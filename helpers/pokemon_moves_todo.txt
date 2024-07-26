@@ -1,0 +1,95 @@
+# Pokémon Moves Implementation To-Do List
+
+## Basic Moves (Direct Damage)
+- [ ] Tackle
+- [ ] Ember
+- [ ] Water Gun
+- [ ] Vine Whip
+- [ ] Thunder Shock
+- [ ] Scratch
+- [ ] Pound
+- [ ] Quick Attack
+- [ ] Gust
+- [ ] Wing Attack
+
+## Status Moves (Inflict Status Conditions)
+- [ ] Poison Powder
+- [ ] Stun Spore
+- [ ] Sleep Powder
+- [ ] Thunder Wave
+- [ ] Will-O-Wisp
+- [ ] Toxic
+- [ ] Confuse Ray
+- [ ] Hypnosis
+- [ ] Sing
+- [ ] Spore
+
+## Stat-Boosting/Reducing Moves
+- [ ] Growl
+- [ ] Tail Whip
+- [ ] Leer
+- [ ] Harden
+- [ ] Swords Dance
+- [ ] Agility
+- [ ] Double Team
+- [ ] Amnesia
+- [ ] Calm Mind
+- [ ] Bulk Up
+
+## Healing Moves
+- [ ] Recover
+- [ ] Soft-Boiled
+- [ ] Heal Pulse
+- [ ] Rest
+- [ ] Aromatherapy
+- [ ] Heal Bell
+- [ ] Moonlight
+- [ ] Morning Sun
+- [ ] Synthesis
+- [ ] Wish
+
+## Combination Moves
+- [ ] Tri Attack
+- [ ] Outrage
+- [ ] Petal Dance
+- [ ] Thrash
+- [ ] Hyper Beam
+- [ ] Solar Beam
+- [ ] Sky Attack
+- [ ] Fly
+- [ ] Dig
+- [ ] Dive
+
+## Moves with Complex Effects
+- [ ] Destiny Bond
+- [ ] Trick Room
+- [ ] Magic Coat
+- [ ] Counter
+- [ ] Mirror Coat
+- [ ] Protect
+- [ ] Detect
+- [ ] Substitute
+- [ ] Baton Pass
+- [ ] Encore
+
+## Advanced Moves with Unique Mechanics
+- [ ] Stealth Rock
+- [ ] Spikes
+- [ ] Toxic Spikes
+- [ ] Roar
+- [ ] Whirlwind
+- [ ] Perish Song
+- [ ] Roost
+- [ ] Volt Switch
+- [ ] U-turn
+- [ ] Rapid Spin
+
+## Final Touches and Special Cases
+- [ ] Fury Attack
+- [ ] Double Slap
+- [ ] Solar Beam (weather dependency)
+- [ ] Moves with terrain dependency (Electric Terrain effects)
+- [ ] Skill Swap (ability interaction)
+- [ ] Gastro Acid (ability interaction)
+- [ ] Z-Moves
+- [ ] G-Max Moves
