@@ -1,19 +1,3 @@
-"""
-Command sets
-
-All commands in the game must be grouped in a cmdset.  A given command
-can be part of any number of cmdsets and cmdsets can be added/removed
-and merged onto entities at runtime.
-
-To create new commands to populate the cmdset, see
-`commands/command.py`.
-
-This module wraps the default command sets of Evennia; overloads them
-to add/remove commands from the default lineup. You can create your
-own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
-
-"""
-
 from evennia import default_cmds
 from paxboards.commands import add_board_commands
 from fusion2.commands.pokedex import CmdPokedexSearch
@@ -25,6 +9,7 @@ from commands.command import (
     CmdAddPokemonToStorage, 
     CmdGetPokemonDetails
 )
+from commands.start_battle import CmdStartBattle  # Import the new command
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -52,6 +37,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAddPokemonToStorage())
         self.add(CmdGetPokemonDetails())
         self.add(CmdPokedexSearch())
+        self.add(CmdStartBattle())  # Add the start battle command
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
