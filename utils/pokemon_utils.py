@@ -1,13 +1,93 @@
+import random
 import math
 from evennia import create_object
 from typeclasses.pokemon import Pokemon
 from fusion2.pokemon.pokedex import pokedex
+from fusion2.pokemon.dex import parsed_learnset as pl
 from utils.id_tracker_utils import get_id_tracker
-from fusion2.pokemon.dex.natures import natures_dict
-import random
 import string
 
 BASE36 = string.digits + string.ascii_uppercase
+
+NATURES = {
+    "Hardy": {},
+    "Lonely": {'atk': 1.1, 'def': 0.9},
+    "Brave": {'atk': 1.1, 'spe': 0.9},
+    "Adamant": {'atk': 1.1, 'spa': 0.9},
+    "Naughty": {'atk': 1.1, 'spd': 0.9},
+    "Bold": {'def': 1.1, 'atk': 0.9},
+    "Docile": {},
+    "Relaxed": {'def': 1.1, 'spe': 0.9},
+    "Impish": {'def': 1.1, 'spa': 0.9},
+    "Lax": {'def': 1.1, 'spd': 0.9},
+    "Timid": {'spe': 1.1, 'atk': 0.9},
+    "Hasty": {'spe': 1.1, 'def': 0.9},
+    "Serious": {},
+    "Jolly": {'spe': 1.1, 'spa': 0.9},
+    "Naive": {'spe': 1.1, 'spd': 0.9},
+    "Modest": {'spa': 1.1, 'atk': 0.9},
+    "Mild": {'spa': 1.1, 'def': 0.9},
+    "Quiet": {'spa': 1.1, 'spe': 0.9},
+    "Bashful": {},
+    "Rash": {'spa': 1.1, 'spd': 0.9},
+    "Calm": {'spd': 1.1, 'atk': 0.9},
+    "Gentle": {'spd': 1.1, 'def': 0.9},
+    "Sassy": {'spd': 1.1, 'spe': 0.9},
+    "Careful": {'spd': 1.1, 'spa': 0.9},
+    "Quirky": {},
+}
+
+STATUSES = {
+    0: "Normal",
+    1: "Burn",
+    2: "Freeze",
+    3: "Paralysis",
+    4: "Poison",
+    5: "Sleep",
+    6: "Toxic",
+    7: "Fainted"
+}
+STATUSES_SHORT = {
+    0: "NRM",
+    1: "BRN",
+    2: "FRZ",
+    3: "PAR",
+    4: "PSN",
+    5: "SLP",
+    6: "TOX",
+    7: "FNT"
+}
+
+STATUSES_REVERSE_SHORT = {
+    "NRM": 0,
+    "BRN": 1,
+    "FRZ": 2,
+    "PAR": 3,
+    "PSN": 4,
+    "SLP": 5,
+    "TOX": 6,
+    "FNT": 7
+}
+
+def get_status_effect(status: int):
+    if status == 0:
+        return 0, -1
+    elif status == 1:
+        return 1, -1
+    elif status == 2:
+        return 2, -1
+    elif status == 3:
+        return 3, -1
+    elif status == 4:
+        return 4, -1
+    elif status == 5:
+        return 5, random.randint(1, 3)
+    elif status == 6:
+        return 6, 1
+    elif status == 7:
+        return 7, -1
+    else:
+        return 0, -1  # Default to normal if unknown status
 
 def base10_to_base36(num, min_length=4):
     """
@@ -125,6 +205,115 @@ def calculate_stat(base, iv, ev, level, nature, stat_type):
     if stat_type == 'hp':
         stat = ((2 * base + iv + (ev // 4)) * level // 100) + level + 10
     else:
-        nature_modifier = natures_dict[nature]["multipliers"][stat_type]
+        nature_modifier = NATURES[nature].get(stat_type, 1.0)
         stat = (((2 * base + iv + (ev // 4)) * level // 100) + 5) * nature_modifier
     return math.floor(stat)
+
+def generate_ivs():
+    return {stat: random.randint(0, 31) for stat in ['hp', 'attack', 'defense', 'sp_attack', 'sp_defense', 'speed']}
+
+def get_xp_rate(species):
+    rate = get_dic_entry(species, "growthRateId")
+    ratedict = {
+        1: "slow",
+        2: "mediumfast",
+        3: "fast",
+        4: "mediumslow",
+        5: "erratic",
+        6: "fluctuating"
+    }
+    return ratedict.get(rate)
+
+def get_xp_to_level(level, xprate):
+    if level == 1:
+        return 0
+    if xprate == 'erratic':
+        if level <= 50:
+            return int((level * level * level * (100 - level)) / 50)
+        elif level <= 68:
+            return int((level * level * level * (150 - level)) / 100)
+        elif level <= 98:
+            return int((level * level * level * int((1911 - (10 * level)) / 3)) / 100)
+        else:
+            return int((level * level * level * (160 - level)) / 100)
+    elif xprate == 'fast':
+        return int(4 * level * level * level / 5)
+    elif xprate == 'mediumfast':
+        return level * level * level
+    elif xprate == 'mediumslow':
+        return int((6 * level * level * level / 5) - (15 * level * level) + (100 * level) - 140)
+    elif xprate == 'slow':
+        return int(5 * level * level * level / 4)
+    else:  # fluctuating
+        if level <= 15:
+            return int(level * level * level * ((int((level + 1) / 3) + 24) / 50))
+        elif level <= 36:
+            return int(level * level * level * ((level + 14) / 50))
+        else:
+            return int(level * level * level * ((int(level / 2) + 32) / 50))
+
+def get_dic_entry(species, keyName):
+    entry = get_dic(species).get(keyName)
+    if entry is None and keyName != "baseSpecies":
+        entry = get_dic(get_dic_entry(species, "baseSpecies")).get(keyName)
+    return entry
+
+def get_dic(species):
+    return pokedex.get(species.lower(), pokedex["missingno"])
+
+def team_generation(specify=False, team=None):
+    """
+    Generate a team of Pokémon.
+
+    :param specify: If the moves and abilities should be specified or not.
+    :param team: List of lists for the team: [['name', lvl], ... ]
+    :return: A list of Pokémon objects representing the team.
+    """
+    if team is None:
+        return []
+
+    full_team = []
+    for member in team:
+        name, level = member
+        team_poke = create_pokemon(name, owner=0, level=level)
+        poke_moves = level_moves(name, level)
+        move_index = 0
+        for m in range(level):
+            if move_index == 4:
+                break
+            try:
+                for n in range(len(poke_moves[level - m])):
+                    team_poke.move_sets[0][move_index] = poke_moves[level - m][n]
+                    move_index += 1
+                    if move_index == 4:
+                        break
+            except KeyError:
+                continue
+            except IndexError:
+                continue
+        full_team.append(team_poke)
+    return full_team
+
+def can_learn_move(pokemon, move, method):
+    learnset = pl.pfLearnset
+    if move.lower() in learnset[pokemon.lower()][method.lower()]:
+        return True
+    return False
+
+def level_moves(pokemon, level):
+    learnset = pl.pfLearnset
+    moveList = {}
+    try:
+        target = learnset[pokemon.lower()]['level']
+        for i in range(1, level):
+            try:
+                if "," in target[f'{i}']:
+                    atkList = target[f'{i}'].split(",")
+                    moveList.update({i: atkList})
+                else:
+                    moveList.update({i: [target[f'{i}']]})
+            except KeyError:
+                continue
+    except KeyError:
+        return ['None', 'None', 'None', 'None']
+    return moveList
