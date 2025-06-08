@@ -9,7 +9,7 @@ BASE_PATH = Path(__file__).resolve().parents[2]
 INPUT_PATH = BASE_PATH / "helpers" / "scripts" / "input"
 POKEDEX_PATH = BASE_PATH / "pokemon" / "pokedex.py"
 MOVEDEX_PATH = BASE_PATH / "pokemon" / "dex" / "combatdex.py"
-ABILITYDEX_PATH = INPUT_PATH / "abilitydex.json"
+ABILITYDEX_PATH = BASE_PATH / "pokemon" / "dex" / "abilities" / "abilitiesdex.py"
 
 try:
     ABILITYDEX = load_abilitydex(ABILITYDEX_PATH)
