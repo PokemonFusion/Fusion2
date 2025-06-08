@@ -1,4 +1,4 @@
-from pokefunc import Return, Acrobatics, CrushGrip
+from .pokefunc import Return, Acrobatics, CrushGrip
 
 py_dict = {
     "Return": {
