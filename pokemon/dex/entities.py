@@ -23,6 +23,13 @@ class Ability:
             raw=data,
         )
 
+    def call(self, func: str, *args, **kwargs):
+        """Call a stored ability callback if it exists."""
+        cb = self.raw.get(func)
+        if callable(cb):
+            return cb(*args, **kwargs)
+        return None
+
 @dataclass
 class Move:
     name: str
@@ -160,7 +167,14 @@ def load_pokedex(
 def load_movedex(path: Path) -> Dict[str, Move]:
     """Load move data from a Python or JSON file."""
     if path.suffix == ".py":
-        module_name = f"pokemon.dex.{path.stem}"
+        # support nested paths like pokemon/dex/abilities/abilitiesdex.py
+        rel_parts = path.with_suffix("").parts
+        try:
+            idx = rel_parts.index("pokemon")
+            module_parts = rel_parts[idx:]
+        except ValueError:
+            module_parts = ["pokemon", "dex", path.stem]
+        module_name = ".".join(module_parts)
         spec = importlib.util.spec_from_file_location(module_name, path)
         mod = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = mod
@@ -174,7 +188,13 @@ def load_movedex(path: Path) -> Dict[str, Move]:
 def load_abilitydex(path: Path) -> Dict[str, Ability]:
     """Load ability data from a Python or JSON file."""
     if path.suffix == ".py":
-        module_name = f"pokemon.dex.{path.stem}"
+        rel_parts = path.with_suffix("").parts
+        try:
+            idx = rel_parts.index("pokemon")
+            module_parts = rel_parts[idx:]
+        except ValueError:
+            module_parts = ["pokemon", "dex", path.stem]
+        module_name = ".".join(module_parts)
         spec = importlib.util.spec_from_file_location(module_name, path)
         mod = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = mod
