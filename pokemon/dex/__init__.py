@@ -7,7 +7,7 @@ BASE_PATH = Path(__file__).resolve().parents[2]
 
 # Raw data files
 INPUT_PATH = BASE_PATH / "helpers" / "scripts" / "input"
-POKEDEX_PATH = BASE_PATH / "pokemon" / "pokedex.py"
+POKEDEX_PATH = BASE_PATH / "pokemon" / "dex" / "pokedex.py"
 MOVEDEX_PATH = BASE_PATH / "pokemon" / "dex" / "combatdex.py"
 ABILITYDEX_PATH = BASE_PATH / "pokemon" / "dex" / "abilities" / "abilitiesdex.py"
 
