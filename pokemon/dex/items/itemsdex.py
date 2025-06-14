@@ -1,4 +1,4 @@
-from .functions.itemfuncs import *
+from ..functions.items_funcs import *
 
 py_dict = {   'Abilityshield': {   'name': 'Ability Shield',
                          'spritenum': 746,

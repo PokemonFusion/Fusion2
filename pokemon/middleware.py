@@ -1,6 +1,6 @@
 # fusion2/pokemon/middleware.py
 
-from fusion2.pokemon.pokedex import pokedex
+from fusion2.pokemon.dex import POKEDEX as pokedex
 
 def get_pokemon_by_number(number):
     for name, details in pokedex.items():
