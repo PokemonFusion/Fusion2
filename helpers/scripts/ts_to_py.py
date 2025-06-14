@@ -11,6 +11,16 @@ BASE_DIR = Path(__file__).parent
 TS_DIR = BASE_DIR / 'ts'
 JSON_DIR = BASE_DIR / 'json'
 PY_DIR = BASE_DIR / 'py'
+
+# Mapping of dictionary types to output python file names used by the main
+# project.  These names differ from the raw dict_type names for some data
+# files.
+PY_NAMES = {
+    'pokedex': 'pokedex',
+    'items': 'itemsdex',
+    'abilities': 'abilitiesdex',
+    'moves': 'combatdex',
+}
 FUNC_DIR = PY_DIR / 'functions'
 
 # Patterns to remove TypeScript headers
@@ -131,7 +141,8 @@ def convert_ts(dict_type: str) -> None:
 
     # Write Python dictionary
     PY_DIR.mkdir(parents=True, exist_ok=True)
-    with (PY_DIR / f'{dict_type}.py').open('w') as f:
+    out_name = PY_NAMES.get(dict_type, dict_type)
+    with (PY_DIR / f'{out_name}.py').open('w') as f:
         f.write(f'from .functions.{dict_type}_funcs import *\n\n')
         pretty = pprint.pformat(py_dict, indent=4, width=120, sort_dicts=False)
         f.write('py_dict = ' + pretty)
