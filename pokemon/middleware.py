@@ -1,6 +1,6 @@
 # fusion2/pokemon/middleware.py
 
-from fusion2.pokemon.dex import POKEDEX as pokedex
+from fusion2.pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
 
 def get_pokemon_by_number(number):
     for name, details in pokedex.items():
@@ -46,4 +46,45 @@ def format_pokemon_details(name, details):
     if "prevo" in details:
         msg += f"Evolved From: {details['prevo']} (at level {details.get('evoLevel', 'N/A')})\n"
     msg += f"Egg Groups: {', '.join(details['eggGroups'])}\n"
+    return msg
+
+
+def _normalize_key(name: str) -> str:
+    """Normalize names for lookup in MOVEDEX."""
+    return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+
+
+def get_move_by_name(name):
+    """Return move data from the movedex by name."""
+
+    key = _normalize_key(name)
+    if key in movedex:
+        return key, movedex[key]
+    for move_name, details in movedex.items():
+        alt = _normalize_key(details.get("name", move_name))
+        if alt == key:
+            return move_name, details
+    return None, None
+
+
+def get_move_description(details):
+    """Placeholder: obtain a long description for a move."""
+    # TODO: Pull full move descriptions from dataset or external source
+    return details.get("desc") or "No description available."
+
+
+def format_move_details(name, details):
+    """Return a formatted string describing a move."""
+
+    msg = f"{details.get('name', name)}\n"
+    msg += "-" * 55 + "\n"
+    msg += f"Type: {details.get('type', 'Unknown')}\n"
+    msg += f"Class: {details.get('category', 'Unknown')}\n"
+    msg += f"Power: {details.get('basePower', '--')}\n"
+    msg += f"Accuracy: {details.get('accuracy', '--')}\n"
+    msg += f"PP: {details.get('pp', '--')}\n"
+    msg += f"Target: {details.get('target', '--')}\n"
+    msg += f"Priority: {details.get('priority', 0)}\n"
+    msg += f"Desc: {get_move_description(details)}\n"
+    msg += "-" * 55
     return msg
