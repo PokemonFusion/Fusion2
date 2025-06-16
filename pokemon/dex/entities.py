@@ -56,6 +56,46 @@ class Move:
 
 
 @dataclass
+class Item:
+    name: str
+    num: int
+    spritenum: Optional[int] = None
+    desc: Optional[str] = None
+    id: Optional[str] = None
+    gen: Optional[int] = None
+    mega_evolves: Optional[str] = None
+    mega_stone: Optional[str] = None
+    item_user: List[str] = field(default_factory=list)
+    on_take_item: Any = None
+    forced_forme: Optional[str] = None
+    raw: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, name: str, data: Dict[str, Any]):
+        return cls(
+            name=name,
+            num=data.get("num", 0),
+            spritenum=data.get("spritenum"),
+            desc=data.get("desc"),
+            id=data.get("id"),
+            gen=data.get("gen"),
+            mega_evolves=data.get("megaEvolves"),
+            mega_stone=data.get("megaStone"),
+            item_user=data.get("itemUser", []),
+            on_take_item=data.get("onTakeItem"),
+            forced_forme=data.get("forcedForme"),
+            raw=data,
+        )
+
+    def call(self, func: str, *args, **kwargs):
+        """Call a stored item callback if it exists."""
+        cb = self.raw.get(func)
+        if callable(cb):
+            return cb(*args, **kwargs)
+        return None
+
+
+@dataclass
 class Stats:
     hp: int = 0
     atk: int = 0
@@ -203,3 +243,23 @@ def load_abilitydex(path: Path) -> Dict[str, Ability]:
     else:
         data = _load_json(path)
     return {name: Ability.from_dict(name, details) for name, details in data.items()}
+
+
+def load_itemdex(path: Path) -> Dict[str, Item]:
+    """Load item data from a Python or JSON file."""
+    if path.suffix == ".py":
+        rel_parts = path.with_suffix("").parts
+        try:
+            idx = rel_parts.index("pokemon")
+            module_parts = rel_parts[idx:]
+        except ValueError:
+            module_parts = ["pokemon", "dex", path.stem]
+        module_name = ".".join(module_parts)
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = mod
+        spec.loader.exec_module(mod)
+        data = getattr(mod, "py_dict")
+    else:
+        data = _load_json(path)
+    return {name: Item.from_dict(name, details) for name, details in data.items()}
