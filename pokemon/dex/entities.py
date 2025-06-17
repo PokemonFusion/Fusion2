@@ -96,6 +96,29 @@ class Item:
 
 
 @dataclass
+class Condition:
+    name: str
+    effect_type: Optional[str] = None
+    duration: Optional[int] = None
+    raw: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, name: str, data: Dict[str, Any]):
+        return cls(
+            name=name,
+            effect_type=data.get("effectType"),
+            duration=data.get("duration"),
+            raw=data,
+        )
+
+    def call(self, func: str, *args, **kwargs):
+        cb = self.raw.get(func)
+        if callable(cb):
+            return cb(*args, **kwargs)
+        return None
+
+
+@dataclass
 class Stats:
     hp: int = 0
     atk: int = 0
@@ -263,3 +286,23 @@ def load_itemdex(path: Path) -> Dict[str, Item]:
     else:
         data = _load_json(path)
     return {name: Item.from_dict(name, details) for name, details in data.items()}
+
+
+def load_conditiondex(path: Path) -> Dict[str, Condition]:
+    """Load condition data from a Python or JSON file."""
+    if path.suffix == ".py":
+        rel_parts = path.with_suffix("").parts
+        try:
+            idx = rel_parts.index("pokemon")
+            module_parts = rel_parts[idx:]
+        except ValueError:
+            module_parts = ["pokemon", "dex", path.stem]
+        module_name = ".".join(module_parts)
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = mod
+        spec.loader.exec_module(mod)
+        data = getattr(mod, "py_dict")
+    else:
+        data = _load_json(path)
+    return {name: Condition.from_dict(name, details) for name, details in data.items()}
