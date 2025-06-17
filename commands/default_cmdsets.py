@@ -16,7 +16,11 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 from evennia import default_cmds
 from paxboards.commands import add_board_commands
-from fusion2.commands.pokedex import CmdPokedexSearch, CmdMovedexSearch
+from fusion2.commands.pokedex import (
+    CmdPokedexSearch,
+    CmdMovedexSearch,
+    CmdMovesetSearch,
+)
 
 from commands.command import (
     CmdShowPokemonOnUser, 
@@ -53,6 +57,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGetPokemonDetails())
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
+        self.add(CmdMovesetSearch())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

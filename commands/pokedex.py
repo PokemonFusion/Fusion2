@@ -7,6 +7,8 @@ from fusion2.pokemon.middleware import (
     format_pokemon_details,
     get_move_by_name,
     format_move_details,
+    get_moveset_by_name,
+    format_moveset,
 )
 
 class CmdPokedexSearch(Command):
@@ -72,3 +74,24 @@ class CmdMovedexSearch(Command):
             self.caller.msg(format_move_details(name, details))
         else:
             self.caller.msg("No move found with that name.")
+
+
+class CmdMovesetSearch(Command):
+    """Show the moveset for a Pokémon."""
+
+    key = "moveset"
+    aliases = ["learnset", "movelist"]
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        args = self.args.strip()
+        if not args:
+            self.caller.msg("You need to specify a Pokémon name.")
+            return
+
+        name, moveset = get_moveset_by_name(args)
+        if name and moveset:
+            self.caller.msg(format_moveset(name, moveset))
+        else:
+            self.caller.msg("No moveset found for that Pokémon.")
