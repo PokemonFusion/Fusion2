@@ -1,6 +1,8 @@
 # fusion2/pokemon/middleware.py
 
+import re
 from fusion2.pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
+from fusion2.pokemon.data.learnsets.learnsets import LEARNSETS
 
 def get_pokemon_by_number(number):
     for name, details in pokedex.items():
@@ -88,3 +90,98 @@ def format_move_details(name, details):
     msg += f"Desc: {get_move_description(details)}\n"
     msg += "-" * 55
     return msg
+
+
+CODE_RE = re.compile(r"^(?P<gen>\d+)(?P<type>[A-Z])(?P<data>.*)$")
+
+
+def _parse_codes(codes):
+    """Return a mapping of learn types to their highest generation entry."""
+
+    result = {}
+    for code in codes:
+        m = CODE_RE.match(code)
+        if not m:
+            continue
+        gen = int(m.group("gen"))
+        ltype = m.group("type")
+        data = m.group("data")
+        entry = result.get(ltype)
+        if not entry or gen > entry[0]:
+            result[ltype] = (gen, data)
+    return result
+
+
+def build_moveset(learnset):
+    """Build a categorized moveset from a raw learnset dictionary."""
+
+    moveset = {
+        "level-up": [],
+        "machine": [],
+        "tutor": [],
+        "egg": [],
+        "event": [],
+        "dream": [],
+        "virtual": [],
+    }
+
+    for move, codes in learnset.items():
+        parsed = _parse_codes(codes)
+        for letter, (gen, data) in parsed.items():
+            if letter == "L":
+                level = int(data or 0)
+                moveset["level-up"].append((level, move))
+            elif letter == "M":
+                moveset["machine"].append(move)
+            elif letter == "T":
+                moveset["tutor"].append(move)
+            elif letter == "E":
+                moveset["egg"].append(move)
+            elif letter == "S":
+                moveset["event"].append(move)
+            elif letter == "D":
+                moveset["dream"].append(move)
+            elif letter == "V":
+                moveset["virtual"].append(move)
+
+    moveset["level-up"].sort(key=lambda x: x[0])
+    for key in ["machine", "tutor", "egg", "event", "dream", "virtual"]:
+        moveset[key].sort()
+    return moveset
+
+
+def get_moveset_by_name(name):
+    """Return a moveset for the given Pokémon name."""
+
+    key = name.lower()
+    data = LEARNSETS.get(key)
+    if not data:
+        return None, None
+    learnset = data.get("learnset", {})
+    return key, build_moveset(learnset)
+
+
+def format_moveset(name, moveset):
+    """Format a moveset dictionary for display."""
+
+    lines = [f"Moveset for {name.title()}", "-" * 55]
+
+    if moveset["level-up"]:
+        lines.append("Level-up:")
+        for level, move in moveset["level-up"]:
+            lines.append(f"  Lv {level}: {move}")
+        lines.append("")
+
+    for key, title in [
+        ("machine", "Machine"),
+        ("tutor", "Tutor"),
+        ("egg", "Egg"),
+        ("event", "Event"),
+        ("dream", "Dream World"),
+        ("virtual", "Virtual Console"),
+    ]:
+        if moveset[key]:
+            joined = ", ".join(moveset[key])
+            lines.append(f"{title}: {joined}")
+
+    return "\n".join(lines)
