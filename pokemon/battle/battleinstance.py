@@ -7,11 +7,22 @@ from evennia import create_object
 
 from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon
+from ..generation import generate_pokemon
 
 
-def generate_wild_pokemon() -> Pokemon:
-    """Placeholder that returns a simple Pikachu."""
-    return Pokemon(name="Pikachu", level=5, hp=35)
+def generate_wild_pokemon(location=None) -> Pokemon:
+    """Generate a wild Pokémon based on the current location.
+
+    Parameters
+    ----------
+    location : optional
+        The player's location. Spawn tables will be pulled from this
+        value in the future.
+    """
+
+    # TODO: Pull spawn data from `location` to determine species and level.
+    inst = generate_pokemon("Pikachu", level=5)
+    return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp)
 
 
 def generate_trainer_pokemon() -> Pokemon:
@@ -32,7 +43,7 @@ class BattleInstance:
         """Start a battle against a wild Pokémon or a trainer."""
         opponent_kind = random.choice(["pokemon", "trainer"])
         if opponent_kind == "pokemon":
-            opponent_poke = generate_wild_pokemon()
+            opponent_poke = generate_wild_pokemon(self.player.location)
             opponent_team = Team(trainer="Wild", pokemon_list=[opponent_poke])
             self.player.msg(f"A wild {opponent_poke.name} appears!")
         else:
