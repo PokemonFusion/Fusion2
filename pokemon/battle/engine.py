@@ -146,16 +146,40 @@ class Battle:
     # Pseudocode mapping
     # ------------------------------------------------------------------
     def run_switch(self) -> None:
-        """Placeholder for switch handling as described in simulator-doc.txt."""
+        """Handle Pokémon switches before moves are executed."""
 
-        # TODO: implement pre-move switching logic
-        pass
+        for part in self.participants:
+            if part.has_lost:
+                continue
+
+            # If no active Pokémon, bring out the first healthy one
+            if not part.active:
+                for poke in part.pokemons:
+                    if getattr(poke, "hp", 0) > 0:
+                        part.active = [poke]
+                        break
+                continue
+
+            # Replace fainted active Pokémon if possible
+            active = part.active[0]
+            if getattr(active, "hp", 0) <= 0:
+                for poke in part.pokemons:
+                    if poke is active:
+                        continue
+                    if getattr(poke, "hp", 0) > 0:
+                        part.active = [poke]
+                        break
 
     def run_after_switch(self) -> None:
-        """Placeholder for events triggered after switching."""
+        """Trigger simple events after Pokémon have switched in."""
 
-        # TODO: implement switch-in effects
-        pass
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for poke in part.active:
+                # Clear any temporary battle values on switch
+                if hasattr(poke, "tempvals"):
+                    poke.tempvals.clear()
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
@@ -166,16 +190,37 @@ class Battle:
         self.execute_actions(actions)
 
     def run_faint(self) -> None:
-        """Handle fainted Pokémon and trigger faint events."""
+        """Handle fainted Pokémon and mark participants as losing if needed."""
 
-        # TODO: implement faint resolution
-        pass
+        for part in self.participants:
+            if part.has_lost:
+                continue
+
+            # Remove fainted Pokémon from the active list
+            part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]
+
+            # Check if the participant has any Pokémon left
+            if not any(getattr(p, "hp", 0) > 0 for p in part.pokemons):
+                part.has_lost = True
 
     def residual(self) -> None:
-        """Process residual effects at the end of a turn."""
+        """Process residual effects and handle end-of-turn fainting."""
 
-        # TODO: implement weather and other residual effects
-        pass
+        # Apply very light residual damage for demonstration
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for poke in list(part.active):
+                status = getattr(poke, "status", None)
+                if status in {"brn", "psn"}:
+                    poke.hp = max(0, poke.hp - 1)
+
+        # Remove Pokémon that fainted from residual damage
+        self.run_faint()
+
+        # Auto-switch in replacements for any empty sides
+        self.run_switch()
+        self.run_after_switch()
 
     def run_action(self) -> None:
         """Main action runner modeled on Showdown's `runAction`."""
