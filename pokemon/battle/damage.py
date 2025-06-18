@@ -114,6 +114,19 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move) -> DamageResult:
             f"{attacker.name} uses {move.name} on {target.name} and deals {phrase} damage!"
         )
         result.debug.setdefault("damage", []).append(dmg)
+
+        # apply simple status effects like burns
+        if move.raw:
+            status = move.raw.get("status")
+            chance = move.raw.get("statusChance", 100)
+            secondary = move.raw.get("secondary")
+            if secondary and isinstance(secondary, dict):
+                status = secondary.get("status", status)
+                chance = secondary.get("chance", chance)
+            if status and percent_check(chance / 100.0):
+                setattr(target, "status", status)
+                if status == "brn":
+                    result.text.append(f"{target.name} was burned!")
     if numhits > 1:
         result.text.append(f"{attacker.name} hit {numhits} times!")
     return result
