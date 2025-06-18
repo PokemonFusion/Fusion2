@@ -25,9 +25,10 @@ from fusion2.commands.pokedex import (
 from commands.command import (
     CmdShowPokemonOnUser, 
     CmdShowPokemonInStorage, 
-    CmdAddPokemonToUser, 
-    CmdAddPokemonToStorage, 
-    CmdGetPokemonDetails
+    CmdAddPokemonToUser,
+    CmdAddPokemonToStorage,
+    CmdGetPokemonDetails,
+    CmdUseMove,
 )
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -55,6 +56,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAddPokemonToUser())
         self.add(CmdAddPokemonToStorage())
         self.add(CmdGetPokemonDetails())
+        self.add(CmdUseMove())
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
         self.add(CmdMovesetSearch())
