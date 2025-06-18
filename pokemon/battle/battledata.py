@@ -32,11 +32,19 @@ class Move:
 class Pokemon:
     """Very small Pokemon container used for battles."""
 
-    def __init__(self, name: str, level: int = 1, hp: int = 100, status: int = 0):
+    def __init__(
+        self,
+        name: str,
+        level: int = 1,
+        hp: int = 100,
+        status: int = 0,
+        moves: Optional[List[str]] = None,
+    ):
         self.name = name
         self.level = level
         self.hp = hp
         self.status = status
+        self.moves: List[str] = moves or []
         self.tempvals: Dict[str, int] = {}
 
     def getName(self) -> str:
@@ -51,6 +59,7 @@ class Pokemon:
             "level": self.level,
             "hp": self.hp,
             "status": self.status,
+            "moves": self.moves,
             "tempvals": self.tempvals,
         }
 
@@ -61,6 +70,7 @@ class Pokemon:
             level=data.get("level", 1),
             hp=data.get("hp", 100),
             status=data.get("status", 0),
+            moves=data.get("moves", []),
         )
         obj.tempvals = data.get("tempvals", {})
         return obj
