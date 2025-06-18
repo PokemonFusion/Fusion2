@@ -108,7 +108,8 @@ class BattleParticipant:
         active_poke = self.active[0]
         if not hasattr(active_poke, "moves") or not active_poke.moves:
             return None
-        move = active_poke.moves[0]
+        move_data = active_poke.moves[0]
+        move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
         opponent = battle.opponent_of(self)
         if not opponent or not opponent.active:
             return None

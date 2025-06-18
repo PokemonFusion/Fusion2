@@ -6,7 +6,7 @@ from typing import List
 from evennia import create_object
 
 from typeclasses.battleroom import BattleRoom
-from .battledata import BattleData, Team, Pokemon
+from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from ..generation import generate_pokemon
 from fusion2.world.pokemon_spawn import get_spawn
@@ -21,12 +21,15 @@ def generate_wild_pokemon(location=None) -> Pokemon:
         inst = None
     if not inst:
         inst = generate_pokemon("Pikachu", level=5)
-    return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp)
+    moves = [Move(name=m) for m in inst.moves]
+    return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp, moves=moves)
 
 
 def generate_trainer_pokemon() -> Pokemon:
     """Placeholder that returns a trainer's Charmander."""
-    return Pokemon(name="Charmander", level=5, hp=39)
+    inst = generate_pokemon("Charmander", level=5)
+    moves = [Move(name=m) for m in inst.moves]
+    return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp, moves=moves)
 
 
 class BattleInstance:
@@ -61,8 +64,15 @@ class BattleInstance:
 
         player_pokemon: List[Pokemon] = []
         for poke in self.player.storage.active_pokemon.all():
+            inst = generate_pokemon(poke.name, level=poke.level)
+            moves = [Move(name=m) for m in inst.moves]
             player_pokemon.append(
-                Pokemon(name=poke.name, level=poke.level, hp=100)
+                Pokemon(
+                    name=inst.species.name,
+                    level=inst.level,
+                    hp=inst.stats.hp,
+                    moves=moves,
+                )
             )
 
         player_participant = BattleParticipant(self.player.key, player_pokemon)
