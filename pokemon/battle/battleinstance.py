@@ -8,20 +8,18 @@ from evennia import create_object
 from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon
 from ..generation import generate_pokemon
+from fusion2.world.pokemon_spawn import get_spawn
 
 
 def generate_wild_pokemon(location=None) -> Pokemon:
-    """Generate a wild Pokémon based on the current location.
+    """Generate a wild Pokémon based on the supplied location."""
 
-    Parameters
-    ----------
-    location : optional
-        The player's location. Spawn tables will be pulled from this
-        value in the future.
-    """
-
-    # TODO: Pull spawn data from `location` to determine species and level.
-    inst = generate_pokemon("Pikachu", level=5)
+    if location:
+        inst = get_spawn(location)
+    else:
+        inst = None
+    if not inst:
+        inst = generate_pokemon("Pikachu", level=5)
     return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp)
 
 

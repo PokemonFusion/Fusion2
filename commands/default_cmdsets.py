@@ -23,14 +23,15 @@ from fusion2.commands.pokedex import (
 )
 
 from commands.command import (
-    CmdShowPokemonOnUser, 
-    CmdShowPokemonInStorage, 
+    CmdShowPokemonOnUser,
+    CmdShowPokemonInStorage,
     CmdAddPokemonToUser,
     CmdAddPokemonToStorage,
     CmdGetPokemonDetails,
     CmdUseMove,
-    CmdHunt,
 )
+from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
+from commands.cmd_spawns import CmdSpawns
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -59,6 +60,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGetPokemonDetails())
         self.add(CmdUseMove())
         self.add(CmdHunt())
+        self.add(CmdLeaveHunt())
+        self.add(CmdSpawns())
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
         self.add(CmdMovesetSearch())
