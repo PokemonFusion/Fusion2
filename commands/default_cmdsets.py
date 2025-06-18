@@ -29,6 +29,7 @@ from commands.command import (
     CmdAddPokemonToStorage,
     CmdGetPokemonDetails,
     CmdUseMove,
+    CmdHunt,
 )
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -57,6 +58,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAddPokemonToStorage())
         self.add(CmdGetPokemonDetails())
         self.add(CmdUseMove())
+        self.add(CmdHunt())
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
         self.add(CmdMovesetSearch())

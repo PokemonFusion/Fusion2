@@ -166,3 +166,21 @@ class CmdUseMove(Command):
         if getattr(tgt, "status", None):
             out.append(f"{tgt.name} is now {tgt.status}.")
         self.caller.msg("\n".join(out))
+
+class CmdHunt(Command):
+    """Search for a wild Pokémon or a trainer to battle."""
+
+    key = "+hunt"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        from pokemon.battle.battleinstance import BattleInstance
+
+        if self.caller.ndb.get("battle_instance"):
+            self.caller.msg("You are already engaged in a battle.")
+            return
+
+        battle = BattleInstance(self.caller)
+        battle.start()
+
