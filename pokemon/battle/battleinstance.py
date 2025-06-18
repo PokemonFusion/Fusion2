@@ -7,6 +7,7 @@ from evennia import create_object
 
 from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon
+from .engine import Battle, BattleParticipant, BattleType
 from ..generation import generate_pokemon
 from fusion2.world.pokemon_spawn import get_spawn
 
@@ -36,31 +37,54 @@ class BattleInstance:
         self.room = create_object(BattleRoom, key=f"Battle-{player.key}")
         self.room.db.instance = self
         self.data: BattleData | None = None
+        self.battle: Battle | None = None
 
     def start(self) -> None:
         """Start a battle against a wild Pokémon or a trainer."""
         opponent_kind = random.choice(["pokemon", "trainer"])
         if opponent_kind == "pokemon":
             opponent_poke = generate_wild_pokemon(self.player.location)
-            opponent_team = Team(trainer="Wild", pokemon_list=[opponent_poke])
+            battle_type = BattleType.WILD
+            opponent_name = "Wild"
             self.player.msg(f"A wild {opponent_poke.name} appears!")
         else:
             opponent_poke = generate_trainer_pokemon()
-            opponent_team = Team(trainer="Trainer", pokemon_list=[opponent_poke])
+            battle_type = BattleType.TRAINER
+            opponent_name = "Trainer"
             self.player.msg(
                 f"A trainer challenges you with {opponent_poke.name}!"
             )
 
+        opponent_participant = BattleParticipant(
+            opponent_name, [opponent_poke], is_ai=True
+        )
+
         player_pokemon: List[Pokemon] = []
         for poke in self.player.storage.active_pokemon.all():
-            player_pokemon.append(Pokemon(name=poke.name, level=poke.level, hp=100))
+            player_pokemon.append(
+                Pokemon(name=poke.name, level=poke.level, hp=100)
+            )
+
+        player_participant = BattleParticipant(self.player.key, player_pokemon)
+
+        # Set the first Pokémon of each side as active
+        if player_participant.pokemons:
+            player_participant.active = [player_participant.pokemons[0]]
+        if opponent_participant.pokemons:
+            opponent_participant.active = [opponent_participant.pokemons[0]]
+
+        self.battle = Battle(battle_type, [player_participant, opponent_participant])
 
         player_team = Team(trainer=self.player.key, pokemon_list=player_pokemon)
+        opponent_team = Team(trainer=opponent_name, pokemon_list=[opponent_poke])
         self.data = BattleData(player_team, opponent_team)
 
         self.player.ndb.battle_instance = self
         self.player.move_to(self.room, quiet=True)
         self.player.msg("Battle started!")
+
+        # Run the opening turn immediately for demonstration
+        self.battle.run_turn()
 
     def end(self) -> None:
         """End the battle and clean up."""
@@ -68,4 +92,5 @@ class BattleInstance:
             self.room.delete()
         if self.player.ndb.get("battle_instance"):
             del self.player.ndb.battle_instance
+        self.battle = None
         self.player.msg("The battle has ended.")
