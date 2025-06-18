@@ -11,5 +11,22 @@ class Pokemon(models.Model):
 
 class UserStorage(models.Model):
     user = models.OneToOneField(DefaultCharacter, on_delete=models.CASCADE)
-    active_pokemon = models.ManyToManyField(Pokemon, related_name='active_users')
-    stored_pokemon = models.ManyToManyField(Pokemon, related_name='stored_users')
+    active_pokemon = models.ManyToManyField(
+        Pokemon, related_name="active_users"
+    )
+    stored_pokemon = models.ManyToManyField(
+        Pokemon, related_name="stored_users", blank=True
+    )
+
+
+class StorageBox(models.Model):
+    """A box of Pokémon stored for a particular user."""
+
+    storage = models.ForeignKey(
+        UserStorage, on_delete=models.CASCADE, related_name="boxes"
+    )
+    name = models.CharField(max_length=255)
+    pokemon = models.ManyToManyField(Pokemon, related_name="boxes", blank=True)
+
+    def __str__(self):
+        return f"{self.name} (Owner: {self.storage.user.key})"

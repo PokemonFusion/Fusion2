@@ -184,3 +184,76 @@ class CmdHunt(Command):
         battle = BattleInstance(self.caller)
         battle.start()
 
+
+class CmdChooseStarter(Command):
+    """Choose your first Pokémon."""
+
+    key = "choosestarter"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        if not self.args:
+            self.caller.msg("Usage: choosestarter <pokemon>")
+            return
+        result = self.caller.choose_starter(self.args.strip())
+        self.caller.msg(result)
+
+
+class CmdDepositPokemon(Command):
+    """Deposit a Pokémon into a storage box."""
+
+    key = "deposit"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        parts = self.args.split()
+        if not parts:
+            self.caller.msg("Usage: deposit <pokemon_id> [box]")
+            return
+        try:
+            pid = int(parts[0])
+            box = int(parts[1]) if len(parts) > 1 else 1
+        except ValueError:
+            self.caller.msg("Usage: deposit <pokemon_id> [box]")
+            return
+        self.caller.msg(self.caller.deposit_pokemon(pid, box))
+
+
+class CmdWithdrawPokemon(Command):
+    """Withdraw a Pokémon from a storage box."""
+
+    key = "withdraw"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        parts = self.args.split()
+        if not parts:
+            self.caller.msg("Usage: withdraw <pokemon_id> [box]")
+            return
+        try:
+            pid = int(parts[0])
+            box = int(parts[1]) if len(parts) > 1 else 1
+        except ValueError:
+            self.caller.msg("Usage: withdraw <pokemon_id> [box]")
+            return
+        self.caller.msg(self.caller.withdraw_pokemon(pid, box))
+
+
+class CmdShowBox(Command):
+    """Show the contents of a storage box."""
+
+    key = "showbox"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        try:
+            index = int(self.args.strip() or "1")
+        except ValueError:
+            self.caller.msg("Usage: showbox <box_number>")
+            return
+        self.caller.msg(self.caller.show_box(index))
+
