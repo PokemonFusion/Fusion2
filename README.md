@@ -38,3 +38,13 @@ Evennia's documentation is here:
 https://github.com/evennia/evennia/wiki.
 
 Enjoy!
+
+## Regional Pokédex Data
+
+The `pokemon/data/regiondex.py` module stores regional Pokédex entries for
+each main-series region (Kanto through Galar).  Each entry is a pair of the
+regional number and the species name.  The data was generated from the
+[PokeAPI](https://github.com/PokeAPI/pokeapi/) CSV dumps
+(`pokedexes.csv`, `pokemon_dex_numbers.csv` and `pokemon_species.csv`).  Use the
+helpers in `pokemon/dex/functions/pokedex_funcs.py` such as
+`get_region_entries()` or `get_region_species()` to access the data.
