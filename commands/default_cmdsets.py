@@ -29,6 +29,10 @@ from commands.command import (
     CmdAddPokemonToStorage,
     CmdGetPokemonDetails,
     CmdUseMove,
+    CmdChooseStarter,
+    CmdDepositPokemon,
+    CmdWithdrawPokemon,
+    CmdShowBox,
 )
 from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
 from commands.cmd_spawns import CmdSpawns
@@ -59,6 +63,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAddPokemonToStorage())
         self.add(CmdGetPokemonDetails())
         self.add(CmdUseMove())
+        self.add(CmdChooseStarter())
+        self.add(CmdDepositPokemon())
+        self.add(CmdWithdrawPokemon())
+        self.add(CmdShowBox())
         self.add(CmdHunt())
         self.add(CmdLeaveHunt())
         self.add(CmdSpawns())
