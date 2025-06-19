@@ -5,7 +5,7 @@ import re
 import random
 from typing import Dict, List, Optional
 
-from .dex import POKEDEX
+from .dex import POKEDEX, MOVEDEX
 from .data.learnsets.learnsets import LEARNSETS
 from .dex.entities import Stats, Pokemon as SpeciesPokemon
 
@@ -89,6 +89,115 @@ def get_valid_moves(species_name: str, level: int) -> List[str]:
         if mv not in moves:
             moves.append(mv)
     return moves
+
+
+def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = False) -> List[str]:
+    """Return up to four moves for a wild Pokémon.
+
+    The moves are chosen from level-up moves learned at or before the given
+    level.  STAB and higher-level moves are preferred.  If ``allow_special`` is
+    True, there is a small chance an egg or machine move is included.
+    """
+
+    key = species_name.lower()
+    species = POKEDEX.get(key)
+    if not species:
+        # allow lookup by dex number provided as string or int
+        try:
+            num = int(species_name)
+        except (TypeError, ValueError):
+            return []
+        for name, data in POKEDEX.items():
+            if data.num == num:
+                species = data
+                key = name.lower()
+                break
+    if not species:
+        return []
+
+    types = [t.lower() for t in species.types]
+
+    data = LEARNSETS.get(key)
+    if not data:
+        return ["Struggle"]
+
+    learnset = data.get("learnset", {})
+    level_moves: List[tuple[int, str]] = []
+    for move, codes in learnset.items():
+        learned_at: Optional[int] = None
+        for code in codes:
+            m = _LEVEL_CODE.match(code)
+            if not m:
+                continue
+            lvl = int(m.group("level"))
+            if lvl <= level and (learned_at is None or lvl > learned_at):
+                learned_at = lvl
+        if learned_at is not None:
+            level_moves.append((learned_at, move))
+
+    if not level_moves:
+        return ["Struggle"]
+
+    # Sort by level descending for recency
+    level_moves.sort(key=lambda x: x[0], reverse=True)
+
+    def is_stab(mv: str) -> bool:
+        md = MOVEDEX.get(mv.lower())
+        return bool(md and md.type and md.type.lower() in types)
+
+    def is_damaging(mv: str) -> bool:
+        md = MOVEDEX.get(mv.lower())
+        if not md:
+            return False
+        if md.category == "Status":
+            return False
+        try:
+            return int(md.power) > 0
+        except (TypeError, ValueError):
+            return False
+
+    stab_moves = [mv for _, mv in level_moves if is_stab(mv)]
+    other_moves = [mv for _, mv in level_moves if not is_stab(mv)]
+
+    moves: List[str] = []
+    for mv in stab_moves:
+        if mv not in moves:
+            moves.append(mv)
+        if len(moves) >= 4:
+            break
+    if len(moves) < 4:
+        for mv in other_moves:
+            if mv not in moves:
+                moves.append(mv)
+            if len(moves) >= 4:
+                break
+
+    if allow_special and random.random() < 0.05:
+        special_pool: List[str] = []
+        for move, codes in learnset.items():
+            for code in codes:
+                if code.endswith("M") or code.endswith("E"):
+                    special_pool.append(move)
+                    break
+        if special_pool:
+            special_move = random.choice(special_pool)
+            if special_move not in moves:
+                if len(moves) >= 4:
+                    moves[-1] = special_move
+                else:
+                    moves.append(special_move)
+
+    def has_damaging(ms: List[str]) -> bool:
+        return any(is_damaging(m) for m in ms)
+
+    if not has_damaging(moves):
+        fallback = "Tackle" if "tackle" in MOVEDEX else "Struggle"
+        if moves:
+            moves[0] = fallback
+        else:
+            moves = [fallback]
+
+    return moves[:4]
 
 
 def get_random_ability(abilities: Dict[str, str]) -> str:
