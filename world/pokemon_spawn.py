@@ -6,8 +6,8 @@ from typing import List, Dict, Optional
 
 from evennia import DefaultRoom
 
-from fusion2.utils.pokemon_config import RARITY_WEIGHTS, TIERS
-from fusion2.pokemon.generation import generate_pokemon, PokemonInstance
+from utils.pokemon_config import RARITY_WEIGHTS, TIERS
+from pokemon.generation import generate_pokemon, PokemonInstance
 
 
 def weighted_choice(choices: List[Dict]) -> Optional[Dict]:

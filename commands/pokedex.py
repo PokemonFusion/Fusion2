@@ -1,7 +1,7 @@
 # mygame/commands/pokedex.py
 
 from evennia import Command
-from fusion2.pokemon.middleware import (
+from pokemon.middleware import (
     get_pokemon_by_number,
     get_pokemon_by_name,
     format_pokemon_details,

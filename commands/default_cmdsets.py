@@ -16,7 +16,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 from evennia import default_cmds
 from paxboards.commands import add_board_commands
-from fusion2.commands.pokedex import (
+from commands.pokedex import (
     CmdPokedexSearch,
     CmdMovedexSearch,
     CmdMovesetSearch,

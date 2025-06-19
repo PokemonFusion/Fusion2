@@ -1,8 +1,8 @@
 # fusion2/pokemon/middleware.py
 
 import re
-from fusion2.pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
-from fusion2.pokemon.data.learnsets.learnsets import LEARNSETS
+from pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
+from pokemon.data.learnsets.learnsets import LEARNSETS
 
 def get_pokemon_by_number(number):
     for name, details in pokedex.items():
