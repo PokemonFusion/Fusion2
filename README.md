@@ -29,6 +29,17 @@ to your new game using a MUD client on `localhost`, port `4000`.  You can
 also log into the web client by pointing a browser to
 `http://localhost:4001`.
 
+## Database migrations
+
+If you pull changes that add new models (such as the Trainer model), run
+
+```bash
+evennia makemigrations pokemon
+evennia migrate
+```
+
+to update your database schema before starting the server.
+
 # Getting started
 
 From here on you might want to look at one of the beginner tutorials:
