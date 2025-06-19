@@ -189,11 +189,19 @@ def _load_json(path: Path) -> Dict[str, Any]:
 def load_pokedex(
     path: Path, abilitydex: Optional[Dict[str, Ability]] = None
 ) -> Dict[str, Pokemon]:
-    """Load pokemon data from an existing Python or JSON file."""
+    """Load pokemon data from a Python or JSON file."""
     if path.suffix == ".py":
-        module_name = path.stem
+        # support nested paths like pokemon/dex/pokedex.py
+        rel_parts = path.with_suffix("").parts
+        try:
+            idx = rel_parts.index("pokemon")
+            module_parts = rel_parts[idx:]
+        except ValueError:
+            module_parts = ["pokemon", "dex", path.stem]
+        module_name = ".".join(module_parts)
         spec = importlib.util.spec_from_file_location(module_name, path)
         mod = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = mod
         spec.loader.exec_module(mod)
         data = getattr(mod, "pokedex")
     else:
