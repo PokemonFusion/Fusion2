@@ -9,7 +9,7 @@ from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from ..generation import generate_pokemon
-from fusion2.world.pokemon_spawn import get_spawn
+from world.pokemon_spawn import get_spawn
 
 
 def generate_wild_pokemon(location=None) -> Pokemon:
