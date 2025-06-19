@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from evennia import Command, create_object
 
-from fusion2.world.pokemon_spawn import get_spawn
-from fusion2.typeclasses.rooms import Room
+from world.pokemon_spawn import get_spawn
+from typeclasses.rooms import Room
 
 
 class CmdHunt(Command):
