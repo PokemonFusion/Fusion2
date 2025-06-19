@@ -31,7 +31,8 @@ also log into the web client by pointing a browser to
 
 ## Database migrations
 
-If you pull changes that add new models (such as the Trainer model), run
+If you pull changes that add new models (such as the Trainer model) or
+modify existing ones (for example adding new Pokémon fields), run
 
 ```bash
 evennia makemigrations pokemon

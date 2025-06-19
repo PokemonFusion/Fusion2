@@ -5,6 +5,7 @@ class Pokemon(models.Model):
     name = models.CharField(max_length=255)
     level = models.IntegerField()
     type_ = models.CharField(max_length=255)
+    data = models.JSONField(default=dict, blank=True)
     trainer = models.ForeignKey(
         "Trainer",
         on_delete=models.CASCADE,

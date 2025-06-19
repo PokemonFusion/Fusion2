@@ -2,16 +2,24 @@ from evennia import DefaultCharacter
 from .models import Pokemon, UserStorage, Trainer, GymBadge
   
 class User(DefaultCharacter):
-    def add_pokemon_to_user(self, name, level, type_):
+    def add_pokemon_to_user(self, name, level, type_, data=None):
         pokemon = Pokemon.objects.create(
-            name=name, level=level, type_=type_, trainer=self.trainer
+            name=name,
+            level=level,
+            type_=type_,
+            trainer=self.trainer,
+            data=data or {},
         )
         self.storage.active_pokemon.add(pokemon)
 
     
-    def add_pokemon_to_storage(self, name, level, type_):
+    def add_pokemon_to_storage(self, name, level, type_, data=None):
         pokemon = Pokemon.objects.create(
-            name=name, level=level, type_=type_, trainer=self.trainer
+            name=name,
+            level=level,
+            type_=type_,
+            trainer=self.trainer,
+            data=data or {},
         )
         self.storage.stored_pokemon.add(pokemon)
 
