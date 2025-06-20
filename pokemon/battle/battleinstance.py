@@ -107,6 +107,64 @@ class BattleInstance:
         # Run the opening turn immediately for demonstration
         self.battle.run_turn()
 
+    def start_pvp(self, opponent) -> None:
+        """Start a player-versus-player battle."""
+
+        opponent_pokemon: List[Pokemon] = []
+        for poke in opponent.storage.active_pokemon.all():
+            inst = generate_pokemon(poke.name, level=poke.level)
+            moves = [Move(name=m) for m in inst.moves]
+            opponent_pokemon.append(
+                Pokemon(
+                    name=inst.species.name,
+                    level=inst.level,
+                    hp=inst.stats.hp,
+                    moves=moves,
+                )
+            )
+
+        player_pokemon: List[Pokemon] = []
+        for poke in self.player.storage.active_pokemon.all():
+            inst = generate_pokemon(poke.name, level=poke.level)
+            moves = [Move(name=m) for m in inst.moves]
+            player_pokemon.append(
+                Pokemon(
+                    name=inst.species.name,
+                    level=inst.level,
+                    hp=inst.stats.hp,
+                    moves=moves,
+                )
+            )
+
+        player_participant = BattleParticipant(self.player.key, player_pokemon)
+        opponent_participant = BattleParticipant(opponent.key, opponent_pokemon)
+
+        if player_participant.pokemons:
+            player_participant.active = [player_participant.pokemons[0]]
+        if opponent_participant.pokemons:
+            opponent_participant.active = [opponent_participant.pokemons[0]]
+
+        self.battle = Battle(BattleType.PVP, [player_participant, opponent_participant])
+
+        player_team = Team(trainer=self.player.key, pokemon_list=player_pokemon)
+        opponent_team = Team(trainer=opponent.key, pokemon_list=opponent_pokemon)
+        self.data = BattleData(player_team, opponent_team)
+        self.room.db.battle_data = self.data.to_dict()
+        self.state = BattleState.from_battle_data(self.data, ai_type="PVP")
+        self.room.db.battle_state = self.state.to_dict()
+
+        add_watcher(self.state, self.player)
+        add_watcher(self.state, opponent)
+        self.watchers.update({self.player.id, opponent.id})
+
+        self.player.ndb.battle_instance = self
+        opponent.ndb.battle_instance = self
+        self.player.move_to(self.room, quiet=True)
+        opponent.move_to(self.room, quiet=True)
+        notify_watchers(self.state, "PVP battle begins!", room=self.room)
+
+        self.battle.run_turn()
+
     def end(self) -> None:
         """End the battle and clean up."""
         if self.room:
