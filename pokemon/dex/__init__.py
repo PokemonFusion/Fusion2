@@ -6,10 +6,12 @@ from .entities import (
     Move,
     Pokemon,
     Item,
+    Condition,
     load_abilitydex,
     load_movedex,
     load_pokedex,
     load_itemdex,
+    load_conditiondex,
 )
 
 BASE_PATH = Path(__file__).resolve().parents[2]
@@ -20,6 +22,7 @@ POKEDEX_PATH = BASE_PATH / "pokemon" / "dex" / "pokedex.py"
 MOVEDEX_PATH = BASE_PATH / "pokemon" / "dex" / "combatdex.py"
 ABILITYDEX_PATH = BASE_PATH / "pokemon" / "dex" / "abilities" / "abilitiesdex.py"
 ITEMDEX_PATH = BASE_PATH / "pokemon" / "dex" / "items" / "itemsdex.py"
+CONDITIONDEX_PATH = BASE_PATH / "pokemon" / "dex" / "conditions.py"
 
 try:
     ABILITYDEX = load_abilitydex(ABILITYDEX_PATH)
@@ -38,6 +41,11 @@ try:
 except Exception:
     ITEMDEX = {}
 
+try:
+    CONDITIONDEX = load_conditiondex(CONDITIONDEX_PATH)
+except Exception:
+    CONDITIONDEX = {}
+
 __all__ = [
     "Ability",
     "Move",
@@ -47,4 +55,5 @@ __all__ = [
     "MOVEDEX",
     "ABILITYDEX",
     "ITEMDEX",
+    "CONDITIONDEX",
 ]
