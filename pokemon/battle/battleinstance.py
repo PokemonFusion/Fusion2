@@ -9,6 +9,7 @@ from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
+from .interface import add_watcher, notify_watchers, remove_watcher
 from ..generation import generate_pokemon
 from world.pokemon_spawn import get_spawn
 
@@ -42,6 +43,8 @@ class BattleInstance:
         self.room.db.instance = self
         self.data: BattleData | None = None
         self.battle: Battle | None = None
+        self.state: BattleState | None = None
+        self.watchers: set[int] = set()
 
     def start(self) -> None:
         """Start a battle against a wild Pokémon or a trainer."""
@@ -91,13 +94,15 @@ class BattleInstance:
         self.data = BattleData(player_team, opponent_team)
         # Store a serialisable snapshot on the room for later use
         self.room.db.battle_data = self.data.to_dict()
-        self.room.db.battle_state = BattleState.from_battle_data(
-            self.data, ai_type=battle_type.name
-        ).to_dict()
+        self.state = BattleState.from_battle_data(self.data, ai_type=battle_type.name)
+        self.room.db.battle_state = self.state.to_dict()
+        add_watcher(self.state, self.player)
+        self.watchers.add(self.player.id)
 
         self.player.ndb.battle_instance = self
         self.player.move_to(self.room, quiet=True)
         self.player.msg("Battle started!")
+        notify_watchers(self.state, f"{self.player.key} has entered battle!", room=self.room)
 
         # Run the opening turn immediately for demonstration
         self.battle.run_turn()
@@ -109,4 +114,28 @@ class BattleInstance:
         if self.player.ndb.get("battle_instance"):
             del self.player.ndb.battle_instance
         self.battle = None
+        if self.state:
+            notify_watchers(self.state, "The battle has ended.", room=self.room)
+        self.watchers.clear()
+        self.state = None
         self.player.msg("The battle has ended.")
+
+    # ------------------------------------------------------------------
+    # Watcher helpers
+    # ------------------------------------------------------------------
+    def add_watcher(self, watcher) -> None:
+        if not self.state:
+            return
+        add_watcher(self.state, watcher)
+        self.watchers.add(watcher.id)
+
+    def remove_watcher(self, watcher) -> None:
+        if not self.state:
+            return
+        remove_watcher(self.state, watcher)
+        self.watchers.discard(watcher.id)
+
+    def notify(self, message: str) -> None:
+        if not self.state:
+            return
+        notify_watchers(self.state, message, room=self.room)
