@@ -8,9 +8,13 @@ class Pokemon(models.Model):
     name = models.CharField(max_length=255)
     level = models.IntegerField()
     type_ = models.CharField(max_length=255)
+    ability = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
-        return f"{self.id}: {self.name} (Level {self.level}, Type: {self.type_})"
+        return (
+            f"{self.id}: {self.name} (Level {self.level}, Type: {self.type_}, "
+            f"Ability: {self.ability})"
+        )
 
 class UserStorage(models.Model):
     user = models.OneToOneField(DefaultCharacter, on_delete=models.CASCADE)

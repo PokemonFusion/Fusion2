@@ -20,6 +20,8 @@ from commands.pokedex import (
     CmdPokedexSearch,
     CmdMovedexSearch,
     CmdMovesetSearch,
+    CmdPokedexNumber,
+    CmdStarterList,
 )
 
 from commands.command import (
@@ -36,6 +38,7 @@ from commands.command import (
 )
 from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
 from commands.cmd_spawns import CmdSpawns
+from commands.cmd_chargen import CmdChargen
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -73,6 +76,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
         self.add(CmdMovesetSearch())
+        self.add(CmdPokedexNumber())
+        self.add(CmdStarterList())
+        self.add(CmdChargen())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

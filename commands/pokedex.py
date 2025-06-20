@@ -95,3 +95,41 @@ class CmdMovesetSearch(Command):
             self.caller.msg(format_moveset(name, moveset))
         else:
             self.caller.msg("No moveset found for that Pokémon.")
+
+
+class CmdPokedexNumber(Command):
+    """Lookup a Pokémon by its National Dex number."""
+
+    key = "pokenum"
+    aliases = ["dexnum"]
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        arg = self.args.strip()
+        if not arg.isdigit():
+            self.caller.msg("Usage: pokenum <number>")
+            return
+        num = int(arg)
+        name, details = get_pokemon_by_number(num)
+        if not name:
+            self.caller.msg("No Pokémon found with that number.")
+            return
+        self.caller.msg(format_pokemon_details(name, details))
+
+
+from pokemon.starters import get_starter_names
+
+
+class CmdStarterList(Command):
+    """List valid starter Pokémon."""
+
+    key = "starterlist"
+    aliases = ["starters"]
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        names = get_starter_names()
+        self.caller.msg("Starter Pokémon:\n" + ", ".join(names))
+
