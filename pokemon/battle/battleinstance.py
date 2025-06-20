@@ -8,6 +8,7 @@ from evennia import create_object
 from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
+from .state import BattleState
 from ..generation import generate_pokemon
 from world.pokemon_spawn import get_spawn
 
@@ -88,6 +89,11 @@ class BattleInstance:
         player_team = Team(trainer=self.player.key, pokemon_list=player_pokemon)
         opponent_team = Team(trainer=opponent_name, pokemon_list=[opponent_poke])
         self.data = BattleData(player_team, opponent_team)
+        # Store a serialisable snapshot on the room for later use
+        self.room.db.battle_data = self.data.to_dict()
+        self.room.db.battle_state = BattleState.from_battle_data(
+            self.data, ai_type=battle_type.name
+        ).to_dict()
 
         self.player.ndb.battle_instance = self
         self.player.move_to(self.room, quiet=True)
