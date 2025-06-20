@@ -1,6 +1,6 @@
 from .functions.moves_funcs import *
 
-py_dict = {   'Entry0': {   'num': 719,
+py_dict = {   '10000000voltthunderbolt': {   'num': 719,
                   'accuracy': True,
                   'basePower': 195,
                   'category': 'Special',
