@@ -40,6 +40,7 @@ from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
 from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
 from commands.cmd_spawns import CmdSpawns
 from commands.cmd_chargen import CmdChargen
+from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -71,6 +72,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdDepositPokemon())
         self.add(CmdWithdrawPokemon())
         self.add(CmdShowBox())
+        self.add(CmdTradePokemon())
         self.add(CmdHunt())
         self.add(CmdLeaveHunt())
         self.add(CmdWatchBattle())
@@ -102,6 +104,8 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        self.add(CmdCharCreate())
+        self.add(CmdAlts())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
@@ -142,3 +146,4 @@ class SessionCmdSet(default_cmds.SessionCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+
