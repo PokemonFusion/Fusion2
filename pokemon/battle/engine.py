@@ -95,13 +95,22 @@ class BattleParticipant:
         self.active: List = []
         self.is_ai = is_ai
         self.has_lost = False
+        # Optional action to be used for the next turn when this participant is
+        # controlled externally (e.g. by a player).
+        self.pending_action: Optional[Action] = None
 
     def choose_action(self, battle: "Battle") -> Optional[Action]:
         """Return an Action object for this turn.
 
-        This default AI simply uses the first move of the first active
-        Pokémon against the opposing participant's first active Pokémon.
+        For AI-controlled participants the action is chosen automatically.  For
+        non-AI participants this method returns the ``pending_action`` that was
+        queued externally.
         """
+
+        if not self.is_ai:
+            action = self.pending_action
+            self.pending_action = None
+            return action
 
         if not self.active:
             return None
