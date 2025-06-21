@@ -95,6 +95,7 @@ class BattleParticipant:
         self.active: List = []
         self.is_ai = is_ai
         self.has_lost = False
+        self.pending_action: Optional[Action] = None
 
     def choose_action(self, battle: "Battle") -> Optional[Action]:
         """Return an Action object for this turn.
@@ -102,6 +103,13 @@ class BattleParticipant:
         This default AI simply uses the first move of the first active
         Pokémon against the opposing participant's first active Pokémon.
         """
+        if self.pending_action:
+            action = self.pending_action
+            self.pending_action = None
+            return action
+
+        if not self.is_ai:
+            return None
 
         if not self.active:
             return None
