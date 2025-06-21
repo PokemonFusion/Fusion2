@@ -134,6 +134,11 @@ class CmdUseMove(Command):
             self.caller.msg("Usage: usemove <move> <attacker> <target>")
             return
 
+        inst = self.caller.ndb.get("battle_instance")
+        if inst:
+            inst.queue_move(move_name)
+            return
+
         from pokemon.dex import MOVEDEX, POKEDEX, Move
         from pokemon.battle import damage_calc
         import copy
