@@ -38,6 +38,11 @@ from commands.command import (
 )
 from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
 from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
+from commands.cmd_battle import (
+    CmdBattleAttack,
+    CmdBattleSwitch,
+    CmdBattleItem,
+)
 from commands.cmd_spawns import CmdSpawns
 from commands.cmd_chargen import CmdChargen
 
@@ -75,6 +80,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdLeaveHunt())
         self.add(CmdWatchBattle())
         self.add(CmdUnwatchBattle())
+        self.add(CmdBattleAttack())
+        self.add(CmdBattleSwitch())
+        self.add(CmdBattleItem())
         self.add(CmdSpawns())
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
