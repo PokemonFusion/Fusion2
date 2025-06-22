@@ -43,11 +43,4 @@ try:
 except ImportError:
     print("secret_settings.py file not found or failed to import.")
 
-# Optional third-party apps. Commented out if not installed in the environment.
-# INSTALLED_APPS += ('paxboards',)
-
-# Local apps
-INSTALLED_APPS += ('pokemon',)
-
-# Allow use of unconventional field names used in legacy models
-SILENCED_SYSTEM_CHECKS = ["fields.E001"]
+INSTALLED_APPS += ('paxboards',)
