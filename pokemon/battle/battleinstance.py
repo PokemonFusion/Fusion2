@@ -104,8 +104,8 @@ class BattleInstance:
         self.player.msg("Battle started!")
         notify_watchers(self.state, f"{self.player.key} has entered battle!", room=self.room)
 
-        # Run the opening turn immediately for demonstration
-        self.battle.run_turn()
+        # Let the player know the battle is ready for input
+        self.prompt_first_turn()
 
     def end(self) -> None:
         """End the battle and clean up."""
@@ -119,6 +119,38 @@ class BattleInstance:
         self.watchers.clear()
         self.state = None
         self.player.msg("The battle has ended.")
+
+    # ------------------------------------------------------------------
+    # Battle helpers
+    # ------------------------------------------------------------------
+    def prompt_first_turn(self) -> None:
+        """Notify the player that the battle is ready to begin."""
+        self.player.msg("The battle awaits your move.")
+
+    def run_turn(self) -> None:
+        """Advance the battle by one turn."""
+        if self.battle:
+            self.battle.run_turn()
+
+    def queue_move(self, move_name: str, target: str = "B1") -> None:
+        """Queue a move and run the turn if ready."""
+        if not self.data or not self.battle:
+            return
+        pos = self.data.turndata.teamPositions("A").get("A1")
+        if not pos:
+            return
+        pos.declareAttack(target, Move(name=move_name))
+        self.room.db.battle_data = self.data.to_dict()
+        self.maybe_run_turn()
+
+    def is_turn_ready(self) -> bool:
+        if not self.data:
+            return False
+        return all(p.getAction() for p in self.data.turndata.positions.values())
+
+    def maybe_run_turn(self) -> None:
+        if self.is_turn_ready():
+            self.run_turn()
 
     # ------------------------------------------------------------------
     # Watcher helpers
