@@ -1,14 +1,38 @@
+from random import choice
+
+from pokemon.battle.utils import apply_boost
+
+
 class Acrobatics:
     def basePowerCallback(self, *args, **kwargs):
         pass
 
 class Acupressure:
-    def onHit(self, *args, **kwargs):
-        pass
+    def onHit(self, user, target, battle):
+        """Randomly raise one of the target's stats by 2 stages."""
+        stats = ["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]
+        viable = [s for s in stats if getattr(target, "boosts", {}).get(s, 0) < 6]
+        if not viable:
+            return False
+        stat = choice(viable)
+        apply_boost(target, {stat: 2})
+        return True
 
 class Afteryou:
-    def onHit(self, *args, **kwargs):
-        pass
+    def onHit(self, user, target, battle):
+        """Make the target act immediately after the user when possible."""
+        if not battle:
+            return True
+        # Fail in singles battles (only one active Pokémon per side)
+        if all(len(getattr(p, "active", [])) <= 1 for p in getattr(battle, "participants", [])):
+            return False
+        queue = getattr(battle, "queue", None)
+        if queue:
+            action = getattr(queue, "will_move", lambda t: None)(target)
+            if not action:
+                return False
+            getattr(queue, "prioritize_action", lambda a: None)(action)
+        return True
 
 class Alluringvoice:
     def onHit(self, *args, **kwargs):
