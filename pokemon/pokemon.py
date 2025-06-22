@@ -1,16 +1,27 @@
 from evennia import DefaultCharacter
-from .models import Pokemon, UserStorage, StorageBox
+from .models import Pokemon, UserStorage, StorageBox, Trainer, GymBadge
 from .generation import generate_pokemon
 from .dex import POKEDEX
-  
-class User(DefaultCharacter):
-    def add_pokemon_to_user(self, name, level, type_):
-        pokemon = Pokemon.objects.create(name=name, level=level, type_=type_)
-        self.storage.active_pokemon.add(pokemon)
 
-    
-    def add_pokemon_to_storage(self, name, level, type_):
-        pokemon = Pokemon.objects.create(name=name, level=level, type_=type_)
+
+class User(DefaultCharacter):
+    def add_pokemon_to_user(self, name, level, type_, data=None):
+        pokemon = Pokemon.objects.create(
+            name=name,
+            level=level,
+            type_=type_,
+            trainer=self.trainer,
+            data=data or {},
+        )
+        self.storage.active_pokemon.add(pokemon)
+    def add_pokemon_to_storage(self, name, level, type_, data=None):
+        pokemon = Pokemon.objects.create(
+            name=name,
+            level=level,
+            type_=type_,
+            trainer=self.trainer,
+            data=data or {},
+        )
         self.storage.stored_pokemon.add(pokemon)
 
     def show_pokemon_on_user(self):
@@ -26,6 +37,9 @@ class User(DefaultCharacter):
         if not storage.boxes.exists():
             for i in range(1, 9):
                 StorageBox.objects.create(storage=storage, name=f"Box {i}")
+        Trainer.objects.get_or_create(
+            user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
+        )
 
     # ------------------------------------------------------------------
     # Starter selection
@@ -45,6 +59,7 @@ class User(DefaultCharacter):
             name=instance.species.name,
             level=instance.level,
             type_=", ".join(instance.species.types),
+            trainer=self.trainer,
         )
         self.storage.active_pokemon.add(pokemon)
         return f"You received {pokemon.name}!"
@@ -94,3 +109,17 @@ class User(DefaultCharacter):
             return Pokemon.objects.get(id=pokemon_id)
         except Pokemon.DoesNotExist:
             return None
+
+    @property
+    def trainer(self) -> Trainer:
+        return Trainer.objects.get(user=self)
+
+    # Helper proxy methods
+    def add_badge(self, badge: GymBadge) -> None:
+        self.trainer.add_badge(badge)
+
+    def add_money(self, amount: int) -> None:
+        self.trainer.add_money(amount)
+
+    def log_seen_pokemon(self, pokemon: Pokemon) -> None:
+        self.trainer.log_seen_pokemon(pokemon)
