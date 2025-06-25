@@ -54,3 +54,5 @@ nosetests.xml
 
 # VSCode config
 .vscode
+server/evennia.db3-wal
+server/evennia.db3-shm

@@ -46,6 +46,15 @@ class Pokemon:
         self.status = status
         self.moves = moves or []
         self.tempvals: Dict[str, int] = {}
+        self.boosts: Dict[str, int] = {
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 0,
+            "spe": 0,
+            "accuracy": 0,
+            "evasion": 0,
+        }
 
     def getName(self) -> str:
         return self.name
@@ -61,6 +70,7 @@ class Pokemon:
             "status": self.status,
             "moves": [m.to_dict() for m in self.moves],
             "tempvals": self.tempvals,
+            "boosts": self.boosts,
         }
 
     @classmethod
@@ -73,6 +83,18 @@ class Pokemon:
             moves=[Move.from_dict(m) for m in data.get("moves", [])],
         )
         obj.tempvals = data.get("tempvals", {})
+        obj.boosts = data.get(
+            "boosts",
+            {
+                "atk": 0,
+                "def": 0,
+                "spa": 0,
+                "spd": 0,
+                "spe": 0,
+                "accuracy": 0,
+                "evasion": 0,
+            },
+        )
         return obj
 
 

@@ -47,4 +47,25 @@ try:
 except ImportError:
     print("secret_settings.py file not found or failed to import.")
 
+# Optional third-party apps. Comment out if not installed in the environment.
 INSTALLED_APPS += ('paxboards',)
+
+# Local apps
+INSTALLED_APPS += ('pokemon',)
+
+# Allow use of unconventional field names used in legacy models
+SILENCED_SYSTEM_CHECKS = ["fields.E001"]
+
+# Custom permission hierarchy with Validator role
+PERMISSION_HIERARCHY = [
+    "Guest",
+    "Player",
+    "Helper",
+    "Validator",
+    "Builder",
+    "Admin",
+    "Developer",
+]
+
+# Use the custom character typeclass with Pokémon helpers
+BASE_CHARACTER_TYPECLASS = "pokemon.pokemon.User"

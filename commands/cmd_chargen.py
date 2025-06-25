@@ -62,7 +62,7 @@ def start(caller, raw_string):
     text = (
         "Welcome to Pokemon Fusion!\n"
         "A: Play a human trainer with a starter Pokemon.\n"
-        "B: Play a Fusion without a starter."\n
+        "B: Play a Fusion without a starter.\n"
     )
     options = (
         {"desc": "Human trainer", "goto": ("human_gender", {"char_type": "human"})},

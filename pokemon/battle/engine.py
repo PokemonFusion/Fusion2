@@ -38,7 +38,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Dict
+
+from pokemon.dex import MOVEDEX
 
 
 class BattleType(Enum):
@@ -67,12 +69,13 @@ class BattleMove:
     power: int = 0
     accuracy: int | float | bool = 100
     priority: int = 0
-    effect_function: Optional[Callable] = None
+    onHit: Optional[Callable] = None
 
     def execute(self, user, target, battle: "Battle") -> None:
-        """Execute this move's effect."""
-        if self.effect_function:
-            self.effect_function(user, target, battle)
+        """Execute this move's onHit effect if present."""
+        if self.onHit:
+            self.onHit(user, target, battle)
+
 
 
 @dataclass
@@ -95,8 +98,6 @@ class BattleParticipant:
         self.active: List = []
         self.is_ai = is_ai
         self.has_lost = False
-        # Optional action to be used for the next turn when this participant is
-        # controlled externally (e.g. by a player).
         self.pending_action: Optional[Action] = None
 
     def choose_action(self, battle: "Battle") -> Optional[Action]:
@@ -106,6 +107,13 @@ class BattleParticipant:
         non-AI participants this method returns the ``pending_action`` that was
         queued externally.
         """
+        if self.pending_action:
+            action = self.pending_action
+            self.pending_action = None
+            return action
+
+        if not self.is_ai:
+            return None
 
         if not self.is_ai:
             action = self.pending_action
@@ -118,7 +126,35 @@ class BattleParticipant:
         if not hasattr(active_poke, "moves") or not active_poke.moves:
             return None
         move_data = active_poke.moves[0]
-        move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
+
+        def _norm(name: str) -> str:
+            return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+
+        move_entry = MOVEDEX.get(_norm(move_data.name))
+        on_hit_func = None
+        if move_entry:
+            from pokemon.dex.functions import moves_funcs
+            on_hit = move_entry.raw.get("onHit")
+            if isinstance(on_hit, str):
+                try:
+                    cls_name, func_name = on_hit.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        inst = cls()
+                        candidate = getattr(inst, func_name, None)
+                        if callable(candidate):
+                            on_hit_func = candidate
+                except Exception:
+                    on_hit_func = None
+            move = BattleMove(
+                name=move_entry.name,
+                power=getattr(move_entry, "power", 0),
+                accuracy=getattr(move_entry, "accuracy", 100),
+                priority=move_entry.raw.get("priority", 0),
+                onHit=on_hit_func,
+            )
+        else:
+            move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
         opponent = battle.opponent_of(self)
         if not opponent or not opponent.active:
             return None
