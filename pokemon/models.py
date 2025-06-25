@@ -67,12 +67,12 @@ class OwnedPokemon(SharedMemoryModel):
 
     # Ownership & trainers
     original_trainer = models.ForeignKey(
-        "typeclasses.characters.Character",
+        ObjectDB,
         related_name="original_pokemon",
         on_delete=models.CASCADE,
     )
     current_trainer = models.ForeignKey(
-        "typeclasses.characters.Character",
+        ObjectDB,
         related_name="owned_pokemon",
         on_delete=models.CASCADE,
     )
