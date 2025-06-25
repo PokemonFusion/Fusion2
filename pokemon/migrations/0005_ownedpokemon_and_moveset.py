@@ -37,8 +37,8 @@ class Migration(migrations.Migration):
                 ('known_moves', models.JSONField(blank=True, default=list)),
                 ('moveset', models.JSONField(blank=True, default=list)),
                 ('data', models.JSONField(blank=True, default=dict)),
-                ('current_trainer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_pokemon', to='typeclasses.characters.character')),
-                ('original_trainer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='original_pokemon', to='typeclasses.characters.character')),
+                ('current_trainer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_pokemon', to='objects.objectdb')),
+                ('original_trainer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='original_pokemon', to='objects.objectdb')),
             ],
         ),
         migrations.CreateModel(
