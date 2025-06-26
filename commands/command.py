@@ -262,3 +262,29 @@ class CmdShowBox(Command):
             return
         self.caller.msg(self.caller.show_box(index))
 
+
+class CmdSpoof(Command):
+    """
+    Emit text to the current room without attribution.
+
+    Usage:
+        spoof <message>
+        @emit <message>
+    """
+
+    key = "spoof"
+    aliases = ["@emit"]
+    locks = "cmd:all()"
+    help_category = "General"
+
+    def func(self):
+        """Send the raw message to the room."""
+        message = self.args.strip()
+        if not message:
+            self.caller.msg("Usage: spoof <message>")
+            return
+        location = self.caller.location
+        if not location:
+            self.caller.msg("You have no location to spoof from.")
+            return
+        location.msg_contents(message)
