@@ -29,6 +29,18 @@ to your new game using a MUD client on `localhost`, port `4000`.  You can
 also log into the web client by pointing a browser to
 `http://localhost:4001`.
 
+## Database migrations
+
+If you pull changes that add new models (such as the Trainer model) or
+modify existing ones (for example adding new Pokémon fields), run
+
+```bash
+evennia makemigrations pokemon
+evennia migrate
+```
+
+to update your database schema before starting the server.
+
 # Getting started
 
 From here on you might want to look at one of the beginner tutorials:
@@ -38,3 +50,13 @@ Evennia's documentation is here:
 https://github.com/evennia/evennia/wiki.
 
 Enjoy!
+
+## Regional Pokédex Data
+
+The `pokemon/data/regiondex.py` module stores regional Pokédex entries for
+each main-series region (Kanto through Galar).  Each entry is a pair of the
+regional number and the species name.  The data was generated from the
+[PokeAPI](https://github.com/PokeAPI/pokeapi/) CSV dumps
+(`pokedexes.csv`, `pokemon_dex_numbers.csv` and `pokemon_species.csv`).  Use the
+helpers in `pokemon/dex/functions/pokedex_funcs.py` such as
+`get_region_entries()` or `get_region_species()` to access the data.

@@ -16,15 +16,39 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 from evennia import default_cmds
 from paxboards.commands import add_board_commands
-from fusion2.commands.pokedex import CmdPokedexSearch
+from commands.pokedex import (
+    CmdPokedexSearch,
+    CmdMovedexSearch,
+    CmdMovesetSearch,
+    CmdPokedexNumber,
+    CmdStarterList,
+)
 
 from commands.command import (
-    CmdShowPokemonOnUser, 
-    CmdShowPokemonInStorage, 
-    CmdAddPokemonToUser, 
-    CmdAddPokemonToStorage, 
-    CmdGetPokemonDetails
+    CmdShowPokemonOnUser,
+    CmdShowPokemonInStorage,
+    CmdAddPokemonToUser,
+    CmdAddPokemonToStorage,
+    CmdGetPokemonDetails,
+    CmdUseMove,
+    CmdChooseStarter,
+    CmdDepositPokemon,
+    CmdWithdrawPokemon,
+    CmdShowBox,
+    CmdSpoof,
 )
+from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
+from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
+from commands.cmd_battle import (
+    CmdBattleAttack,
+    CmdBattleSwitch,
+    CmdBattleItem,
+)
+from commands.cmd_spawns import CmdSpawns
+from commands.cmd_chargen import CmdChargen
+from commands.cmd_roomwizard import CmdRoomWizard
+from commands.cmd_validate import CmdValidate
+from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -45,13 +69,37 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         add_board_commands(self)
 
+        # Basic roleplay command
+        self.add(CmdSpoof())
+
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
         self.add(CmdShowPokemonInStorage())
         self.add(CmdAddPokemonToUser())
         self.add(CmdAddPokemonToStorage())
         self.add(CmdGetPokemonDetails())
+        self.add(CmdUseMove())
+        self.add(CmdChooseStarter())
+        self.add(CmdDepositPokemon())
+        self.add(CmdWithdrawPokemon())
+        self.add(CmdShowBox())
+        self.add(CmdTradePokemon())
+        self.add(CmdHunt())
+        self.add(CmdLeaveHunt())
+        self.add(CmdWatchBattle())
+        self.add(CmdUnwatchBattle())
+        self.add(CmdBattleAttack())
+        self.add(CmdBattleSwitch())
+        self.add(CmdBattleItem())
+        self.add(CmdSpawns())
         self.add(CmdPokedexSearch())
+        self.add(CmdMovedexSearch())
+        self.add(CmdMovesetSearch())
+        self.add(CmdPokedexNumber())
+        self.add(CmdStarterList())
+        self.add(CmdChargen())
+        self.add(CmdRoomWizard())
+        self.add(CmdValidate())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
@@ -72,6 +120,8 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        self.add(CmdCharCreate())
+        self.add(CmdAlts())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
@@ -112,3 +162,4 @@ class SessionCmdSet(default_cmds.SessionCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+

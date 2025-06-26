@@ -115,3 +115,176 @@ class CmdGetPokemonDetails(Command):
                 self.caller.msg(f"No Pokémon found with ID {pokemon_id}.")
         except ValueError:
             self.caller.msg("Usage: getpokemondetails <pokemon_id>")
+
+
+class CmdUseMove(Command):
+    """Use a Pokémon move in a simple battle simulation."""
+
+    key = "usemove"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        if not self.args:
+            self.caller.msg("Usage: usemove <move> <attacker> <target>")
+            return
+        try:
+            move_name, attacker_name, target_name = self.args.split()
+        except ValueError:
+            self.caller.msg("Usage: usemove <move> <attacker> <target>")
+            return
+
+        inst = self.caller.ndb.get("battle_instance")
+        if inst:
+            inst.queue_move(move_name)
+            return
+
+        from pokemon.dex import MOVEDEX, POKEDEX, Move
+        from pokemon.battle import damage_calc
+        import copy
+
+        movedata = MOVEDEX.get(move_name.capitalize())
+        if not movedata:
+            self.caller.msg(f"Unknown move '{move_name}'.")
+            return
+
+        attacker = POKEDEX.get(attacker_name.lower())
+        target = POKEDEX.get(target_name.lower())
+        if not attacker or not target:
+            self.caller.msg("Unknown attacker or target Pokémon name.")
+            return
+
+        move = Move.from_dict(move_name.capitalize(), movedata)
+        att = copy.deepcopy(attacker)
+        tgt = copy.deepcopy(target)
+        att.current_hp = att.base_stats.hp
+        tgt.current_hp = tgt.base_stats.hp
+
+        result = damage_calc(att, tgt, move)
+        total_dmg = sum(result.debug.get("damage", []))
+        tgt.current_hp = max(0, tgt.current_hp - total_dmg)
+        if tgt.current_hp == 0:
+            result.fainted.append(tgt.name)
+
+        out = result.text
+        out.append(f"{tgt.name} has {tgt.current_hp} HP remaining.")
+        if getattr(tgt, "status", None):
+            out.append(f"{tgt.name} is now {tgt.status}.")
+        self.caller.msg("\n".join(out))
+
+class CmdHunt(Command):
+    """Search for a wild Pokémon or a trainer to battle."""
+
+    key = "+hunt"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        from pokemon.battle.battleinstance import BattleInstance
+
+        if self.caller.ndb.get("battle_instance"):
+            self.caller.msg("You are already engaged in a battle.")
+            return
+
+        battle = BattleInstance(self.caller)
+        battle.start()
+
+
+class CmdChooseStarter(Command):
+    """Choose your first Pokémon."""
+
+    key = "choosestarter"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        if not self.args:
+            self.caller.msg("Usage: choosestarter <pokemon>")
+            return
+        result = self.caller.choose_starter(self.args.strip())
+        self.caller.msg(result)
+
+
+class CmdDepositPokemon(Command):
+    """Deposit a Pokémon into a storage box."""
+
+    key = "deposit"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        parts = self.args.split()
+        if not parts:
+            self.caller.msg("Usage: deposit <pokemon_id> [box]")
+            return
+        try:
+            pid = int(parts[0])
+            box = int(parts[1]) if len(parts) > 1 else 1
+        except ValueError:
+            self.caller.msg("Usage: deposit <pokemon_id> [box]")
+            return
+        self.caller.msg(self.caller.deposit_pokemon(pid, box))
+
+
+class CmdWithdrawPokemon(Command):
+    """Withdraw a Pokémon from a storage box."""
+
+    key = "withdraw"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        parts = self.args.split()
+        if not parts:
+            self.caller.msg("Usage: withdraw <pokemon_id> [box]")
+            return
+        try:
+            pid = int(parts[0])
+            box = int(parts[1]) if len(parts) > 1 else 1
+        except ValueError:
+            self.caller.msg("Usage: withdraw <pokemon_id> [box]")
+            return
+        self.caller.msg(self.caller.withdraw_pokemon(pid, box))
+
+
+class CmdShowBox(Command):
+    """Show the contents of a storage box."""
+
+    key = "showbox"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        try:
+            index = int(self.args.strip() or "1")
+        except ValueError:
+            self.caller.msg("Usage: showbox <box_number>")
+            return
+        self.caller.msg(self.caller.show_box(index))
+
+
+class CmdSpoof(Command):
+    """
+    Emit text to the current room without attribution.
+
+    Usage:
+        spoof <message>
+        @emit <message>
+    """
+
+    key = "spoof"
+    aliases = ["@emit"]
+    locks = "cmd:all()"
+    help_category = "General"
+
+    def func(self):
+        """Send the raw message to the room."""
+        message = self.args.strip()
+        if not message:
+            self.caller.msg("Usage: spoof <message>")
+            return
+        location = self.caller.location
+        if not location:
+            self.caller.msg("You have no location to spoof from.")
+            return
+        location.msg_contents(message)
