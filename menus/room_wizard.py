@@ -13,16 +13,19 @@ def node_start(caller, raw_input=None):
         "Welcome to the Room Wizard!\n"
         "First: what will the |wname|n of the room be?"
     )
-    # go to node_name next
-    return text, {"goto": "node_name"}
+    # go to node_name next; capture any input with _default
+    return text, [{"key": "_default", "goto": "node_name"}]
 
 def node_name(caller, raw_input):
     """Collect room name and ask for description."""
     if not raw_input:
-        return "Please give me a name (or type |wquit|n to exit):", {"goto": "node_name"}
+        return (
+            "Please give me a name (or type |wquit|n to exit):",
+            [{"key": "_default", "goto": "node_name"}],
+        )
     caller.ndb.rw_data['name'] = raw_input
     text = "Great.  Now enter the |wdescription|n of the room:"
-    return text, {"goto": "node_desc"}
+    return text, [{"key": "_default", "goto": "node_desc"}]
 
 def node_desc(caller, raw_input):
     """Collect description and ask if it's a Pokémon Center."""
@@ -70,12 +73,12 @@ def node_hunt_yes(caller, raw_input=None):
         "Enter the encounter table as `name:rate, name:rate`.\n"
         "Example: |wRattata:60, Pidgey:40|n"
     )
-    return text, {"goto": "node_hunt_table"}
+    return text, [{"key": "_default", "goto": "node_hunt_table"}]
 
 def node_hunt_no(caller, raw_input=None):
     caller.ndb.rw_data['has_hunting'] = False
     # skip straight to summary
-    return None, {"goto": "node_summary"}
+    return node_summary(caller)
 
 def node_hunt_table(caller, raw_input):
     data = caller.ndb.rw_data
@@ -90,7 +93,7 @@ def node_hunt_table(caller, raw_input):
                 {"goto": "node_hunt_table"}
             )
     data['hunt_table'] = table
-    return None, {"goto": "node_summary"}
+    return node_summary(caller)
 
 def node_summary(caller, raw_input=None):
     """Show summary and ask final confirm."""
@@ -125,7 +128,7 @@ def node_create(caller, raw_input=None):
     caller.msg(f"|gRoom '{room.key}' created successfully! (ID: {room.id})|n")
     # clear out our session data
     del caller.ndb.rw_data
-    return None, {"goto": "node_quit"}
+    return node_quit(caller)
 
 def node_quit(caller, raw_input=None):
     """Clean exit node (EvMenu tears itself down)."""
