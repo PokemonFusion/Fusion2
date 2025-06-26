@@ -35,6 +35,7 @@ from commands.command import (
     CmdDepositPokemon,
     CmdWithdrawPokemon,
     CmdShowBox,
+    CmdSpoof,
 )
 from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
 from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
@@ -66,6 +67,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # any commands you add below will overload the default ones.
         #
         add_board_commands(self)
+
+        # Basic roleplay command
+        self.add(CmdSpoof())
 
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
