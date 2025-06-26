@@ -14,48 +14,55 @@ def node_start(caller, raw_input=None):
         "First: what will the |wname|n of the room be?"
     )
     # go to node_name next
-    return text, "node_name"
+    return text, {"goto": "node_name"}
 
 def node_name(caller, raw_input):
     """Collect room name and ask for description."""
     if not raw_input:
-        return "Please give me a name (or type |wquit|n to exit):", "node_name"
+        return "Please give me a name (or type |wquit|n to exit):", {"goto": "node_name"}
     caller.ndb.rw_data['name'] = raw_input
     text = "Great.  Now enter the |wdescription|n of the room:"
-    return text, "node_desc"
+    return text, {"goto": "node_desc"}
 
 def node_desc(caller, raw_input):
     """Collect description and ask if it's a Pokémon Center."""
     if not raw_input:
-        return "I need a description.  (or |wquit|n)", "node_desc"
+        return "I need a description.  (or |wquit|n)", {"goto": "node_desc"}
     caller.ndb.rw_data['desc'] = raw_input
     text = "Is this a |wPokémon Center|n? (yes/no)"
-    opts = {"yes": "node_center_yes", "no": "node_center_no"}
+    opts = [
+        {"key": "yes", "goto": "node_center_yes"},
+        {"key": "no", "goto": "node_center_no"},
+    ]
     return text, opts
 
 def node_center_yes(caller, raw_input=None):
     caller.ndb.rw_data['is_center'] = True
-    return "Is this an |wItem Shop|n? (yes/no)", {
-        "yes": "node_shop_yes", "no": "node_shop_no"
-    }
+    return "Is this an |wItem Shop|n? (yes/no)", [
+        {"key": "yes", "goto": "node_shop_yes"},
+        {"key": "no", "goto": "node_shop_no"},
+    ]
 
 def node_center_no(caller, raw_input=None):
     caller.ndb.rw_data['is_center'] = False
-    return "Is this an |wItem Shop|n? (yes/no)", {
-        "yes": "node_shop_yes", "no": "node_shop_no"
-    }
+    return "Is this an |wItem Shop|n? (yes/no)", [
+        {"key": "yes", "goto": "node_shop_yes"},
+        {"key": "no", "goto": "node_shop_no"},
+    ]
 
 def node_shop_yes(caller, raw_input=None):
     caller.ndb.rw_data['is_shop'] = True
-    return "Allow |wPokémon hunting|n? (yes/no)", {
-        "yes": "node_hunt_yes", "no": "node_hunt_no"
-    }
+    return "Allow |wPokémon hunting|n? (yes/no)", [
+        {"key": "yes", "goto": "node_hunt_yes"},
+        {"key": "no", "goto": "node_hunt_no"},
+    ]
 
 def node_shop_no(caller, raw_input=None):
     caller.ndb.rw_data['is_shop'] = False
-    return "Allow |wPokémon hunting|n? (yes/no)", {
-        "yes": "node_hunt_yes", "no": "node_hunt_no"
-    }
+    return "Allow |wPokémon hunting|n? (yes/no)", [
+        {"key": "yes", "goto": "node_hunt_yes"},
+        {"key": "no", "goto": "node_hunt_no"},
+    ]
 
 def node_hunt_yes(caller, raw_input=None):
     caller.ndb.rw_data['has_hunting'] = True
@@ -63,12 +70,12 @@ def node_hunt_yes(caller, raw_input=None):
         "Enter the encounter table as `name:rate, name:rate`.\n"
         "Example: |wRattata:60, Pidgey:40|n"
     )
-    return text, "node_hunt_table"
+    return text, {"goto": "node_hunt_table"}
 
 def node_hunt_no(caller, raw_input=None):
     caller.ndb.rw_data['has_hunting'] = False
     # skip straight to summary
-    return None, "node_summary"
+    return None, {"goto": "node_summary"}
 
 def node_hunt_table(caller, raw_input):
     data = caller.ndb.rw_data
@@ -80,10 +87,10 @@ def node_hunt_table(caller, raw_input):
         except ValueError:
             return (
                 "Invalid format.  Use `name:rate, name:rate`.",
-                "node_hunt_table"
+                {"goto": "node_hunt_table"}
             )
     data['hunt_table'] = table
-    return None, "node_summary"
+    return None, {"goto": "node_summary"}
 
 def node_summary(caller, raw_input=None):
     """Show summary and ask final confirm."""
@@ -100,7 +107,10 @@ def node_summary(caller, raw_input=None):
         for mon, rate in data['hunt_table'].items():
             text += f"  - {mon}: {rate}%\n"
     text += "\nType |wcreate|n to finish or |wquit|n to abort."
-    opts = {"create": "node_create", "quit": "node_quit"}
+    opts = [
+        {"key": "create", "goto": "node_create"},
+        {"key": "quit", "goto": "node_quit"},
+    ]
     return text, opts
 
 def node_create(caller, raw_input=None):
@@ -115,7 +125,7 @@ def node_create(caller, raw_input=None):
     caller.msg(f"|gRoom '{room.key}' created successfully! (ID: {room.id})|n")
     # clear out our session data
     del caller.ndb.rw_data
-    return "node_quit"
+    return None, {"goto": "node_quit"}
 
 def node_quit(caller, raw_input=None):
     """Clean exit node (EvMenu tears itself down)."""
