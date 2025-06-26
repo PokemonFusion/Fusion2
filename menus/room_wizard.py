@@ -1,6 +1,7 @@
 from evennia.utils.evmenu import EvMenu
-from evennia import create_object
+from evennia import create_object, search_object
 from typeclasses.rooms import Room
+from typeclasses.exits import Exit
 
 #
 # ─── NODE FUNCTIONS ─────────────────────────────────────────────────────────────
@@ -126,10 +127,66 @@ def node_create(caller, raw_input=None):
     room.db.has_pokemon_hunting = data.get('has_hunting', False)
     room.db.hunt_table          = data.get('hunt_table', {})
     caller.msg(f"|gRoom '{room.key}' created successfully! (ID: {room.id})|n")
-    # clear out our session data
+    caller.ndb.rw_room = room
     del caller.ndb.rw_data
+    return (
+        "Would you like to add exits to this room? (yes/no)",
+        [
+            {"key": "yes", "goto": "node_exit_dir"},
+            {"key": "no", "goto": "node_tp_prompt"},
+        ],
+    )
+
+def node_exit_dir(caller, raw_input=None):
+    """Prompt for exit direction and destination."""
+    room = caller.ndb.rw_room
+    if not raw_input:
+        text = (
+            "Enter exit as <direction>=<room_id> or 'list rooms'.\n"
+            "Type 'done' when finished."
+        )
+        return text, [{"key": "_default", "goto": "node_exit_dir"}]
+    cmd = raw_input.strip()
+    if cmd.lower().startswith("list"):
+        lines = [f"{r.id} - {r.key}" for r in Room.objects.all()]
+        caller.msg("\n".join(lines))
+        return "Enter exit as <dir>=<id> or 'done':", {"goto": "node_exit_dir"}
+    if cmd.lower() == "done":
+        return node_tp_prompt(caller)
+    if "=" not in cmd:
+        caller.msg("Usage: <direction>=<room_id> or 'done'.")
+        return "", {"goto": "node_exit_dir"}
+    direction, rid = [s.strip() for s in cmd.split("=", 1)]
+    try:
+        dest = Room.objects.get(id=int(rid))
+    except (ValueError, Room.DoesNotExist):
+        caller.msg("Invalid room id.")
+        return "", {"goto": "node_exit_dir"}
+    create_object(Exit, key=direction, location=room, destination=dest)
+    caller.msg(f"Created exit '{direction}' to {dest.key}.")
+    return "Add another exit or 'done' when finished:", {"goto": "node_exit_dir"}
+
+def node_tp_prompt(caller, raw_input=None):
+    """Ask if caller wants to teleport into the room."""
+    return (
+        "Teleport to the new room now? (yes/no)",
+        [
+            {"key": "yes", "goto": "node_tp_yes"},
+            {"key": "no", "goto": "node_quit"},
+        ],
+    )
+
+def node_tp_yes(caller, raw_input=None):
+    room = caller.ndb.rw_room
+    if room:
+        caller.move_to(room, quiet=True)
+        caller.msg(f"You are now in {room.key}.")
     return node_quit(caller)
 
 def node_quit(caller, raw_input=None):
     """Clean exit node (EvMenu tears itself down)."""
+    if hasattr(caller.ndb, "rw_room"):
+        del caller.ndb.rw_room
+    if hasattr(caller.ndb, "rw_data"):
+        del caller.ndb.rw_data
     return "Exiting Room Wizard.  Thanks!", None

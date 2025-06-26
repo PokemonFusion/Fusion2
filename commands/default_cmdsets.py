@@ -47,6 +47,7 @@ from commands.cmd_battle import (
 from commands.cmd_spawns import CmdSpawns
 from commands.cmd_chargen import CmdChargen
 from commands.cmd_roomwizard import CmdRoomWizard
+from commands.cmd_editroom import CmdEditRoom
 from commands.cmd_validate import CmdValidate
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 
@@ -99,6 +100,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdStarterList())
         self.add(CmdChargen())
         self.add(CmdRoomWizard())
+        self.add(CmdEditRoom())
         self.add(CmdValidate())
 
 
