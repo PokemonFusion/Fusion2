@@ -34,10 +34,11 @@ from evennia.settings_default import *
 # This is the name of your game. Make it catchy!
 SERVERNAME = "Pokemon Fusion 2"
 
-MULTISESSION_MODE = 2
+MULTISESSION_MODE = 3
 CMD_IGNORE_PREFIXES = "&/"
-MAX_NR_CHARACTERS = 5
-
+MAX_NR_CHARACTERS = 10
+MAX_NR_SIMULTANEOUS_PUPPETS = 4
+AUTO_PUPPET_ON_LOGIN = False
 
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
