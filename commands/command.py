@@ -269,11 +269,11 @@ class CmdSpoof(Command):
 
     Usage:
         spoof <message>
-        emit <message>
+        @emit <message>
     """
 
     key = "spoof"
-    aliases = ["emit"]
+    aliases = ["@emit"]
     locks = "cmd:all()"
     help_category = "General"
 
