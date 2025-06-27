@@ -107,7 +107,7 @@ def human_type(caller, raw_string, **kwargs):
 def fusion_species(caller, raw_string, **kwargs):
     caller.ndb.chargen["gender"] = kwargs.get("gender")
     text = "Enter the species for your fusion:"
-    return text, ({"key": "*", "goto": "fusion_ability"},)
+    return text, ({"key": "_default", "goto": "fusion_ability"},)
 
 
 def fusion_ability(caller, raw_string, **kwargs):
@@ -137,7 +137,7 @@ def starter_species(caller, raw_string, **kwargs):
         "Enter the species for your starter Pokemon "
         "(use 'starterlist' to view valid options):"
     )
-    return text, ({"key": "*", "goto": "starter_ability"},)
+    return text, ({"key": "_default", "goto": "starter_ability"},)
 
 
 def starter_ability(caller, raw_string, **kwargs):
