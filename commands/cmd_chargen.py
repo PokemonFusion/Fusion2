@@ -143,6 +143,9 @@ def starter_species(caller, raw_string, **kwargs):
 def starter_ability(caller, raw_string, **kwargs):
     species = raw_string.strip()
     species_l = species.lower()
+    if species_l in ("starterlist", "starters"):
+        caller.execute_cmd("starterlist", session=caller.ndb._evmenu._session)
+        return "starter_species", {}
     if species_l not in STARTER_NAMES:
         caller.msg("Invalid starter species. Use 'starterlist' for options.")
         return "starter_species", {}
@@ -173,6 +176,9 @@ def starter_confirm(caller, raw_string, **kwargs):
     if not species:
         species = raw_string.strip()
         species_l = species.lower()
+        if species_l in ("starterlist", "starters"):
+            caller.execute_cmd("starterlist", session=caller.ndb._evmenu._session)
+            return "starter_species", {}
         if species_l not in STARTER_NAMES:
             caller.msg("Invalid starter species. Use 'starterlist' for options.")
             return "starter_species", {}
