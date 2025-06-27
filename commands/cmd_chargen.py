@@ -6,6 +6,7 @@ from evennia.utils.evmenu import EvMenu
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
 from pokemon.models import Pokemon, UserStorage, StorageBox
+from pokemon.starters import get_starter_names
 
 
 TYPES = [
@@ -16,6 +17,9 @@ TYPES = [
 
 
 NATURES = list(generate_pokemon.__globals__["NATURES"].keys())
+
+# Pre-compute the valid starter species names for quick lookup.
+STARTER_NAMES = set(name.lower() for name in get_starter_names())
 
 
 def _ensure_storage(char):
@@ -129,13 +133,20 @@ def fusion_ability(caller, raw_string, **kwargs):
 
 def starter_species(caller, raw_string, **kwargs):
     caller.ndb.chargen["favored_type"] = kwargs.get("type")
-    text = "Enter the species for your starter Pokemon:"
+    text = (
+        "Enter the species for your starter Pokemon "
+        "(use 'starterlist' to view valid options):"
+    )
     return text, ({"key": "*", "goto": "starter_ability"},)
 
 
 def starter_ability(caller, raw_string, **kwargs):
     species = raw_string.strip()
-    if species.lower() not in POKEDEX:
+    species_l = species.lower()
+    if species_l not in STARTER_NAMES:
+        caller.msg("Invalid starter species. Use 'starterlist' for options.")
+        return "starter_species", {}
+    if species_l not in POKEDEX:
         caller.msg("Unknown species. Try again.")
         return "starter_species", {}
     caller.ndb.chargen["species"] = species
@@ -161,7 +172,11 @@ def starter_confirm(caller, raw_string, **kwargs):
     species = caller.ndb.chargen.get("species")
     if not species:
         species = raw_string.strip()
-        if species.lower() not in POKEDEX:
+        species_l = species.lower()
+        if species_l not in STARTER_NAMES:
+            caller.msg("Invalid starter species. Use 'starterlist' for options.")
+            return "starter_species", {}
+        if species_l not in POKEDEX:
             caller.msg("Unknown species. Try again.")
             return "starter_species", {}
         caller.ndb.chargen["species"] = species
