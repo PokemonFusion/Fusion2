@@ -17,5 +17,6 @@ class CmdRoomWizard(Command):
         EvMenu(
             self.caller,
             room_wizard,
+            startnode="node_start",
             cmd_on_exit=True
         )
