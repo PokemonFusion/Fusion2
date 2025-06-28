@@ -263,6 +263,39 @@ class CmdShowBox(Command):
         self.caller.msg(self.caller.show_box(index))
 
 
+class CmdChargenInfo(Command):
+    """Show chargen details and active Pokémon."""
+
+    key = "chargeninfo"
+    locks = "cmd:all()"
+    help_category = "General"
+
+    def func(self):
+        char = self.caller
+        lines = ["|wCharacter Info|n"]
+        lines.append(f"  Gender: {char.db.gender or 'Unset'}")
+        if char.db.favored_type:
+            lines.append(f"  Favored type: {char.db.favored_type}")
+        if char.db.fusion_species:
+            lines.append(f"  Fusion species: {char.db.fusion_species}")
+        if char.db.fusion_ability:
+            lines.append(f"  Fusion ability: {char.db.fusion_ability}")
+        storage = getattr(char, "storage", None)
+        if storage:
+            mons = list(storage.active_pokemon.all())
+            if mons:
+                lines.append("  Active Pokémon:")
+                for mon in mons:
+                    lines.append(
+                        f"    {mon.name} (Lv {mon.level}, Ability: {mon.ability})"
+                    )
+            else:
+                lines.append("  Active Pokémon: None")
+        else:
+            lines.append("  No storage data.")
+        char.msg("\n".join(lines))
+
+
 class CmdSpoof(Command):
     """
     Emit text to the current room without attribution.
