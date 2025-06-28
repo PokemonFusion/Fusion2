@@ -32,11 +32,12 @@ def _ensure_storage(char):
 
 
 def _create_starter(char, species_name: str, ability: str, level: int = 5):
-    species = POKEDEX.get(species_name.lower())
-    if not species:
+    """Create the starter Pokemon for the player."""
+    try:
+        instance = generate_pokemon(species_name, level=level)
+    except ValueError:
         char.msg("That species does not exist.")
         return
-    instance = generate_pokemon(species.name, level=level)
     pokemon = Pokemon.objects.create(
         name=instance.species.name,
         level=instance.level,
