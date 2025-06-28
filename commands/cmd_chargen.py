@@ -43,6 +43,7 @@ def _create_starter(char, species_name: str, ability: str, level: int = 5):
         level=instance.level,
         type_=", ".join(instance.species.types),
         ability=ability or instance.ability,
+        trainer=char.trainer,
     )
     storage = _ensure_storage(char)
     storage.active_pokemon.add(pokemon)
