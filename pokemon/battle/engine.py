@@ -72,9 +72,30 @@ class BattleMove:
     onHit: Optional[Callable] = None
 
     def execute(self, user, target, battle: "Battle") -> None:
-        """Execute this move's onHit effect if present."""
+        """Execute this move's effect."""
         if self.onHit:
             self.onHit(user, target, battle)
+            return
+
+        # Default behaviour for moves without custom handlers
+        from . import damage_calc
+        from pokemon.dex.entities import Move
+
+        move = Move(
+            name=self.name,
+            num=0,
+            type=None,
+            category="Physical",
+            power=self.power,
+            accuracy=self.accuracy,
+            pp=None,
+            raw={},
+        )
+
+        result = damage_calc(user, target, move)
+        dmg = sum(result.debug.get("damage", []))
+        if hasattr(target, "hp"):
+            target.hp = max(0, target.hp - dmg)
 
 
 
