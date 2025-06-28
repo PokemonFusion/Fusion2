@@ -112,9 +112,9 @@ def fusion_species(caller, raw_string, **kwargs):
 
 def fusion_ability(caller, raw_string, **kwargs):
     species = raw_string.strip()
-    if species.lower() not in POKEDEX:
+    if not (species.title() in POKEDEX or species.lower() in POKEDEX):
         caller.msg("Unknown species. Try again.")
-        return fusion_species(caller, raw_string, gender=caller.ndb.chargen.get("gender"))
+        return "fusion_species", {}
     caller.ndb.chargen["species"] = species
     data = POKEDEX.get(species.title()) or POKEDEX.get(species.lower())
     abilities = [
@@ -146,13 +146,13 @@ def starter_ability(caller, raw_string, **kwargs):
     if species_l in ("starterlist", "starters"):
         # display starter list without leaving the menu
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return starter_species(caller, raw_string, type=caller.ndb.chargen.get("favored_type"))
+        return "starter_species", {}
     if species_l not in STARTER_NAMES:
         caller.msg("Invalid starter species. Use 'starterlist' for options.")
-        return starter_species(caller, raw_string, type=caller.ndb.chargen.get("favored_type"))
-    if species_l not in POKEDEX:
+        return "starter_species", {}
+    if not (species.title() in POKEDEX or species.lower() in POKEDEX):
         caller.msg("Unknown species. Try again.")
-        return starter_species(caller, raw_string, type=caller.ndb.chargen.get("favored_type"))
+        return "starter_species", {}
     caller.ndb.chargen["species"] = species
     data = POKEDEX.get(species.title()) or POKEDEX.get(species.lower())
     abilities = [
@@ -178,15 +178,14 @@ def starter_confirm(caller, raw_string, **kwargs):
         species = raw_string.strip()
         species_l = species.lower()
         if species_l in ("starterlist", "starters"):
-            # display starter list without leaving the menu
             caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-            return starter_species(caller, raw_string, type=caller.ndb.chargen.get("favored_type"))
+            return "starter_species", {}
         if species_l not in STARTER_NAMES:
             caller.msg("Invalid starter species. Use 'starterlist' for options.")
-            return starter_species(caller, raw_string, type=caller.ndb.chargen.get("favored_type"))
-        if species_l not in POKEDEX:
+            return "starter_species", {}
+        if not (species.title() in POKEDEX or species.lower() in POKEDEX):
             caller.msg("Unknown species. Try again.")
-            return starter_species(caller, raw_string, type=caller.ndb.chargen.get("favored_type"))
+            return "starter_species", {}
         caller.ndb.chargen["species"] = species
     text = f"You chose {species.title()} with ability {caller.ndb.chargen.get('ability')} as your starter. Proceed? (y/n)"
     options = (
@@ -203,9 +202,9 @@ def fusion_confirm(caller, raw_string, **kwargs):
     species = caller.ndb.chargen.get("species")
     if not species:
         species = raw_string.strip()
-        if species.lower() not in POKEDEX:
+        if not (species.title() in POKEDEX or species.lower() in POKEDEX):
             caller.msg("Unknown species. Try again.")
-            return fusion_species(caller, raw_string, gender=caller.ndb.chargen.get("gender"))
+            return "fusion_species", {}
         caller.ndb.chargen["species"] = species
     text = (
         f"You chose to fuse with {species.title()} having ability {caller.ndb.chargen.get('ability')}. Proceed? (y/n)"
