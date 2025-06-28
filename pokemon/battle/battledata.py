@@ -37,12 +37,14 @@ class Pokemon:
         name: str,
         level: int = 1,
         hp: int = 100,
+        max_hp: Optional[int] = None,
         status: int = 0,
         moves: Optional[List[Move]] = None,
     ):
         self.name = name
         self.level = level
         self.hp = hp
+        self.max_hp = max_hp if max_hp is not None else hp
         self.status = status
         self.moves = moves or []
         self.tempvals: Dict[str, int] = {}
@@ -67,6 +69,7 @@ class Pokemon:
             "name": self.name,
             "level": self.level,
             "hp": self.hp,
+            "max_hp": self.max_hp,
             "status": self.status,
             "moves": [m.to_dict() for m in self.moves],
             "tempvals": self.tempvals,
@@ -79,6 +82,7 @@ class Pokemon:
             name=data["name"],
             level=data.get("level", 1),
             hp=data.get("hp", 100),
+            max_hp=data.get("max_hp"),
             status=data.get("status", 0),
             moves=[Move.from_dict(m) for m in data.get("moves", [])],
         )

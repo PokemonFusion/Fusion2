@@ -24,14 +24,26 @@ def generate_wild_pokemon(location=None) -> Pokemon:
     if not inst:
         inst = generate_pokemon("Pikachu", level=5)
     moves = [Move(name=m) for m in inst.moves]
-    return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp, moves=moves)
+    return Pokemon(
+        name=inst.species.name,
+        level=inst.level,
+        hp=inst.stats.hp,
+        max_hp=inst.stats.hp,
+        moves=moves,
+    )
 
 
 def generate_trainer_pokemon() -> Pokemon:
     """Placeholder that returns a trainer's Charmander."""
     inst = generate_pokemon("Charmander", level=5)
     moves = [Move(name=m) for m in inst.moves]
-    return Pokemon(name=inst.species.name, level=inst.level, hp=inst.stats.hp, moves=moves)
+    return Pokemon(
+        name=inst.species.name,
+        level=inst.level,
+        hp=inst.stats.hp,
+        max_hp=inst.stats.hp,
+        moves=moves,
+    )
 
 
 class BattleInstance:
@@ -75,6 +87,7 @@ class BattleInstance:
                     name=inst.species.name,
                     level=inst.level,
                     hp=inst.stats.hp,
+                    max_hp=inst.stats.hp,
                     moves=moves,
                 )
             )
