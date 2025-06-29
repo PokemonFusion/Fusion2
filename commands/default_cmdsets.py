@@ -50,6 +50,7 @@ from commands.cmd_roomwizard import CmdRoomWizard
 from commands.cmd_editroom import CmdEditRoom
 from commands.cmd_validate import CmdValidate
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
+from commands.cmd_glance import CmdGlance
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -72,6 +73,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
 
         # Basic roleplay command
         self.add(CmdSpoof())
+        self.add(CmdGlance())
 
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
