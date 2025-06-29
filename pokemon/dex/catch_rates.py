@@ -5156,3 +5156,7 @@ CATCH_INFO = {
         "catchRate": 3
     }
 }
+
+def get_catch_rate(name: str) -> int:
+    """Return the catch rate for a given species name."""
+    return CATCH_INFO.get(name, {}).get('catch rate', 255)
