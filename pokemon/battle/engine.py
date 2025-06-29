@@ -78,7 +78,7 @@ class BattleMove:
             return
 
         # Default behaviour for moves without custom handlers
-        from . import damage_calc
+        from .damage import damage_calc
         from pokemon.dex.entities import Move
 
         move = Move(

@@ -101,8 +101,17 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move) -> DamageResult:
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
 
-        atk_stat = attacker.base_stats.atk if move.category == "Physical" else attacker.base_stats.spa
-        def_stat = target.base_stats.def_ if move.category == "Physical" else target.base_stats.spd
+        from . import utils
+
+        atk_key = "atk" if move.category == "Physical" else "spa"
+        def_key = "def_" if move.category == "Physical" else "spd"
+
+        if hasattr(utils, "get_modified_stat"):
+            atk_stat = utils.get_modified_stat(attacker, atk_key)
+            def_stat = utils.get_modified_stat(target, def_key)
+        else:
+            atk_stat = getattr(attacker.base_stats, atk_key)
+            def_stat = getattr(target.base_stats, def_key)
         dmg = base_damage(attacker.num, move.power or 0, atk_stat, def_stat)
         dmg = floor(dmg * stab_multiplier(attacker, move))
         eff = type_effectiveness(target, move)
