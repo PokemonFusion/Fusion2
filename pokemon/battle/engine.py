@@ -247,6 +247,10 @@ class Battle:
                 # Clear any temporary battle values on switch
                 if hasattr(poke, "tempvals"):
                     poke.tempvals.clear()
+            for poke in part.pokemons:
+                if poke not in part.active and getattr(poke, "status", None) == "tox":
+                    poke.status = "psn"
+                    poke.toxic_counter = 0
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
@@ -283,6 +287,12 @@ class Battle:
                     max_hp = getattr(poke, "max_hp", getattr(poke, "hp", 1))
                     damage = max(1, max_hp // 8)
                     poke.hp = max(0, poke.hp - damage)
+                elif status == "tox":
+                    max_hp = getattr(poke, "max_hp", getattr(poke, "hp", 1))
+                    counter = getattr(poke, "toxic_counter", 1)
+                    damage = max(1, (max_hp * counter) // 16)
+                    poke.hp = max(0, poke.hp - damage)
+                    poke.toxic_counter = counter + 1
 
         # Remove Pokémon that fainted from residual damage
         self.run_faint()
