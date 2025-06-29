@@ -39,6 +39,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Callable, List, Optional, Dict
+import random
 
 from pokemon.dex import MOVEDEX
 
@@ -331,10 +332,38 @@ class Battle:
     def order_actions(self, actions: List[Action]) -> List[Action]:
         return sorted(actions, key=lambda a: a.priority, reverse=True)
 
+    def status_prevents_move(self, pokemon) -> bool:
+        """Return True if the Pokemon cannot act due to status."""
+        status = getattr(pokemon, "status", None)
+        if status == "par":
+            return random.random() < 0.25
+        if status == "frz":
+            if random.random() < 0.2:
+                pokemon.status = 0
+                return False
+            return True
+        if status == "slp":
+            turns = pokemon.tempvals.get("slp_turns")
+            if turns is None:
+                turns = random.randint(1, 3)
+                pokemon.tempvals["slp_turns"] = turns
+            if turns > 0:
+                turns -= 1
+                pokemon.tempvals["slp_turns"] = turns
+                if turns == 0:
+                    pokemon.status = 0
+                    pokemon.tempvals.pop("slp_turns", None)
+                    return False
+                return True
+        return False
+
     def execute_actions(self, actions: List[Action]) -> None:
         for action in actions:
             if action.action_type is ActionType.MOVE and action.move:
-                action.move.execute(action.actor.active[0], action.target.active[0], self)
+                actor_poke = action.actor.active[0]
+                if self.status_prevents_move(actor_poke):
+                    continue
+                action.move.execute(actor_poke, action.target.active[0], self)
             elif action.action_type is ActionType.ITEM and action.item:
                 self.execute_item(action)
 
