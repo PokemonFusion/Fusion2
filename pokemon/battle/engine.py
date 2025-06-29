@@ -252,14 +252,16 @@ class Battle:
     def residual(self) -> None:
         """Process residual effects and handle end-of-turn fainting."""
 
-        # Apply very light residual damage for demonstration
+        # Apply residual damage from status conditions
         for part in self.participants:
             if part.has_lost:
                 continue
             for poke in list(part.active):
                 status = getattr(poke, "status", None)
                 if status in {"brn", "psn"}:
-                    poke.hp = max(0, poke.hp - 1)
+                    max_hp = getattr(poke, "max_hp", getattr(poke, "hp", 1))
+                    damage = max(1, max_hp // 8)
+                    poke.hp = max(0, poke.hp - damage)
 
         # Remove Pokémon that fainted from residual damage
         self.run_faint()
