@@ -39,6 +39,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Callable, List, Optional, Dict
+import random
 
 from pokemon.dex import MOVEDEX
 
@@ -334,7 +335,17 @@ class Battle:
     def execute_actions(self, actions: List[Action]) -> None:
         for action in actions:
             if action.action_type is ActionType.MOVE and action.move:
-                action.move.execute(action.actor.active[0], action.target.active[0], self)
+                user = action.actor.active[0]
+                status = getattr(user, "status", None)
+                if status == "par":
+                    if random.random() < 0.25:
+                        continue
+                elif status == "frz":
+                    if random.random() < 0.2:
+                        user.status = None
+                    else:
+                        continue
+                action.move.execute(user, action.target.active[0], self)
             elif action.action_type is ActionType.ITEM and action.item:
                 self.execute_item(action)
 
