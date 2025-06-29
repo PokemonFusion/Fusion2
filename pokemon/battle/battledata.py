@@ -40,12 +40,14 @@ class Pokemon:
         max_hp: Optional[int] = None,
         status: int = 0,
         moves: Optional[List[Move]] = None,
+        toxic_counter: int = 0,
     ):
         self.name = name
         self.level = level
         self.hp = hp
         self.max_hp = max_hp if max_hp is not None else hp
         self.status = status
+        self.toxic_counter = toxic_counter
         self.moves = moves or []
         self.tempvals: Dict[str, int] = {}
         self.boosts: Dict[str, int] = {
@@ -63,6 +65,10 @@ class Pokemon:
 
     def setStatus(self, status: int) -> None:
         self.status = status
+        if status == "tox":
+            self.toxic_counter = 1
+        else:
+            self.toxic_counter = 0
 
     def to_dict(self) -> Dict:
         return {
@@ -74,6 +80,7 @@ class Pokemon:
             "moves": [m.to_dict() for m in self.moves],
             "tempvals": self.tempvals,
             "boosts": self.boosts,
+            "toxic_counter": self.toxic_counter,
         }
 
     @classmethod
@@ -85,6 +92,7 @@ class Pokemon:
             max_hp=data.get("max_hp"),
             status=data.get("status", 0),
             moves=[Move.from_dict(m) for m in data.get("moves", [])],
+            toxic_counter=data.get("toxic_counter", 0),
         )
         obj.tempvals = data.get("tempvals", {})
         obj.boosts = data.get(
