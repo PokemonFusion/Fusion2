@@ -107,6 +107,7 @@ class Action:
     action_type: ActionType
     target: Optional["BattleParticipant"] = None
     move: Optional[BattleMove] = None
+    item: Optional[str] = None
     priority: int = 0
 
 
@@ -334,6 +335,33 @@ class Battle:
         for action in actions:
             if action.action_type is ActionType.MOVE and action.move:
                 action.move.execute(action.actor.active[0], action.target.active[0], self)
+            elif action.action_type is ActionType.ITEM and action.item:
+                self.execute_item(action)
+
+    def execute_item(self, action: Action) -> None:
+        """Handle item usage during battle."""
+        item_name = action.item.lower()
+        target = action.target or self.opponent_of(action.actor)
+        if not target or not target.active:
+            return
+
+        if item_name.endswith("ball") and self.type is BattleType.WILD:
+            target_poke = target.active[0]
+            try:
+                from pokemon.dex.functions.pokedex_funcs import get_catch_rate
+            except Exception:
+                get_catch_rate = lambda name: 255
+            catch_rate = get_catch_rate(getattr(target_poke, "name", "")) or 0
+            status = getattr(target_poke, "status", None)
+            max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
+            from .capture import attempt_capture
+            caught = attempt_capture(max_hp, target_poke.hp, catch_rate, status=status)
+            if caught:
+                target.active.remove(target_poke)
+                if target_poke in target.pokemons:
+                    target.pokemons.remove(target_poke)
+                target.has_lost = True
+                self.check_victory()
 
     def end_turn(self) -> None:
         for part in self.participants:
