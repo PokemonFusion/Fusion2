@@ -8,6 +8,7 @@ from .battleinstance import (
 )
 from .state import BattleState
 from .engine import BattleType, BattleParticipant, Battle, BattleMove, Action, ActionType
+from .capture import attempt_capture
 
 __all__ = [
     "DamageResult",
@@ -29,4 +30,5 @@ __all__ = [
     "Action",
     "ActionType",
     "BattleState",
+    "attempt_capture",
 ]
