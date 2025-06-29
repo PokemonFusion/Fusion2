@@ -86,7 +86,14 @@ class CmdBattleItem(Command):
             self.caller.msg("You are not currently in battle.")
             return
         participant = inst.battle.participants[0]
-        action = Action(participant, ActionType.ITEM)
+        target = inst.battle.opponent_of(participant)
+        action = Action(
+            participant,
+            ActionType.ITEM,
+            target,
+            item=item_name,
+            priority=6,
+        )
         participant.pending_action = action
         self.caller.msg(f"You prepare to use {item_name}.")
 
