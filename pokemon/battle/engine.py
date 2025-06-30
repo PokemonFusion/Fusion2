@@ -71,6 +71,7 @@ class BattleMove:
     accuracy: int | float | bool = 100
     priority: int = 0
     onHit: Optional[Callable] = None
+    basePowerCallback: Optional[Callable] = None
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect."""
@@ -93,10 +94,23 @@ class BattleMove:
             raw={},
         )
 
+        if self.basePowerCallback:
+            try:
+                move.basePowerCallback = self.basePowerCallback
+                # allow callback to setup move data before damage calculation
+                self.basePowerCallback(user, target, move)
+            except Exception:
+                move.basePowerCallback = None
+
         result = damage_calc(user, target, move)
         dmg = sum(result.debug.get("damage", []))
         if hasattr(target, "hp"):
             target.hp = max(0, target.hp - dmg)
+            if dmg > 0:
+                try:
+                    target.tempvals["took_damage"] = True
+                except Exception:
+                    pass
 
 
 
@@ -155,6 +169,7 @@ class BattleParticipant:
 
         move_entry = MOVEDEX.get(_norm(move_data.name))
         on_hit_func = None
+        base_power_cb = None
         if move_entry:
             from pokemon.dex.functions import moves_funcs
             on_hit = move_entry.raw.get("onHit")
@@ -169,12 +184,25 @@ class BattleParticipant:
                             on_hit_func = candidate
                 except Exception:
                     on_hit_func = None
+            bp_cb = move_entry.raw.get("basePowerCallback")
+            if isinstance(bp_cb, str):
+                try:
+                    cls_name, func_name = bp_cb.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        inst = cls()
+                        candidate = getattr(inst, func_name, None)
+                        if callable(candidate):
+                            base_power_cb = candidate
+                except Exception:
+                    base_power_cb = None
             move = BattleMove(
                 name=move_entry.name,
                 power=getattr(move_entry, "power", 0),
                 accuracy=getattr(move_entry, "accuracy", 100),
                 priority=move_entry.raw.get("priority", 0),
                 onHit=on_hit_func,
+                basePowerCallback=base_power_cb,
             )
         else:
             move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
@@ -364,6 +392,10 @@ class Battle:
                 if self.status_prevents_move(actor_poke):
                     continue
                 action.move.execute(actor_poke, action.target.active[0], self)
+                try:
+                    actor_poke.tempvals["moved"] = True
+                except Exception:
+                    pass
             elif action.action_type is ActionType.ITEM and action.item:
                 self.execute_item(action)
 
