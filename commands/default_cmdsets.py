@@ -35,6 +35,7 @@ from commands.command import (
     CmdDepositPokemon,
     CmdWithdrawPokemon,
     CmdShowBox,
+    CmdChargenInfo,
     CmdSpoof,
 )
 from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
@@ -86,6 +87,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdDepositPokemon())
         self.add(CmdWithdrawPokemon())
         self.add(CmdShowBox())
+        self.add(CmdChargenInfo())
         self.add(CmdTradePokemon())
         self.add(CmdHunt())
         self.add(CmdLeaveHunt())
