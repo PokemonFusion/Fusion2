@@ -31,6 +31,9 @@ from commands.command import (
     CmdAddPokemonToStorage,
     CmdGetPokemonDetails,
     CmdUseMove,
+    CmdInventory,
+    CmdAddItem,
+    CmdUseItem,
     CmdChooseStarter,
     CmdDepositPokemon,
     CmdWithdrawPokemon,
@@ -88,6 +91,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdWithdrawPokemon())
         self.add(CmdShowBox())
         self.add(CmdChargenInfo())
+        self.add(CmdInventory())
+        self.add(CmdAddItem())
+        self.add(CmdUseItem())
         self.add(CmdTradePokemon())
         self.add(CmdHunt())
         self.add(CmdLeaveHunt())

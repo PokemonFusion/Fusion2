@@ -81,6 +81,9 @@ class CmdBattleItem(Command):
         if not item_name:
             self.caller.msg("Usage: +battleitem <item>")
             return
+        if not self.caller.has_item(item_name):
+            self.caller.msg(f"You do not have any {item_name}.")
+            return
         inst = self.caller.ndb.get("battle_instance")
         if not inst or not inst.battle:
             self.caller.msg("You are not currently in battle.")
@@ -95,5 +98,6 @@ class CmdBattleItem(Command):
             priority=6,
         )
         participant.pending_action = action
+        self.caller.remove_item(item_name)
         self.caller.msg(f"You prepare to use {item_name}.")
 

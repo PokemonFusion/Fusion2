@@ -504,6 +504,10 @@ class Echoedvoice:
             if isinstance(effect, dict):
                 multiplier = effect.get("multiplier", 1)
                 base_power *= multiplier
+        else:
+            chain = getattr(user, "echoed_voice_chain", 0)
+            if chain:
+                base_power *= min(chain + 1, 5)
         return base_power
 
     def onFieldRestart(self, effect_state):
