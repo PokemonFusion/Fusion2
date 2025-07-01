@@ -36,9 +36,9 @@ corresponding methods simply ``pass`` for now.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Callable, List, Optional, Dict
+from typing import Callable, List, Optional, Dict, Any
 import random
 
 from pokemon.dex import MOVEDEX
@@ -71,9 +71,15 @@ class BattleMove:
     accuracy: int | float | bool = 100
     priority: int = 0
     onHit: Optional[Callable] = None
+    onTry: Optional[Callable] = None
+    basePowerCallback: Optional[Callable] = None
+    type: Optional[str] = None
+    raw: Dict[str, Any] = field(default_factory=dict)
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect."""
+        if self.onTry:
+            self.onTry(user, target, self, battle)
         if self.onHit:
             self.onHit(user, target, battle)
             return
@@ -82,18 +88,21 @@ class BattleMove:
         from .damage import damage_calc
         from pokemon.dex.entities import Move
 
+        raw = dict(self.raw)
+        if self.basePowerCallback:
+            raw["basePowerCallback"] = self.basePowerCallback
         move = Move(
             name=self.name,
             num=0,
-            type=None,
+            type=self.type,
             category="Physical",
             power=self.power,
             accuracy=self.accuracy,
             pp=None,
-            raw={},
+            raw=raw,
         )
 
-        result = damage_calc(user, target, move)
+        result = damage_calc(user, target, move, battle=battle)
         dmg = sum(result.debug.get("damage", []))
         if hasattr(target, "hp"):
             target.hp = max(0, target.hp - dmg)
@@ -155,6 +164,8 @@ class BattleParticipant:
 
         move_entry = MOVEDEX.get(_norm(move_data.name))
         on_hit_func = None
+        on_try_func = None
+        base_power_cb = None
         if move_entry:
             from pokemon.dex.functions import moves_funcs
             on_hit = move_entry.raw.get("onHit")
@@ -169,12 +180,40 @@ class BattleParticipant:
                             on_hit_func = candidate
                 except Exception:
                     on_hit_func = None
+            on_try = move_entry.raw.get("onTry")
+            if isinstance(on_try, str):
+                try:
+                    cls_name, func_name = on_try.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        inst = cls()
+                        cand = getattr(inst, func_name, None)
+                        if callable(cand):
+                            on_try_func = cand
+                except Exception:
+                    on_try_func = None
+            base_cb = move_entry.raw.get("basePowerCallback")
+            if isinstance(base_cb, str):
+                try:
+                    cls_name, func_name = base_cb.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        inst = cls()
+                        cand = getattr(inst, func_name, None)
+                        if callable(cand):
+                            base_power_cb = cand
+                except Exception:
+                    base_power_cb = None
             move = BattleMove(
                 name=move_entry.name,
                 power=getattr(move_entry, "power", 0),
                 accuracy=getattr(move_entry, "accuracy", 100),
                 priority=move_entry.raw.get("priority", 0),
                 onHit=on_hit_func,
+                onTry=on_try_func,
+                basePowerCallback=base_power_cb,
+                type=getattr(move_entry, "type", None),
+                raw=move_entry.raw,
             )
         else:
             move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
@@ -194,6 +233,8 @@ class Battle:
         self.participants = participants
         self.turn_count = 0
         self.battle_over = False
+        from .battledata import Field
+        self.field = Field()
 
     # ------------------------------------------------------------------
     # Helper methods
