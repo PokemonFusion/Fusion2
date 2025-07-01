@@ -537,8 +537,22 @@ class Electrify:
         pass
 
 class Electroball:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the user's Speed compared to the target's."""
+        u_speed = getattr(getattr(user, "base_stats", None), "spe", 0) or 0
+        t_speed = getattr(getattr(target, "base_stats", None), "spe", 1) or 1
+        if t_speed == 0:
+            t_speed = 1
+        ratio = u_speed / t_speed
+        if ratio >= 4:
+            return 150
+        if ratio >= 3:
+            return 120
+        if ratio >= 2:
+            return 80
+        if ratio > 1:
+            return 60
+        return 40
 
 class Electrodrift:
     def onBasePower(self, *args, **kwargs):
@@ -589,8 +603,13 @@ class Entrainment:
         pass
 
 class Eruption:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the user's remaining HP."""
+        cur_hp = getattr(user, "hp", 0)
+        max_hp = getattr(user, "max_hp", cur_hp or 1)
+        ratio = cur_hp / max_hp if max_hp else 0
+        power = int(150 * ratio)
+        return max(1, power)
 
 class Expandingforce:
     def onBasePower(self, *args, **kwargs):
@@ -637,8 +656,11 @@ class Finalgambit:
         pass
 
 class Firepledge:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Return boosted power if combined with another Pledge move."""
+        if getattr(user, "pledge_combo", False):
+            return 150
+        return getattr(move, "power", 80) or 80
     def onModifyMove(self, *args, **kwargs):
         pass
     def onPrepareHit(self, *args, **kwargs):
