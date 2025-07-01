@@ -110,6 +110,13 @@ class User(DefaultCharacter):
         except Pokemon.DoesNotExist:
             return None
 
+    def get_active_pokemon_by_slot(self, slot: int):
+        """Return the active Pokémon at the given slot (1-6)."""
+        mons = list(self.storage.active_pokemon.all().order_by("id"))
+        if 1 <= slot <= len(mons):
+            return mons[slot - 1]
+        return None
+
     @property
     def trainer(self) -> Trainer:
         return Trainer.objects.get(user=self)

@@ -263,6 +263,42 @@ class CmdShowBox(Command):
         self.caller.msg(self.caller.show_box(index))
 
 
+class CmdSetHoldItem(Command):
+    """Give one of your active Pokémon a held item."""
+
+    key = "setholditem"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        if not self.args or "=" not in self.args:
+            self.caller.msg("Usage: setholditem <slot>=<item>")
+            return
+
+        slot_str, item_name = [p.strip() for p in self.args.split("=", 1)]
+
+        try:
+            slot = int(slot_str)
+        except ValueError:
+            self.caller.msg("Slot must be a number between 1 and 6.")
+            return
+
+        pokemon = self.caller.get_active_pokemon_by_slot(slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+
+        item = self.caller.search(item_name, location=self.caller)
+        if not item:
+            return
+
+        pokemon.held_item = item.key
+        pokemon.save()
+        item.delete()
+
+        self.caller.msg(f"{pokemon.name} is now holding {item.key}.")
+
+
 class CmdChargenInfo(Command):
     """Show chargen details and active Pokémon."""
 
