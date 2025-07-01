@@ -102,10 +102,24 @@ class BattleMove:
             raw=raw,
         )
 
+        if self.basePowerCallback:
+            try:
+                move.basePowerCallback = self.basePowerCallback
+                # allow callback to setup move data before damage calculation
+                self.basePowerCallback(user, target, move)
+            except Exception:
+                move.basePowerCallback = None
+
         result = damage_calc(user, target, move, battle=battle)
+
         dmg = sum(result.debug.get("damage", []))
         if hasattr(target, "hp"):
             target.hp = max(0, target.hp - dmg)
+            if dmg > 0:
+                try:
+                    target.tempvals["took_damage"] = True
+                except Exception:
+                    pass
 
 
 
@@ -180,6 +194,7 @@ class BattleParticipant:
                             on_hit_func = candidate
                 except Exception:
                     on_hit_func = None
+
             on_try = move_entry.raw.get("onTry")
             if isinstance(on_try, str):
                 try:
@@ -204,6 +219,7 @@ class BattleParticipant:
                             base_power_cb = cand
                 except Exception:
                     base_power_cb = None
+                    
             move = BattleMove(
                 name=move_entry.name,
                 power=getattr(move_entry, "power", 0),
@@ -214,6 +230,7 @@ class BattleParticipant:
                 basePowerCallback=base_power_cb,
                 type=getattr(move_entry, "type", None),
                 raw=move_entry.raw,
+
             )
         else:
             move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
@@ -405,6 +422,10 @@ class Battle:
                 if self.status_prevents_move(actor_poke):
                     continue
                 action.move.execute(actor_poke, action.target.active[0], self)
+                try:
+                    actor_poke.tempvals["moved"] = True
+                except Exception:
+                    pass
             elif action.action_type is ActionType.ITEM and action.item:
                 self.execute_item(action)
 
