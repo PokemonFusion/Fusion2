@@ -494,21 +494,46 @@ class Dreameater:
         pass
 
 class Echoedvoice:
-    def basePowerCallback(self, user, target, move):
-        """Increase power when used consecutively by the same user."""
-        chain = getattr(user, "echoed_voice_chain", 0)
-        if not getattr(move, "_echoed_voice_inc", False):
-            chain = min(chain + 1, 5)
-            setattr(user, "echoed_voice_chain", chain)
-            setattr(move, "_echoed_voice_inc", True)
-        power = 40 * max(1, chain)
-        return power
-    def onFieldRestart(self, *args, **kwargs):
-        pass
-    def onFieldStart(self, *args, **kwargs):
-        pass
-    def onTry(self, *args, **kwargs):
-        pass
+    """Helper callbacks for the move Echoed Voice."""
+    def basePowerCallback(self, user, target, move, battle=None):
+        """Scale base power based on the active echoed voice effect."""
+        base_power = getattr(move, "basePower", getattr(move, "power", 0))
+        field = getattr(battle, "field", None)
+        if field and hasattr(field, "get_pseudo_weather"):
+            effect = field.get_pseudo_weather("echoedvoice")
+            if isinstance(effect, dict):
+                multiplier = effect.get("multiplier", 1)
+                base_power *= multiplier
+        return base_power
+
+    def onFieldRestart(self, effect_state):
+        """Refresh the effect and increase the power multiplier."""
+        if not isinstance(effect_state, dict):
+            return
+        if effect_state.get("duration") != 2:
+            effect_state["duration"] = 2
+            if effect_state.get("multiplier", 1) < 5:
+                effect_state["multiplier"] = effect_state.get("multiplier", 1) + 1
+
+    def onFieldStart(self, effect_state):
+        """Initialize the echoed voice multiplier."""
+        if isinstance(effect_state, dict):
+            effect_state["multiplier"] = 1
+
+    def onTry(self, user=None, target=None, move=None, battle=None):
+        """Start the echoed voice field effect when the move is used."""
+        if not battle:
+            return
+        field = getattr(battle, "field", None)
+        if field is None:
+            return
+        effect = {
+            "duration": 2,
+            "onFieldStart": self.onFieldStart,
+            "onFieldRestart": self.onFieldRestart,
+        }
+        if hasattr(field, "add_pseudo_weather"):
+            field.add_pseudo_weather("echoedvoice", effect)
 
 class Eeriespell:
     def onHit(self, *args, **kwargs):

@@ -86,7 +86,7 @@ def damage_phrase(target: Pokemon, damage: int) -> str:
     return "no"
 
 
-def damage_calc(attacker: Pokemon, target: Pokemon, move: Move) -> DamageResult:
+def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None) -> DamageResult:
     result = DamageResult()
     numhits = 1
     multihit = move.raw.get("multihit") if move.raw else None
@@ -120,7 +120,19 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move) -> DamageResult:
         else:
             atk_stat = getattr(attacker.base_stats, atk_key)
             def_stat = getattr(target.base_stats, def_key)
-        dmg = base_damage(attacker.num, move.power or 0, atk_stat, def_stat)
+
+        power = move.power or 0
+        if move.raw:
+            cb = move.raw.get("basePowerCallback")
+            if callable(cb):
+                try:
+                    new_power = cb(attacker, target, move, battle=battle)
+                    if isinstance(new_power, (int, float)):
+                        power = int(new_power)
+                except Exception:
+                    pass
+
+        dmg = base_damage(attacker.num, power, atk_stat, def_stat)
         dmg = floor(dmg * stab_multiplier(attacker, move))
         eff = type_effectiveness(target, move)
         dmg = floor(dmg * eff)
