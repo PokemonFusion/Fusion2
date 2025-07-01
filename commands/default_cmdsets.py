@@ -38,6 +38,7 @@ from commands.command import (
     CmdDepositPokemon,
     CmdWithdrawPokemon,
     CmdShowBox,
+    CmdSetHoldItem,
     CmdChargenInfo,
     CmdSpoof,
 )
@@ -90,6 +91,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdDepositPokemon())
         self.add(CmdWithdrawPokemon())
         self.add(CmdShowBox())
+        self.add(CmdSetHoldItem())
         self.add(CmdChargenInfo())
         self.add(CmdInventory())
         self.add(CmdAddItem())

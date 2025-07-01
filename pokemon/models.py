@@ -11,6 +11,7 @@ class Pokemon(models.Model):
     level = models.IntegerField()
     type_ = models.CharField(max_length=255)
     ability = models.CharField(max_length=50, blank=True)
+    held_item = models.CharField(max_length=50, blank=True)
     data = models.JSONField(default=dict, blank=True)
     trainer = models.ForeignKey(
         "Trainer",
