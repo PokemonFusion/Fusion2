@@ -321,3 +321,55 @@ class CmdSpoof(Command):
             self.caller.msg("You have no location to spoof from.")
             return
         location.msg_contents(message)
+
+
+class CmdInventory(Command):
+    """Show items in your inventory."""
+
+    key = "inventory"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        self.caller.msg(self.caller.list_inventory())
+
+
+class CmdAddItem(Command):
+    """Add an item to your inventory."""
+
+    key = "additem"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        parts = self.args.split()
+        if len(parts) != 2:
+            self.caller.msg("Usage: additem <item> <amount>")
+            return
+        item = parts[0]
+        try:
+            qty = int(parts[1])
+        except ValueError:
+            self.caller.msg("Usage: additem <item> <amount>")
+            return
+        self.caller.add_item(item, qty)
+        self.caller.msg(f"Added {qty} x {item}.")
+
+
+class CmdUseItem(Command):
+    """Use an item outside of battle."""
+
+    key = "useitem"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        item_name = self.args.strip()
+        if not item_name:
+            self.caller.msg("Usage: useitem <item>")
+            return
+        if not self.caller.has_item(item_name):
+            self.caller.msg(f"You do not have any {item_name}.")
+            return
+        self.caller.remove_item(item_name)
+        self.caller.msg(f"You use {item_name}. Nothing happens.")
