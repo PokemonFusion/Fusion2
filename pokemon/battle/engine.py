@@ -44,6 +44,16 @@ import random
 from pokemon.dex import MOVEDEX
 
 
+@dataclass
+class BattleSide:
+    """Container for effects active on one side of the battle."""
+
+    # Generic container for any side conditions (Reflect, Spikes, etc)
+    conditions: Dict[str, Dict] = field(default_factory=dict)
+    hazards: Dict[str, Any] = field(default_factory=dict)
+    screens: Dict[str, Any] = field(default_factory=dict)
+
+
 class BattleType(Enum):
     """Different types of battles."""
 
@@ -120,6 +130,21 @@ class BattleMove:
                 except Exception:
                     pass
 
+        # Handle side conditions set by this move
+        side_cond = self.raw.get("sideCondition") if self.raw else None
+        if side_cond:
+            condition = self.raw.get("condition", {})
+            try:
+                from pokemon.dex.functions import moves_funcs
+            except Exception:
+                moves_funcs = None
+            target_side = user
+            if self.raw.get("target") != "allySide":
+                target_side = target
+            part = battle.participant_for(target_side)
+            if part:
+                battle.add_side_condition(part, side_cond, condition, source=user, moves_funcs=moves_funcs)
+
 
 
 @dataclass
@@ -144,6 +169,10 @@ class BattleParticipant:
         self.is_ai = is_ai
         self.has_lost = False
         self.pending_action: Optional[Action] = None
+        self.side = BattleSide()
+        for poke in self.pokemons:
+            if poke is not None:
+                setattr(poke, "side", self.side)
 
     def choose_action(self, battle: "Battle") -> Optional[Action]:
         """Return an Action object for this turn.
@@ -251,6 +280,49 @@ class Battle:
         from .battledata import Field
         self.field = Field()
 
+    def participant_for(self, pokemon) -> Optional[BattleParticipant]:
+        """Return the participant owning ``pokemon`` if any."""
+        for part in self.participants:
+            if pokemon in part.pokemons:
+                return part
+        return None
+
+    def add_side_condition(
+        self,
+        participant: BattleParticipant,
+        name: str,
+        effect: Dict,
+        source=None,
+        *,
+        moves_funcs=None,
+    ) -> None:
+        """Apply a side condition to ``participant``."""
+
+        moves_funcs = moves_funcs or {}
+        side = participant.side
+        current = side.conditions.get(name)
+        if current is None:
+            side.conditions[name] = effect.copy()
+            cb = effect.get("onSideStart")
+        else:
+            cb = effect.get("onSideRestart")
+        if isinstance(cb, str) and moves_funcs:
+            try:
+                cls_name, func_name = cb.split(".", 1)
+                cls = getattr(moves_funcs, cls_name, None)
+                if cls:
+                    cb = getattr(cls(), func_name, None)
+            except Exception:
+                cb = None
+        if callable(cb):
+            try:
+                cb(side, source)
+            except Exception:
+                try:
+                    cb(side)
+                except Exception:
+                    cb()
+
     # ------------------------------------------------------------------
     # Helper methods
     # ------------------------------------------------------------------
@@ -282,6 +354,7 @@ class Battle:
                 for poke in part.pokemons:
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
+                        setattr(poke, "side", part.side)
                         break
                 continue
 
@@ -293,6 +366,7 @@ class Battle:
                         continue
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
+                        setattr(poke, "side", part.side)
                         break
 
     def run_after_switch(self) -> None:
