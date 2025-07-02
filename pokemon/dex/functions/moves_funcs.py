@@ -1,6 +1,22 @@
 from random import choice, random
-
+from pokemon.data import TYPE_CHART
 from pokemon.battle.utils import apply_boost
+
+
+def type_effectiveness(target, move):
+    if not move or not getattr(move, "type", None):
+        return 1.0
+    chart = TYPE_CHART.get(move.type.capitalize(), {})
+    eff = 1.0
+    for typ in getattr(target, "types", []):
+        val = chart.get(typ.capitalize(), 0)
+        if val == 1:
+            eff *= 2
+        elif val == 2:
+            eff *= 0.5
+        elif val == 3:
+            eff *= 0
+    return eff
 
 
 class Acrobatics:
@@ -216,7 +232,14 @@ class Banefulbunker:
 
 class Barbbarrage:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Double power if the target is poisoned."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if target and getattr(target, "status", None) in {"psn", "tox"}:
+            return power * 2
+        return power
 
 class Batonpass:
     def onHit(self, user, target, battle):
@@ -375,7 +398,17 @@ class Brickbreak:
 
 class Brine:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Double power if the target is at or below half HP."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if target:
+            cur_hp = getattr(target, "hp", 0)
+            max_hp = getattr(target, "max_hp", cur_hp or 1)
+            if cur_hp * 2 <= max_hp:
+                return power * 2
+        return power
 
 class Bugbite:
     def onHit(self, user, target, battle):
@@ -456,7 +489,12 @@ class Charge:
     def onAfterMove(self, *args, **kwargs):
         pass
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        move = args[2] if len(args) > 2 else None
+        power = getattr(move, "power", 0) if move else 0
+        if move and getattr(move, "type", "").lower() == "electric":
+            return power * 2
+        return power
     def onEnd(self, *args, **kwargs):
         pass
     def onMoveAborted(self, *args, **kwargs):
@@ -505,7 +543,14 @@ class Clearsmog:
 
 class Collisioncourse:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Boost power if the move is super effective."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if target and move and type_effectiveness(target, move) > 1:
+            return int(power * 4 / 3)
+        return power
 
 class Comeuppance:
     def damageCallback(self, *args, **kwargs):
@@ -879,7 +924,14 @@ class Electricterrain:
     def durationCallback(self, *args, **kwargs):
         pass
     def onBasePower(self, *args, **kwargs):
-        pass
+        attacker = args[0] if args else None
+        move = args[2] if len(args) > 2 else None
+        power = getattr(move, "power", 0) if move else 0
+        if move and getattr(move, "type", "").lower() == "electric":
+            grounded = getattr(attacker, "grounded", True)
+            if grounded:
+                return int(power * 1.3)
+        return power
     def onFieldEnd(self, *args, **kwargs):
         pass
     def onFieldStart(self, *args, **kwargs):
@@ -922,7 +974,14 @@ class Electroball:
 
 class Electrodrift:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Boost power if super effective."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if target and move and type_effectiveness(target, move) > 1:
+            return int(power * 4 / 3)
+        return power
 
 class Electroshot:
     def onTryMove(self, *args, **kwargs):
@@ -1004,7 +1063,17 @@ class Eruption:
 
 class Expandingforce:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Boost power on Psychic Terrain when grounded."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        terrain = getattr(user, "terrain", None)
+        grounded = getattr(user, "grounded", True)
+        if terrain == "psychicterrain" and grounded:
+            return int(power * 1.5)
+        return power
+
     def onModifyMove(self, *args, **kwargs):
         move = args[0] if args else kwargs.get('move')
         user = args[1] if len(args) > 1 else kwargs.get('user')
@@ -1021,7 +1090,15 @@ class Expandingforce:
 
 class Facade:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Double power if the user has a status condition (except sleep)."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        status = getattr(user, "status", None)
+        if status and status != "slp":
+            return power * 2
+        return power
 
 class Fairylock:
     def onFieldStart(self, *args, **kwargs):
@@ -1046,7 +1123,14 @@ class Fellstinger:
 
 class Ficklebeam:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """30% chance to double power."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if random() < 0.3:
+            return power * 2
+        return power
 
 class Filletaway:
     def onHit(self, user, target, battle):
@@ -1285,11 +1369,27 @@ class Furycutter:
 
 class Fusionbolt:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Double power if Fusion Flare was used this turn."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        last = getattr(user, "last_move_this_turn", "").lower() if user else ""
+        if last == "fusionflare":
+            return power * 2
+        return power
 
 class Fusionflare:
     def onBasePower(self, *args, **kwargs):
-        pass
+        """Double power if Fusion Bolt was used this turn."""
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        last = getattr(user, "last_move_this_turn", "").lower() if user else ""
+        if last == "fusionbolt":
+            return power * 2
+        return power
 
 class Futuresight:
     def onTry(self, *args, **kwargs):
@@ -1650,7 +1750,16 @@ class Grassyterrain:
     def durationCallback(self, *args, **kwargs):
         pass
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        move_id = getattr(move, "name", "").replace(" ", "").lower() if move else ""
+        if move_id in {"earthquake", "bulldoze", "magnitude"} and target and getattr(target, "grounded", True):
+            return int(power * 0.5)
+        if move and getattr(move, "type", "").lower() == "grass" and user and getattr(user, "grounded", True):
+            return int(power * 1.3)
+        return power
     def onFieldEnd(self, *args, **kwargs):
         pass
     def onFieldStart(self, *args, **kwargs):
@@ -1660,7 +1769,15 @@ class Grassyterrain:
 
 class Gravapple:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        battle = args[3] if len(args) > 3 else kwargs.get("battle")
+        field = getattr(battle, "field", None) if battle else None
+        if field and getattr(field, "pseudo_weather", {}).get("gravity"):
+            return int(power * 1.5)
+        return power
 
 class Gravity:
     def durationCallback(self, *args, **kwargs):
@@ -1862,14 +1979,33 @@ class Heavyslam:
 
 class Helpinghand:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        state = getattr(user, "volatiles", {}).get("helpinghand") if user else None
+        multiplier = 1.0
+        if isinstance(state, dict):
+            multiplier = state.get("multiplier", 1.5)
+        elif state:
+            multiplier = 1.5
+        return int(power * multiplier)
+
     def onRestart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        if user and "helpinghand" in getattr(user, "volatiles", {}):
+            state = user.volatiles.get("helpinghand")
+            if isinstance(state, dict):
+                state["multiplier"] = state.get("multiplier", 1.5) * 1.5
+            else:
+                user.volatiles["helpinghand"] = {"target": state, "multiplier": 1.5 * 1.5}
+        return True
+
     def onStart(self, *args, **kwargs):
         user = args[0] if args else None
         target = args[1] if len(args) > 1 else None
         if user and hasattr(user, "volatiles"):
-            user.volatiles["helpinghand"] = target
+            user.volatiles["helpinghand"] = {"target": target, "multiplier": 1.5}
         return True
     def onTryHit(self, target, source, move):
         """Only works if the ally is preparing to move."""
@@ -2068,9 +2204,27 @@ class Kingsshield:
 
 class Knockoff:
     def onAfterHit(self, *args, **kwargs):
-        pass
+        target = args[0] if args else kwargs.get("target")
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        if source and getattr(source, "hp", 0) <= 0:
+            return True
+        item = getattr(target, "item", None) or getattr(target, "held_item", None)
+        if item:
+            if hasattr(target, "set_item"):
+                target.set_item(None)
+            else:
+                setattr(target, "item", None)
+        return True
+
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        item = getattr(target, "item", None) or getattr(target, "held_item", None)
+        if item:
+            return int(power * 1.5)
+        return power
 
 class Laserfocus:
     def onEnd(self, *args, **kwargs):
@@ -2087,7 +2241,13 @@ class Laserfocus:
 
 class Lashout:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if user and getattr(user, "statsLoweredThisTurn", False):
+            return power * 2
+        return power
 
 class Lastresort:
     def onTry(self, *args, **kwargs):
@@ -2447,7 +2607,11 @@ class Meanlook:
 
 class Mefirst:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        return int(power * 1.5)
     def onTryHit(self, *args, **kwargs):
         """Fail if the target hasn't chosen a move."""
         target = args[0] if args else None
@@ -2568,13 +2732,27 @@ class Mist:
 
 class Mistyexplosion:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        terrain = getattr(user, "terrain", None)
+        grounded = getattr(user, "grounded", True)
+        if terrain == "mistyterrain" and grounded:
+            return int(power * 1.5)
+        return power
 
 class Mistyterrain:
     def durationCallback(self, *args, **kwargs):
         pass
     def onBasePower(self, *args, **kwargs):
-        pass
+        attacker = args[0] if args else kwargs.get("user")
+        defender = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if move and getattr(move, "type", "").lower() == "dragon" and defender and getattr(defender, "grounded", True):
+            return int(power * 0.5)
+        return power
     def onFieldEnd(self, *args, **kwargs):
         pass
     def onFieldStart(self, *args, **kwargs):
@@ -2618,7 +2796,13 @@ class Mortalspin:
 
 class Mudsport:
     def onBasePower(self, *args, **kwargs):
-        pass
+        attacker = args[0] if args else kwargs.get("user")
+        defender = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if move and getattr(move, "type", "").lower() == "electric":
+            return int(power * 0.33)
+        return power
     def onFieldEnd(self, *args, **kwargs):
         pass
     def onFieldStart(self, *args, **kwargs):
@@ -2924,7 +3108,14 @@ class Protect:
 
 class Psyblade:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        terrain = getattr(user, "terrain", None)
+        if terrain == "electricterrain":
+            return int(power * 1.5)
+        return power
 
 class Psychicfangs:
     def onTryHit(self, *args, **kwargs):
@@ -2940,7 +3131,13 @@ class Psychicterrain:
     def durationCallback(self, *args, **kwargs):
         pass
     def onBasePower(self, *args, **kwargs):
-        pass
+        attacker = args[0] if args else kwargs.get("user")
+        defender = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if move and getattr(move, "type", "").lower() == "psychic" and attacker and getattr(attacker, "grounded", True):
+            return int(power * 1.3)
+        return power
     def onFieldEnd(self, *args, **kwargs):
         pass
     def onFieldStart(self, *args, **kwargs):
@@ -3183,7 +3380,14 @@ class Rest:
 
 class Retaliate:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        fainted = getattr(getattr(user, "side", None), "faintedLastTurn", False)
+        if fainted:
+            return power * 2
+        return power
 
 class Return:
     def basePowerCallback(self, user, target, move):
@@ -3636,13 +3840,27 @@ class Soak:
 
 class Solarbeam:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        weather = getattr(user, "weather", None)
+        if weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow"}:
+            return int(power * 0.5)
+        return power
     def onTryMove(self, *args, **kwargs):
         pass
 
 class Solarblade:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        weather = getattr(user, "weather", None)
+        if weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow"}:
+            return int(power * 0.5)
+        return power
     def onTryMove(self, *args, **kwargs):
         pass
 
@@ -4358,7 +4576,13 @@ class Venomdrench:
 
 class Venoshock:
     def onBasePower(self, *args, **kwargs):
-        pass
+        user = args[0] if args else kwargs.get("user")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if target and getattr(target, "status", None) in {"psn", "tox"}:
+            return power * 2
+        return power
 
 class Wakeupslap:
     def basePowerCallback(self, user, target, move):
@@ -4402,7 +4626,13 @@ class Watershuriken:
 
 class Watersport:
     def onBasePower(self, *args, **kwargs):
-        pass
+        attacker = args[0] if args else kwargs.get("user")
+        defender = args[1] if len(args) > 1 else kwargs.get("target")
+        move = args[2] if len(args) > 2 else kwargs.get("move")
+        power = getattr(move, "power", 0) if move else 0
+        if move and getattr(move, "type", "").lower() == "fire":
+            return int(power * 0.33)
+        return power
     def onFieldEnd(self, *args, **kwargs):
         pass
     def onFieldStart(self, *args, **kwargs):
