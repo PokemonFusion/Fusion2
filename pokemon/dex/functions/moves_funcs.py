@@ -165,7 +165,11 @@ class Auroraveil:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Activate the Aurora Veil screen on the side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["auroraveil"] = True
+        return True
     def onTry(self, *args, **kwargs):
         battle = kwargs.get('battle') if kwargs else None
         if len(args) > 3:
@@ -385,7 +389,18 @@ class Bounce:
     def onSourceBasePower(self, *args, **kwargs):
         pass
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle the two-turn Bounce behaviour."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("bounce"):
+            vol.pop("bounce", None)
+            user.volatiles = vol
+            return True
+        vol["bounce"] = True
+        user.volatiles = vol
+        return False
 
 class Brickbreak:
     def onTryHit(self, user, target, move):
@@ -660,7 +675,13 @@ class Covet:
 
 class Craftyshield:
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Protect the side from status moves this turn."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["craftyshield"] = True
+            side.volatiles = vol
+        return True
     def onTry(self, *args, **kwargs):
         battle = kwargs.get('battle') if kwargs else None
         if len(args) > 3:
@@ -769,7 +790,18 @@ class Dig:
     def onSourceModifyDamage(self, *args, **kwargs):
         pass
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Dig as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("dig"):
+            vol.pop("dig", None)
+            user.volatiles = vol
+            return True
+        vol["dig"] = True
+        user.volatiles = vol
+        return False
 
 class Direclaw:
     def onHit(self, user, target, battle):
@@ -810,7 +842,18 @@ class Dive:
     def onSourceModifyDamage(self, *args, **kwargs):
         pass
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Dive as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("dive"):
+            vol.pop("dive", None)
+            user.volatiles = vol
+            return True
+        vol["dive"] = True
+        user.volatiles = vol
+        return False
 
 class Doodle:
     def onHit(self, user, target, battle):
@@ -837,7 +880,10 @@ class Doubleshock:
             user.types = [t for t in user.types if t.lower() != "electric"]
         return True
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Fail if the user is not Electric type."""
+        user = args[0] if args else kwargs.get("user")
+        types = getattr(user, "types", []) if user else []
+        return any(t.lower() == "electric" for t in types)
 
 class Dragoncheer:
     def onModifyCritRatio(self, *args, **kwargs):
@@ -985,7 +1031,8 @@ class Electrodrift:
 
 class Electroshot:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Electro Shot has no additional move check in this stub."""
+        return True
 
 class Embargo:
     def onEnd(self, *args, **kwargs):
@@ -1175,7 +1222,14 @@ class Firepledge:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Start the Fire Pledge side condition."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            side.conditions["firepledge"] = {
+                "turns": 4,
+                "source": kwargs.get("source"),
+            }
+        return True
 
 class Firstimpression:
     def onTry(self, *args, **kwargs):
@@ -1254,7 +1308,18 @@ class Fly:
     def onSourceModifyDamage(self, *args, **kwargs):
         pass
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Fly as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("fly"):
+            vol.pop("fly", None)
+            user.volatiles = vol
+            return True
+        vol["fly"] = True
+        user.volatiles = vol
+        return False
 
 class Flyingpress:
     def onEffectiveness(self, *args, **kwargs):
@@ -1333,7 +1398,18 @@ class Freezedry:
 
 class Freezeshock:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Freeze Shock as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("freezeshock"):
+            vol.pop("freezeshock", None)
+            user.volatiles = vol
+            return True
+        vol["freezeshock"] = True
+        user.volatiles = vol
+        return False
 
 class Freezyfrost:
     def onHit(self, user, target, battle):
@@ -1435,7 +1511,18 @@ class Genesissupernova:
 
 class Geomancy:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Geomancy as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("geomancy"):
+            vol.pop("geomancy", None)
+            user.volatiles = vol
+            return True
+        vol["geomancy"] = True
+        user.volatiles = vol
+        return False
 
 class Glaiverush:
     def onAccuracy(self, *args, **kwargs):
@@ -1469,7 +1556,13 @@ class Gmaxcannonade:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Initialize residual G-Max Cannonade effect."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["gmaxcannonade"] = 4
+            side.volatiles = vol
+        return True
 
 class Gmaxcentiferno:
     def onHit(self, user, target, battle):
@@ -1600,7 +1693,11 @@ class Gmaxsteelsurge:
             side.hazards["steelsurge"] = True
         return True
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Activate the Steel Surge hazard on this side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "hazards"):
+            side.hazards["steelsurge"] = True
+        return True
 
 class Gmaxstonesurge:
     def onHit(self, user, target, battle):
@@ -1652,7 +1749,13 @@ class Gmaxvinelash:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Begin the G-Max Vine Lash residual effect."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["gmaxvinelash"] = 4
+            side.volatiles = vol
+        return True
 
 class Gmaxvolcalith:
     def onHit(self, user, target, battle):
@@ -1666,7 +1769,13 @@ class Gmaxvolcalith:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Start the G-Max Volcalith residual effect."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["gmaxvolcalith"] = 4
+            side.volatiles = vol
+        return True
 
 class Gmaxvoltcrash:
     def onHit(self, user, target, battle):
@@ -1687,7 +1796,13 @@ class Gmaxwildfire:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Begin the G-Max Wildfire residual effect."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["gmaxwildfire"] = 4
+            side.volatiles = vol
+        return True
 
 class Gmaxwindrage:
     def onHit(self, user, target, battle):
@@ -1739,7 +1854,14 @@ class Grasspledge:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Start the Grass Pledge side condition."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            side.conditions["grasspledge"] = {
+                "turns": 4,
+                "source": kwargs.get("source"),
+            }
+        return True
 
 class Grassyglide:
     def onModifyPriority(self, *args, **kwargs):
@@ -2083,7 +2205,18 @@ class Iceball:
 
 class Iceburn:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Ice Burn as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("iceburn"):
+            vol.pop("iceburn", None)
+            user.volatiles = vol
+            return True
+        vol["iceburn"] = True
+        user.volatiles = vol
+        return False
 
 class Icespinner:
     def onAfterHit(self, *args, **kwargs):
@@ -2291,7 +2424,11 @@ class Lightscreen:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Activate the Light Screen effect."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["lightscreen"] = True
+        return True
 
 class Lightthatburnsthesky:
     def onModifyMove(self, *args, **kwargs):
@@ -2343,7 +2480,11 @@ class Luckychant:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Prevent critical hits against this side for a few turns."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["luckychant"] = True
+        return True
 
 class Lunarblessing:
     def onHit(self, user, target, battle):
@@ -2440,7 +2581,13 @@ class Magnitude:
 
 class Matblock:
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Protect the side from attacks for one turn."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["matblock"] = True
+            side.volatiles = vol
+        return True
     def onTry(self, *args, **kwargs):
         user = args[0] if args else None
         battle = args[3] if len(args) > 3 else kwargs.get('battle')
@@ -2632,7 +2779,18 @@ class Metalburst:
 
 class Meteorbeam:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Meteor Beam as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("meteorbeam"):
+            vol.pop("meteorbeam", None)
+            user.volatiles = vol
+            return True
+        vol["meteorbeam"] = True
+        user.volatiles = vol
+        return False
 
 class Metronome:
     def onHit(self, user, target, battle):
@@ -2725,7 +2883,11 @@ class Mist:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Prevent stat reduction on this side for five turns."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["mist"] = True
+        return True
     def onTryBoost(self, *args, **kwargs):
         pass
 
@@ -2938,7 +3100,18 @@ class Petaldance:
 
 class Phantomforce:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Phantom Force as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("phantomforce"):
+            vol.pop("phantomforce", None)
+            user.volatiles = vol
+            return True
+        vol["phantomforce"] = True
+        user.volatiles = vol
+        return False
 
 class Photongeyser:
     def onModifyMove(self, *args, **kwargs):
@@ -3012,7 +3185,11 @@ class Powder:
             target.volatiles["powder"] = True
         return True
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Prevent Fire-type moves while powdered."""
+        move = args[1] if len(args) > 1 else kwargs.get("move")
+        if move and getattr(move, "type", "").lower() == "fire":
+            return False
+        return True
 
 class Powershift:
     def onCopy(self, *args, **kwargs):
@@ -3229,7 +3406,13 @@ class Quickguard:
             return True
         return False
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Activate Quick Guard for this side."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["quickguard"] = True
+            side.volatiles = vol
+        return True
     def onTry(self, *args, **kwargs):
         battle = kwargs.get('battle') if kwargs else None
         if len(args) > 3:
@@ -3305,7 +3488,18 @@ class Rapidspin:
 
 class Razorwind:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Razor Wind as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("razorwind"):
+            vol.pop("razorwind", None)
+            user.volatiles = vol
+            return True
+        vol["razorwind"] = True
+        user.volatiles = vol
+        return False
 
 class Recycle:
     def onHit(self, user, target, battle):
@@ -3333,7 +3527,11 @@ class Reflect:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Activate the Reflect screen on the side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["reflect"] = True
+        return True
 
 class Reflecttype:
     def onHit(self, user, target, battle):
@@ -3524,7 +3722,11 @@ class Safeguard:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Protect the side from status conditions."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["safeguard"] = True
+        return True
     def onTryAddVolatile(self, *args, **kwargs):
         pass
 
@@ -3581,7 +3783,18 @@ class Secretpower:
 
 class Shadowforce:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Shadow Force as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("shadowforce"):
+            vol.pop("shadowforce", None)
+            user.volatiles = vol
+            return True
+        vol["shadowforce"] = True
+        user.volatiles = vol
+        return False
 
 class Shedtail:
     def onHit(self, user, target, battle):
@@ -3638,7 +3851,18 @@ class Shelltrap:
             user.volatiles["shelltrap"] = True
         return True
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Activate Shell Trap and skip the attack on the first turn."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("shelltrap_ready"):
+            vol.pop("shelltrap_ready", None)
+            user.volatiles = vol
+            return True
+        vol["shelltrap_ready"] = True
+        user.volatiles = vol
+        return False
     def priorityChargeCallback(self, *args, **kwargs):
         pass
 
@@ -3726,11 +3950,33 @@ class Skillswap:
 
 class Skullbash:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Skull Bash as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("skullbash"):
+            vol.pop("skullbash", None)
+            user.volatiles = vol
+            return True
+        vol["skullbash"] = True
+        user.volatiles = vol
+        return False
 
 class Skyattack:
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Sky Attack as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("skyattack"):
+            vol.pop("skyattack", None)
+            user.volatiles = vol
+            return True
+        vol["skyattack"] = True
+        user.volatiles = vol
+        return False
 
 class Skydrop:
     def onAnyBasePower(self, *args, **kwargs):
@@ -3848,7 +4094,18 @@ class Solarbeam:
             return int(power * 0.5)
         return power
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Solar Beam as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("solarbeam"):
+            vol.pop("solarbeam", None)
+            user.volatiles = vol
+            return True
+        vol["solarbeam"] = True
+        user.volatiles = vol
+        return False
 
 class Solarblade:
     def onBasePower(self, *args, **kwargs):
@@ -3861,7 +4118,18 @@ class Solarblade:
             return int(power * 0.5)
         return power
     def onTryMove(self, *args, **kwargs):
-        pass
+        """Handle Solar Blade as a two-turn move."""
+        user = args[0] if args else kwargs.get("user")
+        if not user:
+            return False
+        vol = getattr(user, "volatiles", {})
+        if vol.get("solarblade"):
+            vol.pop("solarblade", None)
+            user.volatiles = vol
+            return True
+        vol["solarblade"] = True
+        user.volatiles = vol
+        return False
 
 class Sparklingaria:
     def onAfterMove(self, *args, **kwargs):
@@ -3901,7 +4169,12 @@ class Spikes:
     def onSideRestart(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Lay a layer of Spikes on the opposing side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "hazards"):
+            layers = side.hazards.get("spikes", 0)
+            side.hazards["spikes"] = min(layers + 1, 3)
+        return True
 
 class Spikyshield:
     def onHit(self, user, target, battle):
@@ -3993,7 +4266,11 @@ class Stealthrock:
     def onEntryHazard(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Set Stealth Rock on the opposing side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "hazards"):
+            side.hazards["rocks"] = True
+        return True
 
 class Steelbeam:
     def onAfterMove(self, *args, **kwargs):
@@ -4024,7 +4301,11 @@ class Stickyweb:
     def onEntryHazard(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Set Sticky Web on the opposing side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "hazards"):
+            side.hazards["stickyweb"] = True
+        return True
 
 class Stockpile:
     def onEnd(self, *args, **kwargs):
@@ -4230,7 +4511,11 @@ class Tailwind:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Double the Speed of allies for four turns."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens["tailwind"] = True
+        return True
 
 class Takeheart:
     def onHit(self, user, target, battle):
@@ -4456,7 +4741,12 @@ class Toxicspikes:
     def onSideRestart(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Set Toxic Spikes on the opposing side."""
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "hazards"):
+            layers = side.hazards.get("toxicspikes", 0)
+            side.hazards["toxicspikes"] = min(layers + 1, 2)
+        return True
 
 class Transform:
     def onHit(self, user, target, battle):
@@ -4611,7 +4901,14 @@ class Waterpledge:
     def onSideEnd(self, *args, **kwargs):
         pass
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Start the Water Pledge side condition."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            side.conditions["waterpledge"] = {
+                "turns": 4,
+                "source": kwargs.get("source"),
+            }
+        return True
 
 class Watershuriken:
     def basePowerCallback(self, user, target, move):
@@ -4679,7 +4976,13 @@ class Wideguard:
             return True
         return False
     def onSideStart(self, *args, **kwargs):
-        pass
+        """Activate Wide Guard for this side."""
+        side = args[0] if args else kwargs.get("side")
+        if side:
+            vol = getattr(side, "volatiles", {})
+            vol["wideguard"] = True
+            side.volatiles = vol
+        return True
     def onTry(self, *args, **kwargs):
         battle = kwargs.get('battle') if kwargs else None
         if len(args) > 3:
