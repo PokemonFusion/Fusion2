@@ -128,7 +128,11 @@ class Aurawheel:
     def onModifyType(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        species = getattr(getattr(user, "species", None), "name", "").lower()
+        if "morpeko" not in species:
+            return False
+        return True
 
 class Auroraveil:
     def durationCallback(self, *args, **kwargs):
@@ -140,7 +144,20 @@ class Auroraveil:
     def onSideStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        field = getattr(battle, 'field', None)
+        weather = None
+        if field and hasattr(field, 'weather'):
+            weather = field.weather
+        elif battle and hasattr(battle, 'weather'):
+            weather = battle.weather
+        elif battle and hasattr(battle, 'state'):
+            weather = getattr(battle.state, 'roomweather', None)
+        if str(weather).lower() in ('hail', 'snow'):
+            return True
+        return False
 
 class Autotomize:
     def onHit(self, user, target, battle):
@@ -417,6 +434,12 @@ class Clangoroussoul:
         return True
 
     def onTry(self, *args, **kwargs):
+        user = args[0] if args else None
+        max_hp = getattr(user, 'max_hp', 0)
+        if max_hp <= 1:
+            return False
+        if getattr(user, 'hp', 0) <= max_hp * 33 // 100:
+            return False
         return True
 
     def onTryHit(self, *args, **kwargs):
@@ -440,7 +463,11 @@ class Comeuppance:
     def onModifyTarget(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        last = getattr(user, 'tempvals', {}).get('last_damaged_by') if user else None
+        if not last or not last.get('this_turn'):
+            return False
+        return True
 
 class Conversion:
     def onHit(self, user, target, battle):
@@ -508,7 +535,11 @@ class Counter:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        vol = getattr(user, 'volatiles', {}).get('counter') if user else None
+        if not vol or vol.get('slot') is None:
+            return False
+        return True
 
 class Courtchange:
     def onHitField(self, user, battle):
@@ -533,7 +564,16 @@ class Craftyshield:
     def onSideStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        queue = getattr(battle, 'queue', None)
+        if queue and hasattr(queue, 'willAct'):
+            try:
+                return bool(queue.willAct())
+            except Exception:
+                return True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -571,7 +611,12 @@ class Curse:
 
 class Darkvoid:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        move = args[2] if len(args) > 2 else kwargs.get('move')
+        species = getattr(getattr(user, 'species', None), 'name', '').lower()
+        if 'darkrai' in species or getattr(move, 'has_bounced', False):
+            return True
+        return False
 
 class Defog:
     def onHit(self, user, target, battle):
@@ -653,7 +698,12 @@ class Doodle:
 
 class Doomdesire:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        side = getattr(target, 'side', None)
+        if not side:
+            return False
+        return True
 
 class Doubleshock:
     def onHit(self, user, target, battle):
@@ -865,7 +915,10 @@ class Fairylock:
 
 class Fakeout:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if getattr(user, 'active_move_actions', 1) > 1:
+            return False
+        return True
 
 class Falseswipe:
     def onDamage(self, *args, **kwargs):
@@ -889,7 +942,13 @@ class Filletaway:
         apply_boost(user, {"atk": 2, "spa": 2, "spe": 2})
         return True
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if not user:
+            return False
+        max_hp = getattr(user, 'max_hp', 0)
+        if getattr(user, 'hp', 0) <= max_hp // 2 or max_hp == 1:
+            return False
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -916,7 +975,10 @@ class Firepledge:
 
 class Firstimpression:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if getattr(user, 'active_move_actions', 1) > 1:
+            return False
+        return True
 
 class Fishiousrend:
     def basePowerCallback(self, user, target, move):
@@ -1019,7 +1081,14 @@ class Followme:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        if not battle:
+            return True
+        participants = getattr(battle, 'participants', [])
+        multi = any(len(getattr(p, 'active', [])) > 1 for p in participants)
+        return multi
 
 class Foresight:
     def onModifyBoost(self, *args, **kwargs):
@@ -1087,7 +1156,10 @@ class Fusionflare:
 
 class Futuresight:
     def onTry(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if not target or not getattr(target, 'side', None):
+            return False
+        return True
 
 class Gastroacid:
     def onCopy(self, *args, **kwargs):
@@ -1637,7 +1709,11 @@ class Hurricane:
 
 class Hyperspacefury:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        species = getattr(getattr(user, 'species', None), 'name', '').lower()
+        if 'hoopa-unbound' in species:
+            return True
+        return False
 
 class Iceball:
     def basePowerCallback(self, user, target, move):
@@ -1791,7 +1867,19 @@ class Lashout:
 
 class Lastresort:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if not user or not getattr(user, 'moves', None):
+            return False
+        if len(user.moves) < 2:
+            return False
+        has_lr = False
+        for mv in user.moves:
+            if getattr(mv, 'name', '').lower() == 'lastresort':
+                has_lr = True
+                continue
+            if not getattr(mv, 'used', False):
+                return False
+        return has_lr
 
 class Lastrespects:
     def basePowerCallback(self, user, target, move):
@@ -1922,7 +2010,13 @@ class Magnetrise:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        target = args[0] if args else None
+        battle = args[3] if len(args) > 3 else kwargs.get('battle')
+        if target and (target.volatiles.get('smackdown') or target.volatiles.get('ingrain')):
+            return False
+        if battle and getattr(getattr(battle, 'field', None), 'pseudo_weather', {}).get('Gravity'):
+            return False
+        return True
 
 class Magnitude:
     def onModifyMove(self, *args, **kwargs):
@@ -1934,7 +2028,16 @@ class Matblock:
     def onSideStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        battle = args[3] if len(args) > 3 else kwargs.get('battle')
+        if user and getattr(user, 'active_move_actions', 1) > 1:
+            return False
+        if battle and getattr(battle, 'queue', None) and hasattr(battle.queue, 'willAct'):
+            try:
+                return bool(battle.queue.willAct())
+            except Exception:
+                return True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -2097,7 +2200,11 @@ class Metalburst:
     def onModifyTarget(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        last = getattr(user, 'tempvals', {}).get('last_damaged_by') if user else None
+        if not last or not last.get('this_turn'):
+            return False
+        return True
 
 class Meteorbeam:
     def onTryMove(self, *args, **kwargs):
@@ -2168,7 +2275,11 @@ class Mirrorcoat:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        vol = getattr(user, 'volatiles', {}).get('mirrorcoat') if user else None
+        if not vol or vol.get('slot') is None:
+            return False
+        return True
 
 class Mirrormove:
     def onTryHit(self, *args, **kwargs):
@@ -2270,7 +2381,12 @@ class Noretreat:
     def onTrapPokemon(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and getattr(user, 'volatiles', {}).get('noretreat'):
+            return False
+        if user and getattr(user, 'volatiles', {}).get('trapped'):
+            return True
+        return True
 
 class Obstruct:
     def onHit(self, user, target, battle):
@@ -2401,7 +2517,11 @@ class Pollenpuff:
 
 class Poltergeist:
     def onTry(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else kwargs.get('target')
+        item = None
+        if target:
+            item = getattr(target, 'item', None) or getattr(target, 'held_item', None)
+        return bool(item)
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -2575,7 +2695,15 @@ class Quickguard:
     def onSideStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        if battle and getattr(battle, 'queue', None) and hasattr(battle.queue, 'willAct'):
+            try:
+                return bool(battle.queue.willAct())
+            except Exception:
+                return True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -2603,7 +2731,14 @@ class Ragepowder:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        if not battle:
+            return True
+        participants = getattr(battle, 'participants', [])
+        multi = any(len(getattr(p, 'active', [])) > 1 for p in participants)
+        return multi
 
 class Ragingbull:
     def onModifyType(self, *args, **kwargs):
@@ -2688,7 +2823,12 @@ class Rest:
             user.setStatus("slp")
         return True
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if not user:
+            return False
+        if getattr(user, 'status', None) == 'slp':
+            return False
+        return True
 
 class Retaliate:
     def onBasePower(self, *args, **kwargs):
@@ -2798,7 +2938,7 @@ class Round:
             return (getattr(move, "power", 0) or 0) * 2
         return getattr(move, "power", 0)
     def onTry(self, *args, **kwargs):
-        pass
+        return True
 
 class Ruination:
     def damageCallback(self, *args, **kwargs):
@@ -2980,7 +3120,16 @@ class Skydrop:
     def onRedirectTarget(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else kwargs.get('target')
+        battle = args[3] if len(args) > 3 else kwargs.get('battle')
+        if target and getattr(target, 'weightkg', 0) >= 200:
+            return False
+        if battle and getattr(getattr(battle, 'field', None), 'pseudo_weather', {}).get('Gravity'):
+            return False
+        if user and getattr(user, 'volatiles', {}).get('skydrop'):
+            return False
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -2997,7 +3146,8 @@ class Sleeptalk:
             move.onHit(user, target, battle)
         return True
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        return getattr(user, 'status', None) == 'slp'
 
 class Smackdown:
     def onRestart(self, *args, **kwargs):
@@ -3025,7 +3175,8 @@ class Snatch:
 
 class Snore:
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        return getattr(user, 'status', None) == 'slp'
 
 class Soak:
     def onHit(self, user, target, battle):
@@ -3125,11 +3276,15 @@ class Spitup:
     def onAfterMove(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        layers = 0
+        if user:
+            layers = getattr(user, 'stockpile_layers', getattr(user, 'stockpile', 0))
+        return layers > 0
 
 class Splash:
     def onTry(self, *args, **kwargs):
-        pass
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -3179,7 +3334,12 @@ class Steelroller:
             field.set_terrain(None)
         return True
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        field = getattr(battle, 'field', None)
+        terrain = getattr(field, 'terrain', None) if field else None
+        return bool(terrain)
 
 class Stickyweb:
     def onEntryHazard(self, *args, **kwargs):
@@ -3195,7 +3355,11 @@ class Stockpile:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if not user:
+            return False
+        layers = getattr(user, 'stockpile_layers', getattr(user, 'stockpile', 0))
+        return layers < 3
 
 class Stompingtantrum:
     def basePowerCallback(self, user, target, move):
@@ -3247,7 +3411,11 @@ class Stuffcheeks:
         apply_boost(user, {"def": 2})
         return True
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        item = None
+        if user:
+            item = getattr(user, 'item', None) or getattr(user, 'held_item', None)
+        return bool(item and 'berry' in str(item).lower())
 
 class Substitute:
     def onEnd(self, *args, **kwargs):
@@ -3270,7 +3438,12 @@ class Substitute:
 
 class Suckerpunch:
     def onTry(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else kwargs.get('target')
+        move = getattr(target, 'last_move', None)
+        if not move:
+            return False
+        category = getattr(move, 'category', '').lower()
+        return category != 'status'
 
 class Supercellslam:
     def onMoveFail(self, *args, **kwargs):
@@ -3297,7 +3470,11 @@ class Swallow:
         setattr(user, "stockpile_layers", 0)
         return True
     def onTry(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        layers = 0
+        if user:
+            layers = getattr(user, 'stockpile_layers', getattr(user, 'stockpile', 0))
+        return layers > 0
 
 class Switcheroo:
     def onHit(self, *args, **kwargs):
@@ -3411,13 +3588,16 @@ class Telekinesis:
     def onStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else kwargs.get('target')
+        if target and getattr(target, 'volatiles', {}).get('telekinesis'):
+            return False
+        return True
     def onUpdate(self, *args, **kwargs):
         pass
 
 class Teleport:
     def onTry(self, *args, **kwargs):
-        pass
+        return True
 
 class Temperflare:
     def basePowerCallback(self, user, target, move):
@@ -3493,7 +3673,7 @@ class Thunder:
 
 class Thunderclap:
     def onTry(self, *args, **kwargs):
-        pass
+        return True
 
 class Tidyup:
     def onHit(self, user, target, battle):
@@ -3610,7 +3790,10 @@ class Trumpcard:
 
 class Upperhand:
     def onTry(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else kwargs.get('target')
+        move = getattr(target, 'last_move', None)
+        priority = getattr(move, 'priority', 0) if move else 0
+        return priority > 0
 
 class Uproar:
     def onAnySetStatus(self, *args, **kwargs):
@@ -3710,7 +3893,15 @@ class Wideguard:
     def onSideStart(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
-        pass
+        battle = kwargs.get('battle') if kwargs else None
+        if len(args) > 3:
+            battle = args[3] or battle
+        if battle and getattr(battle, 'queue', None) and hasattr(battle.queue, 'willAct'):
+            try:
+                return bool(battle.queue.willAct())
+            except Exception:
+                return True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
