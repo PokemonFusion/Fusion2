@@ -708,12 +708,31 @@ class Firstimpression:
         pass
 
 class Fishiousrend:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the target has not moved yet this turn."""
+        moved = getattr(target, "tempvals", {}).get("moved")
+        base = getattr(move, "power", 0) or 0
+        if not moved:
+            return base * 2
+        return base
 
 class Flail:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power as the user has less HP remaining."""
+        cur_hp = getattr(user, "hp", 0)
+        max_hp = getattr(user, "max_hp", cur_hp or 1)
+        thresh = int((48 * cur_hp) / max_hp) if max_hp else 48
+        if thresh <= 1:
+            return 200
+        if thresh <= 4:
+            return 150
+        if thresh <= 9:
+            return 100
+        if thresh <= 16:
+            return 80
+        if thresh <= 32:
+            return 40
+        return 20
 
 class Flameburst:
     def onAfterSubDamage(self, *args, **kwargs):
@@ -800,16 +819,27 @@ class Freezyfrost:
         pass
 
 class Frustration:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the user's unhappiness."""
+        happiness = getattr(user, "happiness", 0)
+        power = int((255 - min(255, max(0, happiness))) * 10 / 25)
+        return max(1, power)
 
 class Furycutter:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
-    def onRestart(self, *args, **kwargs):
-        pass
-    def onStart(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power with consecutive uses."""
+        chain = getattr(user, "fury_cutter_chain", 0)
+        if not getattr(move, "_fury_cutter_inc", False):
+            chain = min(chain + 1, 4)
+            setattr(user, "fury_cutter_chain", chain)
+            setattr(move, "_fury_cutter_inc", True)
+        return min(160, 40 * chain if chain else 40)
+
+    def onRestart(self, user, target, move):
+        setattr(user, "fury_cutter_chain", min(getattr(user, "fury_cutter_chain", 0) + 1, 4))
+
+    def onStart(self, user, target, move):
+        setattr(user, "fury_cutter_chain", 1)
 
 class Fusionbolt:
     def onBasePower(self, *args, **kwargs):

@@ -111,7 +111,6 @@ class BattleMove:
                 move.basePowerCallback = None
 
         result = damage_calc(user, target, move, battle=battle)
-
         dmg = sum(result.debug.get("damage", []))
         if hasattr(target, "hp"):
             target.hp = max(0, target.hp - dmg)
@@ -194,7 +193,6 @@ class BattleParticipant:
                             on_hit_func = candidate
                 except Exception:
                     on_hit_func = None
-
             on_try = move_entry.raw.get("onTry")
             if isinstance(on_try, str):
                 try:
@@ -219,7 +217,6 @@ class BattleParticipant:
                             base_power_cb = cand
                 except Exception:
                     base_power_cb = None
-                    
             move = BattleMove(
                 name=move_entry.name,
                 power=getattr(move_entry, "power", 0),
