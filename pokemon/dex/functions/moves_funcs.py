@@ -1075,6 +1075,7 @@ class Expandingforce:
         return power
 
     def onModifyMove(self, *args, **kwargs):
+        """Adjust targeting on Psychic Terrain when the user is grounded."""
         move = args[0] if args else kwargs.get('move')
         user = args[1] if len(args) > 1 else kwargs.get('user')
         battle = kwargs.get('battle')
@@ -1083,8 +1084,6 @@ class Expandingforce:
         field = getattr(battle, 'field', None)
         terrain = getattr(field, 'terrain', getattr(battle, 'terrain', None))
         if str(terrain).lower() == 'psychicterrain' and getattr(user, 'grounded', True):
-            if move and getattr(move, 'power', None):
-                move.power = int(move.power * 1.5)
             if move:
                 move.target = 'allAdjacentFoes'
 
