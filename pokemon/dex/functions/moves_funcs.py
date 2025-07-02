@@ -78,7 +78,10 @@ class Aquaring:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["aquaring"] = True
+        return True
 
 class Aromatherapy:
     def onHit(self, user, target, battle):
@@ -118,7 +121,11 @@ class Attract:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["attract"] = user
+        return True
     def onTryImmunity(self, *args, **kwargs):
         pass
     def onUpdate(self, *args, **kwargs):
@@ -281,7 +288,10 @@ class Bide:
     def onMoveAborted(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["bide"] = {"turns": 0, "damage": 0}
+        return True
 
 class Bleakwindstorm:
     def onModifyMove(self, *args, **kwargs):
@@ -344,7 +354,10 @@ class Burningbulwark:
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["protect"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -403,7 +416,10 @@ class Charge:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["charge"] = 2
+        return True
 
 class Clangoroussoul:
     def onHit(self, user, target, battle):
@@ -506,7 +522,10 @@ class Counter:
     def onRedirectTarget(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "tempvals"):
+            user.tempvals["counter_damage"] = 0
+        return True
     def onTry(self, *args, **kwargs):
         pass
 
@@ -565,7 +584,7 @@ class Curse:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -589,7 +608,10 @@ class Destinybond:
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["destinybond"] = True
+        return True
 
 class Detect:
     def onHit(self, user, target, battle):
@@ -628,7 +650,12 @@ class Disable:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        move = getattr(target, "last_move", None)
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["disable"] = move
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -668,7 +695,10 @@ class Dragoncheer:
     def onModifyCritRatio(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["dragoncheer"] = True
+        return True
 
 class Dragonenergy:
     def basePowerCallback(self, user, target, move):
@@ -760,7 +790,11 @@ class Electrify:
     def onModifyType(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["electrify"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -794,7 +828,11 @@ class Embargo:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["embargo"] = True
+        return True
 
 class Encore:
     def onDisableMove(self, *args, **kwargs):
@@ -806,7 +844,12 @@ class Encore:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        move = getattr(target, "last_move", None)
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["encore"] = move
+        return True
 
 class Endeavor:
     def damageCallback(self, *args, **kwargs):
@@ -825,7 +868,10 @@ class Endure:
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["endure"] = True
+        return True
 
 class Entrainment:
     def onHit(self, user, target, battle):
@@ -998,7 +1044,10 @@ class Focusenergy:
     def onModifyCritRatio(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["focusenergy"] = True
+        return True
 
 class Focuspunch:
     def beforeMoveCallback(self, *args, **kwargs):
@@ -1007,7 +1056,10 @@ class Focuspunch:
         """Deal heavy damage if the user kept its focus."""
         return True
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["focuspunch"] = True
+        return True
     def onTryAddVolatile(self, *args, **kwargs):
         pass
     def priorityChargeCallback(self, *args, **kwargs):
@@ -1017,7 +1069,10 @@ class Followme:
     def onFoeRedirectTarget(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["followme"] = True
+        return True
     def onTry(self, *args, **kwargs):
         pass
 
@@ -1027,7 +1082,11 @@ class Foresight:
     def onNegateImmunity(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["foresight"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1093,7 +1152,11 @@ class Gastroacid:
     def onCopy(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["gastroacid"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1129,7 +1192,10 @@ class Glaiverush:
     def onSourceModifyDamage(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["glaiverush"] = True
+        return True
 
 class Gmaxbefuddle:
     def onHit(self, user, target, battle):
@@ -1170,7 +1236,10 @@ class Gmaxchistrike:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["gmaxchistrike"] = True
+        return True
 
 class Gmaxcuddle:
     def onHit(self, user, target, battle):
@@ -1459,7 +1528,10 @@ class Grudge:
     def onFaint(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["grudge"] = True
+        return True
 
 class Guardianofalola:
     def damageCallback(self, *args, **kwargs):
@@ -1542,7 +1614,11 @@ class Healblock:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["healblock"] = True
+        return True
     def onTryHeal(self, *args, **kwargs):
         pass
 
@@ -1608,7 +1684,11 @@ class Helpinghand:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["helpinghand"] = target
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1657,7 +1737,10 @@ class Iceball:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "tempvals"):
+            user.tempvals["iceball_hits"] = 0
+        return True
 
 class Iceburn:
     def onTryMove(self, *args, **kwargs):
@@ -1675,7 +1758,10 @@ class Imprison:
     def onFoeDisableMove(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["imprison"] = True
+        return True
 
 class Incinerate:
     def onHit(self, user, target, battle):
@@ -1702,7 +1788,10 @@ class Ingrain:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["ingrain"] = True
+        return True
     def onTrapPokemon(self, *args, **kwargs):
         pass
 
@@ -1765,7 +1854,10 @@ class Kingsshield:
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["protect"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1783,7 +1875,10 @@ class Laserfocus:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["laserfocus"] = True
+        return True
 
 class Lashout:
     def onBasePower(self, *args, **kwargs):
@@ -1804,7 +1899,11 @@ class Leechseed:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["leechseed"] = user
+        return True
     def onTryImmunity(self, *args, **kwargs):
         pass
 
@@ -1881,7 +1980,10 @@ class Magiccoat:
     def onAllyTryHitSide(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["magiccoat"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1920,7 +2022,10 @@ class Magnetrise:
     def onImmunity(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["magnetrise"] = True
+        return True
     def onTry(self, *args, **kwargs):
         pass
 
@@ -2152,7 +2257,11 @@ class Miracleeye:
     def onNegateImmunity(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["miracleeye"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -2166,7 +2275,10 @@ class Mirrorcoat:
     def onRedirectTarget(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "tempvals"):
+            user.tempvals["mirrorcoat_damage"] = 0
+        return True
     def onTry(self, *args, **kwargs):
         pass
 
@@ -2262,11 +2374,17 @@ class Nightmare:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[0] if args else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["nightmare"] = True
+        return True
 
 class Noretreat:
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["noretreat"] = True
+        return True
     def onTrapPokemon(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
@@ -2291,7 +2409,11 @@ class Octolock:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["octolock"] = user
+        return True
     def onTrapPokemon(self, *args, **kwargs):
         pass
     def onTryImmunity(self, *args, **kwargs):
@@ -2407,7 +2529,10 @@ class Poltergeist:
 
 class Powder:
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["powder"] = True
+        return True
     def onTryMove(self, *args, **kwargs):
         pass
 
@@ -2419,7 +2544,10 @@ class Powershift:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["powershift"] = True
+        return True
 
 class Powersplit:
     def onHit(self, user, target, battle):
@@ -2451,7 +2579,16 @@ class Powertrick:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user:
+            atk = getattr(user, "atk", None)
+            defense = getattr(user, "def", None)
+            if atk is not None and defense is not None:
+                setattr(user, "atk", defense)
+                setattr(user, "def", atk)
+            if hasattr(user, "volatiles"):
+                user.volatiles["powertrick"] = True
+        return True
 
 class Powertrip:
     def basePowerCallback(self, user, target, move):
@@ -2601,7 +2738,10 @@ class Ragepowder:
     def onFoeRedirectTarget(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["ragepowder"] = True
+        return True
     def onTry(self, *args, **kwargs):
         pass
 
@@ -2772,11 +2912,17 @@ class Rollout:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "tempvals"):
+            user.tempvals["rollout_hits"] = 0
+        return True
 
 class Roost:
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["roost"] = True
+        return True
     def onType(self, *args, **kwargs):
         pass
 
@@ -2822,7 +2968,11 @@ class Saltcure:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["saltcure"] = user
+        return True
 
 class Sandsearstorm:
     def onModifyMove(self, *args, **kwargs):
@@ -2879,7 +3029,10 @@ class Shelltrap:
             return False
         return True
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["shelltrap"] = True
+        return True
     def onTryMove(self, *args, **kwargs):
         pass
     def priorityChargeCallback(self, *args, **kwargs):
@@ -2907,7 +3060,10 @@ class Silktrap:
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["protect"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -3003,7 +3159,10 @@ class Smackdown:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["smackdown"] = True
+        return True
 
 class Smellingsalts:
     def basePowerCallback(self, user, target, move):
@@ -3021,7 +3180,10 @@ class Snatch:
     def onAnyPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["snatch"] = True
+        return True
 
 class Snore:
     def onTry(self, *args, **kwargs):
@@ -3098,7 +3260,10 @@ class Spikyshield:
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["protect"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -3151,7 +3316,10 @@ class Spotlight:
     def onFoeRedirectTarget(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["spotlight"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -3193,7 +3361,11 @@ class Stockpile:
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0)) if user else 0
+        if user:
+            setattr(user, "stockpile_layers", layers + 1)
+        return True
     def onTry(self, *args, **kwargs):
         pass
 
@@ -3262,7 +3434,10 @@ class Substitute:
             user.volatiles["substitute"] = True
         return True
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["substitute"] = True
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
     def onTryPrimaryHit(self, *args, **kwargs):
@@ -3343,7 +3518,11 @@ class Syrupbomb:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["syrupbomb"] = user
+        return True
     def onUpdate(self, *args, **kwargs):
         pass
 
@@ -3371,7 +3550,10 @@ class Tarshot:
     def onEffectiveness(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["tarshot"] = True
+        return True
 
 class Taunt:
     def onBeforeMove(self, *args, **kwargs):
@@ -3381,7 +3563,10 @@ class Taunt:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["taunt"] = True
+        return True
 
 class Teatime:
     def onHitField(self, user, battle):
@@ -3409,7 +3594,10 @@ class Telekinesis:
     def onImmunity(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["telekinesis"] = True
+        return True
     def onTry(self, *args, **kwargs):
         pass
     def onUpdate(self, *args, **kwargs):
@@ -3485,7 +3673,10 @@ class Throatchop:
     def onModifyMove(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["throatchop"] = 2
+        return True
 
 class Thunder:
     def onModifyMove(self, *args, **kwargs):
@@ -3519,7 +3710,10 @@ class Torment:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["torment"] = True
+        return True
 
 class Toxicspikes:
     def onEntryHazard(self, *args, **kwargs):
@@ -3620,7 +3814,10 @@ class Uproar:
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["uproar"] = 3
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -3722,7 +3919,10 @@ class Wish:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        user = args[0] if args else None
+        if user and hasattr(user, "volatiles"):
+            user.volatiles["wish"] = 2
+        return True
 
 class Wonderroom:
     def durationCallback(self, *args, **kwargs):
@@ -3757,7 +3957,10 @@ class Yawn:
     def onEnd(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
-        pass
+        target = args[1] if len(args) > 1 else None
+        if target and hasattr(target, "volatiles"):
+            target.volatiles["yawn"] = 2
+        return True
     def onTryHit(self, *args, **kwargs):
         pass
 
