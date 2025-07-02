@@ -498,12 +498,18 @@ class Echoedvoice:
     def basePowerCallback(self, user, target, move, battle=None):
         """Scale base power based on the active echoed voice effect."""
         base_power = getattr(move, "basePower", getattr(move, "power", 0))
+        chain = getattr(user, "echoed_voice_chain", 0)
+        base_power *= max(1, chain + 1)
         field = getattr(battle, "field", None)
         if field and hasattr(field, "get_pseudo_weather"):
             effect = field.get_pseudo_weather("echoedvoice")
             if isinstance(effect, dict):
                 multiplier = effect.get("multiplier", 1)
                 base_power *= multiplier
+        else:
+            chain = getattr(user, "echoed_voice_chain", 0)
+            if chain:
+                base_power *= min(chain + 1, 5)
         return base_power
 
     def onFieldRestart(self, effect_state):

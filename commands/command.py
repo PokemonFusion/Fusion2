@@ -263,6 +263,42 @@ class CmdShowBox(Command):
         self.caller.msg(self.caller.show_box(index))
 
 
+class CmdSetHoldItem(Command):
+    """Give one of your active Pokémon a held item."""
+
+    key = "setholditem"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        if not self.args or "=" not in self.args:
+            self.caller.msg("Usage: setholditem <slot>=<item>")
+            return
+
+        slot_str, item_name = [p.strip() for p in self.args.split("=", 1)]
+
+        try:
+            slot = int(slot_str)
+        except ValueError:
+            self.caller.msg("Slot must be a number between 1 and 6.")
+            return
+
+        pokemon = self.caller.get_active_pokemon_by_slot(slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+
+        item = self.caller.search(item_name, location=self.caller)
+        if not item:
+            return
+
+        pokemon.held_item = item.key
+        pokemon.save()
+        item.delete()
+
+        self.caller.msg(f"{pokemon.name} is now holding {item.key}.")
+
+
 class CmdChargenInfo(Command):
     """Show chargen details and active Pokémon."""
 
@@ -321,3 +357,55 @@ class CmdSpoof(Command):
             self.caller.msg("You have no location to spoof from.")
             return
         location.msg_contents(message)
+
+
+class CmdInventory(Command):
+    """Show items in your inventory."""
+
+    key = "inventory"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        self.caller.msg(self.caller.list_inventory())
+
+
+class CmdAddItem(Command):
+    """Add an item to your inventory."""
+
+    key = "additem"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        parts = self.args.split()
+        if len(parts) != 2:
+            self.caller.msg("Usage: additem <item> <amount>")
+            return
+        item = parts[0]
+        try:
+            qty = int(parts[1])
+        except ValueError:
+            self.caller.msg("Usage: additem <item> <amount>")
+            return
+        self.caller.add_item(item, qty)
+        self.caller.msg(f"Added {qty} x {item}.")
+
+
+class CmdUseItem(Command):
+    """Use an item outside of battle."""
+
+    key = "useitem"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        item_name = self.args.strip()
+        if not item_name:
+            self.caller.msg("Usage: useitem <item>")
+            return
+        if not self.caller.has_item(item_name):
+            self.caller.msg(f"You do not have any {item_name}.")
+            return
+        self.caller.remove_item(item_name)
+        self.caller.msg(f"You use {item_name}. Nothing happens.")
