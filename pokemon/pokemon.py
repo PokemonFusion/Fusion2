@@ -2,9 +2,10 @@ from evennia import DefaultCharacter
 from .models import Pokemon, UserStorage, StorageBox, Trainer, GymBadge
 from .generation import generate_pokemon
 from .dex import POKEDEX
+from utils.inventory import InventoryMixin
 
 
-class User(DefaultCharacter):
+class User(InventoryMixin, DefaultCharacter):
     def add_pokemon_to_user(self, name, level, type_, data=None):
         pokemon = Pokemon.objects.create(
             name=name,
@@ -40,6 +41,8 @@ class User(DefaultCharacter):
         Trainer.objects.get_or_create(
             user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
         )
+        if self.db.inventory is None:
+            self.db.inventory = {}
 
     # ------------------------------------------------------------------
     # Starter selection
@@ -109,6 +112,13 @@ class User(DefaultCharacter):
             return Pokemon.objects.get(id=pokemon_id)
         except Pokemon.DoesNotExist:
             return None
+
+    def get_active_pokemon_by_slot(self, slot: int):
+        """Return the active Pokémon at the given slot (1-6)."""
+        mons = list(self.storage.active_pokemon.all().order_by("id"))
+        if 1 <= slot <= len(mons):
+            return mons[slot - 1]
+        return None
 
     @property
     def trainer(self) -> Trainer:

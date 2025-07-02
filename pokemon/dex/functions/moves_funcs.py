@@ -494,21 +494,52 @@ class Dreameater:
         pass
 
 class Echoedvoice:
-    def basePowerCallback(self, user, target, move):
-        """Increase power when used consecutively by the same user."""
+    """Helper callbacks for the move Echoed Voice."""
+    def basePowerCallback(self, user, target, move, battle=None):
+        """Scale base power based on the active echoed voice effect."""
+        base_power = getattr(move, "basePower", getattr(move, "power", 0))
         chain = getattr(user, "echoed_voice_chain", 0)
-        if not getattr(move, "_echoed_voice_inc", False):
-            chain = min(chain + 1, 5)
-            setattr(user, "echoed_voice_chain", chain)
-            setattr(move, "_echoed_voice_inc", True)
-        power = 40 * max(1, chain)
-        return power
-    def onFieldRestart(self, *args, **kwargs):
-        pass
-    def onFieldStart(self, *args, **kwargs):
-        pass
-    def onTry(self, *args, **kwargs):
-        pass
+        base_power *= max(1, chain + 1)
+        field = getattr(battle, "field", None)
+        if field and hasattr(field, "get_pseudo_weather"):
+            effect = field.get_pseudo_weather("echoedvoice")
+            if isinstance(effect, dict):
+                multiplier = effect.get("multiplier", 1)
+                base_power *= multiplier
+        else:
+            chain = getattr(user, "echoed_voice_chain", 0)
+            if chain:
+                base_power *= min(chain + 1, 5)
+        return base_power
+
+    def onFieldRestart(self, effect_state):
+        """Refresh the effect and increase the power multiplier."""
+        if not isinstance(effect_state, dict):
+            return
+        if effect_state.get("duration") != 2:
+            effect_state["duration"] = 2
+            if effect_state.get("multiplier", 1) < 5:
+                effect_state["multiplier"] = effect_state.get("multiplier", 1) + 1
+
+    def onFieldStart(self, effect_state):
+        """Initialize the echoed voice multiplier."""
+        if isinstance(effect_state, dict):
+            effect_state["multiplier"] = 1
+
+    def onTry(self, user=None, target=None, move=None, battle=None):
+        """Start the echoed voice field effect when the move is used."""
+        if not battle:
+            return
+        field = getattr(battle, "field", None)
+        if field is None:
+            return
+        effect = {
+            "duration": 2,
+            "onFieldStart": self.onFieldStart,
+            "onFieldRestart": self.onFieldRestart,
+        }
+        if hasattr(field, "add_pseudo_weather"):
+            field.add_pseudo_weather("echoedvoice", effect)
 
 class Eeriespell:
     def onHit(self, *args, **kwargs):
@@ -537,8 +568,22 @@ class Electrify:
         pass
 
 class Electroball:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the user's Speed compared to the target's."""
+        u_speed = getattr(getattr(user, "base_stats", None), "spe", 0) or 0
+        t_speed = getattr(getattr(target, "base_stats", None), "spe", 1) or 1
+        if t_speed == 0:
+            t_speed = 1
+        ratio = u_speed / t_speed
+        if ratio >= 4:
+            return 150
+        if ratio >= 3:
+            return 120
+        if ratio >= 2:
+            return 80
+        if ratio > 1:
+            return 60
+        return 40
 
 class Electrodrift:
     def onBasePower(self, *args, **kwargs):
@@ -589,8 +634,13 @@ class Entrainment:
         pass
 
 class Eruption:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the user's remaining HP."""
+        cur_hp = getattr(user, "hp", 0)
+        max_hp = getattr(user, "max_hp", cur_hp or 1)
+        ratio = cur_hp / max_hp if max_hp else 0
+        power = int(150 * ratio)
+        return max(1, power)
 
 class Expandingforce:
     def onBasePower(self, *args, **kwargs):
@@ -637,8 +687,11 @@ class Finalgambit:
         pass
 
 class Firepledge:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Return boosted power if combined with another Pledge move."""
+        if getattr(user, "pledge_combo", False):
+            return 150
+        return getattr(move, "power", 80) or 80
     def onModifyMove(self, *args, **kwargs):
         pass
     def onPrepareHit(self, *args, **kwargs):

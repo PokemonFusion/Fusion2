@@ -238,6 +238,38 @@ class Team:
 class Field:
     def __init__(self):
         self.payday: Dict[str, int] = {}
+        # Track ongoing field effects such as Trick Room or Echoed Voice
+        self.pseudo_weather: Dict[str, Dict] = {}
+
+    # ------------------------------
+    # Pseudo weather helpers
+    # ------------------------------
+    def add_pseudo_weather(self, name: str, effect: Dict, *, moves_funcs=None) -> None:
+        """Add a pseudo weather condition to the field."""
+        moves_funcs = moves_funcs or {}
+        current = self.pseudo_weather.get(name)
+        if current is None:
+            self.pseudo_weather[name] = effect.copy()
+            cb = effect.get("onFieldStart")
+        else:
+            cb = effect.get("onFieldRestart")
+        if isinstance(cb, str) and moves_funcs:
+            try:
+                cls_name, func_name = cb.split(".", 1)
+                cls = getattr(moves_funcs, cls_name, None)
+                if cls:
+                    cb = getattr(cls(), func_name, None)
+            except Exception:
+                cb = None
+        if callable(cb):
+            cb(self.pseudo_weather[name])
+
+    def get_pseudo_weather(self, name: str) -> Optional[Dict]:
+        return self.pseudo_weather.get(name)
+
+    def remove_pseudo_weather(self, name: str) -> None:
+        if name in self.pseudo_weather:
+            del self.pseudo_weather[name]
 
     def to_dict(self) -> Dict:
         return {"payday": self.payday}
@@ -253,6 +285,8 @@ class Battle:
     def __init__(self, battletype: int = 1):
         self.turn = 1
         self.battletype = battletype
+        # Field represents global effects active on the battlefield
+        self.field = Field()
 
     def incrementTurn(self) -> None:
         self.turn += 1
