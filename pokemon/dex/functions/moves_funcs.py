@@ -708,12 +708,31 @@ class Firstimpression:
         pass
 
 class Fishiousrend:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the target has not moved yet this turn."""
+        moved = getattr(target, "tempvals", {}).get("moved")
+        base = getattr(move, "power", 0) or 0
+        if not moved:
+            return base * 2
+        return base
 
 class Flail:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power as the user has less HP remaining."""
+        cur_hp = getattr(user, "hp", 0)
+        max_hp = getattr(user, "max_hp", cur_hp or 1)
+        thresh = int((48 * cur_hp) / max_hp) if max_hp else 48
+        if thresh <= 1:
+            return 200
+        if thresh <= 4:
+            return 150
+        if thresh <= 9:
+            return 100
+        if thresh <= 16:
+            return 80
+        if thresh <= 32:
+            return 40
+        return 20
 
 class Flameburst:
     def onAfterSubDamage(self, *args, **kwargs):
@@ -800,16 +819,27 @@ class Freezyfrost:
         pass
 
 class Frustration:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the user's unhappiness."""
+        happiness = getattr(user, "happiness", 0)
+        power = int((255 - min(255, max(0, happiness))) * 10 / 25)
+        return max(1, power)
 
 class Furycutter:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
-    def onRestart(self, *args, **kwargs):
-        pass
-    def onStart(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power with consecutive uses."""
+        chain = getattr(user, "fury_cutter_chain", 0)
+        if not getattr(move, "_fury_cutter_inc", False):
+            chain = min(chain + 1, 4)
+            setattr(user, "fury_cutter_chain", chain)
+            setattr(move, "_fury_cutter_inc", True)
+        return min(160, 40 * chain if chain else 40)
+
+    def onRestart(self, user, target, move):
+        setattr(user, "fury_cutter_chain", min(getattr(user, "fury_cutter_chain", 0) + 1, 4))
+
+    def onStart(self, user, target, move):
+        setattr(user, "fury_cutter_chain", 1)
 
 class Fusionbolt:
     def onBasePower(self, *args, **kwargs):
@@ -994,14 +1024,29 @@ class Gmaxwindrage:
         pass
 
 class Grassknot:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power with the target's weight."""
+        weight = getattr(target, "weightkg", 0)
+        if weight >= 200:
+            return 120
+        if weight >= 100:
+            return 100
+        if weight >= 50:
+            return 80
+        if weight >= 25:
+            return 60
+        if weight >= 10:
+            return 40
+        return 20
     def onTryHit(self, *args, **kwargs):
         pass
 
 class Grasspledge:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Return 150 power when used in a pledge combo."""
+        if getattr(move, "pledge_combo", False) or getattr(user, "pledge_combo", False):
+            return 150
+        return getattr(move, "power", 0) or 0
     def onModifyMove(self, *args, **kwargs):
         pass
     def onModifySpe(self, *args, **kwargs):
@@ -1074,16 +1119,26 @@ class Guardswap:
         pass
 
 class Gyroball:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power the slower the user is compared to the target."""
+        user_spe = getattr(getattr(user, "base_stats", None), "spe", 0)
+        target_spe = getattr(getattr(target, "base_stats", None), "spe", 0)
+        user_spe = max(1, user_spe)
+        power = int((25 * target_spe / user_spe) + 1)
+        return min(150, max(1, power))
 
 class Happyhour:
     def onTryHit(self, *args, **kwargs):
         pass
 
 class Hardpress:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on the target's remaining HP."""
+        cur_hp = getattr(target, "hp", 0)
+        max_hp = getattr(target, "max_hp", cur_hp or 1)
+        ratio = cur_hp / max_hp if max_hp else 0
+        power = int(100 * ratio)
+        return max(1, power)
 
 class Haze:
     def onHitField(self, *args, **kwargs):
@@ -1126,14 +1181,36 @@ class Heartswap:
         pass
 
 class Heatcrash:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on weight ratio."""
+        user_wt = getattr(user, "weightkg", 0)
+        target_wt = getattr(target, "weightkg", 1)
+        if user_wt >= target_wt * 5:
+            return 120
+        if user_wt >= target_wt * 4:
+            return 100
+        if user_wt >= target_wt * 3:
+            return 80
+        if user_wt >= target_wt * 2:
+            return 60
+        return 40
     def onTryHit(self, *args, **kwargs):
         pass
 
 class Heavyslam:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power based on weight ratio."""
+        user_wt = getattr(user, "weightkg", 0)
+        target_wt = getattr(target, "weightkg", 1)
+        if user_wt >= target_wt * 5:
+            return 120
+        if user_wt >= target_wt * 4:
+            return 100
+        if user_wt >= target_wt * 3:
+            return 80
+        if user_wt >= target_wt * 2:
+            return 60
+        return 40
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1148,8 +1225,11 @@ class Helpinghand:
         pass
 
 class Hex:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the target has a status condition."""
+        if getattr(target, "status", None):
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
 
 class Hiddenpower:
     def onModifyType(self, *args, **kwargs):
@@ -1172,8 +1252,16 @@ class Hyperspacefury:
         pass
 
 class Iceball:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power doubles with each consecutive hit and after Defense Curl."""
+        temp = getattr(user, "tempvals", {})
+        hits = temp.get("iceball_hits", 0)
+        bp = (getattr(move, "power", 30) or 30) * (2 ** hits)
+        if getattr(user, "defensecurl", False):
+            bp *= 2
+        temp["iceball_hits"] = hits + 1
+        setattr(user, "tempvals", temp)
+        return bp
     def onAfterMove(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
@@ -1206,8 +1294,11 @@ class Incinerate:
         pass
 
 class Infernalparade:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the target is statused."""
+        if getattr(target, "status", None):
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
 
 class Ingrain:
     def onDragOut(self, *args, **kwargs):
@@ -1286,8 +1377,11 @@ class Lastresort:
         pass
 
 class Lastrespects:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power for each fainted ally."""
+        party = getattr(user, "party", [user])
+        fainted = sum(1 for p in party if p is not user and getattr(p, "hp", 0) <= 0)
+        return 50 + 50 * fainted
 
 class Leechseed:
     def onResidual(self, *args, **kwargs):
@@ -1322,8 +1416,20 @@ class Lockon:
         pass
 
 class Lowkick:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power with the target's weight."""
+        wt = getattr(target, "weightkg", 0) * 10
+        if wt >= 2000:
+            return 120
+        if wt >= 1000:
+            return 100
+        if wt >= 500:
+            return 80
+        if wt >= 250:
+            return 60
+        if wt >= 100:
+            return 40
+        return 20
     def onTryHit(self, *args, **kwargs):
         pass
 
@@ -1670,8 +1776,11 @@ class Partingshot:
         pass
 
 class Payback:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the target already moved."""
+        moved = getattr(target, "tempvals", {}).get("moved")
+        base = getattr(move, "power", 0) or 0
+        return base * 2 if moved else base
 
 class Perishsong:
     def onEnd(self, *args, **kwargs):
@@ -1694,8 +1803,10 @@ class Photongeyser:
         pass
 
 class Pikapapow:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power scales with the user's happiness."""
+        happiness = getattr(user, "happiness", 0)
+        return max(1, int((happiness * 10) / 25))
 
 class Pluck:
     def onHit(self, *args, **kwargs):
@@ -1750,8 +1861,11 @@ class Powertrick:
         pass
 
 class Powertrip:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power for each positive stat boost."""
+        boosts = getattr(user, "boosts", {})
+        positive = sum(v for v in boosts.values() if v > 0)
+        return (getattr(move, "power", 0) or 0) + 20 * positive
 
 class Present:
     def onModifyMove(self, *args, **kwargs):
@@ -1802,16 +1916,23 @@ class Psywave:
         pass
 
 class Punishment:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power based on target's boosts, capped at 200."""
+        boosts = getattr(target, "boosts", {})
+        positive = sum(v for v in boosts.values() if v > 0)
+        power = 60 + 20 * positive
+        return min(200, power)
 
 class Purify:
     def onHit(self, *args, **kwargs):
         pass
 
 class Pursuit:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the target is switching out."""
+        if getattr(target, "tempvals", {}).get("switching"):
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
     def beforeTurnCallback(self, *args, **kwargs):
         pass
     def onBeforeSwitchOut(self, *args, **kwargs):
@@ -1844,8 +1965,10 @@ class Rage:
         pass
 
 class Ragefist:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power based on times the user was hit."""
+        times = getattr(user, "times_attacked", 0)
+        return min(350, 50 + 50 * times)
 
 class Ragepowder:
     def onFoeRedirectTarget(self, *args, **kwargs):
@@ -1914,28 +2037,53 @@ class Retaliate:
         pass
 
 class Return:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power scales with happiness."""
+        happiness = getattr(user, "happiness", 0)
+        return max(1, int((happiness * 10) / 25))
 
 class Revelationdance:
     def onModifyType(self, *args, **kwargs):
         pass
 
 class Revenge:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the user was hit this turn."""
+        if getattr(user, "tempvals", {}).get("took_damage"):
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
 
 class Reversal:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power as the user has less HP remaining."""
+        cur_hp = getattr(user, "hp", 0)
+        max_hp = getattr(user, "max_hp", cur_hp or 1)
+        ratio = int((48 * cur_hp) / max_hp) if max_hp else 48
+        if ratio <= 1:
+            return 200
+        if ratio <= 4:
+            return 150
+        if ratio <= 9:
+            return 100
+        if ratio <= 16:
+            return 80
+        if ratio <= 32:
+            return 40
+        return 20
 
 class Revivalblessing:
     def onTryHit(self, *args, **kwargs):
         pass
 
 class Risingvoltage:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power on Electric Terrain against grounded foes."""
+        terrain = getattr(user, "terrain", None)
+        grounded = getattr(target, "grounded", True)
+        base = getattr(move, "power", 0) or 0
+        if terrain == "electricterrain" and grounded:
+            return base * 2
+        return base
 
 class Roleplay:
     def onHit(self, *args, **kwargs):
@@ -1944,8 +2092,16 @@ class Roleplay:
         pass
 
 class Rollout:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power doubles with each consecutive hit and after Defense Curl."""
+        temp = getattr(user, "tempvals", {})
+        hits = temp.get("rollout_hits", 0)
+        bp = (getattr(move, "power", 30) or 30) * (2 ** hits)
+        if getattr(user, "defensecurl", False):
+            bp *= 2
+        temp["rollout_hits"] = hits + 1
+        setattr(user, "tempvals", temp)
+        return bp
     def onAfterMove(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
@@ -1966,8 +2122,11 @@ class Rototiller:
         pass
 
 class Round:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if used consecutively in the same turn."""
+        if getattr(move, "sourceEffect", None) == "round":
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
     def onTry(self, *args, **kwargs):
         pass
 
@@ -2114,8 +2273,11 @@ class Smackdown:
         pass
 
 class Smellingsalts:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power on paralyzed targets."""
+        if getattr(target, "status", None) == "par":
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
     def onHit(self, *args, **kwargs):
         pass
 
@@ -2188,8 +2350,10 @@ class Spite:
         pass
 
 class Spitup:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power depends on stockpile layers."""
+        layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0))
+        return layers * 100 if layers else 0
     def onAfterMove(self, *args, **kwargs):
         pass
     def onTry(self, *args, **kwargs):
@@ -2250,8 +2414,11 @@ class Stockpile:
         pass
 
 class Stompingtantrum:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the user's previous move failed."""
+        if getattr(user, "move_failed", False):
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
 
 class Stoneaxe:
     def onAfterHit(self, *args, **kwargs):
@@ -2260,8 +2427,11 @@ class Stoneaxe:
         pass
 
 class Storedpower:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Increase power for each positive stat boost."""
+        boosts = getattr(user, "boosts", {})
+        positive = sum(v for v in boosts.values() if v > 0)
+        return (getattr(move, "power", 0) or 0) + 20 * positive
 
 class Strengthsap:
     def onHit(self, *args, **kwargs):
@@ -2390,12 +2560,18 @@ class Teleport:
         pass
 
 class Temperflare:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power if the user's previous move failed."""
+        if getattr(user, "move_failed", False):
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
 
 class Terablast:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Return 100 power if Tera type is Stellar."""
+        if getattr(user, "terastallized", None) == "Stellar":
+            return 100
+        return getattr(move, "power", 0)
     def onModifyMove(self, *args, **kwargs):
         pass
     def onModifyType(self, *args, **kwargs):
@@ -2506,16 +2682,28 @@ class Trickroom:
         pass
 
 class Tripleaxel:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power increases with each hit."""
+        hit = getattr(move, "hit", 1)
+        return 20 * hit
 
 class Triplekick:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        hit = getattr(move, "hit", 1)
+        return 10 * hit
 
 class Trumpcard:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        pp = getattr(move, "pp", 5)
+        if pp == 0:
+            return 200
+        if pp == 1:
+            return 80
+        if pp == 2:
+            return 60
+        if pp == 3:
+            return 50
+        return 40
 
 class Upperhand:
     def onTry(self, *args, **kwargs):
@@ -2534,8 +2722,10 @@ class Uproar:
         pass
 
 class Veeveevolley:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power scales with happiness."""
+        happiness = getattr(user, "happiness", 0)
+        return max(1, int((happiness * 10) / 25))
 
 class Venomdrench:
     def onHit(self, *args, **kwargs):
@@ -2546,14 +2736,20 @@ class Venoshock:
         pass
 
 class Wakeupslap:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Double power on sleeping targets."""
+        if getattr(target, "status", None) == "slp":
+            return (getattr(move, "power", 0) or 0) * 2
+        return getattr(move, "power", 0)
     def onHit(self, *args, **kwargs):
         pass
 
 class Waterpledge:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Return 150 power when used in a pledge combo."""
+        if getattr(move, "sourceEffect", None) in {"grasspledge", "firepledge"}:
+            return 150
+        return getattr(move, "power", 0) or 0
     def onModifyMove(self, *args, **kwargs):
         pass
     def onPrepareHit(self, *args, **kwargs):
@@ -2564,8 +2760,14 @@ class Waterpledge:
         pass
 
 class Watershuriken:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Ash-Greninja's Battle Bond boosts power by 5."""
+        species = getattr(user, "species", None)
+        ability = getattr(user, "ability", None)
+        power = getattr(move, "power", 15) or 15
+        if species == "Greninja-Ash" and ability == "battlebond" and not getattr(user, "transformed", False):
+            return power + 5
+        return power
 
 class Watersport:
     def onBasePower(self, *args, **kwargs):
@@ -2576,8 +2778,11 @@ class Watersport:
         pass
 
 class Waterspout:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Power scales with the user's remaining HP."""
+        cur_hp = getattr(user, "hp", 0)
+        max_hp = getattr(user, "max_hp", cur_hp or 1)
+        return (getattr(move, "power", 150) or 150) * cur_hp / max_hp
 
 class Weatherball:
     def onModifyMove(self, *args, **kwargs):
@@ -2626,8 +2831,11 @@ class Worryseed:
         pass
 
 class Wringout:
-    def basePowerCallback(self, *args, **kwargs):
-        pass
+    def basePowerCallback(self, user, target, move):
+        """Scale power with the target's remaining HP."""
+        cur_hp = getattr(target, "hp", 0)
+        max_hp = getattr(target, "max_hp", cur_hp or 1)
+        return max(1, int(120 * cur_hp / max_hp))
 
 class Yawn:
     def onEnd(self, *args, **kwargs):

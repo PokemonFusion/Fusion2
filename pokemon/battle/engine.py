@@ -111,7 +111,6 @@ class BattleMove:
                 move.basePowerCallback = None
 
         result = damage_calc(user, target, move, battle=battle)
-
         dmg = sum(result.debug.get("damage", []))
         if hasattr(target, "hp"):
             target.hp = max(0, target.hp - dmg)
@@ -230,7 +229,6 @@ class BattleParticipant:
                 basePowerCallback=base_power_cb,
                 type=getattr(move_entry, "type", None),
                 raw=move_entry.raw,
-
             )
         else:
             move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
