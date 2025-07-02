@@ -320,11 +320,25 @@ class Bide:
 
 class Bleakwindstorm:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        if str(weather).lower() in ('rain', 'raindance') and hasattr(move, 'accuracy'):
+            move.accuracy = True
 
 class Blizzard:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        if str(weather).lower() in ('hail', 'snow') and hasattr(move, 'accuracy'):
+            move.accuracy = True
 
 class Block:
     def onHit(self, user, target, battle):
@@ -643,7 +657,15 @@ class Curse:
             apply_boost(user, {"atk": 1, "def": 1, "spe": -1})
         return True
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        types = [t.lower() for t in getattr(user, 'types', [])]
+        if 'ghost' in types:
+            if move:
+                move.target = 'normal'
+        else:
+            if move:
+                move.target = 'self'
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
@@ -984,7 +1006,18 @@ class Expandingforce:
     def onBasePower(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        terrain = getattr(field, 'terrain', getattr(battle, 'terrain', None))
+        if str(terrain).lower() == 'psychicterrain' and getattr(user, 'grounded', True):
+            if move and getattr(move, 'power', None):
+                move.power = int(move.power * 1.5)
+            if move:
+                move.target = 'allAdjacentFoes'
 
 class Facade:
     def onBasePower(self, *args, **kwargs):
@@ -1048,7 +1081,10 @@ class Firepledge:
             return 150
         return getattr(move, "power", 80) or 80
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if getattr(user, 'pledge_combo', False) and move:
+            move.pledge_combo = True
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onResidual(self, *args, **kwargs):
@@ -1593,7 +1629,10 @@ class Grasspledge:
             return 150
         return getattr(move, "power", 0) or 0
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if getattr(user, 'pledge_combo', False) and move:
+            move.pledge_combo = True
     def onModifySpe(self, *args, **kwargs):
         pass
     def onPrepareHit(self, *args, **kwargs):
@@ -1637,11 +1676,24 @@ class Gravity:
     def onModifyAccuracy(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        if move and getattr(move, 'accuracy', True) is not True:
+            try:
+                move.accuracy = min(100, int(move.accuracy * 5 / 3))
+            except Exception:
+                pass
 
 class Growth:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        sunny = str(weather).lower() in ('sunnyday', 'sunny', 'desolateland')
+        if move:
+            move.boosts = {'atk': 2, 'spa': 2} if sunny else {'atk': 1, 'spa': 1}
 
 class Grudge:
     def onBeforeMove(self, *args, **kwargs):
@@ -1732,7 +1784,9 @@ class Healblock:
     def onEnd(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        if move:
+            move.effect = 'healblock'
     def onRestart(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
@@ -1842,7 +1896,17 @@ class Holdback:
 
 class Hurricane:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        w = str(weather).lower()
+        if w in ('rain', 'raindance', 'primordialsea') and hasattr(move, 'accuracy'):
+            move.accuracy = True
+        elif w in ('sunnyday', 'sunny', 'desolateland') and isinstance(getattr(move, 'accuracy', None), (int, float)):
+            move.accuracy = move.accuracy // 2
 
 class Hyperspacefury:
     def onTry(self, *args, **kwargs):
@@ -1866,7 +1930,14 @@ class Iceball:
     def onAfterMove(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if user:
+            temp = getattr(user, 'tempvals', {})
+            hits = temp.get('iceball_hits', 0)
+            if move:
+                move.hit = hits + 1
+                move.is_multi_turn = True
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
@@ -2065,7 +2136,13 @@ class Lightscreen:
 
 class Lightthatburnsthesky:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if user and move:
+            if getattr(user, 'atk', 0) > getattr(user, 'spa', 0):
+                move.category = 'Physical'
+            else:
+                move.category = 'Special'
 
 class Lockon:
     def onHit(self, user, target, battle):
@@ -2193,7 +2270,12 @@ class Magnetrise:
 
 class Magnitude:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        import random as _r
+        level, power = _r.choice([(4,10),(5,30),(6,50),(7,70),(8,90),(9,110),(10,150)])
+        if move:
+            move.magnitude = level
+            move.power = power
     def onUseMoveMessage(self, *args, **kwargs):
         pass
 
@@ -2677,7 +2759,13 @@ class Phantomforce:
 
 class Photongeyser:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if user and move:
+            if getattr(user, 'atk', 0) > getattr(user, 'spa', 0):
+                move.category = 'Physical'
+            else:
+                move.category = 'Special'
 
 class Pikapapow:
     def basePowerCallback(self, user, target, move):
@@ -2806,7 +2894,19 @@ class Powertrip:
 
 class Present:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        from random import randint
+        roll = randint(1, 100)
+        if move:
+            if roll <= 20:
+                move.heal = 0.25
+                move.power = 0
+            elif roll <= 60:
+                move.power = 40
+            elif roll <= 80:
+                move.power = 80
+            else:
+                move.power = 120
 
 class Protect:
     def onHit(self, user, target, battle):
@@ -2910,7 +3010,9 @@ class Pursuit:
     def onBeforeSwitchOut(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        if move:
+            move.pursuit = True
     def onTryHit(self, target, source, move):
         """Always succeeds, even on switching targets."""
         return True
@@ -3164,7 +3266,12 @@ class Rollout:
     def onAfterMove(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if user and move:
+            hits = getattr(user, 'tempvals', {}).get('rollout_hits', 0)
+            move.hit = hits + 1
+            move.is_multi_turn = True
     def onResidual(self, *args, **kwargs):
         pass
     def onStart(self, *args, **kwargs):
@@ -3232,7 +3339,14 @@ class Saltcure:
 
 class Sandsearstorm:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        if str(weather).lower() in ('rain', 'raindance') and hasattr(move, 'accuracy'):
+            move.accuracy = True
 
 class Sappyseed:
     def onHit(self, user, target, battle):
@@ -3243,7 +3357,24 @@ class Sappyseed:
 
 class Secretpower:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        terrain = getattr(field, 'terrain', None)
+        if not move:
+            return
+        if terrain == 'electricterrain':
+            move.secondary = {'status': 'par'}
+        elif terrain == 'grassyterrain':
+            move.secondary = {'status': 'slp'}
+        elif terrain == 'mistyterrain':
+            move.secondary = {'boosts': {'spa': -1}}
+        elif terrain == 'psychicterrain':
+            move.secondary = {'boosts': {'spd': -1}}
+        else:
+            move.secondary = {'status': 'par'}
 
 class Shadowforce:
     def onTryMove(self, *args, **kwargs):
@@ -3278,7 +3409,17 @@ class Shellsidearm:
                 target.setStatus("psn")
         return True
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        target = args[2] if len(args) > 2 else kwargs.get('target')
+        if user and target and move:
+            atk = getattr(user, 'atk', 0)
+            spa = getattr(user, 'spa', 0)
+            defe = getattr(target, 'def', getattr(target, 'def_', 0))
+            spd = getattr(target, 'spd', 0)
+            phys = atk / max(1, defe)
+            spec = spa / max(1, spd)
+            move.category = 'Physical' if phys > spec else 'Special'
     def onPrepareHit(self, *args, **kwargs):
         pass
 
@@ -3407,7 +3548,11 @@ class Skydrop:
             target.volatiles.pop("skydrop", None)
         return True
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        target = args[2] if len(args) > 2 else kwargs.get('target')
+        if target and hasattr(target, 'volatiles') and move:
+            target.volatiles['skydrop'] = True
+            move.is_sky_drop = True
     def onMoveFail(self, *args, **kwargs):
         pass
     def onRedirectTarget(self, *args, **kwargs):
@@ -3714,7 +3859,9 @@ class Strengthsap:
 
 class Struggle:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        if move:
+            move.recoil = 0.25
 
 class Stuffcheeks:
     def onDisableMove(self, *args, **kwargs):
@@ -3956,7 +4103,15 @@ class Terablast:
             return 100
         return getattr(move, "power", 0)
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        tera = getattr(user, 'terastallized', None)
+        if tera and move:
+            if getattr(user, 'atk', 0) > getattr(user, 'spa', 0):
+                move.category = 'Physical'
+            else:
+                move.category = 'Special'
+            move.type = tera
     def onModifyType(self, *args, **kwargs):
         pass
     def onPrepareHit(self, *args, **kwargs):
@@ -3964,13 +4119,28 @@ class Terablast:
 
 class Terastarstorm:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        tera = getattr(user, 'terastallized', None)
+        if move and tera:
+            move.type = tera
+            if tera == 'Stellar':
+                move.power = 120
     def onModifyType(self, *args, **kwargs):
         pass
 
 class Terrainpulse:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        terrain = getattr(field, 'terrain', None)
+        if move and terrain and getattr(user, 'grounded', True):
+            move.power = 100
+            move.type = terrain.replace('terrain', '').capitalize()
     def onModifyType(self, *args, **kwargs):
         pass
 
@@ -4006,7 +4176,10 @@ class Throatchop:
             target.volatiles["throatchop"] = 2
         return True
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        if move:
+            move.flags = getattr(move, 'flags', {})
+            move.flags['sound'] = False
     def onStart(self, *args, **kwargs):
         target = args[1] if len(args) > 1 else None
         if target and hasattr(target, "volatiles"):
@@ -4015,7 +4188,17 @@ class Throatchop:
 
 class Thunder:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        w = str(weather).lower()
+        if w in ('rain', 'raindance', 'primordialsea') and hasattr(move, 'accuracy'):
+            move.accuracy = True
+        elif w in ('sunnyday', 'sunny', 'desolateland') and isinstance(getattr(move, 'accuracy', None), (int, float)):
+            move.accuracy = move.accuracy // 2
 
 class Thunderclap:
     def onTry(self, *args, **kwargs):
@@ -4196,7 +4379,10 @@ class Waterpledge:
             return 150
         return getattr(move, "power", 0) or 0
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        user = args[1] if len(args) > 1 else kwargs.get('user')
+        if getattr(user, 'pledge_combo', False) and move:
+            move.pledge_combo = True
     def onPrepareHit(self, *args, **kwargs):
         pass
     def onSideEnd(self, *args, **kwargs):
@@ -4231,7 +4417,27 @@ class Waterspout:
 
 class Weatherball:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        w = str(weather).lower()
+        if not move:
+            return
+        if w in ('sunnyday', 'sunny', 'desolateland'):
+            move.power = 100
+            move.type = 'Fire'
+        elif w in ('rain', 'raindance', 'primordialsea'):
+            move.power = 100
+            move.type = 'Water'
+        elif w in ('hail', 'snow'):
+            move.power = 100
+            move.type = 'Ice'
+        elif w in ('sandstorm', 'sand'):
+            move.power = 100
+            move.type = 'Rock'
     def onModifyType(self, *args, **kwargs):
         pass
 
@@ -4263,7 +4469,14 @@ class Wideguard:
 
 class Wildboltstorm:
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        battle = kwargs.get('battle')
+        if len(args) > 2:
+            battle = args[2] or battle
+        field = getattr(battle, 'field', None)
+        weather = getattr(field, 'weather', getattr(battle, 'weather', None))
+        if str(weather).lower() in ('rain', 'raindance') and hasattr(move, 'accuracy'):
+            move.accuracy = True
 
 class Wish:
     def onEnd(self, *args, **kwargs):
@@ -4284,7 +4497,9 @@ class Wonderroom:
     def onFieldStart(self, *args, **kwargs):
         pass
     def onModifyMove(self, *args, **kwargs):
-        pass
+        move = args[0] if args else kwargs.get('move')
+        if move:
+            move.creates_wonderroom = True
 
 class Worryseed:
     def onHit(self, user, target, battle):
