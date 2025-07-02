@@ -97,6 +97,14 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move) -> DamageResult:
         numhits = multihit
 
     for _ in range(numhits):
+        if hasattr(move, "basePowerCallback") and callable(move.basePowerCallback):
+            try:
+                new_power = move.basePowerCallback(attacker, target, move)
+                if isinstance(new_power, (int, float)):
+                    move.power = int(new_power)
+            except Exception:
+                pass
+
         if not accuracy_check(move):
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
