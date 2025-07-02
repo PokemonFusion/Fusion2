@@ -174,7 +174,11 @@ class Autotomize:
             user.tempvals["autotomize"] = True
         return True
 
-    def onTryHit(self, *args, **kwargs):
+    def onTryHit(self, user, *args, **kwargs):
+        """Fail if the user's Speed is already maximized."""
+        boosts = getattr(user, "boosts", {})
+        if boosts.get("spe", 0) >= 6:
+            return False
         return True
 
 class Avalanche:
@@ -203,8 +207,12 @@ class Banefulbunker:
     def onStart(self, *args, **kwargs):
         return True
 
-    def onTryHit(self, *args, **kwargs):
-        return True
+    def onTryHit(self, target, source, move):
+        """Block the incoming move and poison contact attackers."""
+        flags = getattr(move, "flags", {}) if move else {}
+        if flags.get("contact") and hasattr(source, "setStatus"):
+            source.setStatus("psn")
+        return False
 
 class Barbbarrage:
     def onBasePower(self, *args, **kwargs):
@@ -343,8 +351,13 @@ class Bounce:
         pass
 
 class Brickbreak:
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, target, move):
+        """Shatter opposing Reflect, Light Screen, or Aurora Veil."""
+        side = getattr(target, "side", None)
+        if side and hasattr(side, "screens"):
+            for screen in ("reflect", "lightscreen", "auroraveil"):
+                side.screens.pop(screen, None)
+        return True
 
 class Brine:
     def onBasePower(self, *args, **kwargs):
@@ -375,9 +388,12 @@ class Burningbulwark:
         if user and hasattr(user, "volatiles"):
             user.volatiles["protect"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
-
+    def onTryHit(self, target, source, move):
+        """Block the incoming move and burn contact attackers."""
+        flags = getattr(move, "flags", {}) if move else {}
+        if flags.get("contact") and hasattr(source, "setStatus"):
+            source.setStatus("brn")
+        return False
 class Burningjealousy:
     def onHit(self, user, target, battle):
         """Burn the target if it has any stat boosts."""
@@ -418,8 +434,9 @@ class Ceaselessedge:
         pass
 
 class Celebrate:
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, *args, **kwargs):
+        """Always succeeds and shows a celebratory message."""
+        return True
 
 class Charge:
     def onAfterMove(self, *args, **kwargs):
@@ -458,7 +475,10 @@ class Clangoroussoul:
             return False
         return True
 
-    def onTryHit(self, *args, **kwargs):
+    def onTryHit(self, user, *args, **kwargs):
+        """Apply the stat boosts before HP reduction."""
+        boosts = {stat: 1 for stat in ["atk", "def", "spa", "spd", "spe"]}
+        apply_boost(user, boosts)
         return True
 
 class Clearsmog:
@@ -593,9 +613,12 @@ class Craftyshield:
             except Exception:
                 return True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
-
+    def onTryHit(self, target, source, move):
+        """Block status moves aimed at the user's side."""
+        if getattr(move, "category", "") == "Status" and getattr(move, "target", "") not in {"self", "all"}:
+            return False
+        return True
+      
 class Crushgrip:
     def basePowerCallback(self, user, target, move):
         """Scale power based on the target's remaining HP."""
@@ -625,8 +648,12 @@ class Curse:
         pass
     def onStart(self, *args, **kwargs):
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, target, move):
+        """Fail if a Ghost already cursed the target."""
+        if "ghost" in [t.lower() for t in getattr(user, "types", [])]:
+            if getattr(target, "volatiles", {}).get("cursed"):
+                return False
+        return True
 
 class Darkvoid:
     def onTry(self, *args, **kwargs):
@@ -701,8 +728,12 @@ class Disable:
         if target and hasattr(target, "volatiles"):
             target.volatiles["disable"] = move
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target has no move to disable."""
+        last = getattr(target, "last_move", None)
+        if not last or getattr(last, "isZ", False) or getattr(last, "isMax", False) or getattr(last, "id", "") == "struggle":
+            return False
+        return True
 
 class Dive:
     def onImmunity(self, *args, **kwargs):
@@ -845,8 +876,9 @@ class Electrify:
         if target and hasattr(target, "volatiles"):
             target.volatiles["electrify"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Electrify the target's next move if it is about to act."""
+        return True
 
 class Electroball:
     def basePowerCallback(self, user, target, move):
@@ -931,8 +963,13 @@ class Entrainment:
             return False
         setattr(target, "ability", ability)
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target already has the user's ability or is the user."""
+        if target is source:
+            return False
+        if getattr(target, "ability", None) == getattr(source, "ability", None):
+            return False
+        return True
 
 class Eruption:
     def basePowerCallback(self, user, target, move):
@@ -995,8 +1032,10 @@ class Filletaway:
         if getattr(user, 'hp', 0) <= max_hp // 2 or max_hp == 1:
             return False
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, *args, **kwargs):
+        """Apply the boosts before HP is halved."""
+        apply_boost(user, {"atk": 2, "spa": 2, "spe": 2})
+        return True
 
 class Finalgambit:
     def damageCallback(self, *args, **kwargs):
@@ -1156,8 +1195,11 @@ class Foresight:
         if target and hasattr(target, "volatiles"):
             target.volatiles["foresight"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target already has Miracle Eye active."""
+        if getattr(target, "volatiles", {}).get("miracleeye"):
+            return False
+        return True
 
 class Forestscurse:
     def onHit(self, user, target, battle):
@@ -1229,8 +1271,12 @@ class Gastroacid:
         if target and hasattr(target, "volatiles"):
             target.volatiles["gastroacid"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target's ability cannot be suppressed."""
+        item = getattr(target, "item", "").lower()
+        if item == "abilityshield":
+            return None
+        return True
 
 class Gearup:
     def onHitSide(self, user, battle):
@@ -1534,8 +1580,11 @@ class Grassknot:
         if weight >= 10:
             return 40
         return 20
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail against Dynamax targets."""
+        if getattr(target, "volatiles", {}).get("dynamax"):
+            return False
+        return True
 
 class Grasspledge:
     def basePowerCallback(self, user, target, move):
@@ -1641,8 +1690,9 @@ class Gyroball:
         return min(150, max(1, power))
 
 class Happyhour:
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, *args, **kwargs):
+        """Simply succeed to display the effect."""
+        return True
 
 class Hardpress:
     def basePowerCallback(self, user, target, move):
@@ -1698,7 +1748,7 @@ class Healingwish:
     def onSwap(self, *args, **kwargs):
         pass
     def onTryHit(self, *args, **kwargs):
-        pass
+        return True
 
 class Healpulse:
     def onHit(self, user, target, battle):
@@ -1730,8 +1780,11 @@ class Heatcrash:
         if user_wt >= target_wt * 2:
             return 60
         return 40
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail against Dynamax targets."""
+        if getattr(target, "volatiles", {}).get("dynamax"):
+            return False
+        return True
 
 class Heavyslam:
     def basePowerCallback(self, user, target, move):
@@ -1747,8 +1800,11 @@ class Heavyslam:
         if user_wt >= target_wt * 2:
             return 60
         return 40
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail against Dynamax targets."""
+        if getattr(target, "volatiles", {}).get("dynamax"):
+            return False
+        return True
 
 class Helpinghand:
     def onBasePower(self, *args, **kwargs):
@@ -1761,8 +1817,9 @@ class Helpinghand:
         if user and hasattr(user, "volatiles"):
             user.volatiles["helpinghand"] = target
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Only works if the ally is preparing to move."""
+        return True
 
 class Hex:
     def basePowerCallback(self, user, target, move):
@@ -1935,7 +1992,8 @@ class Kingsshield:
             user.volatiles["protect"] = True
         return True
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Block the incoming move like Protect."""
+        return False
 
 class Knockoff:
     def onAfterHit(self, *args, **kwargs):
@@ -2020,7 +2078,8 @@ class Lockon:
     def onSourceInvulnerability(self, *args, **kwargs):
         pass
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Always succeeds, setting up the lock-on effect."""
+        return True
 
 class Lowkick:
     def basePowerCallback(self, user, target, move):
@@ -2038,7 +2097,11 @@ class Lowkick:
             return 40
         return 20
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Fail on Dynamaxed targets."""
+        target = args[0] if args else None
+        if getattr(target, "volatiles", {}).get("dynamax"):
+            return False
+        return True
 
 class Luckychant:
     def onSideEnd(self, *args, **kwargs):
@@ -2062,7 +2125,8 @@ class Lunardance:
     def onSwap(self, *args, **kwargs):
         pass
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Always succeeds to set up the healing effect."""
+        return True
 
 class Magiccoat:
     def onAllyTryHitSide(self, *args, **kwargs):
@@ -2073,7 +2137,11 @@ class Magiccoat:
             user.volatiles["magiccoat"] = True
         return True
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Reflect status moves back at the attacker."""
+        move = kwargs.get("move")
+        if move and getattr(move, "category", "") == "Status":
+            return False
+        return True
 
 class Magicpowder:
     def onHit(self, user, target, battle):
@@ -2144,7 +2212,8 @@ class Matblock:
                 return True
         return True
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Protect the user's side for the first turn."""
+        return False
 
 class Maxairstream:
     def onHit(self, user, target, battle):
@@ -2194,7 +2263,8 @@ class Maxguard:
         return True
 
     def onTryHit(self, *args, **kwargs):
-        return True
+        """Block the incoming move."""
+        return False
 
 class Maxhailstorm:
     def onHit(self, user, target, battle):
@@ -2297,7 +2367,11 @@ class Mefirst:
     def onBasePower(self, *args, **kwargs):
         pass
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Fail if the target hasn't chosen a move."""
+        target = args[0] if args else None
+        if not getattr(target, "last_move", None):
+            return False
+        return True
 
 class Metalburst:
     def damageCallback(self, *args, **kwargs):
@@ -2370,7 +2444,8 @@ class Miracleeye:
             target.volatiles["miracleeye"] = True
         return True
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Allow Psychic moves to hit Dark types and negate evasion boosts."""
+        return True
 
 class Mirrorcoat:
     def beforeTurnCallback(self, *args, **kwargs):
@@ -2395,7 +2470,11 @@ class Mirrorcoat:
 
 class Mirrormove:
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Fail if the target hasn't used a move yet."""
+        target = args[0] if args else None
+        if not getattr(target, "last_move", None):
+            return False
+        return True
 
 class Mist:
     def onSideEnd(self, *args, **kwargs):
@@ -2475,7 +2554,8 @@ class Naturalgift:
 
 class Naturepower:
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Choose a move based on terrain; always succeeds here."""
+        return True
 
 class Naturesmadness:
     def damageCallback(self, *args, **kwargs):
@@ -2519,7 +2599,8 @@ class Obstruct:
     def onStart(self, *args, **kwargs):
         return True
     def onTryHit(self, *args, **kwargs):
-        return True
+        """Block the incoming move like Protect."""
+        return False
 
 class Octolock:
     def onResidual(self, *args, **kwargs):
@@ -2537,7 +2618,8 @@ class Octolock:
 
 class Odorsleuth:
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Remove the target's evasion boosts and Ghost immunity."""
+        return True
 
 class Orderup:
     def onAfterMoveSecondarySelf(self, *args, **kwargs):
@@ -2645,7 +2727,12 @@ class Poltergeist:
             item = getattr(target, 'item', None) or getattr(target, 'held_item', None)
         return bool(item)
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Fail if the target has no held item."""
+        target = args[0] if args else None
+        item = getattr(target, "item", None) or getattr(target, "held_item", None)
+        if not item:
+            return False
+        return True
 
 class Powder:
     def onStart(self, *args, **kwargs):
@@ -2732,7 +2819,8 @@ class Protect:
     def onStart(self, *args, **kwargs):
         return True
     def onTryHit(self, *args, **kwargs):
-        return True
+        """Block the incoming move."""
+        return False
 
 class Psyblade:
     def onBasePower(self, *args, **kwargs):
@@ -2740,7 +2828,13 @@ class Psyblade:
 
 class Psychicfangs:
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Shatter the target's screens before dealing damage."""
+        target = args[0] if args else None
+        side = getattr(target, "side", None)
+        if side and hasattr(side, "screens"):
+            for screen in ("reflect", "lightscreen", "auroraveil"):
+                side.screens.pop(screen, None)
+        return True
 
 class Psychicterrain:
     def durationCallback(self, *args, **kwargs):
@@ -2752,7 +2846,13 @@ class Psychicterrain:
     def onFieldStart(self, *args, **kwargs):
         pass
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Prevent priority moves from hitting grounded Pokémon."""
+        move = kwargs.get("move")
+        if move and getattr(move, "priority", 0) > 0:
+            target = args[0] if args else None
+            if getattr(target, "grounded", True):
+                return False
+        return True
 
 class Psychoshift:
     def onHit(self, user, target, battle):
@@ -2811,8 +2911,9 @@ class Pursuit:
         pass
     def onModifyMove(self, *args, **kwargs):
         pass
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Always succeeds, even on switching targets."""
+        return True
 
 class Quash:
     def onHit(self, user, target, battle):
@@ -2841,8 +2942,11 @@ class Quickguard:
             except Exception:
                 return True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Block priority moves for the turn."""
+        if getattr(move, "priority", 0) > 0:
+            return False
+        return True
 
 class Rage:
     def onBeforeMove(self, *args, **kwargs):
@@ -2883,8 +2987,13 @@ class Ragepowder:
 class Ragingbull:
     def onModifyType(self, *args, **kwargs):
         pass
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Remove the target's screens before damage."""
+        side = getattr(target, "side", None)
+        if side and hasattr(side, "screens"):
+            for screen in ("reflect", "lightscreen", "auroraveil"):
+                side.screens.pop(screen, None)
+        return True
 
 class Ragingfury:
     def onAfterMove(self, *args, **kwargs):
@@ -3010,8 +3119,12 @@ class Reversal:
         return 20
 
 class Revivalblessing:
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, *args, **kwargs):
+        """Fail if there are no fainted allies to revive."""
+        party = getattr(user, "party", [])
+        if not any(getattr(mon, "hp", 0) <= 0 for mon in party):
+            return False
+        return True
 
 class Risingvoltage:
     def basePowerCallback(self, user, target, move):
@@ -3031,8 +3144,11 @@ class Roleplay:
             return False
         setattr(user, "ability", ability)
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the abilities are the same or cannot be copied."""
+        if getattr(target, "ability", None) == getattr(source, "ability", None):
+            return False
+        return True
 
 class Rollout:
     def basePowerCallback(self, user, target, move):
@@ -3145,8 +3261,12 @@ class Shedtail:
         if hasattr(user, "tempvals"):
             user.tempvals["switch_out"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, *args, **kwargs):
+        """Fail if the user lacks enough HP to create a substitute."""
+        max_hp = getattr(user, "max_hp", 0)
+        if getattr(user, "hp", 0) <= max_hp // 2:
+            return False
+        return True
 
 class Shellsidearm:
     def onAfterSubDamage(self, *args, **kwargs):
@@ -3204,8 +3324,12 @@ class Silktrap:
         if user and hasattr(user, "volatiles"):
             user.volatiles["protect"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Block the incoming move and drop Speed on contact."""
+        flags = getattr(move, "flags", {}) if move else {}
+        if flags.get("contact") and hasattr(source, "boosts"):
+            apply_boost(source, {"spe": -1})
+        return False
 
 class Simplebeam:
     def onHit(self, user, target, battle):
@@ -3213,8 +3337,15 @@ class Simplebeam:
         if hasattr(target, "__dict__"):
             target.ability = "Simple"
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target already has Simple or is protected."""
+        ability = getattr(target, "ability", "").lower()
+        if ability == "simple":
+            return False
+        item = getattr(target, "item", "").lower()
+        if item == "abilityshield":
+            return False
+        return True
 
 class Sketch:
     def onHit(self, user, target, battle):
@@ -3240,8 +3371,14 @@ class Skillswap:
         setattr(user, "ability", t_abil)
         setattr(target, "ability", u_abil)
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if either ability cannot be swapped."""
+        banned = {"illusion", "multitype", "comatose"}
+        if getattr(source, "ability", "").lower() in banned:
+            return False
+        if getattr(target, "ability", "").lower() in banned:
+            return False
+        return True
 
 class Skullbash:
     def onTryMove(self, *args, **kwargs):
@@ -3286,8 +3423,13 @@ class Skydrop:
         if user and getattr(user, 'volatiles', {}).get('skydrop'):
             return False
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target is too heavy or already airborne."""
+        if getattr(target, "weightkg", 0) >= 200:
+            return False
+        if getattr(target, "volatiles", {}).get("skydrop"):
+            return False
+        return True
 
 class Sleeptalk:
     def onHit(self, user, target, battle):
@@ -3415,8 +3557,13 @@ class Spikyshield:
         if user and hasattr(user, "volatiles"):
             user.volatiles["protect"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Block the move and hurt contact attackers."""
+        flags = getattr(move, "flags", {}) if move else {}
+        if flags.get("contact") and hasattr(source, "max_hp"):
+            damage = max(1, getattr(source, "max_hp", 1) // 8)
+            source.hp = max(0, getattr(source, "hp", 0) - damage)
+        return False
 
 class Spiritshackle:
     def onHit(self, user, target, battle):
@@ -3451,7 +3598,8 @@ class Splash:
     def onTry(self, *args, **kwargs):
         return True
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Always fails to have any effect."""
+        return True
 
 class Splinteredstormshards:
     def onAfterSubDamage(self, user, target, battle):
@@ -3475,8 +3623,9 @@ class Spotlight:
         if target and hasattr(target, "volatiles"):
             target.volatiles["spotlight"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Force foes to target the user this turn."""
+        return True
 
 class Stealthrock:
     def onEntryHazard(self, *args, **kwargs):
@@ -3606,8 +3755,14 @@ class Substitute:
         if user and hasattr(user, "volatiles"):
             user.volatiles["substitute"] = True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, user, *args, **kwargs):
+        """Fail if a substitute already exists or HP is too low."""
+        if getattr(user, "volatiles", {}).get("substitute"):
+            return False
+        max_hp = getattr(user, "max_hp", 0)
+        if getattr(user, "hp", 0) <= max_hp // 4:
+            return False
+        return True
     def onTryPrimaryHit(self, *args, **kwargs):
         pass
 
@@ -4002,7 +4157,8 @@ class Uproar:
             user.volatiles["uproar"] = 3
         return True
     def onTryHit(self, *args, **kwargs):
-        pass
+        """Always succeeds and prevents Sleep for several turns."""
+        return True
 
 class Veeveevolley:
     def basePowerCallback(self, user, target, move):
@@ -4099,8 +4255,11 @@ class Wideguard:
             except Exception:
                 return True
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Block moves that hit multiple targets."""
+        if getattr(move, "target", "") in {"allAdjacent", "allAdjacentFoes"}:
+            return False
+        return True
 
 class Wildboltstorm:
     def onModifyMove(self, *args, **kwargs):
@@ -4132,8 +4291,14 @@ class Worryseed:
         """Replace the target's ability with Insomnia."""
         setattr(target, "ability", "insomnia")
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target already has Insomnia or is protected."""
+        if getattr(target, "ability", "").lower() == "insomnia":
+            return False
+        item = getattr(target, "item", "").lower()
+        if item == "abilityshield":
+            return False
+        return True
     def onTryImmunity(self, *args, **kwargs):
         pass
 
@@ -4152,6 +4317,11 @@ class Yawn:
         if target and hasattr(target, "volatiles"):
             target.volatiles["yawn"] = 2
         return True
-    def onTryHit(self, *args, **kwargs):
-        pass
+    def onTryHit(self, target, source, move):
+        """Fail if the target already has a status condition."""
+        if getattr(target, "status", None):
+            return False
+        if getattr(target, "volatiles", {}).get("yawn"):
+            return False
+        return True
 
