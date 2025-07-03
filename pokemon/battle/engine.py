@@ -157,6 +157,8 @@ class Action:
     move: Optional[BattleMove] = None
     item: Optional[str] = None
     priority: int = 0
+    priority_mod: float = 0.0
+    speed: int = 0
 
 
 class BattleParticipant:
@@ -488,7 +490,103 @@ class Battle:
         return actions
 
     def order_actions(self, actions: List[Action]) -> List[Action]:
-        return sorted(actions, key=lambda a: a.priority, reverse=True)
+        """Order actions by priority and speed following Showdown rules."""
+
+        try:
+            from pokemon.battle import utils
+        except Exception:
+            utils = None
+
+        trick_room = bool(self.field.get_pseudo_weather("trickroom"))
+
+        for action in actions:
+            poke = action.actor.active[0] if action.actor.active else None
+            move = action.move
+            base_priority = action.priority
+            priority = base_priority
+
+            # Ability-based priority modifications
+            ability = getattr(poke, "ability", None)
+            if ability and hasattr(ability, "call"):
+                try:
+                    mod = ability.call(
+                        "onModifyPriority",
+                        priority,
+                        pokemon=poke,
+                        target=action.target.active[0]
+                        if action.target and action.target.active
+                        else None,
+                        move=move,
+                    )
+                    if isinstance(mod, (int, float)):
+                        priority = mod
+                except Exception:
+                    pass
+                try:
+                    frac = ability.call(
+                        "onFractionalPriority",
+                        priority,
+                        pokemon=poke,
+                        target=action.target.active[0]
+                        if action.target and action.target.active
+                        else None,
+                        move=move,
+                    )
+                    if isinstance(frac, (int, float)):
+                        # Treat return value as additive adjustment
+                        priority += frac if frac != priority else 0
+                except Exception:
+                    pass
+
+            # Item-based priority modifications
+            item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
+            if item and hasattr(item, "call"):
+                try:
+                    frac = item.call("onFractionalPriority", pokemon=poke)
+                    if isinstance(frac, (int, float)):
+                        priority += frac
+                except Exception:
+                    pass
+
+            action.priority = priority
+            action.priority_mod = priority - base_priority
+
+            # Determine effective speed
+            if poke:
+                if utils and hasattr(utils, "get_modified_stat"):
+                    try:
+                        speed = utils.get_modified_stat(poke, "spe")
+                    except Exception:
+                        speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
+                else:
+                    speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
+
+                if ability and hasattr(ability, "call"):
+                    try:
+                        mod = ability.call("onModifySpe", speed, pokemon=poke)
+                        if isinstance(mod, (int, float)):
+                            speed = int(mod)
+                    except Exception:
+                        pass
+                if item and hasattr(item, "call"):
+                    try:
+                        mod = item.call("onModifySpe", speed, pokemon=poke)
+                        if isinstance(mod, (int, float)):
+                            speed = int(mod)
+                    except Exception:
+                        pass
+            else:
+                speed = 0
+
+            action.speed = speed
+            action._tiebreak = random.random()
+
+        if trick_room:
+            key = lambda a: (a.priority, -a.speed, a._tiebreak)
+        else:
+            key = lambda a: (a.priority, a.speed, a._tiebreak)
+
+        return sorted(actions, key=key, reverse=True)
 
     def status_prevents_move(self, pokemon) -> bool:
         """Return True if the Pokemon cannot act due to status."""
