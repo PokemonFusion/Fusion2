@@ -355,6 +355,10 @@ class Battle:
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
                         setattr(poke, "side", part.side)
+                        ability = getattr(poke, "ability", None)
+                        if ability and hasattr(ability, "call"):
+                            ability.call("onStart", poke, self)
+                            ability.call("onSwitchIn", poke, self)
                         break
                 continue
 
@@ -367,6 +371,10 @@ class Battle:
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
                         setattr(poke, "side", part.side)
+                        ability = getattr(poke, "ability", None)
+                        if ability and hasattr(ability, "call"):
+                            ability.call("onStart", poke, self)
+                            ability.call("onSwitchIn", poke, self)
                         break
 
     def run_after_switch(self) -> None:
@@ -448,6 +456,13 @@ class Battle:
     def start_turn(self) -> None:
         """Reset temporary flags or display status."""
         self.turn_count += 1
+        if self.turn_count == 1:
+            for part in self.participants:
+                for poke in part.active:
+                    ability = getattr(poke, "ability", None)
+                    if ability and hasattr(ability, "call"):
+                        ability.call("onStart", poke, self)
+                        ability.call("onSwitchIn", poke, self)
 
     def select_actions(self) -> List[Action]:
         actions: List[Action] = []
@@ -530,6 +545,10 @@ class Battle:
         for part in self.participants:
             if all(getattr(p, "hp", 1) <= 0 for p in part.pokemons):
                 part.has_lost = True
+            for poke in part.active:
+                ability = getattr(poke, "ability", None)
+                if ability and hasattr(ability, "call"):
+                    ability.call("onEnd", poke, self)
         self.check_victory()
 
     def run_turn(self) -> None:

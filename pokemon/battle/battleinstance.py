@@ -30,6 +30,7 @@ def generate_wild_pokemon(location=None) -> Pokemon:
         hp=inst.stats.hp,
         max_hp=inst.stats.hp,
         moves=moves,
+        ability=inst.ability,
     )
 
 
@@ -43,6 +44,7 @@ def generate_trainer_pokemon() -> Pokemon:
         hp=inst.stats.hp,
         max_hp=inst.stats.hp,
         moves=moves,
+        ability=inst.ability,
     )
 
 
