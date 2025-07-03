@@ -389,8 +389,14 @@ class Battle:
                     poke.tempvals.clear()
             for poke in part.pokemons:
                 if poke not in part.active and getattr(poke, "status", None) == "tox":
-                    poke.status = "psn"
-                    poke.toxic_counter = 0
+                    try:
+                        from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+                        handler = CONDITION_HANDLERS.get("tox")
+                        if handler and hasattr(handler, "onSwitchIn"):
+                            handler.onSwitchIn(poke, battle=self)
+                    except Exception:
+                        poke.status = "psn"
+                        poke.toxic_counter = 0
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
@@ -423,7 +429,14 @@ class Battle:
                 continue
             for poke in list(part.active):
                 status = getattr(poke, "status", None)
-                if status in {"brn", "psn"}:
+                try:
+                    from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+                except Exception:
+                    CONDITION_HANDLERS = {}
+                handler = CONDITION_HANDLERS.get(status)
+                if handler and hasattr(handler, "onResidual"):
+                    handler.onResidual(poke, battle=self)
+                elif status in {"brn", "psn"}:
                     max_hp = getattr(poke, "max_hp", getattr(poke, "hp", 1))
                     damage = max(1, max_hp // 8)
                     poke.hp = max(0, poke.hp - damage)
@@ -480,6 +493,14 @@ class Battle:
     def status_prevents_move(self, pokemon) -> bool:
         """Return True if the Pokemon cannot act due to status."""
         status = getattr(pokemon, "status", None)
+        try:
+            from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+        except Exception:
+            CONDITION_HANDLERS = {}
+        handler = CONDITION_HANDLERS.get(status)
+        if handler and hasattr(handler, "onBeforeMove"):
+            result = handler.onBeforeMove(pokemon, battle=self)
+            return result is False
         if status == "par":
             return random.random() < 0.25
         if status == "frz":
