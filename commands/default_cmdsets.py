@@ -56,6 +56,7 @@ from commands.cmd_editroom import CmdEditRoom
 from commands.cmd_validate import CmdValidate
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 from commands.cmd_glance import CmdGlance
+from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -92,6 +93,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdWithdrawPokemon())
         self.add(CmdShowBox())
         self.add(CmdSetHoldItem())
+        self.add(CmdSheet())
+        self.add(CmdSheetPokemon())
         self.add(CmdChargenInfo())
         self.add(CmdInventory())
         self.add(CmdAddItem())
