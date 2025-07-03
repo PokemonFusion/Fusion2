@@ -85,6 +85,7 @@ class BattleMove:
     basePowerCallback: Optional[Callable] = None
     type: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
+    pp: Optional[int] = None
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect."""
@@ -400,13 +401,105 @@ class Battle:
                         poke.status = "psn"
                         poke.toxic_counter = 0
 
+    # ------------------------------------------------------------------
+    # Move handling helpers
+    # ------------------------------------------------------------------
+
+    def deduct_pp(self, pokemon, move: BattleMove) -> None:
+        """Decrease the PP of ``move`` on ``pokemon`` if possible."""
+        if move.pp is not None:
+            if move.pp > 0:
+                move.pp -= 1
+            return
+        moves = getattr(pokemon, "moves", [])
+        for m in moves:
+            if getattr(m, "name", None) == move.name and hasattr(m, "pp"):
+                if m.pp is not None and m.pp > 0:
+                    m.pp -= 1
+                break
+
+    def use_move(self, action: Action) -> None:
+        """Attempt to use the chosen move applying simple failure rules."""
+        if not action.move or not action.actor.active:
+            return
+
+        user = action.actor.active[0]
+        if self.status_prevents_move(user):
+            return
+
+        target_part = action.target or self.opponent_of(action.actor)
+        target = None
+        if target_part and target_part.active:
+            candidate = target_part.active[0]
+            if getattr(candidate, "hp", 0) > 0:
+                target = candidate
+
+        if not target:
+            # no valid target, still deduct PP and end
+            self.deduct_pp(user, action.move)
+            try:
+                user.tempvals["moved"] = True
+            except Exception:
+                pass
+            return
+
+        self.deduct_pp(user, action.move)
+
+        if getattr(target, "volatiles", {}).get("protect"):
+            try:
+                user.tempvals["moved"] = True
+            except Exception:
+                pass
+            return
+
+        if getattr(target, "volatiles", {}).get("substitute") and not action.move.raw.get("bypassSub"):
+            try:
+                user.tempvals["moved"] = True
+            except Exception:
+                pass
+            return
+
+        eff = 1.0
+        if action.move.type:
+            try:
+                from pokemon.data import TYPE_CHART
+                chart = TYPE_CHART.get(action.move.type.capitalize())
+                if chart:
+                    for typ in getattr(target, "types", []):
+                        val = chart.get(typ.capitalize(), 0)
+                        if val == 3:
+                            eff = 0
+                            break
+                        elif val == 1:
+                            eff *= 2
+                        elif val == 2:
+                            eff *= 0.5
+            except Exception:
+                pass
+
+        if eff == 0:
+            try:
+                user.tempvals["moved"] = True
+            except Exception:
+                pass
+            return
+
+        action.move.execute(user, target, self)
+        try:
+            user.tempvals["moved"] = True
+        except Exception:
+            pass
+
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
-
-        # TODO: incorporate full move failure and targeting rules
         actions = self.select_actions()
         actions = self.order_actions(actions)
-        self.execute_actions(actions)
+
+        for action in actions:
+            if action.action_type is ActionType.MOVE:
+                self.use_move(action)
+            elif action.action_type is ActionType.ITEM and action.item:
+                self.execute_item(action)
 
     def run_faint(self) -> None:
         """Handle fainted Pokémon and mark participants as losing if needed."""
