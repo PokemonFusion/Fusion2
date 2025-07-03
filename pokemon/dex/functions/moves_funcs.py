@@ -139,9 +139,18 @@ class Assurance:
 
 class Attract:
     def onBeforeMove(self, *args, **kwargs):
-        pass
+        """50% chance the infatuated Pokémon can't move."""
+        user = args[0] if args else kwargs.get("user")
+        if user and random() < 0.5:
+            if hasattr(user, "tempvals"):
+                user.tempvals["cant_move"] = "attract"
+            return False
+        return True
     def onEnd(self, *args, **kwargs):
-        pass
+        target = args[0] if args else kwargs.get("target")
+        if target and hasattr(target, "volatiles"):
+            target.volatiles.pop("attract", None)
+        return True
     def onStart(self, *args, **kwargs):
         user = args[0] if args else None
         target = args[1] if len(args) > 1 else None
@@ -149,9 +158,21 @@ class Attract:
             target.volatiles["attract"] = user
         return True
     def onTryImmunity(self, *args, **kwargs):
-        pass
+        target = args[0] if args else kwargs.get("target")
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        tg = getattr(target, "gender", "N") if target else "N"
+        sg = getattr(source, "gender", "N") if source else "N"
+        if tg == "N" or sg == "N" or tg == sg:
+            return False
+        return True
     def onUpdate(self, *args, **kwargs):
-        pass
+        target = args[0] if args else kwargs.get("target")
+        if not target or not hasattr(target, "volatiles"):
+            return False
+        src = target.volatiles.get("attract")
+        if not src or getattr(src, "hp", 0) <= 0:
+            target.volatiles.pop("attract", None)
+        return True
 
 class Aurawheel:
     def onModifyType(self, *args, **kwargs):
@@ -165,11 +186,30 @@ class Aurawheel:
 
 class Auroraveil:
     def durationCallback(self, *args, **kwargs):
-        pass
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        item = getattr(source, "item", None) or getattr(source, "held_item", None)
+        if item and str(item).lower() == "lightclay":
+            return 8
+        return 5
     def onAnyModifyDamage(self, *args, **kwargs):
-        pass
+        damage = args[0] if args else kwargs.get("damage")
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        target = args[2] if len(args) > 2 else kwargs.get("target")
+        move = args[3] if len(args) > 3 else kwargs.get("move")
+        if not target or not source or not move or move.category == "Status":
+            return damage
+        side = getattr(target, "side", None)
+        if side and getattr(side, "screens", {}).get("auroraveil"):
+            mult = 0.5
+            if len(getattr(side, "active", [])) > 1:
+                mult = 2 / 3
+            return int(damage * mult)
+        return damage
     def onSideEnd(self, *args, **kwargs):
-        pass
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens.pop("auroraveil", None)
+        return True
     def onSideStart(self, *args, **kwargs):
         """Activate the Aurora Veil screen on the side."""
         side = args[0] if args else kwargs.get("side")
@@ -2596,11 +2636,30 @@ class Leechseed:
 
 class Lightscreen:
     def durationCallback(self, *args, **kwargs):
-        pass
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        item = getattr(source, "item", None) or getattr(source, "held_item", None)
+        if item and str(item).lower() == "lightclay":
+            return 8
+        return 5
     def onAnyModifyDamage(self, *args, **kwargs):
-        pass
+        damage = args[0] if args else kwargs.get("damage")
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        target = args[2] if len(args) > 2 else kwargs.get("target")
+        move = args[3] if len(args) > 3 else kwargs.get("move")
+        if not target or not source or not move or move.category != "Special":
+            return damage
+        side = getattr(target, "side", None)
+        if side and getattr(side, "screens", {}).get("lightscreen"):
+            mult = 0.5
+            if len(getattr(side, "active", [])) > 1:
+                mult = 2 / 3
+            return int(damage * mult)
+        return damage
     def onSideEnd(self, *args, **kwargs):
-        pass
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens.pop("lightscreen", None)
+        return True
     def onSideStart(self, *args, **kwargs):
         """Activate the Light Screen effect."""
         side = args[0] if args else kwargs.get("side")
@@ -3774,11 +3833,30 @@ class Recycle:
 
 class Reflect:
     def durationCallback(self, *args, **kwargs):
-        pass
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        item = getattr(source, "item", None) or getattr(source, "held_item", None)
+        if item and str(item).lower() == "lightclay":
+            return 8
+        return 5
     def onAnyModifyDamage(self, *args, **kwargs):
-        pass
+        damage = args[0] if args else kwargs.get("damage")
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        target = args[2] if len(args) > 2 else kwargs.get("target")
+        move = args[3] if len(args) > 3 else kwargs.get("move")
+        if not target or not source or not move or move.category != "Physical":
+            return damage
+        side = getattr(target, "side", None)
+        if side and getattr(side, "screens", {}).get("reflect"):
+            mult = 0.5
+            if len(getattr(side, "active", [])) > 1:
+                mult = 2 / 3
+            return int(damage * mult)
+        return damage
     def onSideEnd(self, *args, **kwargs):
-        pass
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens.pop("reflect", None)
+        return True
     def onSideStart(self, *args, **kwargs):
         """Activate the Reflect screen on the side."""
         side = args[0] if args else kwargs.get("side")
@@ -3979,7 +4057,11 @@ class Ruination:
 
 class Safeguard:
     def durationCallback(self, *args, **kwargs):
-        pass
+        source = args[1] if len(args) > 1 else kwargs.get("source")
+        item = getattr(source, "item", None) or getattr(source, "held_item", None)
+        if item and str(item).lower() == "lightclay":
+            return 8
+        return 5
     def onSetStatus(self, *args, **kwargs):
         status = args[0] if args else kwargs.get("status")
         target = args[1] if len(args) > 1 else kwargs.get("target")
@@ -3988,7 +4070,10 @@ class Safeguard:
             return False
         return True
     def onSideEnd(self, *args, **kwargs):
-        pass
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens.pop("safeguard", None)
+        return True
     def onSideStart(self, *args, **kwargs):
         """Protect the side from status conditions."""
         side = args[0] if args else kwargs.get("side")
@@ -3996,7 +4081,12 @@ class Safeguard:
             side.screens["safeguard"] = True
         return True
     def onTryAddVolatile(self, *args, **kwargs):
-        pass
+        volatile = args[0] if args else kwargs.get("status")
+        target = args[1] if len(args) > 1 else kwargs.get("target")
+        side = getattr(target, "side", None)
+        if side and getattr(side, "screens", {}).get("safeguard") and volatile == "confusion":
+            return False
+        return True
 
 class Saltcure:
     def onEnd(self, *args, **kwargs):
@@ -4801,14 +4891,17 @@ class Syrupbomb:
 
 class Tailwind:
     def durationCallback(self, *args, **kwargs):
-        pass
+        return 4
     def onModifySpe(self, *args, **kwargs):
         spe = args[0] if args else kwargs.get("spe")
         if spe is None:
             return None
         return spe * 2
     def onSideEnd(self, *args, **kwargs):
-        pass
+        side = args[0] if args else kwargs.get("side")
+        if side and hasattr(side, "screens"):
+            side.screens.pop("tailwind", None)
+        return True
     def onSideStart(self, *args, **kwargs):
         """Double the Speed of allies for four turns."""
         side = args[0] if args else kwargs.get("side")
