@@ -154,6 +154,13 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None) -> 
                 chance = secondary.get("chance", chance)
             if status and percent_check(chance / 100.0):
                 setattr(target, "status", status)
+                try:
+                    from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+                except Exception:
+                    CONDITION_HANDLERS = {}
+                handler = CONDITION_HANDLERS.get(status)
+                if handler and hasattr(handler, "onStart"):
+                    handler.onStart(target, source=attacker, battle=battle)
                 if status == "brn":
                     result.text.append(f"{target.name} was burned!")
     if numhits > 1:
