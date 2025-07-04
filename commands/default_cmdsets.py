@@ -42,7 +42,7 @@ from commands.command import (
     CmdChargenInfo,
     CmdSpoof,
 )
-from commands.cmd_hunt import CmdHunt, CmdLeaveHunt
+from commands.cmd_hunt import CmdHunt, CmdLeaveHunt, CmdCustomHunt
 from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
 from commands.cmd_battle import (
     CmdBattleAttack,
@@ -101,6 +101,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdUseItem())
         self.add(CmdTradePokemon())
         self.add(CmdHunt())
+        self.add(CmdCustomHunt())
         self.add(CmdLeaveHunt())
         self.add(CmdWatchBattle())
         self.add(CmdUnwatchBattle())
