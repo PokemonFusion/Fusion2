@@ -409,3 +409,46 @@ class CmdUseItem(Command):
             return
         self.caller.remove_item(item_name)
         self.caller.msg(f"You use {item_name}. Nothing happens.")
+
+
+class CmdEvolvePokemon(Command):
+    """Evolve one of your Pokémon if possible."""
+
+    key = "evolve"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        """Attempt to evolve one of the player's Pokémon."""
+        parts = self.args.split()
+        if not parts:
+            self.caller.msg("Usage: evolve <pokemon_id> [item]")
+            return
+
+        try:
+            pid = int(parts[0])
+        except ValueError:
+            self.caller.msg("Usage: evolve <pokemon_id> [item]")
+            return
+
+        item = parts[1] if len(parts) > 1 else None
+        pokemon = self.caller.get_pokemon_by_id(pid)
+        if not pokemon:
+            self.caller.msg("No such Pokémon.")
+            return
+
+        if item and not self.caller.has_item(item):
+            self.caller.msg(f"You do not have a {item}.")
+            return
+
+        from pokemon.evolution import attempt_evolution
+
+        new_species = attempt_evolution(pokemon, item=item)
+        if not new_species:
+            self.caller.msg("It doesn't seem to be able to evolve right now.")
+            return
+
+        if item:
+            self.caller.remove_item(item)
+        pokemon.save()
+        self.caller.msg(f"{pokemon.name} evolved into {new_species}!")
