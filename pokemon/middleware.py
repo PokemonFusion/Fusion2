@@ -3,6 +3,7 @@
 import re
 from pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
 from pokemon.data.learnsets.learnsets import LEARNSETS
+from pokemon.data.text import MOVES_TEXT
 
 
 def _get(obj, key, default=None):
@@ -134,8 +135,13 @@ def get_move_by_name(name):
 
 
 def get_move_description(details):
-    """Placeholder: obtain a long description for a move."""
-    # TODO: Pull full move descriptions from dataset or external source
+    """Return a long description for a move."""
+
+    name = _get(details, "name")
+    if name:
+        entry = MOVES_TEXT.get(str(name).lower())
+        if entry and entry.get("desc"):
+            return entry["desc"]
     return _get(details, "desc", "No description available.")
 
 
