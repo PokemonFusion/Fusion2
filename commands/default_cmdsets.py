@@ -49,6 +49,14 @@ from commands.cmd_battle import (
     CmdBattleSwitch,
     CmdBattleItem,
 )
+from commands.cmd_pvp import (
+    CmdPvpHelp,
+    CmdPvpList,
+    CmdPvpCreate,
+    CmdPvpJoin,
+    CmdPvpAbort,
+    CmdPvpStart,
+)
 from commands.cmd_spawns import CmdSpawns
 from commands.cmd_chargen import CmdChargen
 from commands.cmd_roomwizard import CmdRoomWizard
@@ -111,6 +119,13 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdBattleItem())
         self.add(CmdSpawns())
         self.add(CmdGivePokemon())
+        # PVP commands
+        self.add(CmdPvpHelp())
+        self.add(CmdPvpList())
+        self.add(CmdPvpCreate())
+        self.add(CmdPvpJoin())
+        self.add(CmdPvpAbort())
+        self.add(CmdPvpStart())
         self.add(CmdPokedexSearch())
         self.add(CmdMovedexSearch())
         self.add(CmdMovesetSearch())

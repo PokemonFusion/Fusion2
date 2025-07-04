@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import List
+from typing import List, Optional
 
 from evennia import create_object
 
@@ -51,8 +51,9 @@ def generate_trainer_pokemon() -> Pokemon:
 class BattleInstance:
     """Simple container for a temporary battle."""
 
-    def __init__(self, player):
+    def __init__(self, player, opponent: Optional[object] = None):
         self.player = player
+        self.opponent = opponent
         self.room = create_object(BattleRoom, key=f"Battle-{player.key}")
         self.room.db.instance = self
         self.data: BattleData | None = None
@@ -61,7 +62,11 @@ class BattleInstance:
         self.watchers: set[int] = set()
 
     def start(self) -> None:
-        """Start a battle against a wild Pokémon or a trainer."""
+        """Start a battle against a wild Pokémon, trainer or another player."""
+        if self.opponent:
+            self.start_pvp()
+            return
+
         opponent_kind = random.choice(["pokemon", "trainer"])
         if opponent_kind == "pokemon":
             opponent_poke = generate_wild_pokemon(self.player.location)
@@ -122,18 +127,91 @@ class BattleInstance:
         # Let the player know the battle is ready for input
         self.prompt_first_turn()
 
+    def start_pvp(self) -> None:
+        """Start a battle between two players."""
+        if not self.opponent:
+            return
+
+        player_pokemon: List[Pokemon] = []
+        for poke in self.player.storage.active_pokemon.all():
+            inst = generate_pokemon(poke.name, level=poke.level)
+            moves = [Move(name=m) for m in inst.moves]
+            player_pokemon.append(
+                Pokemon(
+                    name=inst.species.name,
+                    level=inst.level,
+                    hp=inst.stats.hp,
+                    max_hp=inst.stats.hp,
+                    moves=moves,
+                )
+            )
+
+        opp_pokemon: List[Pokemon] = []
+        for poke in self.opponent.storage.active_pokemon.all():
+            inst = generate_pokemon(poke.name, level=poke.level)
+            moves = [Move(name=m) for m in inst.moves]
+            opp_pokemon.append(
+                Pokemon(
+                    name=inst.species.name,
+                    level=inst.level,
+                    hp=inst.stats.hp,
+                    max_hp=inst.stats.hp,
+                    moves=moves,
+                )
+            )
+
+        player_participant = BattleParticipant(self.player.key, player_pokemon)
+        opponent_participant = BattleParticipant(self.opponent.key, opp_pokemon)
+
+        if player_participant.pokemons:
+            player_participant.active = [player_participant.pokemons[0]]
+        if opponent_participant.pokemons:
+            opponent_participant.active = [opponent_participant.pokemons[0]]
+
+        self.battle = Battle(BattleType.PVP, [player_participant, opponent_participant])
+
+        team_a = Team(trainer=self.player.key, pokemon_list=player_pokemon)
+        team_b = Team(trainer=self.opponent.key, pokemon_list=opp_pokemon)
+        self.data = BattleData(team_a, team_b)
+
+        self.room.db.battle_data = self.data.to_dict()
+        self.state = BattleState.from_battle_data(self.data, ai_type="Player")
+        self.room.db.battle_state = self.state.to_dict()
+
+        add_watcher(self.state, self.player)
+        add_watcher(self.state, self.opponent)
+        self.watchers.update({self.player.id, self.opponent.id})
+
+        self.player.ndb.battle_instance = self
+        self.opponent.ndb.battle_instance = self
+        self.player.move_to(self.room, quiet=True)
+        self.opponent.move_to(self.room, quiet=True)
+        self.player.msg("PVP battle started!")
+        self.opponent.msg("PVP battle started!")
+        notify_watchers(
+            self.state,
+            f"{self.player.key} and {self.opponent.key} begin a battle!",
+            room=self.room,
+        )
+
+        self.prompt_first_turn()
+
     def end(self) -> None:
         """End the battle and clean up."""
         if self.room:
             self.room.delete()
         if self.player.ndb.get("battle_instance"):
             del self.player.ndb.battle_instance
+        if self.opponent and self.opponent.ndb.get("battle_instance"):
+            del self.opponent.ndb.battle_instance
         self.battle = None
         if self.state:
             notify_watchers(self.state, "The battle has ended.", room=self.room)
         self.watchers.clear()
         self.state = None
         self.player.msg("The battle has ended.")
+        if self.opponent:
+            self.opponent.msg("The battle has ended.")
 
     # ------------------------------------------------------------------
     # Battle helpers
