@@ -67,6 +67,8 @@ class BattleInstance:
             self.start_pvp()
             return
 
+        origin = self.player.location
+
         opponent_kind = random.choice(["pokemon", "trainer"])
         if opponent_kind == "pokemon":
             opponent_poke = generate_wild_pokemon(self.player.location)
@@ -115,6 +117,7 @@ class BattleInstance:
         # Store a serialisable snapshot on the room for later use
         self.room.db.battle_data = self.data.to_dict()
         self.state = BattleState.from_battle_data(self.data, ai_type=battle_type.name)
+        self.state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
         self.room.db.battle_state = self.state.to_dict()
         add_watcher(self.state, self.player)
         self.watchers.add(self.player.id)
@@ -131,6 +134,8 @@ class BattleInstance:
         """Start a battle between two players."""
         if not self.opponent:
             return
+
+        origin = self.player.location
 
         player_pokemon: List[Pokemon] = []
         for poke in self.player.storage.active_pokemon.all():
@@ -176,6 +181,7 @@ class BattleInstance:
 
         self.room.db.battle_data = self.data.to_dict()
         self.state = BattleState.from_battle_data(self.data, ai_type="Player")
+        self.state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
         self.room.db.battle_state = self.state.to_dict()
 
         add_watcher(self.state, self.player)
