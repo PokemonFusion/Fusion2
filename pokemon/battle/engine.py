@@ -127,6 +127,23 @@ class BattleMove:
 
         result = damage_calc(user, target, move, battle=battle)
         dmg = sum(result.debug.get("damage", []))
+        # Apply onSourceModifyDamage callbacks from target volatiles
+        try:
+            from pokemon.dex.functions import moves_funcs
+        except Exception:
+            moves_funcs = None
+        if moves_funcs:
+            for vol in getattr(target, "volatiles", {}):
+                cls = getattr(moves_funcs, vol.capitalize(), None)
+                if cls:
+                    cb = getattr(cls(), "onSourceModifyDamage", None)
+                    if callable(cb):
+                        try:
+                            new_dmg = cb(dmg, target, user, move)
+                        except Exception:
+                            new_dmg = cb(dmg, target, user)
+                        if isinstance(new_dmg, (int, float)):
+                            dmg = int(new_dmg)
         if hasattr(target, "hp"):
             target.hp = max(0, target.hp - dmg)
             if dmg > 0:
@@ -519,6 +536,34 @@ class Battle:
 
         self.deduct_pp(user, action.move)
 
+        # Handle onTryMove callbacks for multi-turn moves or special behaviour
+        cb_name = action.move.raw.get("onTryMove") if action.move.raw else None
+        if cb_name:
+            try:
+                from pokemon.dex.functions import moves_funcs
+                if isinstance(cb_name, str):
+                    cls_name, func_name = cb_name.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        cb = getattr(cls(), func_name, None)
+                    else:
+                        cb = None
+                else:
+                    cb = cb_name
+                if callable(cb):
+                    try:
+                        result = cb(user, target, action.move)
+                    except Exception:
+                        result = cb(user, target)
+                    if result is False:
+                        try:
+                            user.tempvals["moved"] = True
+                        except Exception:
+                            pass
+                        return
+            except Exception:
+                pass
+
         if getattr(target, "volatiles", {}).get("protect"):
             try:
                 user.tempvals["moved"] = True
@@ -527,6 +572,32 @@ class Battle:
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
             return
+
+        # Check if the target is in an invulnerable state (e.g. Fly, Dig)
+        vols = list(getattr(target, "volatiles", {}).keys())
+        if vols:
+            try:
+                from pokemon.dex.functions import moves_funcs
+            except Exception:
+                moves_funcs = None
+            if moves_funcs:
+                for vol in vols:
+                    cls = getattr(moves_funcs, vol.capitalize(), None)
+                    if cls:
+                        inv_cb = getattr(cls(), "onInvulnerability", None)
+                        if callable(inv_cb):
+                            try:
+                                blocked = inv_cb(target, user, action.move)
+                            except Exception:
+                                blocked = inv_cb(target, user)
+                            if blocked:
+                                try:
+                                    user.tempvals["moved"] = True
+                                except Exception:
+                                    pass
+                                if action.move.raw.get("selfdestruct") == "always":
+                                    user.hp = 0
+                                return
 
         sub = getattr(target, "volatiles", {}).get("substitute")
         if sub and not action.move.raw.get("bypassSub"):
@@ -555,6 +626,22 @@ class Battle:
 
             dmg_result = damage_calc(user, target, move, battle=self)
             dmg = sum(dmg_result.debug.get("damage", []))
+            try:
+                from pokemon.dex.functions import moves_funcs
+            except Exception:
+                moves_funcs = None
+            if moves_funcs:
+                for vol in getattr(target, "volatiles", {}):
+                    cls = getattr(moves_funcs, vol.capitalize(), None)
+                    if cls:
+                        cb = getattr(cls(), "onSourceModifyDamage", None)
+                        if callable(cb):
+                            try:
+                                new_dmg = cb(dmg, target, user, move)
+                            except Exception:
+                                new_dmg = cb(dmg, target, user)
+                            if isinstance(new_dmg, (int, float)):
+                                dmg = int(new_dmg)
             if isinstance(sub, dict):
                 remaining = sub.get("hp", 0) - dmg
                 if remaining <= 0:
