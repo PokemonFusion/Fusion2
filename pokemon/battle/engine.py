@@ -42,6 +42,10 @@ from typing import Callable, List, Optional, Dict, Any
 import random
 
 from pokemon.dex import MOVEDEX
+try:
+    from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
+except Exception:
+    BALL_MODIFIERS = {}
 
 
 @dataclass
@@ -879,11 +883,34 @@ class Battle:
             status = getattr(target_poke, "status", None)
             max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
             from .capture import attempt_capture
-            caught = attempt_capture(max_hp, target_poke.hp, catch_rate, status=status)
+            ball_mod = BALL_MODIFIERS.get(item_name, 1.0)
+            caught = attempt_capture(
+                max_hp,
+                target_poke.hp,
+                catch_rate,
+                ball_modifier=ball_mod,
+                status=status,
+            )
+            if hasattr(action.actor, "remove_item"):
+                try:
+                    action.actor.remove_item(action.item)
+                except Exception:
+                    pass
             if caught:
                 target.active.remove(target_poke)
                 if target_poke in target.pokemons:
                     target.pokemons.remove(target_poke)
+                if hasattr(action.actor, "add_pokemon_to_storage"):
+                    try:
+                        poke_types = getattr(target_poke, "types", [])
+                        type_ = ", ".join(poke_types) if isinstance(poke_types, list) else str(poke_types)
+                        action.actor.add_pokemon_to_storage(
+                            getattr(target_poke, "name", ""),
+                            getattr(target_poke, "level", 1),
+                            type_,
+                        )
+                    except Exception:
+                        pass
                 target.has_lost = True
                 self.check_victory()
 
