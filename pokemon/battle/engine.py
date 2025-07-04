@@ -509,6 +509,8 @@ class Battle:
                 user.tempvals["moved"] = True
             except Exception:
                 pass
+            if action.move.raw.get("selfdestruct") == "always":
+                user.hp = 0
             return
 
         self.deduct_pp(user, action.move)
@@ -518,6 +520,8 @@ class Battle:
                 user.tempvals["moved"] = True
             except Exception:
                 pass
+            if action.move.raw.get("selfdestruct") == "always":
+                user.hp = 0
             return
 
         sub = getattr(target, "volatiles", {}).get("substitute")
@@ -564,6 +568,10 @@ class Battle:
                 user.tempvals["moved"] = True
             except Exception:
                 pass
+            sd = action.move.raw.get("selfdestruct")
+            hit = dmg > 0
+            if sd == "always" or (sd == "ifHit" and hit):
+                user.hp = 0
             return
 
         eff = 1.0
@@ -589,9 +597,16 @@ class Battle:
                 user.tempvals["moved"] = True
             except Exception:
                 pass
+            if action.move.raw.get("selfdestruct") == "always":
+                user.hp = 0
             return
 
         action.move.execute(user, target, self)
+        sd = action.move.raw.get("selfdestruct")
+        if sd:
+            hit = getattr(target, "tempvals", {}).get("took_damage")
+            if sd == "always" or (sd == "ifHit" and hit):
+                user.hp = 0
         try:
             user.tempvals["moved"] = True
         except Exception:
