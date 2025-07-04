@@ -146,6 +146,29 @@ class BattleMove:
             if part:
                 battle.add_side_condition(part, side_cond, condition, source=user, moves_funcs=moves_funcs)
 
+        # Apply volatile status effects set by this move
+        volatile = self.raw.get("volatileStatus") if self.raw else None
+        if volatile:
+            effect = self.raw.get("condition", {})
+            try:
+                from pokemon.dex.functions import moves_funcs
+            except Exception:
+                moves_funcs = None
+            cb = effect.get("onStart")
+            if isinstance(cb, str) and moves_funcs:
+                try:
+                    cls_name, func_name = cb.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        cb = getattr(cls(), func_name, None)
+                except Exception:
+                    cb = None
+            if callable(cb):
+                try:
+                    cb(user, target)
+                except Exception:
+                    cb(target)
+
 
 
 @dataclass
@@ -554,6 +577,18 @@ class Battle:
                     damage = max(1, (max_hp * counter) // 16)
                     poke.hp = max(0, poke.hp - damage)
                     poke.toxic_counter = counter + 1
+
+                # Handle volatile statuses with residual effects
+                volatiles = list(getattr(poke, "volatiles", {}).keys())
+                if volatiles:
+                    try:
+                        from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
+                    except Exception:
+                        VOLATILE_HANDLERS = {}
+                    for vol in volatiles:
+                        handler = VOLATILE_HANDLERS.get(vol)
+                        if handler and hasattr(handler, "onResidual"):
+                            handler.onResidual(poke, battle=self)
 
         # Remove Pokémon that fainted from residual damage
         self.run_faint()
