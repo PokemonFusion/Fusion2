@@ -1187,19 +1187,34 @@ class Immunity:
             pokemon.setStatus(0)
 
 class Imposter:
-    def _try_transform(self, pokemon=None):
+    def _try_transform(self, pokemon=None, battle=None):
         if not pokemon or getattr(pokemon, "transformed", False):
             return
-        foes = pokemon.foes() if hasattr(pokemon, "foes") else []
-        target = foes[0] if foes else None
-        if target and hasattr(pokemon, "transform_into"):
-            pokemon.transform_into(target)
+        if not battle:
+            return
+        part = battle.participant_for(pokemon)
+        opponent = battle.opponent_of(part) if part else None
+        target = opponent.active[0] if opponent and opponent.active else None
+        if target:
+            try:
+                from pokemon.dex.functions.moves_funcs import Transform
+                Transform().onHit(pokemon, target, battle)
+            except Exception:
+                pass
 
-    def onStart(self, pokemon=None):
-        self._try_transform(pokemon)
+    def onStart(self, pokemon=None, battle=None):
+        if not pokemon:
+            return
+        pokemon.abilityState = getattr(pokemon, "abilityState", {})
+        pokemon.abilityState["switching_in"] = True
 
-    def onSwitchIn(self, pokemon=None):
-        self._try_transform(pokemon)
+    def onSwitchIn(self, pokemon=None, battle=None):
+        if not pokemon:
+            return
+        state = getattr(pokemon, "abilityState", {})
+        if state.get("switching_in"):
+            self._try_transform(pokemon, battle)
+            state["switching_in"] = False
 
 class Infiltrator:
     def onModifyMove(self, move, user=None):
