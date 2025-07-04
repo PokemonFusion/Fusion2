@@ -335,10 +335,23 @@ class Battle:
                 return part
         return None
 
+    def restore_transforms(self) -> None:
+        """Revert any Pokémon transformed via the Transform move."""
+        for part in self.participants:
+            for poke in part.pokemons:
+                backup = getattr(poke, "tempvals", {}).get("transform_backup")
+                if backup:
+                    for attr, value in backup.items():
+                        setattr(poke, attr, value)
+                    poke.tempvals.pop("transform_backup", None)
+                    if hasattr(poke, "transformed"):
+                        poke.transformed = False
+
     def check_victory(self) -> Optional[BattleParticipant]:
         remaining = [p for p in self.participants if not p.has_lost]
         if len(remaining) <= 1:
             self.battle_over = True
+            self.restore_transforms()
             return remaining[0] if remaining else None
         return None
 

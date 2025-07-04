@@ -5963,10 +5963,34 @@ class Toxicspikes:
 
 class Transform:
     def onHit(self, user, target, battle):
-        """Copy the target's appearance and stats."""
+        """Copy the target's appearance and stats, storing originals."""
+        backup = user.tempvals.get("transform_backup")
+        if backup is None:
+            backup = {}
+            for attr in ("species", "stats", "base_stats", "types", "moves", "ability"):
+                if hasattr(user, attr):
+                    val = getattr(user, attr)
+                    if attr in {"stats", "base_stats"} and hasattr(val, "__dict__"):
+                        backup[attr] = val.__class__(**val.__dict__)
+                    elif attr == "moves":
+                        backup[attr] = [m for m in val]
+                    else:
+                        backup[attr] = val
+            user.tempvals["transform_backup"] = backup
+
         user.transformed = True
-        user.species = getattr(target, "species", user.species)
-        user.stats = getattr(target, "stats", {}).copy()
+        if hasattr(target, "species"):
+            user.species = target.species
+        if hasattr(target, "stats"):
+            user.stats = target.stats.__class__(**target.stats.__dict__)
+        if hasattr(target, "base_stats"):
+            user.base_stats = target.base_stats.__class__(**target.base_stats.__dict__)
+        if hasattr(target, "types"):
+            user.types = list(target.types)
+        if hasattr(target, "moves"):
+            user.moves = [m for m in target.moves]
+        if hasattr(target, "ability"):
+            user.ability = target.ability
         return True
 
 class Triattack:
