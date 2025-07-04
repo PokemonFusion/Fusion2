@@ -59,3 +59,18 @@ class HuntSystem:
         if self.spawn_callback:
             self.spawn_callback(hunter, result)
         return f"A wild {selected_name} (Lv {level}) appeared!"
+
+    def perform_fixed_hunt(self, hunter, name: str, level: int) -> str:
+        """Resolve a hunt with a predetermined Pokémon and level."""
+        room = self.room
+        if not room.db.allow_hunting:
+            return "You can't hunt here."
+
+        result = {
+            "name": name,
+            "level": level,
+            "data": {"name": name, "min_level": level, "max_level": level},
+        }
+        if self.spawn_callback:
+            self.spawn_callback(hunter, result)
+        return f"A wild {name} (Lv {level}) appeared!"
