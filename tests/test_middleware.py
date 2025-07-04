@@ -9,6 +9,7 @@ from pokemon.middleware import (
     format_move_details,
     get_pokemon_by_name,
     format_pokemon_details,
+    get_move_description,
 )
 
 
@@ -30,3 +31,14 @@ def test_format_pokemon_details():
     msg = format_pokemon_details(name, details)
     assert "Bulbasaur" in msg
     assert "#" in msg
+
+
+def test_get_move_description_from_moves_text():
+    _, move = get_move_by_name("Absorb")
+    desc = get_move_description(move)
+    assert "recovers" in desc.lower()
+
+
+def test_get_move_description_fallback():
+    fake_move = {"name": "FakeMove", "desc": "Some description."}
+    assert get_move_description(fake_move) == "Some description."
