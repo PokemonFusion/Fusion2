@@ -11,7 +11,7 @@ class CmdSheet(Command):
 
     def func(self):
         caller = self.caller
-        party = caller.db.pokemon_party or []
+        party = list(caller.storage.active_pokemon.all().order_by("id"))
         if not party:
             caller.msg("You have no Pokémon in your party.")
             return
@@ -82,7 +82,7 @@ class CmdSheetPokemon(Command):
             caller.msg("Usage: +sheet/pokemon <slot>")
             return
 
-        party = caller.db.pokemon_party or []
+        party = list(caller.storage.active_pokemon.all().order_by("id"))
         if self.slot < 1 or self.slot > len(party):
             caller.msg("No Pokémon in that slot.")
             return
