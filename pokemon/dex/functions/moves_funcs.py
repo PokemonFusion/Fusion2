@@ -5441,12 +5441,13 @@ class Substitute:
             return False
         user.hp -= max_hp // 4
         if hasattr(user, "volatiles"):
-            user.volatiles["substitute"] = True
+            user.volatiles["substitute"] = {"hp": max_hp // 4}
         return True
     def onStart(self, *args, **kwargs):
         user = args[0] if args else None
         if user and hasattr(user, "volatiles"):
-            user.volatiles["substitute"] = True
+            hp = getattr(user, "max_hp", getattr(user, "hp", 0)) // 4
+            user.volatiles["substitute"] = {"hp": hp}
         return True
     def onTryHit(self, user, *args, **kwargs):
         """Fail if a substitute already exists or HP is too low."""
@@ -6406,5 +6407,6 @@ class Yawn:
 
 VOLATILE_HANDLERS = {
     "leechseed": Leechseed(),
+    "substitute": Substitute(),
 }
 

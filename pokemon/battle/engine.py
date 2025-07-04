@@ -401,8 +401,40 @@ class Battle:
                         break
                 continue
 
-            # Replace fainted active Pokémon if possible
             active = part.active[0]
+
+            # Handle voluntary switch-outs (e.g. Baton Pass)
+            if getattr(active, "tempvals", {}).get("baton_pass") or getattr(
+                active, "tempvals", {}
+            ).get("switch_out"):
+                replacement = None
+                for poke in part.pokemons:
+                    if poke is active:
+                        continue
+                    if getattr(poke, "hp", 0) > 0:
+                        replacement = poke
+                        break
+                if replacement:
+                    part.active = [replacement]
+                    setattr(replacement, "side", part.side)
+                    ability = getattr(replacement, "ability", None)
+                    if ability and hasattr(ability, "call"):
+                        ability.call("onStart", replacement, self)
+                        ability.call("onSwitchIn", replacement, self)
+
+                    if active.tempvals.get("baton_pass"):
+                        if hasattr(active, "boosts") and hasattr(replacement, "boosts"):
+                            replacement.boosts = dict(active.boosts)
+                        sub = getattr(active, "volatiles", {}).pop("substitute", None)
+                        if sub:
+                            if not hasattr(replacement, "volatiles"):
+                                replacement.volatiles = {}
+                            replacement.volatiles["substitute"] = dict(sub)
+                        active.tempvals.pop("baton_pass", None)
+                    active.tempvals.pop("switch_out", None)
+                continue
+
+            # Replace fainted active Pokémon if possible
             if getattr(active, "hp", 0) <= 0:
                 for poke in part.pokemons:
                     if poke is active:
@@ -488,7 +520,46 @@ class Battle:
                 pass
             return
 
-        if getattr(target, "volatiles", {}).get("substitute") and not action.move.raw.get("bypassSub"):
+        sub = getattr(target, "volatiles", {}).get("substitute")
+        if sub and not action.move.raw.get("bypassSub"):
+            from .damage import damage_calc
+            from pokemon.dex.entities import Move
+
+            raw = dict(action.move.raw)
+            if action.move.basePowerCallback:
+                raw["basePowerCallback"] = action.move.basePowerCallback
+            move = Move(
+                name=action.move.name,
+                num=0,
+                type=action.move.type,
+                category="Physical",
+                power=action.move.power,
+                accuracy=action.move.accuracy,
+                pp=None,
+                raw=raw,
+            )
+            if action.move.basePowerCallback:
+                try:
+                    move.basePowerCallback = action.move.basePowerCallback
+                    action.move.basePowerCallback(user, target, move)
+                except Exception:
+                    move.basePowerCallback = None
+
+            dmg_result = damage_calc(user, target, move, battle=self)
+            dmg = sum(dmg_result.debug.get("damage", []))
+            if isinstance(sub, dict):
+                remaining = sub.get("hp", 0) - dmg
+                if remaining <= 0:
+                    target.volatiles.pop("substitute", None)
+                else:
+                    sub["hp"] = remaining
+            else:
+                target.volatiles.pop("substitute", None)
+            if dmg > 0:
+                try:
+                    target.tempvals["took_damage"] = True
+                except Exception:
+                    pass
             try:
                 user.tempvals["moved"] = True
             except Exception:
