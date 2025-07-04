@@ -7,10 +7,19 @@ import random
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-# Setup minimal pokemon.battle package
+# Setup minimal pokemon.battle package with utils
 pkg_battle = types.ModuleType("pokemon.battle")
 pkg_battle.__path__ = []
+utils_stub = types.ModuleType("pokemon.battle.utils")
+
+def get_modified_stat(pokemon, stat):
+    return getattr(pokemon.base_stats, stat, 0)
+
+utils_stub.get_modified_stat = get_modified_stat
+utils_stub.apply_boost = lambda *args, **kwargs: None
+pkg_battle.utils = utils_stub
 sys.modules["pokemon.battle"] = pkg_battle
+sys.modules["pokemon.battle.utils"] = utils_stub
 
 ent_path = os.path.join(ROOT, "pokemon", "dex", "entities.py")
 ent_spec = importlib.util.spec_from_file_location("pokemon.dex.entities", ent_path)
@@ -111,6 +120,16 @@ def test_substitute_blocks_damage():
     assert move.pp == 4
 
 
+def test_substitute_takes_damage():
+    battle, user, target, move = setup_battle(target_volatiles={"substitute": {"hp": 25}})
+    battle.start_turn()
+    battle.run_switch()
+    battle.run_after_switch()
+    battle.run_move()
+    assert target.hp == 100
+    assert target.volatiles["substitute"]["hp"] == 21
+
+
 def test_immunity_blocks_damage():
     battle, user, target, move = setup_battle(target_types=["Ghost"])
     battle.start_turn()
@@ -120,7 +139,14 @@ def test_immunity_blocks_damage():
     assert target.hp == 100
     assert move.pp == 4
 
+
+
 # Cleanup modules
 
 del sys.modules["pokemon.dex"]
 del sys.modules["pokemon.data"]
+sys.modules.pop("pokemon.dex.functions.moves_funcs", None)
+sys.modules.pop("pokemon.battle.utils", None)
+sys.modules.pop("pokemon.battle", None)
+sys.modules.pop("pokemon.battle.engine", None)
+sys.modules.pop("pokemon.battle.damage", None)
