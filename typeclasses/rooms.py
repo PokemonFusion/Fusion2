@@ -35,6 +35,8 @@ class FusionRoom(Room):
         self.db.allow_hunting = False
         self.db.encounter_rate = 100
         self.db.hunt_chart = []
+        # Track the current weather affecting this room
+        self.db.weather = "clear"
 
     def set_hunt_chart(self, chart):
         """Helper to set this room's hunt chart."""
@@ -47,3 +49,14 @@ class FusionRoom(Room):
         population = [e.get("name") for e in self.db.hunt_chart]
         weights = [e.get("weight", 1) for e in self.db.hunt_chart]
         return random.choices(population, weights=weights, k=1)[0]
+
+    # ------------------------------------------------------------------
+    # Weather helpers
+    # ------------------------------------------------------------------
+    def get_weather(self) -> str:
+        """Return the current weather in this room."""
+        return self.db.get("weather", "clear")
+
+    def set_weather(self, weather: str) -> None:
+        """Set the room's weather."""
+        self.db.weather = str(weather).lower()

@@ -19,7 +19,7 @@ class HuntSystem:
 
     def get_current_weather(self) -> str:
         """Return the current weather for the room. Override for custom logic."""
-        return "clear"
+        return getattr(self.room.db, "weather", "clear")
 
     def perform_hunt(self, hunter) -> str:
         """Resolve a hunt attempt and return the result message."""

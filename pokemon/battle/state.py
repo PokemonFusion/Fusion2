@@ -21,7 +21,7 @@ class BattleState:
     declare: Dict[str, Dict[str, str]] = field(default_factory=dict)
     recycle: Dict[str, str] = field(default_factory=dict)
     expshare: Dict[str, str] = field(default_factory=dict)
-    roomweather: str = "Clear"
+    roomweather: str = "clear"
     watchers: Dict[int, int] = field(default_factory=dict)
     tier: int = 1
     turn: int = 1
