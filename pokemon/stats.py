@@ -17,6 +17,8 @@ __all__ = [
     "add_experience",
     "add_evs",
     "calculate_stats",
+    "distribute_experience",
+    "award_experience_to_party",
 ]
 
 
@@ -143,4 +145,51 @@ def calculate_stats(species_name: str, level: int, ivs: Dict[str, int], evs: Dic
         ),
     }
     return stats
+
+
+def distribute_experience(pokemon_list, amount: int, ev_gains: Dict[str, int] | None = None) -> None:
+    """Distribute experience and EVs evenly across ``pokemon_list``."""
+
+    mons = list(pokemon_list)
+    if not mons or amount <= 0:
+        return
+
+    share = amount // len(mons)
+    remainder = amount % len(mons)
+    ev_gains = ev_gains or {}
+
+    for idx, mon in enumerate(mons):
+        gained = share + (1 if idx < remainder else 0)
+        add_experience(mon, gained)
+        if ev_gains:
+            add_evs(mon, ev_gains)
+        if hasattr(mon, "save"):
+            try:
+                mon.save()
+            except Exception:
+                pass
+
+
+def award_experience_to_party(player, amount: int, ev_gains: Dict[str, int] | None = None) -> None:
+    """Award experience to a player's active party respecting EXP Share."""
+
+    storage = getattr(player, "storage", None)
+    if not storage or not hasattr(storage.active_pokemon, "all"):
+        return
+
+    mons = list(storage.active_pokemon.all())
+    if not mons:
+        return
+
+    if getattr(getattr(player, "db", {}), "exp_share", False):
+        distribute_experience(mons, amount, ev_gains)
+    else:
+        add_experience(mons[0], amount)
+        if ev_gains:
+            add_evs(mons[0], ev_gains)
+        if hasattr(mons[0], "save"):
+            try:
+                mons[0].save()
+            except Exception:
+                pass
 

@@ -452,3 +452,20 @@ class CmdEvolvePokemon(Command):
             self.caller.remove_item(item)
         pokemon.save()
         self.caller.msg(f"{pokemon.name} evolved into {new_species}!")
+
+
+class CmdExpShare(Command):
+    """Toggle the EXP Share effect for your party."""
+
+    key = "+expshare"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        current = bool(self.caller.db.exp_share)
+        if current:
+            self.caller.db.exp_share = False
+            self.caller.msg("EXP Share is turned OFF.")
+        else:
+            self.caller.db.exp_share = True
+            self.caller.msg("EXP Share is turned ON.")
