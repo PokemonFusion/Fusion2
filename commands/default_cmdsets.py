@@ -66,6 +66,8 @@ from commands.cmd_givepokemon import CmdGivePokemon
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 from commands.cmd_glance import CmdGlance
 from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
+from commands.cmdmapmove import CmdMapMove
+from commands.cmdstartmap import CmdStartMap
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -135,6 +137,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRoomWizard())
         self.add(CmdEditRoom())
         self.add(CmdValidate())
+        self.add(CmdMapMove())
+        self.add(CmdStartMap())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
