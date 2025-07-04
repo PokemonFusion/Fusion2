@@ -3008,10 +3008,16 @@ class Leechseed:
         source = getattr(target, "volatiles", {}).get("leechseed")
         if not source:
             return True
+        if getattr(source, "hp", 0) <= 0:
+            if hasattr(target, "volatiles"):
+                target.volatiles.pop("leechseed", None)
+            return True
         damage = getattr(target, "max_hp", 0) // 8
         target.hp = max(0, getattr(target, "hp", 0) - damage)
         if hasattr(source, "hp"):
             source.hp = min(getattr(source, "hp", 0) + damage, getattr(source, "max_hp", 0))
+        if getattr(target, "hp", 0) <= 0 and hasattr(target, "volatiles"):
+            target.volatiles.pop("leechseed", None)
         return True
     def onStart(self, *args, **kwargs):
         user = args[0] if args else None
@@ -6392,4 +6398,13 @@ class Yawn:
         if getattr(target, "volatiles", {}).get("yawn"):
             return False
         return True
+
+
+# ----------------------------------------------------------------------
+# Volatile status handlers lookup
+# ----------------------------------------------------------------------
+
+VOLATILE_HANDLERS = {
+    "leechseed": Leechseed(),
+}
 
