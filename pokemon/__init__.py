@@ -8,6 +8,8 @@ from .stats import (
     add_experience,
     add_evs,
     calculate_stats,
+    distribute_experience,
+    award_experience_to_party,
 )
 
 __all__ = [
@@ -19,6 +21,8 @@ __all__ = [
     "add_experience",
     "add_evs",
     "calculate_stats",
+    "distribute_experience",
+    "award_experience_to_party",
     "get_evolution_items",
     "get_evolution",
     "attempt_evolution",
