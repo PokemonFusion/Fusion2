@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils import ansi
+from utils.ansi import ansi
 from django.db.utils import OperationalError
 
 class CmdSheet(Command):
