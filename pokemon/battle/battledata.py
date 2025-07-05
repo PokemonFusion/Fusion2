@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 
 @dataclass
@@ -244,6 +244,11 @@ class Field:
         self.payday: Dict[str, int] = {}
         # Track ongoing field effects such as Trick Room or Echoed Voice
         self.pseudo_weather: Dict[str, Dict] = {}
+        # Track standard weather and terrain conditions
+        self.weather: Optional[str] = None
+        self.weather_state: Dict[str, Any] = {}
+        self.terrain: Optional[str] = None
+        self.terrain_state: Dict[str, Any] = {}
 
     # ------------------------------
     # Pseudo weather helpers
@@ -276,12 +281,24 @@ class Field:
             del self.pseudo_weather[name]
 
     def to_dict(self) -> Dict:
-        return {"payday": self.payday}
+        return {
+            "payday": self.payday,
+            "weather": self.weather,
+            "weather_state": self.weather_state,
+            "terrain": self.terrain,
+            "terrain_state": self.terrain_state,
+            "pseudo_weather": self.pseudo_weather,
+        }
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Field":
         obj = cls()
         obj.payday = data.get("payday", {})
+        obj.weather = data.get("weather")
+        obj.weather_state = data.get("weather_state", {})
+        obj.terrain = data.get("terrain")
+        obj.terrain_state = data.get("terrain_state", {})
+        obj.pseudo_weather = data.get("pseudo_weather", {})
         return obj
 
 

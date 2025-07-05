@@ -135,13 +135,13 @@ def get_move_by_name(name):
 
 
 def get_move_description(details):
-    """Return a long description for a move."""
+    """Return a long description for the given move."""
 
-    name = _get(details, "name")
-    if name:
-        entry = MOVES_TEXT.get(str(name).lower())
-        if entry and entry.get("desc"):
-            return entry["desc"]
+    name = _get(details, "name", "")
+    key = _normalize_key(name)
+    entry = MOVES_TEXT.get(key)
+    if entry and "desc" in entry:
+        return entry["desc"]
     return _get(details, "desc", "No description available.")
 
 

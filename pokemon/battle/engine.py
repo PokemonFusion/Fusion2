@@ -399,6 +399,147 @@ class Battle:
             return remaining[0] if remaining else None
         return None
 
+    # ------------------------------
+    # Field condition helpers
+    # ------------------------------
+    def _lookup_effect(self, name: str):
+        try:
+            from pokemon.dex.functions import conditions_funcs, moves_funcs
+        except Exception:
+            return None
+
+        key = name.replace(" ", "").replace("-", "").lower()
+        cls_name = key.capitalize()
+        handler = getattr(conditions_funcs, cls_name, None)
+        if handler is None:
+            handler = getattr(moves_funcs, cls_name, None)
+        if handler:
+            try:
+                return handler()
+            except Exception:
+                return handler
+        return None
+
+    def setWeather(self, name: str, source=None) -> bool:
+        """Start a weather effect on the field."""
+        handler = self._lookup_effect(name)
+        if not handler:
+            return False
+        effect = {}
+        dur_cb = getattr(handler, "durationCallback", None)
+        if callable(dur_cb):
+            try:
+                effect["duration"] = dur_cb(source=source)
+            except Exception:
+                try:
+                    effect["duration"] = dur_cb(source)
+                except Exception:
+                    effect["duration"] = dur_cb()
+        self.field.add_pseudo_weather(name, effect)
+        if hasattr(handler, "onFieldStart"):
+            try:
+                handler.onFieldStart(self.field, source=source)
+            except Exception:
+                handler.onFieldStart(self.field)
+        self.field.weather = name
+        self.field.weather_handler = handler
+        return True
+
+    def clearWeather(self) -> None:
+        name = getattr(self.field, "weather", None)
+        handler = getattr(self.field, "weather_handler", None)
+        if name and handler and hasattr(handler, "onFieldEnd"):
+            try:
+                handler.onFieldEnd(self.field)
+            except Exception:
+                pass
+        if name:
+            self.field.pseudo_weather.pop(name, None)
+        self.field.weather = None
+        self.field.weather_state = {}
+        self.field.weather_handler = None
+
+    def setTerrain(self, name: str, source=None) -> bool:
+        """Start a terrain effect on the field."""
+        handler = self._lookup_effect(name)
+        if not handler:
+            return False
+        effect = {}
+        dur_cb = getattr(handler, "durationCallback", None)
+        if callable(dur_cb):
+            try:
+                effect["duration"] = dur_cb(source=source)
+            except Exception:
+                try:
+                    effect["duration"] = dur_cb(source)
+                except Exception:
+                    effect["duration"] = dur_cb()
+        self.field.add_pseudo_weather(name, effect)
+        if hasattr(handler, "onFieldStart"):
+            try:
+                handler.onFieldStart(self.field, source=source)
+            except Exception:
+                handler.onFieldStart(self.field)
+        self.field.terrain = name
+        self.field.terrain_handler = handler
+        return True
+
+    def clearTerrain(self) -> None:
+        name = getattr(self.field, "terrain", None)
+        handler = getattr(self.field, "terrain_handler", None)
+        if name and handler and hasattr(handler, "onFieldEnd"):
+            try:
+                handler.onFieldEnd(self.field)
+            except Exception:
+                pass
+        if name:
+            self.field.pseudo_weather.pop(name, None)
+        self.field.terrain = None
+        self.field.terrain_state = {}
+        self.field.terrain_handler = None
+
+    def apply_entry_hazards(self, pokemon) -> None:
+        """Apply entry hazard effects to ``pokemon`` if present."""
+        side = getattr(pokemon, "side", None)
+        if not side:
+            return
+        try:
+            from pokemon.dex.functions import moves_funcs
+        except Exception:
+            moves_funcs = None
+
+        name_map = {
+            "rocks": "stealthrock",
+            "spikes": "spikes",
+            "toxicspikes": "toxicspikes",
+            "stickyweb": "stickyweb",
+            "steelsurge": "gmaxsteelsurge",
+        }
+
+        for name, active in list(side.hazards.items()):
+            if not active:
+                continue
+            effect = name_map.get(name, name)
+            handler = None
+            if moves_funcs:
+                handler = getattr(moves_funcs, effect.capitalize(), None)
+                if handler:
+                    try:
+                        handler = handler()
+                    except Exception:
+                        pass
+            if not handler:
+                continue
+            cb = getattr(handler, "onEntryHazard", None)
+            if callable(cb):
+                try:
+                    cb(pokemon=pokemon)
+                except Exception:
+                    try:
+                        cb(pokemon)
+                    except Exception:
+                        pass
+
     # ------------------------------------------------------------------
     # Pseudocode mapping
     # ------------------------------------------------------------------
@@ -419,6 +560,7 @@ class Battle:
                         if ability and hasattr(ability, "call"):
                             ability.call("onStart", poke, self)
                             ability.call("onSwitchIn", poke, self)
+                        self.apply_entry_hazards(poke)
                         break
                 continue
 
@@ -453,6 +595,7 @@ class Battle:
                             replacement.volatiles["substitute"] = dict(sub)
                         active.tempvals.pop("baton_pass", None)
                     active.tempvals.pop("switch_out", None)
+                    self.apply_entry_hazards(replacement)
                 continue
 
             # Replace fainted active Pokémon if possible
@@ -727,6 +870,20 @@ class Battle:
             # Check if the participant has any Pokémon left
             if not any(getattr(p, "hp", 0) > 0 for p in part.pokemons):
                 part.has_lost = True
+                continue
+
+            # If the active slot is empty, automatically send the first healthy Pokémon
+            if not part.active:
+                for poke in part.pokemons:
+                    if getattr(poke, "hp", 0) > 0:
+                        part.active = [poke]
+                        setattr(poke, "side", part.side)
+                        ability = getattr(poke, "ability", None)
+                        if ability and hasattr(ability, "call"):
+                            ability.call("onStart", poke, self)
+                            ability.call("onSwitchIn", poke, self)
+                        self.apply_entry_hazards(poke)
+                        break
 
     def residual(self) -> None:
         """Process residual effects and handle end-of-turn fainting."""
@@ -755,6 +912,21 @@ class Battle:
                     poke.hp = max(0, poke.hp - damage)
                     poke.toxic_counter = counter + 1
 
+                # Ability and item residual callbacks
+                ability = getattr(poke, "ability", None)
+                if ability and hasattr(ability, "call"):
+                    try:
+                        ability.call("onResidual", poke, self)
+                    except Exception:
+                        pass
+
+                item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
+                if item and hasattr(item, "call"):
+                    try:
+                        item.call("onResidual", pokemon=poke, battle=self)
+                    except Exception:
+                        pass
+
                 # Handle volatile statuses with residual effects
                 volatiles = list(getattr(poke, "volatiles", {}).keys())
                 if volatiles:
@@ -766,6 +938,78 @@ class Battle:
                         handler = VOLATILE_HANDLERS.get(vol)
                         if handler and hasattr(handler, "onResidual"):
                             handler.onResidual(poke, battle=self)
+
+        # Handle field weather effects
+        weather = getattr(self.field, "weather", None)
+        weather_handler = getattr(self.field, "weather_handler", None)
+        if weather_handler:
+            try:
+                weather_handler.onFieldResidual(self.field)
+            except Exception:
+                pass
+            for part in self.participants:
+                if part.has_lost:
+                    continue
+                for poke in part.active:
+                    try:
+                        weather_handler.onWeather(poke)
+                    except Exception:
+                        pass
+            if weather not in self.field.pseudo_weather:
+                self.field.weather = None
+                self.field.weather_handler = None
+
+        # Handle terrain effects
+        terrain = getattr(self.field, "terrain", None)
+        terrain_handler = getattr(self.field, "terrain_handler", None)
+        if terrain_handler:
+            try:
+                terrain_handler.onFieldResidual(self.field)
+            except Exception:
+                pass
+            for part in self.participants:
+                if part.has_lost:
+                    continue
+                for poke in part.active:
+                    try:
+                        terrain_handler.onResidual(poke)
+                    except Exception:
+                        pass
+            if terrain not in self.field.pseudo_weather:
+                self.field.terrain = None
+                self.field.terrain_handler = None
+
+        # Handle pseudo weather effects
+        try:
+            from pokemon.dex.functions import moves_funcs, conditions_funcs
+        except Exception:
+            moves_funcs = None
+            conditions_funcs = None
+        for name, effect in list(self.field.pseudo_weather.items()):
+            if name in {weather, terrain}:
+                continue
+            handler = None
+            if moves_funcs:
+                handler = getattr(moves_funcs, name.capitalize(), None)
+                if handler:
+                    try:
+                        handler = handler()
+                    except Exception:
+                        pass
+            if not handler and conditions_funcs:
+                handler = getattr(conditions_funcs, name.capitalize(), None)
+                if handler:
+                    try:
+                        handler = handler()
+                    except Exception:
+                        pass
+            if handler and hasattr(handler, "onFieldResidual"):
+                try:
+                    handler.onFieldResidual(self.field)
+                except Exception:
+                    pass
+            if name not in self.field.pseudo_weather:
+                continue
 
         # Remove Pokémon that fainted from residual damage
         self.run_faint()
@@ -797,6 +1041,66 @@ class Battle:
                         ability.call("onStart", poke, self)
                         ability.call("onSwitchIn", poke, self)
 
+    def before_turn(self) -> None:
+        """Run simple BeforeTurn events for all active Pokémon."""
+        try:
+            from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+        except Exception:
+            CONDITION_HANDLERS = {}
+        try:
+            from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
+        except Exception:
+            VOLATILE_HANDLERS = {}
+
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for poke in part.active:
+                ability = getattr(poke, "ability", None)
+                if ability and hasattr(ability, "call"):
+                    try:
+                        ability.call("onBeforeTurn", poke, self)
+                    except Exception:
+                        pass
+
+                item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
+                if item and hasattr(item, "call"):
+                    try:
+                        item.call("onBeforeTurn", pokemon=poke, battle=self)
+                    except Exception:
+                        pass
+
+                status = getattr(poke, "status", None)
+                handler = CONDITION_HANDLERS.get(status)
+                if handler and hasattr(handler, "onBeforeTurn"):
+                    try:
+                        handler.onBeforeTurn(poke, battle=self)
+                    except Exception:
+                        pass
+
+                if status == "slp":
+                    turns = poke.tempvals.get("slp_turns")
+                    if turns is None:
+                        turns = random.randint(1, 3)
+                    else:
+                        turns -= 1
+                    if turns <= 0:
+                        poke.status = 0
+                        poke.tempvals.pop("slp_turns", None)
+                    else:
+                        poke.tempvals["slp_turns"] = turns
+
+                vols = getattr(poke, "volatiles", {})
+                for vol in list(vols.keys()):
+                    handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
+                    if handler and hasattr(handler, "onBeforeTurn"):
+                        try:
+                            keep = handler.onBeforeTurn(poke, battle=self)
+                            if keep is False:
+                                vols.pop(vol, None)
+                        except Exception:
+                            pass
+
     def select_actions(self) -> List[Action]:
         actions: List[Action] = []
         for part in self.participants:
@@ -823,48 +1127,12 @@ class Battle:
             base_priority = action.priority
             priority = base_priority
 
-            # Ability-based priority modifications
             ability = getattr(poke, "ability", None)
-            if ability and hasattr(ability, "call"):
-                try:
-                    mod = ability.call(
-                        "onModifyPriority",
-                        priority,
-                        pokemon=poke,
-                        target=action.target.active[0]
-                        if action.target and action.target.active
-                        else None,
-                        move=move,
-                    )
-                    if isinstance(mod, (int, float)):
-                        priority = mod
-                except Exception:
-                    pass
-                try:
-                    frac = ability.call(
-                        "onFractionalPriority",
-                        priority,
-                        pokemon=poke,
-                        target=action.target.active[0]
-                        if action.target and action.target.active
-                        else None,
-                        move=move,
-                    )
-                    if isinstance(frac, (int, float)):
-                        # Treat return value as additive adjustment
-                        priority += frac if frac != priority else 0
-                except Exception:
-                    pass
-
-            # Item-based priority modifications
             item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
-            if item and hasattr(item, "call"):
-                try:
-                    frac = item.call("onFractionalPriority", pokemon=poke)
-                    if isinstance(frac, (int, float)):
-                        priority += frac
-                except Exception:
-                    pass
+
+            if poke:
+                target = action.target.active[0] if action.target and action.target.active else None
+                priority = self.apply_priority_modifiers(poke, move, priority, target)
 
             action.priority = priority
             action.priority_mod = priority - base_priority
@@ -906,6 +1174,103 @@ class Battle:
 
         return sorted(actions, key=key, reverse=True)
 
+    def apply_priority_modifiers(
+        self,
+        pokemon,
+        move: Optional[BattleMove],
+        priority: float,
+        target,
+    ) -> float:
+        """Apply ability, item and status priority modifiers."""
+
+        try:
+            from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+        except Exception:
+            CONDITION_HANDLERS = {}
+        try:
+            from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
+        except Exception:
+            VOLATILE_HANDLERS = {}
+
+        ability = getattr(pokemon, "ability", None)
+        if ability and hasattr(ability, "call"):
+            try:
+                mod = ability.call(
+                    "onModifyPriority",
+                    priority,
+                    pokemon=pokemon,
+                    target=target,
+                    move=move,
+                )
+                if isinstance(mod, (int, float)):
+                    priority = mod
+            except Exception:
+                pass
+            try:
+                frac = ability.call(
+                    "onFractionalPriority",
+                    priority,
+                    pokemon=pokemon,
+                    target=target,
+                    move=move,
+                )
+                if isinstance(frac, (int, float)):
+                    priority += frac if frac != priority else 0
+            except Exception:
+                pass
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        if item and hasattr(item, "call"):
+            try:
+                frac = item.call("onFractionalPriority", pokemon=pokemon)
+                if isinstance(frac, (int, float)):
+                    priority += frac
+            except Exception:
+                pass
+
+        status = getattr(pokemon, "status", None)
+        handler = CONDITION_HANDLERS.get(status)
+        if handler:
+            if hasattr(handler, "onModifyPriority"):
+                try:
+                    mod = handler.onModifyPriority(priority, pokemon=pokemon, target=target, move=move)
+                    if isinstance(mod, (int, float)):
+                        priority = mod
+                except Exception:
+                    pass
+            if hasattr(handler, "onFractionalPriority"):
+                try:
+                    frac = handler.onFractionalPriority(priority, pokemon=pokemon, target=target, move=move)
+                    if isinstance(frac, (int, float)):
+                        priority += frac if frac != priority else 0
+                except Exception:
+                    pass
+
+        volatiles = getattr(pokemon, "volatiles", {})
+        for vol in list(volatiles.keys()):
+            handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
+            if not handler:
+                continue
+            if hasattr(handler, "onModifyPriority"):
+                try:
+                    mod = handler.onModifyPriority(priority, pokemon=pokemon, target=target, move=move)
+                    if isinstance(mod, (int, float)):
+                        priority = mod
+                except Exception:
+                    pass
+            if hasattr(handler, "onFractionalPriority"):
+                try:
+                    frac = handler.onFractionalPriority(priority, pokemon=pokemon, target=target, move=move)
+                    if isinstance(frac, (int, float)):
+                        priority += frac if frac != priority else 0
+                except Exception:
+                    pass
+
+        if getattr(pokemon, "tempvals", {}).pop("quash", False):
+            priority = -7
+
+        return priority
+
     def status_prevents_move(self, pokemon) -> bool:
         """Return True if the Pokemon cannot act due to status."""
         status = getattr(pokemon, "status", None)
@@ -913,10 +1278,49 @@ class Battle:
             from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
         except Exception:
             CONDITION_HANDLERS = {}
+        try:
+            from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
+        except Exception:
+            VOLATILE_HANDLERS = {}
+
+        ability = getattr(pokemon, "ability", None)
+        if ability and hasattr(ability, "call"):
+            try:
+                res = ability.call("onBeforeMove", pokemon=pokemon, battle=self)
+                if res is False:
+                    return True
+            except Exception:
+                pass
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        if item and hasattr(item, "call"):
+            try:
+                res = item.call("onBeforeMove", pokemon=pokemon, battle=self)
+                if res is False:
+                    return True
+            except Exception:
+                pass
+
         handler = CONDITION_HANDLERS.get(status)
         if handler and hasattr(handler, "onBeforeMove"):
             result = handler.onBeforeMove(pokemon, battle=self)
-            return result is False
+            if result is False:
+                return True
+
+        volatiles = getattr(pokemon, "volatiles", {})
+        if "flinch" in volatiles:
+            volatiles.pop("flinch", None)
+            return True
+        for vol in list(volatiles.keys()):
+            handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
+            if handler and hasattr(handler, "onBeforeMove"):
+                try:
+                    result = handler.onBeforeMove(pokemon, battle=self)
+                except Exception:
+                    result = handler.onBeforeMove(pokemon)
+                if result is False:
+                    return True
+
         if status == "par":
             return random.random() < 0.25
         if status == "frz":
@@ -1013,5 +1417,6 @@ class Battle:
 
     def run_turn(self) -> None:
         self.start_turn()
+        self.before_turn()
         self.run_action()
         self.end_turn()

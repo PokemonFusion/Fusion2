@@ -68,12 +68,13 @@ def test_format_pokemon_details():
     assert "#" in msg
 
 
-def test_get_move_description_from_text():
-    _, move = get_move_by_name("Fling")
+def test_get_move_description_from_moves_text():
+    _, move = get_move_by_name("Absorb")
     desc = get_move_description(move)
-    assert "held item" in desc
+    assert "recovers" in desc.lower()
 
 
 def test_get_move_description_fallback():
-    _, move = get_move_by_name("Tackle")
-    assert get_move_description(move) == "No description available."
+    fake_move = {"name": "FakeMove", "desc": "Some description."}
+    assert get_move_description(fake_move) == "Some description."
+
