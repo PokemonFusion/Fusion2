@@ -3,13 +3,14 @@ from __future__ import annotations
 import random
 from typing import List, Optional
 
-from evennia import create_object
+from evennia import create_object, search_object
 
 from typeclasses.battleroom import BattleRoom
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
 from .interface import add_watcher, notify_watchers, remove_watcher
+from .handler import battle_handler
 from ..generation import generate_pokemon
 from ..stats import calculate_stats
 from world.pokemon_spawn import get_spawn
@@ -119,6 +120,28 @@ class BattleInstance:
         self.state: BattleState | None = None
         self.watchers: set[int] = set()
 
+    @classmethod
+    def restore(cls, room) -> "BattleInstance | None":
+        """Recreate an instance from a stored battle room."""
+        data = getattr(room.db, "battle_data", None)
+        state = getattr(room.db, "battle_state", None)
+        if not data or not state:
+            return None
+        obj = cls.__new__(cls)
+        obj.player = None
+        obj.opponent = None
+        obj.room = room
+        room.db.instance = obj
+        obj.data = BattleData.from_dict(data)
+        obj.battle = obj.data.battle
+        obj.state = BattleState.from_dict(state)
+        obj.watchers = set(obj.state.watchers.keys())
+        for wid in obj.watchers:
+            targets = search_object(wid)
+            if targets:
+                targets[0].ndb.battle_instance = obj
+        return obj
+
     def start(self) -> None:
         """Start a battle against a wild Pokémon, trainer or another player."""
         if self.opponent:
@@ -189,6 +212,7 @@ class BattleInstance:
 
         # Let the player know the battle is ready for input
         self.prompt_first_turn()
+        battle_handler.register(self)
 
     def start_pvp(self) -> None:
         """Start a battle between two players."""
@@ -265,10 +289,17 @@ class BattleInstance:
         )
 
         self.prompt_first_turn()
+        battle_handler.register(self)
 
     def end(self) -> None:
         """End the battle and clean up."""
         if self.room:
+            if hasattr(self.room.db, "instance"):
+                del self.room.db.instance
+            if hasattr(self.room.db, "battle_data"):
+                del self.room.db.battle_data
+            if hasattr(self.room.db, "battle_state"):
+                del self.room.db.battle_state
             self.room.delete()
         if self.player.ndb.get("battle_instance"):
             del self.player.ndb.battle_instance
@@ -279,6 +310,7 @@ class BattleInstance:
             notify_watchers(self.state, "The battle has ended.", room=self.room)
         self.watchers.clear()
         self.state = None
+        battle_handler.unregister(self)
         self.player.msg("The battle has ended.")
         if self.opponent:
             self.opponent.msg("The battle has ended.")

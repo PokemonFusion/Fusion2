@@ -31,6 +31,14 @@ iface.remove_watcher = lambda *a, **k: None
 iface.notify_watchers = lambda *a, **k: None
 sys.modules["pokemon.battle.interface"] = iface
 
+# Stub battle handler
+handler_mod = types.ModuleType("pokemon.battle.handler")
+handler_mod.battle_handler = types.SimpleNamespace(register=lambda *a, **k: None,
+                                                   unregister=lambda *a, **k: None,
+                                                   restore=lambda *a, **k: None,
+                                                   save=lambda *a, **k: None)
+sys.modules["pokemon.battle.handler"] = handler_mod
+
 # Stub pokemon generation
 gen_mod = types.ModuleType("pokemon.generation")
 class DummyInst:
