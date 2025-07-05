@@ -30,7 +30,8 @@ def at_server_start():
     This is called every time the server starts up, regardless of
     how it was shut down.
     """
-    pass
+    from pokemon.battle.handler import battle_handler
+    battle_handler.restore()
 
 
 def at_server_stop():
@@ -38,7 +39,8 @@ def at_server_stop():
     This is called just before the server is shut down, regardless
     of it is for a reload, reset or shutdown.
     """
-    pass
+    from pokemon.battle.handler import battle_handler
+    battle_handler.save()
 
 
 def at_server_reload_start():
@@ -68,4 +70,5 @@ def at_server_cold_stop():
     This is called only when the server goes down due to a shutdown or
     reset.
     """
-    pass
+    from pokemon.battle.handler import battle_handler
+    battle_handler.save()
