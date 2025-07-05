@@ -48,6 +48,7 @@ from commands.command import (
 )
 from commands.cmd_hunt import CmdHunt, CmdLeaveHunt, CmdCustomHunt
 from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
+from commands.cmd_adminbattle import CmdAbortBattle
 from commands.cmd_battle import (
     CmdBattleAttack,
     CmdBattleSwitch,
@@ -128,6 +129,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdLeaveHunt())
         self.add(CmdWatchBattle())
         self.add(CmdUnwatchBattle())
+        self.add(CmdAbortBattle())
         self.add(CmdBattleAttack())
         self.add(CmdBattleSwitch())
         self.add(CmdBattleItem())
