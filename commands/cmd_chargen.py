@@ -7,6 +7,7 @@ from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
 from pokemon.models import Pokemon, UserStorage, StorageBox
 from pokemon.starters import get_starter_names
+from commands.command import heal_pokemon
 
 
 TYPES = [
@@ -31,20 +32,38 @@ def _ensure_storage(char):
     return storage
 
 
-def _create_starter(char, species_name: str, ability: str, level: int = 5):
+def _create_starter(
+    char, species_name: str, ability: str, gender: str, level: int = 5
+):
     """Create the starter Pokemon for the player."""
     try:
         instance = generate_pokemon(species_name, level=level)
     except ValueError:
         char.msg("That species does not exist.")
         return
+    chosen_gender = gender or instance.gender
+    data = {
+        "ivs": {
+            "hp": instance.ivs.hp,
+            "atk": instance.ivs.atk,
+            "def": instance.ivs.def_,
+            "spa": instance.ivs.spa,
+            "spd": instance.ivs.spd,
+            "spe": instance.ivs.spe,
+        },
+        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+        "nature": instance.nature,
+        "gender": chosen_gender,
+    }
     pokemon = Pokemon.objects.create(
         name=instance.species.name,
         level=instance.level,
         type_=", ".join(instance.species.types),
         ability=ability or instance.ability,
         trainer=char.trainer,
+        data=data,
     )
+    heal_pokemon(pokemon)
     storage = _ensure_storage(char)
     storage.active_pokemon.add(pokemon)
     return pokemon
@@ -163,18 +182,50 @@ def starter_ability(caller, raw_string, **kwargs):
     abilities = list(dict.fromkeys(abilities))
     if len(abilities) <= 1:
         caller.ndb.chargen["ability"] = abilities[0] if abilities else ""
-        return starter_confirm(caller, raw_string)
+        return starter_gender(caller, raw_string)
     text = "Choose your pokemon's ability:\n"
     for ab in abilities:
         text += f"  {ab}\n"
-    options = tuple({"key": ab.lower(), "desc": ab, "goto": ("starter_confirm", {"ability": ab})} for ab in abilities)
+    options = tuple({"key": ab.lower(), "desc": ab, "goto": ("starter_gender", {"ability": ab})} for ab in abilities)
     return text, options
+
+
+def starter_gender(caller, raw_string, **kwargs):
+    ability = kwargs.get("ability")
+    if ability:
+        caller.ndb.chargen["ability"] = ability
+
+    species = caller.ndb.chargen.get("species")
+    if not species:
+        caller.msg("Error: Species not chosen.")
+        return "starter_species", {}
+
+    data = POKEDEX.get(species.title()) or POKEDEX.get(species.lower())
+    ratio = getattr(data, "gender_ratio", None)
+
+    options = []
+    text = "Choose your starter's gender:"
+    if not ratio or (ratio.M == 0 and ratio.F == 0):
+        options.append({"key": ("N", "n"), "desc": "Genderless", "goto": ("starter_confirm", {"gender": "N"})})
+    else:
+        if ratio.M == 1:
+            options.append({"key": ("M", "m"), "desc": "Male", "goto": ("starter_confirm", {"gender": "M"})})
+        elif ratio.F == 1:
+            options.append({"key": ("F", "f"), "desc": "Female", "goto": ("starter_confirm", {"gender": "F"})})
+        else:
+            options.append({"key": ("M", "m"), "desc": "Male", "goto": ("starter_confirm", {"gender": "M"})})
+            options.append({"key": ("F", "f"), "desc": "Female", "goto": ("starter_confirm", {"gender": "F"})})
+
+    return text, tuple(options)
 
 
 def starter_confirm(caller, raw_string, **kwargs):
     ability = kwargs.get("ability")
     if ability:
         caller.ndb.chargen["ability"] = ability
+    gender = kwargs.get("gender")
+    if gender:
+        caller.ndb.chargen["gender"] = gender
     species = caller.ndb.chargen.get("species")
     if not species:
         species = raw_string.strip()
@@ -189,7 +240,11 @@ def starter_confirm(caller, raw_string, **kwargs):
             caller.msg("Unknown species. Try again.")
             return "starter_species", {}
         caller.ndb.chargen["species"] = species
-    text = f"You chose {species.title()} with ability {caller.ndb.chargen.get('ability')} as your starter. Proceed? (y/n)"
+    text = (
+        f"You chose {species.title()}"
+        f" ({caller.ndb.chargen.get('gender', '?')})"
+        f" with ability {caller.ndb.chargen.get('ability')} as your starter. Proceed? (y/n)"
+    )
     options = (
         {"key": ("y", "Y"), "goto": "finish_human"},
         {"key": ("n", "N"), "goto": "starter_species"},
@@ -224,7 +279,7 @@ def finish_human(caller, raw_string):
     if not species:
         caller.msg("Error: No species chosen.")
         return None, None
-    _create_starter(caller, species, data.get("ability"))
+    _create_starter(caller, species, data.get("ability"), data.get("gender"))
     caller.db.gender = data.get("gender")
     caller.db.favored_type = data.get("favored_type")
     caller.msg(
