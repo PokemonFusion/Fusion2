@@ -128,7 +128,10 @@ class User(InventoryMixin, DefaultCharacter):
 
     @property
     def trainer(self) -> Trainer:
-        return Trainer.objects.get(user=self)
+        trainer, _ = Trainer.objects.get_or_create(
+            user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
+        )
+        return trainer
 
     # Helper proxy methods
     def add_badge(self, badge: GymBadge) -> None:
