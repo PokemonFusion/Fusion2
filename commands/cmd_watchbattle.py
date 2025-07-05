@@ -17,20 +17,37 @@ class CmdWatchBattle(Command):
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +watchbattle <character>")
+            self.caller.msg("Usage: +watchbattle <character or battle id>")
             return
-        target = search_object(self.args.strip())
-        if not target:
-            self.caller.msg("No such character.")
-            return
-        target = target[0]
-        inst = target.ndb.get("battle_instance")
-        if not inst:
-            self.caller.msg("They are not currently in battle.")
-            return
+        arg = self.args.strip()
+        inst = None
+        target = None
+        if arg.isdigit():
+            from pokemon.battle.handler import battle_handler
+
+            bid = int(arg)
+            inst = battle_handler.instances.get(bid)
+            if not inst:
+                self.caller.msg("No battle with that ID found.")
+                return
+        else:
+            target_list = search_object(arg)
+            if not target_list:
+                self.caller.msg("No such character.")
+                return
+            target = target_list[0]
+            inst = target.ndb.get("battle_instance")
+            if not inst:
+                self.caller.msg("They are not currently in battle.")
+                return
         inst.add_watcher(self.caller)
         self.caller.move_to(inst.room, quiet=True)
-        self.caller.msg(f"You begin watching {target.key}'s battle.")
+        if target:
+            self.caller.msg(
+                f"You begin watching {target.key}'s battle (#{inst.room.id})."
+            )
+        else:
+            self.caller.msg(f"You begin watching battle #{inst.room.id}.")
 
 
 class CmdUnwatchBattle(Command):

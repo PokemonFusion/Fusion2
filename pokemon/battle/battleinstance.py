@@ -208,6 +208,8 @@ class BattleInstance:
         self.player.ndb.battle_instance = self
         self.player.move_to(self.room, quiet=True)
         self.player.msg("Battle started!")
+        bid = getattr(self.room, "id", 0)
+        self.player.msg(f"Battle ID: {bid}")
         notify_watchers(self.state, f"{self.player.key} has entered battle!", room=self.room)
 
         # Let the player know the battle is ready for input
@@ -282,6 +284,9 @@ class BattleInstance:
         self.opponent.move_to(self.room, quiet=True)
         self.player.msg("PVP battle started!")
         self.opponent.msg("PVP battle started!")
+        bid = getattr(self.room, "id", 0)
+        self.player.msg(f"Battle ID: {bid}")
+        self.opponent.msg(f"Battle ID: {bid}")
         notify_watchers(
             self.state,
             f"{self.player.key} and {self.opponent.key} begin a battle!",
