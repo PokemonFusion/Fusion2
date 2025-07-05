@@ -1,6 +1,7 @@
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
 from pokemon.models import Pokemon
+from commands.command import heal_pokemon
 
 
 def node_start(caller, raw_input=None, target=None):
@@ -31,14 +32,29 @@ def node_level(caller, raw_input=None, target=None):
         level = 1
     species = caller.ndb.givepoke.get("species")
     instance = generate_pokemon(species, level=level)
+    data = {
+        "ivs": {
+            "hp": instance.ivs.hp,
+            "atk": instance.ivs.atk,
+            "def": instance.ivs.def_,
+            "spa": instance.ivs.spa,
+            "spd": instance.ivs.spd,
+            "spe": instance.ivs.spe,
+        },
+        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+        "nature": instance.nature,
+        "gender": instance.gender,
+        "admin_generated": True,
+    }
     pokemon = Pokemon.objects.create(
         name=instance.species.name,
         level=instance.level,
         type_=", ".join(instance.species.types),
         ability=instance.ability,
         trainer=target.trainer,
-        data={"admin_generated": True},
+        data=data,
     )
+    heal_pokemon(pokemon)
     target.storage.active_pokemon.add(pokemon)
     caller.msg(f"Gave {pokemon.name} (Lv {pokemon.level}) to {target.key}.")
     if target != caller:
