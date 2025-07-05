@@ -38,10 +38,8 @@ def get_stats(pokemon):
 def heal_pokemon(pokemon):
     """Restore a single Pokemon's HP and clear status."""
     max_hp = get_max_hp(pokemon)
-    data = pokemon.data or {}
-    data["current_hp"] = max_hp
-    data["status"] = ""
-    pokemon.data = data
+    pokemon.current_hp = max_hp
+    pokemon.status = ""
     pokemon.save()
 
 

@@ -24,6 +24,23 @@ def generate_wild_pokemon(location=None) -> Pokemon:
     if not inst:
         inst = generate_pokemon("Pikachu", level=5)
     moves = [Move(name=m) for m in inst.moves]
+    data = {}
+    if hasattr(inst, "ivs"):
+        data.update(
+            {
+                "ivs": {
+                    "hp": inst.ivs.hp,
+                    "atk": inst.ivs.atk,
+                    "def": inst.ivs.def_,
+                    "spa": inst.ivs.spa,
+                    "spd": inst.ivs.spd,
+                    "spe": inst.ivs.spe,
+                },
+                "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+                "nature": getattr(inst, "nature", "Hardy"),
+                "gender": getattr(inst, "gender", "N"),
+            }
+        )
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
@@ -31,6 +48,7 @@ def generate_wild_pokemon(location=None) -> Pokemon:
         max_hp=inst.stats.hp,
         moves=moves,
         ability=inst.ability,
+        data=data,
     )
 
 
@@ -38,6 +56,23 @@ def generate_trainer_pokemon() -> Pokemon:
     """Placeholder that returns a trainer's Charmander."""
     inst = generate_pokemon("Charmander", level=5)
     moves = [Move(name=m) for m in inst.moves]
+    data = {}
+    if hasattr(inst, "ivs"):
+        data.update(
+            {
+                "ivs": {
+                    "hp": inst.ivs.hp,
+                    "atk": inst.ivs.atk,
+                    "def": inst.ivs.def_,
+                    "spa": inst.ivs.spa,
+                    "spd": inst.ivs.spd,
+                    "spe": inst.ivs.spe,
+                },
+                "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+                "nature": getattr(inst, "nature", "Hardy"),
+                "gender": getattr(inst, "gender", "N"),
+            }
+        )
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
@@ -45,6 +80,7 @@ def generate_trainer_pokemon() -> Pokemon:
         max_hp=inst.stats.hp,
         moves=moves,
         ability=inst.ability,
+        data=data,
     )
 
 
@@ -91,6 +127,23 @@ class BattleInstance:
         for poke in self.player.storage.active_pokemon.all():
             inst = generate_pokemon(poke.name, level=poke.level)
             moves = [Move(name=m) for m in inst.moves]
+            data = {}
+            if hasattr(inst, "ivs"):
+                data.update(
+                    {
+                        "ivs": {
+                            "hp": inst.ivs.hp,
+                            "atk": inst.ivs.atk,
+                            "def": inst.ivs.def_,
+                            "spa": inst.ivs.spa,
+                            "spd": inst.ivs.spd,
+                            "spe": inst.ivs.spe,
+                        },
+                        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+                        "nature": getattr(inst, "nature", "Hardy"),
+                        "gender": getattr(inst, "gender", "N"),
+                    }
+                )
             player_pokemon.append(
                 Pokemon(
                     name=inst.species.name,
@@ -98,6 +151,8 @@ class BattleInstance:
                     hp=inst.stats.hp,
                     max_hp=inst.stats.hp,
                     moves=moves,
+                    ability=inst.ability,
+                    data=data,
                 )
             )
 
@@ -141,6 +196,23 @@ class BattleInstance:
         for poke in self.player.storage.active_pokemon.all():
             inst = generate_pokemon(poke.name, level=poke.level)
             moves = [Move(name=m) for m in inst.moves]
+            data = {}
+            if hasattr(inst, "ivs"):
+                data.update(
+                    {
+                        "ivs": {
+                            "hp": inst.ivs.hp,
+                            "atk": inst.ivs.atk,
+                            "def": inst.ivs.def_,
+                            "spa": inst.ivs.spa,
+                            "spd": inst.ivs.spd,
+                            "spe": inst.ivs.spe,
+                        },
+                        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+                        "nature": getattr(inst, "nature", "Hardy"),
+                        "gender": getattr(inst, "gender", "N"),
+                    }
+                )
             player_pokemon.append(
                 Pokemon(
                     name=inst.species.name,
@@ -148,6 +220,8 @@ class BattleInstance:
                     hp=inst.stats.hp,
                     max_hp=inst.stats.hp,
                     moves=moves,
+                    ability=inst.ability,
+                    data=data,
                 )
             )
 
@@ -155,6 +229,19 @@ class BattleInstance:
         for poke in self.opponent.storage.active_pokemon.all():
             inst = generate_pokemon(poke.name, level=poke.level)
             moves = [Move(name=m) for m in inst.moves]
+            data = {
+                "ivs": {
+                    "hp": inst.ivs.hp,
+                    "atk": inst.ivs.atk,
+                    "def": inst.ivs.def_,
+                    "spa": inst.ivs.spa,
+                    "spd": inst.ivs.spd,
+                    "spe": inst.ivs.spe,
+                },
+                "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
+                "nature": inst.nature,
+                "gender": inst.gender,
+            }
             opp_pokemon.append(
                 Pokemon(
                     name=inst.species.name,
@@ -162,6 +249,8 @@ class BattleInstance:
                     hp=inst.stats.hp,
                     max_hp=inst.stats.hp,
                     moves=moves,
+                    ability=inst.ability,
+                    data=data,
                 )
             )
 
