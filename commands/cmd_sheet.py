@@ -1,5 +1,6 @@
 from evennia import Command
 from evennia.utils import ansi
+from django.db.utils import OperationalError
 
 class CmdSheet(Command):
     """Display a summary of your Pokémon party."""
@@ -11,7 +12,11 @@ class CmdSheet(Command):
 
     def func(self):
         caller = self.caller
-        party = list(caller.storage.active_pokemon.all().order_by("id"))
+        try:
+            party = list(caller.storage.active_pokemon.all().order_by("id"))
+        except OperationalError:
+            caller.msg("The game database is out of date. Please run 'evennia migrate'.")
+            return
         if not party:
             caller.msg("You have no Pokémon in your party.")
             return
