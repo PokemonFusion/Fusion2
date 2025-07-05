@@ -70,6 +70,7 @@ from commands.cmd_roomwizard import CmdRoomWizard
 from commands.cmd_editroom import CmdEditRoom
 from commands.cmd_validate import CmdValidate
 from commands.cmd_givepokemon import CmdGivePokemon
+from commands.cmd_gitpull import CmdGitPull
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 from commands.cmd_glance import CmdGlance
 from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
@@ -135,6 +136,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdBattleItem())
         self.add(CmdSpawns())
         self.add(CmdGivePokemon())
+        self.add(CmdGitPull())
         # PVP commands
         self.add(CmdPvpHelp())
         self.add(CmdPvpList())

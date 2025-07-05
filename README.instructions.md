@@ -64,3 +64,9 @@ regional number and the species name.  The data was generated from the
 (`pokedexes.csv`, `pokemon_dex_numbers.csv` and `pokemon_species.csv`).  Use the
 helpers in `pokemon/dex/functions/pokedex_funcs.py` such as
 `get_region_entries()` or `get_region_species()` to access the data.
+
+## Git Pull Command
+
+Admins can update the server's code from within the game by using the
+`+gitpull` command. The command runs `git pull` and returns any output to
+the caller.
