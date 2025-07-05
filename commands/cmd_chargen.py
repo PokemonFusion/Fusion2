@@ -202,15 +202,29 @@ def starter_gender(caller, raw_string, **kwargs):
 
     data = POKEDEX.get(species.title()) or POKEDEX.get(species.lower())
     ratio = getattr(data, "gender_ratio", None)
+    gender = getattr(data, "gender", None)
 
     options = []
     text = "Choose your starter's gender:"
-    if not ratio or (ratio.M == 0 and ratio.F == 0):
-        options.append({"key": ("N", "n"), "desc": "Genderless", "goto": ("starter_confirm", {"gender": "N"})})
-    else:
-        if ratio.M == 1:
+    if gender:
+        if gender == "N":
+            options.append({"key": ("N", "n"), "desc": "Genderless", "goto": ("starter_confirm", {"gender": "N"})})
+        elif gender == "M":
             options.append({"key": ("M", "m"), "desc": "Male", "goto": ("starter_confirm", {"gender": "M"})})
-        elif ratio.F == 1:
+        elif gender == "F":
+            options.append({"key": ("F", "f"), "desc": "Female", "goto": ("starter_confirm", {"gender": "F"})})
+    else:
+        if not ratio:
+            ratio_m = 0.5
+            ratio_f = 0.5
+        else:
+            ratio_m = ratio.M
+            ratio_f = ratio.F
+        if ratio_m == 0 and ratio_f == 0:
+            options.append({"key": ("N", "n"), "desc": "Genderless", "goto": ("starter_confirm", {"gender": "N"})})
+        elif ratio_m == 1:
+            options.append({"key": ("M", "m"), "desc": "Male", "goto": ("starter_confirm", {"gender": "M"})})
+        elif ratio_f == 1:
             options.append({"key": ("F", "f"), "desc": "Female", "goto": ("starter_confirm", {"gender": "F"})})
         else:
             options.append({"key": ("M", "m"), "desc": "Male", "goto": ("starter_confirm", {"gender": "M"})})
