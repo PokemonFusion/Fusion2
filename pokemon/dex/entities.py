@@ -154,6 +154,7 @@ class Pokemon:
     num: int
     types: List[str] = field(default_factory=list)
     gender_ratio: Optional[GenderRatio] = None
+    gender: Optional[str] = None
     base_stats: Stats = field(default_factory=Stats)
     abilities: Dict[str, Ability] = field(default_factory=dict)
     heightm: float = 0.0
@@ -178,6 +179,7 @@ class Pokemon:
         gender_ratio = None
         if "genderRatio" in data:
             gender_ratio = GenderRatio.from_dict(data["genderRatio"])
+        gender = data.get("gender")
         abilities: Dict[str, Ability] = {}
         for slot, ability_name in data.get("abilities", {}).items():
             lookup = abilitydex.get(ability_name.lower())
@@ -191,6 +193,7 @@ class Pokemon:
             num=data.get("num", 0),
             types=data.get("types", []),
             gender_ratio=gender_ratio,
+            gender=gender,
             base_stats=base_stats,
             abilities=abilities,
             heightm=data.get("heightm", 0.0),

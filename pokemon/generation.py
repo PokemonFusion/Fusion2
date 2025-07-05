@@ -47,10 +47,18 @@ def calculate_stat(base: int, iv: int, level: int, *, is_hp: bool = False, modif
     return stat
 
 
-def get_gender(ratio: Optional[Dict[str, float]]) -> str:
-    """Return a gender based on the species gender ratio."""
+def get_gender(
+    ratio: Optional[Dict[str, float]] = None, single: Optional[str] = None
+) -> str:
+    """Return a gender based on ratio or a single-gender value."""
+    if single:
+        if single in {"M", "F", "N"}:
+            return single
+
     if ratio is None:
-        return "N"
+        # default 50/50 when no ratio and no single gender
+        ratio = {"M": 0.5, "F": 0.5}
+
     if ratio.get("M") == 0 and ratio.get("F") == 0:
         return "N"
     if ratio.get("M") == 1:
@@ -270,7 +278,10 @@ def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
     )
 
     ability = get_random_ability({k: v.name if hasattr(v, "name") else v for k, v in species.abilities.items()})
-    gender = get_gender( {"M": species.gender_ratio.M, "F": species.gender_ratio.F} if species.gender_ratio else None)
+    ratio_dict = None
+    if species.gender_ratio:
+        ratio_dict = {"M": species.gender_ratio.M, "F": species.gender_ratio.F}
+    gender = get_gender(ratio_dict, getattr(species, "gender", None))
 
     moves = get_valid_moves(species.name, level)
     if len(moves) > 4:
