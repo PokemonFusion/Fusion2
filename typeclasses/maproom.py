@@ -1,5 +1,5 @@
 from evennia import DefaultRoom
-from evennia.utils import ansi
+from utils.ansi import ansi
 
 
 class MapRoom(DefaultRoom):

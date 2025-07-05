@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from evennia import search_object
-from evennia.utils import ansi
+from utils.ansi import ansi
 
 from .state import BattleState
 

@@ -23,8 +23,8 @@ STARTER_NAMES = set(name.lower() for name in get_starter_names())
 
 
 def _ensure_storage(char):
-    storage, _ = UserStorage.objects.get_or_create(user=char)
-    char.storage = storage
+    """Return the character's storage, creating it and its boxes if missing."""
+    storage = char.storage  # property ensures creation
     if not storage.boxes.exists():
         for i in range(1, 9):
             StorageBox.objects.create(storage=storage, name=f"Box {i}")

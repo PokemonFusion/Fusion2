@@ -33,16 +33,22 @@ class User(InventoryMixin, DefaultCharacter):
 
     def at_object_creation(self):
         super().at_object_creation()
-        storage, _ = UserStorage.objects.get_or_create(user=self)
-        self.storage = storage
-        if not storage.boxes.exists():
-            for i in range(1, 9):
-                StorageBox.objects.create(storage=storage, name=f"Box {i}")
+        # Ensure a storage record and starter boxes exist for this character.
+        _ = self.storage
         Trainer.objects.get_or_create(
             user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
         )
         if self.db.inventory is None:
             self.db.inventory = {}
+
+    @property
+    def storage(self) -> UserStorage:
+        """Return this character's storage, creating it if needed."""
+        storage, created = UserStorage.objects.get_or_create(user=self)
+        if not storage.boxes.exists():
+            for i in range(1, 9):
+                StorageBox.objects.create(storage=storage, name=f"Box {i}")
+        return storage
 
     # ------------------------------------------------------------------
     # Starter selection
@@ -122,7 +128,10 @@ class User(InventoryMixin, DefaultCharacter):
 
     @property
     def trainer(self) -> Trainer:
-        return Trainer.objects.get(user=self)
+        trainer, _ = Trainer.objects.get_or_create(
+            user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
+        )
+        return trainer
 
     # Helper proxy methods
     def add_badge(self, badge: GymBadge) -> None:
