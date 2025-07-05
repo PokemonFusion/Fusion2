@@ -32,6 +32,8 @@ class FusionRoom(Room):
         super().at_object_creation()
         self.db.is_pokemon_center = False
         self.db.is_item_store = False
+        self.db.is_item_shop = False
+        self.db.store_inventory = {}
         self.db.allow_hunting = False
         self.db.encounter_rate = 100
         self.db.hunt_chart = []

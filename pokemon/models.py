@@ -150,5 +150,13 @@ class Trainer(models.Model):
         self.money += amount
         self.save()
 
+    def spend_money(self, amount: int) -> bool:
+        """Remove money if available and return success."""
+        if self.money < amount:
+            return False
+        self.money -= amount
+        self.save()
+        return True
+
     def log_seen_pokemon(self, pokemon: Pokemon) -> None:
         self.seen_pokemon.add(pokemon)
