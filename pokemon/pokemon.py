@@ -131,5 +131,9 @@ class User(InventoryMixin, DefaultCharacter):
     def add_money(self, amount: int) -> None:
         self.trainer.add_money(amount)
 
+    def spend_money(self, amount: int) -> bool:
+        """Try to spend money from the trainer."""
+        return self.trainer.spend_money(amount)
+
     def log_seen_pokemon(self, pokemon: Pokemon) -> None:
         self.trainer.log_seen_pokemon(pokemon)
