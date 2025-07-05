@@ -131,6 +131,10 @@ def get_move_by_name(name):
         alt = _normalize_key(_get(details, "name", move_name))
         if alt == key:
             return move_name, details
+    # Fallback to text dataset if move not present in MOVEDEX
+    entry = MOVES_TEXT.get(key)
+    if entry:
+        return key, entry
     return None, None
 
 
