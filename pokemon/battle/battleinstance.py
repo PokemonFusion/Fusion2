@@ -11,7 +11,29 @@ from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
 from .interface import add_watcher, notify_watchers, remove_watcher
 from ..generation import generate_pokemon
+from ..stats import calculate_stats
 from world.pokemon_spawn import get_spawn
+
+
+def _calc_stats_from_model(poke):
+    """Return calculated stats for a stored Pokemon model."""
+    data = getattr(poke, "data", {}) or {}
+    ivs = data.get("ivs", {})
+    evs = data.get("evs", {})
+    nature = data.get("nature", "Hardy")
+    try:
+        return calculate_stats(poke.name, poke.level, ivs, evs, nature)
+    except Exception:
+        inst = generate_pokemon(poke.name, level=poke.level)
+        st = getattr(inst, "stats", inst)
+        return {
+            "hp": getattr(st, "hp", 100),
+            "atk": getattr(st, "atk", 0),
+            "def": getattr(st, "def_", 0),
+            "spa": getattr(st, "spa", 0),
+            "spd": getattr(st, "spd", 0),
+            "spe": getattr(st, "spe", 0),
+        }
 
 
 def generate_wild_pokemon(location=None) -> Pokemon:
@@ -125,34 +147,17 @@ class BattleInstance:
 
         player_pokemon: List[Pokemon] = []
         for poke in self.player.storage.active_pokemon.all():
-            inst = generate_pokemon(poke.name, level=poke.level)
-            moves = [Move(name=m) for m in inst.moves]
-            data = {}
-            if hasattr(inst, "ivs"):
-                data.update(
-                    {
-                        "ivs": {
-                            "hp": inst.ivs.hp,
-                            "atk": inst.ivs.atk,
-                            "def": inst.ivs.def_,
-                            "spa": inst.ivs.spa,
-                            "spd": inst.ivs.spd,
-                            "spe": inst.ivs.spe,
-                        },
-                        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
-                        "nature": getattr(inst, "nature", "Hardy"),
-                        "gender": getattr(inst, "gender", "N"),
-                    }
-                )
+            stats = _calc_stats_from_model(poke)
+            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
             player_pokemon.append(
                 Pokemon(
-                    name=inst.species.name,
-                    level=inst.level,
-                    hp=inst.stats.hp,
-                    max_hp=inst.stats.hp,
+                    name=poke.name,
+                    level=poke.level,
+                    hp=stats.get("hp", poke.level),
+                    max_hp=stats.get("hp", poke.level),
                     moves=moves,
-                    ability=inst.ability,
-                    data=data,
+                    ability=getattr(poke, "ability", None),
+                    data=getattr(poke, "data", {}),
                 )
             )
 
@@ -194,63 +199,33 @@ class BattleInstance:
 
         player_pokemon: List[Pokemon] = []
         for poke in self.player.storage.active_pokemon.all():
-            inst = generate_pokemon(poke.name, level=poke.level)
-            moves = [Move(name=m) for m in inst.moves]
-            data = {}
-            if hasattr(inst, "ivs"):
-                data.update(
-                    {
-                        "ivs": {
-                            "hp": inst.ivs.hp,
-                            "atk": inst.ivs.atk,
-                            "def": inst.ivs.def_,
-                            "spa": inst.ivs.spa,
-                            "spd": inst.ivs.spd,
-                            "spe": inst.ivs.spe,
-                        },
-                        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
-                        "nature": getattr(inst, "nature", "Hardy"),
-                        "gender": getattr(inst, "gender", "N"),
-                    }
-                )
+            stats = _calc_stats_from_model(poke)
+            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
             player_pokemon.append(
                 Pokemon(
-                    name=inst.species.name,
-                    level=inst.level,
-                    hp=inst.stats.hp,
-                    max_hp=inst.stats.hp,
+                    name=poke.name,
+                    level=poke.level,
+                    hp=stats.get("hp", poke.level),
+                    max_hp=stats.get("hp", poke.level),
                     moves=moves,
-                    ability=inst.ability,
-                    data=data,
+                    ability=getattr(poke, "ability", None),
+                    data=getattr(poke, "data", {}),
                 )
             )
 
         opp_pokemon: List[Pokemon] = []
         for poke in self.opponent.storage.active_pokemon.all():
-            inst = generate_pokemon(poke.name, level=poke.level)
-            moves = [Move(name=m) for m in inst.moves]
-            data = {
-                "ivs": {
-                    "hp": inst.ivs.hp,
-                    "atk": inst.ivs.atk,
-                    "def": inst.ivs.def_,
-                    "spa": inst.ivs.spa,
-                    "spd": inst.ivs.spd,
-                    "spe": inst.ivs.spe,
-                },
-                "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
-                "nature": inst.nature,
-                "gender": inst.gender,
-            }
+            stats = _calc_stats_from_model(poke)
+            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
             opp_pokemon.append(
                 Pokemon(
-                    name=inst.species.name,
-                    level=inst.level,
-                    hp=inst.stats.hp,
-                    max_hp=inst.stats.hp,
+                    name=poke.name,
+                    level=poke.level,
+                    hp=stats.get("hp", poke.level),
+                    max_hp=stats.get("hp", poke.level),
                     moves=moves,
-                    ability=inst.ability,
-                    data=data,
+                    ability=getattr(poke, "ability", None),
+                    data=getattr(poke, "data", {}),
                 )
             )
 

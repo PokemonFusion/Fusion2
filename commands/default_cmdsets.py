@@ -54,6 +54,7 @@ from commands.cmd_battle import (
     CmdBattleItem,
 )
 from commands.cmd_store import CmdStore
+from commands.cmd_movesets import CmdMovesets
 from commands.cmd_pvp import (
     CmdPvpHelp,
     CmdPvpList,
@@ -119,6 +120,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdEvolvePokemon())
         self.add(CmdExpShare())
         self.add(CmdHeal())
+        self.add(CmdMovesets())
         self.add(CmdAdminHeal())
         self.add(CmdTradePokemon())
         self.add(CmdHunt())

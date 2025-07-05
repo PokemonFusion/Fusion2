@@ -203,6 +203,12 @@ class Pokemon(models.Model):
     @moves.setter
     def moves(self, value: List[str]) -> None:
         self._set_data("moves", list(value))
+        idx = self.active_moveset
+        sets = self.movesets
+        while len(sets) < max(idx + 1, 4):
+            sets.append([])
+        sets[idx] = list(value)
+        self._set_data("movesets", sets[:4])
 
     @property
     def learned_moves(self) -> List[str]:
@@ -259,6 +265,38 @@ class Pokemon(models.Model):
     @trainer_owner_id.setter
     def trainer_owner_id(self, value: str) -> None:
         self._set_data("trainer_id", value)
+
+    # Moveset management --------------------------------------------------
+
+    @property
+    def movesets(self) -> List[List[str]]:
+        return self._get_data().get("movesets", [])
+
+    @movesets.setter
+    def movesets(self, value: List[List[str]]) -> None:
+        self._set_data("movesets", [list(mv)[:4] for mv in value][:4])
+
+    @property
+    def active_moveset(self) -> int:
+        return self._get_data().get("active_moveset", 0)
+
+    @active_moveset.setter
+    def active_moveset(self, value: int) -> None:
+        self._set_data("active_moveset", int(value))
+
+    def swap_moveset(self, index: int) -> None:
+        sets = self.movesets
+        if 0 <= index < len(sets):
+            self.active_moveset = index
+            self.moves = sets[index]
+            self.save()
+
+    def save(self, *args, **kwargs):
+        if "movesets" not in self.data:
+            self.data["movesets"] = [self.data.get("moves", [])]
+        if "active_moveset" not in self.data:
+            self.data["active_moveset"] = 0
+        super().save(*args, **kwargs)
 
 
 class UserStorage(models.Model):
