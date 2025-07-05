@@ -1,4 +1,57 @@
 from evennia import Command
+from pokemon.generation import generate_pokemon
+from pokemon.stats import calculate_stats
+
+
+def _get_stats_from_data(pokemon):
+    """Return calculated stats based on stored data."""
+    data = getattr(pokemon, "data", {}) or {}
+    ivs = data.get("ivs", {})
+    evs = data.get("evs", {})
+    nature = data.get("nature", "Hardy")
+    try:
+        return calculate_stats(pokemon.name, pokemon.level, ivs, evs, nature)
+    except Exception:
+        # Fallback to a fresh instance if Pokedex lookup fails
+        inst = generate_pokemon(pokemon.name, level=pokemon.level)
+        return {
+            "hp": inst.stats.hp,
+            "atk": inst.stats.atk,
+            "def": inst.stats.def_,
+            "spa": inst.stats.spa,
+            "spd": inst.stats.spd,
+            "spe": inst.stats.spe,
+        }
+
+
+def get_max_hp(pokemon) -> int:
+    """Return the calculated maximum HP for ``pokemon``."""
+    stats = _get_stats_from_data(pokemon)
+    return stats.get("hp", 0)
+
+
+def get_stats(pokemon):
+    """Return a dict of calculated stats for ``pokemon``."""
+    return _get_stats_from_data(pokemon)
+
+
+def heal_pokemon(pokemon):
+    """Restore a single Pokemon's HP and clear status."""
+    max_hp = get_max_hp(pokemon)
+    data = pokemon.data or {}
+    data["current_hp"] = max_hp
+    data["status"] = ""
+    pokemon.data = data
+    pokemon.save()
+
+
+def heal_party(char):
+    """Heal all active Pokemon for the given character."""
+    storage = getattr(char, "storage", None)
+    if not storage:
+        return
+    for mon in storage.active_pokemon.all():
+        heal_pokemon(mon)
 
 class CmdShowPokemonOnUser(Command):
     """
@@ -469,3 +522,44 @@ class CmdExpShare(Command):
         else:
             self.caller.db.exp_share = True
             self.caller.msg("EXP Share is turned ON.")
+
+
+class CmdHeal(Command):
+    """Heal your Pokémon party at a Pokémon Center."""
+
+    key = "+heal"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        location = self.caller.location
+        if not (location and location.db.is_pokemon_center):
+            self.caller.msg("You must be at a Pokémon Center to heal.")
+            return
+        heal_party(self.caller)
+        self.caller.msg("Your Pokémon have been fully healed.")
+
+
+class CmdAdminHeal(Command):
+    """Heal another player's Pokémon party."""
+
+    key = "+adminheal"
+    locks = "cmd:perm(Wizards)"
+    help_category = "Admin"
+
+    def parse(self):
+        self.target_name = self.args.strip()
+
+    def func(self):
+        target = self.caller
+        if self.target_name:
+            target = self.caller.search(self.target_name, global_search=True)
+            if not target:
+                return
+        heal_party(target)
+        if target.location:
+            target.location.msg_contents(
+                f"{self.caller.key} heals {target.key}'s Pokémon party.")
+        self.caller.msg(f"{target.key}'s Pokémon have been healed.")
+        if target != self.caller:
+            target.msg("Your Pokémon have been healed by an admin.")

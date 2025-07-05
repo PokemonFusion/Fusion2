@@ -1,6 +1,7 @@
 from evennia import Command
 from utils.ansi import ansi
 from django.db.utils import OperationalError
+from commands.command import get_max_hp, get_stats
 
 class CmdSheet(Command):
     """Display a summary of your Pokémon party."""
@@ -31,17 +32,18 @@ class CmdSheet(Command):
 
             name = getattr(mon, "name", "Unknown")
             level = getattr(mon, "level", "?")
-            gender = getattr(mon, "gender", "?")
+            data = getattr(mon, "data", {}) or {}
+            gender = getattr(mon, "gender", data.get("gender", "?"))
             hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
-            max_hp = getattr(mon, "max_hp", getattr(mon, "max_hp", 0))
+            max_hp = get_max_hp(mon)
             status = getattr(mon, "status", "") or ""
 
-            stats = getattr(mon, "stats", {}) or {}
-            atk = stats.get("atk") or stats.get("attack") or "?"
-            defe = stats.get("def") or stats.get("def_") or "?"
-            spd = stats.get("spd") or stats.get("speed") or "?"
-            spatk = stats.get("spatk") or stats.get("spa") or "?"
-            spdef = stats.get("spdef") or stats.get("spd_def") or "?"
+            stats = get_stats(mon)
+            atk = stats.get("atk", "?")
+            defe = stats.get("def", "?")
+            spd = stats.get("spe", "?")
+            spatk = stats.get("spa", "?")
+            spdef = stats.get("spd", "?")
 
             moves = getattr(mon, "moves", [])
             move_names = [getattr(m, "name", str(m)) for m in moves]
@@ -99,7 +101,8 @@ class CmdSheetPokemon(Command):
 
         name = getattr(mon, "name", "Unknown")
         level = getattr(mon, "level", "?")
-        gender = getattr(mon, "gender", "?")
+        data = getattr(mon, "data", {}) or {}
+        gender = getattr(mon, "gender", data.get("gender", "?"))
         pid = getattr(mon, "id", getattr(mon, "unique_id", "?"))
         types = getattr(mon, "types", getattr(mon, "type", []))
         if isinstance(types, (list, tuple)):
@@ -107,18 +110,18 @@ class CmdSheetPokemon(Command):
         ability = getattr(mon, "ability", "?")
         nature = getattr(mon, "nature", "?")
         hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
-        max_hp = getattr(mon, "max_hp", getattr(mon, "max_hp", 0))
+        max_hp = get_max_hp(mon)
         status = getattr(mon, "status", "") or "OK"
         held = getattr(mon, "held_item", "None")
         friendship = getattr(mon, "friendship", "?")
         exp = getattr(mon, "experience", getattr(mon, "exp", 0))
         exp_to = getattr(mon, "exp_to_next", getattr(mon, "exp_to_next_level", 1)) or 1
-        stats = getattr(mon, "stats", {}) or {}
-        atk = stats.get("atk") or stats.get("attack") or "?"
-        defe = stats.get("def") or stats.get("def_") or "?"
-        spd = stats.get("spd") or stats.get("speed") or "?"
-        spatk = stats.get("spatk") or stats.get("spa") or "?"
-        spdef = stats.get("spdef") or stats.get("spd_def") or "?"
+        stats = get_stats(mon)
+        atk = stats.get("atk", "?")
+        defe = stats.get("def", "?")
+        spd = stats.get("spe", "?")
+        spatk = stats.get("spa", "?")
+        spdef = stats.get("spd", "?")
         moves = getattr(mon, "moves", [])
 
         # HP bar
