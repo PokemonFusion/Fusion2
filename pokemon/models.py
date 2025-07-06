@@ -1,6 +1,7 @@
 """Database models for player-owned Pokémon and trainers."""
 
 from evennia import DefaultObject
+from evennia.objects.models import ObjectDB
 from evennia.utils.idmapper.models import SharedMemoryModel
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
@@ -42,7 +43,7 @@ class Pokemon(models.Model):
 
 
 class UserStorage(models.Model):
-    user = models.OneToOneField(DefaultObject, on_delete=models.CASCADE, db_index=True)
+    user = models.OneToOneField(ObjectDB, on_delete=models.CASCADE, db_index=True)
     active_pokemon = models.ManyToManyField(Pokemon, related_name="active_users")
     stored_pokemon = models.ManyToManyField(Pokemon, related_name="stored_users", blank=True)
 
@@ -70,7 +71,7 @@ class OwnedPokemon(SharedMemoryModel):
         db_index=True,
     )
     trainer = models.ForeignKey(
-        "pokemon.models.Trainer",
+        "pokemon.Trainer",
         on_delete=models.CASCADE,
         db_index=True,
     )
@@ -138,7 +139,7 @@ class Trainer(models.Model):
     """Model storing trainer specific stats for a Character."""
 
     user = models.OneToOneField(
-        DefaultObject, on_delete=models.CASCADE, related_name="trainer", db_index=True
+        ObjectDB, on_delete=models.CASCADE, related_name="trainer", db_index=True
     )
     trainer_number = models.PositiveIntegerField(unique=True)
     money = models.PositiveIntegerField(default=0)
