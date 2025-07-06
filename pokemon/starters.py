@@ -1,46 +1,65 @@
 """Helpers for determining valid starter Pokémon."""
 
 from typing import Dict, List, Tuple
-
 from pokemon.dex import POKEDEX
 
+# Forms or categories we explicitly exclude from “starter” status
 EXCLUDED_TAGS = {"Sub-Legendary", "Mythical"}
 
 
-def _build_starters() -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
-    """Generate a sorted list of (num, name) tuples for valid starters.
-
-    Returns
-    -------
-    Tuple[List[Tuple[int, str]], Dict[str, str]]
-        A list of ``(num, display_name)`` pairs and a mapping of valid input
-        strings to the canonical Pokedex key.
+def _build_starters() -> Tuple[
+    List[Tuple[int, str]],
+    Dict[str, str],
+    Dict[str, str],
+]:
     """
-
+    Generate:
+      1) A sorted list of (num, display_name) tuples for valid starters,
+      2) A lookup of valid input strings -> canonical dex key,
+      3) A mapping of dex key -> display_name for UI use.
+    """
     starters: List[Tuple[int, str]] = []
     lookup: Dict[str, str] = {}
+    display_map: Dict[str, str] = {}
+
     for key, mon in POKEDEX.items():
-        num = getattr(mon, "num", 0)
+        # Numeric dex number
+        num = mon.num
         if num <= 0:
             continue
-        if getattr(mon, "prevo", None):
+        # Only base forms (no evolutions)
+        if mon.prevo:
             continue
-        raw = getattr(mon, "raw", {}) or {}
-        tags = raw.get("tags", []) if isinstance(raw, dict) else []
-        forme = raw.get("forme") if isinstance(raw, dict) else None
+
+        # Pull tags/forms out of the raw dict
+        raw = mon.raw or {}
+        tags = raw.get("tags", [])
+        forme = raw.get("forme")
+
+        # Exclude Mythicals/Legendaries and non-starter special forms
         if any(tag in EXCLUDED_TAGS for tag in tags):
             continue
         if forme and forme not in ("Alola", "Galar"):
             continue
-        display_name = getattr(mon, "name", key)
+
+        # **Key change**: grab the display name from raw["name"]
+        display_name = raw.get("name", mon.name)
         starters.append((num, display_name))
+
+        # Allow lookup by either the display name or the raw key
         lookup[display_name.lower()] = key
         lookup[key.lower()] = key
+
+        # Map dex-key → display name for UI
+        display_map[key] = display_name
+
+    # Sort in ascending National Dex order
     starters.sort(key=lambda t: t[0])
-    return starters, lookup
+    return starters, lookup, display_map
 
 
-STARTER_ENTRIES, STARTER_LOOKUP = _build_starters()
+# Build once at import time
+STARTER_ENTRIES, STARTER_LOOKUP, STARTER_DISPLAY_MAP = _build_starters()
 
 
 def get_starter_numbers() -> List[int]:
@@ -52,7 +71,10 @@ STARTER_NUMBERS: List[int] = get_starter_numbers()
 
 
 def get_starter_names() -> List[str]:
-    """Return the valid starter Pokémon names."""
+    """Return the valid starter Pokémon **display** names, in dex order."""
     return [name for _, name in STARTER_ENTRIES]
 
 
+def get_starter_display_map() -> Dict[str, str]:
+    """Return a mapping of dex_key → display_name for all valid starters."""
+    return STARTER_DISPLAY_MAP
