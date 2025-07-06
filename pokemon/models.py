@@ -1,7 +1,8 @@
 """Database models for player-owned Pokémon and trainers."""
 
-from evennia.objects.models import ObjectDB
+from evennia import DefaultObject
 from evennia.utils.idmapper.models import SharedMemoryModel
+from evennia.objects.models import ObjectDB
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 import uuid
@@ -100,7 +101,7 @@ class ActiveMoveslot(models.Model):
 
     pokemon = models.ForeignKey(OwnedPokemon, on_delete=models.CASCADE, db_index=True)
     move = models.ForeignKey(Move, on_delete=models.CASCADE, db_index=True)
-    slot = models.PositiveSmallIntegerField()
+    slot = models.PositiveSmallIntegerField(db_index=True)
 
     class Meta:
         unique_together = ("pokemon", "slot")
@@ -114,7 +115,7 @@ class BattleSlot(SharedMemoryModel):
 
     pokemon = models.OneToOneField(OwnedPokemon, on_delete=models.CASCADE, primary_key=True)
     battle_id = models.PositiveIntegerField(db_index=True)
-    battle_team = models.PositiveSmallIntegerField()
+    battle_team = models.PositiveSmallIntegerField(db_index=True)
     current_hp = models.PositiveIntegerField()
     status = models.CharField(max_length=20)
     fainted = models.BooleanField(default=False)
