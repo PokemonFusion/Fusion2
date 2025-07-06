@@ -45,6 +45,12 @@ evennia migrate
 
 to update your database schema before starting the server.
 
+## Database backend
+
+The game is configured to use **PostgreSQL**. The connection settings are kept
+in `server/conf/secret_settings.py`, which is not committed to the repository.
+Make sure PostgreSQL is available before running migration or start commands.
+
 # Getting started
 
 From here on you might want to look at one of the beginner tutorials:
