@@ -45,7 +45,9 @@ class Pokemon(models.Model):
 class UserStorage(models.Model):
     user = models.OneToOneField(ObjectDB, on_delete=models.CASCADE, db_index=True)
     active_pokemon = models.ManyToManyField(Pokemon, related_name="active_users")
-    stored_pokemon = models.ManyToManyField(Pokemon, related_name="stored_users", blank=True)
+    stored_pokemon = models.ManyToManyField(
+        Pokemon, related_name="stored_users", blank=True
+    )
 
 
 class StorageBox(models.Model):
@@ -113,7 +115,9 @@ class ActiveMoveslot(models.Model):
 class BattleSlot(SharedMemoryModel):
     """Ephemeral per-battle state for a Pokémon."""
 
-    pokemon = models.OneToOneField(OwnedPokemon, on_delete=models.CASCADE, primary_key=True)
+    pokemon = models.OneToOneField(
+        OwnedPokemon, on_delete=models.CASCADE, primary_key=True
+    )
     battle_id = models.PositiveIntegerField(db_index=True)
     battle_team = models.PositiveSmallIntegerField(db_index=True)
     current_hp = models.PositiveIntegerField()
@@ -169,4 +173,3 @@ class Trainer(models.Model):
 
     def log_seen_pokemon(self, pokemon: Pokemon) -> None:
         self.seen_pokemon.add(pokemon)
-
