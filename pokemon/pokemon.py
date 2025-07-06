@@ -5,7 +5,7 @@ from .dex import POKEDEX
 from utils.inventory import InventoryMixin
 
 
-class User(InventoryMixin, DefaultCharacter):
+class User(DefaultCharacter, InventoryMixin):
     def add_pokemon_to_user(self, name, level, type_, data=None):
         pokemon = Pokemon.objects.create(
             name=name,
