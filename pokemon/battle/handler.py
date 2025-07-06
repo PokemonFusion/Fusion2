@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, TYPE_CHECKING
 
 from evennia import search_object
 from evennia.server.models import ServerConfig
 
-from .battleinstance import BattleInstance
+if TYPE_CHECKING:
+    from .battleinstance import BattleInstance
 
 
 class BattleHandler:
@@ -28,6 +29,7 @@ class BattleHandler:
         ids: List[int] = ServerConfig.objects.conf(
             "active_battle_rooms", default=[]
         )
+        from .battleinstance import BattleInstance
         for rid in ids:
             rooms = search_object(rid)
             if not rooms:
