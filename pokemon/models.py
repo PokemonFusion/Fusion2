@@ -1,6 +1,7 @@
 """Database models for player-owned Pokémon and trainers."""
 
-from evennia import DefaultObject, SharedMemoryModel
+from evennia import DefaultObject
+from evennia.utils.idmapper.models import SharedMemoryModel
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 import uuid
