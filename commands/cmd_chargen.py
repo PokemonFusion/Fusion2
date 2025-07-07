@@ -137,6 +137,7 @@ class CmdChargen(Command):
             cmd_on_exit=None,
             on_abort=node_abort,
             invalid_message="Invalid entry.\nTry again.",
+            numbered_options=False,
         )
 
 

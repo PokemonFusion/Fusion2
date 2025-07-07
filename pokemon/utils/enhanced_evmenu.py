@@ -26,11 +26,13 @@ class EnhancedEvMenu(EvMenu):
         on_abort=None,
         invalid_message=None,
         auto_repeat_invalid=True,
+        numbered_options=True,
         **kwargs,
     ):
         self.on_abort = on_abort
         self.invalid_message = invalid_message or _HELP_NO_OPTION_MATCH
         self.auto_repeat_invalid = auto_repeat_invalid
+        self.numbered_options = numbered_options
         super().__init__(*args, **kwargs)
 
     def parse_input(self, raw_string):
@@ -42,6 +44,11 @@ class EnhancedEvMenu(EvMenu):
         """
         cmd = strip_ansi(raw_string.strip())
         low = cmd.lower()
+
+        if not low:
+            if self.auto_repeat_invalid:
+                self.display_nodetext()
+            return
 
         # 1) Abort handling
         if low in self.abort_keys:
@@ -133,7 +140,13 @@ class EnhancedEvMenu(EvMenu):
         return f"|w== Menu ==|n\n{text}\n"
 
     def options_formatter(self, optionlist):
+        if not self.numbered_options:
+            return super().options_formatter(optionlist)
+
         lines = []
         for idx, (key, desc) in enumerate(optionlist, 1):
-            lines.append(f"{idx}. {key}: {desc}")
+            if desc:
+                lines.append(f"{idx}. {key}: {desc}")
+            else:
+                lines.append(f"{idx}. {key}")
         return "\n".join(lines)
