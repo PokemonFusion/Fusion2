@@ -48,8 +48,7 @@ try:
 except ImportError:
     print("secret_settings.py file not found or failed to import.")
 
-# Optional third-party apps. Comment out if not installed in the environment.
-INSTALLED_APPS += ('paxboards',)
+# Optional third-party apps. None at this time.
 
 # Local apps
 INSTALLED_APPS += ('pokemon',)

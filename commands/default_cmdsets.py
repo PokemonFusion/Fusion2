@@ -15,7 +15,18 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from paxboards.commands import add_board_commands
+from bboard.commands import (
+    CmdBBList,
+    CmdBBRead,
+    CmdBBPost,
+    CmdBBDelete,
+    CmdBBSet,
+    CmdBBNew,
+    CmdBBEdit,
+    CmdBBMove,
+    CmdBBPurge,
+    CmdBBLock,
+)
 from commands.pokedex import (
     CmdPokedexSearch,
     CmdMovedexSearch,
@@ -94,7 +105,17 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-        add_board_commands(self)
+        # Bulletin board commands
+        self.add(CmdBBList())
+        self.add(CmdBBRead())
+        self.add(CmdBBPost())
+        self.add(CmdBBDelete())
+        self.add(CmdBBSet())
+        self.add(CmdBBNew())
+        self.add(CmdBBEdit())
+        self.add(CmdBBMove())
+        self.add(CmdBBPurge())
+        self.add(CmdBBLock())
 
         # Basic roleplay command
         self.add(CmdSpoof())
