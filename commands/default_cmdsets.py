@@ -87,6 +87,7 @@ from commands.cmd_glance import CmdGlance
 from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
 from commands.cmdmapmove import CmdMapMove
 from commands.cmdstartmap import CmdStartMap
+from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -120,6 +121,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Basic roleplay command
         self.add(CmdSpoof())
         self.add(CmdGlance())
+        self.add(CmdOOC())
 
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
@@ -196,6 +198,11 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        # replace default ic/ooc commands
+        for cmdname in ("ic", "puppet", "ooc", "unpuppet"):
+            self.remove(cmdname)
+        self.add(CmdGOIC())
+        self.add(CmdGOOOC())
         self.add(CmdCharCreate())
         self.add(CmdAlts())
 
