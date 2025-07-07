@@ -145,10 +145,6 @@ class CmdChargen(Command):
 
 
 def start(caller, raw_string):
-    if raw_string:
-        _invalid(caller)
-        return "start"
-
     text = (
         "Welcome to Pokemon Fusion!\n"
         "A: Play a human trainer with a starter Pokémon.\n"
@@ -169,10 +165,6 @@ def start(caller, raw_string):
 
 
 def human_gender(caller, raw_string, **kwargs):
-    if raw_string and not kwargs:
-        _invalid(caller)
-        return "human_gender"
-
     caller.ndb.chargen = {"type": "human"}
     text = "Choose your gender: (M)ale or (F)emale"
     options = (
@@ -189,10 +181,6 @@ def human_gender(caller, raw_string, **kwargs):
 
 
 def fusion_gender(caller, raw_string, **kwargs):
-    if raw_string and not kwargs:
-        _invalid(caller)
-        return "fusion_gender"
-
     caller.ndb.chargen = {"type": "fusion"}
     text = "Choose your gender: (M)ale or (F)emale"
     options = (
@@ -213,10 +201,6 @@ def fusion_gender(caller, raw_string, **kwargs):
 
 
 def human_type(caller, raw_string, **kwargs):
-    if raw_string and not kwargs:
-        _invalid(caller)
-        return "human_type"
-
     caller.ndb.chargen["gender"] = kwargs["gender"]
     text = "Choose your favored Pokémon type:\n" + format_columns(TYPES) + "\n"
     options = tuple(
@@ -230,10 +214,6 @@ def human_type(caller, raw_string, **kwargs):
 
 
 def fusion_species(caller, raw_string, **kwargs):
-    if raw_string and not kwargs:
-        _invalid(caller)
-        return "fusion_species"
-
     caller.ndb.chargen["gender"] = kwargs.get("gender")
     text = "Enter the species for your fusion:"
     options = (
@@ -283,10 +263,6 @@ def fusion_ability(caller, raw_string, **kwargs):
 
 
 def starter_species(caller, raw_string, **kwargs):
-    if raw_string and not kwargs:
-        _invalid(caller)
-        return "starter_species"
-
     caller.ndb.chargen["favored_type"] = kwargs.get("type")
     text = (
         "Enter the species for your starter Pokémon\n"
@@ -346,10 +322,6 @@ def starter_ability(caller, raw_string, **kwargs):
 
 
 def starter_gender(caller, raw_string, **kwargs):
-    if raw_string and not kwargs:
-        _invalid(caller)
-        return "starter_gender"
-
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
 
@@ -405,10 +377,6 @@ def starter_gender(caller, raw_string, **kwargs):
 
 
 def starter_confirm(caller, raw_string, **kwargs):
-    if raw_string and not kwargs and caller.ndb.chargen.get("species"):
-        _invalid(caller)
-        return "starter_confirm"
-
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
     if kwargs.get("gender"):
@@ -445,10 +413,6 @@ def starter_confirm(caller, raw_string, **kwargs):
 
 
 def fusion_confirm(caller, raw_string, **kwargs):
-    if raw_string and not kwargs and caller.ndb.chargen.get("species"):
-        _invalid(caller)
-        return "fusion_confirm"
-
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
 
