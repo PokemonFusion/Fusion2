@@ -159,7 +159,7 @@ def start(caller, raw_string):
             "goto": ("fusion_gender", {}),
         },
         ABORT_OPTION,
-        {"key": "_default", "goto": "start", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -175,7 +175,7 @@ def human_gender(caller, raw_string, **kwargs):
             "goto": ("human_type", {"gender": "Female"}),
         },
         ABORT_OPTION,
-        {"key": "_default", "goto": "human_gender", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -195,7 +195,7 @@ def fusion_gender(caller, raw_string, **kwargs):
             "goto": ("fusion_species", {"gender": "Female"}),
         },
         ABORT_OPTION,
-        {"key": "_default", "goto": "fusion_gender", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -208,7 +208,7 @@ def human_type(caller, raw_string, **kwargs):
         for t in TYPES
     ) + (
         ABORT_OPTION,
-        {"key": "_default", "goto": "human_type", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -257,7 +257,7 @@ def fusion_ability(caller, raw_string, **kwargs):
         for ab in abilities
     ) + (
         ABORT_OPTION,
-        {"key": "_default", "goto": "fusion_ability", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -316,7 +316,7 @@ def starter_ability(caller, raw_string, **kwargs):
         for ab in abilities
     ) + (
         ABORT_OPTION,
-        {"key": "_default", "goto": "starter_ability", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -371,7 +371,7 @@ def starter_gender(caller, raw_string, **kwargs):
 
     options += [
         ABORT_OPTION,
-        {"key": "_default", "goto": "starter_gender", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     ]
     return text, tuple(options)
 
@@ -407,7 +407,7 @@ def starter_confirm(caller, raw_string, **kwargs):
         {"key": ("Y", "y"), "goto": "finish_human"},
         {"key": ("N", "n"), "goto": "starter_species"},
         ABORT_OPTION,
-        {"key": "_default", "goto": "starter_confirm", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
@@ -429,7 +429,7 @@ def fusion_confirm(caller, raw_string, **kwargs):
         {"key": ("Y", "y"), "goto": "finish_fusion"},
         {"key": ("N", "n"), "goto": "fusion_species"},
         ABORT_OPTION,
-        {"key": "_default", "goto": "fusion_confirm", "exec": _invalid},
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
     return text, options
 
