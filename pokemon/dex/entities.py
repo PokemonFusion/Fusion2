@@ -165,6 +165,7 @@ class Pokemon:
     evos: List[str] = field(default_factory=list)
     egg_groups: List[str] = field(default_factory=list)
     raw: Dict[str, Any] = field(default_factory=dict)
+    is_baby: bool = False
 
     @classmethod
     def from_dict(
@@ -188,6 +189,10 @@ class Pokemon:
             else:
                 abilities[slot] = Ability(name=ability_name, num=0, raw={})
 
+        base = data.get("baseSpecies", name)
+        from .baby_species import BABY_SPECIES
+        is_baby = base in BABY_SPECIES
+
         return cls(
             name=name,
             num=data.get("num", 0),
@@ -204,6 +209,7 @@ class Pokemon:
             evos=data.get("evos", []),
             egg_groups=data.get("eggGroups", []),
             raw=data,
+            is_baby=is_baby,
         )
 
 
