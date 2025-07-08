@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 from pokemon.dex import POKEDEX
 
 # Forms or categories we explicitly exclude from “starter” status
-EXCLUDED_TAGS = {"Sub-Legendary", "Mythical"}
+EXCLUDED_TAGS = {"Sub-Legendary", "Mythical", 'Restricted Legendary'}
 
 
 def _build_starters() -> Tuple[
