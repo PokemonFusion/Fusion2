@@ -6,6 +6,9 @@ from pokemon.dex import POKEDEX
 # Forms or categories we explicitly exclude from “starter” status
 EXCLUDED_TAGS = {"Sub-Legendary", "Mythical", 'Restricted Legendary'}
 
+# Regional forms that are considered for starter eligibility
+REGIONAL_FORMS = ("Alola", "Galar")
+
 
 def _build_starters() -> Tuple[
     List[Tuple[int, str]],
@@ -21,6 +24,20 @@ def _build_starters() -> Tuple[
     starters: List[Tuple[int, str]] = []
     lookup: Dict[str, str] = {}
     display_map: Dict[str, str] = {}
+    key_lookup: Dict[str, str] = {}
+
+    for k, mon in POKEDEX.items():
+        key_lookup[k.lower()] = k
+        key_lookup[(mon.raw or {}).get("name", mon.name).lower()] = k
+
+    def add_entry(k: str, mon_obj) -> None:
+        disp = (mon_obj.raw or {}).get("name", mon_obj.name)
+        num = mon_obj.num
+        if (num, disp) not in starters:
+            starters.append((num, disp))
+        lookup[disp.lower()] = k
+        lookup[k.lower()] = k
+        display_map[k] = disp
 
     for key, mon in POKEDEX.items():
         # Numeric dex number
@@ -39,19 +56,28 @@ def _build_starters() -> Tuple[
         # Exclude Mythicals/Legendaries and non-starter special forms
         if any(tag in EXCLUDED_TAGS for tag in tags):
             continue
-        if forme and forme not in ("Alola", "Galar"):
+        if forme and forme not in REGIONAL_FORMS:
             continue
 
         # **Key change**: grab the display name from raw["name"]
-        display_name = raw.get("name", mon.name)
-        starters.append((num, display_name))
+        add_entry(key, mon)
 
-        # Allow lookup by either the display name or the raw key
-        lookup[display_name.lower()] = key
-        lookup[key.lower()] = key
-
-        # Map dex-key → display name for UI
-        display_map[key] = display_name
+        if mon.is_baby and mon.evos:
+            for evo in mon.evos:
+                ekey = key_lookup.get(evo.lower())
+                if not ekey:
+                    continue
+                evo_mon = POKEDEX.get(ekey)
+                if not evo_mon:
+                    continue
+                raw2 = evo_mon.raw or {}
+                tags2 = raw2.get("tags", [])
+                forme2 = raw2.get("forme")
+                if any(tag in EXCLUDED_TAGS for tag in tags2):
+                    continue
+                if forme2 and forme2 not in REGIONAL_FORMS:
+                    continue
+                add_entry(ekey, evo_mon)
 
     # Sort in ascending National Dex order
     starters.sort(key=lambda t: t[0])

@@ -13,6 +13,7 @@ from .entities import (
     load_itemdex,
     load_conditiondex,
 )
+from .baby_species import BABY_SPECIES
 
 BASE_PATH = Path(__file__).resolve().parents[2]
 
@@ -56,4 +57,5 @@ __all__ = [
     "ABILITYDEX",
     "ITEMDEX",
     "CONDITIONDEX",
+    "BABY_SPECIES",
 ]
