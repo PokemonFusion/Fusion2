@@ -1391,7 +1391,23 @@ class Battle:
                 target.active.remove(target_poke)
                 if target_poke in target.pokemons:
                     target.pokemons.remove(target_poke)
-                if hasattr(action.actor, "add_pokemon_to_storage"):
+                if getattr(target_poke, "model_id", None) is not None:
+                    try:
+                        from pokemon.models import Pokemon as PokemonModel
+                        dbpoke = PokemonModel.objects.get(id=target_poke.model_id)
+                        if hasattr(action.actor, "trainer"):
+                            dbpoke.trainer = action.actor.trainer
+                        dbpoke.temporary = False
+                        if hasattr(dbpoke, "save"):
+                            dbpoke.save()
+                        if hasattr(action.actor, "storage") and hasattr(action.actor.storage, "stored_pokemon"):
+                            try:
+                                action.actor.storage.stored_pokemon.add(dbpoke)
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                elif hasattr(action.actor, "add_pokemon_to_storage"):
                     try:
                         poke_types = getattr(target_poke, "types", [])
                         type_ = ", ".join(poke_types) if isinstance(poke_types, list) else str(poke_types)

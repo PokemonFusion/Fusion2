@@ -12,18 +12,23 @@ from .state import BattleState
 from .interface import add_watcher, notify_watchers, remove_watcher
 from .handler import battle_handler
 from ..generation import generate_pokemon
-from ..stats import calculate_stats
 from world.pokemon_spawn import get_spawn
 
 
 def _calc_stats_from_model(poke):
     """Return calculated stats for a stored Pokemon model."""
+    try:
+        from ..stats import calculate_stats
+    except Exception:  # pragma: no cover
+        calculate_stats = None
     data = getattr(poke, "data", {}) or {}
     ivs = data.get("ivs", {})
     evs = data.get("evs", {})
     nature = data.get("nature", "Hardy")
     try:
-        return calculate_stats(poke.name, poke.level, ivs, evs, nature)
+        if calculate_stats:
+            return calculate_stats(poke.name, poke.level, ivs, evs, nature)
+        raise Exception
     except Exception:
         inst = generate_pokemon(poke.name, level=poke.level)
         st = getattr(inst, "stats", inst)
@@ -39,6 +44,11 @@ def _calc_stats_from_model(poke):
 
 def generate_wild_pokemon(location=None) -> Pokemon:
     """Generate a wild Pokémon based on the supplied location."""
+
+    try:
+        from ..models import Pokemon as PokemonModel
+    except Exception:  # pragma: no cover - optional in tests
+        PokemonModel = None
 
     if location:
         inst = get_spawn(location)
@@ -64,6 +74,16 @@ def generate_wild_pokemon(location=None) -> Pokemon:
                 "gender": getattr(inst, "gender", "N"),
             }
         )
+    db_obj = None
+    if PokemonModel:
+        db_obj = PokemonModel.objects.create(
+            name=inst.species.name,
+            level=inst.level,
+            type_=", ".join(getattr(inst.species, "types", [])),
+            ability=getattr(inst, "ability", ""),
+            data=data,
+            temporary=True,
+        )
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
@@ -72,11 +92,16 @@ def generate_wild_pokemon(location=None) -> Pokemon:
         moves=moves,
         ability=inst.ability,
         data=data,
+        model_id=db_obj.id if db_obj else None,
     )
 
 
 def generate_trainer_pokemon() -> Pokemon:
     """Placeholder that returns a trainer's Charmander."""
+    try:
+        from ..models import Pokemon as PokemonModel
+    except Exception:  # pragma: no cover
+        PokemonModel = None
     inst = generate_pokemon("Charmander", level=5)
     moves = [Move(name=m) for m in inst.moves]
     data = {}
@@ -96,6 +121,16 @@ def generate_trainer_pokemon() -> Pokemon:
                 "gender": getattr(inst, "gender", "N"),
             }
         )
+    db_obj = None
+    if PokemonModel:
+        db_obj = PokemonModel.objects.create(
+            name=inst.species.name,
+            level=inst.level,
+            type_=", ".join(getattr(inst.species, "types", [])),
+            ability=getattr(inst, "ability", ""),
+            data=data,
+            temporary=True,
+        )
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
@@ -104,6 +139,7 @@ def generate_trainer_pokemon() -> Pokemon:
         moves=moves,
         ability=inst.ability,
         data=data,
+        model_id=db_obj.id if db_obj else None,
     )
 
 
@@ -119,6 +155,7 @@ class BattleInstance:
         self.battle: Battle | None = None
         self.state: BattleState | None = None
         self.watchers: set[int] = set()
+        self.temp_pokemon_ids: List[int] = []
 
     @classmethod
     def restore(cls, room) -> "BattleInstance | None":
@@ -136,6 +173,7 @@ class BattleInstance:
         obj.battle = obj.data.battle
         obj.state = BattleState.from_dict(state)
         obj.watchers = set(obj.state.watchers.keys())
+        obj.temp_pokemon_ids = list(getattr(room.db, "temp_pokemon_ids", []))
         for wid in obj.watchers:
             targets = search_object(wid)
             if targets:
@@ -153,11 +191,15 @@ class BattleInstance:
         opponent_kind = random.choice(["pokemon", "trainer"])
         if opponent_kind == "pokemon":
             opponent_poke = generate_wild_pokemon(self.player.location)
+            if getattr(opponent_poke, "model_id", None):
+                self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.WILD
             opponent_name = "Wild"
             self.player.msg(f"A wild {opponent_poke.name} appears!")
         else:
             opponent_poke = generate_trainer_pokemon()
+            if getattr(opponent_poke, "model_id", None):
+                self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.TRAINER
             opponent_name = "Trainer"
             self.player.msg(
@@ -202,6 +244,7 @@ class BattleInstance:
         self.state = BattleState.from_battle_data(self.data, ai_type=battle_type.name)
         self.state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
         self.room.db.battle_state = self.state.to_dict()
+        self.room.db.temp_pokemon_ids = list(self.temp_pokemon_ids)
         add_watcher(self.state, self.player)
         self.watchers.add(self.player.id)
 
@@ -298,6 +341,19 @@ class BattleInstance:
 
     def end(self) -> None:
         """End the battle and clean up."""
+        try:
+            from ..models import Pokemon as PokemonModel
+        except Exception:  # pragma: no cover
+            PokemonModel = None
+        for pid in getattr(self, "temp_pokemon_ids", []):
+            try:
+                if PokemonModel:
+                    poke = PokemonModel.objects.get(id=pid)
+                    if getattr(poke, "temporary", False):
+                        poke.delete()
+            except Exception:
+                pass
+        self.temp_pokemon_ids.clear()
         if self.room:
             if hasattr(self.room.db, "instance"):
                 del self.room.db.instance
@@ -305,6 +361,8 @@ class BattleInstance:
                 del self.room.db.battle_data
             if hasattr(self.room.db, "battle_state"):
                 del self.room.db.battle_state
+            if hasattr(self.room.db, "temp_pokemon_ids"):
+                del self.room.db.temp_pokemon_ids
             self.room.delete()
         if self.player.ndb.get("battle_instance"):
             del self.player.ndb.battle_instance
