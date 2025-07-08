@@ -66,7 +66,7 @@ class EnhancedEvMenu(EvMenu):
 
         # 3) Look for a matching option manually using raw option definitions
         match_opt = None
-        options = self.test_options or []
+        options = getattr(self, "options", [])
         options = options if isinstance(options, (list, tuple)) else [options]
         for opt in options:
             keys = make_iter(opt.get("key"))
@@ -90,11 +90,7 @@ class EnhancedEvMenu(EvMenu):
             pass
 
         # 6) If nothing changed (and not a help/look), treat as invalid
-        if (
-            self.nodename
-            and low not in ("help", "h", "look", "l")
-            and low not in self.options
-        ):
+        if self.nodename and low not in ("help", "h", "look", "l"):
             self.invalid_msg()
             if self.auto_repeat_invalid:
                 self.display_nodetext()
