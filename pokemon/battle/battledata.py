@@ -43,6 +43,7 @@ class Pokemon:
         toxic_counter: int = 0,
         ability=None,
         data: Optional[Dict] = None,
+        model_id: Optional[int] = None,
     ):
         self.name = name
         self.level = level
@@ -52,6 +53,7 @@ class Pokemon:
         self.toxic_counter = toxic_counter
         self.moves = moves or []
         self.ability = ability
+        self.model_id = model_id
         self.data = data or {}
         self.tempvals: Dict[str, int] = {}
         self.boosts: Dict[str, int] = {
@@ -87,6 +89,7 @@ class Pokemon:
             "toxic_counter": self.toxic_counter,
             "ability": getattr(self.ability, "name", self.ability),
             "data": self.data,
+            "model_id": self.model_id,
         }
 
     @classmethod
@@ -101,6 +104,7 @@ class Pokemon:
             toxic_counter=data.get("toxic_counter", 0),
             ability=data.get("ability"),
             data=data.get("data"),
+            model_id=data.get("model_id"),
         )
         obj.tempvals = data.get("tempvals", {})
         obj.boosts = data.get(

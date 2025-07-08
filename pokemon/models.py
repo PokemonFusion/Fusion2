@@ -25,6 +25,8 @@ class Pokemon(models.Model):
     type_ = models.CharField(max_length=255)
     ability = models.CharField(max_length=50, blank=True)
     held_item = models.CharField(max_length=50, blank=True)
+    data = models.JSONField(default=dict, blank=True)
+    temporary = models.BooleanField(default=False, db_index=True)
     trainer = models.ForeignKey(
         "Trainer",
         on_delete=models.CASCADE,

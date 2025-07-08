@@ -6,14 +6,36 @@ from pokemon.stats import calculate_stats
 def _get_stats_from_data(pokemon):
     """Return calculated stats based on stored data."""
     data = getattr(pokemon, "data", {}) or {}
-    ivs = data.get("ivs", {})
-    evs = data.get("evs", {})
-    nature = data.get("nature", "Hardy")
+    if not data and hasattr(pokemon, "ivs"):
+        ivs = {
+            "hp": pokemon.ivs[0],
+            "atk": pokemon.ivs[1],
+            "def": pokemon.ivs[2],
+            "spa": pokemon.ivs[3],
+            "spd": pokemon.ivs[4],
+            "spe": pokemon.ivs[5],
+        }
+        evs = {
+            "hp": pokemon.evs[0],
+            "atk": pokemon.evs[1],
+            "def": pokemon.evs[2],
+            "spa": pokemon.evs[3],
+            "spd": pokemon.evs[4],
+            "spe": pokemon.evs[5],
+        }
+        nature = getattr(pokemon, "nature", "Hardy")
+        name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
+        level = getattr(pokemon, "level", 1)
+    else:
+        ivs = data.get("ivs", {})
+        evs = data.get("evs", {})
+        nature = data.get("nature", "Hardy")
+        name = getattr(pokemon, "name", getattr(pokemon, "species", ""))
+        level = getattr(pokemon, "level", 1)
     try:
-        return calculate_stats(pokemon.name, pokemon.level, ivs, evs, nature)
+        return calculate_stats(name, level, ivs, evs, nature)
     except Exception:
-        # Fallback to a fresh instance if Pokedex lookup fails
-        inst = generate_pokemon(pokemon.name, level=pokemon.level)
+        inst = generate_pokemon(name, level=level)
         return {
             "hp": inst.stats.hp,
             "atk": inst.stats.atk,
@@ -38,9 +60,14 @@ def get_stats(pokemon):
 def heal_pokemon(pokemon):
     """Restore a single Pokemon's HP and clear status."""
     max_hp = get_max_hp(pokemon)
-    pokemon.current_hp = max_hp
-    pokemon.status = ""
-    pokemon.save()
+    if hasattr(pokemon, "current_hp"):
+        pokemon.current_hp = max_hp
+    if hasattr(pokemon, "status"):
+        pokemon.status = ""
+    try:
+        pokemon.save()
+    except Exception:
+        pass
 
 
 def heal_party(char):
