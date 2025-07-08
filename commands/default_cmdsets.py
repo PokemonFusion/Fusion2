@@ -17,6 +17,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 from evennia import default_cmds
 from evennia.contrib.utils.debugpy import CmdDebugPy
 from paxboards.commands import add_board_commands
+
 from commands.pokedex import (
     CmdPokedexSearch,
     CmdMovedexSearch,
@@ -77,6 +78,7 @@ from commands.cmd_glance import CmdGlance
 from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
 from commands.cmdmapmove import CmdMapMove
 from commands.cmdstartmap import CmdStartMap
+from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -96,11 +98,22 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-        add_board_commands(self)
+        # Bulletin board commands
+        self.add(CmdBBList())
+        self.add(CmdBBRead())
+        self.add(CmdBBPost())
+        self.add(CmdBBDelete())
+        self.add(CmdBBSet())
+        self.add(CmdBBNew())
+        self.add(CmdBBEdit())
+        self.add(CmdBBMove())
+        self.add(CmdBBPurge())
+        self.add(CmdBBLock())
 
         # Basic roleplay command
         self.add(CmdSpoof())
         self.add(CmdGlance())
+        self.add(CmdOOC())
 
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
@@ -177,6 +190,11 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        # replace default ic/ooc commands
+        for cmdname in ("ic", "puppet", "ooc", "unpuppet"):
+            self.remove(cmdname)
+        self.add(CmdGOIC())
+        self.add(CmdGOOOC())
         self.add(CmdCharCreate())
         self.add(CmdAlts())
 

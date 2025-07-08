@@ -13,8 +13,7 @@ urlpatterns = [
     path("admin/", include("web.admin.urls")),
     # add any extra urls here:
     # path("mypath/", include("path.to.my.urls.file")),
-    # paxboards
-    re_path(r'^boards/', include('paxboards.urls')),
+
 ]
 
 # 'urlpatterns' must be named such for Django to find it.
