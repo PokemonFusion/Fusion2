@@ -8,6 +8,7 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
     PokemonInstance = None
 
 from .evolution import get_evolution_items, get_evolution, attempt_evolution
+from .breeding import determine_egg_species
 from .stats import (
     exp_for_level,
     level_for_exp,
@@ -32,4 +33,5 @@ __all__ = [
     "get_evolution_items",
     "get_evolution",
     "attempt_evolution",
+    "determine_egg_species",
 ]

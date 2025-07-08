@@ -9,3 +9,4 @@ For setup instructions and other notes migrated from the original Evennia README
 ## License
 
 This project is distributed under the terms of the [MIT License](LICENSE).
+
