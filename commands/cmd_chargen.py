@@ -293,10 +293,10 @@ def starter_ability(caller, raw_string, **kwargs):
     lentry = entry.lower()
     if lentry in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return "starter_species"
+        return "starter_species", {}
     if lentry not in STARTER_NAMES:
         caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
-        return "starter_species"
+        return "starter_species", {}
 
     key = STARTER_LOOKUP[lentry]
     data = POKEDEX[key]
@@ -388,10 +388,10 @@ def starter_confirm(caller, raw_string, **kwargs):
         return node_abort(caller)
     if low in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return "starter_species"
+        return "starter_species", {}
     if low not in STARTER_NAMES:
         caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
-        return "starter_species"
+        return "starter_species", {}
 
     key = STARTER_LOOKUP[low]
     caller.ndb.chargen["species_key"] = key
