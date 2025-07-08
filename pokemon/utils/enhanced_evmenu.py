@@ -36,12 +36,7 @@ class EnhancedEvMenu(EvMenu):
         super().__init__(*args, **kwargs)
 
     def parse_input(self, raw_string):
-        """
-        Override the input parser to:
-         1) catch abort keys immediately,
-         2) catch options with goto == '_repeat' to exec and re-display,
-         3) on other invalid input, show our invalid_msg and re-show the node.
-        """
+        """Custom input parsing supporting the ``_repeat`` target."""
         cmd = strip_ansi(raw_string.strip())
         low = cmd.lower()
 
@@ -50,13 +45,13 @@ class EnhancedEvMenu(EvMenu):
                 self.display_nodetext()
             return
 
-        # 1) Abort handling
+        # abort keys always end the menu
         if low in self.abort_keys:
             self.msg("|rMenu aborted.|n")
             self.at_abort()
             return self.close_menu()
 
-        # 2) help <topic> support
+        # allow per-node help by "help <topic>"
         if low.startswith("help ") and isinstance(self.helptext, dict):
             topic = low.split(" ", 1)[1]
             if topic in self.helptext:
@@ -64,40 +59,76 @@ class EnhancedEvMenu(EvMenu):
             self.msg(f"|rNo help for '{topic}'.|n")
             return
 
-        # 3) Look for a matching option manually using raw option definitions
+        # collect option definitions for later reference
+        option_defs = self.test_options or []
+        option_defs = (
+            option_defs if isinstance(option_defs, (list, tuple)) else [option_defs]
+        )
+
         match_opt = None
-        options = self.test_options or []
-        options = options if isinstance(options, (list, tuple)) else [options]
-        for opt in options:
+        default_opt = None
+        for opt in option_defs:
             keys = make_iter(opt.get("key"))
+            if "_default" in keys and default_opt is None:
+                default_opt = opt
             if any(low == str(k).lower() for k in keys):
                 match_opt = opt
                 break
 
-        # 4) Run exec callback and handle `_repeat` goto before normal processing
-        if match_opt:
-            exec_fn = match_opt.get("exec")
+        def _run_exec(opt):
+            exec_fn = opt.get("exec")
             if callable(exec_fn):
                 exec_fn(self.caller)
+
+        # explicit match
+        if match_opt:
+            _run_exec(match_opt)
             if match_opt.get("goto") == "_repeat":
                 self.display_nodetext()
                 return
+            try:
+                super().parse_input(raw_string)
+            except EvMenuError:
+                pass
+            return
 
-        # 5) Delegate to parent for normal processing
-        try:
-            super().parse_input(raw_string)
-        except EvMenuError:
-            pass
+        # built-in commands
+        if self.auto_look and low in ("look", "l"):
+            self.display_nodetext()
+            return
+        if self.auto_help and isinstance(self.helptext, dict) and low in self.helptext:
+            self.display_tooltip(low)
+            return
+        if self.auto_help and low in ("help", "h"):
+            self.display_helptext()
+            return
+        if self.auto_quit and low in ("quit", "q", "exit"):
+            self.close_menu()
+            return
+        if self.debug_mode and low.startswith("menudebug"):
+            self.print_debug_info(low[9:].strip())
+            return
 
-        # 6) If nothing changed (and not a help/look), treat as invalid
-        if (
-            self.nodename
-            and low not in ("help", "h", "look", "l")
-            and low not in self.options
-        ):
-            self.invalid_msg()
-            if self.auto_repeat_invalid:
-                self.display_nodetext()
+        # default option
+        if default_opt:
+            _run_exec(default_opt)
+            goto = default_opt.get("goto")
+            if goto == "_repeat":
+                if self.auto_repeat_invalid:
+                    self.display_nodetext()
+                else:
+                    self.display_nodetext()
+                return
+            try:
+                super().parse_input(raw_string)
+            except EvMenuError:
+                pass
+            return
+
+        # completely invalid
+        self.invalid_msg()
+        if self.auto_repeat_invalid:
+            self.display_nodetext()
 
     def invalid_msg(self):
         """
