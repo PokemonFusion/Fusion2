@@ -42,7 +42,9 @@ class EnhancedEvMenu(EvMenu):
 
         if not low:
             if self.auto_repeat_invalid:
-                self.display_nodetext()
+                # re-run the current node with a blank entry so any
+                # raw-string dependent logic resets cleanly
+                self.goto(None, "")
             return
 
         # abort keys always end the menu
@@ -84,7 +86,8 @@ class EnhancedEvMenu(EvMenu):
         if match_opt:
             _run_exec(match_opt)
             if match_opt.get("goto") == "_repeat":
-                self.display_nodetext()
+                # re-run same node without carrying over old input
+                self.goto(None, "")
                 return
             try:
                 super().parse_input(raw_string)
@@ -114,10 +117,11 @@ class EnhancedEvMenu(EvMenu):
             _run_exec(default_opt)
             goto = default_opt.get("goto")
             if goto == "_repeat":
+                # repeat current node with cleared input
                 if self.auto_repeat_invalid:
-                    self.display_nodetext()
+                    self.goto(None, "")
                 else:
-                    self.display_nodetext()
+                    self.goto(None, "")
                 return
             try:
                 super().parse_input(raw_string)
