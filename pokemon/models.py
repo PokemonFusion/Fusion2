@@ -138,7 +138,7 @@ class UserStorage(models.Model):
         """Return active Pokémon ordered by slot."""
         qs = self.active_pokemon.all()
         if hasattr(qs, "order_by"):
-            qs = qs.order_by("activepokemonslot__slot")
+            qs = qs.order_by("active_slots__slot")
         return list(qs)
 
 
