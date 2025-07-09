@@ -118,7 +118,7 @@ def _create_starter(
     heal_pokemon(pokemon)
 
     storage = _ensure_storage(char)
-    storage.active_pokemon.add(pokemon)
+    storage.add_active_pokemon(pokemon)
 
     return pokemon
 

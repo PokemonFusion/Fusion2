@@ -211,7 +211,12 @@ class BattleInstance:
         )
 
         player_pokemon: List[Pokemon] = []
-        for poke in self.player.storage.active_pokemon.all():
+        party = (
+            self.player.storage.get_party()
+            if hasattr(self.player.storage, "get_party")
+            else list(self.player.storage.active_pokemon.all())
+        )
+        for poke in party:
             stats = _calc_stats_from_model(poke)
             moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
             player_pokemon.append(
@@ -267,7 +272,12 @@ class BattleInstance:
         origin = self.player.location
 
         player_pokemon: List[Pokemon] = []
-        for poke in self.player.storage.active_pokemon.all():
+        party = (
+            self.player.storage.get_party()
+            if hasattr(self.player.storage, "get_party")
+            else list(self.player.storage.active_pokemon.all())
+        )
+        for poke in party:
             stats = _calc_stats_from_model(poke)
             moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
             player_pokemon.append(
@@ -283,7 +293,12 @@ class BattleInstance:
             )
 
         opp_pokemon: List[Pokemon] = []
-        for poke in self.opponent.storage.active_pokemon.all():
+        party = (
+            self.opponent.storage.get_party()
+            if hasattr(self.opponent.storage, "get_party")
+            else list(self.opponent.storage.active_pokemon.all())
+        )
+        for poke in party:
             stats = _calc_stats_from_model(poke)
             moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
             opp_pokemon.append(
