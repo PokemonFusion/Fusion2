@@ -16,8 +16,18 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 from evennia import default_cmds
 from evennia.contrib.utils.debugpy import CmdDebugPy
-from paxboards.commands import add_board_commands
-
+from bboard.commands import (
+    CmdBBList,
+    CmdBBRead,
+    CmdBBPost,
+    CmdBBDelete,
+    CmdBBSet,
+    CmdBBNew,
+    CmdBBEdit,
+    CmdBBMove,
+    CmdBBPurge,
+    CmdBBLock,
+)
 from commands.pokedex import (
     CmdPokedexSearch,
     CmdMovedexSearch,
