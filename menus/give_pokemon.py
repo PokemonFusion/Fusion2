@@ -4,8 +4,12 @@ from pokemon.models import OwnedPokemon
 from commands.command import heal_pokemon
 
 
-def node_start(caller, raw_input=None, target=None):
+def node_start(caller, raw_input=None, **kwargs):
     """Ask for Pokemon species."""
+    target = kwargs.get("target")
+    if not target:
+        caller.msg("No target specified.")
+        return None, None
     if target.storage.active_pokemon.count() >= 6:
         caller.msg(f"{target.key}'s party is full.")
         return None, None
@@ -19,8 +23,12 @@ def node_start(caller, raw_input=None, target=None):
     return "node_level", {}
 
 
-def node_level(caller, raw_input=None, target=None):
+def node_level(caller, raw_input=None, **kwargs):
     """Ask for the level and create the Pokemon."""
+    target = kwargs.get("target")
+    if not target:
+        caller.msg("No target specified.")
+        return None, None
     if not raw_input:
         return "Enter level:", [{"key": "_default", "goto": "node_level"}]
     try:
