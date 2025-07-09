@@ -51,10 +51,13 @@ class CmdPokedexSearch(Command):
             if num <= 0:
                 continue
             canonical, details = get_pokemon_by_name(key)
-            display_name = getattr(details, "name", None)
-            if not display_name and isinstance(details, dict):
+            display_name = None
+            if isinstance(details, dict):
                 display_name = details.get("name")
-            display_name = display_name or canonical.title()
+            else:
+                display_name = getattr(details, "name", None)
+            if display_name is None:
+                display_name = canonical
 
             forme = None
             if isinstance(details, dict):
