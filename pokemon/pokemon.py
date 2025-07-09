@@ -1,4 +1,5 @@
 from evennia import DefaultCharacter
+from django.utils import timezone
 from .models import (
     Pokemon,
     OwnedPokemon,
@@ -45,10 +46,16 @@ class User(DefaultCharacter, InventoryMixin):
         self.storage.stored_pokemon.add(pokemon)
 
     def show_pokemon_on_user(self):
-        return "\n".join(str(pokemon) for pokemon in self.storage.active_pokemon.all())
+        return "\n".join(
+            f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}"
+            for pokemon in self.storage.active_pokemon.all()
+        )
 
     def show_pokemon_in_storage(self):
-        return "\n".join(str(pokemon) for pokemon in self.storage.stored_pokemon.all())
+        return "\n".join(
+            f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}"
+            for pokemon in self.storage.stored_pokemon.all()
+        )
 
     def at_object_creation(self):
         super().at_object_creation()

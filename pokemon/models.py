@@ -76,6 +76,7 @@ class OwnedPokemon(SharedMemoryModel):
         editable=False,
         db_index=True,
     )
+    created_at = models.DateTimeField(auto_now_add=True)
     trainer = models.ForeignKey(
         "pokemon.Trainer",
         on_delete=models.CASCADE,
