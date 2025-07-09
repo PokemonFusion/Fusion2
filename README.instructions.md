@@ -19,7 +19,13 @@ Your game's main configuration file is found in
 `server/conf/settings.py` (but you don't need to change it to get
 started). If you just created this directory (which means you'll already
 have a `virtualenv` running if you followed the default instructions),
-`cd` to this directory then initialize a new database using
+`cd` to this directory. Install the Python dependencies with
+
+```bash
+pip install -r requirements.txt
+```
+
+Then initialize a new database using
 
     evennia migrate
 
@@ -50,6 +56,9 @@ to update your database schema before starting the server.
 The game is configured to use **PostgreSQL**. The connection settings are kept
 in `server/conf/secret_settings.py`, which is not committed to the repository.
 Make sure PostgreSQL is available before running migration or start commands.
+
+The `psycopg2` package is required so that Django can talk to PostgreSQL. It is
+installed automatically when using the `requirements.txt` file mentioned above.
 
 # Getting started
 
