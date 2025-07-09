@@ -45,7 +45,7 @@ def get_national_entries() -> List[Tuple[int, str]]:
         num = getattr(details, "num", None)
         if num is None and isinstance(details, dict):
             num = details.get("num")
-        if num:
+        if num and int(num) > 0:
             entries.append((int(num), name.lower()))
     entries.sort(key=lambda x: x[0])
     return entries
