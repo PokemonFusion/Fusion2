@@ -189,5 +189,6 @@ class User(DefaultCharacter, InventoryMixin):
         """Try to spend money from the trainer."""
         return self.trainer.spend_money(amount)
 
-    def log_seen_pokemon(self, pokemon: Pokemon) -> None:
-        self.trainer.log_seen_pokemon(pokemon)
+    def log_seen_pokemon(self, species: str | int) -> None:
+        """Proxy for ``Trainer.log_seen_pokemon``."""
+        self.trainer.log_seen_pokemon(species)
