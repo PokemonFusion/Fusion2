@@ -239,7 +239,7 @@ def load_pokedex(
     else:
         data = _load_json(path)
     return {
-        name: Pokemon.from_dict(name, details, abilitydex)
+        name: Pokemon.from_dict(details.get("name", name), details, abilitydex)
         for name, details in data.items()
     }
 

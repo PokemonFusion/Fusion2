@@ -6,9 +6,16 @@ from evennia import Command
 
 
 class CmdGitPull(Command):
-    """Pull the latest code from the git repository."""
+    """Update the server's code from the git repository.
 
-    key = "+gitpull"
+    Usage:
+      @gitpull
+
+    This will run ``git pull`` in the game directory and relay any
+    output back to the caller.
+    """
+
+    key = "@gitpull"
     locks = "cmd:perm(Wizards)"
     help_category = "Admin"
 

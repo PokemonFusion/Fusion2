@@ -35,13 +35,48 @@ class CmdPokedexSearch(Command):
     locks = "cmd:all()"
     help_category = "Pokemon"
 
-    def _list_entries(self, entries):
+    def parse(self):
+        """Parse optional /region switch."""
+        args = self.args.strip()
+        self.switches = []
+        if args.startswith("/"):
+            parts = args[1:].split(None, 1)
+            self.switches = parts[0].split("/")
+            args = parts[1] if len(parts) > 1 else ""
+        self.args = args.strip()
+
+    def _list_entries(self, entries, include_forms=False):
         lines = []
-        for num, name in entries:
+        for num, key in entries:
+            if num <= 0:
+                continue
+            canonical, details = get_pokemon_by_name(key)
+            display_name = None
+            if isinstance(details, dict):
+                display_name = details.get("name")
+            else:
+                display_name = getattr(details, "name", None)
+            if display_name is None:
+                display_name = canonical
+
+            forme = None
+            if isinstance(details, dict):
+                forme = details.get("forme")
+            else:
+                forme = getattr(details, "forme", None)
+
+            if not include_forms:
+                if forme and ("mega" in forme.lower() or "gmax" in forme.lower()):
+                    continue
+                if "mega" in key.lower() or "gmax" in key.lower():
+                    continue
+                if "mega" in display_name.lower() or "gmax" in display_name.lower():
+                    continue
+
             symbol = ""
             if hasattr(self.caller, "get_dex_symbol"):
-                symbol = self.caller.get_dex_symbol(name)
-            lines.append(f"{num:>3}. {name.title()} ({name}) {symbol}")
+                symbol = self.caller.get_dex_symbol(canonical)
+            lines.append(f"{num:>3}. {display_name} ({canonical}) {symbol}")
         self.caller.msg("\n".join(lines))
 
     def func(self):
@@ -86,6 +121,19 @@ class CmdPokedexSearch(Command):
             self.caller.msg(format_pokemon_details(name, details))
         else:
             self.caller.msg("No Pokémon found with that name or number.")
+
+
+class CmdPokedexAll(CmdPokedexSearch):
+    """List all positive-numbered Pokémon."""
+
+    key = "+dex/all"
+    aliases = ["pokedex/all"]
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        entries = get_national_entries()
+        self._list_entries(entries, include_forms=True)
 
 
 class CmdMovedexSearch(Command):
