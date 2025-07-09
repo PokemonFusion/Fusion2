@@ -10,17 +10,29 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='userstorage',
+            name='active_pokemon',
+        ),
+        migrations.RemoveField(
+            model_name='userstorage',
+            name='stored_pokemon',
+        ),
+        migrations.RemoveField(
+            model_name='storagebox',
+            name='pokemon',
+        ),
+        migrations.AddField(
             model_name='userstorage',
             name='active_pokemon',
             field=models.ManyToManyField(related_name='active_users', to='pokemon.ownedpokemon'),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='userstorage',
             name='stored_pokemon',
             field=models.ManyToManyField(blank=True, related_name='stored_users', to='pokemon.ownedpokemon'),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='storagebox',
             name='pokemon',
             field=models.ManyToManyField(blank=True, related_name='boxes', to='pokemon.ownedpokemon'),
