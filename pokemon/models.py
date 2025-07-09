@@ -9,6 +9,44 @@ from django.core.exceptions import ValidationError
 import uuid
 
 
+class Gender(models.TextChoices):
+    """Allowed Pokémon genders."""
+
+    MALE = "M", "Male"
+    FEMALE = "F", "Female"
+    NONE = "N", "None"
+
+
+class Nature(models.TextChoices):
+    """Available Pokémon natures."""
+
+    HARDY = "Hardy", "Hardy"
+    LONELY = "Lonely", "Lonely"
+    BRAVE = "Brave", "Brave"
+    ADAMANT = "Adamant", "Adamant"
+    NAUGHTY = "Naughty", "Naughty"
+    BOLD = "Bold", "Bold"
+    DOCILE = "Docile", "Docile"
+    RELAXED = "Relaxed", "Relaxed"
+    IMPISH = "Impish", "Impish"
+    LAX = "Lax", "Lax"
+    TIMID = "Timid", "Timid"
+    HASTY = "Hasty", "Hasty"
+    SERIOUS = "Serious", "Serious"
+    JOLLY = "Jolly", "Jolly"
+    NAIVE = "Naive", "Naive"
+    MODEST = "Modest", "Modest"
+    MILD = "Mild", "Mild"
+    QUIET = "Quiet", "Quiet"
+    BASHFUL = "Bashful", "Bashful"
+    RASH = "Rash", "Rash"
+    CALM = "Calm", "Calm"
+    GENTLE = "Gentle", "Gentle"
+    SASSY = "Sassy", "Sassy"
+    CAREFUL = "Careful", "Careful"
+    QUIRKY = "Quirky", "Quirky"
+
+
 class Move(models.Model):
     """A normalized move entry."""
 
@@ -122,8 +160,16 @@ class OwnedPokemon(SharedMemoryModel):
     )
     species = models.CharField(max_length=50)
     nickname = models.CharField(max_length=50, blank=True)
-    gender = models.CharField(max_length=10, blank=True)
-    nature = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(
+        max_length=10,
+        blank=True,
+        choices=Gender.choices,
+    )
+    nature = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=Nature.choices,
+    )
     ability = models.CharField(max_length=50, blank=True)
     held_item = models.CharField(max_length=50, blank=True)
     tera_type = models.CharField(max_length=20, blank=True)
@@ -292,8 +338,16 @@ class NPCTrainerPokemon(models.Model):
     species = models.CharField(max_length=50)
     level = models.PositiveSmallIntegerField(default=1)
     ability = models.CharField(max_length=50, blank=True)
-    nature = models.CharField(max_length=20, blank=True)
-    gender = models.CharField(max_length=10, blank=True)
+    nature = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=Nature.choices,
+    )
+    gender = models.CharField(
+        max_length=10,
+        blank=True,
+        choices=Gender.choices,
+    )
     ivs = ArrayField(models.PositiveSmallIntegerField(), size=6)
     evs = ArrayField(models.PositiveSmallIntegerField(), size=6)
     held_item = models.CharField(max_length=50, blank=True)
