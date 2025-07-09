@@ -6,6 +6,12 @@ Please note that the server is under heavy development. You can follow progress 
 
 For setup instructions and other notes migrated from the original Evennia README, see [README.instructions.md](README.instructions.md).
 
+To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## License
 
 This project is distributed under the terms of the [MIT License](LICENSE).
