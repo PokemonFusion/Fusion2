@@ -28,7 +28,7 @@ class User(DefaultCharacter, InventoryMixin):
         pokemon.set_level(level)
         from commands.command import heal_pokemon
         heal_pokemon(pokemon)
-        self.storage.active_pokemon.add(pokemon)
+        self.storage.add_active_pokemon(pokemon)
     def add_pokemon_to_storage(self, name, level, type_, data=None):
         pokemon = OwnedPokemon.objects.create(
             trainer=self.trainer,
@@ -46,9 +46,14 @@ class User(DefaultCharacter, InventoryMixin):
         self.storage.stored_pokemon.add(pokemon)
 
     def show_pokemon_on_user(self):
+        party = (
+            self.storage.get_party()
+            if hasattr(self.storage, "get_party")
+            else list(self.storage.active_pokemon.all())
+        )
         return "\n".join(
             f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}"
-            for pokemon in self.storage.active_pokemon.all()
+            for pokemon in party
         )
 
     def show_pokemon_in_storage(self):
@@ -110,7 +115,7 @@ class User(DefaultCharacter, InventoryMixin):
         pokemon.set_level(5)
         from commands.command import heal_pokemon
         heal_pokemon(pokemon)
-        self.storage.active_pokemon.add(pokemon)
+        self.storage.add_active_pokemon(pokemon)
         return f"You received {pokemon.species}!"
 
     # ------------------------------------------------------------------
@@ -128,7 +133,7 @@ class User(DefaultCharacter, InventoryMixin):
         if not pokemon:
             return "No such Pokémon."
         if pokemon in self.storage.active_pokemon.all():
-            self.storage.active_pokemon.remove(pokemon)
+            self.storage.remove_active_pokemon(pokemon)
         self.storage.stored_pokemon.add(pokemon)
         box = self.get_box(box_index)
         box.pokemon.add(pokemon)
@@ -144,7 +149,7 @@ class User(DefaultCharacter, InventoryMixin):
             return "That Pokémon is not in that box."
         box.pokemon.remove(pokemon)
         self.storage.stored_pokemon.remove(pokemon)
-        self.storage.active_pokemon.add(pokemon)
+        self.storage.add_active_pokemon(pokemon)
         display = pokemon.nickname or pokemon.species
         return f"{display} was withdrawn from {box.name}."
 
@@ -163,10 +168,8 @@ class User(DefaultCharacter, InventoryMixin):
 
     def get_active_pokemon_by_slot(self, slot: int):
         """Return the active Pokémon at the given slot (1-6)."""
-        mons = list(self.storage.active_pokemon.all().order_by("unique_id"))
-        if 1 <= slot <= len(mons):
-            return mons[slot - 1]
-        return None
+        slot_obj = self.storage.active_slots.select_related("pokemon").filter(slot=slot).first()
+        return slot_obj.pokemon if slot_obj else None
 
     @property
     def trainer(self) -> Trainer:

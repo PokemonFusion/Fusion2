@@ -75,7 +75,8 @@ def heal_party(char):
     storage = getattr(char, "storage", None)
     if not storage:
         return
-    for mon in storage.active_pokemon.all():
+    party = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
+    for mon in party:
         heal_pokemon(mon)
 
 class CmdShowPokemonOnUser(Command):
@@ -393,7 +394,7 @@ class CmdChargenInfo(Command):
             lines.append(f"  Fusion ability: {char.db.fusion_ability}")
         storage = getattr(char, "storage", None)
         if storage:
-            mons = list(storage.active_pokemon.all())
+            mons = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
             if mons:
                 lines.append("  Active Pokémon:")
                 for mon in mons:

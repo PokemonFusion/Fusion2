@@ -177,7 +177,7 @@ def award_experience_to_party(player, amount: int, ev_gains: Dict[str, int] | No
     if not storage or not hasattr(storage.active_pokemon, "all"):
         return
 
-    mons = list(storage.active_pokemon.all())
+    mons = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
     if not mons:
         return
 

@@ -6,7 +6,7 @@ def node_start(caller, raw_input=None):
     if not (caller.location and caller.location.db.is_pokemon_center):
         caller.msg("You must be at a Pokémon Center to manage movesets.")
         return None, None
-    mons = list(caller.storage.active_pokemon.all())
+    mons = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
     if not mons:
         caller.msg("You have no active Pokémon.")
         return None, None

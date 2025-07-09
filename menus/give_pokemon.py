@@ -55,7 +55,7 @@ def node_level(caller, raw_input=None, target=None):
         data=data,
     )
     heal_pokemon(pokemon)
-    target.storage.active_pokemon.add(pokemon)
+    target.storage.add_active_pokemon(pokemon)
     caller.msg(f"Gave {pokemon.name} (Lv {pokemon.level}) to {target.key}.")
     if target != caller:
         target.msg(f"You received {pokemon.name} (Lv {pokemon.level}) from {caller.key}.")

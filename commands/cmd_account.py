@@ -55,8 +55,8 @@ class CmdTradePokemon(Command):
             self.caller.msg("No such Pokémon.")
             return
         if pokemon in self.caller.storage.active_pokemon.all():
-            self.caller.storage.active_pokemon.remove(pokemon)
-            target.storage.active_pokemon.add(pokemon)
+            self.caller.storage.remove_active_pokemon(pokemon)
+            target.storage.add_active_pokemon(pokemon)
         elif pokemon in self.caller.storage.stored_pokemon.all():
             self.caller.storage.stored_pokemon.remove(pokemon)
             target.storage.stored_pokemon.add(pokemon)
