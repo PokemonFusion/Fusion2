@@ -30,6 +30,7 @@ from bboard.commands import (
 )
 from commands.pokedex import (
     CmdPokedexSearch,
+    CmdPokedexAll,
     CmdMovedexSearch,
     CmdMovesetSearch,
     CmdPokedexNumber,
@@ -170,6 +171,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdPvpAbort())
         self.add(CmdPvpStart())
         self.add(CmdPokedexSearch())
+        self.add(CmdPokedexAll())
         self.add(CmdMovedexSearch())
         self.add(CmdMovesetSearch())
         self.add(CmdPokedexNumber())
