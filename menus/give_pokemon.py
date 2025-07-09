@@ -1,6 +1,6 @@
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
-from pokemon.models import Pokemon
+from pokemon.models import OwnedPokemon
 from commands.command import heal_pokemon
 
 
@@ -32,31 +32,29 @@ def node_level(caller, raw_input=None, target=None):
         level = 1
     species = caller.ndb.givepoke.get("species")
     instance = generate_pokemon(species, level=level)
-    data = {
-        "ivs": {
-            "hp": instance.ivs.hp,
-            "atk": instance.ivs.atk,
-            "def": instance.ivs.def_,
-            "spa": instance.ivs.spa,
-            "spd": instance.ivs.spd,
-            "spe": instance.ivs.spe,
-        },
-        "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
-        "nature": instance.nature,
-        "gender": instance.gender,
-        "admin_generated": True,
-    }
-    pokemon = Pokemon.objects.create(
-        species=instance.species.name,
-        level=instance.level,
-        type_=", ".join(instance.species.types),
-        ability=instance.ability,
+    pokemon = OwnedPokemon.objects.create(
         trainer=target.trainer,
-        data=data,
+        species=instance.species.name,
+        nickname="",
+        gender=instance.gender,
+        nature=instance.nature,
+        ability=instance.ability,
+        ivs=[
+            instance.ivs.hp,
+            instance.ivs.atk,
+            instance.ivs.def_,
+            instance.ivs.spa,
+            instance.ivs.spd,
+            instance.ivs.spe,
+        ],
+        evs=[0, 0, 0, 0, 0, 0],
     )
+    pokemon.set_level(instance.level)
     heal_pokemon(pokemon)
     target.storage.add_active_pokemon(pokemon)
-    caller.msg(f"Gave {pokemon.species} (Lv {pokemon.level}) to {target.key}.")
+    caller.msg(
+        f"Gave {pokemon.species} (Lv {pokemon.level}) to {target.key}."
+    )
     if target != caller:
         target.msg(f"You received {pokemon.species} (Lv {pokemon.level}) from {caller.key}.")
     del caller.ndb.givepoke
