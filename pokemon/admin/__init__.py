@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (
+from ..models import (
     Pokemon,
     UserStorage,
     StorageBox,
@@ -11,10 +11,12 @@ from .models import (
     GymBadge,
 )
 
+from .owned_pokemon import OwnedPokemonAdmin
+
 admin.site.register(Pokemon)
 admin.site.register(UserStorage)
 admin.site.register(StorageBox)
-admin.site.register(OwnedPokemon)
+admin.site.register(OwnedPokemon, OwnedPokemonAdmin)
 admin.site.register(ActiveMoveslot)
 admin.site.register(BattleSlot)
 admin.site.register(Move)
