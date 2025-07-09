@@ -11,9 +11,10 @@ creation commands.
 from evennia.objects.objects import DefaultCharacter
 
 from .objects import ObjectParent
+from utils.pokedex import DexTrackerMixin
 
 
-class Character(ObjectParent, DefaultCharacter):
+class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
     """
     The Character just re-implements some of the Object's methods and hooks
     to represent a Character entity in-game.

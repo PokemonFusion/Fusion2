@@ -34,3 +34,20 @@ def get_catch_rate(species: str) -> int:
     """Return the catch rate for a species or ``0`` if unknown."""
     info = get_catch_info(species)
     return info.get("catchRate", 0) if info else 0
+
+
+def get_national_entries() -> List[Tuple[int, str]]:
+    """Return ``(number, species)`` pairs for the National Pok\xe9dex."""
+    from .. import POKEDEX
+
+    entries: List[Tuple[int, str]] = []
+    for name, details in POKEDEX.items():
+        num = getattr(details, "num", None)
+        if num is None and isinstance(details, dict):
+            num = details.get("num")
+        if num:
+            entries.append((int(num), name.lower()))
+    entries.sort(key=lambda x: x[0])
+    return entries
+
+
