@@ -20,6 +20,9 @@ class CmdGivePokemon(Command):
         target = self.caller.search(self.args.strip(), global_search=True)
         if not target:
             return
+        if not target.is_typeclass("typeclasses.characters.Character", exact=False):
+            self.caller.msg("You can only give Pokémon to characters.")
+            return
 
         if target.storage.active_pokemon.count() >= 6:
             self.caller.msg(f"{target.key}'s party is already full.")
