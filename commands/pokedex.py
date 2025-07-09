@@ -73,7 +73,7 @@ class CmdPokedexSearch(Command):
             symbol = ""
             if hasattr(self.caller, "get_dex_symbol"):
                 symbol = self.caller.get_dex_symbol(key)
-            lines.append(f"{num:>3}. {display_name} {symbol}")
+            lines.append(f"{num:>3}. {display_name} ({key.upper()}) {symbol}")
         self.caller.msg("\n".join(lines))
 
     def func(self):
