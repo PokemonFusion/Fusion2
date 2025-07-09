@@ -47,7 +47,7 @@ def node_level(caller, raw_input=None, target=None):
         "admin_generated": True,
     }
     pokemon = Pokemon.objects.create(
-        name=instance.species.name,
+        species=instance.species.name,
         level=instance.level,
         type_=", ".join(instance.species.types),
         ability=instance.ability,
@@ -56,8 +56,8 @@ def node_level(caller, raw_input=None, target=None):
     )
     heal_pokemon(pokemon)
     target.storage.add_active_pokemon(pokemon)
-    caller.msg(f"Gave {pokemon.name} (Lv {pokemon.level}) to {target.key}.")
+    caller.msg(f"Gave {pokemon.species} (Lv {pokemon.level}) to {target.key}.")
     if target != caller:
-        target.msg(f"You received {pokemon.name} (Lv {pokemon.level}) from {caller.key}.")
+        target.msg(f"You received {pokemon.species} (Lv {pokemon.level}) from {caller.key}.")
     del caller.ndb.givepoke
     return None, None

@@ -51,6 +51,8 @@ class FakeManager:
         self.store = {}
         self.counter = 1
     def create(self, **kwargs):
+        if "name" in kwargs and "species" not in kwargs:
+            kwargs["species"] = kwargs.pop("name")
         obj = FakePokemon(**kwargs)
         obj.id = self.counter
         self.counter += 1
@@ -61,8 +63,8 @@ class FakeManager:
 
 class FakePokemon:
     objects = FakeManager()
-    def __init__(self, name, level, type_, trainer=None, ability=None, data=None, temporary=False):
-        self.name = name
+    def __init__(self, species, level, type_, trainer=None, ability=None, data=None, temporary=False):
+        self.species = species
         self.level = level
         self.type_ = type_
         self.trainer = trainer
@@ -102,6 +104,13 @@ spawn_mod.get_spawn = lambda loc: None
 
 def setup_module(module):
     evennia.create_object = lambda cls, key=None: cls()
+    pokemon_pkg = types.ModuleType("pokemon")
+    pokemon_pkg.generation = gen_mod
+    pokemon_pkg.models = models_mod
+    pokemon_pkg.breeding = types.ModuleType("pokemon.breeding")
+    pokemon_pkg.dex = importlib.import_module("pokemon.dex")
+    sys.modules["pokemon"] = pokemon_pkg
+    sys.modules["pokemon.breeding"] = pokemon_pkg.breeding
     sys.modules["typeclasses.battleroom"] = battleroom_mod
     sys.modules["pokemon.battle.interface"] = iface
     sys.modules["pokemon.battle.handler"] = handler_mod
@@ -190,7 +199,7 @@ def test_temp_pokemon_persists_after_restore():
 
 
 def test_capture_converts_pokemon():
-    wild_db = FakePokemon.objects.create(name="Bulbasaur", level=5, type_="Grass", temporary=True)
+    wild_db = FakePokemon.objects.create(species="Bulbasaur", level=5, type_="Grass", temporary=True)
     wild = Pokemon("Bulbasaur", hp=1, max_hp=10, model_id=wild_db.id)
     attacker = Pokemon("Pikachu")
     p1 = BattleParticipant("P1", [attacker], is_ai=False)

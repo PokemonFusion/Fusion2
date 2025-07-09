@@ -66,14 +66,26 @@ class SpeciesEntry(models.Model):
         return self.name
 
 
-class Pokemon(models.Model):
+class BasePokemon(models.Model):
+    """Abstract base model for Pokémon."""
+
+    species = models.CharField(max_length=50, default="")
+    level = models.PositiveSmallIntegerField(default=1)
+    ability = models.CharField(max_length=50, blank=True)
+    nature = models.CharField(max_length=20, blank=True, choices=Nature.choices)
+    gender = models.CharField(max_length=10, blank=True, choices=Gender.choices)
+    ivs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list)
+    evs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list)
+    held_item = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class Pokemon(BasePokemon):
     """Simple Pokémon instance used for starter and storage boxes."""
 
-    name = models.CharField(max_length=255)
-    level = models.IntegerField()
     type_ = models.CharField(max_length=255)
-    ability = models.CharField(max_length=50, blank=True)
-    held_item = models.CharField(max_length=50, blank=True)
     data = models.JSONField(default=dict, blank=True)
     temporary = models.BooleanField(default=False, db_index=True)
     trainer = models.ForeignKey(
@@ -88,7 +100,7 @@ class Pokemon(models.Model):
     def __str__(self):
         owner = f" owned by {self.trainer.user.key}" if self.trainer else ""
         return (
-            f"{self.id}: {self.name} (Level {self.level}, Type: {self.type_}, "
+            f"{self.id}: {self.species} (Level {self.level}, Type: {self.type_}, "
             f"Ability: {self.ability})" + owner
         )
 
@@ -143,7 +155,7 @@ class StorageBox(models.Model):
         return f"{self.name} (Owner: {self.storage.user.key})"
 
 
-class OwnedPokemon(SharedMemoryModel):
+class OwnedPokemon(SharedMemoryModel, BasePokemon):
     """Persistent data for a player's Pokémon."""
 
     unique_id = models.UUIDField(
@@ -158,24 +170,9 @@ class OwnedPokemon(SharedMemoryModel):
         on_delete=models.CASCADE,
         db_index=True,
     )
-    species = models.CharField(max_length=50)
     nickname = models.CharField(max_length=50, blank=True)
-    gender = models.CharField(
-        max_length=10,
-        blank=True,
-        choices=Gender.choices,
-    )
-    nature = models.CharField(
-        max_length=20,
-        blank=True,
-        choices=Nature.choices,
-    )
-    ability = models.CharField(max_length=50, blank=True)
-    held_item = models.CharField(max_length=50, blank=True)
     tera_type = models.CharField(max_length=20, blank=True)
     total_exp = models.BigIntegerField(default=0)
-    ivs = ArrayField(models.PositiveSmallIntegerField(), size=6)
-    evs = ArrayField(models.PositiveSmallIntegerField(), size=6)
     learned_moves = models.ManyToManyField(Move, related_name="owners")
     active_moveset = models.ManyToManyField(
         Move,
@@ -329,28 +326,12 @@ class NPCTrainer(models.Model):
         return self.name
 
 
-class NPCTrainerPokemon(models.Model):
+class NPCTrainerPokemon(BasePokemon):
     """Persistent Pokémon owned by an NPC trainer."""
 
     trainer = models.ForeignKey(
         NPCTrainer, on_delete=models.CASCADE, related_name="pokemon", db_index=True
     )
-    species = models.CharField(max_length=50)
-    level = models.PositiveSmallIntegerField(default=1)
-    ability = models.CharField(max_length=50, blank=True)
-    nature = models.CharField(
-        max_length=20,
-        blank=True,
-        choices=Nature.choices,
-    )
-    gender = models.CharField(
-        max_length=10,
-        blank=True,
-        choices=Gender.choices,
-    )
-    ivs = ArrayField(models.PositiveSmallIntegerField(), size=6)
-    evs = ArrayField(models.PositiveSmallIntegerField(), size=6)
-    held_item = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return f"{self.species} for {self.trainer.name}"
