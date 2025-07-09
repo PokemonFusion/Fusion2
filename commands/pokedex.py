@@ -50,11 +50,11 @@ class CmdPokedexSearch(Command):
         for num, key in entries:
             if num <= 0:
                 continue
-            _k, details = get_pokemon_by_name(key)
+            canonical, details = get_pokemon_by_name(key)
             display_name = getattr(details, "name", None)
             if not display_name and isinstance(details, dict):
                 display_name = details.get("name")
-            display_name = display_name or key.title()
+            display_name = display_name or canonical.title()
 
             forme = None
             if isinstance(details, dict):
@@ -72,8 +72,8 @@ class CmdPokedexSearch(Command):
 
             symbol = ""
             if hasattr(self.caller, "get_dex_symbol"):
-                symbol = self.caller.get_dex_symbol(key)
-            lines.append(f"{num:>3}. {display_name} ({key.upper()}) {symbol}")
+                symbol = self.caller.get_dex_symbol(canonical)
+            lines.append(f"{num:>3}. {display_name} ({canonical}) {symbol}")
         self.caller.msg("\n".join(lines))
 
     def func(self):
