@@ -14,7 +14,7 @@ class CmdSheet(Command):
     def func(self):
         caller = self.caller
         try:
-            party = list(caller.storage.active_pokemon.all().order_by("id"))
+            party = list(caller.storage.active_pokemon.all().order_by("unique_id"))
         except OperationalError:
             caller.msg("The game database is out of date. Please run 'evennia migrate'.")
             return
@@ -89,7 +89,7 @@ class CmdSheetPokemon(Command):
             caller.msg("Usage: +sheet/pokemon <slot>")
             return
 
-        party = list(caller.storage.active_pokemon.all().order_by("id"))
+        party = list(caller.storage.active_pokemon.all().order_by("unique_id"))
         if self.slot < 1 or self.slot > len(party):
             caller.msg("No Pokémon in that slot.")
             return

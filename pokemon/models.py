@@ -46,9 +46,11 @@ class Pokemon(models.Model):
 
 class UserStorage(models.Model):
     user = models.OneToOneField(ObjectDB, on_delete=models.CASCADE, db_index=True)
-    active_pokemon = models.ManyToManyField(Pokemon, related_name="active_users")
+    active_pokemon = models.ManyToManyField(
+        "OwnedPokemon", related_name="active_users"
+    )
     stored_pokemon = models.ManyToManyField(
-        Pokemon, related_name="stored_users", blank=True
+        "OwnedPokemon", related_name="stored_users", blank=True
     )
 
 
@@ -59,7 +61,7 @@ class StorageBox(models.Model):
         UserStorage, on_delete=models.CASCADE, related_name="boxes", db_index=True
     )
     name = models.CharField(max_length=255)
-    pokemon = models.ManyToManyField(Pokemon, related_name="boxes", blank=True)
+    pokemon = models.ManyToManyField("OwnedPokemon", related_name="boxes", blank=True)
 
     def __str__(self):
         return f"{self.name} (Owner: {self.storage.user.key})"
@@ -98,6 +100,24 @@ class OwnedPokemon(SharedMemoryModel):
 
     def __str__(self):
         return f"{self.nickname or self.species} ({self.unique_id})"
+
+    @property
+    def name(self) -> str:
+        """Return nickname if set, otherwise the species."""
+        return self.nickname or self.species
+
+    @property
+    def level(self) -> int:
+        """Return the Pokémon's level derived from experience."""
+        from .stats import level_for_exp
+
+        return level_for_exp(self.total_exp)
+
+    def set_level(self, level: int) -> None:
+        """Set ``total_exp`` based on the desired level."""
+        from .stats import exp_for_level
+
+        self.total_exp = exp_for_level(level)
 
 
 class ActiveMoveslot(models.Model):
@@ -175,3 +195,32 @@ class Trainer(models.Model):
 
     def log_seen_pokemon(self, pokemon: Pokemon) -> None:
         self.seen_pokemon.add(pokemon)
+
+
+class NPCTrainer(models.Model):
+    """Static NPC trainer such as gym leaders."""
+
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class NPCTrainerPokemon(models.Model):
+    """Persistent Pokémon owned by an NPC trainer."""
+
+    trainer = models.ForeignKey(
+        NPCTrainer, on_delete=models.CASCADE, related_name="pokemon", db_index=True
+    )
+    species = models.CharField(max_length=50)
+    level = models.PositiveSmallIntegerField(default=1)
+    ability = models.CharField(max_length=50, blank=True)
+    nature = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(max_length=10, blank=True)
+    ivs = ArrayField(models.PositiveSmallIntegerField(), size=6)
+    evs = ArrayField(models.PositiveSmallIntegerField(), size=6)
+    held_item = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return f"{self.species} for {self.trainer.name}"

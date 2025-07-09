@@ -43,12 +43,7 @@ class CmdTradePokemon(Command):
         if not self.args or "=" not in self.args:
             self.caller.msg("Usage: tradepokemon <pokemon_id>=<character>")
             return
-        pid_str, target_name = [part.strip() for part in self.args.split("=", 1)]
-        try:
-            pid = int(pid_str)
-        except ValueError:
-            self.caller.msg("Pokemon ID must be a number.")
-            return
+        pid, target_name = [part.strip() for part in self.args.split("=", 1)]
         target = self.caller.search(target_name)
         if not target:
             return
@@ -68,6 +63,7 @@ class CmdTradePokemon(Command):
         else:
             self.caller.msg("You don't have that Pokémon.")
             return
-        self.caller.msg(f"You traded {pokemon.name} to {target.key}.")
-        target.msg(f"{self.caller.key} traded {pokemon.name} to you.")
+        name = pokemon.nickname or pokemon.species
+        self.caller.msg(f"You traded {name} to {target.key}.")
+        target.msg(f"{self.caller.key} traded {name} to you.")
 

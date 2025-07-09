@@ -6,7 +6,7 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
-from pokemon.models import Pokemon, StorageBox, OwnedPokemon
+from pokemon.models import OwnedPokemon, StorageBox
 from pokemon.starters import get_starter_names, STARTER_LOOKUP
 from commands.command import heal_pokemon
 
@@ -79,45 +79,48 @@ def _ensure_storage(char):
 
 
 def _create_starter(
-        char,
-        species_key: str,
-        ability: str,
-        gender: str,
-        level: int = 5,
+    char,
+    species_key: str,
+    ability: str,
+    gender: str,
+    level: int = 5,
 ):
-        """Instantiate and store a starter Pokémon for the player."""
-        try:
-                instance = generate_pokemon(species_key, level=level)
-        except ValueError:
-                char.msg("That species does not exist.")
-                return
+    """Instantiate and store a starter Pokémon for the player."""
+    try:
+        instance = generate_pokemon(species_key, level=level)
+    except ValueError:
+        char.msg("That species does not exist.")
+        return
 
-        chosen_gender = gender or instance.gender
+    chosen_gender = gender or instance.gender
 
-        pokemon = OwnedPokemon.objects.create(
-                trainer=char.trainer,
-                species=instance.species.name,
-                nickname="",
-                gender=chosen_gender,
-                nature=instance.nature,
-                ability=ability or instance.ability,
-                ivs=[
-                        instance.ivs.hp,
-                        instance.ivs.atk,
-                        instance.ivs.def_,
-                        instance.ivs.spa,
-                        instance.ivs.spd,
-                        instance.ivs.spe,
-                ],
-                evs=[0, 0, 0, 0, 0, 0],
-        )
 
-        storage = _ensure_storage(char)
-        storage.active_pokemon.add(pokemon)
+    pokemon = OwnedPokemon.objects.create(
+        trainer=char.trainer,
+        species=instance.species.name,
+        nickname="",
+        gender=chosen_gender,
+        nature=instance.nature,
+        ability=ability or instance.ability,
+        ivs=[
+            instance.ivs.hp,
+            instance.ivs.atk,
+            instance.ivs.def_,
+            instance.ivs.spa,
+            instance.ivs.spd,
+            instance.ivs.spe,
+        ],
+        evs=[0, 0, 0, 0, 0, 0],
+    )
 
-        heal_pokemon(pokemon)
+    pokemon.set_level(level)
 
-        return pokemon
+    heal_pokemon(pokemon)
+
+    storage = _ensure_storage(char)
+    storage.active_pokemon.add(pokemon)
+
+    return pokemon
 
 
 # ────── COMMAND CLASS ─────────────────────────────────────────────────────────

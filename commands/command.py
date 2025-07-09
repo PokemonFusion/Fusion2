@@ -184,15 +184,12 @@ class CmdGetPokemonDetails(Command):
         if not self.args:
             self.caller.msg("Usage: getpokemondetails <pokemon_id>")
             return
-        try:
-            pokemon_id = int(self.args.strip())
-            pokemon = self.caller.get_pokemon_by_id(pokemon_id)
-            if pokemon:
-                self.caller.msg(str(pokemon))
-            else:
-                self.caller.msg(f"No Pokémon found with ID {pokemon_id}.")
-        except ValueError:
-            self.caller.msg("Usage: getpokemondetails <pokemon_id>")
+        pokemon_id = self.args.strip()
+        pokemon = self.caller.get_pokemon_by_id(pokemon_id)
+        if pokemon:
+            self.caller.msg(str(pokemon))
+        else:
+            self.caller.msg(f"No Pokémon found with ID {pokemon_id}.")
 
 
 class CmdUseMove(Command):
@@ -295,8 +292,8 @@ class CmdDepositPokemon(Command):
         if not parts:
             self.caller.msg("Usage: deposit <pokemon_id> [box]")
             return
+        pid = parts[0]
         try:
-            pid = int(parts[0])
             box = int(parts[1]) if len(parts) > 1 else 1
         except ValueError:
             self.caller.msg("Usage: deposit <pokemon_id> [box]")
@@ -316,8 +313,8 @@ class CmdWithdrawPokemon(Command):
         if not parts:
             self.caller.msg("Usage: withdraw <pokemon_id> [box]")
             return
+        pid = parts[0]
         try:
-            pid = int(parts[0])
             box = int(parts[1]) if len(parts) > 1 else 1
         except ValueError:
             self.caller.msg("Usage: withdraw <pokemon_id> [box]")
@@ -503,12 +500,7 @@ class CmdEvolvePokemon(Command):
             self.caller.msg("Usage: evolve <pokemon_id> [item]")
             return
 
-        try:
-            pid = int(parts[0])
-        except ValueError:
-            self.caller.msg("Usage: evolve <pokemon_id> [item]")
-            return
-
+        pid = parts[0]
         item = parts[1] if len(parts) > 1 else None
         pokemon = self.caller.get_pokemon_by_id(pid)
         if not pokemon:
