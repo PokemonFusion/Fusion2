@@ -10,42 +10,77 @@ from pokemon.middleware import (
     get_moveset_by_name,
     format_moveset,
 )
+from pokemon.dex.functions.pokedex_funcs import (
+    get_region_entries,
+    get_national_entries,
+)
 
 class CmdPokedexSearch(Command):
-    """
-    Search the Pokedex by name or number.
+    """Look up Pokédex entries and lists.
 
     Usage:
       pokedex <name or number>
-      +dex <name or number>
+      +dex[/<region>] [<name or number>]
       poke <name or number>
 
-    Examples:
-      pokedex Bulbasaur
-      pokedex 1
-      +dex Bulbasaur
-      poke 1
+    Calling ``+dex`` or ``+dex/<region>`` with no argument will list all Pokémon
+    in the national or regional dex. When a number is given it is interpreted as
+    the entry number for that dex.
 
+    Regions: Alola, Galar, Hoenn, Johto, Kalos, Kanto, Sinnoh, Unova
     """
+
     key = "pokedex"
     aliases = ["+dex", "poke"]  # Adding aliases
     locks = "cmd:all()"
     help_category = "Pokemon"
 
+    def _list_entries(self, entries):
+        lines = []
+        for num, name in entries:
+            symbol = ""
+            if hasattr(self.caller, "get_dex_symbol"):
+                symbol = self.caller.get_dex_symbol(name)
+            lines.append(f"{num:>3}. {name.title()} ({name}) {symbol}")
+        self.caller.msg("\n".join(lines))
+
     def func(self):
         args = self.args.strip()
+        region = self.switches[0].lower() if self.switches else None
 
         if not args:
-            self.caller.msg("You need to specify a name or number to search for.")
+            if region:
+                try:
+                    entries = get_region_entries(region)
+                except KeyError:
+                    self.caller.msg("Unknown region.")
+                    return
+            else:
+                entries = get_national_entries()
+            self._list_entries(entries)
             return
 
-        if args.isdigit():
-            # Search by number
-            pokemon_id = int(args)
-            name, details = get_pokemon_by_number(pokemon_id)
+        if region:
+            try:
+                entries = get_region_entries(region)
+            except KeyError:
+                self.caller.msg("Unknown region.")
+                return
+            if args.isdigit():
+                rnum = int(args)
+                species = next((n for num, n in entries if num == rnum), None)
+                if not species:
+                    self.caller.msg("No Pokémon with that number in this region.")
+                    return
+                name, details = get_pokemon_by_name(species)
+            else:
+                name, details = get_pokemon_by_name(args)
         else:
-            # Search by name
-            name, details = get_pokemon_by_name(args)
+            if args.isdigit():
+                num = int(args)
+                name, details = get_pokemon_by_number(num)
+            else:
+                name, details = get_pokemon_by_name(args)
 
         if name and details:
             self.caller.msg(format_pokemon_details(name, details))
