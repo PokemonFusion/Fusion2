@@ -54,8 +54,10 @@ class DummyChar:
         self.storage = DummyStorage(count)
         self.msgs = []
         self.is_char = is_char
+        self.checked_paths = []
 
     def is_typeclass(self, path, exact=False):
+        self.checked_paths.append(path)
         return self.is_char
 
     def msg(self, text):
@@ -82,6 +84,7 @@ def test_rejects_non_character_target():
     cmd.args = "Obj"
     cmd.func()
     assert caller.search_called == ("Obj", True)
+    assert target.checked_paths and target.checked_paths[-1] == "evennia.objects.objects.DefaultCharacter"
     assert caller.msgs and "You can only give" in caller.msgs[-1]
     assert not menu_calls
 
@@ -95,6 +98,7 @@ def test_launches_menu_for_character():
     cmd.caller = caller
     cmd.args = "Trg"
     cmd.func()
+    assert target.checked_paths and target.checked_paths[-1] == "evennia.objects.objects.DefaultCharacter"
     assert menu_calls
     args, kwargs = menu_calls[-1]
     assert args[0] is caller
@@ -110,5 +114,6 @@ def test_party_full_blocks_menu():
     cmd.caller = caller
     cmd.args = "Full"
     cmd.func()
+    assert target.checked_paths and target.checked_paths[-1] == "evennia.objects.objects.DefaultCharacter"
     assert caller.msgs and "party is already full" in caller.msgs[-1]
     assert not menu_calls
