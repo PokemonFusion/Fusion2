@@ -24,6 +24,9 @@ class User(DefaultCharacter, InventoryMixin):
             ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
             evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
         )
+        pokemon.set_level(level)
+        from commands.command import heal_pokemon
+        heal_pokemon(pokemon)
         self.storage.active_pokemon.add(pokemon)
     def add_pokemon_to_storage(self, name, level, type_, data=None):
         pokemon = OwnedPokemon.objects.create(
@@ -36,6 +39,9 @@ class User(DefaultCharacter, InventoryMixin):
             ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
             evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
         )
+        pokemon.set_level(level)
+        from commands.command import heal_pokemon
+        heal_pokemon(pokemon)
         self.storage.stored_pokemon.add(pokemon)
 
     def show_pokemon_on_user(self):
@@ -94,6 +100,9 @@ class User(DefaultCharacter, InventoryMixin):
             ],
             evs=[0, 0, 0, 0, 0, 0],
         )
+        pokemon.set_level(5)
+        from commands.command import heal_pokemon
+        heal_pokemon(pokemon)
         self.storage.active_pokemon.add(pokemon)
         return f"You received {pokemon.species}!"
 

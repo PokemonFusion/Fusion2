@@ -106,6 +106,19 @@ class OwnedPokemon(SharedMemoryModel):
         """Return nickname if set, otherwise the species."""
         return self.nickname or self.species
 
+    @property
+    def level(self) -> int:
+        """Return the Pokémon's level derived from experience."""
+        from .stats import level_for_exp
+
+        return level_for_exp(self.total_exp)
+
+    def set_level(self, level: int) -> None:
+        """Set ``total_exp`` based on the desired level."""
+        from .stats import exp_for_level
+
+        self.total_exp = exp_for_level(level)
+
 
 class ActiveMoveslot(models.Model):
     """Mapping of active move slots for a Pokémon."""

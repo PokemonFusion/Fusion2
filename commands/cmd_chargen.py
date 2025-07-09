@@ -113,6 +113,8 @@ def _create_starter(
         evs=[0, 0, 0, 0, 0, 0],
     )
 
+    pokemon.set_level(level)
+
     heal_pokemon(pokemon)
 
     storage = _ensure_storage(char)
