@@ -74,5 +74,5 @@ helpers in `pokemon/dex/functions/pokedex_funcs.py` such as
 ## Git Pull Command
 
 Admins can update the server's code from within the game by using the
-`+gitpull` command. The command runs `git pull` and returns any output to
+`@gitpull` command. The command runs `git pull` and returns any output to
 the caller.
