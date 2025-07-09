@@ -46,9 +46,11 @@ class Pokemon(models.Model):
 
 class UserStorage(models.Model):
     user = models.OneToOneField(ObjectDB, on_delete=models.CASCADE, db_index=True)
-    active_pokemon = models.ManyToManyField(Pokemon, related_name="active_users")
+    active_pokemon = models.ManyToManyField(
+        "OwnedPokemon", related_name="active_users"
+    )
     stored_pokemon = models.ManyToManyField(
-        Pokemon, related_name="stored_users", blank=True
+        "OwnedPokemon", related_name="stored_users", blank=True
     )
 
 
@@ -59,7 +61,7 @@ class StorageBox(models.Model):
         UserStorage, on_delete=models.CASCADE, related_name="boxes", db_index=True
     )
     name = models.CharField(max_length=255)
-    pokemon = models.ManyToManyField(Pokemon, related_name="boxes", blank=True)
+    pokemon = models.ManyToManyField("OwnedPokemon", related_name="boxes", blank=True)
 
     def __str__(self):
         return f"{self.name} (Owner: {self.storage.user.key})"
@@ -98,6 +100,11 @@ class OwnedPokemon(SharedMemoryModel):
 
     def __str__(self):
         return f"{self.nickname or self.species} ({self.unique_id})"
+
+    @property
+    def name(self) -> str:
+        """Return nickname if set, otherwise the species."""
+        return self.nickname or self.species
 
 
 class ActiveMoveslot(models.Model):
@@ -175,3 +182,32 @@ class Trainer(models.Model):
 
     def log_seen_pokemon(self, pokemon: Pokemon) -> None:
         self.seen_pokemon.add(pokemon)
+
+
+class NPCTrainer(models.Model):
+    """Static NPC trainer such as gym leaders."""
+
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class NPCTrainerPokemon(models.Model):
+    """Persistent Pokémon owned by an NPC trainer."""
+
+    trainer = models.ForeignKey(
+        NPCTrainer, on_delete=models.CASCADE, related_name="pokemon", db_index=True
+    )
+    species = models.CharField(max_length=50)
+    level = models.PositiveSmallIntegerField(default=1)
+    ability = models.CharField(max_length=50, blank=True)
+    nature = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(max_length=10, blank=True)
+    ivs = ArrayField(models.PositiveSmallIntegerField(), size=6)
+    evs = ArrayField(models.PositiveSmallIntegerField(), size=6)
+    held_item = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return f"{self.species} for {self.trainer.name}"

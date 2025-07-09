@@ -1,5 +1,5 @@
 from evennia import DefaultCharacter
-from .models import Pokemon, UserStorage, StorageBox, Trainer, GymBadge
+from .models import OwnedPokemon, UserStorage, StorageBox, Trainer, GymBadge
 from .generation import generate_pokemon
 from .dex import POKEDEX
 from utils.inventory import InventoryMixin
@@ -7,21 +7,27 @@ from utils.inventory import InventoryMixin
 
 class User(DefaultCharacter, InventoryMixin):
     def add_pokemon_to_user(self, name, level, type_, data=None):
-        pokemon = Pokemon.objects.create(
-            name=name,
-            level=level,
-            type_=type_,
+        pokemon = OwnedPokemon.objects.create(
             trainer=self.trainer,
-            data=data or {},
+            species=name,
+            nickname="",
+            gender=data.get("gender", "") if data else "",
+            nature=data.get("nature", "") if data else "",
+            ability=data.get("ability", "") if data else "",
+            ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
+            evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
         )
         self.storage.active_pokemon.add(pokemon)
     def add_pokemon_to_storage(self, name, level, type_, data=None):
-        pokemon = Pokemon.objects.create(
-            name=name,
-            level=level,
-            type_=type_,
+        pokemon = OwnedPokemon.objects.create(
             trainer=self.trainer,
-            data=data or {},
+            species=name,
+            nickname="",
+            gender=data.get("gender", "") if data else "",
+            nature=data.get("nature", "") if data else "",
+            ability=data.get("ability", "") if data else "",
+            ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
+            evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
         )
         self.storage.stored_pokemon.add(pokemon)
 
@@ -64,14 +70,25 @@ class User(DefaultCharacter, InventoryMixin):
             return "That species does not exist."
 
         instance = generate_pokemon(species.name, level=5)
-        pokemon = Pokemon.objects.create(
-            name=instance.species.name,
-            level=instance.level,
-            type_=", ".join(instance.species.types),
+        pokemon = OwnedPokemon.objects.create(
             trainer=self.trainer,
+            species=instance.species.name,
+            nickname="",
+            gender=instance.gender,
+            nature=instance.nature,
+            ability=instance.ability,
+            ivs=[
+                instance.ivs.hp,
+                instance.ivs.atk,
+                instance.ivs.def_,
+                instance.ivs.spa,
+                instance.ivs.spd,
+                instance.ivs.spe,
+            ],
+            evs=[0, 0, 0, 0, 0, 0],
         )
         self.storage.active_pokemon.add(pokemon)
-        return f"You received {pokemon.name}!"
+        return f"You received {pokemon.species}!"
 
     # ------------------------------------------------------------------
     # Box management
@@ -83,7 +100,7 @@ class User(DefaultCharacter, InventoryMixin):
             raise ValueError("Invalid box number")
         return boxes[index - 1]
 
-    def deposit_pokemon(self, pokemon_id: int, box_index: int = 1) -> str:
+    def deposit_pokemon(self, pokemon_id: str, box_index: int = 1) -> str:
         pokemon = self.get_pokemon_by_id(pokemon_id)
         if not pokemon:
             return "No such Pokémon."
@@ -92,9 +109,10 @@ class User(DefaultCharacter, InventoryMixin):
         self.storage.stored_pokemon.add(pokemon)
         box = self.get_box(box_index)
         box.pokemon.add(pokemon)
-        return f"{pokemon.name} was deposited in {box.name}."
+        display = pokemon.nickname or pokemon.species
+        return f"{display} was deposited in {box.name}."
 
-    def withdraw_pokemon(self, pokemon_id: int, box_index: int = 1) -> str:
+    def withdraw_pokemon(self, pokemon_id: str, box_index: int = 1) -> str:
         pokemon = self.get_pokemon_by_id(pokemon_id)
         if not pokemon:
             return "No such Pokémon."
@@ -104,7 +122,8 @@ class User(DefaultCharacter, InventoryMixin):
         box.pokemon.remove(pokemon)
         self.storage.stored_pokemon.remove(pokemon)
         self.storage.active_pokemon.add(pokemon)
-        return f"{pokemon.name} was withdrawn from {box.name}."
+        display = pokemon.nickname or pokemon.species
+        return f"{display} was withdrawn from {box.name}."
 
     def show_box(self, box_index: int) -> str:
         box = self.get_box(box_index)
@@ -115,13 +134,13 @@ class User(DefaultCharacter, InventoryMixin):
 
     def get_pokemon_by_id(self, pokemon_id):
         try:
-            return Pokemon.objects.get(id=pokemon_id)
-        except Pokemon.DoesNotExist:
+            return OwnedPokemon.objects.get(unique_id=pokemon_id)
+        except OwnedPokemon.DoesNotExist:
             return None
 
     def get_active_pokemon_by_slot(self, slot: int):
         """Return the active Pokémon at the given slot (1-6)."""
-        mons = list(self.storage.active_pokemon.all().order_by("id"))
+        mons = list(self.storage.active_pokemon.all().order_by("unique_id"))
         if 1 <= slot <= len(mons):
             return mons[slot - 1]
         return None
