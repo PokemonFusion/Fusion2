@@ -35,6 +35,16 @@ class CmdPokedexSearch(Command):
     locks = "cmd:all()"
     help_category = "Pokemon"
 
+    def parse(self):
+        """Parse optional /region switch."""
+        args = self.args.strip()
+        self.switches = []
+        if args.startswith("/"):
+            parts = args[1:].split(None, 1)
+            self.switches = parts[0].split("/")
+            args = parts[1] if len(parts) > 1 else ""
+        self.args = args.strip()
+
     def _list_entries(self, entries):
         lines = []
         for num, name in entries:
