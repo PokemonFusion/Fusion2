@@ -18,6 +18,16 @@ class Move(models.Model):
         return self.name
 
 
+class SpeciesEntry(models.Model):
+    """Pokédex species entry."""
+
+    name = models.CharField(max_length=50, unique=True)
+    dex_id = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Pokemon(models.Model):
     """Simple Pokémon instance used for starter and storage boxes."""
 
@@ -230,7 +240,7 @@ class Trainer(models.Model):
     trainer_number = models.PositiveIntegerField(unique=True)
     money = models.PositiveIntegerField(default=0)
     seen_pokemon = models.ManyToManyField(
-        Pokemon, related_name="seen_by_trainers", blank=True
+        SpeciesEntry, related_name="seen_by_trainers", blank=True
     )
     badges = models.ManyToManyField(GymBadge, related_name="trainers", blank=True)
 
@@ -253,8 +263,14 @@ class Trainer(models.Model):
         self.save()
         return True
 
-    def log_seen_pokemon(self, pokemon: Pokemon) -> None:
-        self.seen_pokemon.add(pokemon)
+    def log_seen_pokemon(self, species: str | int) -> None:
+        """Record that the trainer has seen the given species."""
+        if isinstance(species, int):
+            entry = SpeciesEntry.objects.filter(pk=species).first()
+        else:
+            entry = SpeciesEntry.objects.filter(name__iexact=str(species)).first()
+        if entry:
+            self.seen_pokemon.add(entry)
 
 
 class NPCTrainer(models.Model):
