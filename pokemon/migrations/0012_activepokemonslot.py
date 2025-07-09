@@ -20,7 +20,11 @@ class Migration(migrations.Migration):
                 'unique_together': {('storage', 'slot'), ('storage', 'pokemon')},
             },
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='userstorage',
+            name='active_pokemon',
+        ),
+        migrations.AddField(
             model_name='userstorage',
             name='active_pokemon',
             field=models.ManyToManyField(related_name='active_users', through='pokemon.ActivePokemonSlot', to='pokemon.ownedpokemon'),
