@@ -1,5 +1,12 @@
 from evennia import DefaultCharacter
-from .models import OwnedPokemon, UserStorage, StorageBox, Trainer, GymBadge
+from .models import (
+    Pokemon,
+    OwnedPokemon,
+    UserStorage,
+    StorageBox,
+    Trainer,
+    GymBadge,
+)
 from .generation import generate_pokemon
 from .dex import POKEDEX
 from utils.inventory import InventoryMixin
