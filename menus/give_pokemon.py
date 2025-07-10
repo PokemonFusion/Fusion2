@@ -14,13 +14,16 @@ def node_start(caller, raw_input=None, **kwargs):
         caller.msg(f"{target.key}'s party is full.")
         return None, None
     if not raw_input:
-        return f"Enter Pokemon species to give {target.key}:", [{"key": "_default", "goto": "node_start"}]
+        return (
+            f"Enter Pokemon species to give {target.key}:",
+            [{"key": "_default", "goto": "node_start"}],
+        )
     name = raw_input.strip()
     if name.lower() not in POKEDEX and name.title() not in POKEDEX:
         caller.msg("Unknown species. Try again.")
-        return "node_start", {}
+        return "node_start", {"target": target}
     caller.ndb.givepoke = {"species": name}
-    return "node_level", {}
+    return "node_level", {"target": target}
 
 
 def node_level(caller, raw_input=None, **kwargs):
@@ -35,7 +38,7 @@ def node_level(caller, raw_input=None, **kwargs):
         level = int(raw_input.strip())
     except ValueError:
         caller.msg("Level must be a number.")
-        return "node_level", {}
+        return "node_level", {"target": target}
     if level < 1:
         level = 1
     species = caller.ndb.givepoke.get("species")
