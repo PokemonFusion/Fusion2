@@ -27,12 +27,18 @@ class EnhancedEvMenu(EvMenu):
         invalid_message=None,
         auto_repeat_invalid=True,
         numbered_options=True,
+        menu_title="Pokémon Menu",
+        use_pokemon_style=True,
+        show_footer=True,
         **kwargs,
     ):
         self.on_abort = on_abort
         self.invalid_message = invalid_message or _HELP_NO_OPTION_MATCH
         self.auto_repeat_invalid = auto_repeat_invalid
         self.numbered_options = numbered_options
+        self.menu_title = menu_title
+        self.use_pokemon_style = use_pokemon_style
+        self.show_footer = show_footer
         super().__init__(*args, **kwargs)
 
     def parse_input(self, raw_string):
@@ -172,16 +178,35 @@ class EnhancedEvMenu(EvMenu):
 
     def nodetext_formatter(self, nodetext):
         text = super().nodetext_formatter(nodetext)
-        return f"|w== Menu ==|n\n{text}\n"
+        if not self.use_pokemon_style:
+            return text
+        return (
+            f"|y╔═══════════[ |w{self.menu_title}|n|y ]═══════════╗|n\n"
+            f"{text}\n"
+            f"|y╚══════════════════════════════════════╝|n"
+        )
 
     def options_formatter(self, optionlist):
         if not self.numbered_options:
             return super().options_formatter(optionlist)
 
+        if not self.use_pokemon_style:
+            return "\n".join(
+                f"{idx}. {key}: {desc}" if desc else f"{idx}. {key}"
+                for idx, (key, desc) in enumerate(optionlist, 1)
+            )
+
         lines = []
         for idx, (key, desc) in enumerate(optionlist, 1):
-            if desc:
-                lines.append(f"{idx}. {key}: {desc}")
-            else:
-                lines.append(f"{idx}. {key}")
+            prefix = f"|c{idx}.|n |g{key}|n"
+            lines.append(f"{prefix}: |w{desc}|n" if desc else prefix)
         return "\n".join(lines)
+
+    def node_formatter(self, nodetext, optionstext):
+        result = super().node_formatter(nodetext, optionstext)
+        if self.show_footer:
+            if self.use_pokemon_style:
+                result += "\n\n|y== |g[Enter Number] |w| 'q' to quit | 'h' for help|y ==|n"
+            else:
+                result += "\n\n[Type a number or command. 'q' to quit.]"
+        return result
