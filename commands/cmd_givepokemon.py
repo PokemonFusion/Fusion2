@@ -24,9 +24,5 @@ class CmdGivePokemon(Command):
             self.caller.msg("You can only give Pokémon to characters.")
             return
 
-        if target.storage.active_pokemon.count() >= 6:
-            self.caller.msg(f"{target.key}'s party is already full.")
-            return
-
         EvMenu(self.caller, give_pokemon, startnode="node_start", target=target)
 

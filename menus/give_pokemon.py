@@ -16,7 +16,13 @@ def node_start(caller, raw_input=None, **kwargs):
     if not raw_input:
         return (
             f"Enter Pokemon species to give {target.key}:",
-            [{"key": "_default", "goto": "node_start"}],
+            [
+                {
+                    "key": "_default",
+                    "goto": "node_start",
+                    "goto_kwargs": {"target": target},
+                }
+            ],
         )
     name = raw_input.strip()
     if name.lower() not in POKEDEX and name.title() not in POKEDEX:
@@ -33,7 +39,16 @@ def node_level(caller, raw_input=None, **kwargs):
         caller.msg("No target specified.")
         return None, None
     if not raw_input:
-        return "Enter level:", [{"key": "_default", "goto": "node_level"}]
+        return (
+            "Enter level:",
+            [
+                {
+                    "key": "_default",
+                    "goto": "node_level",
+                    "goto_kwargs": {"target": target},
+                }
+            ],
+        )
     try:
         level = int(raw_input.strip())
     except ValueError:

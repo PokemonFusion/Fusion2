@@ -81,9 +81,11 @@ def test_target_preserved_across_nodes():
     caller = DummyCaller()
     target = DummyTarget()
     text, opts = menu.node_start(caller, target=target)
-    assert isinstance(opts, list)
+    assert opts[0].get("goto_kwargs", {}).get("target") is target
     next_node, kwargs = menu.node_start(caller, raw_input="Pikachu", target=target)
     assert kwargs.get("target") is target
     caller.ndb.givepoke = {"species": "Pikachu"}
+    text, opts = menu.node_level(caller, target=target)
+    assert opts[0].get("goto_kwargs", {}).get("target") is target
     next_node, kwargs = menu.node_level(caller, raw_input="5", target=target)
     assert next_node is None and kwargs is None

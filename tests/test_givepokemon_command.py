@@ -105,7 +105,7 @@ def test_launches_menu_for_character():
     assert kwargs.get("target") is target
 
 
-def test_party_full_blocks_menu():
+def test_party_full_still_launches_menu():
     menu_calls.clear()
     cmd = cmd_mod.CmdGivePokemon()
     caller = DummyCaller()
@@ -115,5 +115,5 @@ def test_party_full_blocks_menu():
     cmd.args = "Full"
     cmd.func()
     assert target.checked_paths and target.checked_paths[-1] == "evennia.objects.objects.DefaultCharacter"
-    assert caller.msgs and "party is already full" in caller.msgs[-1]
-    assert not menu_calls
+    assert menu_calls
+    assert not any("already full" in msg for msg in caller.msgs)
