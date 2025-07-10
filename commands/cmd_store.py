@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 import menus.item_store as item_store
 
 
@@ -14,5 +14,5 @@ class CmdStore(Command):
         if not self.caller.location or not self.caller.location.db.is_item_shop:
             self.caller.msg("There is no store here.")
             return
-        EvMenu(self.caller, item_store, startnode="node_start", cmd_on_exit=None)
+        EnhancedEvMenu(self.caller, item_store, startnode="node_start", cmd_on_exit=None)
 

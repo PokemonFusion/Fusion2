@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 import menus.give_pokemon as give_pokemon
 
@@ -20,10 +20,14 @@ class CmdGivePokemon(Command):
         target = self.caller.search(self.args.strip(), global_search=True)
         if not target:
             return
-
-        if target.storage.active_pokemon.count() >= 6:
-            self.caller.msg(f"{target.key}'s party is already full.")
+        if not target.is_typeclass("evennia.objects.objects.DefaultCharacter", exact=False):
+            self.caller.msg("You can only give Pokémon to characters.")
             return
 
-        EvMenu(self.caller, give_pokemon, startnode="node_start", target=target)
+        EnhancedEvMenu(
+            self.caller,
+            give_pokemon,
+            startnode="node_start",
+            startnode_input=(None, {"target": target}),
+        )
 

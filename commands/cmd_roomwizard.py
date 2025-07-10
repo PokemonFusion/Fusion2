@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 import menus.room_wizard as room_wizard
 
 class CmdRoomWizard(Command):
@@ -14,7 +14,7 @@ class CmdRoomWizard(Command):
     help_category = "Building"
 
     def func(self):
-        EvMenu(
+        EnhancedEvMenu(
             self.caller,
             room_wizard,
             startnode="node_start",

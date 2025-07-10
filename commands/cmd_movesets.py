@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 import menus.moveset_manager as moveset_manager
 
 
@@ -11,5 +11,5 @@ class CmdMovesets(Command):
     help_category = "Pokemon"
 
     def func(self):
-        EvMenu(self.caller, moveset_manager, startnode="node_start", cmd_on_exit=None)
+        EnhancedEvMenu(self.caller, moveset_manager, startnode="node_start", cmd_on_exit=None)
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdSpawns(Command):
@@ -74,5 +74,5 @@ class CmdSpawns(Command):
             "quit": _menunode_quit,
         }
 
-        EvMenu(caller, menu_nodes, startnode="main")
+        EnhancedEvMenu(caller, menu_nodes, startnode="main")
 
