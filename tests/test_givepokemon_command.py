@@ -75,6 +75,10 @@ class DummyCaller(DummyChar):
     def __init__(self):
         super().__init__("Caller")
 
+    def search(self, name, global_search=True):
+        result = fake_search_object(name)
+        return result[0] if result else None
+
 
 def test_rejects_non_character_target():
     menu_calls.clear()

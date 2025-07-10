@@ -1,4 +1,4 @@
-from evennia import Command, search_object
+from evennia import Command
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 import menus.give_pokemon as give_pokemon
@@ -17,11 +17,9 @@ class CmdGivePokemon(Command):
             self.caller.msg("Usage: @givepokemon <character>")
             return
 
-        matches = search_object(self.args.strip())
-        if not matches:
-            self.caller.msg("No such character.")
+        target = self.caller.search(self.args.strip(), global_search=True)
+        if not target:
             return
-        target = matches[0]
         if not target.is_typeclass("evennia.objects.objects.DefaultCharacter", exact=False):
             self.caller.msg("You can only give Pokémon to characters.")
             return
