@@ -91,6 +91,7 @@ def generate_wild_pokemon(location=None) -> Pokemon:
                     getattr(getattr(inst, "ivs", None), "spe", 0),
                 ],
                 evs=[0, 0, 0, 0, 0, 0],
+                current_hp=inst.stats.hp,
                 is_wild=True,
             )
             db_obj.set_level(inst.level)
@@ -100,7 +101,7 @@ def generate_wild_pokemon(location=None) -> Pokemon:
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
-        hp=inst.stats.hp,
+        hp=getattr(db_obj, "current_hp", inst.stats.hp),
         max_hp=inst.stats.hp,
         moves=moves,
         ability=inst.ability,
@@ -151,6 +152,7 @@ def generate_trainer_pokemon(trainer=None) -> Pokemon:
                 getattr(getattr(inst, "ivs", None), "spe", 0),
             ],
             evs=[0, 0, 0, 0, 0, 0],
+            current_hp=inst.stats.hp,
             ai_trainer=trainer,
         )
             db_obj.set_level(inst.level)
@@ -160,7 +162,7 @@ def generate_trainer_pokemon(trainer=None) -> Pokemon:
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
-        hp=inst.stats.hp,
+        hp=getattr(db_obj, "current_hp", inst.stats.hp),
         max_hp=inst.stats.hp,
         moves=moves,
         ability=inst.ability,
@@ -249,7 +251,7 @@ class BattleInstance:
                 Pokemon(
                     name=poke.name,
                     level=poke.level,
-                    hp=stats.get("hp", poke.level),
+                    hp=getattr(poke, "current_hp", stats.get("hp", poke.level)),
                     max_hp=stats.get("hp", poke.level),
                     moves=moves,
                     ability=getattr(poke, "ability", None),
@@ -331,7 +333,7 @@ class BattleInstance:
                 Pokemon(
                     name=poke.name,
                     level=poke.level,
-                    hp=stats.get("hp", poke.level),
+                    hp=getattr(poke, "current_hp", stats.get("hp", poke.level)),
                     max_hp=stats.get("hp", poke.level),
                     moves=moves,
                     ability=getattr(poke, "ability", None),

@@ -201,6 +201,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     friendship = models.PositiveSmallIntegerField(default=70)
     flags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     tera_type = models.CharField(max_length=20, blank=True)
+    current_hp = models.PositiveIntegerField(default=0)
     total_exp = models.BigIntegerField(default=0)
     learned_moves = models.ManyToManyField(Move, related_name="owners")
     active_moveset = models.ManyToManyField(
@@ -242,6 +243,7 @@ class ActiveMoveslot(models.Model):
     pokemon = models.ForeignKey(OwnedPokemon, on_delete=models.CASCADE, db_index=True)
     move = models.ForeignKey(Move, on_delete=models.CASCADE, db_index=True)
     slot = models.PositiveSmallIntegerField(db_index=True)
+    current_pp = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         unique_together = ("pokemon", "slot")

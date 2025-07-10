@@ -15,9 +15,15 @@ def clone_pokemon(pokemon: OwnedPokemon, for_ai: bool = True) -> OwnedPokemon:
             held_item=pokemon.held_item,
             tera_type=pokemon.tera_type,
             total_exp=pokemon.total_exp,
+            current_hp=pokemon.current_hp,
             is_battle_instance=True,
             ai_trainer=pokemon.ai_trainer if for_ai else None,
         )
         clone.learned_moves.set(pokemon.learned_moves.all())
-        clone.active_moveset.set(pokemon.active_moveset.all())
+        for slot in pokemon.activemoveslot_set.all():
+            clone.activemoveslot_set.create(
+                move=slot.move,
+                slot=slot.slot,
+                current_pp=slot.current_pp,
+            )
         return clone

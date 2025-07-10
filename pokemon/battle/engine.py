@@ -1397,6 +1397,7 @@ class Battle:
                         dbpoke = OwnedPokemon.objects.get(unique_id=target_poke.model_id)
                         if hasattr(action.actor, "trainer"):
                             dbpoke.trainer = action.actor.trainer
+                        dbpoke.current_hp = target_poke.hp
                         dbpoke.is_wild = False
                         dbpoke.ai_trainer = None
                         if hasattr(dbpoke, "save"):

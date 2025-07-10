@@ -101,6 +101,7 @@ class FakeOwnedPokemon:
         ai_trainer=None,
         is_template=False,
         is_battle_instance=False,
+        current_hp=10,
     ):
         self.species = species
         self.level = level
@@ -115,6 +116,7 @@ class FakeOwnedPokemon:
         self.ivs = ivs or [0]*6
         self.evs = evs or [0]*6
         self.unique_id = str(self.__class__.objects.counter)
+        self.current_hp = current_hp
 
     def set_level(self, lvl):
         self.level = lvl
