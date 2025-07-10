@@ -19,6 +19,7 @@ def node_start(caller, raw_input=None, **kwargs):
             [
                 {
                     "key": "_default",
+                    "desc": "Enter species name",
                     "goto": ("node_start", {"target": target}),
                 }
             ],
@@ -43,6 +44,7 @@ def node_level(caller, raw_input=None, **kwargs):
             [
                 {
                     "key": "_default",
+                    "desc": "Enter level number",
                     "goto": ("node_level", {"target": target}),
                 }
             ],

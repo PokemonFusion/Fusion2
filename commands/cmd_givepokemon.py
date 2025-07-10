@@ -28,7 +28,6 @@ class CmdGivePokemon(Command):
             self.caller,
             give_pokemon,
             startnode="node_start",
-            startnode_input=("", {"target": target}),
-            target=target,
+            startnode_input=(None, {"target": target}),
         )
 

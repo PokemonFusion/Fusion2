@@ -102,7 +102,6 @@ def test_launches_menu_for_character():
     assert menu_calls
     args, kwargs = menu_calls[-1]
     assert args[0] is caller
-    assert kwargs.get("target") is target
     sni = kwargs.get("startnode_input")
     assert isinstance(sni, tuple) and sni[1].get("target") is target
 
