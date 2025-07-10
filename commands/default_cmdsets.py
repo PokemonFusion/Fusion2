@@ -46,6 +46,7 @@ from commands.command import (
     CmdUseMove,
     CmdInventory,
     CmdAddItem,
+    CmdGiveItem,
     CmdUseItem,
     CmdEvolvePokemon,
     CmdExpShare,
@@ -144,6 +145,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdChargenInfo())
         self.add(CmdInventory())
         self.add(CmdAddItem())
+        self.add(CmdGiveItem())
         self.add(CmdUseItem())
         self.add(CmdStore())
         self.add(CmdEvolvePokemon())

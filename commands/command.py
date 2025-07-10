@@ -1,6 +1,9 @@
 from evennia import Command
 from pokemon.generation import generate_pokemon
 from pokemon.stats import calculate_stats
+from pokemon.models import InventoryEntry
+from utils.inventory import add_item, remove_item
+from pokemon.dex import ITEMDEX
 
 
 def _get_stats_from_data(pokemon):
@@ -438,12 +441,27 @@ class CmdSpoof(Command):
 class CmdInventory(Command):
     """Show items in your inventory."""
 
-    key = "inventory"
+    key = "+inventory"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Inventory"
 
     def func(self):
-        self.caller.msg(self.caller.list_inventory())
+        trainer = getattr(self.caller, "trainer", None)
+        if not trainer:
+            self.caller.msg("You have no trainer record.")
+            return
+
+        entries = InventoryEntry.objects.filter(owner=trainer).order_by("item_name")
+        if not entries:
+            self.caller.msg("Your inventory is empty.")
+            return
+
+        lines = ["Your Inventory:"]
+        for entry in entries:
+            data = ITEMDEX.get(entry.item_name, {})
+            desc = data.get("desc", "No description available.")
+            lines.append(f"{entry.item_name.title()} x{entry.quantity} - {desc}")
+        self.caller.msg("\n".join(lines))
 
 
 class CmdAddItem(Command):
@@ -468,23 +486,71 @@ class CmdAddItem(Command):
         self.caller.msg(f"Added {qty} x {item}.")
 
 
+class CmdGiveItem(Command):
+    """Give an item to another player (admin-only)."""
+
+    key = "+giveitem"
+    locks = "cmd:perm(Builder)"
+    help_category = "Admin"
+
+    def parse(self):
+        parts = self.args.split("=")
+        if len(parts) != 2:
+            self.target_name = self.item_name = self.amount = None
+            return
+        self.target_name = parts[0].strip()
+        item_part = parts[1].strip().split(":")
+        self.item_name = item_part[0].strip().lower()
+        self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
+
+    def func(self):
+        if not all([self.target_name, self.item_name]):
+            self.caller.msg("Usage: +giveitem <player> = <item>:<amount>")
+            return
+
+        target = self.caller.search(self.target_name)
+        if not target or not hasattr(target, "trainer"):
+            self.caller.msg("Player not found or has no trainer record.")
+            return
+
+        if self.item_name not in ITEMDEX:
+            self.caller.msg(f"Item '{self.item_name}' not found in ITEMDEX.")
+            return
+
+        add_item(target.trainer, self.item_name, self.amount)
+        self.caller.msg(f"Gave {self.amount} x {self.item_name} to {target.key}.")
+
+
 class CmdUseItem(Command):
     """Use an item outside of battle."""
 
-    key = "useitem"
+    key = "+useitem"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Inventory"
 
     def func(self):
-        item_name = self.args.strip()
+        item_name = self.args.strip().lower()
+        trainer = getattr(self.caller, "trainer", None)
+
         if not item_name:
-            self.caller.msg("Usage: useitem <item>")
+            self.caller.msg("Usage: +useitem <item>")
             return
-        if not self.caller.has_item(item_name):
-            self.caller.msg(f"You do not have any {item_name}.")
+
+        if not trainer:
+            self.caller.msg("You have no trainer record.")
             return
-        self.caller.remove_item(item_name)
-        self.caller.msg(f"You use {item_name}. Nothing happens.")
+
+        if item_name not in ITEMDEX:
+            self.caller.msg(f"No such item '{item_name}' exists.")
+            return
+
+        success = remove_item(trainer, item_name)
+        if not success:
+            self.caller.msg(f"You don't have any {item_name} to use.")
+            return
+
+        # Placeholder for actual item effect logic
+        self.caller.msg(f"You used one {item_name}.")
 
 
 class CmdEvolvePokemon(Command):

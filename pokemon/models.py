@@ -168,9 +168,38 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     trainer = models.ForeignKey(
         "pokemon.Trainer",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         db_index=True,
     )
+    is_wild = models.BooleanField(default=False, db_index=True)
+    ai_trainer = models.ForeignKey(
+        "NPCTrainer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_index=True,
+        related_name="wild_or_ai_pokemon",
+    )
+    is_template = models.BooleanField(default=False, db_index=True)
+    is_battle_instance = models.BooleanField(default=False, db_index=True)
     nickname = models.CharField(max_length=50, blank=True)
+    is_shiny = models.BooleanField(default=False, db_index=True)
+    met_location = models.CharField(max_length=100, blank=True)
+    met_level = models.PositiveSmallIntegerField(null=True, blank=True)
+    met_date = models.DateTimeField(null=True, blank=True)
+    obtained_method = models.CharField(max_length=50, blank=True)
+    original_trainer = models.ForeignKey(
+        "Trainer",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="original_pokemon",
+    )
+    original_trainer_name = models.CharField(max_length=100, blank=True)
+    is_egg = models.BooleanField(default=False)
+    hatch_steps = models.PositiveIntegerField(null=True, blank=True)
+    friendship = models.PositiveSmallIntegerField(default=70)
+    flags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     tera_type = models.CharField(max_length=20, blank=True)
     total_exp = models.BigIntegerField(default=0)
     learned_moves = models.ManyToManyField(Move, related_name="owners")
@@ -200,6 +229,11 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         from .stats import exp_for_level
 
         self.total_exp = exp_for_level(level)
+
+    def delete_if_wild(self) -> None:
+        """Delete this Pokémon if it is an uncaptured wild encounter."""
+        if self.is_wild and self.trainer is None and self.ai_trainer is None:
+            self.delete()
 
 
 class ActiveMoveslot(models.Model):
@@ -326,12 +360,19 @@ class NPCTrainer(models.Model):
         return self.name
 
 
-class NPCTrainerPokemon(BasePokemon):
-    """Persistent Pokémon owned by an NPC trainer."""
+class InventoryEntry(models.Model):
+    """A quantity of a particular item owned by a trainer."""
 
-    trainer = models.ForeignKey(
-        NPCTrainer, on_delete=models.CASCADE, related_name="pokemon", db_index=True
+    owner = models.ForeignKey(
+        "pokemon.Trainer", on_delete=models.CASCADE, related_name="inventory"
     )
+    item_name = models.CharField(max_length=100)
+    quantity = models.PositiveIntegerField(default=1)
 
-    def __str__(self):
-        return f"{self.species} for {self.trainer.name}"
+    class Meta:
+        unique_together = ("owner", "item_name")
+
+    def __str__(self) -> str:
+        return f"{self.item_name} x{self.quantity}"
+
+

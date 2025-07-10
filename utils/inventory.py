@@ -35,3 +35,41 @@ class InventoryMixin:
         lines = [f"{item} x{amount}" for item, amount in inv.items()]
         return "\n".join(lines)
 
+
+def add_item(trainer, item_name: str, amount: int = 1):
+    """Add ``amount`` of ``item_name`` to ``trainer``'s inventory."""
+    from pokemon.models import InventoryEntry
+
+    item_name = item_name.lower()
+    entry, _ = InventoryEntry.objects.get_or_create(
+        owner=trainer, item_name=item_name, defaults={"quantity": 0}
+    )
+    entry.quantity += amount
+    entry.save()
+
+
+def remove_item(trainer, item_name: str, amount: int = 1) -> bool:
+    """Remove ``amount`` of ``item_name`` from ``trainer``. Return success."""
+    from pokemon.models import InventoryEntry
+
+    item_name = item_name.lower()
+    try:
+        entry = InventoryEntry.objects.get(owner=trainer, item_name=item_name)
+    except InventoryEntry.DoesNotExist:
+        return False
+    if entry.quantity < amount:
+        return False
+    entry.quantity -= amount
+    if entry.quantity <= 0:
+        entry.delete()
+    else:
+        entry.save()
+    return True
+
+
+def get_inventory(trainer):
+    """Return ``InventoryEntry`` objects owned by ``trainer`` ordered by item."""
+    from pokemon.models import InventoryEntry
+
+    return InventoryEntry.objects.filter(owner=trainer).order_by("item_name")
+

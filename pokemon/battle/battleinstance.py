@@ -46,9 +46,9 @@ def generate_wild_pokemon(location=None) -> Pokemon:
     """Generate a wild Pokémon based on the supplied location."""
 
     try:
-        from ..models import Pokemon as PokemonModel
+        from ..models import OwnedPokemon
     except Exception:  # pragma: no cover - optional in tests
-        PokemonModel = None
+        OwnedPokemon = None
 
     if location:
         inst = get_spawn(location)
@@ -64,7 +64,7 @@ def generate_wild_pokemon(location=None) -> Pokemon:
                 "ivs": {
                     "hp": inst.ivs.hp,
                     "atk": inst.ivs.atk,
-                    "def": inst.ivs.def_,
+                    "def": getattr(inst.ivs, "def_", 0),
                     "spa": inst.ivs.spa,
                     "spd": inst.ivs.spd,
                     "spe": inst.ivs.spe,
@@ -75,15 +75,28 @@ def generate_wild_pokemon(location=None) -> Pokemon:
             }
         )
     db_obj = None
-    if PokemonModel:
-        db_obj = PokemonModel.objects.create(
-            name=inst.species.name,
-            level=inst.level,
-            type_=", ".join(getattr(inst.species, "types", [])),
-            ability=getattr(inst, "ability", ""),
-            data=data,
-            temporary=True,
-        )
+    if OwnedPokemon:
+        try:
+            db_obj = OwnedPokemon.objects.create(
+                species=inst.species.name,
+                ability=getattr(inst, "ability", ""),
+                nature=getattr(inst, "nature", ""),
+                gender=getattr(inst, "gender", "N"),
+                ivs=[
+                    getattr(getattr(inst, "ivs", None), "hp", 0),
+                    getattr(getattr(inst, "ivs", None), "atk", 0),
+                    getattr(getattr(inst, "ivs", None), "def_", 0),
+                    getattr(getattr(inst, "ivs", None), "spa", 0),
+                    getattr(getattr(inst, "ivs", None), "spd", 0),
+                    getattr(getattr(inst, "ivs", None), "spe", 0),
+                ],
+                evs=[0, 0, 0, 0, 0, 0],
+                is_wild=True,
+            )
+            db_obj.set_level(inst.level)
+            db_obj.save()
+        except Exception:
+            db_obj = None
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
@@ -92,16 +105,16 @@ def generate_wild_pokemon(location=None) -> Pokemon:
         moves=moves,
         ability=inst.ability,
         data=data,
-        model_id=db_obj.id if db_obj else None,
+        model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
     )
 
 
-def generate_trainer_pokemon() -> Pokemon:
-    """Placeholder that returns a trainer's Charmander."""
+def generate_trainer_pokemon(trainer=None) -> Pokemon:
+    """Return a simple trainer-owned Charmander."""
     try:
-        from ..models import Pokemon as PokemonModel
+        from ..models import OwnedPokemon
     except Exception:  # pragma: no cover
-        PokemonModel = None
+        OwnedPokemon = None
     inst = generate_pokemon("Charmander", level=5)
     moves = [Move(name=m) for m in inst.moves]
     data = {}
@@ -111,7 +124,7 @@ def generate_trainer_pokemon() -> Pokemon:
                 "ivs": {
                     "hp": inst.ivs.hp,
                     "atk": inst.ivs.atk,
-                    "def": inst.ivs.def_,
+                    "def": getattr(inst.ivs, "def_", 0),
                     "spa": inst.ivs.spa,
                     "spd": inst.ivs.spd,
                     "spe": inst.ivs.spe,
@@ -122,15 +135,28 @@ def generate_trainer_pokemon() -> Pokemon:
             }
         )
     db_obj = None
-    if PokemonModel:
-        db_obj = PokemonModel.objects.create(
-            name=inst.species.name,
-            level=inst.level,
-            type_=", ".join(getattr(inst.species, "types", [])),
+    if OwnedPokemon:
+        try:
+            db_obj = OwnedPokemon.objects.create(
+            species=inst.species.name,
             ability=getattr(inst, "ability", ""),
-            data=data,
-            temporary=True,
+            nature=getattr(inst, "nature", ""),
+            gender=getattr(inst, "gender", "N"),
+            ivs=[
+                getattr(getattr(inst, "ivs", None), "hp", 0),
+                getattr(getattr(inst, "ivs", None), "atk", 0),
+                getattr(getattr(inst, "ivs", None), "def_", 0),
+                getattr(getattr(inst, "ivs", None), "spa", 0),
+                getattr(getattr(inst, "ivs", None), "spd", 0),
+                getattr(getattr(inst, "ivs", None), "spe", 0),
+            ],
+            evs=[0, 0, 0, 0, 0, 0],
+            ai_trainer=trainer,
         )
+            db_obj.set_level(inst.level)
+            db_obj.save()
+        except Exception:
+            db_obj = None
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
@@ -139,7 +165,7 @@ def generate_trainer_pokemon() -> Pokemon:
         moves=moves,
         ability=inst.ability,
         data=data,
-        model_id=db_obj.id if db_obj else None,
+        model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
     )
 
 
@@ -357,17 +383,21 @@ class BattleInstance:
     def end(self) -> None:
         """End the battle and clean up."""
         try:
-            from ..models import Pokemon as PokemonModel
+            from ..models import OwnedPokemon
         except Exception:  # pragma: no cover
-            PokemonModel = None
+            OwnedPokemon = None
         for pid in getattr(self, "temp_pokemon_ids", []):
             try:
-                if PokemonModel:
-                    poke = PokemonModel.objects.get(id=pid)
-                    if getattr(poke, "temporary", False):
-                        poke.delete()
+                if OwnedPokemon:
+                    poke = OwnedPokemon.objects.get(unique_id=pid)
+                    poke.delete_if_wild()
             except Exception:
                 pass
+        if OwnedPokemon:
+            OwnedPokemon.objects.filter(
+                is_battle_instance=True,
+                battle_slot__fainted=True,
+            ).delete()
         self.temp_pokemon_ids.clear()
         if self.room:
             if hasattr(self.room.db, "instance"):
