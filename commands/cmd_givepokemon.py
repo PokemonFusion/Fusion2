@@ -24,5 +24,11 @@ class CmdGivePokemon(Command):
             self.caller.msg("You can only give Pokémon to characters.")
             return
 
-        EvMenu(self.caller, give_pokemon, startnode="node_start", target=target)
+        EvMenu(
+            self.caller,
+            give_pokemon,
+            startnode="node_start",
+            startnode_input=("", {"target": target}),
+            target=target,
+        )
 

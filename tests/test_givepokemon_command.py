@@ -103,6 +103,8 @@ def test_launches_menu_for_character():
     args, kwargs = menu_calls[-1]
     assert args[0] is caller
     assert kwargs.get("target") is target
+    sni = kwargs.get("startnode_input")
+    assert isinstance(sni, tuple) and sni[1].get("target") is target
 
 
 def test_party_full_still_launches_menu():
@@ -116,4 +118,6 @@ def test_party_full_still_launches_menu():
     cmd.func()
     assert target.checked_paths and target.checked_paths[-1] == "evennia.objects.objects.DefaultCharacter"
     assert menu_calls
+    sni = menu_calls[-1][1].get("startnode_input")
+    assert isinstance(sni, tuple) and sni[1].get("target") is target
     assert not any("already full" in msg for msg in caller.msgs)
