@@ -85,22 +85,26 @@ def test_target_preserved_across_nodes():
     goto = option.get("goto")
     assert option.get("desc")
     assert isinstance(goto, tuple) and goto[1].get("target") is target
-    next_node, kwargs = menu.node_start(caller, raw_input="Pikachu", target=target)
-    assert kwargs.get("target") is target
-    caller.ndb.givepoke = {"species": "Pikachu"}
+    text2, opts2 = menu.node_start(caller, raw_input="Pikachu", target=target)
+    assert caller.ndb.givepoke["species"] == "Pikachu"
+    option = opts2[0]
+    goto = option.get("goto")
+    assert isinstance(goto, tuple) and goto[1].get("target") is target
+
     text, opts = menu.node_level(caller, target=target)
     option = opts[0]
     goto = option.get("goto")
     assert option.get("desc")
     assert isinstance(goto, tuple) and goto[1].get("target") is target
-    next_node, kwargs = menu.node_level(caller, raw_input="5", target=target)
-    assert next_node is None and kwargs is None
+
+    next_text, next_opts = menu.node_level(caller, raw_input="5", target=target)
+    assert next_text is None and next_opts is None
 
 
 def test_invalid_level_keeps_target():
     caller = DummyCaller()
     target = DummyTarget()
     caller.ndb.givepoke = {"species": "Pikachu"}
-    next_node, kwargs = menu.node_level(caller, raw_input="foo", target=target)
-    assert next_node == "node_level"
-    assert kwargs.get("target") is target
+    text, opts = menu.node_level(caller, raw_input="foo", target=target)
+    option = opts[0]
+    assert option.get("goto")[1].get("target") is target

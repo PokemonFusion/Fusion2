@@ -27,9 +27,10 @@ def node_start(caller, raw_input=None, **kwargs):
     name = raw_input.strip()
     if name.lower() not in POKEDEX and name.title() not in POKEDEX:
         caller.msg("Unknown species. Try again.")
-        return "node_start", {"target": target}
+        return node_start(caller, target=target)
+
     caller.ndb.givepoke = {"species": name}
-    return "node_level", {"target": target}
+    return node_level(caller, target=target)
 
 
 def node_level(caller, raw_input=None, **kwargs):
@@ -53,7 +54,7 @@ def node_level(caller, raw_input=None, **kwargs):
         level = int(raw_input.strip())
     except ValueError:
         caller.msg("Level must be a number.")
-        return "node_level", {"target": target}
+        return node_level(caller, target=target)
     if level < 1:
         level = 1
     species = caller.ndb.givepoke.get("species")
