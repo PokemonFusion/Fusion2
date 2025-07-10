@@ -1,15 +1,25 @@
 from evennia import Command
-from utils.ansi import ansi
 from django.db.utils import OperationalError
-from commands.command import get_max_hp, get_stats
+from utils.sheet_display import display_pokemon_sheet
 
 class CmdSheet(Command):
-    """Display a summary of your Pokémon party."""
+    """Display details about Pokémon in your party."""
 
     key = "+sheet"
     aliases = ["party"]
     locks = "cmd:all()"
     help_category = "Pokemon"
+
+    def parse(self):
+        self.slot = None
+        self.mode = "full"
+        if "brief" in self.switches:
+            self.mode = "brief"
+        if "moves" in self.switches:
+            self.mode = "moves"
+        arg = self.args.strip()
+        if arg.isdigit():
+            self.slot = int(arg)
 
     def func(self):
         caller = self.caller
@@ -22,51 +32,15 @@ class CmdSheet(Command):
             caller.msg("You have no Pokémon in your party.")
             return
 
-        lines = []
-        for idx in range(6):
-            mon = party[idx] if idx < len(party) else None
-            slot = idx + 1
-            if not mon:
-                lines.append(f"{slot}. Empty")
-                continue
+        # if no slot specified show first party member
+        slot = self.slot or 1
+        if slot < 1 or slot > len(party):
+            caller.msg("No Pokémon in that slot.")
+            return
 
-            name = getattr(mon, "name", "Unknown")
-            level = getattr(mon, "level", "?")
-            data = getattr(mon, "data", {}) or {}
-            gender = getattr(mon, "gender", data.get("gender", "?"))
-            hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
-            max_hp = get_max_hp(mon)
-            status = getattr(mon, "status", "") or ""
-
-            stats = get_stats(mon)
-            atk = stats.get("atk", "?")
-            defe = stats.get("def", "?")
-            spd = stats.get("spe", "?")
-            spatk = stats.get("spa", "?")
-            spdef = stats.get("spd", "?")
-
-            moves = getattr(mon, "moves", [])
-            move_names = [getattr(m, "name", str(m)) for m in moves]
-            movestr = ", ".join(move_names[:3])
-
-            icon = ""
-            if hp <= 0 or str(status).lower() in ("fnt", "fainted"):
-                icon = ansi.RED("FNT")
-            elif str(status).lower().startswith("par"):
-                icon = ansi.YELLOW("PAR")
-            elif status:
-                icon = status
-
-            line = (
-                f"{slot}. {name} L{level} {gender} "
-                f"HP {hp}/{max_hp} "
-                f"{icon} "
-                f"ATK:{atk} DEF:{defe} SPD:{spd} SPA:{spatk} SPDEF:{spdef} "
-                f"{movestr}"
-            )
-            lines.append(line.strip())
-
-        caller.msg("\n".join(lines))
+        mon = party[slot - 1]
+        sheet = display_pokemon_sheet(caller, mon, slot=slot, mode=self.mode)
+        caller.msg(sheet)
 
 
 class CmdSheetPokemon(Command):
@@ -99,73 +73,5 @@ class CmdSheetPokemon(Command):
             caller.msg("That slot is empty.")
             return
 
-        name = getattr(mon, "name", "Unknown")
-        level = getattr(mon, "level", "?")
-        data = getattr(mon, "data", {}) or {}
-        gender = getattr(mon, "gender", data.get("gender", "?"))
-        pid = getattr(mon, "id", getattr(mon, "unique_id", "?"))
-        types = getattr(mon, "types", getattr(mon, "type", []))
-        if isinstance(types, (list, tuple)):
-            types = "/".join(types)
-        ability = getattr(mon, "ability", "?")
-        nature = getattr(mon, "nature", "?")
-        hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
-        max_hp = get_max_hp(mon)
-        status = getattr(mon, "status", "") or "OK"
-        held = getattr(mon, "held_item", "None")
-        friendship = getattr(mon, "friendship", "?")
-        exp = getattr(mon, "experience", getattr(mon, "exp", 0))
-        exp_to = getattr(mon, "exp_to_next", getattr(mon, "exp_to_next_level", 1)) or 1
-        stats = get_stats(mon)
-        atk = stats.get("atk", "?")
-        defe = stats.get("def", "?")
-        spd = stats.get("spe", "?")
-        spatk = stats.get("spa", "?")
-        spdef = stats.get("spd", "?")
-        moves = getattr(mon, "moves", [])
-
-        # HP bar
-        bar_len = 20
-        hp_ratio = 0
-        if max_hp:
-            hp_ratio = max(0.0, min(1.0, hp / max_hp))
-        filled = int(bar_len * hp_ratio)
-        if hp_ratio > 0.5:
-            bar_color = ansi.GREEN
-        elif hp_ratio > 0.25:
-            bar_color = ansi.YELLOW
-        else:
-            bar_color = ansi.RED
-        hp_bar = bar_color("█" * filled + " " * (bar_len - filled))
-
-        # EXP bar
-        exp_ratio = 0
-        if exp_to:
-            exp_ratio = max(0.0, min(1.0, exp / exp_to))
-        exp_filled = int(bar_len * exp_ratio)
-        exp_bar = ansi.CYAN("█" * exp_filled + " " * (bar_len - exp_filled))
-
-        lines = [
-            f"|w{name}|n Lv{level} ({gender}) ID:{pid}",
-            f"Type: {types}",
-            f"Ability: {ability}    Nature: {nature}",
-            f"HP: {hp}/{max_hp} {hp_bar}",
-            f"ATK:{atk} DEF:{defe} SPD:{spd} SPA:{spatk} SPDEF:{spdef}",
-            f"Status: {status}    Held: {held}",
-            f"Friendship: {friendship}",
-            f"EXP: {exp}/{exp_to} {exp_bar}",
-            "Moves:",
-        ]
-
-        for mv in moves:
-            mname = getattr(mv, "name", str(mv))
-            pp = getattr(mv, "pp", getattr(mv, "current_pp", None))
-            max_pp = getattr(mv, "max_pp", None)
-            if pp is not None and max_pp is not None:
-                lines.append(f"  {mname} ({pp}/{max_pp} PP)")
-            elif pp is not None:
-                lines.append(f"  {mname} ({pp} PP)")
-            else:
-                lines.append(f"  {mname}")
-
-        caller.msg("\n".join(lines))
+        sheet = display_pokemon_sheet(caller, mon, slot=self.slot)
+        caller.msg(sheet)
