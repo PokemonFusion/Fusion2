@@ -19,8 +19,7 @@ def node_start(caller, raw_input=None, **kwargs):
             [
                 {
                     "key": "_default",
-                    "goto": "node_start",
-                    "goto_kwargs": {"target": target},
+                    "goto": ("node_start", {"target": target}),
                 }
             ],
         )
@@ -44,8 +43,7 @@ def node_level(caller, raw_input=None, **kwargs):
             [
                 {
                     "key": "_default",
-                    "goto": "node_level",
-                    "goto_kwargs": {"target": target},
+                    "goto": ("node_level", {"target": target}),
                 }
             ],
         )
