@@ -1,4 +1,4 @@
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from evennia import create_object, search_object
 from typeclasses.rooms import Room
 from typeclasses.exits import Exit

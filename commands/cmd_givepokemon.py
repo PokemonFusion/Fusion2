@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 import menus.give_pokemon as give_pokemon
 
@@ -24,7 +24,7 @@ class CmdGivePokemon(Command):
             self.caller.msg("You can only give Pokémon to characters.")
             return
 
-        EvMenu(
+        EnhancedEvMenu(
             self.caller,
             give_pokemon,
             startnode="node_start",

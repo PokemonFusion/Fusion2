@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from evennia import Command
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 from evennia.utils.utils import datetime_format
 
 from .bboard import BBoard, create_board, get_board, list_boards
@@ -110,7 +110,7 @@ class CmdBBPost(Command):
         if not board.access(self.caller, "post"):
             self.caller.msg("You cannot post to this board.")
             return
-        EvMenu(self.caller, "bboard.menus", startnode="post_subject", kwargs={"board": board})
+        EnhancedEvMenu(self.caller, "bboard.menus", startnode="post_subject", kwargs={"board": board})
 
 
 class CmdBBDelete(Command):
@@ -194,7 +194,7 @@ class CmdBBEdit(Command):
         if not post:
             self.caller.msg("Invalid post number.")
             return
-        EvMenu(
+        EnhancedEvMenu(
             self.caller,
             "bboard.menus",
             startnode="edit_body",

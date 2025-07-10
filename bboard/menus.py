@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from evennia.utils.evmenu import EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from evennia.utils.eveditor import EvEditor
 
 
