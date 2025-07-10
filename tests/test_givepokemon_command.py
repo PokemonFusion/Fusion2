@@ -14,6 +14,14 @@ orig_enhanced = sys.modules.get("pokemon.utils.enhanced_evmenu")
 
 fake_evennia = types.ModuleType("evennia")
 fake_evennia.Command = type("Command", (), {})
+search_calls = []
+
+def fake_search_object(name):
+    search_calls.append(name)
+    return fake_search_object.return_value
+
+fake_search_object.return_value = []
+fake_evennia.search_object = fake_search_object
 sys.modules["evennia"] = fake_evennia
 
 fake_enhanced = types.ModuleType("pokemon.utils.enhanced_evmenu")
@@ -66,24 +74,19 @@ class DummyChar:
 class DummyCaller(DummyChar):
     def __init__(self):
         super().__init__("Caller")
-        self.search_called = None
-        self.search_result = None
-
-    def search(self, name, global_search=False):
-        self.search_called = (name, global_search)
-        return self.search_result
 
 
 def test_rejects_non_character_target():
     menu_calls.clear()
+    search_calls.clear()
     cmd = cmd_mod.CmdGivePokemon()
     caller = DummyCaller()
     target = DummyChar("Obj", is_char=False)
-    caller.search_result = target
+    fake_search_object.return_value = [target]
     cmd.caller = caller
     cmd.args = "Obj"
     cmd.func()
-    assert caller.search_called == ("Obj", True)
+    assert search_calls and search_calls[-1] == "Obj"
     assert target.checked_paths and target.checked_paths[-1] == "evennia.objects.objects.DefaultCharacter"
     assert caller.msgs and "You can only give" in caller.msgs[-1]
     assert not menu_calls
@@ -91,10 +94,11 @@ def test_rejects_non_character_target():
 
 def test_launches_menu_for_character():
     menu_calls.clear()
+    search_calls.clear()
     cmd = cmd_mod.CmdGivePokemon()
     caller = DummyCaller()
     target = DummyChar("Trg")
-    caller.search_result = target
+    fake_search_object.return_value = [target]
     cmd.caller = caller
     cmd.args = "Trg"
     cmd.func()
@@ -108,10 +112,11 @@ def test_launches_menu_for_character():
 
 def test_party_full_still_launches_menu():
     menu_calls.clear()
+    search_calls.clear()
     cmd = cmd_mod.CmdGivePokemon()
     caller = DummyCaller()
     target = DummyChar("Full", count=6)
-    caller.search_result = target
+    fake_search_object.return_value = [target]
     cmd.caller = caller
     cmd.args = "Full"
     cmd.func()

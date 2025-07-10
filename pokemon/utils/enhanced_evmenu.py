@@ -30,6 +30,7 @@ class EnhancedEvMenu(EvMenu):
         menu_title="Pokémon Menu",
         use_pokemon_style=True,
         show_footer=True,
+        footer_prompt="Number",
         **kwargs,
     ):
         self.on_abort = on_abort
@@ -39,6 +40,7 @@ class EnhancedEvMenu(EvMenu):
         self.menu_title = menu_title
         self.use_pokemon_style = use_pokemon_style
         self.show_footer = show_footer
+        self.footer_prompt = footer_prompt
         super().__init__(*args, **kwargs)
 
     def parse_input(self, raw_string):
@@ -205,8 +207,11 @@ class EnhancedEvMenu(EvMenu):
     def node_formatter(self, nodetext, optionstext):
         result = super().node_formatter(nodetext, optionstext)
         if self.show_footer:
+            prompt = self.footer_prompt
             if self.use_pokemon_style:
-                result += "\n\n|y== |g[Enter Number] |w| 'q' to quit | 'h' for help|y ==|n"
+                result += (
+                    f"\n\n|y== |g[Enter {prompt}] |w| 'q' to quit | 'h' for help|y ==|n"
+                )
             else:
-                result += "\n\n[Type a number or command. 'q' to quit.]"
+                result += f"\n\n[Type {prompt.lower()} or command. 'q' to quit.]"
         return result

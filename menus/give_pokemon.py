@@ -13,6 +13,9 @@ def node_start(caller, raw_input=None, **kwargs):
     if target.storage.active_pokemon.count() >= 6:
         caller.msg(f"{target.key}'s party is full.")
         return None, None
+    menu = getattr(caller.ndb, "_evmenu", None)
+    if menu:
+        menu.footer_prompt = "Name"
     if not raw_input:
         return (
             f"Enter Pokemon species to give {target.key}:",
@@ -39,6 +42,9 @@ def node_level(caller, raw_input=None, **kwargs):
     if not target:
         caller.msg("No target specified.")
         return None, None
+    menu = getattr(caller.ndb, "_evmenu", None)
+    if menu:
+        menu.footer_prompt = "Number"
     if not raw_input:
         return (
             "Enter level:",
