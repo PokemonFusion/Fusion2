@@ -15,7 +15,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from evennia.contrib.utils.debugpy import CmdDebugPy
+from commands.cmd_debugpy import CmdDebugPy
 from bboard.commands import (
     CmdBBList,
     CmdBBRead,
