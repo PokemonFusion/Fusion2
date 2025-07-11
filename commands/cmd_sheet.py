@@ -39,13 +39,28 @@ class CmdSheetPokemon(Command):
 
     def parse(self):
         self.slot = None
-        arg = self.args.strip()
-        if arg.isdigit():
+        self.show_all = False
+        arg = self.args.strip().lower()
+        if arg == "all":
+            self.show_all = True
+        elif arg.isdigit():
             self.slot = int(arg)
 
     def func(self):
         caller = self.caller
         party = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
+        if self.show_all:
+            if not party:
+                caller.msg("You have no Pokémon in your party.")
+                return
+            sheets = []
+            for idx, mon in enumerate(party, 1):
+                if not mon:
+                    continue
+                sheets.append(display_pokemon_sheet(caller, mon, slot=idx))
+            caller.msg("\n-------\n".join(sheets))
+            return
+
         if self.slot is None:
             if not party:
                 caller.msg("You have no Pokémon in your party.")

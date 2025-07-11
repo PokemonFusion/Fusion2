@@ -67,6 +67,7 @@ def display_trainer_sheet(character) -> str:
     lines.append(f"Morphology: {morphology}   Sex: {gender}")
     lines.append(f"Level: {level}   HP: {hp}")
     lines.append(f"Status: {status}")
+    lines.append(f"Faction: {get_faction_and_rank(character)}")
 
     stats = character.db.stats or {}
     if stats:
@@ -152,7 +153,6 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
         lines.append("  " + format_move_details(mv))
 
     # placeholder features
-    lines.append(f"Faction: {get_faction_and_rank(pokemon)}")
     hatch = getattr(pokemon, "hatch", None)
     if getattr(pokemon, "egg", False):
         lines.append(get_egg_description(hatch or 0))
