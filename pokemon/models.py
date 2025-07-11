@@ -378,3 +378,31 @@ class InventoryEntry(models.Model):
         return f"{self.item_name} x{self.quantity}"
 
 
+class PokemonFusion(models.Model):
+    """Record a fusion between two Pokémon using their unique IDs."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    parent_a = models.ForeignKey(
+        OwnedPokemon,
+        on_delete=models.CASCADE,
+        related_name="fusion_parent_a",
+    )
+    parent_b = models.ForeignKey(
+        OwnedPokemon,
+        on_delete=models.CASCADE,
+        related_name="fusion_parent_b",
+    )
+    result = models.OneToOneField(
+        OwnedPokemon,
+        on_delete=models.CASCADE,
+        related_name="fusion_result",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("parent_a", "parent_b")
+
+    def __str__(self) -> str:
+        return f"Fusion of {self.parent_a} + {self.parent_b} -> {self.result}"
+
+
