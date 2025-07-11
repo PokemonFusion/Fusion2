@@ -11,15 +11,25 @@ class CmdSheet(Command):
     help_category = "Pokemon"
 
     def parse(self):
+        """Parse optional /switches and slot argument."""
         self.slot = None
         self.mode = "full"
+
+        arg = self.args.strip()
+        self.switches = []
+        if arg.startswith("/"):
+            parts = arg[1:].split(None, 1)
+            self.switches = parts[0].split("/")
+            arg = parts[1] if len(parts) > 1 else ""
+
         if "brief" in self.switches:
             self.mode = "brief"
         if "moves" in self.switches:
             self.mode = "moves"
-        arg = self.args.strip()
+
         if arg.isdigit():
             self.slot = int(arg)
+        self.args = arg.strip()
 
     def func(self):
         caller = self.caller
