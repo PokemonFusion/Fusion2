@@ -268,7 +268,17 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         for idx, name in enumerate(moves[:4], 1):
             mv = Move.objects.filter(name__iexact=name).first()
             if mv:
-                self.activemoveslot_set.create(move=mv, slot=idx)
+                slot = self.activemoveslot_set.create(move=mv, slot=idx)
+                try:
+                    from .dex import MOVEDEX
+                except Exception:  # pragma: no cover - MOVEDEX may be missing in tests
+                    MOVEDEX = {}
+                base_pp = MOVEDEX.get(name.lower(), {}).get("pp")
+                boost_obj = self.pp_boosts.filter(move=mv).first()
+                bonus = boost_obj.bonus_pp if boost_obj else 0
+                if base_pp is not None:
+                    slot.current_pp = base_pp + bonus
+                    slot.save()
 
     def swap_moveset(self, index: int) -> None:
         """Switch to the moveset at ``index`` (0-based)."""
@@ -279,6 +289,19 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         self.active_moveset_index = index
         self.save()
         self.apply_active_moveset()
+
+    def get_max_pp(self, move_name: str) -> int | None:
+        """Return the maximum PP for ``move_name`` accounting for boosts."""
+        try:
+            from .dex import MOVEDEX
+        except Exception:  # pragma: no cover - fallback for tests
+            MOVEDEX = {}
+        base_pp = MOVEDEX.get(move_name.lower(), {}).get("pp")
+        if base_pp is None:
+            return None
+        boost = self.pp_boosts.filter(move__name__iexact=move_name).first()
+        bonus = boost.bonus_pp if boost else 0
+        return base_pp + bonus
 
 
 class ActiveMoveslot(models.Model):
@@ -448,5 +471,21 @@ class PokemonFusion(models.Model):
 
     def __str__(self) -> str:
         return f"Fusion of {self.parent_a} + {self.parent_b} -> {self.result}"
+
+
+class MovePPBoost(models.Model):
+    """Store extra PP added to a move for a specific Pokémon."""
+
+    pokemon = models.ForeignKey(
+        OwnedPokemon, on_delete=models.CASCADE, related_name="pp_boosts"
+    )
+    move = models.ForeignKey(Move, on_delete=models.CASCADE)
+    bonus_pp = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        unique_together = ("pokemon", "move")
+
+    def __str__(self) -> str:
+        return f"{self.pokemon} {self.move} +{self.bonus_pp} PP"
 
 

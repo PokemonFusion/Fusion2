@@ -22,6 +22,8 @@ def clone_pokemon(pokemon: OwnedPokemon, for_ai: bool = True) -> OwnedPokemon:
             active_moveset_index=pokemon.active_moveset_index,
         )
         clone.learned_moves.set(pokemon.learned_moves.all())
+        for boost in getattr(pokemon, "pp_boosts", []).all() if hasattr(pokemon, "pp_boosts") else []:
+            clone.pp_boosts.create(move=boost.move, bonus_pp=boost.bonus_pp)
         for slot in pokemon.activemoveslot_set.all():
             clone.activemoveslot_set.create(
                 move=slot.move,
