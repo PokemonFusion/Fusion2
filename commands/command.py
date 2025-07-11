@@ -777,3 +777,65 @@ class CmdChooseMoveset(Command):
             return
         pokemon.swap_moveset(self.index)
         self.caller.msg(f"{pokemon.name} is now using moveset {self.index + 1}.")
+
+
+class CmdTeachMove(Command):
+    """Teach a move to one of your active Pokémon."""
+
+    key = "+move"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def parse(self):
+        if "=" not in self.args:
+            self.slot = None
+            self.move_name = ""
+            return
+        left, right = [p.strip() for p in self.args.split("=", 1)]
+        try:
+            self.slot = int(left)
+        except ValueError:
+            self.slot = None
+        self.move_name = right.strip()
+
+    def func(self):
+        if self.slot is None or not self.move_name:
+            self.caller.msg("Usage: +move <slot>=<move>")
+            return
+        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+        from pokemon.generation import get_valid_moves
+        from pokemon.models import Move
+
+        valid = [m.lower() for m in get_valid_moves(pokemon.species, pokemon.level)]
+        if self.move_name.lower() not in valid:
+            self.caller.msg(f"{pokemon.name} cannot learn {self.move_name}.")
+            return
+        if pokemon.learned_moves.filter(name__iexact=self.move_name).exists():
+            self.caller.msg(f"{pokemon.name} already knows {self.move_name}.")
+            return
+
+        move_obj, _ = Move.objects.get_or_create(name=self.move_name.capitalize())
+        pokemon.learned_moves.add(move_obj)
+        sets = pokemon.movesets or [[]]
+        placed = False
+        for s in sets:
+            if self.move_name in s:
+                placed = True
+                break
+            if len(s) < 4 and not placed:
+                s.append(self.move_name)
+                placed = True
+                break
+        if not placed:
+            idx = pokemon.active_moveset_index if pokemon.active_moveset_index < len(sets) else 0
+            if sets[idx]:
+                sets[idx][0] = self.move_name
+            else:
+                sets[idx] = [self.move_name]
+        pokemon.movesets = sets
+        pokemon.save()
+        pokemon.apply_active_moveset()
+        self.caller.msg(f"{pokemon.name} learned {self.move_name.capitalize()}.")
