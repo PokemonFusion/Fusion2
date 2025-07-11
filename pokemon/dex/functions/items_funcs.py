@@ -1881,6 +1881,493 @@ class Ppmax:
             return False
         return pokemon.apply_pp_max(move_name)
 
+class Potion:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        cur_hp = getattr(pokemon, "hp", getattr(pokemon, "current_hp", 0))
+        healed = min(cur_hp + 20, max_hp)
+        if healed <= cur_hp:
+            return False
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = healed
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = healed
+        return True
+
+class Superpotion:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        cur_hp = getattr(pokemon, "hp", getattr(pokemon, "current_hp", 0))
+        healed = min(cur_hp + 60, max_hp)
+        if healed <= cur_hp:
+            return False
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = healed
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = healed
+        return True
+
+class Hyperpotion:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        cur_hp = getattr(pokemon, "hp", getattr(pokemon, "current_hp", 0))
+        healed = min(cur_hp + 120, max_hp)
+        if healed <= cur_hp:
+            return False
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = healed
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = healed
+        return True
+
+class Maxpotion:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        cur_hp = getattr(pokemon, "hp", getattr(pokemon, "current_hp", 0))
+        if cur_hp >= max_hp:
+            return False
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = max_hp
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = max_hp
+        return True
+
+class Fullrestore:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = max_hp
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = max_hp
+        if hasattr(pokemon, "status"):
+            pokemon.status = 0
+        return True
+
+class Antidote:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        status = getattr(pokemon, "status", None)
+        if status not in {"psn", "tox"}:
+            return False
+        pokemon.status = 0
+        return True
+
+class Paralyzeheal:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        if getattr(pokemon, "status", None) != "par":
+            return False
+        pokemon.status = 0
+        return True
+
+class Burnheal:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        if getattr(pokemon, "status", None) != "brn":
+            return False
+        pokemon.status = 0
+        return True
+
+class Iceheal:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        if getattr(pokemon, "status", None) != "frz":
+            return False
+        pokemon.status = 0
+        return True
+
+class Awakening:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        if getattr(pokemon, "status", None) != "slp":
+            return False
+        pokemon.status = 0
+        return True
+
+class Fullheal:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        if hasattr(pokemon, "status"):
+            if getattr(pokemon, "status", None) == 0:
+                return False
+            pokemon.status = 0
+            return True
+        return False
+
+class Revive:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        hp_attr = "hp" if hasattr(pokemon, "hp") else "current_hp"
+        cur_hp = getattr(pokemon, hp_attr, 0)
+        if cur_hp > 0:
+            return False
+        max_hp = getattr(pokemon, "max_hp", cur_hp)
+        heal = max_hp // 2
+        setattr(pokemon, hp_attr, heal)
+        if hasattr(pokemon, "status"):
+            pokemon.status = 0
+        if hasattr(pokemon, "fainted"):
+            pokemon.fainted = False
+        return True
+
+class Maxrevive:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        hp_attr = "hp" if hasattr(pokemon, "hp") else "current_hp"
+        cur_hp = getattr(pokemon, hp_attr, 0)
+        if cur_hp > 0:
+            return False
+        max_hp = getattr(pokemon, "max_hp", cur_hp)
+        setattr(pokemon, hp_attr, max_hp)
+        if hasattr(pokemon, "status"):
+            pokemon.status = 0
+        if hasattr(pokemon, "fainted"):
+            pokemon.fainted = False
+        return True
+
+class Ether:
+    def onUse(self, pokemon=None, move_name=None):
+        if not pokemon or not move_name:
+            return False
+        get_max = getattr(pokemon, "get_max_pp", None)
+        slots = getattr(pokemon, "activemoveslot_set", None)
+        if not slots or not get_max:
+            return False
+        try:
+            slot_iter = slots.all()
+        except Exception:
+            slot_iter = slots
+        for slot in slot_iter:
+            if slot.move.name.lower() == move_name.lower():
+                max_pp = get_max(move_name)
+                if max_pp is None:
+                    return False
+                if slot.current_pp >= max_pp:
+                    return False
+                slot.current_pp = min(slot.current_pp + 10, max_pp)
+                if hasattr(slot, "save"):
+                    slot.save()
+                return True
+        return False
+
+class Maxether:
+    def onUse(self, pokemon=None, move_name=None):
+        if not pokemon or not move_name:
+            return False
+        get_max = getattr(pokemon, "get_max_pp", None)
+        slots = getattr(pokemon, "activemoveslot_set", None)
+        if not slots or not get_max:
+            return False
+        try:
+            slot_iter = slots.all()
+        except Exception:
+            slot_iter = slots
+        for slot in slot_iter:
+            if slot.move.name.lower() == move_name.lower():
+                max_pp = get_max(move_name)
+                if max_pp is None:
+                    return False
+                if slot.current_pp >= max_pp:
+                    return False
+                slot.current_pp = max_pp
+                if hasattr(slot, "save"):
+                    slot.save()
+                return True
+        return False
+
+class Elixir:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        get_max = getattr(pokemon, "get_max_pp", None)
+        slots = getattr(pokemon, "activemoveslot_set", None)
+        if not slots or not get_max:
+            return False
+        changed = False
+        try:
+            slot_iter = slots.all()
+        except Exception:
+            slot_iter = slots
+        for slot in slot_iter:
+            max_pp = get_max(slot.move.name)
+            if max_pp is None:
+                continue
+            if slot.current_pp < max_pp:
+                slot.current_pp = min(slot.current_pp + 10, max_pp)
+                if hasattr(slot, "save"):
+                    slot.save()
+                changed = True
+        return changed
+
+class Maxelixir:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        get_max = getattr(pokemon, "get_max_pp", None)
+        slots = getattr(pokemon, "activemoveslot_set", None)
+        if not slots or not get_max:
+            return False
+        changed = False
+        try:
+            slot_iter = slots.all()
+        except Exception:
+            slot_iter = slots
+        for slot in slot_iter:
+            max_pp = get_max(slot.move.name)
+            if max_pp is None:
+                continue
+            if slot.current_pp < max_pp:
+                slot.current_pp = max_pp
+                if hasattr(slot, "save"):
+                    slot.save()
+                changed = True
+        return changed
+
+class Hpup:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"hp": 10})
+        return True
+
+class Protein:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"atk": 10})
+        return True
+
+class Iron:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"def": 10})
+        return True
+
+class Calcium:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"spa": 10})
+        return True
+
+class Carbos:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"spe": 10})
+        return True
+
+class Zinc:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"spd": 10})
+        return True
+
+class Healthfeather:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"hp": 1})
+        return True
+
+class Musclefeather:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"atk": 1})
+        return True
+
+class Resistfeather:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"def": 1})
+        return True
+
+class Geniusfeather:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"spa": 1})
+        return True
+
+class Cleverfeather:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"spd": 1})
+        return True
+
+class Swiftfeather:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.stats import add_evs
+        except Exception:
+            return False
+        add_evs(pokemon, {"spe": 1})
+        return True
+
+class Healpowder:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        if getattr(pokemon, "status", None) == 0:
+            return False
+        pokemon.status = 0
+        return True
+
+class Energypowder:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        cur_hp = getattr(pokemon, "hp", getattr(pokemon, "current_hp", 0))
+        healed = min(cur_hp + 60, max_hp)
+        if healed <= cur_hp:
+            return False
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = healed
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = healed
+        return True
+
+class Energyroot:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+        cur_hp = getattr(pokemon, "hp", getattr(pokemon, "current_hp", 0))
+        healed = min(cur_hp + 120, max_hp)
+        if healed <= cur_hp:
+            return False
+        if hasattr(pokemon, "hp"):
+            pokemon.hp = healed
+        if hasattr(pokemon, "current_hp"):
+            pokemon.current_hp = healed
+        return True
+
+class Revivalherb:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        hp_attr = "hp" if hasattr(pokemon, "hp") else "current_hp"
+        cur_hp = getattr(pokemon, hp_attr, 0)
+        if cur_hp > 0:
+            return False
+        max_hp = getattr(pokemon, "max_hp", cur_hp)
+        setattr(pokemon, hp_attr, max_hp)
+        if hasattr(pokemon, "status"):
+            pokemon.status = 0
+        if hasattr(pokemon, "fainted"):
+            pokemon.fainted = False
+        return True
+
+class Abilitycapsule:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.dex import POKEDEX
+        except Exception:
+            return False
+        species = getattr(pokemon, "species", getattr(pokemon, "name", None))
+        data = POKEDEX.get(species)
+        if not data:
+            return False
+        abilities = data.get("abilities", {})
+        cur = getattr(pokemon, "ability", None)
+        if cur == abilities.get("0") and "1" in abilities:
+            pokemon.ability = abilities["1"]
+            return True
+        if cur == abilities.get("1") and "0" in abilities:
+            pokemon.ability = abilities["0"]
+            return True
+        return False
+
+class Abilitypatch:
+    def onUse(self, pokemon=None):
+        if not pokemon:
+            return False
+        try:
+            from pokemon.dex import POKEDEX
+        except Exception:
+            return False
+        species = getattr(pokemon, "species", getattr(pokemon, "name", None))
+        data = POKEDEX.get(species)
+        if not data:
+            return False
+        hidden = data.get("abilities", {}).get("H")
+        if not hidden or getattr(pokemon, "ability", None) == hidden:
+            return False
+        pokemon.ability = hidden
+        return True
+
 class Przcureberry:
     def onEat(self, pokemon=None):
         if pokemon and getattr(pokemon, "status", None) == "par":
