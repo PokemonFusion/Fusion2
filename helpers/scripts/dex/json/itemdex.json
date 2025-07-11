@@ -6709,9 +6709,194 @@
 			}
 			return true;
 		},
-		"forcedForme": "Venomicon-Epilogue",
-		"itemUser": ["Venomicon-Epilogue"],
-		"num": -2,
-		"gen": 8,
-		"isNonstandard": "CAP"}}`",
+                "forcedForme": "Venomicon-Epilogue",
+                "itemUser": ["Venomicon-Epilogue"],
+                "num": -2,
+                "gen": 8,
+                "isNonstandard": "CAP"},
+        "potion": {
+                "name": "Potion",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "superpotion": {
+                "name": "Super Potion",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "hyperpotion": {
+                "name": "Hyper Potion",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "maxpotion": {
+                "name": "Max Potion",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "fullrestore": {
+                "name": "Full Restore",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "antidote": {
+                "name": "Antidote",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "paralyzeheal": {
+                "name": "Paralyze Heal",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "burnheal": {
+                "name": "Burn Heal",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "iceheal": {
+                "name": "Ice Heal",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "awakening": {
+                "name": "Awakening",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "fullheal": {
+                "name": "Full Heal",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "revive": {
+                "name": "Revive",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "maxrevive": {
+                "name": "Max Revive",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "ether": {
+                "name": "Ether",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "maxether": {
+                "name": "Max Ether",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "elixir": {
+                "name": "Elixir",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "maxelixir": {
+                "name": "Max Elixir",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "hpup": {
+                "name": "HP Up",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "protein": {
+                "name": "Protein",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "iron": {
+                "name": "Iron",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "calcium": {
+                "name": "Calcium",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "carbos": {
+                "name": "Carbos",
+                onUse() {},
+                "num": 0,
+                "gen": 1},
+        "zinc": {
+                "name": "Zinc",
+                onUse() {},
+                "num": 0,
+                "gen": 3},
+        "healthfeather": {
+                "name": "Health Feather",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "musclefeather": {
+                "name": "Muscle Feather",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "resistfeather": {
+                "name": "Resist Feather",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "geniusfeather": {
+                "name": "Genius Feather",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "cleverfeather": {
+                "name": "Clever Feather",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "swiftfeather": {
+                "name": "Swift Feather",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "healpowder": {
+                "name": "Heal Powder",
+                onUse() {},
+                "num": 0,
+                "gen": 2},
+        "energypowder": {
+                "name": "Energy Powder",
+                onUse() {},
+                "num": 0,
+                "gen": 2},
+        "energyroot": {
+                "name": "Energy Root",
+                onUse() {},
+                "num": 0,
+                "gen": 2},
+        "revivalherb": {
+                "name": "Revival Herb",
+                onUse() {},
+                "num": 0,
+                "gen": 2},
+        "abilitycapsule": {
+                "name": "Ability Capsule",
+                onUse() {},
+                "num": 0,
+                "gen": 6},
+        "abilitypatch": {
+                "name": "Ability Patch",
+                onUse() {},
+                "num": 0,
+                "gen": 8},
+        "ppup": {
+                "name": "PP Up",
+                onUse() {},
+                "num": 0,
+                "gen": 2},
+        "ppmax": {
+                "name": "PP Max",
+                onUse() {},
+                "num": 0,
+                "gen": 3}
 }

@@ -96,3 +96,18 @@ def test_inventory_functions():
     assert inv_mod.remove_item(trainer, "potion", 1)
     assert list(inv_mod.get_inventory(trainer)) == []
 
+
+def test_add_various_medicines():
+    d = Dummy()
+    meds = [
+        "Antidote",
+        "Revive",
+        "Ether",
+        "Ability Capsule",
+    ]
+    for item in meds:
+        d.add_item(item)
+    listed = d.list_inventory()
+    for item in meds:
+        assert item in listed
+
