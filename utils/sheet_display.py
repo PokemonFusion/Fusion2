@@ -5,11 +5,14 @@ from evennia.utils.evtable import EvTable
 from utils.ansi import ansi
 from commands.command import get_max_hp, get_stats
 from utils.xp_utils import get_display_xp, get_next_level_xp
+from pokemon.stats import level_for_exp
 from utils.faction_utils import get_faction_and_rank
+from pokemon.dex import POKEDEX
 
 
 __all__ = [
     "display_pokemon_sheet",
+    "display_trainer_sheet",
     "get_status_effects",
     "format_move_details",
     "get_egg_description",
@@ -26,6 +29,55 @@ def get_egg_description(hatch: int) -> str:
     """Return description text based on hatch progress."""
     # TODO: implement proper egg status checks
     return ""  # placeholder
+
+
+def _get_pokemon_types(pokemon) -> list[str]:
+    """Return a list of type strings for ``pokemon``."""
+    if hasattr(pokemon, "types") and pokemon.types:
+        return list(pokemon.types)
+    if hasattr(pokemon, "type") and pokemon.type:
+        typ = pokemon.type
+        return [typ] if isinstance(typ, str) else list(typ)
+    species = getattr(pokemon, "species", None)
+    if not species:
+        return []
+    name = str(species)
+    entry = POKEDEX.get(name) or POKEDEX.get(name.capitalize()) or POKEDEX.get(name.lower())
+    if entry:
+        types = getattr(entry, "types", None)
+        if not types and isinstance(entry, dict):
+            types = entry.get("types")
+        if types:
+            return list(types)
+    return []
+
+
+def display_trainer_sheet(character) -> str:
+    """Return a formatted sheet for a trainer character."""
+    name = getattr(character, "key", "Unknown")
+    species = character.db.fusion_species or "Human"
+    morphology = "Fusion" if character.db.fusion_species else "Human"
+    gender = character.db.gender or "?"
+    level = character.db.level if character.db.level is not None else "N/A"
+    hp = character.db.hp if character.db.hp is not None else "N/A"
+    status = character.db.status or "None"
+
+    lines = [name.center(78)]
+    lines.append(f"Species: {species}")
+    lines.append(f"Morphology: {morphology}   Sex: {gender}")
+    lines.append(f"Level: {level}   HP: {hp}")
+    lines.append(f"Status: {status}")
+    lines.append(f"Faction: {get_faction_and_rank(character)}")
+
+    stats = character.db.stats or {}
+    if stats:
+        table = EvTable("HP", "Atk", "Def", "SpA", "SpD", "Spe")
+        table.add_row(
+            *(str(stats.get(k, "N/A")) for k in ["hp", "atk", "def", "spa", "spd", "spe"])
+        )
+        lines.append(str(table))
+
+    return "\n".join(lines)
 
 
 def format_move_details(move) -> str:
@@ -63,7 +115,9 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
 
     level = getattr(pokemon, "level", None)
     if level is None:
-        level = get_next_level_xp(pokemon)  # use XP to derive level if needed
+        xp_val = get_display_xp(pokemon)
+        growth = getattr(pokemon, "growth_rate", "medium_fast")
+        level = level_for_exp(xp_val, growth)
 
     xp = get_display_xp(pokemon)
     next_xp = get_next_level_xp(pokemon)
@@ -81,14 +135,11 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
     lines.append(f"Status: {get_status_effects(pokemon)}")
     nature = getattr(pokemon, "nature", "?")
     ability = getattr(pokemon, "ability", "?")
-    held = getattr(pokemon, "held_item", "None")
+    held = getattr(pokemon, "held_item", None) or "Nothing"
     lines.append(f"Nature: {nature}  Ability: {ability}  Held: {held}")
     # types
-    types = getattr(pokemon, "types", getattr(pokemon, "type", []))
-    if isinstance(types, (list, tuple)):
-        type_str = "/".join(types)
-    else:
-        type_str = str(types)
+    types = _get_pokemon_types(pokemon)
+    type_str = "/".join(types) if types else "?"
     lines.append(f"Type: {type_str}")
 
     stats = get_stats(pokemon)
@@ -102,7 +153,6 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
         lines.append("  " + format_move_details(mv))
 
     # placeholder features
-    lines.append(f"Faction: {get_faction_and_rank(pokemon)}")
     hatch = getattr(pokemon, "hatch", None)
     if getattr(pokemon, "egg", False):
         lines.append(get_egg_description(hatch or 0))

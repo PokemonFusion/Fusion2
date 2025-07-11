@@ -7,7 +7,11 @@ __all__ = ["get_display_xp", "get_next_level_xp"]
 
 def get_display_xp(pokemon) -> int:
     """Return the experience total for ``pokemon``."""
-    return getattr(pokemon, "xp", getattr(pokemon, "experience", 0))
+    return getattr(
+        pokemon,
+        "xp",
+        getattr(pokemon, "experience", getattr(pokemon, "total_exp", 0)),
+    )
 
 
 def get_next_level_xp(pokemon) -> int:
