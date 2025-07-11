@@ -1869,6 +1869,18 @@ class Powerweight:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
 
+class Ppup:
+    def onUse(self, pokemon=None, move_name=None):
+        if not pokemon or not move_name:
+            return False
+        return pokemon.apply_pp_up(move_name)
+
+class Ppmax:
+    def onUse(self, pokemon=None, move_name=None):
+        if not pokemon or not move_name:
+            return False
+        return pokemon.apply_pp_max(move_name)
+
 class Przcureberry:
     def onEat(self, pokemon=None):
         if pokemon and getattr(pokemon, "status", None) == "par":
