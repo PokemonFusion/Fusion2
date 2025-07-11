@@ -84,6 +84,7 @@ def node_level(caller, raw_input=None, **kwargs):
     )
     pokemon.set_level(instance.level)
     heal_pokemon(pokemon)
+    pokemon.learn_level_up_moves()
     target.storage.add_active_pokemon(pokemon)
     caller.msg(
         f"Gave {pokemon.species} (Lv {pokemon.level}) to {target.key}."

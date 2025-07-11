@@ -1,6 +1,9 @@
 from evennia import Command
 from pokemon.generation import generate_pokemon
 from pokemon.stats import calculate_stats
+from pokemon.models import InventoryEntry
+from utils.inventory import add_item, remove_item
+from pokemon.dex import ITEMDEX
 
 
 def _get_stats_from_data(pokemon):
@@ -64,6 +67,33 @@ def heal_pokemon(pokemon):
         pokemon.current_hp = max_hp
     if hasattr(pokemon, "status"):
         pokemon.status = ""
+    try:
+        from pokemon.dex import MOVEDEX
+    except Exception:  # pragma: no cover - tests may not provide dex
+        MOVEDEX = {}
+    bonuses = {}
+    manager = getattr(pokemon, "pp_boosts", None)
+    if manager is not None:
+        try:
+            iterable = manager.all()
+        except Exception:  # pragma: no cover
+            iterable = manager
+        for b in iterable:
+            bonuses[getattr(b.move, "name", "").lower()] = getattr(b, "bonus_pp", 0)
+    slots = getattr(pokemon, "activemoveslot_set", None)
+    if slots is not None:
+        try:
+            slot_iter = slots.all()
+        except Exception:  # pragma: no cover
+            slot_iter = slots
+    else:
+        slot_iter = []
+    for slot in slot_iter:
+        base = MOVEDEX.get(slot.move.name.lower(), {}).get("pp")
+        bonus = bonuses.get(slot.move.name.lower(), 0)
+        if base is not None:
+            slot.current_pp = base + bonus
+            slot.save()
     try:
         pokemon.save()
     except Exception:
@@ -438,12 +468,27 @@ class CmdSpoof(Command):
 class CmdInventory(Command):
     """Show items in your inventory."""
 
-    key = "inventory"
+    key = "+inventory"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Inventory"
 
     def func(self):
-        self.caller.msg(self.caller.list_inventory())
+        trainer = getattr(self.caller, "trainer", None)
+        if not trainer:
+            self.caller.msg("You have no trainer record.")
+            return
+
+        entries = InventoryEntry.objects.filter(owner=trainer).order_by("item_name")
+        if not entries:
+            self.caller.msg("Your inventory is empty.")
+            return
+
+        lines = ["Your Inventory:"]
+        for entry in entries:
+            data = ITEMDEX.get(entry.item_name, {})
+            desc = data.get("desc", "No description available.")
+            lines.append(f"{entry.item_name.title()} x{entry.quantity} - {desc}")
+        self.caller.msg("\n".join(lines))
 
 
 class CmdAddItem(Command):
@@ -468,23 +513,140 @@ class CmdAddItem(Command):
         self.caller.msg(f"Added {qty} x {item}.")
 
 
+class CmdGiveItem(Command):
+    """Give an item to another player (admin-only)."""
+
+    key = "+giveitem"
+    locks = "cmd:perm(Builder)"
+    help_category = "Admin"
+
+    def parse(self):
+        parts = self.args.split("=")
+        if len(parts) != 2:
+            self.target_name = self.item_name = self.amount = None
+            return
+        self.target_name = parts[0].strip()
+        item_part = parts[1].strip().split(":")
+        self.item_name = item_part[0].strip().lower()
+        self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
+
+    def func(self):
+        if not all([self.target_name, self.item_name]):
+            self.caller.msg("Usage: +giveitem <player> = <item>:<amount>")
+            return
+
+        target = self.caller.search(self.target_name)
+        if not target or not hasattr(target, "trainer"):
+            self.caller.msg("Player not found or has no trainer record.")
+            return
+
+        if self.item_name not in ITEMDEX:
+            self.caller.msg(f"Item '{self.item_name}' not found in ITEMDEX.")
+            return
+
+        add_item(target.trainer, self.item_name, self.amount)
+        self.caller.msg(f"Gave {self.amount} x {self.item_name} to {target.key}.")
+
+
 class CmdUseItem(Command):
     """Use an item outside of battle."""
 
-    key = "useitem"
+    key = "+useitem"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Inventory"
 
     def func(self):
-        item_name = self.args.strip()
-        if not item_name:
-            self.caller.msg("Usage: useitem <item>")
+        args = self.args.strip()
+        trainer = getattr(self.caller, "trainer", None)
+
+        if not trainer:
+            self.caller.msg("You have no trainer record.")
             return
-        if not self.caller.has_item(item_name):
-            self.caller.msg(f"You do not have any {item_name}.")
+
+        pending = getattr(self.caller.ndb, "pending_pp_item", None)
+
+        if pending:
+            move_sel = args.strip()
+            if not move_sel:
+                self.caller.msg("Please specify which move to apply the item to.")
+                return
+            pokemon = pending["pokemon"]
+            item = pending["item"]
+            slots = list(pokemon.activemoveslot_set.order_by("slot"))
+            move_name = None
+            if move_sel.isdigit():
+                idx = int(move_sel) - 1
+                if 0 <= idx < len(slots):
+                    move_name = slots[idx].move.name
+            else:
+                for s in slots:
+                    if s.move.name.lower() == move_sel.lower():
+                        move_name = s.move.name
+                        break
+            if not move_name:
+                self.caller.msg("Invalid move selection.")
+                return
+            if item == "ppup":
+                applied = pokemon.apply_pp_up(move_name)
+                fail_msg = "That move's PP can't be raised any further."
+            else:
+                applied = pokemon.apply_pp_max(move_name)
+                fail_msg = "That move already has maximum PP."
+            if not applied:
+                self.caller.msg(fail_msg)
+                self.caller.ndb.pending_pp_item = None
+                return
+            remove_item(trainer, item)
+            self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
+            self.caller.ndb.pending_pp_item = None
             return
-        self.caller.remove_item(item_name)
-        self.caller.msg(f"You use {item_name}. Nothing happens.")
+
+        if not args:
+            self.caller.msg("Usage: +useitem <item> or +useitem <slot>=<item>")
+            return
+
+        slot = None
+        item_name = args
+        if "=" in args:
+            left, right = [p.strip() for p in args.split("=", 1)]
+            try:
+                slot = int(left)
+            except ValueError:
+                self.caller.msg("Invalid slot number.")
+                return
+            item_name = right
+
+        item_name = item_name.lower()
+
+        if item_name not in ITEMDEX:
+            self.caller.msg(f"No such item '{item_name}' exists.")
+            return
+
+        if slot is not None and item_name in {"ppup", "ppmax", "pp max"}:
+            pokemon = self.caller.get_active_pokemon_by_slot(slot)
+            if not pokemon:
+                self.caller.msg("No Pokémon in that slot.")
+                return
+            slots = list(pokemon.activemoveslot_set.order_by("slot"))
+            if not slots:
+                self.caller.msg("That Pokémon knows no moves.")
+                return
+            self.caller.ndb.pending_pp_item = {"pokemon": pokemon, "item": item_name.replace(" ", "")}
+            lines = ["Choose a move to increase PP:"]
+            for s in slots:
+                max_pp = pokemon.get_max_pp(s.move.name)
+                lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
+            lines.append("Use +useitem <move name or number> to select.")
+            self.caller.msg("\n".join(lines))
+            return
+
+        success = remove_item(trainer, item_name)
+        if not success:
+            self.caller.msg(f"You don't have any {item_name} to use.")
+            return
+
+        # Placeholder for other item effects
+        self.caller.msg(f"You used one {item_name}.")
 
 
 class CmdEvolvePokemon(Command):
@@ -581,3 +743,37 @@ class CmdAdminHeal(Command):
         self.caller.msg(f"{target.key}'s Pokémon have been healed.")
         if target != self.caller:
             target.msg("Your Pokémon have been healed by an admin.")
+
+
+class CmdChooseMoveset(Command):
+    """Select which stored moveset a Pokémon should use."""
+
+    key = "+moveset"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def parse(self):
+        if "=" not in self.args:
+            self.slot = self.index = None
+            return
+        left, right = [p.strip() for p in self.args.split("=", 1)]
+        try:
+            self.slot = int(left)
+            self.index = int(right) - 1
+        except ValueError:
+            self.slot = self.index = None
+
+    def func(self):
+        if self.slot is None or self.index is None:
+            self.caller.msg("Usage: +moveset <slot>=<set#>")
+            return
+        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+        sets = pokemon.movesets or []
+        if self.index < 0 or self.index >= len(sets):
+            self.caller.msg("Invalid moveset number.")
+            return
+        pokemon.swap_moveset(self.index)
+        self.caller.msg(f"{pokemon.name} is now using moveset {self.index + 1}.")

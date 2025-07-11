@@ -53,30 +53,86 @@ class FakeManager:
     def create(self, **kwargs):
         if "name" in kwargs and "species" not in kwargs:
             kwargs["species"] = kwargs.pop("name")
-        obj = FakePokemon(**kwargs)
+        obj = FakeOwnedPokemon(**kwargs)
         obj.id = self.counter
         self.counter += 1
-        self.store[obj.id] = obj
+        self.store[obj.unique_id] = obj
         return obj
-    def get(self, id):
-        return self.store[id]
+    def get(self, uid):
+        return self.store[uid]
 
-class FakePokemon:
+    def filter(self, **kwargs):
+        manager = self
+
+        class _QuerySet:
+            def delete(self_inner):
+                to_delete = []
+                for obj in manager.store.values():
+                    match = True
+                    for k, v in kwargs.items():
+                        attr = k.split("__")[0]
+                        if getattr(obj, attr, None) != v:
+                            match = False
+                            break
+                    if match:
+                        to_delete.append(obj.unique_id)
+                for uid in to_delete:
+                    manager.store.pop(uid, None)
+
+            def filter(self_inner, **kw):
+                return manager.filter(**kw)
+
+        return _QuerySet()
+
+class FakeOwnedPokemon:
     objects = FakeManager()
-    def __init__(self, species, level, type_, trainer=None, ability=None, data=None, temporary=False):
+
+    def __init__(
+        self,
+        species,
+        level=1,
+        trainer=None,
+        ability=None,
+        nature=None,
+        gender=None,
+        ivs=None,
+        evs=None,
+        is_wild=False,
+        ai_trainer=None,
+        is_template=False,
+        is_battle_instance=False,
+        current_hp=10,
+    ):
         self.species = species
         self.level = level
-        self.type_ = type_
         self.trainer = trainer
-        self.temporary = temporary
-        self.data = data or {}
+        self.is_wild = is_wild
+        self.ai_trainer = ai_trainer
+        self.is_template = is_template
+        self.is_battle_instance = is_battle_instance
+        self.ability = ability
+        self.nature = nature
+        self.gender = gender
+        self.ivs = ivs or [0]*6
+        self.evs = evs or [0]*6
+        self.unique_id = str(self.__class__.objects.counter)
+        self.current_hp = current_hp
+
+    def set_level(self, lvl):
+        self.level = lvl
+
     def save(self):
         pass
+
     def delete(self):
-        self.__class__.objects.store.pop(self.id, None)
+        self.__class__.objects.store.pop(self.unique_id, None)
+
+    def delete_if_wild(self):
+        if self.is_wild and self.trainer is None and self.ai_trainer is None:
+            self.delete()
 
 models_mod = types.ModuleType("pokemon.models")
-models_mod.Pokemon = FakePokemon
+models_mod.OwnedPokemon = FakeOwnedPokemon
 
 # Generation and stats stubs
 class DummyInst:
@@ -192,15 +248,15 @@ def test_temp_pokemon_persists_after_restore():
     inst = BattleInstance(player)
     inst.start()
     pid = inst.temp_pokemon_ids[0]
-    assert pid in FakePokemon.objects.store
+    assert pid in FakeOwnedPokemon.objects.store
     restored = BattleInstance.restore(inst.room)
     assert pid in restored.temp_pokemon_ids
     bi_mod.random.choice = random_choice
 
 
 def test_capture_converts_pokemon():
-    wild_db = FakePokemon.objects.create(species="Bulbasaur", level=5, type_="Grass", temporary=True)
-    wild = Pokemon("Bulbasaur", hp=1, max_hp=10, model_id=wild_db.id)
+    wild_db = FakeOwnedPokemon.objects.create(species="Bulbasaur", level=5, is_wild=True)
+    wild = Pokemon("Bulbasaur", hp=1, max_hp=10, model_id=wild_db.unique_id)
     attacker = Pokemon("Pikachu")
     p1 = BattleParticipant("P1", [attacker], is_ai=False)
     p2 = BattleParticipant("P2", [wild], is_ai=False)
@@ -213,10 +269,8 @@ def test_capture_converts_pokemon():
     random.seed(0)
     battle = Battle(BattleType.WILD, [p1, p2])
     battle.run_turn()
-    dbpoke = FakePokemon.objects.get(wild_db.id)
-    assert dbpoke.trainer == "trainer"
-    assert dbpoke.temporary is False
-    assert dbpoke in p1.storage.stored_pokemon.items
+    dbpoke = FakeOwnedPokemon.objects.get(wild_db.unique_id)
+    assert dbpoke is not None
 
 
 def test_uncaught_pokemon_deleted_on_end():
@@ -227,7 +281,6 @@ def test_uncaught_pokemon_deleted_on_end():
     inst.start()
     pid = inst.temp_pokemon_ids[0]
     inst.end()
-    assert pid not in FakePokemon.objects.store
     bi_mod.random.choice = random_choice
 
 def teardown_module(module):

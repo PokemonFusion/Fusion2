@@ -117,6 +117,8 @@ def _create_starter(
 
     heal_pokemon(pokemon)
 
+    pokemon.learn_level_up_moves()
+
     storage = _ensure_storage(char)
     storage.add_active_pokemon(pokemon)
 

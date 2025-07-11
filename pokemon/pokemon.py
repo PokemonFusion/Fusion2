@@ -28,6 +28,7 @@ class User(DefaultCharacter, InventoryMixin):
         pokemon.set_level(level)
         from commands.command import heal_pokemon
         heal_pokemon(pokemon)
+        pokemon.learn_level_up_moves()
         self.storage.add_active_pokemon(pokemon)
     def add_pokemon_to_storage(self, name, level, type_, data=None):
         pokemon = OwnedPokemon.objects.create(
@@ -43,6 +44,7 @@ class User(DefaultCharacter, InventoryMixin):
         pokemon.set_level(level)
         from commands.command import heal_pokemon
         heal_pokemon(pokemon)
+        pokemon.learn_level_up_moves()
         self.storage.stored_pokemon.add(pokemon)
 
     def show_pokemon_on_user(self):
@@ -115,6 +117,7 @@ class User(DefaultCharacter, InventoryMixin):
         pokemon.set_level(5)
         from commands.command import heal_pokemon
         heal_pokemon(pokemon)
+        pokemon.learn_level_up_moves()
         self.storage.add_active_pokemon(pokemon)
         return f"You received {pokemon.species}!"
 

@@ -3620,4 +3620,12 @@ py_dict = {   'Abilityshield': {   'name': 'Ability Shield',
                     'itemUser': ['Venomicon-Epilogue'],
                     'num': -2,
                     'gen': 8,
-                    'isNonstandard': 'CAP'}}
+                    'isNonstandard': 'CAP'},
+    'Ppup': {   'name': 'PP Up',
+                'desc': 'Raises the max PP of a move.',
+                'num': 0,
+                'gen': 2},
+    'Ppmax': {   'name': 'PP Max',
+                 'desc': 'Maximizes the max PP of a move.',
+                 'num': 0,
+                 'gen': 3}}

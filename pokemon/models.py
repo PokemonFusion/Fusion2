@@ -7,6 +7,10 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 import uuid
+import math
+
+# Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
+MAX_PP_MULTIPLIER = 1.6
 
 
 class Gender(models.TextChoices):
@@ -168,10 +172,40 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     trainer = models.ForeignKey(
         "pokemon.Trainer",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         db_index=True,
     )
+    is_wild = models.BooleanField(default=False, db_index=True)
+    ai_trainer = models.ForeignKey(
+        "NPCTrainer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_index=True,
+        related_name="wild_or_ai_pokemon",
+    )
+    is_template = models.BooleanField(default=False, db_index=True)
+    is_battle_instance = models.BooleanField(default=False, db_index=True)
     nickname = models.CharField(max_length=50, blank=True)
+    is_shiny = models.BooleanField(default=False, db_index=True)
+    met_location = models.CharField(max_length=100, blank=True)
+    met_level = models.PositiveSmallIntegerField(null=True, blank=True)
+    met_date = models.DateTimeField(null=True, blank=True)
+    obtained_method = models.CharField(max_length=50, blank=True)
+    original_trainer = models.ForeignKey(
+        "Trainer",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="original_pokemon",
+    )
+    original_trainer_name = models.CharField(max_length=100, blank=True)
+    is_egg = models.BooleanField(default=False)
+    hatch_steps = models.PositiveIntegerField(null=True, blank=True)
+    friendship = models.PositiveSmallIntegerField(default=70)
+    flags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     tera_type = models.CharField(max_length=20, blank=True)
+    current_hp = models.PositiveIntegerField(default=0)
     total_exp = models.BigIntegerField(default=0)
     learned_moves = models.ManyToManyField(Move, related_name="owners")
     active_moveset = models.ManyToManyField(
@@ -179,6 +213,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         through="ActiveMoveslot",
         related_name="active_on",
     )
+    movesets = models.JSONField(blank=True, default=list)
+    active_moveset_index = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
         return f"{self.nickname or self.species} ({self.unique_id})"
@@ -201,6 +237,118 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
         self.total_exp = exp_for_level(level)
 
+    def delete_if_wild(self) -> None:
+        """Delete this Pokémon if it is an uncaptured wild encounter."""
+        if self.is_wild and self.trainer is None and self.ai_trainer is None:
+            self.delete()
+
+    # ------------------------------------------------------------------
+    # Move management helpers
+    # ------------------------------------------------------------------
+    def learn_level_up_moves(self) -> None:
+        """Learn all level-up moves up to the current level."""
+        from .generation import get_valid_moves
+
+        moves = get_valid_moves(self.species, self.level)
+        objs = [
+            m
+            for m in Move.objects.filter(name__in=moves)
+        ]
+        if objs:
+            self.learned_moves.add(*objs)
+        if not self.movesets:
+            self.movesets = [moves[:4]]
+            self.active_moveset_index = 0
+        self.save()
+        self.apply_active_moveset()
+
+    def apply_active_moveset(self) -> None:
+        """Replace active move slots with the currently selected moveset."""
+        sets = self.movesets or []
+        if not sets:
+            return
+        moves = sets[self.active_moveset_index] if self.active_moveset_index < len(sets) else []
+        self.activemoveslot_set.all().delete()
+        for idx, name in enumerate(moves[:4], 1):
+            mv = Move.objects.filter(name__iexact=name).first()
+            if mv:
+                slot = self.activemoveslot_set.create(move=mv, slot=idx)
+                try:
+                    from .dex import MOVEDEX
+                except Exception:  # pragma: no cover - MOVEDEX may be missing in tests
+                    MOVEDEX = {}
+                base_pp = MOVEDEX.get(name.lower(), {}).get("pp")
+                boost_obj = self.pp_boosts.filter(move=mv).first()
+                bonus = boost_obj.bonus_pp if boost_obj else 0
+                if base_pp is not None:
+                    slot.current_pp = base_pp + bonus
+                    slot.save()
+
+    def swap_moveset(self, index: int) -> None:
+        """Switch to the moveset at ``index`` (0-based)."""
+        if self.movesets is None:
+            self.movesets = []
+        if index < 0 or index >= len(self.movesets):
+            return
+        self.active_moveset_index = index
+        self.save()
+        self.apply_active_moveset()
+
+    def get_max_pp(self, move_name: str) -> int | None:
+        """Return the maximum PP for ``move_name`` accounting for boosts."""
+        try:
+            from .dex import MOVEDEX
+        except Exception:  # pragma: no cover - fallback for tests
+            MOVEDEX = {}
+        base_pp = MOVEDEX.get(move_name.lower(), {}).get("pp")
+        if base_pp is None:
+            return None
+        boost = self.pp_boosts.filter(move__name__iexact=move_name).first()
+        bonus = boost.bonus_pp if boost else 0
+        return base_pp + bonus
+
+    # ------------------------------------------------------------------
+    # PP boosting helpers
+    # ------------------------------------------------------------------
+    def _apply_pp_boost(self, move_name: str, full: bool = False) -> bool:
+        """Apply a PP Up or PP Max boost to ``move_name``."""
+        try:
+            from .dex import MOVEDEX
+        except Exception:  # pragma: no cover - fallback for tests
+            MOVEDEX = {}
+        base_pp = MOVEDEX.get(move_name.lower(), {}).get("pp")
+        if base_pp is None:
+            return False
+        move = Move.objects.filter(name__iexact=move_name).first()
+        if not move:
+            return False
+        boost_obj, _ = self.pp_boosts.get_or_create(move=move, defaults={"bonus_pp": 0})
+        max_bonus = math.floor(base_pp * MAX_PP_MULTIPLIER) - base_pp
+        current = boost_obj.bonus_pp
+        if current >= max_bonus:
+            return False
+        if full:
+            new_bonus = max_bonus
+        else:
+            step = max(1, base_pp // 5)
+            new_bonus = min(current + step, max_bonus)
+        delta = new_bonus - current
+        boost_obj.bonus_pp = new_bonus
+        boost_obj.save()
+        for slot in self.activemoveslot_set.filter(move=move):
+            if slot.current_pp is not None:
+                slot.current_pp = min(slot.current_pp + delta, base_pp + new_bonus)
+                slot.save()
+        return True
+
+    def apply_pp_up(self, move_name: str) -> bool:
+        """Apply a PP Up to ``move_name`` and return success."""
+        return self._apply_pp_boost(move_name, full=False)
+
+    def apply_pp_max(self, move_name: str) -> bool:
+        """Apply a PP Max to ``move_name`` and return success."""
+        return self._apply_pp_boost(move_name, full=True)
+
 
 class ActiveMoveslot(models.Model):
     """Mapping of active move slots for a Pokémon."""
@@ -208,6 +356,7 @@ class ActiveMoveslot(models.Model):
     pokemon = models.ForeignKey(OwnedPokemon, on_delete=models.CASCADE, db_index=True)
     move = models.ForeignKey(Move, on_delete=models.CASCADE, db_index=True)
     slot = models.PositiveSmallIntegerField(db_index=True)
+    current_pp = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         unique_together = ("pokemon", "slot")
@@ -326,12 +475,63 @@ class NPCTrainer(models.Model):
         return self.name
 
 
-class NPCTrainerPokemon(BasePokemon):
-    """Persistent Pokémon owned by an NPC trainer."""
+class InventoryEntry(models.Model):
+    """A quantity of a particular item owned by a trainer."""
 
-    trainer = models.ForeignKey(
-        NPCTrainer, on_delete=models.CASCADE, related_name="pokemon", db_index=True
+    owner = models.ForeignKey(
+        "pokemon.Trainer", on_delete=models.CASCADE, related_name="inventory"
     )
+    item_name = models.CharField(max_length=100)
+    quantity = models.PositiveIntegerField(default=1)
 
-    def __str__(self):
-        return f"{self.species} for {self.trainer.name}"
+    class Meta:
+        unique_together = ("owner", "item_name")
+
+    def __str__(self) -> str:
+        return f"{self.item_name} x{self.quantity}"
+
+
+class PokemonFusion(models.Model):
+    """Record a fusion between two Pokémon using their unique IDs."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    parent_a = models.ForeignKey(
+        OwnedPokemon,
+        on_delete=models.CASCADE,
+        related_name="fusion_parent_a",
+    )
+    parent_b = models.ForeignKey(
+        OwnedPokemon,
+        on_delete=models.CASCADE,
+        related_name="fusion_parent_b",
+    )
+    result = models.OneToOneField(
+        OwnedPokemon,
+        on_delete=models.CASCADE,
+        related_name="fusion_result",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("parent_a", "parent_b")
+
+    def __str__(self) -> str:
+        return f"Fusion of {self.parent_a} + {self.parent_b} -> {self.result}"
+
+
+class MovePPBoost(models.Model):
+    """Store extra PP added to a move for a specific Pokémon."""
+
+    pokemon = models.ForeignKey(
+        OwnedPokemon, on_delete=models.CASCADE, related_name="pp_boosts"
+    )
+    move = models.ForeignKey(Move, on_delete=models.CASCADE)
+    bonus_pp = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        unique_together = ("pokemon", "move")
+
+    def __str__(self) -> str:
+        return f"{self.pokemon} {self.move} +{self.bonus_pp} PP"
+
+

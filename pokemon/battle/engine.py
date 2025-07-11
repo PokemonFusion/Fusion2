@@ -1393,11 +1393,13 @@ class Battle:
                     target.pokemons.remove(target_poke)
                 if getattr(target_poke, "model_id", None) is not None:
                     try:
-                        from pokemon.models import Pokemon as PokemonModel
-                        dbpoke = PokemonModel.objects.get(id=target_poke.model_id)
+                        from pokemon.models import OwnedPokemon
+                        dbpoke = OwnedPokemon.objects.get(unique_id=target_poke.model_id)
                         if hasattr(action.actor, "trainer"):
                             dbpoke.trainer = action.actor.trainer
-                        dbpoke.temporary = False
+                        dbpoke.current_hp = target_poke.hp
+                        dbpoke.is_wild = False
+                        dbpoke.ai_trainer = None
                         if hasattr(dbpoke, "save"):
                             dbpoke.save()
                         if hasattr(action.actor, "storage") and hasattr(action.actor.storage, "stored_pokemon"):
