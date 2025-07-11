@@ -7,6 +7,10 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 import uuid
+import math
+
+# Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
+MAX_PP_MULTIPLIER = 1.6
 
 
 class Gender(models.TextChoices):
@@ -302,6 +306,48 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         boost = self.pp_boosts.filter(move__name__iexact=move_name).first()
         bonus = boost.bonus_pp if boost else 0
         return base_pp + bonus
+
+    # ------------------------------------------------------------------
+    # PP boosting helpers
+    # ------------------------------------------------------------------
+    def _apply_pp_boost(self, move_name: str, full: bool = False) -> bool:
+        """Apply a PP Up or PP Max boost to ``move_name``."""
+        try:
+            from .dex import MOVEDEX
+        except Exception:  # pragma: no cover - fallback for tests
+            MOVEDEX = {}
+        base_pp = MOVEDEX.get(move_name.lower(), {}).get("pp")
+        if base_pp is None:
+            return False
+        move = Move.objects.filter(name__iexact=move_name).first()
+        if not move:
+            return False
+        boost_obj, _ = self.pp_boosts.get_or_create(move=move, defaults={"bonus_pp": 0})
+        max_bonus = math.floor(base_pp * MAX_PP_MULTIPLIER) - base_pp
+        current = boost_obj.bonus_pp
+        if current >= max_bonus:
+            return False
+        if full:
+            new_bonus = max_bonus
+        else:
+            step = max(1, base_pp // 5)
+            new_bonus = min(current + step, max_bonus)
+        delta = new_bonus - current
+        boost_obj.bonus_pp = new_bonus
+        boost_obj.save()
+        for slot in self.activemoveslot_set.filter(move=move):
+            if slot.current_pp is not None:
+                slot.current_pp = min(slot.current_pp + delta, base_pp + new_bonus)
+                slot.save()
+        return True
+
+    def apply_pp_up(self, move_name: str) -> bool:
+        """Apply a PP Up to ``move_name`` and return success."""
+        return self._apply_pp_boost(move_name, full=False)
+
+    def apply_pp_max(self, move_name: str) -> bool:
+        """Apply a PP Max to ``move_name`` and return success."""
+        return self._apply_pp_boost(move_name, full=True)
 
 
 class ActiveMoveslot(models.Model):

@@ -556,19 +556,88 @@ class CmdUseItem(Command):
     help_category = "Inventory"
 
     def func(self):
-        item_name = self.args.strip().lower()
+        args = self.args.strip()
         trainer = getattr(self.caller, "trainer", None)
-
-        if not item_name:
-            self.caller.msg("Usage: +useitem <item>")
-            return
 
         if not trainer:
             self.caller.msg("You have no trainer record.")
             return
 
+        pending = getattr(self.caller.ndb, "pending_pp_item", None)
+
+        if pending:
+            move_sel = args.strip()
+            if not move_sel:
+                self.caller.msg("Please specify which move to apply the item to.")
+                return
+            pokemon = pending["pokemon"]
+            item = pending["item"]
+            slots = list(pokemon.activemoveslot_set.order_by("slot"))
+            move_name = None
+            if move_sel.isdigit():
+                idx = int(move_sel) - 1
+                if 0 <= idx < len(slots):
+                    move_name = slots[idx].move.name
+            else:
+                for s in slots:
+                    if s.move.name.lower() == move_sel.lower():
+                        move_name = s.move.name
+                        break
+            if not move_name:
+                self.caller.msg("Invalid move selection.")
+                return
+            if item == "ppup":
+                applied = pokemon.apply_pp_up(move_name)
+                fail_msg = "That move's PP can't be raised any further."
+            else:
+                applied = pokemon.apply_pp_max(move_name)
+                fail_msg = "That move already has maximum PP."
+            if not applied:
+                self.caller.msg(fail_msg)
+                self.caller.ndb.pending_pp_item = None
+                return
+            remove_item(trainer, item)
+            self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
+            self.caller.ndb.pending_pp_item = None
+            return
+
+        if not args:
+            self.caller.msg("Usage: +useitem <item> or +useitem <slot>=<item>")
+            return
+
+        slot = None
+        item_name = args
+        if "=" in args:
+            left, right = [p.strip() for p in args.split("=", 1)]
+            try:
+                slot = int(left)
+            except ValueError:
+                self.caller.msg("Invalid slot number.")
+                return
+            item_name = right
+
+        item_name = item_name.lower()
+
         if item_name not in ITEMDEX:
             self.caller.msg(f"No such item '{item_name}' exists.")
+            return
+
+        if slot is not None and item_name in {"ppup", "ppmax", "pp max"}:
+            pokemon = self.caller.get_active_pokemon_by_slot(slot)
+            if not pokemon:
+                self.caller.msg("No Pokémon in that slot.")
+                return
+            slots = list(pokemon.activemoveslot_set.order_by("slot"))
+            if not slots:
+                self.caller.msg("That Pokémon knows no moves.")
+                return
+            self.caller.ndb.pending_pp_item = {"pokemon": pokemon, "item": item_name.replace(" ", "")}
+            lines = ["Choose a move to increase PP:"]
+            for s in slots:
+                max_pp = pokemon.get_max_pp(s.move.name)
+                lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
+            lines.append("Use +useitem <move name or number> to select.")
+            self.caller.msg("\n".join(lines))
             return
 
         success = remove_item(trainer, item_name)
@@ -576,7 +645,7 @@ class CmdUseItem(Command):
             self.caller.msg(f"You don't have any {item_name} to use.")
             return
 
-        # Placeholder for actual item effect logic
+        # Placeholder for other item effects
         self.caller.msg(f"You used one {item_name}.")
 
 
