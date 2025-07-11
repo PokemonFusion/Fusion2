@@ -41,7 +41,8 @@ def _get_pokemon_types(pokemon) -> list[str]:
     species = getattr(pokemon, "species", None)
     if not species:
         return []
-    entry = POKEDEX.get(str(species).lower())
+    name = str(species)
+    entry = POKEDEX.get(name) or POKEDEX.get(name.capitalize()) or POKEDEX.get(name.lower())
     if entry:
         types = getattr(entry, "types", None)
         if not types and isinstance(entry, dict):

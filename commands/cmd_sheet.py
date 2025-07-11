@@ -1,6 +1,13 @@
 from evennia import Command
 from django.db.utils import OperationalError
-from utils.sheet_display import display_pokemon_sheet, display_trainer_sheet
+from utils.sheet_display import (
+    display_pokemon_sheet,
+    display_trainer_sheet,
+    get_status_effects,
+)
+from commands.command import get_max_hp
+from utils.xp_utils import get_display_xp
+from pokemon.stats import level_for_exp
 
 class CmdSheet(Command):
     """Display information about your trainer character."""
@@ -45,7 +52,18 @@ class CmdSheetPokemon(Command):
                 return
             lines = ["|wParty Pokémon|n"]
             for idx, mon in enumerate(party, 1):
-                lines.append(f"{idx}: {mon.name} (Lv {getattr(mon, 'level', '?')})")
+                level = getattr(mon, "level", None)
+                if level is None:
+                    xp_val = get_display_xp(mon)
+                    growth = getattr(mon, "growth_rate", "medium_fast")
+                    level = level_for_exp(xp_val, growth)
+                hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
+                max_hp = get_max_hp(mon)
+                status = get_status_effects(mon)
+                gender = getattr(mon, "gender", "?")
+                lines.append(
+                    f"{idx}: {mon.name} (Lv {level} HP {hp}/{max_hp} {gender} {status})"
+                )
             caller.msg("\n".join(lines))
             return
 
