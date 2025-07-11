@@ -51,6 +51,7 @@ from commands.command import (
     CmdEvolvePokemon,
     CmdExpShare,
     CmdHeal,
+    CmdChooseMoveset,
     CmdAdminHeal,
     CmdChooseStarter,
     CmdDepositPokemon,
@@ -151,6 +152,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdEvolvePokemon())
         self.add(CmdExpShare())
         self.add(CmdHeal())
+        self.add(CmdChooseMoveset())
         self.add(CmdMovesets())
         self.add(CmdAdminHeal())
         self.add(CmdTradePokemon())

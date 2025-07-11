@@ -209,6 +209,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         through="ActiveMoveslot",
         related_name="active_on",
     )
+    movesets = models.JSONField(blank=True, default=list)
+    active_moveset_index = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
         return f"{self.nickname or self.species} ({self.unique_id})"
@@ -235,6 +237,48 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         """Delete this Pokémon if it is an uncaptured wild encounter."""
         if self.is_wild and self.trainer is None and self.ai_trainer is None:
             self.delete()
+
+    # ------------------------------------------------------------------
+    # Move management helpers
+    # ------------------------------------------------------------------
+    def learn_level_up_moves(self) -> None:
+        """Learn all level-up moves up to the current level."""
+        from .generation import get_valid_moves
+
+        moves = get_valid_moves(self.species, self.level)
+        objs = [
+            m
+            for m in Move.objects.filter(name__in=moves)
+        ]
+        if objs:
+            self.learned_moves.add(*objs)
+        if not self.movesets:
+            self.movesets = [moves[:4]]
+            self.active_moveset_index = 0
+        self.save()
+        self.apply_active_moveset()
+
+    def apply_active_moveset(self) -> None:
+        """Replace active move slots with the currently selected moveset."""
+        sets = self.movesets or []
+        if not sets:
+            return
+        moves = sets[self.active_moveset_index] if self.active_moveset_index < len(sets) else []
+        self.activemoveslot_set.all().delete()
+        for idx, name in enumerate(moves[:4], 1):
+            mv = Move.objects.filter(name__iexact=name).first()
+            if mv:
+                self.activemoveslot_set.create(move=mv, slot=idx)
+
+    def swap_moveset(self, index: int) -> None:
+        """Switch to the moveset at ``index`` (0-based)."""
+        if self.movesets is None:
+            self.movesets = []
+        if index < 0 or index >= len(self.movesets):
+            return
+        self.active_moveset_index = index
+        self.save()
+        self.apply_active_moveset()
 
 
 class ActiveMoveslot(models.Model):

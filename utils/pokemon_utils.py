@@ -18,6 +18,8 @@ def clone_pokemon(pokemon: OwnedPokemon, for_ai: bool = True) -> OwnedPokemon:
             current_hp=pokemon.current_hp,
             is_battle_instance=True,
             ai_trainer=pokemon.ai_trainer if for_ai else None,
+            movesets=list(pokemon.movesets or []),
+            active_moveset_index=pokemon.active_moveset_index,
         )
         clone.learned_moves.set(pokemon.learned_moves.all())
         for slot in pokemon.activemoveslot_set.all():

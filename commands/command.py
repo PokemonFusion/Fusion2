@@ -647,3 +647,37 @@ class CmdAdminHeal(Command):
         self.caller.msg(f"{target.key}'s Pokémon have been healed.")
         if target != self.caller:
             target.msg("Your Pokémon have been healed by an admin.")
+
+
+class CmdChooseMoveset(Command):
+    """Select which stored moveset a Pokémon should use."""
+
+    key = "+moveset"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def parse(self):
+        if "=" not in self.args:
+            self.slot = self.index = None
+            return
+        left, right = [p.strip() for p in self.args.split("=", 1)]
+        try:
+            self.slot = int(left)
+            self.index = int(right) - 1
+        except ValueError:
+            self.slot = self.index = None
+
+    def func(self):
+        if self.slot is None or self.index is None:
+            self.caller.msg("Usage: +moveset <slot>=<set#>")
+            return
+        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+        sets = pokemon.movesets or []
+        if self.index < 0 or self.index >= len(sets):
+            self.caller.msg("Invalid moveset number.")
+            return
+        pokemon.swap_moveset(self.index)
+        self.caller.msg(f"{pokemon.name} is now using moveset {self.index + 1}.")

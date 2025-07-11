@@ -39,6 +39,8 @@ class OwnedPokemon:
     def set_level(self, lvl):
         self.level = lvl
     current_hp = 10
+    def learn_level_up_moves(self):
+        pass
 fake_models.OwnedPokemon = OwnedPokemon
 sys.modules["pokemon.models"] = fake_models
 
