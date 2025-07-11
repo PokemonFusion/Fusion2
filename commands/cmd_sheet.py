@@ -1,55 +1,24 @@
 from evennia import Command
 from django.db.utils import OperationalError
-from utils.sheet_display import display_pokemon_sheet
+from utils.sheet_display import display_pokemon_sheet, display_trainer_sheet
 
 class CmdSheet(Command):
-    """Display details about Pokémon in your party."""
+    """Display information about your trainer character."""
 
     key = "+sheet"
     aliases = ["party"]
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "General"
 
     def parse(self):
-        """Parse optional /switches and slot argument."""
-        self.slot = None
         self.mode = "full"
-
-        arg = self.args.strip()
-        self.switches = []
-        if arg.startswith("/"):
-            parts = arg[1:].split(None, 1)
-            self.switches = parts[0].split("/")
-            arg = parts[1] if len(parts) > 1 else ""
-
+        self.switches = getattr(self, "switches", [])
         if "brief" in self.switches:
             self.mode = "brief"
-        if "moves" in self.switches:
-            self.mode = "moves"
-
-        if arg.isdigit():
-            self.slot = int(arg)
-        self.args = arg.strip()
 
     def func(self):
         caller = self.caller
-        try:
-            party = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
-        except OperationalError:
-            caller.msg("The game database is out of date. Please run 'evennia migrate'.")
-            return
-        if not party:
-            caller.msg("You have no Pokémon in your party.")
-            return
-
-        # if no slot specified show first party member
-        slot = self.slot or 1
-        if slot < 1 or slot > len(party):
-            caller.msg("No Pokémon in that slot.")
-            return
-
-        mon = party[slot - 1]
-        sheet = display_pokemon_sheet(caller, mon, slot=slot, mode=self.mode)
+        sheet = display_trainer_sheet(caller)
         caller.msg(sheet)
 
 
@@ -69,11 +38,17 @@ class CmdSheetPokemon(Command):
 
     def func(self):
         caller = self.caller
+        party = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
         if self.slot is None:
-            caller.msg("Usage: +sheet/pokemon <slot>")
+            if not party:
+                caller.msg("You have no Pokémon in your party.")
+                return
+            lines = ["|wParty Pokémon|n"]
+            for idx, mon in enumerate(party, 1):
+                lines.append(f"{idx}: {mon.name} (Lv {getattr(mon, 'level', '?')})")
+            caller.msg("\n".join(lines))
             return
 
-        party = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
         if self.slot < 1 or self.slot > len(party):
             caller.msg("No Pokémon in that slot.")
             return
