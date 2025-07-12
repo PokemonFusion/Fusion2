@@ -72,6 +72,7 @@ def setup_modules():
     orig_stats = sys.modules.get("pokemon.stats")
     orig_dex = sys.modules.get("pokemon.dex")
     orig_breeding = sys.modules.get("pokemon.breeding")
+    orig_learn = sys.modules.get("pokemon.utils.move_learning")
 
     pokemon_pkg = types.ModuleType("pokemon")
     gen_mod = types.ModuleType("pokemon.generation")
@@ -108,6 +109,21 @@ def setup_modules():
     sys.modules["pokemon.dex"] = dex_mod
     sys.modules["pokemon.breeding"] = breeding_mod
 
+    learn_mod = types.ModuleType("pokemon.utils.move_learning")
+
+    def learn_move(pokemon, move_name, caller=None, prompt=False):
+        sets = pokemon.movesets
+        if len(sets[0]) < 4:
+            sets[0].append(move_name)
+        pokemon.movesets = sets
+        pokemon.save()
+        pokemon.apply_active_moveset()
+        if caller:
+            caller.msg(f"{pokemon.name} learned {move_name}.")
+
+    learn_mod.learn_move = learn_move
+    sys.modules["pokemon.utils.move_learning"] = learn_mod
+
     orig_inv = sys.modules.get("utils.inventory")
     fake_inv = types.ModuleType("utils.inventory")
     fake_inv.add_item = lambda *a, **k: None
@@ -123,10 +139,11 @@ def setup_modules():
         orig_dex,
         orig_breeding,
         orig_inv,
+        orig_learn,
     )
 
 
-def restore_modules(orig_evennia, orig_pokemon, orig_gen, orig_models, orig_stats, orig_dex, orig_breeding, orig_inv):
+def restore_modules(orig_evennia, orig_pokemon, orig_gen, orig_models, orig_stats, orig_dex, orig_breeding, orig_inv, orig_learn):
     if orig_evennia is not None:
         sys.modules["evennia"] = orig_evennia
     else:
@@ -163,6 +180,10 @@ def restore_modules(orig_evennia, orig_pokemon, orig_gen, orig_models, orig_stat
         sys.modules["utils.inventory"] = orig_inv
     else:
         sys.modules.pop("utils.inventory", None)
+    if orig_learn is not None:
+        sys.modules["pokemon.utils.move_learning"] = orig_learn
+    else:
+        sys.modules.pop("pokemon.utils.move_learning", None)
 
 
 def test_teach_move_command():

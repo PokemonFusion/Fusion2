@@ -245,22 +245,27 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     # ------------------------------------------------------------------
     # Move management helpers
     # ------------------------------------------------------------------
-    def learn_level_up_moves(self) -> None:
-        """Learn all level-up moves up to the current level."""
+    def learn_level_up_moves(self, *, caller=None, prompt: bool = False) -> None:
+        """Learn all level-up moves up to the current level.
+
+        If ``caller`` is provided and ``prompt`` is True, the caller will be
+        asked about replacing moves for any newly learned techniques.
+        """
         from .generation import get_valid_moves
+        from pokemon.utils.move_learning import learn_move
 
         moves = get_valid_moves(self.species, self.level)
-        objs = [
-            m
-            for m in Move.objects.filter(name__in=moves)
-        ]
-        if objs:
-            self.learned_moves.add(*objs)
+        known = {m.name.lower() for m in self.learned_moves.all()}
+        for mv in moves:
+            if mv.lower() not in known:
+                learn_move(self, mv, caller=caller, prompt=prompt)
+                known.add(mv.lower())
+
         if not self.movesets:
             self.movesets = [moves[:4]]
             self.active_moveset_index = 0
-        self.save()
-        self.apply_active_moveset()
+            self.save()
+            self.apply_active_moveset()
 
     def apply_active_moveset(self) -> None:
         """Replace active move slots with the currently selected moveset."""

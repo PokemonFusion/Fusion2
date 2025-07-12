@@ -817,25 +817,6 @@ class CmdTeachMove(Command):
             self.caller.msg(f"{pokemon.name} already knows {self.move_name}.")
             return
 
-        move_obj, _ = Move.objects.get_or_create(name=self.move_name.capitalize())
-        pokemon.learned_moves.add(move_obj)
-        sets = pokemon.movesets or [[]]
-        placed = False
-        for s in sets:
-            if self.move_name in s:
-                placed = True
-                break
-            if len(s) < 4 and not placed:
-                s.append(self.move_name)
-                placed = True
-                break
-        if not placed:
-            idx = pokemon.active_moveset_index if pokemon.active_moveset_index < len(sets) else 0
-            if sets[idx]:
-                sets[idx][0] = self.move_name
-            else:
-                sets[idx] = [self.move_name]
-        pokemon.movesets = sets
-        pokemon.save()
-        pokemon.apply_active_moveset()
-        self.caller.msg(f"{pokemon.name} learned {self.move_name.capitalize()}.")
+        from pokemon.utils.move_learning import learn_move
+
+        learn_move(pokemon, self.move_name, caller=self.caller, prompt=True)
