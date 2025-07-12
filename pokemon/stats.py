@@ -48,17 +48,41 @@ def level_for_exp(exp: int, rate: str = "medium_fast") -> int:
     return level
 
 
-def add_experience(pokemon, amount: int, *, rate: str | None = None) -> None:
+def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None) -> None:
     """Add experience to ``pokemon`` and update its level."""
     if amount <= 0:
         return
-    pokemon.experience = getattr(pokemon, "experience", 0) + amount
-    growth = rate or getattr(pokemon, "growth_rate", None)
-    if growth is None:
-        growth = getattr(getattr(pokemon, "data", {}), "get", lambda x, d=None: d)("growth_rate", "medium_fast")
-        if hasattr(pokemon, "data") and isinstance(pokemon.data, dict):
-            growth = pokemon.data.get("growth_rate", "medium_fast")
-    pokemon.level = level_for_exp(pokemon.experience, growth)
+
+    prev_level = getattr(pokemon, "level", None)
+
+    if hasattr(pokemon, "total_exp"):
+        pokemon.total_exp = getattr(pokemon, "total_exp", 0) + amount
+        growth = rate or getattr(pokemon, "growth_rate", None)
+        if growth is None:
+            growth = getattr(getattr(pokemon, "data", {}), "get", lambda x, d=None: d)(
+                "growth_rate", "medium_fast"
+            )
+            if hasattr(pokemon, "data") and isinstance(pokemon.data, dict):
+                growth = pokemon.data.get("growth_rate", "medium_fast")
+        # level property will derive from total_exp
+    else:
+        pokemon.experience = getattr(pokemon, "experience", 0) + amount
+        growth = rate or getattr(pokemon, "growth_rate", None)
+        if growth is None:
+            growth = getattr(getattr(pokemon, "data", {}), "get", lambda x, d=None: d)(
+                "growth_rate", "medium_fast"
+            )
+            if hasattr(pokemon, "data") and isinstance(pokemon.data, dict):
+                growth = pokemon.data.get("growth_rate", "medium_fast")
+        pokemon.level = level_for_exp(pokemon.experience, growth)
+
+    new_level = getattr(pokemon, "level", None)
+    if prev_level is not None and new_level and new_level > prev_level:
+        if hasattr(pokemon, "learn_level_up_moves"):
+            try:
+                pokemon.learn_level_up_moves(caller=caller, prompt=True)
+            except TypeError:
+                pokemon.learn_level_up_moves()
 
 
 def add_evs(pokemon, gains: Dict[str, int]) -> None:
