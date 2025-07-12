@@ -19,6 +19,8 @@ __all__ = [
     "calculate_stats",
     "distribute_experience",
     "award_experience_to_party",
+    "apply_item_exp_mod",
+    "apply_item_ev_mod",
 ]
 
 
@@ -119,6 +121,62 @@ def _calc_stat(base: int, iv: int, ev: int, level: int, *, nature_mod: float = 1
     return int(stat * nature_mod)
 
 
+def _item_name(item) -> str:
+    """Return a normalized name for a held item."""
+    if not item:
+        return ""
+    if isinstance(item, str):
+        return item.replace(" ", "").lower()
+    return str(getattr(item, "name", "")).replace(" ", "").lower()
+
+
+def apply_item_exp_mod(pokemon, amount: int) -> int:
+    """Apply experience modifiers from a Pokémon's held item."""
+    item_obj = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+    if hasattr(item_obj, "call"):
+        try:
+            mod = item_obj.call("onModifyExp", amount, pokemon=pokemon)
+            if isinstance(mod, (int, float)):
+                amount = int(mod)
+        except Exception:
+            pass
+    item = _item_name(item_obj)
+    if item == "luckyegg":
+        return int(amount * 1.5)
+    return amount
+
+
+def apply_item_ev_mod(pokemon, gains: Dict[str, int]) -> Dict[str, int]:
+    """Apply EV modifiers from a Pokémon's held item."""
+    item_obj = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+    item = _item_name(item_obj)
+    if not gains:
+        return gains
+    if hasattr(item_obj, "call"):
+        try:
+            mod = item_obj.call("onModifyEVs", gains, pokemon=pokemon)
+            if isinstance(mod, dict):
+                gains = mod
+        except Exception:
+            pass
+    if item == "machobrace":
+        return {k: v * 2 for k, v in gains.items()}
+    power_items = {
+        "powerweight": "hp",
+        "powerbracer": "atk",
+        "powerbelt": "def",
+        "powerlens": "spa",
+        "powerband": "spd",
+        "poweranklet": "spe",
+    }
+    if item in power_items:
+        stat = power_items[item]
+        mod = gains.copy()
+        mod[stat] = mod.get(stat, 0) + 8
+        return mod
+    return gains
+
+
 def calculate_stats(species_name: str, level: int, ivs: Dict[str, int], evs: Dict[str, int], nature: str) -> Dict[str, int]:
     """Return calculated stats for the given Pokémon parameters."""
     species = (
@@ -184,9 +242,10 @@ def distribute_experience(pokemon_list, amount: int, ev_gains: Dict[str, int] | 
 
     for idx, mon in enumerate(mons):
         gained = share + (1 if idx < remainder else 0)
+        gained = apply_item_exp_mod(mon, gained)
         add_experience(mon, gained)
         if ev_gains:
-            add_evs(mon, ev_gains)
+            add_evs(mon, apply_item_ev_mod(mon, ev_gains))
         if hasattr(mon, "save"):
             try:
                 mon.save()
@@ -208,9 +267,10 @@ def award_experience_to_party(player, amount: int, ev_gains: Dict[str, int] | No
     if getattr(getattr(player, "db", {}), "exp_share", False):
         distribute_experience(mons, amount, ev_gains)
     else:
-        add_experience(mons[0], amount)
+        gained = apply_item_exp_mod(mons[0], amount)
+        add_experience(mons[0], gained)
         if ev_gains:
-            add_evs(mons[0], ev_gains)
+            add_evs(mons[0], apply_item_ev_mod(mons[0], ev_gains))
         if hasattr(mons[0], "save"):
             try:
                 mons[0].save()

@@ -259,7 +259,12 @@ class BattleInstance:
                 )
             )
 
-        player_participant = BattleParticipant(self.player.key, player_pokemon)
+        try:
+            player_participant = BattleParticipant(
+                self.player.key, player_pokemon, player=self.player
+            )
+        except TypeError:
+            player_participant = BattleParticipant(self.player.key, player_pokemon)
 
         # Set the first Pokémon of each side as active
         if player_participant.pokemons:
@@ -341,8 +346,18 @@ class BattleInstance:
                 )
             )
 
-        player_participant = BattleParticipant(self.player.key, player_pokemon)
-        opponent_participant = BattleParticipant(self.opponent.key, opp_pokemon)
+        try:
+            player_participant = BattleParticipant(
+                self.player.key, player_pokemon, player=self.player
+            )
+        except TypeError:
+            player_participant = BattleParticipant(self.player.key, player_pokemon)
+        try:
+            opponent_participant = BattleParticipant(
+                self.opponent.key, opp_pokemon, player=self.opponent
+            )
+        except TypeError:
+            opponent_participant = BattleParticipant(self.opponent.key, opp_pokemon)
 
         if player_participant.pokemons:
             player_participant.active = [player_participant.pokemons[0]]
