@@ -3,7 +3,11 @@ from pathlib import Path
 import json
 import importlib.util
 import sys
+import csv
+import re
 from typing import Any, Dict, Optional, List
+
+BASE_PATH = Path(__file__).resolve().parents[2]
 
 @dataclass
 class Ability:
@@ -68,6 +72,7 @@ class Item:
     item_user: List[str] = field(default_factory=list)
     on_take_item: Any = None
     forced_forme: Optional[str] = None
+    price: Optional[int] = None
     raw: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
@@ -84,6 +89,7 @@ class Item:
             item_user=data.get("itemUser", []),
             on_take_item=data.get("onTakeItem"),
             forced_forme=data.get("forcedForme"),
+            price=data.get("price"),
             raw=data,
         )
 
@@ -302,7 +308,25 @@ def load_itemdex(path: Path) -> Dict[str, Item]:
         data = getattr(mod, "py_dict")
     else:
         data = _load_json(path)
-    return {name: Item.from_dict(name, details) for name, details in data.items()}
+
+    items = {name: Item.from_dict(name, details) for name, details in data.items()}
+
+    price_path = BASE_PATH / "pokemon" / "data" / "item_prices.csv"
+    if price_path.exists():
+        with open(price_path) as f:
+            reader = csv.DictReader(f)
+            price_map = {}
+            for row in reader:
+                key = re.sub(r"\W+", "", row.get("identifier", "")).lower()
+                cost = row.get("cost")
+                if cost:
+                    price_map[key] = int(cost)
+        for item in items.values():
+            key = re.sub(r"\W+", "", item.name).lower()
+            if key in price_map:
+                item.price = price_map[key]
+
+    return items
 
 
 def load_conditiondex(path: Path) -> Dict[str, Condition]:
