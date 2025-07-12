@@ -209,7 +209,7 @@ class Action:
 class BattleParticipant:
     """Represents one side of a battle."""
 
-    def __init__(self, name: str, pokemons: List, is_ai: bool = False):
+    def __init__(self, name: str, pokemons: List, is_ai: bool = False, player=None):
         self.name = name
         self.pokemons = pokemons
         self.active: List = []
@@ -217,6 +217,7 @@ class BattleParticipant:
         self.has_lost = False
         self.pending_action: Optional[Action] = None
         self.side = BattleSide()
+        self.player = player
         for poke in self.pokemons:
             if poke is not None:
                 setattr(poke, "side", self.side)
@@ -863,6 +864,24 @@ class Battle:
         for part in self.participants:
             if part.has_lost:
                 continue
+
+            opponent = self.opponent_of(part)
+
+            fainted = [p for p in part.pokemons if getattr(p, "hp", 0) <= 0 and not getattr(p, "is_fainted", False)]
+            if fainted:
+                if opponent and opponent.player and self.type in {BattleType.WILD, BattleType.TRAINER, BattleType.SCRIPTED}:
+                    from pokemon.dex.exp_ev_yields import GAIN_INFO
+                    from pokemon.stats import award_experience_to_party
+                    for poke in fainted:
+                        info = GAIN_INFO.get(getattr(poke, "name", ""), {})
+                        exp = info.get("exp", 0)
+                        evs = info.get("evs", {})
+                        if exp or evs:
+                            award_experience_to_party(opponent.player, exp, evs)
+                        poke.is_fainted = True
+                else:
+                    for poke in fainted:
+                        poke.is_fainted = True
 
             # Remove fainted Pokémon from the active list
             part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]

@@ -1366,6 +1366,13 @@ class Luckypunch:
             return crit_ratio + 2
         return crit_ratio
 
+class Luckyegg:
+    def onModifyExp(self, exp, pokemon=None):
+        """Boost EXP gained by 50%."""
+        if isinstance(exp, (int, float)):
+            return int(exp * 1.5)
+        return exp
+
 class Lumberry:
     def onAfterSetStatus(self, status=None, target=None, source=None, effect=None):
         if target and status:
@@ -1414,6 +1421,12 @@ class Machobrace:
     def onModifySpe(self, spe, pokemon=None):
         """Halve the holder's Speed."""
         return spe // 2 if isinstance(spe, int) else spe
+
+    def onModifyEVs(self, gains, pokemon=None):
+        """Double EV gains."""
+        if isinstance(gains, dict):
+            return {k: v * 2 for k, v in gains.items()}
+        return gains
 
 class Magnet:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -1842,17 +1855,45 @@ class Poweranklet:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
 
+    def onModifyEVs(self, gains, pokemon=None):
+        if isinstance(gains, dict):
+            gains = gains.copy()
+            gains["spe"] = gains.get("spe", 0) + 8
+            return gains
+        return gains
+
 class Powerband:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
+
+    def onModifyEVs(self, gains, pokemon=None):
+        if isinstance(gains, dict):
+            gains = gains.copy()
+            gains["spd"] = gains.get("spd", 0) + 8
+            return gains
+        return gains
 
 class Powerbelt:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
 
+    def onModifyEVs(self, gains, pokemon=None):
+        if isinstance(gains, dict):
+            gains = gains.copy()
+            gains["def"] = gains.get("def", 0) + 8
+            return gains
+        return gains
+
 class Powerbracer:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
+
+    def onModifyEVs(self, gains, pokemon=None):
+        if isinstance(gains, dict):
+            gains = gains.copy()
+            gains["atk"] = gains.get("atk", 0) + 8
+            return gains
+        return gains
 
 class Powerherb:
     def onChargeMove(self, pokemon=None, target=None, move=None):
@@ -1865,9 +1906,23 @@ class Powerlens:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
 
+    def onModifyEVs(self, gains, pokemon=None):
+        if isinstance(gains, dict):
+            gains = gains.copy()
+            gains["spa"] = gains.get("spa", 0) + 8
+            return gains
+        return gains
+
 class Powerweight:
     def onModifySpe(self, spe, pokemon=None):
         return spe // 2 if isinstance(spe, int) else spe
+
+    def onModifyEVs(self, gains, pokemon=None):
+        if isinstance(gains, dict):
+            gains = gains.copy()
+            gains["hp"] = gains.get("hp", 0) + 8
+            return gains
+        return gains
 
 class Ppup:
     def onUse(self, pokemon=None, move_name=None):
