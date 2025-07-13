@@ -1,4 +1,4 @@
-"""Utilities for rendering Pokemon sheets."""
+"""Rendering utilities for trainer and Pokémon sheets."""
 
 from evennia.utils.evtable import EvTable
 
@@ -8,27 +8,13 @@ from utils.xp_utils import get_display_xp, get_next_level_xp
 from pokemon.stats import level_for_exp
 from utils.faction_utils import get_faction_and_rank
 from pokemon.dex import POKEDEX
+from utils.display_helpers import (
+    get_status_effects,
+    format_move_details,
+    get_egg_description,
+)
 
-
-__all__ = [
-    "display_pokemon_sheet",
-    "display_trainer_sheet",
-    "get_status_effects",
-    "format_move_details",
-    "get_egg_description",
-]
-
-
-def get_status_effects(pokemon) -> str:
-    """Return a short status string for ``pokemon``."""
-    status = getattr(pokemon, "status", None)
-    return status or "NORM"
-
-
-def get_egg_description(hatch: int) -> str:
-    """Return description text based on hatch progress."""
-    # TODO: implement proper egg status checks
-    return ""  # placeholder
+__all__ = ["display_pokemon_sheet", "display_trainer_sheet"]
 
 
 def _get_pokemon_types(pokemon) -> list[str]:
@@ -50,6 +36,20 @@ def _get_pokemon_types(pokemon) -> list[str]:
         if types:
             return list(types)
     return []
+
+
+def _hp_bar(current: int, maximum: int, width: int = 20) -> str:
+    if maximum <= 0:
+        return ""
+    ratio = max(0.0, min(1.0, current / maximum))
+    filled = int(width * ratio)
+    if ratio > 0.5:
+        color = ansi.GREEN
+    elif ratio > 0.25:
+        color = ansi.YELLOW
+    else:
+        color = ansi.RED
+    return color("█" * filled + " " * (width - filled))
 
 
 def display_trainer_sheet(character) -> str:
@@ -78,33 +78,6 @@ def display_trainer_sheet(character) -> str:
         lines.append(str(table))
 
     return "\n".join(lines)
-
-
-def format_move_details(move) -> str:
-    """Return a formatted move detail line."""
-    # TODO: include move class, type, power, accuracy and description
-    name = getattr(move, "name", str(move))
-    pp = getattr(move, "pp", getattr(move, "current_pp", None))
-    max_pp = getattr(move, "max_pp", None)
-    if pp is not None and max_pp is not None:
-        return f"{name} ({pp}/{max_pp} PP)"
-    if pp is not None:
-        return f"{name} ({pp} PP)"
-    return name
-
-
-def _hp_bar(current: int, maximum: int, width: int = 20) -> str:
-    if maximum <= 0:
-        return ""
-    ratio = max(0.0, min(1.0, current / maximum))
-    filled = int(width * ratio)
-    if ratio > 0.5:
-        color = ansi.GREEN
-    elif ratio > 0.25:
-        color = ansi.YELLOW
-    else:
-        color = ansi.RED
-    return color("█" * filled + " " * (width - filled))
 
 
 def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = "full") -> str:
@@ -137,7 +110,6 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
     ability = getattr(pokemon, "ability", "?")
     held = getattr(pokemon, "held_item", None) or "Nothing"
     lines.append(f"Nature: {nature}  Ability: {ability}  Held: {held}")
-    # types
     types = _get_pokemon_types(pokemon)
     type_str = "/".join(types) if types else "?"
     lines.append(f"Type: {type_str}")
@@ -152,16 +124,13 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
     for mv in moves:
         lines.append("  " + format_move_details(mv))
 
-    # placeholder features
     hatch = getattr(pokemon, "hatch", None)
     if getattr(pokemon, "egg", False):
         lines.append(get_egg_description(hatch or 0))
 
     if mode == "brief":
-        # TODO: implement brief display
-        pass
+        pass  # TODO: implement brief display
     if mode == "moves":
-        # TODO: implement move-focused display
-        pass
+        pass  # TODO: implement move-focused display
 
     return "\n".join(lines)
