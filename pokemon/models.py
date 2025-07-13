@@ -356,7 +356,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
     def heal(self) -> None:
         """Fully restore HP, clear status, and reset PP."""
-        from commands.command import get_max_hp
+        from pokemon.utils.pokemon_helpers import get_max_hp
 
         max_hp = get_max_hp(self)
         if hasattr(self, "current_hp"):
