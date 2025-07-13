@@ -5,6 +5,7 @@ from .battleinstance import (
     BattleInstance,
     generate_trainer_pokemon,
     generate_wild_pokemon,
+    create_battle_pokemon,
 )
 from .state import BattleState
 from .engine import BattleType, BattleParticipant, Battle, BattleMove, Action, ActionType
@@ -23,6 +24,7 @@ __all__ = [
     "BattleInstance",
     "generate_trainer_pokemon",
     "generate_wild_pokemon",
+    "create_battle_pokemon",
     "BattleType",
     "BattleParticipant",
     "Battle",
