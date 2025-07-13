@@ -26,8 +26,7 @@ class User(DefaultCharacter, InventoryMixin):
             evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
         )
         pokemon.set_level(level)
-        from commands.command import heal_pokemon
-        heal_pokemon(pokemon)
+        pokemon.heal()
         pokemon.learn_level_up_moves()
         self.storage.add_active_pokemon(pokemon)
     def add_pokemon_to_storage(self, name, level, type_, data=None):
@@ -42,8 +41,7 @@ class User(DefaultCharacter, InventoryMixin):
             evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
         )
         pokemon.set_level(level)
-        from commands.command import heal_pokemon
-        heal_pokemon(pokemon)
+        pokemon.heal()
         pokemon.learn_level_up_moves()
         self.storage.stored_pokemon.add(pokemon)
 
@@ -115,8 +113,7 @@ class User(DefaultCharacter, InventoryMixin):
             evs=[0, 0, 0, 0, 0, 0],
         )
         pokemon.set_level(5)
-        from commands.command import heal_pokemon
-        heal_pokemon(pokemon)
+        pokemon.heal()
         pokemon.learn_level_up_moves()
         self.storage.add_active_pokemon(pokemon)
         return f"You received {pokemon.species}!"

@@ -1,7 +1,6 @@
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
 from pokemon.models import OwnedPokemon
-from commands.command import heal_pokemon
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -83,7 +82,7 @@ def node_level(caller, raw_input=None, **kwargs):
         evs=[0, 0, 0, 0, 0, 0],
     )
     pokemon.set_level(instance.level)
-    heal_pokemon(pokemon)
+    pokemon.heal()
     pokemon.learn_level_up_moves()
     target.storage.add_active_pokemon(pokemon)
     caller.msg(
