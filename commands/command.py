@@ -1,14 +1,9 @@
 from evennia import Command
 from pokemon.generation import generate_pokemon
 from pokemon.stats import calculate_stats
-from pokemon.models import InventoryEntry
-from utils.inventory import add_item, remove_item
 
 from pokemon.dex import ITEMDEX
-
-
 from pokemon.utils.pokemon_helpers import get_max_hp, get_stats
-
 
 def heal_party(char):
     """Heal all active Pokemon for the given character."""
