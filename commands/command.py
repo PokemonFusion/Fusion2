@@ -1,6 +1,9 @@
 from evennia import Command
+from pokemon.generation import generate_pokemon
+from pokemon.stats import calculate_stats
 from pokemon.models import InventoryEntry
 from utils.inventory import add_item, remove_item
+
 from pokemon.dex import ITEMDEX
 
 
@@ -386,7 +389,7 @@ class CmdInventory(Command):
             self.caller.msg("You have no trainer record.")
             return
 
-        entries = InventoryEntry.objects.filter(owner=trainer).order_by("item_name")
+        entries = trainer.list_inventory()
         if not entries:
             self.caller.msg("Your inventory is empty.")
             return
@@ -417,7 +420,11 @@ class CmdAddItem(Command):
         except ValueError:
             self.caller.msg("Usage: additem <item> <amount>")
             return
-        self.caller.add_item(item, qty)
+        trainer = getattr(self.caller, "trainer", None)
+        if not trainer:
+            self.caller.msg("You have no trainer record.")
+            return
+        trainer.add_item(item, qty)
         self.caller.msg(f"Added {qty} x {item}.")
 
 
@@ -452,7 +459,7 @@ class CmdGiveItem(Command):
             self.caller.msg(f"Item '{self.item_name}' not found in ITEMDEX.")
             return
 
-        add_item(target.trainer, self.item_name, self.amount)
+        target.trainer.add_item(self.item_name, self.amount)
         self.caller.msg(f"Gave {self.amount} x {self.item_name} to {target.key}.")
 
 
@@ -504,7 +511,7 @@ class CmdUseItem(Command):
                 self.caller.msg(fail_msg)
                 self.caller.ndb.pending_pp_item = None
                 return
-            remove_item(trainer, item)
+            trainer.remove_item(item)
             self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
             self.caller.ndb.pending_pp_item = None
             return
@@ -548,7 +555,7 @@ class CmdUseItem(Command):
             self.caller.msg("\n".join(lines))
             return
 
-        success = remove_item(trainer, item_name)
+        success = trainer.remove_item(item_name)
         if not success:
             self.caller.msg(f"You don't have any {item_name} to use.")
             return
@@ -590,7 +597,7 @@ class CmdEvolvePokemon(Command):
             return
 
         if item:
-            self.caller.remove_item(item)
+            self.caller.trainer.remove_item(item)
         pokemon.save()
         self.caller.msg(f"{pokemon.name} evolved into {new_species}!")
 

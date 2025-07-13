@@ -123,12 +123,21 @@ class FakePokemon:
         return True
 
 
+class DummyTrainer:
+    def __init__(self, counter):
+        self.counter = counter
+
+    def remove_item(self, name):
+        self.counter[0] += 1
+        return True
+
+
 class DummyCaller:
-    def __init__(self, poke):
+    def __init__(self, poke, counter):
         self.poke = poke
         self.msgs = []
         self.ndb = types.SimpleNamespace()
-        self.trainer = 'trainer'
+        self.trainer = DummyTrainer(counter)
 
     def get_active_pokemon_by_slot(self, slot):
         return self.poke if slot == 1 else None
@@ -194,7 +203,7 @@ def test_ppup_flow():
     restore_modules(*origs)
 
     poke = FakePokemon()
-    caller = DummyCaller(poke)
+    caller = DummyCaller(poke, remove_counter)
 
     cmd = cmd_mod.CmdUseItem()
     cmd.caller = caller
@@ -221,7 +230,7 @@ def test_ppup_at_max():
     poke = FakePokemon()
     # pre-boost to max
     poke.apply_pp_max("tackle")
-    caller = DummyCaller(poke)
+    caller = DummyCaller(poke, remove_counter)
 
     cmd = cmd_mod.CmdUseItem()
     cmd.caller = caller

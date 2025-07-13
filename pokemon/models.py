@@ -514,6 +514,38 @@ class Trainer(models.Model):
         if entry:
             self.seen_pokemon.add(entry)
 
+    # ------------------------------------------------------------------
+    # Inventory helpers
+    # ------------------------------------------------------------------
+    def add_item(self, item_name: str, amount: int = 1) -> None:
+        """Add ``amount`` of ``item_name`` to this trainer's inventory."""
+        item_name = item_name.lower()
+        entry, _ = InventoryEntry.objects.get_or_create(
+            owner=self, item_name=item_name, defaults={"quantity": 0}
+        )
+        entry.quantity += amount
+        entry.save()
+
+    def remove_item(self, item_name: str, amount: int = 1) -> bool:
+        """Remove ``amount`` of ``item_name`` and return success."""
+        item_name = item_name.lower()
+        try:
+            entry = InventoryEntry.objects.get(owner=self, item_name=item_name)
+        except InventoryEntry.DoesNotExist:
+            return False
+        if entry.quantity < amount:
+            return False
+        entry.quantity -= amount
+        if entry.quantity <= 0:
+            entry.delete()
+        else:
+            entry.save()
+        return True
+
+    def list_inventory(self):
+        """Return ``InventoryEntry`` objects owned by this trainer."""
+        return InventoryEntry.objects.filter(owner=self).order_by("item_name")
+
 
 class NPCTrainer(models.Model):
     """Static NPC trainer such as gym leaders."""
