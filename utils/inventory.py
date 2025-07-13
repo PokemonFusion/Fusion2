@@ -1,42 +1,63 @@
 import warnings
 
 
+class Inventory(dict):
+    """Simple container for item quantities."""
+
+    def add(self, name: str, quantity: int = 1) -> None:
+        self[name] = self.get(name, 0) + quantity
+
+    def remove(self, name: str, quantity: int = 1) -> bool:
+        if self.get(name, 0) < quantity:
+            return False
+        new_amount = self.get(name, 0) - quantity
+        if new_amount <= 0:
+            self.pop(name, None)
+        else:
+            self[name] = new_amount
+        return True
+
+    def has(self, name: str, quantity: int = 1) -> bool:
+        return self.get(name, 0) >= quantity
+
+    def list(self) -> str:
+        if not self:
+            return "You have no items."
+        lines = [f"{item} x{amount}" for item, amount in self.items()]
+        return "\n".join(lines)
+
+
 class InventoryMixin:
     """Mixin providing simple inventory management."""
 
     @property
     def inventory(self):
-        """Return inventory dictionary mapping item names to counts."""
+        """Return :class:`Inventory` instance stored on this object."""
         inv = getattr(self.db, "inventory", None)
         if inv is None:
-            inv = {}
+            inv = Inventory()
+            self.db.inventory = inv
+        elif isinstance(inv, dict) and not isinstance(inv, Inventory):
+            inv = Inventory(inv)
             self.db.inventory = inv
         return inv
 
     def add_item(self, name: str, quantity: int = 1) -> None:
         inv = self.inventory
-        inv[name] = inv.get(name, 0) + quantity
+        inv.add(name, quantity)
         self.db.inventory = inv
 
     def remove_item(self, name: str, quantity: int = 1) -> bool:
         inv = self.inventory
-        if inv.get(name, 0) < quantity:
-            return False
-        inv[name] -= quantity
-        if inv[name] <= 0:
-            del inv[name]
+        success = inv.remove(name, quantity)
         self.db.inventory = inv
-        return True
+        return success
 
     def has_item(self, name: str, quantity: int = 1) -> bool:
-        return self.inventory.get(name, 0) >= quantity
+        return self.inventory.has(name, quantity)
 
     def list_inventory(self) -> str:
-        inv = self.inventory
-        if not inv:
-            return "You have no items."
-        lines = [f"{item} x{amount}" for item, amount in inv.items()]
-        return "\n".join(lines)
+        return self.inventory.list()
 
 
 def add_item(trainer, item_name: str, amount: int = 1):

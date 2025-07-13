@@ -65,7 +65,8 @@ class User(DefaultCharacter, InventoryMixin):
             user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
         )
         if self.db.inventory is None:
-            self.db.inventory = {}
+            from utils.inventory import Inventory
+            self.db.inventory = Inventory()
 
     @property
     def storage(self) -> UserStorage:

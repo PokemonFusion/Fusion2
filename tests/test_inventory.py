@@ -93,7 +93,7 @@ class FakeTrainer:
 class Dummy(InventoryMixin):
     def __init__(self):
         self.db = types.SimpleNamespace()
-        self.db.inventory = {}
+        self.db.inventory = inv_mod.Inventory()
 
 
 def test_add_and_remove_item():
