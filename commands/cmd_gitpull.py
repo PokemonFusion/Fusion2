@@ -20,8 +20,19 @@ class CmdGitPull(Command):
     help_category = "Admin"
 
     def func(self):
+        """Run ``git pull`` and inform caller of progress and result."""
+        self.caller.msg("Running git pull, please wait...")
+
         result = subprocess.run(["git", "pull"], capture_output=True, text=True)
         if result.stdout:
             self.caller.msg(result.stdout)
+
+        if result.returncode == 0:
+            summary = "Git pull completed successfully."
+        else:
+            summary = f"Git pull failed with return code {result.returncode}."
+
         if result.stderr:
-            self.caller.msg(result.stderr)
+            summary += f"\n{result.stderr}"
+
+        self.caller.msg(summary)
