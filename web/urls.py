@@ -12,7 +12,7 @@ urlpatterns = [
     # web admin
     path("admin/", include("web.admin.urls")),
     # add any extra urls here:
-    # path("mypath/", include("path.to.my.urls.file")),
+    path("roomeditor/", include("roomeditor.urls")),
 
 ]
 

@@ -4,6 +4,7 @@ webpage. Copy this file to your game dir's web/website
 folder and edit it to add/remove links to the menu.
 {% endcomment %}
 {% load static %}
+{% load roomeditor_tags %}
 <nav class="navbar navbar-dark font-weight-bold navbar-expand-md">
   <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#menu-content"
     aria-controls="menu-content" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +44,9 @@ folder and edit it to add/remove links to the menu.
       {% if rest_api_enabled %}
       <li><a class="nav-link" href="/api">API</a></li>
       {% endif %}
+      {% endif %}
+      {% if user|is_builder %}
+      <li><a class="nav-link" href="{% url 'roomeditor:room-list' %}">Room Editor</a></li>
       {% endif %}
       {% endblock %}
     </ul>

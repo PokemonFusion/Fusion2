@@ -1,0 +1,46 @@
+{% extends "website/base.html" %}
+{% load roomeditor_tags %}
+
+{% block titleblock %}{% if room %}Edit Room{% else %}Create Room{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="card-title">{% if room %}Edit Room #{{ room.id }}{% else %}Create Room{% endif %}</h2>
+        {% if no_incoming %}
+        <div class="alert alert-warning">No exits lead to this room.</div>
+        {% endif %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" name="save_room" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+    {% if room %}
+    <div class="card">
+      <div class="card-body">
+        <h3 class="card-title">Exits</h3>
+        <ul class="list-group mb-3">
+        {% for ex in outgoing %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ ex.key }} &rarr; {{ ex.db_destination.key }} ({{ ex.db_destination.id }})
+            <a href="{% url 'roomeditor:delete-exit' room_id=room.id exit_id=ex.id %}" class="btn btn-sm btn-danger">Delete</a>
+          </li>
+        {% empty %}
+          <li class="list-group-item">No exits from this room.</li>
+        {% endfor %}
+        </ul>
+        <form method="post" class="form-inline">
+          {% csrf_token %}
+          {{ exit_form.as_p }}
+          <button type="submit" name="add_exit" class="btn btn-secondary">Add Exit</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
