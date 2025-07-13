@@ -1,8 +1,13 @@
-"""Utilities for rendering Pokemon sheets."""
+"""Rendering functions for trainer and Pokémon sheets."""
 
 from evennia.utils.evtable import EvTable
 
 from utils.ansi import ansi
+from utils.display_helpers import (
+    get_status_effects,
+    format_move_details,
+    get_egg_description,
+)
 from pokemon.utils.pokemon_helpers import get_max_hp, get_stats
 from utils.xp_utils import get_display_xp, get_next_level_xp
 from pokemon.stats import level_for_exp
@@ -10,26 +15,7 @@ from utils.faction_utils import get_faction_and_rank
 from pokemon.dex import POKEDEX
 from pokemon.utils.pokemon_like import PokemonLike
 
-
-__all__ = [
-    "display_pokemon_sheet",
-    "display_trainer_sheet",
-    "get_status_effects",
-    "format_move_details",
-    "get_egg_description",
-]
-
-
-def get_status_effects(pokemon: PokemonLike) -> str:
-    """Return a short status string for ``pokemon``."""
-    status = getattr(pokemon, "status", None)
-    return status or "NORM"
-
-
-def get_egg_description(hatch: int) -> str:
-    """Return description text based on hatch progress."""
-    # TODO: implement proper egg status checks
-    return ""  # placeholder
+__all__ = ["display_pokemon_sheet", "display_trainer_sheet"]
 
 
 def _get_pokemon_types(pokemon: PokemonLike) -> list[str]:
@@ -79,19 +65,6 @@ def display_trainer_sheet(character) -> str:
         lines.append(str(table))
 
     return "\n".join(lines)
-
-
-def format_move_details(move) -> str:
-    """Return a formatted move detail line."""
-    # TODO: include move class, type, power, accuracy and description
-    name = getattr(move, "name", str(move))
-    pp = getattr(move, "pp", getattr(move, "current_pp", None))
-    max_pp = getattr(move, "max_pp", None)
-    if pp is not None and max_pp is not None:
-        return f"{name} ({pp}/{max_pp} PP)"
-    if pp is not None:
-        return f"{name} ({pp} PP)"
-    return name
 
 
 def _hp_bar(current: int, maximum: int, width: int = 20) -> str:
