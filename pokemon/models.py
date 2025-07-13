@@ -354,6 +354,51 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         """Apply a PP Max to ``move_name`` and return success."""
         return self._apply_pp_boost(move_name, full=True)
 
+    def heal(self) -> None:
+        """Fully restore HP, clear status, and reset PP."""
+        from pokemon.utils.pokemon_helpers import get_max_hp
+
+        max_hp = get_max_hp(self)
+        if hasattr(self, "current_hp"):
+            self.current_hp = max_hp
+        if hasattr(self, "status"):
+            self.status = ""
+        try:
+            from pokemon.dex import MOVEDEX
+        except Exception:  # pragma: no cover - tests may not provide dex
+            MOVEDEX = {}
+
+        bonuses = {}
+        manager = getattr(self, "pp_boosts", None)
+        if manager is not None:
+            try:
+                iterable = manager.all()
+            except Exception:  # pragma: no cover
+                iterable = manager
+            for b in iterable:
+                bonuses[getattr(b.move, "name", "").lower()] = getattr(b, "bonus_pp", 0)
+
+        slots = getattr(self, "activemoveslot_set", None)
+        if slots is not None:
+            try:
+                slot_iter = slots.all()
+            except Exception:  # pragma: no cover
+                slot_iter = slots
+        else:
+            slot_iter = []
+
+        for slot in slot_iter:
+            base = MOVEDEX.get(slot.move.name.lower(), {}).get("pp")
+            bonus = bonuses.get(slot.move.name.lower(), 0)
+            if base is not None:
+                slot.current_pp = base + bonus
+                slot.save()
+
+        try:
+            self.save()
+        except Exception:
+            pass
+
 
 class ActiveMoveslot(models.Model):
     """Mapping of active move slots for a Pokémon."""

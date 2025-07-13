@@ -1,103 +1,10 @@
 from evennia import Command
-from pokemon.generation import generate_pokemon
-from pokemon.stats import calculate_stats
 from pokemon.models import InventoryEntry
 from utils.inventory import add_item, remove_item
 from pokemon.dex import ITEMDEX
 
 
-def _get_stats_from_data(pokemon):
-    """Return calculated stats based on stored data."""
-    data = getattr(pokemon, "data", {}) or {}
-    if not data and hasattr(pokemon, "ivs"):
-        ivs = {
-            "hp": pokemon.ivs[0],
-            "atk": pokemon.ivs[1],
-            "def": pokemon.ivs[2],
-            "spa": pokemon.ivs[3],
-            "spd": pokemon.ivs[4],
-            "spe": pokemon.ivs[5],
-        }
-        evs = {
-            "hp": pokemon.evs[0],
-            "atk": pokemon.evs[1],
-            "def": pokemon.evs[2],
-            "spa": pokemon.evs[3],
-            "spd": pokemon.evs[4],
-            "spe": pokemon.evs[5],
-        }
-        nature = getattr(pokemon, "nature", "Hardy")
-        name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
-        level = getattr(pokemon, "level", 1)
-    else:
-        ivs = data.get("ivs", {})
-        evs = data.get("evs", {})
-        nature = data.get("nature", "Hardy")
-        name = getattr(pokemon, "name", getattr(pokemon, "species", ""))
-        level = getattr(pokemon, "level", 1)
-    try:
-        return calculate_stats(name, level, ivs, evs, nature)
-    except Exception:
-        inst = generate_pokemon(name, level=level)
-        return {
-            "hp": inst.stats.hp,
-            "atk": inst.stats.atk,
-            "def": inst.stats.def_,
-            "spa": inst.stats.spa,
-            "spd": inst.stats.spd,
-            "spe": inst.stats.spe,
-        }
-
-
-def get_max_hp(pokemon) -> int:
-    """Return the calculated maximum HP for ``pokemon``."""
-    stats = _get_stats_from_data(pokemon)
-    return stats.get("hp", 0)
-
-
-def get_stats(pokemon):
-    """Return a dict of calculated stats for ``pokemon``."""
-    return _get_stats_from_data(pokemon)
-
-
-def heal_pokemon(pokemon):
-    """Restore a single Pokemon's HP and clear status."""
-    max_hp = get_max_hp(pokemon)
-    if hasattr(pokemon, "current_hp"):
-        pokemon.current_hp = max_hp
-    if hasattr(pokemon, "status"):
-        pokemon.status = ""
-    try:
-        from pokemon.dex import MOVEDEX
-    except Exception:  # pragma: no cover - tests may not provide dex
-        MOVEDEX = {}
-    bonuses = {}
-    manager = getattr(pokemon, "pp_boosts", None)
-    if manager is not None:
-        try:
-            iterable = manager.all()
-        except Exception:  # pragma: no cover
-            iterable = manager
-        for b in iterable:
-            bonuses[getattr(b.move, "name", "").lower()] = getattr(b, "bonus_pp", 0)
-    slots = getattr(pokemon, "activemoveslot_set", None)
-    if slots is not None:
-        try:
-            slot_iter = slots.all()
-        except Exception:  # pragma: no cover
-            slot_iter = slots
-    else:
-        slot_iter = []
-    for slot in slot_iter:
-        base = MOVEDEX.get(slot.move.name.lower(), {}).get("pp")
-        bonus = bonuses.get(slot.move.name.lower(), 0)
-        if base is not None:
-            slot.current_pp = base + bonus
-            slot.save()
-    try:
-        pokemon.save()
-    except Exception:
-        pass
+from pokemon.utils.pokemon_helpers import get_max_hp, get_stats
 
 
 def heal_party(char):
@@ -107,7 +14,8 @@ def heal_party(char):
         return
     party = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
     for mon in party:
-        heal_pokemon(mon)
+        if hasattr(mon, "heal"):
+            mon.heal()
 
 class CmdShowPokemonOnUser(Command):
     """

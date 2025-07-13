@@ -5,7 +5,7 @@ from utils.sheet_display import (
     display_trainer_sheet,
     get_status_effects,
 )
-from commands.command import get_max_hp
+from pokemon.utils.pokemon_helpers import get_max_hp
 from utils.xp_utils import get_display_xp
 from pokemon.stats import level_for_exp
 
