@@ -1,0 +1,35 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}
+My Character Sheet
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="card-title">My Characters</h1>
+        <hr />
+        {% for entry in characters %}
+          <h2>{{ entry.character.key }}</h2>
+          {% if entry.trainer %}
+          <p><strong>Money:</strong> {{ entry.trainer.money }}</p>
+          {% endif %}
+          <p><strong>Pokémon:</strong></p>
+          {% if entry.pokemon %}
+          <ul>
+            {% for mon in entry.pokemon %}
+            <li>{{ mon.name }} - Lv {{ mon.level }}</li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p>No Pokémon found.</p>
+          {% endif %}
+          {% if not forloop.last %}<hr />{% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

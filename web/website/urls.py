@@ -8,12 +8,13 @@ so it can reroute to all website pages.
 
 from django.urls import path
 
+from .views.mysheet import MySheetView
+
 from evennia.web.website.urls import urlpatterns as evennia_website_urlpatterns
 
 # add patterns here
 urlpatterns = [
-    # path("url-pattern", imported_python_view),
-    # path("url-pattern", imported_python_view),
+    path("mysheet/", MySheetView.as_view(), name="my-sheet"),
 ]
 
 # read by Django
