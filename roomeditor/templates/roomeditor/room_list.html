@@ -1,0 +1,41 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}Room List{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="card-title">Rooms</h1>
+        <p><a href="{% url 'roomeditor:room-create' %}" class="btn btn-primary btn-sm">Create New Room</a></p>
+        <hr />
+        {% if rooms %}
+        <table class="table table-striped">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Description</th><th></th></tr>
+          </thead>
+          <tbody>
+          {% for room in rooms %}
+            <tr>
+              <td>{{ room.id }}</td>
+              <td>{{ room.key }}</td>
+              <td>{{ room.db.desc }}</td>
+              <td>
+                <a class="btn btn-sm btn-secondary" href="{% url 'roomeditor:room-edit' room.id %}">Edit</a>
+                {% if room.id in dangling_ids %}
+                <span class="badge badge-warning">No incoming exits</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No rooms found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

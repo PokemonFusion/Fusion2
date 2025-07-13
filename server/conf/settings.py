@@ -51,7 +51,10 @@ except ImportError:
 # Optional third-party apps. None at this time.
 
 # Local apps
-INSTALLED_APPS += ('pokemon',)
+INSTALLED_APPS += (
+    'pokemon',
+    'roomeditor',
+)
 
 # Allow use of unconventional field names used in legacy models
 SILENCED_SYSTEM_CHECKS = ["fields.E001"]
