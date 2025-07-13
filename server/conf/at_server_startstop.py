@@ -17,12 +17,18 @@ at_server_cold_stop()
 
 """
 
+from pathlib import Path
+
+from utils.error_logging import setup_daily_error_log
+
 
 def at_server_init():
     """
     This is called first as the server is starting up, regardless of how.
+    Configure the daily error log handler.
     """
-    pass
+    base_dir = Path(__file__).resolve().parents[1]
+    setup_daily_error_log(base_dir / "logs")
 
 
 def at_server_start():
