@@ -1,3 +1,6 @@
+import warnings
+
+
 class InventoryMixin:
     """Mixin providing simple inventory management."""
 
@@ -40,8 +43,14 @@ def add_item(trainer, item_name: str, amount: int = 1):
     """Add ``amount`` of ``item_name`` to ``trainer``'s inventory.
 
     This thin wrapper is kept for backwards compatibility and simply
-    delegates to :pymeth:`Trainer.add_item`.
+    delegates to :py:meth:`Trainer.add_item`.
     """
+
+    warnings.warn(
+        "utils.inventory.add_item is deprecated; use Trainer.add_item instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     if hasattr(trainer, "add_item"):
         trainer.add_item(item_name, amount)
@@ -61,6 +70,12 @@ def remove_item(trainer, item_name: str, amount: int = 1) -> bool:
 
     Delegates to :pymeth:`Trainer.remove_item` when available.
     """
+
+    warnings.warn(
+        "utils.inventory.remove_item is deprecated; use Trainer.remove_item instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     if hasattr(trainer, "remove_item"):
         return trainer.remove_item(item_name, amount)
@@ -88,6 +103,12 @@ def get_inventory(trainer):
     Provided for backwards compatibility; delegates to
     :pymeth:`Trainer.list_inventory` when available.
     """
+
+    warnings.warn(
+        "utils.inventory.get_inventory is deprecated; use Trainer.list_inventory instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     if hasattr(trainer, "list_inventory"):
         return trainer.list_inventory()
