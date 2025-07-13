@@ -37,19 +37,34 @@ class InventoryMixin:
 
 
 def add_item(trainer, item_name: str, amount: int = 1):
-    """Add ``amount`` of ``item_name`` to ``trainer``'s inventory."""
-    from pokemon.models import InventoryEntry
+    """Add ``amount`` of ``item_name`` to ``trainer``'s inventory.
 
-    item_name = item_name.lower()
-    entry, _ = InventoryEntry.objects.get_or_create(
-        owner=trainer, item_name=item_name, defaults={"quantity": 0}
-    )
-    entry.quantity += amount
-    entry.save()
+    This thin wrapper is kept for backwards compatibility and simply
+    delegates to :pymeth:`Trainer.add_item`.
+    """
+
+    if hasattr(trainer, "add_item"):
+        trainer.add_item(item_name, amount)
+    else:
+        from pokemon.models import InventoryEntry
+
+        item_name = item_name.lower()
+        entry, _ = InventoryEntry.objects.get_or_create(
+            owner=trainer, item_name=item_name, defaults={"quantity": 0}
+        )
+        entry.quantity += amount
+        entry.save()
 
 
 def remove_item(trainer, item_name: str, amount: int = 1) -> bool:
-    """Remove ``amount`` of ``item_name`` from ``trainer``. Return success."""
+    """Remove ``amount`` of ``item_name`` from ``trainer``. Return success.
+
+    Delegates to :pymeth:`Trainer.remove_item` when available.
+    """
+
+    if hasattr(trainer, "remove_item"):
+        return trainer.remove_item(item_name, amount)
+
     from pokemon.models import InventoryEntry
 
     item_name = item_name.lower()
@@ -68,7 +83,15 @@ def remove_item(trainer, item_name: str, amount: int = 1) -> bool:
 
 
 def get_inventory(trainer):
-    """Return ``InventoryEntry`` objects owned by ``trainer`` ordered by item."""
+    """Return ``InventoryEntry`` objects owned by ``trainer`` ordered by item.
+
+    Provided for backwards compatibility; delegates to
+    :pymeth:`Trainer.list_inventory` when available.
+    """
+
+    if hasattr(trainer, "list_inventory"):
+        return trainer.list_inventory()
+
     from pokemon.models import InventoryEntry
 
     return InventoryEntry.objects.filter(owner=trainer).order_by("item_name")

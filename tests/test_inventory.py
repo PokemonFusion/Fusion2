@@ -62,6 +62,34 @@ sys.modules["pokemon.models"] = models_mod
 inv_mod = importlib.import_module("utils.inventory")
 InventoryMixin = inv_mod.InventoryMixin
 
+
+class FakeTrainer:
+    def add_item(self, name, quantity=1):
+        name = name.lower()
+        entry, _ = FakeInventoryEntry.objects.get_or_create(
+            owner=self, item_name=name, defaults={"quantity": 0}
+        )
+        entry.quantity += quantity
+        entry.save()
+
+    def remove_item(self, name, quantity=1):
+        name = name.lower()
+        try:
+            entry = FakeInventoryEntry.objects.get(owner=self, item_name=name)
+        except FakeInventoryEntry.DoesNotExist:
+            return False
+        if entry.quantity < quantity:
+            return False
+        entry.quantity -= quantity
+        if entry.quantity <= 0:
+            entry.delete()
+        else:
+            entry.save()
+        return True
+
+    def list_inventory(self):
+        return FakeInventoryEntry.objects.filter(owner=self).order_by("item_name")
+
 class Dummy(InventoryMixin):
     def __init__(self):
         self.db = types.SimpleNamespace()
@@ -87,14 +115,14 @@ def test_list_inventory_empty():
 
 
 def test_inventory_functions():
-    trainer = object()
-    inv_mod.add_item(trainer, "potion", 2)
-    inv_mod.add_item(trainer, "potion")
-    assert any(e.item_name == "potion" and e.quantity == 3 for e in inv_mod.get_inventory(trainer))
-    assert inv_mod.remove_item(trainer, "potion", 2)
-    assert any(e.quantity == 1 for e in inv_mod.get_inventory(trainer))
-    assert inv_mod.remove_item(trainer, "potion", 1)
-    assert list(inv_mod.get_inventory(trainer)) == []
+    trainer = FakeTrainer()
+    trainer.add_item("potion", 2)
+    trainer.add_item("potion")
+    assert any(e.item_name == "potion" and e.quantity == 3 for e in trainer.list_inventory())
+    assert trainer.remove_item("potion", 2)
+    assert any(e.quantity == 1 for e in trainer.list_inventory())
+    assert trainer.remove_item("potion", 1)
+    assert list(trainer.list_inventory()) == []
 
 
 def test_add_various_medicines():

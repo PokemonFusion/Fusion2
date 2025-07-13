@@ -98,6 +98,7 @@ class CmdBattleItem(Command):
             priority=6,
         )
         participant.pending_action = action
-        self.caller.remove_item(item_name)
+        if hasattr(self.caller, "trainer"):
+            self.caller.trainer.remove_item(item_name)
         self.caller.msg(f"You prepare to use {item_name}.")
 
