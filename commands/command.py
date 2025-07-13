@@ -60,46 +60,6 @@ def get_stats(pokemon):
     return _get_stats_from_data(pokemon)
 
 
-def heal_pokemon(pokemon):
-    """Restore a single Pokemon's HP and clear status."""
-    max_hp = get_max_hp(pokemon)
-    if hasattr(pokemon, "current_hp"):
-        pokemon.current_hp = max_hp
-    if hasattr(pokemon, "status"):
-        pokemon.status = ""
-    try:
-        from pokemon.dex import MOVEDEX
-    except Exception:  # pragma: no cover - tests may not provide dex
-        MOVEDEX = {}
-    bonuses = {}
-    manager = getattr(pokemon, "pp_boosts", None)
-    if manager is not None:
-        try:
-            iterable = manager.all()
-        except Exception:  # pragma: no cover
-            iterable = manager
-        for b in iterable:
-            bonuses[getattr(b.move, "name", "").lower()] = getattr(b, "bonus_pp", 0)
-    slots = getattr(pokemon, "activemoveslot_set", None)
-    if slots is not None:
-        try:
-            slot_iter = slots.all()
-        except Exception:  # pragma: no cover
-            slot_iter = slots
-    else:
-        slot_iter = []
-    for slot in slot_iter:
-        base = MOVEDEX.get(slot.move.name.lower(), {}).get("pp")
-        bonus = bonuses.get(slot.move.name.lower(), 0)
-        if base is not None:
-            slot.current_pp = base + bonus
-            slot.save()
-    try:
-        pokemon.save()
-    except Exception:
-        pass
-
-
 def heal_party(char):
     """Heal all active Pokemon for the given character."""
     storage = getattr(char, "storage", None)
@@ -107,7 +67,8 @@ def heal_party(char):
         return
     party = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
     for mon in party:
-        heal_pokemon(mon)
+        if hasattr(mon, "heal"):
+            mon.heal()
 
 class CmdShowPokemonOnUser(Command):
     """

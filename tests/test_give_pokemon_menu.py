@@ -41,14 +41,10 @@ class OwnedPokemon:
     current_hp = 10
     def learn_level_up_moves(self):
         pass
+    def heal(self):
+        pass
 fake_models.OwnedPokemon = OwnedPokemon
 sys.modules["pokemon.models"] = fake_models
-
-fake_command = types.ModuleType("commands.command")
-def heal_pokemon(pokemon):
-    pass
-fake_command.heal_pokemon = heal_pokemon
-sys.modules["commands.command"] = fake_command
 
 # load menu module with stubs in place
 path = os.path.join(ROOT, "menus", "give_pokemon.py")
