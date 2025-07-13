@@ -47,6 +47,12 @@ try:
 except Exception:
     BALL_MODIFIERS = {}
 
+try:
+    from pokemon.dex.functions import moves_funcs, conditions_funcs
+except Exception:
+    moves_funcs = None
+    conditions_funcs = None
+
 
 @dataclass
 class BattleSide:
@@ -128,10 +134,6 @@ class BattleMove:
         result = damage_calc(user, target, move, battle=battle)
         dmg = sum(result.debug.get("damage", []))
         # Apply onSourceModifyDamage callbacks from target volatiles
-        try:
-            from pokemon.dex.functions import moves_funcs
-        except Exception:
-            moves_funcs = None
         if moves_funcs:
             for vol in getattr(target, "volatiles", {}):
                 cls = getattr(moves_funcs, vol.capitalize(), None)
@@ -156,10 +158,6 @@ class BattleMove:
         side_cond = self.raw.get("sideCondition") if self.raw else None
         if side_cond:
             condition = self.raw.get("condition", {})
-            try:
-                from pokemon.dex.functions import moves_funcs
-            except Exception:
-                moves_funcs = None
             target_side = user
             if self.raw.get("target") != "allySide":
                 target_side = target
@@ -171,10 +169,6 @@ class BattleMove:
         volatile = self.raw.get("volatileStatus") if self.raw else None
         if volatile:
             effect = self.raw.get("condition", {})
-            try:
-                from pokemon.dex.functions import moves_funcs
-            except Exception:
-                moves_funcs = None
             cb = effect.get("onStart")
             if isinstance(cb, str) and moves_funcs:
                 try:
@@ -257,7 +251,6 @@ class BattleParticipant:
         on_try_func = None
         base_power_cb = None
         if move_entry:
-            from pokemon.dex.functions import moves_funcs
             on_hit = move_entry.raw.get("onHit")
             if isinstance(on_hit, str):
                 try:
@@ -404,9 +397,7 @@ class Battle:
     # Field condition helpers
     # ------------------------------
     def _lookup_effect(self, name: str):
-        try:
-            from pokemon.dex.functions import conditions_funcs, moves_funcs
-        except Exception:
+        if not moves_funcs and not conditions_funcs:
             return None
 
         key = name.replace(" ", "").replace("-", "").lower()
@@ -504,10 +495,6 @@ class Battle:
         side = getattr(pokemon, "side", None)
         if not side:
             return
-        try:
-            from pokemon.dex.functions import moves_funcs
-        except Exception:
-            moves_funcs = None
 
         name_map = {
             "rocks": "stealthrock",
@@ -683,30 +670,26 @@ class Battle:
         # Handle onTryMove callbacks for multi-turn moves or special behaviour
         cb_name = action.move.raw.get("onTryMove") if action.move.raw else None
         if cb_name:
-            try:
-                from pokemon.dex.functions import moves_funcs
-                if isinstance(cb_name, str):
-                    cls_name, func_name = cb_name.split(".", 1)
-                    cls = getattr(moves_funcs, cls_name, None)
-                    if cls:
-                        cb = getattr(cls(), func_name, None)
-                    else:
-                        cb = None
+            if isinstance(cb_name, str) and moves_funcs:
+                cls_name, func_name = cb_name.split(".", 1)
+                cls = getattr(moves_funcs, cls_name, None)
+                if cls:
+                    cb = getattr(cls(), func_name, None)
                 else:
-                    cb = cb_name
-                if callable(cb):
+                    cb = None
+            else:
+                cb = cb_name
+            if callable(cb):
+                try:
+                    result = cb(user, target, action.move)
+                except Exception:
+                    result = cb(user, target)
+                if result is False:
                     try:
-                        result = cb(user, target, action.move)
+                        user.tempvals["moved"] = True
                     except Exception:
-                        result = cb(user, target)
-                    if result is False:
-                        try:
-                            user.tempvals["moved"] = True
-                        except Exception:
-                            pass
-                        return
-            except Exception:
-                pass
+                        pass
+                    return
 
         if getattr(target, "volatiles", {}).get("protect"):
             try:
@@ -720,10 +703,6 @@ class Battle:
         # Check if the target is in an invulnerable state (e.g. Fly, Dig)
         vols = list(getattr(target, "volatiles", {}).keys())
         if vols:
-            try:
-                from pokemon.dex.functions import moves_funcs
-            except Exception:
-                moves_funcs = None
             if moves_funcs:
                 for vol in vols:
                     cls = getattr(moves_funcs, vol.capitalize(), None)
@@ -770,10 +749,6 @@ class Battle:
 
             dmg_result = damage_calc(user, target, move, battle=self)
             dmg = sum(dmg_result.debug.get("damage", []))
-            try:
-                from pokemon.dex.functions import moves_funcs
-            except Exception:
-                moves_funcs = None
             if moves_funcs:
                 for vol in getattr(target, "volatiles", {}):
                     cls = getattr(moves_funcs, vol.capitalize(), None)
@@ -999,11 +974,6 @@ class Battle:
                 self.field.terrain_handler = None
 
         # Handle pseudo weather effects
-        try:
-            from pokemon.dex.functions import moves_funcs, conditions_funcs
-        except Exception:
-            moves_funcs = None
-            conditions_funcs = None
         for name, effect in list(self.field.pseudo_weather.items()):
             if name in {weather, terrain}:
                 continue
