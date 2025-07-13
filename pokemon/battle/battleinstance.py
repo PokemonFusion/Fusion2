@@ -42,38 +42,41 @@ def _calc_stats_from_model(poke):
         }
 
 
-def generate_wild_pokemon(location=None) -> Pokemon:
-    """Generate a wild Pokémon based on the supplied location."""
+def create_battle_pokemon(
+    species: str,
+    level: int,
+    *,
+    trainer: object | None = None,
+    is_wild: bool = False,
+) -> Pokemon:
+    """Return a ``Pokemon`` battle object for the given species/level."""
 
     try:
         from ..models import OwnedPokemon
     except Exception:  # pragma: no cover - optional in tests
         OwnedPokemon = None
 
-    if location:
-        inst = get_spawn(location)
-    else:
-        inst = None
-    if not inst:
-        inst = generate_pokemon("Pikachu", level=5)
-    moves = [Move(name=m) for m in inst.moves]
+    inst = generate_pokemon(species, level=level)
+    moves = [Move(name=m) for m in getattr(inst, "moves", [])]
+
     data = {}
     if hasattr(inst, "ivs"):
         data.update(
             {
                 "ivs": {
-                    "hp": inst.ivs.hp,
-                    "atk": inst.ivs.atk,
+                    "hp": getattr(inst.ivs, "hp", 0),
+                    "atk": getattr(inst.ivs, "atk", 0),
                     "def": getattr(inst.ivs, "def_", 0),
-                    "spa": inst.ivs.spa,
-                    "spd": inst.ivs.spd,
-                    "spe": inst.ivs.spe,
+                    "spa": getattr(inst.ivs, "spa", 0),
+                    "spd": getattr(inst.ivs, "spd", 0),
+                    "spe": getattr(inst.ivs, "spe", 0),
                 },
                 "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
                 "nature": getattr(inst, "nature", "Hardy"),
                 "gender": getattr(inst, "gender", "N"),
             }
         )
+
     db_obj = None
     if OwnedPokemon:
         try:
@@ -91,84 +94,48 @@ def generate_wild_pokemon(location=None) -> Pokemon:
                     getattr(getattr(inst, "ivs", None), "spe", 0),
                 ],
                 evs=[0, 0, 0, 0, 0, 0],
-                current_hp=inst.stats.hp,
-                is_wild=True,
+                current_hp=getattr(inst.stats, "hp", level),
+                ai_trainer=trainer,
+                is_wild=is_wild,
             )
             db_obj.set_level(inst.level)
             db_obj.save()
         except Exception:
             db_obj = None
+
     return Pokemon(
         name=inst.species.name,
         level=inst.level,
-        hp=getattr(db_obj, "current_hp", inst.stats.hp),
-        max_hp=inst.stats.hp,
+        hp=getattr(db_obj, "current_hp", getattr(inst.stats, "hp", level)),
+        max_hp=getattr(inst.stats, "hp", level),
         moves=moves,
-        ability=inst.ability,
+        ability=getattr(inst, "ability", None),
         data=data,
         model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
     )
+
+
+def generate_wild_pokemon(location=None) -> Pokemon:
+    """Generate a wild Pokémon based on the supplied location."""
+
+    if location:
+        inst = get_spawn(location)
+    else:
+        inst = None
+
+    if not inst:
+        species = "Pikachu"
+        level = 5
+    else:
+        species = inst.species.name
+        level = inst.level
+
+    return create_battle_pokemon(species, level, is_wild=True)
 
 
 def generate_trainer_pokemon(trainer=None) -> Pokemon:
     """Return a simple trainer-owned Charmander."""
-    try:
-        from ..models import OwnedPokemon
-    except Exception:  # pragma: no cover
-        OwnedPokemon = None
-    inst = generate_pokemon("Charmander", level=5)
-    moves = [Move(name=m) for m in inst.moves]
-    data = {}
-    if hasattr(inst, "ivs"):
-        data.update(
-            {
-                "ivs": {
-                    "hp": inst.ivs.hp,
-                    "atk": inst.ivs.atk,
-                    "def": getattr(inst.ivs, "def_", 0),
-                    "spa": inst.ivs.spa,
-                    "spd": inst.ivs.spd,
-                    "spe": inst.ivs.spe,
-                },
-                "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
-                "nature": getattr(inst, "nature", "Hardy"),
-                "gender": getattr(inst, "gender", "N"),
-            }
-        )
-    db_obj = None
-    if OwnedPokemon:
-        try:
-            db_obj = OwnedPokemon.objects.create(
-            species=inst.species.name,
-            ability=getattr(inst, "ability", ""),
-            nature=getattr(inst, "nature", ""),
-            gender=getattr(inst, "gender", "N"),
-            ivs=[
-                getattr(getattr(inst, "ivs", None), "hp", 0),
-                getattr(getattr(inst, "ivs", None), "atk", 0),
-                getattr(getattr(inst, "ivs", None), "def_", 0),
-                getattr(getattr(inst, "ivs", None), "spa", 0),
-                getattr(getattr(inst, "ivs", None), "spd", 0),
-                getattr(getattr(inst, "ivs", None), "spe", 0),
-            ],
-            evs=[0, 0, 0, 0, 0, 0],
-            current_hp=inst.stats.hp,
-            ai_trainer=trainer,
-        )
-            db_obj.set_level(inst.level)
-            db_obj.save()
-        except Exception:
-            db_obj = None
-    return Pokemon(
-        name=inst.species.name,
-        level=inst.level,
-        hp=getattr(db_obj, "current_hp", inst.stats.hp),
-        max_hp=inst.stats.hp,
-        moves=moves,
-        ability=inst.ability,
-        data=data,
-        model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
-    )
+    return create_battle_pokemon("Charmander", 5, trainer=trainer, is_wild=False)
 
 
 class BattleInstance:
