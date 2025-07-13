@@ -8,8 +8,35 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 # Store originals
-import evennia
-orig_create_object = evennia.create_object
+try:
+    import evennia  # type: ignore
+    orig_create_object = evennia.create_object
+except Exception:
+    evennia = types.ModuleType("evennia")
+    orig_create_object = lambda cls, key=None: cls()
+    evennia.create_object = orig_create_object
+    evennia.DefaultRoom = type("DefaultRoom", (), {})
+    evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
+    evennia.utils = types.ModuleType("evennia.utils")
+    evennia.utils.ansi = types.SimpleNamespace(
+        parse_ansi=lambda s: s,
+        RED=lambda s: s,
+        GREEN=lambda s: s,
+        YELLOW=lambda s: s,
+        BLUE=lambda s: s,
+        MAGENTA=lambda s: s,
+        CYAN=lambda s: s,
+        strip_ansi=lambda s: s,
+    )
+    sys.modules["evennia.utils"] = evennia.utils
+    evennia.server = types.ModuleType("evennia.server")
+    evennia.server.models = types.ModuleType("evennia.server.models")
+    evennia.server.models.ServerConfig = type("ServerConfig", (), {})
+    sys.modules["evennia.server"] = evennia.server
+    sys.modules["evennia.server.models"] = evennia.server.models
+    sys.modules["evennia"] = evennia
+else:
+    evennia.create_object = lambda cls, key=None: cls()
 orig_models = sys.modules.get("pokemon.models")
 orig_generation = sys.modules.get("pokemon.generation")
 orig_spawn = sys.modules.get("world.pokemon_spawn")

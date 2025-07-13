@@ -321,6 +321,52 @@ class Battle:
         from .battledata import Field
         self.field = Field()
 
+    # ------------------------------------------------------------------
+    # Battle initialisation helpers
+    # ------------------------------------------------------------------
+    def start_battle(self) -> None:
+        """Prepare the battle by sending out the first available Pokémon."""
+        for participant in self.participants:
+            if participant.active:
+                continue
+            first = None
+            for poke in participant.pokemons:
+                if getattr(poke, "hp", 1) > 0:
+                    first = poke
+                    break
+            if first is not None:
+                participant.active = [first]
+                self.on_enter_battle(first)
+
+    def send_out_pokemon(self, pokemon, slot: int = 0) -> None:
+        """Place ``pokemon`` into the active slot for its participant."""
+        part = self.participant_for(pokemon)
+        if not part:
+            return
+        if len(part.active) > slot:
+            old = part.active[slot]
+            if old is pokemon:
+                return
+            self.on_switch_out(old)
+            part.active[slot] = pokemon
+        else:
+            part.active.insert(slot, pokemon)
+        self.on_enter_battle(pokemon)
+
+    def switch_pokemon(self, participant: BattleParticipant, new_pokemon) -> None:
+        """Switch the active Pokémon for ``participant`` with ``new_pokemon``."""
+        if not participant.active:
+            participant.active = [new_pokemon]
+            self.on_enter_battle(new_pokemon)
+            return
+        current = participant.active[0]
+        if current is new_pokemon:
+            return
+        self.on_switch_out(current)
+        participant.active[0] = new_pokemon
+        self.on_enter_battle(new_pokemon)
+        self.apply_entry_hazards(new_pokemon)
+
     def participant_for(self, pokemon) -> Optional[BattleParticipant]:
         """Return the participant owning ``pokemon`` if any."""
         for part in self.participants:
@@ -527,6 +573,104 @@ class Battle:
                         cb(pokemon)
                     except Exception:
                         pass
+
+    # ------------------------------------------------------------------
+    # Generic battle condition helpers
+    # ------------------------------------------------------------------
+    def apply_status_condition(self, pokemon, condition: str) -> None:
+        """Inflict a major status condition on ``pokemon``."""
+        pokemon.status = condition
+        try:
+            from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+        except Exception:
+            CONDITION_HANDLERS = {}
+        handler = CONDITION_HANDLERS.get(condition)
+        if handler and hasattr(handler, "onStart"):
+            try:
+                handler.onStart(pokemon, battle=self)
+            except Exception:
+                handler.onStart(pokemon)
+
+    def apply_volatile_status(self, pokemon, condition: str) -> None:
+        """Apply a volatile status to ``pokemon``."""
+        if not hasattr(pokemon, "volatiles"):
+            pokemon.volatiles = {}
+        pokemon.volatiles[condition] = True
+        try:
+            from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
+        except Exception:
+            VOLATILE_HANDLERS = {}
+        handler = VOLATILE_HANDLERS.get(condition)
+        if handler and hasattr(handler, "onStart"):
+            try:
+                handler.onStart(pokemon, battle=self)
+            except Exception:
+                handler.onStart(pokemon)
+
+    def handle_weather(self) -> None:
+        """Apply residual effects of the current weather."""
+        weather_handler = getattr(self.field, "weather_handler", None)
+        if weather_handler and hasattr(weather_handler, "onFieldResidual"):
+            try:
+                weather_handler.onFieldResidual(self.field)
+            except Exception:
+                pass
+
+    def handle_terrain(self) -> None:
+        """Apply residual effects of the active terrain."""
+        terrain_handler = getattr(self.field, "terrain_handler", None)
+        if terrain_handler and hasattr(terrain_handler, "onFieldResidual"):
+            try:
+                terrain_handler.onFieldResidual(self.field)
+            except Exception:
+                pass
+
+    def update_hazards(self) -> None:
+        """Update hazard effects on the field."""
+        for part in self.participants:
+            for poke in part.active:
+                self.apply_entry_hazards(poke)
+
+    # ------------------------------------------------------------------
+    # Battle event hooks
+    # ------------------------------------------------------------------
+    def on_enter_battle(self, pokemon) -> None:
+        """Trigger events when ``pokemon`` enters the field."""
+        ability = getattr(pokemon, "ability", None)
+        if ability and hasattr(ability, "call"):
+            try:
+                ability.call("onStart", pokemon, self)
+                ability.call("onSwitchIn", pokemon, self)
+            except Exception:
+                pass
+        self.apply_entry_hazards(pokemon)
+
+    def on_switch_out(self, pokemon) -> None:
+        """Handle effects when ``pokemon`` leaves the field."""
+        ability = getattr(pokemon, "ability", None)
+        if ability and hasattr(ability, "call"):
+            try:
+                ability.call("onSwitchOut", pokemon, self)
+            except Exception:
+                pass
+        vols = list(getattr(pokemon, "volatiles", {}).keys())
+        for vol in vols:
+            pokemon.volatiles[vol] = False
+
+    def on_faint(self, pokemon) -> None:
+        """Mark ``pokemon`` as fainted and trigger callbacks."""
+        pokemon.is_fainted = True
+        ability = getattr(pokemon, "ability", None)
+        if ability and hasattr(ability, "call"):
+            try:
+                ability.call("onFaint", pokemon, self)
+            except Exception:
+                pass
+
+    def on_end_turn(self) -> None:
+        """Apply end of turn effects."""
+        self.handle_weather()
+        self.handle_terrain()
 
     # ------------------------------------------------------------------
     # Pseudocode mapping
@@ -1100,6 +1244,11 @@ class Battle:
                 actions.append(action)
         return actions
 
+    # Simple wrapper for external API compatibility
+    def collect_actions(self) -> List[Action]:
+        """Alias for :py:meth:`select_actions`."""
+        return self.select_actions()
+
     def order_actions(self, actions: List[Action]) -> List[Action]:
         """Order actions by priority and speed following Showdown rules."""
 
@@ -1162,6 +1311,10 @@ class Battle:
             key = lambda a: (a.priority, a.speed, a._tiebreak)
 
         return sorted(actions, key=key, reverse=True)
+
+    def determine_move_order(self, actions: List[Action]) -> List[Action]:
+        """Alias for :py:meth:`order_actions`."""
+        return self.order_actions(actions)
 
     def apply_priority_modifiers(
         self,
@@ -1332,6 +1485,30 @@ class Battle:
                 return True
         return False
 
+    # ------------------------------------------------------------------
+    # Basic stat handling helpers
+    # ------------------------------------------------------------------
+    def modify_stat_stage(self, pokemon, stat: str, delta: int) -> None:
+        """Modify ``pokemon`` stat stage by ``delta``."""
+        if not hasattr(pokemon, "boosts"):
+            pokemon.boosts = {}
+        current = pokemon.boosts.get(stat, 0)
+        pokemon.boosts[stat] = max(-6, min(6, current + delta))
+
+    def calculate_stat(self, pokemon, stat: str) -> int:
+        """Return ``pokemon``'s stat after modifiers."""
+        try:
+            from . import utils
+            return utils.get_modified_stat(pokemon, stat)
+        except Exception:
+            base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
+            return int(base)
+
+    def reset_stat_changes(self, pokemon) -> None:
+        """Clear temporary stat modifiers for ``pokemon``."""
+        if hasattr(pokemon, "boosts"):
+            pokemon.boosts = {}
+
     def execute_actions(self, actions: List[Action]) -> None:
         for action in actions:
             if action.action_type is ActionType.MOVE and action.move:
@@ -1345,6 +1522,13 @@ class Battle:
                     pass
             elif action.action_type is ActionType.ITEM and action.item:
                 self.execute_item(action)
+
+    def execute_turn(self, actions: List[Action]) -> None:
+        """Execute the supplied actions in proper order."""
+        ordered = self.determine_move_order(actions)
+        self.execute_actions(ordered)
+        self.run_faint()
+        self.residual()
 
     def execute_item(self, action: Action) -> None:
         """Handle item usage during battle."""
@@ -1412,6 +1596,29 @@ class Battle:
                 target.has_lost = True
                 self.check_victory()
 
+    # ------------------------------------------------------------------
+    # Action convenience methods
+    # ------------------------------------------------------------------
+    def perform_move_action(self, action: Action) -> None:
+        """Execute a move action."""
+        self.use_move(action)
+
+    def perform_switch_action(self, participant: BattleParticipant, new_pokemon) -> None:
+        """Switch ``participant``'s active Pokémon."""
+        self.switch_pokemon(participant, new_pokemon)
+
+    def perform_item_action(self, action: Action) -> None:
+        """Use an item during battle."""
+        self.execute_item(action)
+
+    def perform_mega_evolution(self, pokemon) -> None:
+        """Placeholder for Mega Evolution mechanics."""
+        setattr(pokemon, "mega_evolved", True)
+
+    def perform_tera_change(self, pokemon, tera_type: str) -> None:
+        """Placeholder for Terastallization mechanics."""
+        setattr(pokemon, "tera_type", tera_type)
+
     def end_turn(self) -> None:
         for part in self.participants:
             if all(getattr(p, "hp", 1) <= 0 for p in part.pokemons):
@@ -1427,3 +1634,69 @@ class Battle:
         self.before_turn()
         self.run_action()
         self.end_turn()
+
+    # ------------------------------------------------------------------
+    # Logging and feedback helpers
+    # ------------------------------------------------------------------
+    def log_action(self, message: str) -> None:
+        """Basic logger used by the engine."""
+        print(message)
+
+    def display_hp_bar(self, pokemon) -> str:
+        """Return a simple textual HP bar for ``pokemon``."""
+        hp = getattr(pokemon, "hp", 0)
+        max_hp = getattr(pokemon, "max_hp", 1)
+        percent = int((hp / max_hp) * 10)
+        bar = "[" + ("#" * percent).ljust(10) + "]"
+        return bar
+
+    def announce_status_change(self, pokemon, status: str) -> None:
+        """Notify about a status condition change."""
+        self.log_action(f"{getattr(pokemon, 'name', 'Pokemon')} is now {status}!")
+
+    def display_stat_mods(self, pokemon) -> None:
+        """Output current stat stages for debugging."""
+        boosts = getattr(pokemon, "boosts", {})
+        self.log_action(f"Boosts: {boosts}")
+
+    def check_fainted(self, pokemon) -> bool:
+        """Return ``True`` if ``pokemon`` has fainted."""
+        return getattr(pokemon, "hp", 0) <= 0
+
+    def check_win_conditions(self) -> Optional[BattleParticipant]:
+        """Return the winning participant if the battle has ended."""
+        return self.check_victory()
+
+    # ------------------------------------------------------------------
+    # Miscellaneous advanced helpers
+    # ------------------------------------------------------------------
+    def calculate_critical_hit(self) -> bool:
+        """Proxy to :func:`pokemon.battle.damage.critical_hit_check`."""
+        from .damage import critical_hit_check
+        return critical_hit_check()
+
+    def calculate_type_effectiveness(self, target, move) -> float:
+        from .damage import type_effectiveness
+        return type_effectiveness(target, move)
+
+    def handle_immunities_and_abilities(self, attacker, target, move) -> bool:
+        """Return ``True`` if the move is blocked."""
+        eff = 1.0
+        if move.type:
+            eff = self.calculate_type_effectiveness(target, move)
+        if eff == 0:
+            return True
+        if getattr(target, "volatiles", {}).get("protect"):
+            return True
+        return False
+
+    def check_protect_substitute(self, target) -> bool:
+        vols = getattr(target, "volatiles", {})
+        return "protect" in vols or "substitute" in vols
+
+    def check_priority_override(self, pokemon) -> bool:
+        return getattr(pokemon, "tempvals", {}).get("quash", False)
+
+    def handle_end_of_battle_rewards(self, winner: BattleParticipant) -> None:
+        """Placeholder for reward distribution."""
+        pass
