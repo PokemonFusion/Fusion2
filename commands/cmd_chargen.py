@@ -8,7 +8,6 @@ from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
 from pokemon.models import OwnedPokemon, StorageBox
 from pokemon.starters import get_starter_names, STARTER_LOOKUP
-from commands.command import heal_pokemon
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
 
@@ -115,7 +114,7 @@ def _create_starter(
 
     pokemon.set_level(level)
 
-    heal_pokemon(pokemon)
+    pokemon.heal()
 
     pokemon.learn_level_up_moves()
 

@@ -14,37 +14,30 @@ from utils.inventory import InventoryMixin
 
 
 class User(DefaultCharacter, InventoryMixin):
+    def _create_owned_pokemon(self, name, level, data=None):
+        """Create and return a fully initialized ``OwnedPokemon``."""
+        pokemon = OwnedPokemon.objects.create(
+            trainer=self.trainer,
+            species=name,
+            nickname="",
+            gender=data.get("gender", "") if data else "",
+            nature=data.get("nature", "") if data else "",
+            ability=data.get("ability", "") if data else "",
+            ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
+            evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
+        )
+        pokemon.set_level(level)
+        pokemon.heal()
+
+        pokemon.learn_level_up_moves()
+        return pokemon
+
     def add_pokemon_to_user(self, name, level, type_, data=None):
-        pokemon = OwnedPokemon.objects.create(
-            trainer=self.trainer,
-            species=name,
-            nickname="",
-            gender=data.get("gender", "") if data else "",
-            nature=data.get("nature", "") if data else "",
-            ability=data.get("ability", "") if data else "",
-            ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
-            evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
-        )
-        pokemon.set_level(level)
-        from commands.command import heal_pokemon
-        heal_pokemon(pokemon)
-        pokemon.learn_level_up_moves()
+        pokemon = self._create_owned_pokemon(name, level, data)
         self.storage.add_active_pokemon(pokemon)
+
     def add_pokemon_to_storage(self, name, level, type_, data=None):
-        pokemon = OwnedPokemon.objects.create(
-            trainer=self.trainer,
-            species=name,
-            nickname="",
-            gender=data.get("gender", "") if data else "",
-            nature=data.get("nature", "") if data else "",
-            ability=data.get("ability", "") if data else "",
-            ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
-            evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
-        )
-        pokemon.set_level(level)
-        from commands.command import heal_pokemon
-        heal_pokemon(pokemon)
-        pokemon.learn_level_up_moves()
+        pokemon = self._create_owned_pokemon(name, level, data)
         self.storage.stored_pokemon.add(pokemon)
 
     def show_pokemon_on_user(self):
@@ -115,8 +108,7 @@ class User(DefaultCharacter, InventoryMixin):
             evs=[0, 0, 0, 0, 0, 0],
         )
         pokemon.set_level(5)
-        from commands.command import heal_pokemon
-        heal_pokemon(pokemon)
+        pokemon.heal()
         pokemon.learn_level_up_moves()
         self.storage.add_active_pokemon(pokemon)
         return f"You received {pokemon.species}!"
