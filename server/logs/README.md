@@ -4,6 +4,7 @@ commit an empty directory).
 
 - `server.log` - log file from the game Server.
 - `portal.log` - log file from Portal proxy (internet facing)
+- `errors.log` - application error log rotated daily and kept for two weeks
 
 Usually these logs are viewed together with `evennia -l`. They are also rotated every week so as not
 to be too big. Older log names will have a name appended by `_month_date`. 
