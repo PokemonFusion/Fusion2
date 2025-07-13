@@ -8,9 +8,36 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 # Stub evennia.create_object while keeping the real module
-import evennia
-orig_create_object = evennia.create_object
-evennia.create_object = lambda cls, key=None: cls()
+try:
+    import evennia  # type: ignore
+    orig_create_object = evennia.create_object
+except Exception:  # Module doesn't exist in minimal test env
+    evennia = types.ModuleType("evennia")
+    orig_create_object = lambda cls, key=None: cls()
+    evennia.create_object = orig_create_object
+    evennia.search_object = lambda *a, **k: []
+    evennia.DefaultRoom = type("DefaultRoom", (), {})
+    evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
+    evennia.utils = types.ModuleType("evennia.utils")
+    evennia.utils.ansi = types.SimpleNamespace(
+        parse_ansi=lambda s: s,
+        RED=lambda s: s,
+        GREEN=lambda s: s,
+        YELLOW=lambda s: s,
+        BLUE=lambda s: s,
+        MAGENTA=lambda s: s,
+        CYAN=lambda s: s,
+        strip_ansi=lambda s: s,
+    )
+    sys.modules["evennia.utils"] = evennia.utils
+    evennia.server = types.ModuleType("evennia.server")
+    evennia.server.models = types.ModuleType("evennia.server.models")
+    evennia.server.models.ServerConfig = type("ServerConfig", (), {})
+    sys.modules["evennia.server"] = evennia.server
+    sys.modules["evennia.server.models"] = evennia.server.models
+    sys.modules["evennia"] = evennia
+else:
+    evennia.create_object = lambda cls, key=None: cls()
 
 # Stub BattleRoom
 battleroom_mod = types.ModuleType("typeclasses.battleroom")

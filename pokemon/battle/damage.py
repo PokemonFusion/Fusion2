@@ -45,7 +45,50 @@ def base_damage(level: int, power: int, atk: int, defense: int) -> int:
 
 
 def stab_multiplier(attacker: Pokemon, move: Move) -> float:
-    return 1.5 if move.type and move.type in attacker.types else 1.0
+    """Return the STAB multiplier for ``attacker`` using ``move``.
+
+    This helper tolerates different container layouts.  If ``attacker`` does
+    not define a ``types`` attribute, the function falls back to common
+    alternatives such as ``species.types`` or ``data['types']``.  Ability hooks
+    may further modify the multiplier via ``onModifySTAB``.
+    """
+
+    if not move.type:
+        return 1.0
+
+    types = getattr(attacker, "types", None)
+    if types is None:
+        if hasattr(attacker, "species") and getattr(attacker.species, "types", None):
+            types = attacker.species.types
+        elif hasattr(attacker, "data"):
+            types = attacker.data.get("types")
+    types = types or []
+
+    has_type = move.type.lower() in {t.lower() for t in types}
+    stab = 1.5 if has_type else 1.0
+
+    ability = getattr(attacker, "ability", None)
+    if ability is not None:
+        cb = ability.raw.get("onModifySTAB") if hasattr(ability, "raw") else None
+        if isinstance(cb, str):
+            try:
+                from pokemon.dex.functions import abilities_funcs
+                cls_name, func_name = cb.split(".", 1)
+                cls = getattr(abilities_funcs, cls_name, None)
+                if cls:
+                    cb = getattr(cls(), func_name, None)
+            except Exception:
+                cb = None
+        elif not callable(cb):
+            cb = None
+        if callable(cb):
+            try:
+                new_val = cb(stab, source=attacker, move=move)
+            except Exception:
+                new_val = cb(stab)
+            if isinstance(new_val, (int, float)):
+                stab = float(new_val)
+    return stab
 
 
 def type_effectiveness(target: Pokemon, move: Move) -> float:
@@ -166,3 +209,27 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None) -> 
     if numhits > 1:
         result.text.append(f"{attacker.name} hit {numhits} times!")
     return result
+
+
+# ----------------------------------------------------------------------
+# Convenience wrappers for the battle engine
+# ----------------------------------------------------------------------
+
+def calculate_damage(attacker: Pokemon, defender: Pokemon, move: Move, battle=None) -> DamageResult:
+    """Public helper mirroring :func:`damage_calc`."""
+    return damage_calc(attacker, defender, move, battle=battle)
+
+
+def check_move_accuracy(attacker: Pokemon, defender: Pokemon, move: Move) -> bool:
+    """Return ``True`` if ``move`` would hit ``defender``."""
+    return accuracy_check(move)
+
+
+def calculate_critical_hit() -> bool:
+    """Proxy for :func:`critical_hit_check`."""
+    return critical_hit_check()
+
+
+def calculate_type_effectiveness(target: Pokemon, move: Move) -> float:
+    """Proxy for :func:`type_effectiveness`."""
+    return type_effectiveness(target, move)
