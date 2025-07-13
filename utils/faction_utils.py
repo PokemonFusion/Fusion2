@@ -2,8 +2,10 @@
 
 __all__ = ["get_faction_and_rank"]
 
+from pokemon.utils.pokemon_like import PokemonLike
 
-def get_faction_and_rank(pokemon) -> str:
+
+def get_faction_and_rank(pokemon: PokemonLike) -> str:
     """Return formatted faction and rank information."""
     # TODO: connect to real faction system
     faction = getattr(pokemon, "faction", None)

@@ -8,6 +8,7 @@ from utils.xp_utils import get_display_xp, get_next_level_xp
 from pokemon.stats import level_for_exp
 from utils.faction_utils import get_faction_and_rank
 from pokemon.dex import POKEDEX
+from pokemon.utils.pokemon_like import PokemonLike
 
 
 __all__ = [
@@ -19,7 +20,7 @@ __all__ = [
 ]
 
 
-def get_status_effects(pokemon) -> str:
+def get_status_effects(pokemon: PokemonLike) -> str:
     """Return a short status string for ``pokemon``."""
     status = getattr(pokemon, "status", None)
     return status or "NORM"
@@ -31,16 +32,16 @@ def get_egg_description(hatch: int) -> str:
     return ""  # placeholder
 
 
-def _get_pokemon_types(pokemon) -> list[str]:
+def _get_pokemon_types(pokemon: PokemonLike) -> list[str]:
     """Return a list of type strings for ``pokemon``."""
-    if hasattr(pokemon, "types") and pokemon.types:
-        return list(pokemon.types)
-    if hasattr(pokemon, "type") and pokemon.type:
-        typ = pokemon.type
-        return [typ] if isinstance(typ, str) else list(typ)
-    species = getattr(pokemon, "species", None)
+    types = getattr(pokemon, "types", None) or getattr(pokemon, "type", None) or getattr(pokemon, "type_", None)
+    if types:
+        return [types] if isinstance(types, str) else list(types)
+
+    species = getattr(pokemon, "species", None) or getattr(pokemon, "name", None)
     if not species:
         return []
+
     name = str(species)
     entry = POKEDEX.get(name) or POKEDEX.get(name.capitalize()) or POKEDEX.get(name.lower())
     if entry:
@@ -107,7 +108,7 @@ def _hp_bar(current: int, maximum: int, width: int = 20) -> str:
     return color("█" * filled + " " * (width - filled))
 
 
-def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = "full") -> str:
+def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None, mode: str = "full") -> str:
     """Return a formatted sheet for ``pokemon``."""
     name = getattr(pokemon, "name", "Unknown")
     species = getattr(pokemon, "species", name)
@@ -133,8 +134,8 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
     lines.append(f"Level: {level}   XP: {xp}/{next_xp}")
     lines.append(f"HP: {hp}/{max_hp} {_hp_bar(hp, max_hp)}")
     lines.append(f"Status: {get_status_effects(pokemon)}")
-    nature = getattr(pokemon, "nature", "?")
-    ability = getattr(pokemon, "ability", "?")
+    nature = getattr(pokemon, "nature", None) or "?"
+    ability = getattr(pokemon, "ability", None) or "?"
     held = getattr(pokemon, "held_item", None) or "Nothing"
     lines.append(f"Nature: {nature}  Ability: {ability}  Held: {held}")
     # types
@@ -147,7 +148,7 @@ def display_pokemon_sheet(caller, pokemon, slot: int | None = None, mode: str = 
     table.add_row(*(str(stats.get(k, "?")) for k in ["hp", "atk", "def", "spa", "spd", "spe"]))
     lines.append(str(table))
 
-    moves = getattr(pokemon, "moves", [])
+    moves = getattr(pokemon, "moves", []) or []
     lines.append("Moves:")
     for mv in moves:
         lines.append("  " + format_move_details(mv))
