@@ -182,87 +182,10 @@ class BattleInstance:
             return
 
         origin = self.player.location
-
-        opponent_kind = random.choice(["pokemon", "trainer"])
-        if opponent_kind == "pokemon":
-            opponent_poke = generate_wild_pokemon(self.player.location)
-            if getattr(opponent_poke, "model_id", None):
-                self.temp_pokemon_ids.append(opponent_poke.model_id)
-            battle_type = BattleType.WILD
-            opponent_name = "Wild"
-            self.player.msg(f"A wild {opponent_poke.name} appears!")
-        else:
-            opponent_poke = generate_trainer_pokemon()
-            if getattr(opponent_poke, "model_id", None):
-                self.temp_pokemon_ids.append(opponent_poke.model_id)
-            battle_type = BattleType.TRAINER
-            opponent_name = "Trainer"
-            self.player.msg(
-                f"A trainer challenges you with {opponent_poke.name}!"
-            )
-
-        opponent_participant = BattleParticipant(
-            opponent_name, [opponent_poke], is_ai=True
-        )
-
-        player_pokemon: List[Pokemon] = []
-        party = (
-            self.player.storage.get_party()
-            if hasattr(self.player.storage, "get_party")
-            else list(self.player.storage.active_pokemon.all())
-        )
-        for poke in party:
-            stats = _calc_stats_from_model(poke)
-            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
-            player_pokemon.append(
-                Pokemon(
-                    name=poke.name,
-                    level=poke.level,
-                    hp=getattr(poke, "current_hp", stats.get("hp", poke.level)),
-                    max_hp=stats.get("hp", poke.level),
-                    moves=moves,
-                    ability=getattr(poke, "ability", None),
-                    data=getattr(poke, "data", {}),
-                )
-            )
-
-        try:
-            player_participant = BattleParticipant(
-                self.player.key, player_pokemon, player=self.player
-            )
-        except TypeError:
-            player_participant = BattleParticipant(self.player.key, player_pokemon)
-
-        # Set the first Pokémon of each side as active
-        if player_participant.pokemons:
-            player_participant.active = [player_participant.pokemons[0]]
-        if opponent_participant.pokemons:
-            opponent_participant.active = [opponent_participant.pokemons[0]]
-
-        self.battle = Battle(battle_type, [player_participant, opponent_participant])
-
-        player_team = Team(trainer=self.player.key, pokemon_list=player_pokemon)
-        opponent_team = Team(trainer=opponent_name, pokemon_list=[opponent_poke])
-        self.data = BattleData(player_team, opponent_team)
-        # Store a serialisable snapshot on the room for later use
-        self.room.db.battle_data = self.data.to_dict()
-        self.state = BattleState.from_battle_data(self.data, ai_type=battle_type.name)
-        self.state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
-        self.room.db.battle_state = self.state.to_dict()
-        self.room.db.temp_pokemon_ids = list(self.temp_pokemon_ids)
-        add_watcher(self.state, self.player)
-        self.watchers.add(self.player.id)
-
-        self.player.ndb.battle_instance = self
-        self.player.move_to(self.room, quiet=True)
-        self.player.msg("Battle started!")
-        bid = getattr(self.room, "id", 0)
-        self.player.msg(f"Battle ID: {bid}")
-        notify_watchers(self.state, f"{self.player.key} has entered battle!", room=self.room)
-
-        # Let the player know the battle is ready for input
-        self.prompt_first_turn()
-        battle_handler.register(self)
+        opponent_poke, opponent_name, battle_type = self._select_opponent()
+        player_pokemon = self._prepare_player_party(self.player)
+        self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
+        self._setup_battle_room()
 
     def start_pvp(self) -> None:
         """Start a battle between two players."""
@@ -271,47 +194,9 @@ class BattleInstance:
 
         origin = self.player.location
 
-        player_pokemon: List[Pokemon] = []
-        party = (
-            self.player.storage.get_party()
-            if hasattr(self.player.storage, "get_party")
-            else list(self.player.storage.active_pokemon.all())
-        )
-        for poke in party:
-            stats = _calc_stats_from_model(poke)
-            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
-            player_pokemon.append(
-                Pokemon(
-                    name=poke.name,
-                    level=poke.level,
-                    hp=stats.get("hp", poke.level),
-                    max_hp=stats.get("hp", poke.level),
-                    moves=moves,
-                    ability=getattr(poke, "ability", None),
-                    data=getattr(poke, "data", {}),
-                )
-            )
+        player_pokemon = self._prepare_player_party(self.player, full_heal=True)
 
-        opp_pokemon: List[Pokemon] = []
-        party = (
-            self.opponent.storage.get_party()
-            if hasattr(self.opponent.storage, "get_party")
-            else list(self.opponent.storage.active_pokemon.all())
-        )
-        for poke in party:
-            stats = _calc_stats_from_model(poke)
-            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
-            opp_pokemon.append(
-                Pokemon(
-                    name=poke.name,
-                    level=poke.level,
-                    hp=getattr(poke, "current_hp", stats.get("hp", poke.level)),
-                    max_hp=stats.get("hp", poke.level),
-                    moves=moves,
-                    ability=getattr(poke, "ability", None),
-                    data=getattr(poke, "data", {}),
-                )
-            )
+        opp_pokemon = self._prepare_player_party(self.opponent)
 
         try:
             player_participant = BattleParticipant(
@@ -359,6 +244,116 @@ class BattleInstance:
             self.state,
             f"{self.player.key} and {self.opponent.key} begin a battle!",
             room=self.room,
+        )
+
+        self.prompt_first_turn()
+        battle_handler.register(self)
+
+    # ------------------------------------------------------------------
+    # Helper methods extracted from ``start``
+    # ------------------------------------------------------------------
+    def _select_opponent(self) -> tuple[Pokemon, str, BattleType]:
+        """Return the opponent Pokemon, its name and the battle type."""
+        opponent_kind = random.choice(["pokemon", "trainer"])
+        if opponent_kind == "pokemon":
+            opponent_poke = generate_wild_pokemon(self.player.location)
+            if getattr(opponent_poke, "model_id", None):
+                self.temp_pokemon_ids.append(opponent_poke.model_id)
+            battle_type = BattleType.WILD
+            opponent_name = "Wild"
+            self.player.msg(f"A wild {opponent_poke.name} appears!")
+        else:
+            opponent_poke = generate_trainer_pokemon()
+            if getattr(opponent_poke, "model_id", None):
+                self.temp_pokemon_ids.append(opponent_poke.model_id)
+            battle_type = BattleType.TRAINER
+            opponent_name = "Trainer"
+            self.player.msg(
+                f"A trainer challenges you with {opponent_poke.name}!"
+            )
+        return opponent_poke, opponent_name, battle_type
+
+    def _prepare_player_party(self, trainer, full_heal: bool = False) -> List[Pokemon]:
+        """Return a list of battle-ready Pokemon for a trainer.
+
+        If ``full_heal`` is ``True`` the Pokémon start with full HP regardless
+        of any stored current HP value. This mirrors the behaviour used when
+        starting PvP battles where all participant Pokémon begin at full health.
+        """
+        party = (
+            trainer.storage.get_party()
+            if hasattr(trainer.storage, "get_party")
+            else list(trainer.storage.active_pokemon.all())
+        )
+        pokemons: List[Pokemon] = []
+        for poke in party:
+            stats = _calc_stats_from_model(poke)
+            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
+            current_hp = (
+                stats.get("hp", poke.level)
+                if full_heal
+                else getattr(poke, "current_hp", stats.get("hp", poke.level))
+            )
+            pokemons.append(
+                Pokemon(
+                    name=poke.name,
+                    level=poke.level,
+                    hp=current_hp,
+                    max_hp=stats.get("hp", poke.level),
+                    moves=moves,
+                    ability=getattr(poke, "ability", None),
+                    data=getattr(poke, "data", {}),
+                )
+            )
+        return pokemons
+
+    def _init_battle_state(
+        self,
+        origin,
+        player_pokemon: List[Pokemon],
+        opponent_poke: Pokemon,
+        opponent_name: str,
+        battle_type: BattleType,
+    ) -> None:
+        """Create battle objects and state."""
+        opponent_participant = BattleParticipant(
+            opponent_name, [opponent_poke], is_ai=True
+        )
+        try:
+            player_participant = BattleParticipant(
+                self.player.key, player_pokemon, player=self.player
+            )
+        except TypeError:
+            player_participant = BattleParticipant(self.player.key, player_pokemon)
+
+        if player_participant.pokemons:
+            player_participant.active = [player_participant.pokemons[0]]
+        if opponent_participant.pokemons:
+            opponent_participant.active = [opponent_participant.pokemons[0]]
+
+        self.battle = Battle(battle_type, [player_participant, opponent_participant])
+
+        player_team = Team(trainer=self.player.key, pokemon_list=player_pokemon)
+        opponent_team = Team(trainer=opponent_name, pokemon_list=[opponent_poke])
+        self.data = BattleData(player_team, opponent_team)
+
+        self.room.db.battle_data = self.data.to_dict()
+        self.state = BattleState.from_battle_data(self.data, ai_type=battle_type.name)
+        self.state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
+        self.room.db.battle_state = self.state.to_dict()
+        self.room.db.temp_pokemon_ids = list(self.temp_pokemon_ids)
+
+    def _setup_battle_room(self) -> None:
+        """Move players to the battle room and notify watchers."""
+        add_watcher(self.state, self.player)
+        self.watchers.add(self.player.id)
+        self.player.ndb.battle_instance = self
+        self.player.move_to(self.room, quiet=True)
+        self.player.msg("Battle started!")
+        bid = getattr(self.room, "id", 0)
+        self.player.msg(f"Battle ID: {bid}")
+        notify_watchers(
+            self.state, f"{self.player.key} has entered battle!", room=self.room
         )
 
         self.prompt_first_turn()
