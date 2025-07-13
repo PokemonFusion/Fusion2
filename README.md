@@ -12,6 +12,17 @@ To run the server you must install the Python requirements, including `psycopg2`
 pip install -r requirements.txt
 ```
 
+## Contributing and Testing
+
+Development requirements, including the Evennia framework, are installed from `requirements.txt`.  Test-specific packages are kept in `requirements-dev.txt`.
+
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt  # optional
+```
+
+You can then run the test suite with `pytest`.  See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
 ## License
 
 This project is distributed under the terms of the [MIT License](LICENSE).
