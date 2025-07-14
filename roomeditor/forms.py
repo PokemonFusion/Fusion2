@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.safestring import mark_safe
 from evennia.objects.models import ObjectDB
 
 
@@ -8,7 +9,12 @@ class RoomForm(forms.Form):
         max_length=80,
         widget=forms.TextInput(attrs={"size": 60}),
     )
-    desc = forms.CharField(label="Description", widget=forms.Textarea, required=False)
+    desc = forms.CharField(
+        label="Description",
+        widget=forms.Textarea,
+        required=False,
+        help_text=mark_safe('Use Evennia color codes. <a href="/ansi/" target="_blank">ANSI reference</a>'),
+    )
     is_center = forms.BooleanField(label="Pokémon Center", required=False)
     is_shop = forms.BooleanField(label="Item Shop", required=False)
     has_hunting = forms.BooleanField(label="Allow Hunting", required=False)
@@ -29,7 +35,12 @@ class ExitForm(forms.Form):
         ),
     )
     dest_id = forms.ChoiceField(label="Destination Room", choices=())
-    desc = forms.CharField(label="Description", widget=forms.Textarea, required=False)
+    desc = forms.CharField(
+        label="Description",
+        widget=forms.Textarea,
+        required=False,
+        help_text=mark_safe('Use Evennia color codes. <a href="/ansi/" target="_blank">ANSI reference</a>'),
+    )
     err_traverse = forms.CharField(
         label="Failure Message",
         required=False,

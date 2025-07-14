@@ -9,12 +9,14 @@ so it can reroute to all website pages.
 from django.urls import path
 
 from .views.mysheet import MySheetView
+from .views.ansi_reference import AnsiReferenceView
 
 from evennia.web.website.urls import urlpatterns as evennia_website_urlpatterns
 
 # add patterns here
 urlpatterns = [
     path("mysheet/", MySheetView.as_view(), name="my-sheet"),
+    path("ansi/", AnsiReferenceView.as_view(), name="ansi-reference"),
 ]
 
 # read by Django

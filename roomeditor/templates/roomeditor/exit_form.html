@@ -12,13 +12,22 @@
           {% csrf_token %}
           <p>{{ form.direction.label_tag }} {{ form.direction }}</p>
           <p>{{ form.dest_id.label_tag }} {{ form.dest_id }}</p>
-          <p>{{ form.desc.label_tag }} {{ form.desc }}</p>
-          <p>{{ form.err_traverse.label_tag }} {{ form.err_traverse }}</p>
+          <p>
+            {{ form.desc.label_tag }} {{ form.desc }}<br>
+            <small class="form-text text-muted">{{ form.desc.help_text|safe }}</small>
+          </p>
+          <p>
+            {{ form.err_traverse.label_tag }} {{ form.err_traverse }}<br>
+            <small class="form-text text-muted">{{ form.err_traverse.help_text }}</small>
+          </p>
           <p>
             {{ form.locks.label_tag }} {{ form.locks }}
             <button type="button" id="use-default-locks" class="btn btn-sm btn-secondary ml-1">Use Defaults</button>
           </p>
-          <p>{{ form.aliases.label_tag }} {{ form.aliases }}</p>
+          <p>
+            {{ form.aliases.label_tag }} {{ form.aliases }}<br>
+            <small class="form-text text-muted">{{ form.aliases.help_text }}</small>
+          </p>
           {{ form.exit_id }}
           <button type="submit" class="btn btn-primary">Save</button>
           <a href="{% url 'roomeditor:room-edit' room.id %}" class="btn btn-secondary ml-2">Cancel</a>

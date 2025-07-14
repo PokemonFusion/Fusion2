@@ -1,0 +1,33 @@
+{% extends "website/base.html" %}
+{% block titleblock %}ANSI Reference{% endblock %}
+{% block content %}
+<h2>ANSI Color Codes</h2>
+<p>Click a code to copy it to the clipboard.</p>
+<input id="ansi-search" class="form-control mb-2" placeholder="Search...">
+<table class="table table-sm table-bordered">
+  <thead>
+    <tr><th>Markup</th><th>Preview</th><th>Description</th></tr>
+  </thead>
+  <tbody id="ansi-table">
+    {% for entry in codes %}
+    <tr>
+      <td><code class="ansi-code" data-code="{{ entry.code }}">{{ entry.code }}</code></td>
+      <td>{{ entry.sample|safe }}</td>
+      <td>{{ entry.label }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+  const rows = document.querySelectorAll('#ansi-table tr');
+  document.getElementById('ansi-search').addEventListener('input', e => {
+    const term = e.target.value.toLowerCase();
+    rows.forEach(r => {
+      r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
+    });
+  });
+  document.querySelectorAll('.ansi-code').forEach(el => {
+    el.addEventListener('click', () => navigator.clipboard.writeText(el.dataset.code));
+  });
+</script>
+{% endblock %}
