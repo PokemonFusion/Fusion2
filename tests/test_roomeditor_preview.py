@@ -64,7 +64,8 @@ def test_preview_context():
     captured = {}
 
     def fake_render(req, tpl, ctx):
-        captured.update(ctx)
+        captured["template"] = tpl
+        captured["context"] = ctx
         return HttpResponse()
 
     orig_render = views.render
@@ -94,5 +95,6 @@ def test_preview_context():
         else:
             sys.modules.pop("typeclasses.exits", None)
 
-    assert "preview" in captured
-    assert captured["preview"]["name"] == "Test Room"
+    assert captured.get("template") == "roomeditor/room_preview.html"
+    assert "preview" in captured.get("context", {})
+    assert captured["context"]["preview"]["name"] == "Test Room"
