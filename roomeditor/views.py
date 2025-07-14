@@ -102,7 +102,7 @@ def room_edit(request, room_id=None):
     if request.method == "POST" and "add_exit" in request.POST and room:
         exit_form = ExitForm(request.POST)
         if exit_form.is_valid():
-            dest = get_object_or_404(ObjectDB, id=exit_form.cleaned_data["dest_id"])
+            dest = get_object_or_404(ObjectDB, id=int(exit_form.cleaned_data["dest_id"]))
             create_object(Exit, key=exit_form.cleaned_data["direction"], location=room, destination=dest)
             return redirect("roomeditor:room-edit", room_id=room.id)
 
@@ -124,4 +124,35 @@ def delete_exit(request, exit_id, room_id):
     exit_obj = get_object_or_404(ObjectDB, id=exit_id)
     exit_obj.delete()
     return redirect("roomeditor:room-edit", room_id=room.id)
+
+
+@login_required
+@user_passes_test(is_builder)
+def edit_exit(request, room_id, exit_id):
+    """Edit an existing exit."""
+    room = get_object_or_404(ObjectDB, id=room_id)
+    exit_obj = get_object_or_404(ObjectDB, id=exit_id)
+    if request.method == "POST":
+        form = ExitForm(request.POST)
+        if form.is_valid():
+            exit_obj.key = form.cleaned_data["direction"]
+            exit_obj.destination = get_object_or_404(
+                ObjectDB, id=int(form.cleaned_data["dest_id"])
+            )
+            exit_obj.save()
+            return redirect("roomeditor:room-edit", room_id=room.id)
+    else:
+        form = ExitForm(
+            initial={
+                "direction": exit_obj.key,
+                "dest_id": exit_obj.destination.id if exit_obj.destination else None,
+                "exit_id": exit_obj.id,
+            }
+        )
+
+    return render(
+        request,
+        "roomeditor/exit_form.html",
+        {"form": form, "room": room, "exit": exit_obj},
+    )
 

@@ -1,4 +1,5 @@
 from django import forms
+from evennia.objects.models import ObjectDB
 
 
 class RoomForm(forms.Form):
@@ -14,5 +15,26 @@ class RoomForm(forms.Form):
 
 
 class ExitForm(forms.Form):
-    direction = forms.CharField(label="Direction", max_length=32)
-    dest_id = forms.IntegerField(label="Destination Room ID")
+    direction = forms.CharField(
+        label="Direction",
+        max_length=32,
+        widget=forms.TextInput(
+            attrs={
+                "title": "Use Evennia color tags such as |gnorth|n to style the exit name.",
+            }
+        ),
+    )
+    dest_id = forms.ChoiceField(label="Destination Room", choices=())
+    exit_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        queryset = ObjectDB.objects.filter(
+            db_location__isnull=True, db_typeclass_path__contains="rooms"
+        )
+        if hasattr(queryset, "order_by"):
+            queryset = queryset.order_by("id")
+        self.fields["dest_id"].choices = [
+            (obj.id, f"{obj.id} - {getattr(obj, 'key', '')}") for obj in queryset
+        ]
+

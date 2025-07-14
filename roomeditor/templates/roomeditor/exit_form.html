@@ -1,0 +1,21 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}Edit Exit{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title">Edit Exit for Room #{{ room.id }}</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-primary">Save</button>
+          <a href="{% url 'roomeditor:room-edit' room.id %}" class="btn btn-secondary ml-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
