@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Room Preview</title>
+  <link rel="stylesheet" href="{% static 'webclient/css/webclient.css' %}">
+</head>
+<body>
+  <div class="container p-3">
+    <h2>{{ name }}</h2>
+    <div class="out">{{ desc_html|safe }}</div>
+    {% if is_center %}<p><em>Pokémon Center</em></p>{% endif %}
+    {% if is_shop %}<p><em>Item Shop</em></p>{% endif %}
+    {% if has_hunting %}<p><strong>Hunting allowed</strong></p>{% endif %}
+  </div>
+</body>
+</html>

@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.utils.safestring import mark_safe
 from evennia.objects.models import ObjectDB
 from evennia import create_object
 from typeclasses.rooms import Room
@@ -109,4 +111,28 @@ def delete_exit(request, exit_id, room_id):
     exit_obj = get_object_or_404(ObjectDB, id=exit_id)
     exit_obj.delete()
     return redirect("roomeditor:room-edit", room_id=room.id)
+
+
+@login_required
+@user_passes_test(is_builder)
+def room_preview(request):
+    """Render a preview of a room in a popup window."""
+    if request.method != "POST":
+        return redirect("roomeditor:room-list")
+
+    form = RoomForm(request.POST)
+    if not form.is_valid():
+        return HttpResponse("Invalid data", status=400)
+
+    from evennia.utils.text2html import parse_html
+
+    data = form.cleaned_data
+    context = {
+        "name": data["name"],
+        "desc_html": mark_safe(parse_html(data["desc"] or "")),
+        "is_center": data["is_center"],
+        "is_shop": data["is_shop"],
+        "has_hunting": data["has_hunting"],
+    }
+    return render(request, "roomeditor/room_preview.html", context)
 

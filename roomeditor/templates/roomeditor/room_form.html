@@ -16,10 +16,14 @@
           {% csrf_token %}
           {{ form.as_p }}
           <button type="submit" name="save_room" class="btn btn-primary">Save</button>
+          <button type="submit" name="preview_room" class="btn btn-secondary ml-2"
+                  formaction="{% url 'roomeditor:room-preview' %}" formtarget="_blank">
+            Preview
+          </button>
         </form>
       </div>
     </div>
-    {% if room %}
+      {% if room %}
     <div class="card">
       <div class="card-body">
         <h3 class="card-title">Exits</h3>
