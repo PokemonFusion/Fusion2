@@ -11,5 +11,9 @@ class CmdMovesets(Command):
     help_category = "Pokemon"
 
     def func(self):
-        EnhancedEvMenu(self.caller, moveset_manager, startnode="node_start", cmd_on_exit=None)
+        caller = self.caller
+        if not (caller.location and caller.location.db.is_pokemon_center):
+            caller.msg("You must be at a Pokémon Center to manage movesets.")
+            return
+        EnhancedEvMenu(caller, moveset_manager, startnode="node_start", cmd_on_exit=None)
 
