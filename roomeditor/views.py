@@ -1,5 +1,14 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
+try:
+    from evennia.utils import text2html
+except Exception:  # pragma: no cover - fallback for tests without evennia
+    class _Dummy:
+        @staticmethod
+        def parse_html(text, strip_ansi=False):
+            return text
+
+    text2html = _Dummy()
 from evennia.objects.models import ObjectDB
 from evennia import create_object
 from typeclasses.rooms import Room
@@ -41,7 +50,6 @@ def room_edit(request, room_id=None):
     room = None
     if room_id:
         room = get_object_or_404(ObjectDB, id=room_id)
-    preview = None
     if request.method == "POST" and (
         "save_room" in request.POST or "preview_room" in request.POST
     ):
@@ -69,7 +77,8 @@ def room_edit(request, room_id=None):
                 room.save()
                 return redirect("roomeditor:room-edit", room_id=room.id)
             else:
-                preview = data
+                data["desc_html"] = text2html.parse_html(data["desc"])
+                return render(request, "roomeditor/room_preview.html", {"preview": data})
     else:
         initial = {}
         if room:
@@ -104,7 +113,6 @@ def room_edit(request, room_id=None):
         "outgoing": outgoing,
         "incoming": incoming,
         "no_incoming": room is not None and not incoming,
-        "preview": preview,
     }
     return render(request, "roomeditor/room_form.html", context)
 

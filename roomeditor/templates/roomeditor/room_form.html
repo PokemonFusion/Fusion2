@@ -16,22 +16,11 @@
           {% csrf_token %}
           {{ form.as_p }}
           <button type="submit" name="save_room" class="btn btn-primary">Save</button>
-          <button type="submit" name="preview_room" class="btn btn-secondary ml-2">Preview</button>
+          <button type="submit" name="preview_room" class="btn btn-secondary ml-2" formtarget="_blank">Preview</button>
         </form>
       </div>
       </div>
-      {% if preview %}
-      <div class="card mb-3">
-        <div class="card-body">
-          <h3 class="card-title">Preview</h3>
-          <h4>{{ preview.name }}</h4>
-          <p>{{ preview.desc|linebreaks }}</p>
-          {% if preview.is_center %}<p><em>Pokémon Center</em></p>{% endif %}
-          {% if preview.is_shop %}<p><em>Item Shop</em></p>{% endif %}
-          {% if preview.has_hunting %}<p><strong>Hunting allowed</strong></p>{% endif %}
-        </div>
-      </div>
-      {% endif %}
+      {% comment %}Preview handled in new window{% endcomment %}
       {% if room %}
     <div class="card">
       <div class="card-body">

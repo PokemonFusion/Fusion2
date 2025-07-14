@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Room Preview</title>
+  <link rel="stylesheet" href="{% static 'webclient/css/webclient.css' %}" />
+  <link rel="stylesheet" href="{% static 'webclient/css/custom.css' %}" />
+</head>
+<body>
+  <div class="p-3" id="messagewindow">
+    <h2>{{ preview.name }}</h2>
+    <div>{% autoescape off %}{{ preview.desc_html }}{% endautoescape %}</div>
+    {% if preview.is_center %}<p><em>Pokémon Center</em></p>{% endif %}
+    {% if preview.is_shop %}<p><em>Item Shop</em></p>{% endif %}
+    {% if preview.has_hunting %}<p><strong>Hunting allowed</strong></p>{% endif %}
+  </div>
+</body>
+</html>
