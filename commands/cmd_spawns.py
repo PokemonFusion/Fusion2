@@ -15,7 +15,7 @@ class CmdSpawns(Command):
     def func(self):
         caller = self.caller
 
-        def _menunode_main(caller, raw_string, **kwargs):
+        def _menunode_main(caller, raw_input=None, **kwargs):
             table = caller.location.db.spawn_table or []
             text = "Current spawns:\n"
             for entry in table:
@@ -26,27 +26,42 @@ class CmdSpawns(Command):
             )
             return text, options
 
-        def _menunode_add_spawn(caller, raw_string, **kwargs):
-            caller.msg("Enter species name:")
-            return "get_species", {}
+        def _menunode_add_spawn(caller, raw_input=None, **kwargs):
+            """Prompt for the species name of the spawn."""
+            text = "Enter species name:"
+            return text, [{"key": "_default", "goto": "get_species"}]
 
-        def _menunode_get_species(caller, raw_string, **kwargs):
-            kwargs["species"] = raw_string.strip()
-            caller.msg("Enter rarity (common/uncommon/rare/etc):")
-            return "get_rarity", kwargs
+        def _menunode_get_species(caller, raw_input=None, **kwargs):
+            if raw_input is None:
+                return "Enter species name:", [{"key": "_default", "goto": "get_species"}]
+            kwargs["species"] = raw_input.strip()
+            text = "Enter rarity (common/uncommon/rare/etc):"
+            return text, [{"key": "_default", "goto": ("get_rarity", kwargs)}]
 
-        def _menunode_get_rarity(caller, raw_string, **kwargs):
-            kwargs["rarity"] = raw_string.strip() or "common"
-            caller.msg("Enter tiers separated by space:")
-            return "get_tiers", kwargs
+        def _menunode_get_rarity(caller, raw_input=None, **kwargs):
+            if raw_input is None:
+                return "Enter rarity (common/uncommon/rare/etc):", [
+                    {"key": "_default", "goto": ("get_rarity", kwargs)}
+                ]
+            kwargs["rarity"] = raw_input.strip() or "common"
+            text = "Enter tiers separated by space:"
+            return text, [{"key": "_default", "goto": ("get_tiers", kwargs)}]
 
-        def _menunode_get_tiers(caller, raw_string, **kwargs):
-            kwargs["tiers"] = raw_string.strip().split()
-            caller.msg("Enter generations separated by space:")
-            return "get_gens", kwargs
+        def _menunode_get_tiers(caller, raw_input=None, **kwargs):
+            if raw_input is None:
+                return "Enter tiers separated by space:", [
+                    {"key": "_default", "goto": ("get_tiers", kwargs)}
+                ]
+            kwargs["tiers"] = raw_input.strip().split()
+            text = "Enter generations separated by space:"
+            return text, [{"key": "_default", "goto": ("get_gens", kwargs)}]
 
-        def _menunode_get_gens(caller, raw_string, **kwargs):
-            kwargs["generations"] = raw_string.strip().split()
+        def _menunode_get_gens(caller, raw_input=None, **kwargs):
+            if raw_input is None:
+                return "Enter generations separated by space:", [
+                    {"key": "_default", "goto": ("get_gens", kwargs)}
+                ]
+            kwargs["generations"] = raw_input.strip().split()
             table = caller.location.db.spawn_table or []
             table.append(
                 {
@@ -58,7 +73,7 @@ class CmdSpawns(Command):
             )
             caller.location.db.spawn_table = table
             caller.msg("Spawn added.")
-            return "main", {}
+            return _menunode_main(caller)
 
         def _menunode_quit(caller, raw_string, **kwargs):
             caller.msg("Closing spawn editor.")
