@@ -125,7 +125,7 @@ def room_edit(request, room_id=None):
                 exit_obj.locks.replace(lockstring)
             aliases = _parse_aliases(exit_form.cleaned_data.get("aliases"))
             if aliases:
-                exit_obj.aliases.add(*aliases)
+                exit_obj.aliases.add(aliases)
             exit_obj.at_cmdset_get(force_init=True)
             return redirect("roomeditor:room-edit", room_id=room.id)
 
@@ -172,7 +172,7 @@ def edit_exit(request, room_id, exit_id):
             exit_obj.aliases.clear()
             aliases = _parse_aliases(form.cleaned_data.get("aliases"))
             if aliases:
-                exit_obj.aliases.add(*aliases)
+                exit_obj.aliases.add(aliases)
             exit_obj.save()
             exit_obj.at_cmdset_get(force_init=True)
             return redirect("roomeditor:room-edit", room_id=room.id)
