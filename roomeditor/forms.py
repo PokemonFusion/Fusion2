@@ -29,6 +29,13 @@ class ExitForm(forms.Form):
         ),
     )
     dest_id = forms.ChoiceField(label="Destination Room", choices=())
+    desc = forms.CharField(label="Description", widget=forms.Textarea, required=False)
+    err_traverse = forms.CharField(
+        label="Failure Message",
+        required=False,
+        help_text="Message shown when traversal fails.",
+    )
+    locks = forms.CharField(label="Lockstring", required=False)
     aliases = forms.CharField(
         label="Aliases",
         required=False,

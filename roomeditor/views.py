@@ -118,9 +118,15 @@ def room_edit(request, room_id=None):
                 location=room,
                 destination=dest,
             )
+            exit_obj.db.desc = exit_form.cleaned_data.get("desc")
+            exit_obj.db.err_traverse = exit_form.cleaned_data.get("err_traverse")
+            lockstring = exit_form.cleaned_data.get("locks")
+            if lockstring:
+                exit_obj.locks.replace(lockstring)
             aliases = _parse_aliases(exit_form.cleaned_data.get("aliases"))
             if aliases:
                 exit_obj.aliases.add(*aliases)
+            exit_obj.at_cmdset_get(force_init=True)
             return redirect("roomeditor:room-edit", room_id=room.id)
 
     context = {
@@ -156,17 +162,28 @@ def edit_exit(request, room_id, exit_id):
             exit_obj.destination = get_object_or_404(
                 ObjectDB, id=int(form.cleaned_data["dest_id"])
             )
+            exit_obj.db.desc = form.cleaned_data.get("desc")
+            exit_obj.db.err_traverse = form.cleaned_data.get("err_traverse")
+            lockstring = form.cleaned_data.get("locks")
+            if lockstring:
+                exit_obj.locks.replace(lockstring)
+            else:
+                exit_obj.locks.clear()
             exit_obj.aliases.clear()
             aliases = _parse_aliases(form.cleaned_data.get("aliases"))
             if aliases:
                 exit_obj.aliases.add(*aliases)
             exit_obj.save()
+            exit_obj.at_cmdset_get(force_init=True)
             return redirect("roomeditor:room-edit", room_id=room.id)
     else:
         form = ExitForm(
             initial={
                 "direction": exit_obj.key,
                 "dest_id": exit_obj.destination.id if exit_obj.destination else None,
+                "desc": exit_obj.db.desc,
+                "err_traverse": exit_obj.db.err_traverse,
+                "locks": str(exit_obj.locks),
                 "aliases": "; ".join(exit_obj.aliases.all()),
                 "exit_id": exit_obj.id,
             }
