@@ -29,6 +29,11 @@ class ExitForm(forms.Form):
         ),
     )
     dest_id = forms.ChoiceField(label="Destination Room", choices=())
+    aliases = forms.CharField(
+        label="Aliases",
+        required=False,
+        help_text="Separate aliases with commas or semicolons.",
+    )
     exit_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
     def __init__(self, *args, **kwargs):

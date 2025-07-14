@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
+import re
 try:
     from evennia.utils import text2html
 except Exception:  # pragma: no cover - fallback for tests without evennia
@@ -15,6 +16,14 @@ from typeclasses.rooms import Room
 from typeclasses.exits import Exit
 
 from .forms import RoomForm, ExitForm
+
+
+def _parse_aliases(raw: str) -> list[str]:
+    """Return a list of aliases from a raw string."""
+    if not raw:
+        return []
+    pieces = re.split(r"[;,\s]+", raw)
+    return [p for p in (s.strip() for s in pieces) if p]
 
 
 def is_builder(user):
@@ -103,7 +112,15 @@ def room_edit(request, room_id=None):
         exit_form = ExitForm(request.POST)
         if exit_form.is_valid():
             dest = get_object_or_404(ObjectDB, id=int(exit_form.cleaned_data["dest_id"]))
-            create_object(Exit, key=exit_form.cleaned_data["direction"], location=room, destination=dest)
+            exit_obj = create_object(
+                Exit,
+                key=exit_form.cleaned_data["direction"],
+                location=room,
+                destination=dest,
+            )
+            aliases = _parse_aliases(exit_form.cleaned_data.get("aliases"))
+            if aliases:
+                exit_obj.aliases.add(*aliases)
             return redirect("roomeditor:room-edit", room_id=room.id)
 
     context = {
@@ -139,6 +156,10 @@ def edit_exit(request, room_id, exit_id):
             exit_obj.destination = get_object_or_404(
                 ObjectDB, id=int(form.cleaned_data["dest_id"])
             )
+            exit_obj.aliases.clear()
+            aliases = _parse_aliases(form.cleaned_data.get("aliases"))
+            if aliases:
+                exit_obj.aliases.add(*aliases)
             exit_obj.save()
             return redirect("roomeditor:room-edit", room_id=room.id)
     else:
@@ -146,6 +167,7 @@ def edit_exit(request, room_id, exit_id):
             initial={
                 "direction": exit_obj.key,
                 "dest_id": exit_obj.destination.id if exit_obj.destination else None,
+                "aliases": "; ".join(exit_obj.aliases.all()),
                 "exit_id": exit_obj.id,
             }
         )
