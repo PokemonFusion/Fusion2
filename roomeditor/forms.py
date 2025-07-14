@@ -3,7 +3,11 @@ from evennia.objects.models import ObjectDB
 
 
 class RoomForm(forms.Form):
-    name = forms.CharField(label="Name", max_length=80)
+    name = forms.CharField(
+        label="Name",
+        max_length=80,
+        widget=forms.TextInput(attrs={"size": 60}),
+    )
     desc = forms.CharField(label="Description", widget=forms.Textarea, required=False)
     is_center = forms.BooleanField(label="Pokémon Center", required=False)
     is_shop = forms.BooleanField(label="Item Shop", required=False)
