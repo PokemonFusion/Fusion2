@@ -10,22 +10,56 @@ class AnsiReferenceView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         codes = [
+            # formatting
+            ("|n", "Reset"),
+            ("|*", "Inverse"),
+            ("|^", "Blink"),
+            ("|u", "Underline"),
+            ("|U", "Stop underline"),
+            ("|i", "Italic"),
+            ("|I", "Stop italic"),
+            ("|s", "Strikethrough"),
+            ("|S", "Stop strikethrough"),
+
+            # bright foreground colours
             ("|r", "Bright red"),
-            ("|R", "Dark red"),
             ("|g", "Bright green"),
-            ("|G", "Dark green"),
             ("|y", "Bright yellow"),
-            ("|Y", "Dark yellow"),
             ("|b", "Bright blue"),
-            ("|B", "Dark blue"),
             ("|m", "Bright magenta"),
-            ("|M", "Dark magenta"),
             ("|c", "Bright cyan"),
-            ("|C", "Dark cyan"),
             ("|w", "Bright white"),
-            ("|W", "Grey"),
             ("|x", "Dark grey"),
+
+            # dark foreground colours
+            ("|R", "Dark red"),
+            ("|G", "Dark green"),
+            ("|Y", "Dark yellow"),
+            ("|B", "Dark blue"),
+            ("|M", "Dark magenta"),
+            ("|C", "Dark cyan"),
+            ("|W", "Grey"),
             ("|X", "Black"),
+
+            # bright backgrounds
+            ("|[r", "Bright red background"),
+            ("|[g", "Bright green background"),
+            ("|[y", "Bright yellow background"),
+            ("|[b", "Bright blue background"),
+            ("|[m", "Bright magenta background"),
+            ("|[c", "Bright cyan background"),
+            ("|[w", "Bright white background"),
+            ("|[x", "Dark grey background"),
+
+            # dark backgrounds
+            ("|[R", "Dark red background"),
+            ("|[G", "Dark green background"),
+            ("|[Y", "Dark yellow background"),
+            ("|[B", "Dark blue background"),
+            ("|[M", "Dark magenta background"),
+            ("|[C", "Dark cyan background"),
+            ("|[W", "Grey background"),
+            ("|[X", "Black background"),
         ]
         table = []
         for code, label in codes:
