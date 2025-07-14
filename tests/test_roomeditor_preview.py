@@ -1,0 +1,98 @@
+import os
+import sys
+import types
+from django.http import HttpResponse
+from django.test import RequestFactory
+from django.conf import settings
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
+def test_preview_context():
+    import importlib
+    if not settings.configured:
+        settings.configure(
+            SECRET_KEY="test",
+            DEFAULT_CHARSET="utf-8",
+            INSTALLED_APPS=[],
+            USE_I18N=False,
+        )
+        import django
+        django.setup()
+    prev_evennia = sys.modules.get("evennia")
+    prev_objects = sys.modules.get("evennia.objects")
+    prev_models = sys.modules.get("evennia.objects.models")
+    prev_rooms = sys.modules.get("typeclasses.rooms")
+    prev_exits = sys.modules.get("typeclasses.exits")
+
+    fake_evennia = types.ModuleType("evennia")
+    fake_evennia.create_object = lambda *a, **k: types.SimpleNamespace(id=1)
+    fake_objects = types.ModuleType("evennia.objects")
+    fake_models = types.ModuleType("evennia.objects.models")
+
+    class DummyQuery:
+        def filter(self, *a, **k):
+            return []
+
+        def exists(self):
+            return False
+
+    fake_models.ObjectDB = type("ObjectDB", (), {"objects": DummyQuery()})
+    fake_evennia.objects = fake_objects
+    sys.modules["evennia"] = fake_evennia
+    sys.modules["evennia.objects"] = fake_objects
+    sys.modules["evennia.objects.models"] = fake_models
+    sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
+    sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
+    sys.modules["typeclasses.rooms"].Room = type("Room", (), {})
+    sys.modules["typeclasses.exits"].Exit = type("Exit", (), {})
+
+    views = importlib.import_module("roomeditor.views")
+    rf = RequestFactory()
+    data = {
+        "name": "Test Room",
+        "desc": "A sample room",
+        "is_center": True,
+        "is_shop": False,
+        "has_hunting": True,
+        "hunt_table": "Pikachu:5",
+        "preview_room": "1",
+    }
+    request = rf.post("/roomeditor/new/", data)
+    request.user = types.SimpleNamespace(is_authenticated=True, is_superuser=True)
+
+    captured = {}
+
+    def fake_render(req, tpl, ctx):
+        captured.update(ctx)
+        return HttpResponse()
+
+    orig_render = views.render
+    views.render = fake_render
+    try:
+        views.room_edit.__wrapped__(request)
+    finally:
+        views.render = orig_render
+        if prev_evennia is not None:
+            sys.modules["evennia"] = prev_evennia
+        else:
+            sys.modules.pop("evennia", None)
+        if prev_objects is not None:
+            sys.modules["evennia.objects"] = prev_objects
+        else:
+            sys.modules.pop("evennia.objects", None)
+        if prev_models is not None:
+            sys.modules["evennia.objects.models"] = prev_models
+        else:
+            sys.modules.pop("evennia.objects.models", None)
+        if prev_rooms is not None:
+            sys.modules["typeclasses.rooms"] = prev_rooms
+        else:
+            sys.modules.pop("typeclasses.rooms", None)
+        if prev_exits is not None:
+            sys.modules["typeclasses.exits"] = prev_exits
+        else:
+            sys.modules.pop("typeclasses.exits", None)
+
+    assert "preview" in captured
+    assert captured["preview"]["name"] == "Test Room"
