@@ -41,29 +41,35 @@ def room_edit(request, room_id=None):
     room = None
     if room_id:
         room = get_object_or_404(ObjectDB, id=room_id)
-    if request.method == "POST" and "save_room" in request.POST:
+    preview = None
+    if request.method == "POST" and (
+        "save_room" in request.POST or "preview_room" in request.POST
+    ):
         form = RoomForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            if room is None:
-                room = create_object(Room, key=data["name"])
-            room.key = data["name"]
-            room.db.desc = data["desc"]
-            room.db.is_pokemon_center = data["is_center"]
-            room.db.is_item_shop = data["is_shop"]
-            room.db.has_pokemon_hunting = data["has_hunting"]
-            table = {}
-            for entry in data["hunt_table"].split(','):
-                if not entry.strip():
-                    continue
-                try:
-                    mon, rate = entry.split(':')
-                    table[mon.strip()] = int(rate.strip())
-                except ValueError:
-                    continue
-            room.db.hunt_table = table
-            room.save()
-            return redirect("roomeditor:room-edit", room_id=room.id)
+            if "save_room" in request.POST:
+                if room is None:
+                    room = create_object(Room, key=data["name"])
+                room.key = data["name"]
+                room.db.desc = data["desc"]
+                room.db.is_pokemon_center = data["is_center"]
+                room.db.is_item_shop = data["is_shop"]
+                room.db.has_pokemon_hunting = data["has_hunting"]
+                table = {}
+                for entry in data["hunt_table"].split(','):
+                    if not entry.strip():
+                        continue
+                    try:
+                        mon, rate = entry.split(':')
+                        table[mon.strip()] = int(rate.strip())
+                    except ValueError:
+                        continue
+                room.db.hunt_table = table
+                room.save()
+                return redirect("roomeditor:room-edit", room_id=room.id)
+            else:
+                preview = data
     else:
         initial = {}
         if room:
@@ -98,6 +104,7 @@ def room_edit(request, room_id=None):
         "outgoing": outgoing,
         "incoming": incoming,
         "no_incoming": room is not None and not incoming,
+        "preview": preview,
     }
     return render(request, "roomeditor/room_form.html", context)
 
