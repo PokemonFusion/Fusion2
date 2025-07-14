@@ -38,11 +38,26 @@
           <li class="list-group-item">No exits from this room.</li>
         {% endfor %}
         </ul>
-        <form method="post" class="form-inline">
+        <form method="post" class="form-inline" id="add-exit-form">
           {% csrf_token %}
-          {{ exit_form.as_p }}
-          <button type="submit" name="add_exit" class="btn btn-secondary">Add Exit</button>
+          <div class="form-row">
+            <div class="form-group mr-2">{{ exit_form.direction.label_tag }} {{ exit_form.direction }}</div>
+            <div class="form-group mr-2">{{ exit_form.dest_id.label_tag }} {{ exit_form.dest_id }}</div>
+            <div class="form-group mr-2">{{ exit_form.desc.label_tag }} {{ exit_form.desc }}</div>
+            <div class="form-group mr-2">{{ exit_form.err_traverse.label_tag }} {{ exit_form.err_traverse }}</div>
+            <div class="form-group mr-2">
+              {{ exit_form.locks.label_tag }} {{ exit_form.locks }}
+              <button type="button" id="use-default-locks" class="btn btn-sm btn-secondary ml-1">Use Defaults</button>
+            </div>
+            <div class="form-group mr-2">{{ exit_form.aliases.label_tag }} {{ exit_form.aliases }}</div>
+          </div>
+          <button type="submit" name="add_exit" class="btn btn-secondary mt-2">Add Exit</button>
         </form>
+        <script>
+          document.getElementById("use-default-locks").addEventListener("click", function () {
+            document.getElementById("id_locks").value = "{{ default_locks|escapejs }}";
+          });
+        </script>
       </div>
     </div>
     {% endif %}

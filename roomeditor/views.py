@@ -136,6 +136,7 @@ def room_edit(request, room_id=None):
         "outgoing": outgoing,
         "incoming": incoming,
         "no_incoming": room is not None and not incoming,
+        "default_locks": Exit.get_default_lockstring(account=request.user),
     }
     return render(request, "roomeditor/room_form.html", context)
 
@@ -192,6 +193,11 @@ def edit_exit(request, room_id, exit_id):
     return render(
         request,
         "roomeditor/exit_form.html",
-        {"form": form, "room": room, "exit": exit_obj},
+        {
+            "form": form,
+            "room": room,
+            "exit": exit_obj,
+            "default_locks": Exit.get_default_lockstring(account=request.user),
+        },
     )
 
