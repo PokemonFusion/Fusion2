@@ -67,7 +67,9 @@ def room_edit(request, room_id=None):
             data = form.cleaned_data
             if "save_room" in request.POST:
                 if room is None:
-                    room = create_object(Room, key=data["name"])
+                    room = create_object(data["room_class"], key=data["name"])
+                elif room.typeclass_path != data["room_class"]:
+                    room.swap_typeclass(data["room_class"], clean_attributes=False)
                 room.key = data["name"]
                 room.db.desc = data["desc"]
                 room.db.is_pokemon_center = data["is_center"]
@@ -84,17 +86,18 @@ def room_edit(request, room_id=None):
                         continue
                 room.db.hunt_table = table
                 room.save()
-                return redirect("roomeditor:room-edit", room_id=room.id)
+                return redirect("roomeditor:room-list")
             else:
                 data["desc_html"] = text2html.parse_html(data["desc"])
                 return render(request, "roomeditor/room_preview.html", {"preview": data})
     else:
-        initial = {}
+        initial = {"room_class": "typeclasses.rooms.Room"}
         if room:
             table = room.db.hunt_table or {}
             initial = {
                 "name": room.key,
                 "desc": room.db.desc,
+                "room_class": room.typeclass_path,
                 "is_center": room.db.is_pokemon_center,
                 "is_shop": room.db.is_item_shop,
                 "has_hunting": room.db.has_pokemon_hunting,

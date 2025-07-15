@@ -29,10 +29,24 @@ def node_name(caller, raw_input):
     return text, [{"key": "_default", "goto": "node_desc"}]
 
 def node_desc(caller, raw_input):
-    """Collect description and ask if it's a Pokémon Center."""
+    """Collect description and prompt for room class."""
     if not raw_input:
         return "I need a description.  (or |wquit|n)", {"goto": "node_desc"}
     caller.ndb.rw_data['desc'] = raw_input
+    text = (
+        "Select a |wroom class|n:\n"
+        "1) Room\n2) Fusion Room\n3) Battle Room\n4) Map Room"
+    )
+    opts = [
+        {"key": "1", "goto": ("node_set_class", {"cls": "typeclasses.rooms.Room"})},
+        {"key": "2", "goto": ("node_set_class", {"cls": "typeclasses.rooms.FusionRoom"})},
+        {"key": "3", "goto": ("node_set_class", {"cls": "typeclasses.battleroom.BattleRoom"})},
+        {"key": "4", "goto": ("node_set_class", {"cls": "typeclasses.maproom.MapRoom"})},
+    ]
+    return text, opts
+
+def node_set_class(caller, raw_input, cls):
+    caller.ndb.rw_data['room_class'] = cls
     text = "Is this a |wPokémon Center|n? (yes/no)"
     opts = [
         {"key": "yes", "goto": "node_center_yes"},
@@ -103,6 +117,7 @@ def node_summary(caller, raw_input=None):
         "|gRoom Creation Summary|n\n"
         f"Name:        {data['name']}\n"
         f"Description: {data['desc']}\n"
+        f"Class:       {data.get('room_class', 'typeclasses.rooms.Room').split('.')[-1]}\n"
         f"Center:      {'Yes' if data.get('is_center') else 'No'}\n"
         f"Shop:        {'Yes' if data.get('is_shop') else 'No'}\n"
         f"Hunting:     {'Yes' if data.get('has_hunting') else 'No'}\n"
@@ -120,7 +135,8 @@ def node_summary(caller, raw_input=None):
 def node_create(caller, raw_input=None):
     """Actually create the room and exit."""
     data = caller.ndb.rw_data
-    room = create_object(Room, key=data['name'])
+    room_class = data.get('room_class', 'typeclasses.rooms.Room')
+    room = create_object(room_class, key=data['name'])
     room.db.desc                = data['desc']
     room.db.is_pokemon_center   = data.get('is_center', False)
     room.db.is_item_shop        = data.get('is_shop', False)
