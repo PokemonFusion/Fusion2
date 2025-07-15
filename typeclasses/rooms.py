@@ -82,7 +82,8 @@ class FusionRoom(Room):
 
         is_builder = looker.check_permstring("Builder")
 
-        title = f"|g|h📍 {self.key}|n"
+        # Title of the room for display. Show the room name in green and bold.
+        title = f"|g|h{self.key}|n"
         if is_builder:
             title += f" |y(#{self.id})|n"
 
@@ -96,11 +97,13 @@ class FusionRoom(Room):
             paragraphs.append("  " + wrapper.fill(para))
         desc_text = "\n".join(paragraphs)
 
-        output = [title, "", f"|w📝|n {desc_text}"]
+        # Room description follows on the next line in white.
+        output = [title, "", f"|w{desc_text}|n"]
 
         weather = self.get_weather()
         if weather and weather != "clear":
-            output.append(f"|w🌦️|n It's {weather} here.")
+            # Indicate current weather conditions if not clear.
+            output.append(f"|wIt's {weather} here.|n")
 
         exits = self.filter_visible(self.contents_get(content_type="exit"), looker, **kwargs)
         exit_lines = []
@@ -110,8 +113,17 @@ class FusionRoom(Room):
                 line += f" |y(#{ex.id})|n"
             exit_lines.append(line)
 
-        characters = self.filter_visible(self.contents_get(content_type="character"), looker, **kwargs)
+        characters = self.filter_visible(
+            self.contents_get(content_type="character"), looker, **kwargs
+        )
         players = [c for c in characters if c.has_account and not c.attributes.get("npc")]
+        # Make sure the looker shows up in the player list even if filtered out
+        if (
+            looker.has_account
+            and not looker.attributes.get("npc")
+            and looker not in players
+        ):
+            players.append(looker)
         npcs = [c for c in characters if not c.has_account or c.attributes.get("npc")]
 
         player_lines = []
