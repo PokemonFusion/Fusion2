@@ -39,6 +39,11 @@ class FusionRoom(Room):
         self.db.allow_hunting = False
         self.db.encounter_rate = 100
         self.db.hunt_chart = []
+        # Extra hunting related settings
+        self.db.npc_chance = 15  # percent chance of trainer battle
+        self.db.itemfinder_rate = 5  # percent chance of finding item
+        self.db.noitem = False
+        self.db.tp_cost = 0
         # Track the current weather affecting this room
         self.db.weather = "clear"
 
