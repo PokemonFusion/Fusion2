@@ -50,6 +50,7 @@ def test_preview_context():
     views = importlib.import_module("roomeditor.views")
     rf = RequestFactory()
     data = {
+        "room_class": "typeclasses.rooms.Room",
         "name": "Test Room",
         "desc": "A sample room",
         "is_center": True,

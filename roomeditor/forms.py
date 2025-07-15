@@ -4,6 +4,14 @@ from evennia.objects.models import ObjectDB
 
 
 class RoomForm(forms.Form):
+    ROOM_CLASS_CHOICES = [
+        ("typeclasses.rooms.Room", "Room"),
+        ("typeclasses.rooms.FusionRoom", "Fusion Room"),
+        ("typeclasses.battleroom.BattleRoom", "Battle Room"),
+        ("typeclasses.maproom.MapRoom", "Map Room"),
+    ]
+
+    room_class = forms.ChoiceField(label="Room Class", choices=ROOM_CLASS_CHOICES)
     name = forms.CharField(
         label="Name",
         max_length=80,
