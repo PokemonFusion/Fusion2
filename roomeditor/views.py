@@ -86,7 +86,7 @@ def room_edit(request, room_id=None):
                         continue
                 room.db.hunt_table = table
                 room.save()
-                return redirect("roomeditor:room-edit", room_id=room.id)
+                return redirect("roomeditor:room-list")
             else:
                 data["desc_html"] = text2html.parse_html(data["desc"])
                 return render(request, "roomeditor/room_preview.html", {"preview": data})
