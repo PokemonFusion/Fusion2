@@ -110,8 +110,9 @@ class FusionRoom(Room):
             paragraphs.append("  " + wrapper.fill(para))
         desc_text = "\n".join(paragraphs)
 
-        # Room description follows on the next line in white.
-        output = [title, "", f"|w{desc_text}|n"]
+        # Room description follows on the next line without added color so
+        # user-specified codes remain untouched.
+        output = [title, "", desc_text]
 
         weather = self.get_weather()
         if weather and weather != "clear":
