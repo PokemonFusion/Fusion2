@@ -1,4 +1,5 @@
 {% extends "website/base.html" %}
+{% load roomeditor_tags %}
 
 {% block titleblock %}Room List{% endblock %}
 
@@ -13,7 +14,7 @@
         {% if rooms %}
         <table class="table table-striped">
           <thead>
-            <tr><th>ID</th><th>Name</th><th>Description</th><th></th></tr>
+            <tr><th>ID</th><th>Name</th><th>Description</th><th>Class</th><th></th></tr>
           </thead>
           <tbody>
           {% for room in rooms %}
@@ -21,6 +22,7 @@
               <td>{{ room.id }}</td>
               <td>{{ room.key }}</td>
               <td>{{ room.db.desc }}</td>
+              <td>{{ room.typeclass_path|class_name }}</td>
               <td>
                 <a class="btn btn-sm btn-secondary" href="{% url 'roomeditor:room-edit' room.id %}">Edit</a>
                 {% if room.id in dangling_ids %}
