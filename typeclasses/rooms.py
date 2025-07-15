@@ -59,7 +59,11 @@ class FusionRoom(Room):
     # ------------------------------------------------------------------
     def get_weather(self) -> str:
         """Return the current weather in this room."""
-        return self.db.get("weather", "clear")
+        # `self.db` is an AttributeHandler. Using the handler's `get` method can
+        # fail if an attribute named ``get`` was inadvertently stored on the
+        # object, shadowing the method. Access the attribute directly instead to
+        # avoid this edge case.
+        return getattr(self.db, "weather", "clear")
 
     def set_weather(self, weather: str) -> None:
         """Set the room's weather."""
