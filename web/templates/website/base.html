@@ -22,25 +22,25 @@
     <title>{{game_name}} - {% if flatpage %}{{flatpage.title}}{% else %}{% block titleblock %}{{page_title}}{% endblock %}{% endif %}</title>
 
     <style>
-      html {
+      html,
+      body {
         height: 100%;
       }
 
       body {
-        min-height: 100vh;
-        margin: 0;
         display: flex;
         flex-direction: column;
+        margin: 0;
       }
 
       .page-wrapper {
-        flex: 1;
+        flex: 1 0 auto;
         display: flex;
         flex-direction: column;
       }
 
       .main-content {
-        flex: 1;
+        flex: 1 0 auto;
       }
 
       .footer {
@@ -48,7 +48,7 @@
         color: white;
         padding: 1rem 0;
         text-align: center;
-        margin-top: auto;
+        flex-shrink: 0;
       }
     </style>
   </head>
