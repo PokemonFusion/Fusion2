@@ -1,0 +1,51 @@
+{% extends "website/base.html" %}
+{% load static %}
+{% block titleblock %}ANSI Reference{% endblock %}
+{% block header_ext %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'webclient/css/webclient.css' %}">
+  <style>
+    /* webclient.css forces a fixed-height body; reset that so the footer sticks */
+    body {
+      overflow: auto;
+      height: auto;
+      min-height: 100%;
+      padding-bottom: 4rem; /* keep footer from covering table */
+    }
+    /* hide footer on this page to avoid overlap issues */
+    footer.footer {
+      display: none;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+<h2>ANSI Color Codes</h2>
+<p>Click a code to copy it to the clipboard.</p>
+<input id="ansi-search" class="form-control mb-2" placeholder="Search...">
+<table class="table table-sm table-bordered">
+  <thead>
+    <tr><th>Markup</th><th>Preview</th><th>Description</th></tr>
+  </thead>
+  <tbody id="ansi-table">
+    {% for entry in codes %}
+    <tr>
+      <td><code class="ansi-code" data-code="{{ entry.code }}">{{ entry.code }}</code></td>
+      <td>{{ entry.sample|safe }}</td>
+      <td>{{ entry.label }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+  const rows = document.querySelectorAll('#ansi-table tr');
+  document.getElementById('ansi-search').addEventListener('input', e => {
+    const term = e.target.value.toLowerCase();
+    rows.forEach(r => {
+      r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
+    });
+  });
+  document.querySelectorAll('.ansi-code').forEach(el => {
+    el.addEventListener('click', () => navigator.clipboard.writeText(el.dataset.code));
+  });
+</script>
+{% endblock %}

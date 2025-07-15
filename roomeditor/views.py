@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
+import re
 try:
     from evennia.utils import text2html
 except Exception:  # pragma: no cover - fallback for tests without evennia
@@ -15,6 +16,14 @@ from typeclasses.rooms import Room
 from typeclasses.exits import Exit
 
 from .forms import RoomForm, ExitForm
+
+
+def _parse_aliases(raw: str) -> list[str]:
+    """Return a list of aliases from a raw string."""
+    if not raw:
+        return []
+    pieces = re.split(r"[;,\s]+", raw)
+    return [p for p in (s.strip() for s in pieces) if p]
 
 
 def is_builder(user):
@@ -102,8 +111,22 @@ def room_edit(request, room_id=None):
     if request.method == "POST" and "add_exit" in request.POST and room:
         exit_form = ExitForm(request.POST)
         if exit_form.is_valid():
-            dest = get_object_or_404(ObjectDB, id=exit_form.cleaned_data["dest_id"])
-            create_object(Exit, key=exit_form.cleaned_data["direction"], location=room, destination=dest)
+            dest = get_object_or_404(ObjectDB, id=int(exit_form.cleaned_data["dest_id"]))
+            exit_obj = create_object(
+                Exit,
+                key=exit_form.cleaned_data["direction"],
+                location=room,
+                destination=dest,
+            )
+            exit_obj.db.desc = exit_form.cleaned_data.get("desc")
+            exit_obj.db.err_traverse = exit_form.cleaned_data.get("err_traverse")
+            lockstring = exit_form.cleaned_data.get("locks")
+            if lockstring:
+                exit_obj.locks.replace(lockstring)
+            aliases = _parse_aliases(exit_form.cleaned_data.get("aliases"))
+            if aliases:
+                exit_obj.aliases.add(aliases)
+            exit_obj.at_cmdset_get(force_init=True)
             return redirect("roomeditor:room-edit", room_id=room.id)
 
     context = {
@@ -113,6 +136,7 @@ def room_edit(request, room_id=None):
         "outgoing": outgoing,
         "incoming": incoming,
         "no_incoming": room is not None and not incoming,
+        "default_locks": Exit.get_default_lockstring(account=request.user),
     }
     return render(request, "roomeditor/room_form.html", context)
 
@@ -124,4 +148,56 @@ def delete_exit(request, exit_id, room_id):
     exit_obj = get_object_or_404(ObjectDB, id=exit_id)
     exit_obj.delete()
     return redirect("roomeditor:room-edit", room_id=room.id)
+
+
+@login_required
+@user_passes_test(is_builder)
+def edit_exit(request, room_id, exit_id):
+    """Edit an existing exit."""
+    room = get_object_or_404(ObjectDB, id=room_id)
+    exit_obj = get_object_or_404(ObjectDB, id=exit_id)
+    if request.method == "POST":
+        form = ExitForm(request.POST)
+        if form.is_valid():
+            exit_obj.key = form.cleaned_data["direction"]
+            exit_obj.destination = get_object_or_404(
+                ObjectDB, id=int(form.cleaned_data["dest_id"])
+            )
+            exit_obj.db.desc = form.cleaned_data.get("desc")
+            exit_obj.db.err_traverse = form.cleaned_data.get("err_traverse")
+            lockstring = form.cleaned_data.get("locks")
+            if lockstring:
+                exit_obj.locks.replace(lockstring)
+            else:
+                exit_obj.locks.clear()
+            exit_obj.aliases.clear()
+            aliases = _parse_aliases(form.cleaned_data.get("aliases"))
+            if aliases:
+                exit_obj.aliases.add(aliases)
+            exit_obj.save()
+            exit_obj.at_cmdset_get(force_init=True)
+            return redirect("roomeditor:room-edit", room_id=room.id)
+    else:
+        form = ExitForm(
+            initial={
+                "direction": exit_obj.key,
+                "dest_id": exit_obj.destination.id if exit_obj.destination else None,
+                "desc": exit_obj.db.desc,
+                "err_traverse": exit_obj.db.err_traverse,
+                "locks": str(exit_obj.locks),
+                "aliases": "; ".join(exit_obj.aliases.all()),
+                "exit_id": exit_obj.id,
+            }
+        )
+
+    return render(
+        request,
+        "roomeditor/exit_form.html",
+        {
+            "form": form,
+            "room": room,
+            "exit": exit_obj,
+            "default_locks": Exit.get_default_lockstring(account=request.user),
+        },
+    )
 
