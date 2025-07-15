@@ -8,6 +8,7 @@ Rooms are simple containers that has no location of their own.
 from evennia.objects.objects import DefaultRoom
 import random
 import textwrap
+import re
 
 
 from .objects import ObjectParent
@@ -69,6 +70,18 @@ class FusionRoom(Room):
         """Set the room's weather."""
         self.db.weather = str(weather).lower()
 
+    def _color_exit_name(self, name: str) -> str:
+        """Return exit name with hotkey parentheses highlighted."""
+        if not name:
+            return "|c|n"
+
+        def repl(match: re.Match) -> str:
+            inner = match.group(1)
+            return f"|c(|w{inner}|c)"
+
+        colored = re.sub(r"\(([^)]*)\)", repl, name)
+        return f"|c{colored}|n"
+
     # ------------------------------------------------------------------
     # Look/appearance helpers
     # ------------------------------------------------------------------
@@ -115,13 +128,13 @@ class FusionRoom(Room):
         for ex in prioritized + unprioritized:
             if ex.db.dark and not is_builder:
                 continue
-            line = f"|C{ex.key}|n"
+            line = self._color_exit_name(ex.key)
             if not ex.access(looker, "traverse"):
-                line += " |W(Locked)|n"
+                line += " |r(Locked)|n"
             if ex.db.dark:
-                line += " |W(Dark)|n"
+                line += " |m(Dark)|n"
             if is_builder:
-                line += f" |W(#{ex.id})|n"
+                line += f" |y(#{ex.id})|n"
             exit_lines.append("  " + line)
 
         characters = self.filter_visible(
