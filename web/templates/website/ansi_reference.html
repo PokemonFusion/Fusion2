@@ -4,10 +4,14 @@
 {% block header_ext %}
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static 'webclient/css/webclient.css' %}">
-<style>
-  /* webclient.css disables scrolling; re-enable it for this page */
-  body { overflow: auto; }
-</style>
+  <style>
+    /* webclient.css forces a fixed-height body; reset that so the footer sticks */
+    body {
+      overflow: auto;
+      height: auto;
+      min-height: 100%;
+    }
+  </style>
 {% endblock %}
 {% block content %}
 <h2>ANSI Color Codes</h2>
