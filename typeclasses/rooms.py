@@ -115,13 +115,13 @@ class FusionRoom(Room):
         for ex in prioritized + unprioritized:
             if ex.db.dark and not is_builder:
                 continue
-            line = f"|c{ex.key}|n"
+            line = f"|C{ex.key}|n"
             if not ex.access(looker, "traverse"):
-                line += " |r(Locked)|n"
+                line += " |W(Locked)|n"
             if ex.db.dark:
-                line += " |m(Dark)|n"
+                line += " |W(Dark)|n"
             if is_builder:
-                line += f" |y(#{ex.id})|n"
+                line += f" |W(#{ex.id})|n"
             exit_lines.append("  " + line)
 
         characters = self.filter_visible(
@@ -139,7 +139,7 @@ class FusionRoom(Room):
 
         player_names = []
         for p in players:
-            name = f"|o|w{p.key}|n"
+            name = f"|w{p.key}|n"
             if is_builder:
                 name += f" |y(#{p.id})|n"
             if p.db.dark and is_builder:
@@ -148,7 +148,7 @@ class FusionRoom(Room):
 
         npc_names = []
         for npc in npcs:
-            name = f"|o|y{npc.key}|n"
+            name = f"|y{npc.key}|n"
             if is_builder:
                 name += f" |y(#{npc.id})|n"
             npc_names.append(name)
@@ -158,16 +158,17 @@ class FusionRoom(Room):
         box.extend(exit_lines)
         box.append(green_rule)
         if player_names:
-            box.append("|g  :Players:|n " + ", ".join(player_names))
+            box.append("|g  :Players:|n")
+            box.append("  " + ", ".join(player_names))
             box.append(green_rule)
         if npc_names:
             box.append("|g  :Non-Player Characters:|n " + ", ".join(npc_names))
             box.append(green_rule)
 
         if self.db.is_item_store:
-            box.append("|o|yThere is a store here, use +store/list to see its contents.|n")
+            box.append("|yThere is a store here, use +store/list to see its contents.|n")
         if self.db.is_pokemon_center:
-            box.append("|o|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
+            box.append("|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
 
         output.append("\n".join(box))
 
