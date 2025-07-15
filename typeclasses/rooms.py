@@ -73,7 +73,7 @@ class FusionRoom(Room):
     # Look/appearance helpers
     # ------------------------------------------------------------------
 
-    BOX_LINE = "-" * 76
+    BOX_LINE = "|g" + "-" * 76 + "|n"
 
     def return_appearance(self, looker, **kwargs):
         """Return the look description for this room."""
@@ -105,13 +105,24 @@ class FusionRoom(Room):
             # Indicate current weather conditions if not clear.
             output.append(f"|wIt's {weather} here.|n")
 
-        exits = self.filter_visible(self.contents_get(content_type="exit"), looker, **kwargs)
+        exits = self.filter_visible(
+            self.contents_get(content_type="exit"), looker, **kwargs
+        )
+        prioritized = [ex for ex in exits if ex.db.priority is not None]
+        unprioritized = [ex for ex in exits if ex.db.priority is None]
+        prioritized.sort(key=lambda e: e.db.priority)
         exit_lines = []
-        for ex in exits:
+        for ex in prioritized + unprioritized:
+            if ex.db.dark and not is_builder:
+                continue
             line = f"|c{ex.key}|n"
+            if not ex.access(looker, "traverse"):
+                line += " |r(Locked)|n"
+            if ex.db.dark:
+                line += " |m(Dark)|n"
             if is_builder:
                 line += f" |y(#{ex.id})|n"
-            exit_lines.append(line)
+            exit_lines.append("  " + line)
 
         characters = self.filter_visible(
             self.contents_get(content_type="character"), looker, **kwargs
@@ -126,27 +137,37 @@ class FusionRoom(Room):
             players.append(looker)
         npcs = [c for c in characters if not c.has_account or c.attributes.get("npc")]
 
-        player_lines = []
+        player_names = []
         for p in players:
-            line = p.key
+            name = f"|o|w{p.key}|n"
             if is_builder:
-                line += f" |y(#{p.id})|n"
-            player_lines.append(line)
+                name += f" |y(#{p.id})|n"
+            if p.db.dark and is_builder:
+                name += " |m(Dark)|n"
+            player_names.append(name)
 
-        npc_lines = []
+        npc_names = []
         for npc in npcs:
-            line = npc.key
+            name = f"|o|y{npc.key}|n"
             if is_builder:
-                line += f" |y(#{npc.id})|n"
-            npc_lines.append(line)
+                name += f" |y(#{npc.id})|n"
+            npc_names.append(name)
 
-        box = [self.BOX_LINE, "|cExits:|n"]
+        green_rule = self.BOX_LINE
+        box = [green_rule, "|g  :Exits:|n"]
         box.extend(exit_lines)
-        box.append("|w|hPlayers:|n")
-        box.extend(player_lines)
-        box.append("|xNon-Player Characters:|n")
-        box.extend(npc_lines)
-        box.append(self.BOX_LINE)
+        box.append(green_rule)
+        if player_names:
+            box.append("|g  :Players:|n " + ", ".join(player_names))
+            box.append(green_rule)
+        if npc_names:
+            box.append("|g  :Non-Player Characters:|n " + ", ".join(npc_names))
+            box.append(green_rule)
+
+        if self.db.is_item_store:
+            box.append("|o|yThere is a store here, use +store/list to see its contents.|n")
+        if self.db.is_pokemon_center:
+            box.append("|o|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
 
         output.append("\n".join(box))
 
