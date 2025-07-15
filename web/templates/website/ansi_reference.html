@@ -1,5 +1,10 @@
 {% extends "website/base.html" %}
+{% load static %}
 {% block titleblock %}ANSI Reference{% endblock %}
+{% block header_ext %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'webclient/css/webclient.css' %}">
+{% endblock %}
 {% block content %}
 <h2>ANSI Color Codes</h2>
 <p>Click a code to copy it to the clipboard.</p>
