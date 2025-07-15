@@ -5,7 +5,11 @@ import menus.give_pokemon as give_pokemon
 
 
 class CmdGivePokemon(Command):
-    """Give a Pokemon to a character for debugging."""
+    """Give a Pokémon to a character for debugging.
+
+    Usage:
+      @givepokemon <character>
+    """
 
     key = "@givepokemon"
     locks = "cmd:perm(Wizards)"

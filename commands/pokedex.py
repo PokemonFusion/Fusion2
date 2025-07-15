@@ -124,7 +124,11 @@ class CmdPokedexSearch(Command):
 
 
 class CmdPokedexAll(CmdPokedexSearch):
-    """List all positive-numbered Pokémon."""
+    """List all positive-numbered Pokémon.
+
+    Usage:
+      +dex/all
+    """
 
     key = "+dex/all"
     aliases = ["pokedex/all"]
@@ -137,7 +141,11 @@ class CmdPokedexAll(CmdPokedexSearch):
 
 
 class CmdMovedexSearch(Command):
-    """Search the movedex by move name."""
+    """Search the movedex by move name.
+
+    Usage:
+      movedex <name>
+    """
 
     key = "movedex"
     aliases = ["mdex", "move"]
@@ -160,7 +168,11 @@ class CmdMovedexSearch(Command):
 
 
 class CmdMovesetSearch(Command):
-    """Show the moveset for a Pokémon."""
+    """Show the moveset for a Pokémon.
+
+    Usage:
+      moveset <pokemon>
+    """
 
     key = "moveset"
     aliases = ["learnset", "movelist"]
@@ -181,7 +193,11 @@ class CmdMovesetSearch(Command):
 
 
 class CmdPokedexNumber(Command):
-    """Lookup a Pokémon by its National Dex number."""
+    """Lookup a Pokémon by its National Dex number.
+
+    Usage:
+      pokenum <number>
+    """
 
     key = "pokenum"
     aliases = ["dexnum"]
@@ -205,7 +221,11 @@ from pokemon.starters import get_starter_names
 
 
 class CmdStarterList(Command):
-    """List valid starter Pokémon."""
+    """List valid starter Pokémon.
+
+    Usage:
+      starterlist
+    """
 
     key = "starterlist"
     aliases = ["starters"]

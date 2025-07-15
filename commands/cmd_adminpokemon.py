@@ -3,7 +3,11 @@ from pokemon.models import OwnedPokemon
 
 
 class CmdListPokemon(Command):
-    """List a character's Pokémon."""
+    """List a character's Pokémon.
+
+    Usage:
+      @listpokemon <character>
+    """
 
     key = "@listpokemon"
     locks = "cmd:perm(Wizards)"
@@ -39,7 +43,11 @@ class CmdListPokemon(Command):
 
 
 class CmdRemovePokemon(Command):
-    """Delete a Pokémon by its ID."""
+    """Delete a Pokémon by its ID.
+
+    Usage:
+      @removepokemon <pokemon_id>
+    """
 
     key = "@removepokemon"
     locks = "cmd:perm(Wizards)"

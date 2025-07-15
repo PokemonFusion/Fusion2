@@ -7,7 +7,11 @@ from utils.xp_utils import get_display_xp
 from pokemon.stats import level_for_exp
 
 class CmdSheet(Command):
-    """Display information about your trainer character."""
+    """Display information about your trainer character.
+
+    Usage:
+      +sheet [brief]
+    """
 
     key = "+sheet"
     aliases = ["party"]
@@ -27,7 +31,11 @@ class CmdSheet(Command):
 
 
 class CmdSheetPokemon(Command):
-    """Show detailed information about one Pokémon in your party."""
+    """Show detailed information about one Pokémon in your party.
+
+    Usage:
+      +sheet/pokemon [<slot>|all]
+    """
 
     key = "+sheet/pokemon"
     aliases = ["+sheet/pkmn"]

@@ -148,10 +148,15 @@ def _create_starter(
 
 
 class CmdChargen(Command):
-    """Interactive character creation."""
+    """Interactive character creation.
+
+    Usage:
+      chargen
+    """
 
     key = "chargen"
     locks = "cmd:all()"
+    help_category = "General"
 
     def func(self):
         if self.caller.db.validated:

@@ -3,7 +3,11 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 import menus.edit_room as edit_room
 
 class CmdEditRoom(Command):
-    """Interactive wizard for editing rooms."""
+    """Interactive wizard for editing rooms.
+
+    Usage:
+      @editroom
+    """
 
     key = "@editroom"
     locks = "cmd:perm(Builders)"

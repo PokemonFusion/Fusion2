@@ -2,7 +2,11 @@ from evennia import Command
 
 
 class CmdValidate(Command):
-    """Validate a character so they can enter the IC grid."""
+    """Validate a character so they can enter the IC grid.
+
+    Usage:
+      @validate <character>
+    """
 
     key = "@validate"
     locks = "cmd:perm(Validator)"

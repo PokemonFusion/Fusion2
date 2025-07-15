@@ -4,7 +4,11 @@ import menus.moveset_manager as moveset_manager
 
 
 class CmdMovesets(Command):
-    """Manage stored movesets at a Pokémon Center."""
+    """Manage stored movesets at a Pokémon Center.
+
+    Usage:
+      movesets
+    """
 
     key = "movesets"
     locks = "cmd:all()"

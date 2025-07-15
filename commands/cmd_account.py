@@ -3,7 +3,13 @@ from evennia import Command, search_account
 from django.conf import settings
 
 class CmdCharCreate(DefaultCmdCharCreate):
-    """Create a new character with a maximum-per-account limit."""
+    """Create a new character with a maximum-per-account limit.
+
+    Usage:
+      charcreate <name>
+    """
+
+    help_category = "General"
 
     def func(self):
         account = self.account
@@ -14,7 +20,11 @@ class CmdCharCreate(DefaultCmdCharCreate):
         super().func()
 
 class CmdAlts(Command):
-    """List all characters for an account."""
+    """List all characters for an account.
+
+    Usage:
+      @alts <account>
+    """
 
     key = "@alts"
     locks = "cmd:perm(Wizards)"
@@ -33,7 +43,11 @@ class CmdAlts(Command):
         self.msg(f"Characters for {account.key}: {names}")
 
 class CmdTradePokemon(Command):
-    """Trade a Pokémon with another character."""
+    """Trade a Pokémon with another character.
+
+    Usage:
+      tradepokemon <pokemon_id>=<character>
+    """
 
     key = "tradepokemon"
     locks = "cmd:all()"

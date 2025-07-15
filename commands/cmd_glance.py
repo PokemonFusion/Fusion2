@@ -3,7 +3,11 @@ from evennia.utils.evtable import EvTable
 from evennia.utils import utils
 
 class CmdGlance(Command):
-    """Show a brief overview of online characters in the room."""
+    """Show a brief overview of online characters in the room.
+
+    Usage:
+      +glance
+    """
 
     key = "+glance"
     locks = "cmd:all()"
