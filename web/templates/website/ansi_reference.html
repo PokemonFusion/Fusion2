@@ -12,6 +12,10 @@
       min-height: 100%;
       padding-bottom: 4rem; /* keep footer from covering table */
     }
+    /* hide footer on this page to avoid overlap issues */
+    footer.footer {
+      display: none;
+    }
   </style>
 {% endblock %}
 {% block content %}
