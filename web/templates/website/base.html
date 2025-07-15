@@ -22,12 +22,13 @@
     <title>{{game_name}} - {% if flatpage %}{{flatpage.title}}{% else %}{% block titleblock %}{{page_title}}{% endblock %}{% endif %}</title>
 
     <style>
-      html, body {
+      html {
         height: 100%;
-        margin: 0;
       }
 
       body {
+        min-height: 100vh;
+        margin: 0;
         display: flex;
         flex-direction: column;
       }
@@ -47,6 +48,7 @@
         color: white;
         padding: 1rem 0;
         text-align: center;
+        margin-top: auto;
       }
     </style>
   </head>
