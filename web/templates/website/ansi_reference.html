@@ -4,6 +4,10 @@
 {% block header_ext %}
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static 'webclient/css/webclient.css' %}">
+<style>
+  /* webclient.css disables scrolling; re-enable it for this page */
+  body { overflow: auto; }
+</style>
 {% endblock %}
 {% block content %}
 <h2>ANSI Color Codes</h2>
