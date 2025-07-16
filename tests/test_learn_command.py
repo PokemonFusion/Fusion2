@@ -47,6 +47,7 @@ def setup_modules():
     orig_stats = sys.modules.get("pokemon.stats")
     orig_dex = sys.modules.get("pokemon.dex")
     orig_breeding = sys.modules.get("pokemon.breeding")
+    orig_mw = sys.modules.get("pokemon.middleware")
     orig_utils = sys.modules.get("pokemon.utils")
     orig_learn = sys.modules.get("pokemon.utils.move_learning")
 
@@ -68,12 +69,15 @@ def setup_modules():
     dex_mod = types.ModuleType("pokemon.dex")
     dex_mod.ITEMDEX = {}
     breeding_mod = types.ModuleType("pokemon.breeding")
+    mw_mod = types.ModuleType("pokemon.middleware")
+    mw_mod.get_moveset_by_name = lambda name: (None, {"level-up": []})
 
     pokemon_pkg.generation = gen_mod
     pokemon_pkg.models = models_mod
     pokemon_pkg.stats = stats_mod
     pokemon_pkg.dex = dex_mod
     pokemon_pkg.breeding = breeding_mod
+    pokemon_pkg.middleware = mw_mod
 
     sys.modules["pokemon"] = pokemon_pkg
     sys.modules["pokemon.generation"] = gen_mod
@@ -81,6 +85,7 @@ def setup_modules():
     sys.modules["pokemon.stats"] = stats_mod
     sys.modules["pokemon.dex"] = dex_mod
     sys.modules["pokemon.breeding"] = breeding_mod
+    sys.modules["pokemon.middleware"] = mw_mod
 
     utils_mod = types.ModuleType("pokemon.utils")
     helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
@@ -92,6 +97,7 @@ def setup_modules():
 
     learn_mod = types.ModuleType("pokemon.utils.move_learning")
     learn_mod.learn_move = lambda *a, **k: None
+    learn_mod.get_learnable_levelup_moves = lambda poke: ([], {})
     sys.modules["pokemon.utils.move_learning"] = learn_mod
 
     orig_inv = sys.modules.get("utils.inventory")
@@ -110,6 +116,7 @@ def setup_modules():
         orig_stats,
         orig_dex,
         orig_breeding,
+        orig_mw,
         orig_inv,
         orig_utils,
         orig_learn,
@@ -127,6 +134,7 @@ def restore_modules(
     orig_stats,
     orig_dex,
     orig_breeding,
+    orig_mw,
     orig_inv,
     orig_utils,
     orig_learn,
@@ -168,6 +176,10 @@ def restore_modules(
         sys.modules["pokemon.breeding"] = orig_breeding
     else:
         sys.modules.pop("pokemon.breeding", None)
+    if orig_mw is not None:
+        sys.modules["pokemon.middleware"] = orig_mw
+    else:
+        sys.modules.pop("pokemon.middleware", None)
     if orig_inv is not None:
         sys.modules["utils.inventory"] = orig_inv
     else:
@@ -220,6 +232,9 @@ def test_learn_command_opens_menu():
     poke = DummyPokemon()
     caller = DummyCaller(poke)
 
+    learn_mod = sys.modules["pokemon.utils.move_learning"]
+    learn_mod.get_learnable_levelup_moves = lambda p: (["tackle"], {})
+
     cmd = cmd_mod.CmdLearn()
     cmd.caller = caller
     cmd.args = "1"
@@ -230,3 +245,49 @@ def test_learn_command_opens_menu():
 
     assert fake_menu.called
     assert fake_menu.kwargs["pokemon"] is poke
+
+
+def test_learn_lists_pending_when_no_args():
+    origs = setup_modules()
+    fake_menu = origs[-1]
+    cmd_mod = load_cmd_module()
+
+    poke = DummyPokemon()
+    caller = DummyCaller(poke)
+
+    learn_mod = sys.modules["pokemon.utils.move_learning"]
+    learn_mod.get_learnable_levelup_moves = lambda p: (["tackle"], {})
+
+    cmd = cmd_mod.CmdLearn()
+    cmd.caller = caller
+    cmd.args = ""
+    cmd.parse()
+    cmd.func()
+
+    restore_modules(*origs[:-1])
+
+    assert not fake_menu.called
+    assert any("Slot 1" in m for m in caller.msgs)
+
+
+def test_learn_slot_with_no_moves():
+    origs = setup_modules()
+    fake_menu = origs[-1]
+    cmd_mod = load_cmd_module()
+
+    poke = DummyPokemon()
+    caller = DummyCaller(poke)
+
+    learn_mod = sys.modules["pokemon.utils.move_learning"]
+    learn_mod.get_learnable_levelup_moves = lambda p: ([], {})
+
+    cmd = cmd_mod.CmdLearn()
+    cmd.caller = caller
+    cmd.args = "1"
+    cmd.parse()
+    cmd.func()
+
+    restore_modules(*origs[:-1])
+
+    assert not fake_menu.called
+    assert any("no moves" in m.lower() for m in caller.msgs)

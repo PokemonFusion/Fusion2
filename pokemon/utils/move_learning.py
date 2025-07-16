@@ -6,6 +6,39 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 from pokemon.models import Move
 
 
+def get_learnable_levelup_moves(pokemon):
+    """Return a list of level-up moves the Pokémon can still learn.
+
+    Returns a tuple ``(moves, level_map)`` where ``moves`` is an ordered list
+    of move names and ``level_map`` maps each move to the level it is learned
+    at (if available).
+    """
+
+    from pokemon.generation import get_valid_moves
+    from pokemon.middleware import get_moveset_by_name
+
+    known = {m.name.lower() for m in pokemon.learned_moves.all()}
+    _, moveset = get_moveset_by_name(pokemon.species)
+    if moveset:
+        lvl_moves = [
+            (lvl, mv)
+            for lvl, mv in moveset["level-up"]
+            if lvl <= pokemon.level and mv.lower() not in known
+        ]
+        lvl_moves.sort(key=lambda x: x[0])
+        moves = [mv for lvl, mv in lvl_moves]
+        level_map = {mv: lvl for lvl, mv in lvl_moves}
+    else:
+        moves = [
+            mv
+            for mv in get_valid_moves(pokemon.species, pokemon.level)
+            if mv.lower() not in known
+        ]
+        level_map = {}
+
+    return moves, level_map
+
+
 def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None) -> None:
     """Teach ``move_name`` to ``pokemon``.
 
