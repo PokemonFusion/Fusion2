@@ -38,12 +38,16 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
         pokemon.apply_active_moveset()
         if caller:
             caller.msg(f"{pokemon.name} learned {move_name.capitalize()}!")
+        if on_exit:
+            on_exit(caller, None)
         return
 
     pokemon.save()
     if not (prompt and caller):
         if caller:
             caller.msg(f"{pokemon.name} learned {move_name.capitalize()} (stored).")
+        if on_exit:
+            on_exit(caller, None)
         return
 
     from menus import learn_move as learn_menu

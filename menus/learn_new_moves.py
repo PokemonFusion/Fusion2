@@ -1,5 +1,6 @@
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from pokemon.generation import get_valid_moves
+from pokemon.middleware import get_moveset_by_name
 from pokemon.utils.move_learning import learn_move
 
 
@@ -8,7 +9,16 @@ def node_start(caller, raw_input=None, **kwargs):
     moves = kwargs.get("moves")
     if moves is None:
         known = {m.name.lower() for m in pokemon.learned_moves.all()}
-        moves = [m for m in get_valid_moves(pokemon.species, pokemon.level) if m.lower() not in known]
+        _, moveset = get_moveset_by_name(pokemon.species)
+        if moveset:
+            lvl_moves = [
+                (lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= pokemon.level
+            ]
+            lvl_moves.sort(key=lambda x: x[0])
+            ordered = [mv for _, mv in lvl_moves]
+        else:
+            ordered = get_valid_moves(pokemon.species, pokemon.level)
+        moves = [m for m in ordered if m.lower() not in known]
         if not moves:
             caller.msg(f"{pokemon.name} has no new moves to learn.")
             return None, None
