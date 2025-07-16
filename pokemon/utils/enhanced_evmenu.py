@@ -82,11 +82,21 @@ class EnhancedEvMenu(EvMenu):
             self.msg(f"|rNo help for '{topic}'.|n")
             return
 
-        # collect option definitions for later reference
-        option_defs = self.test_options or []
-        option_defs = (
-            option_defs if isinstance(option_defs, (list, tuple)) else [option_defs]
-        )
+        # collect option definitions for later reference. If not provided
+        # explicitly (used only in tests), fall back to the menu's current
+        # options so normal input works.
+        option_defs = getattr(self, "test_options", None)
+        if option_defs is None:
+            option_defs = [
+                {"key": key, "goto": goto}
+                for key, goto in (self.options or {}).items()
+            ]
+            if self.default:
+                option_defs.append({"key": "_default", "goto": self.default})
+        else:
+            option_defs = (
+                option_defs if isinstance(option_defs, (list, tuple)) else [option_defs]
+            )
 
         match_opt = None
         default_opt = None

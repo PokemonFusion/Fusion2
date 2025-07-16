@@ -150,6 +150,6 @@ def test_order_moves_by_level():
     else:
         sys.modules.pop("pokemon.middleware", None)
 
-    assert "Scratch" in lines[1]
-    assert "Tailwhip" in lines[2]
-    assert "Ember" in lines[3]
+    assert lines[1].startswith("Lv5") and "Scratch" in lines[1]
+    assert lines[2].startswith("Lv7") and "Tailwhip" in lines[2]
+    assert lines[3].startswith("Lv10") and "Ember" in lines[3]

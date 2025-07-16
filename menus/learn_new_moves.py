@@ -7,6 +7,7 @@ from pokemon.utils.move_learning import learn_move
 def node_start(caller, raw_input=None, **kwargs):
     pokemon = kwargs.get("pokemon")
     moves = kwargs.get("moves")
+    level_map = kwargs.get("level_map", {})
     if moves is None:
         known = {m.name.lower() for m in pokemon.learned_moves.all()}
         _, moveset = get_moveset_by_name(pokemon.species)
@@ -16,17 +17,22 @@ def node_start(caller, raw_input=None, **kwargs):
             ]
             lvl_moves.sort(key=lambda x: x[0])
             ordered = [mv for _, mv in lvl_moves]
+            level_map = {mv: lvl for lvl, mv in lvl_moves}
         else:
             ordered = get_valid_moves(pokemon.species, pokemon.level)
+            level_map = {}
         moves = [m for m in ordered if m.lower() not in known]
         if not moves:
             caller.msg(f"{pokemon.name} has no new moves to learn.")
             return None, None
         kwargs["moves"] = moves
+        kwargs["level_map"] = level_map
     if raw_input is None:
         lines = [f"Choose a move for {pokemon.name} to learn:"]
         for mv in moves:
-            lines.append(f"  {mv.capitalize()}")
+            lvl = level_map.get(mv)
+            prefix = f"Lv{lvl} " if lvl is not None else ""
+            lines.append(f"  {prefix}{mv.capitalize()}")
         lines.append("Type the move name, 'all' to learn all, or 'cancel' to quit.")
         return "\n".join(lines), [{"key": "_default", "goto": ("node_start", kwargs)}]
     cmd = raw_input.strip().lower()
