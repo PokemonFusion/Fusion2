@@ -11,7 +11,11 @@ from pokemon.battle.pvp import (
 
 
 class CmdPvpHelp(Command):
-    """Show available PVP commands."""
+    """Show available PVP commands.
+
+    Usage:
+      +pvp
+    """
 
     key = "+pvp"
     locks = "cmd:all()"
@@ -28,7 +32,11 @@ class CmdPvpHelp(Command):
 
 
 class CmdPvpList(Command):
-    """List all open PVP requests in the room."""
+    """List all open PVP requests in the room.
+
+    Usage:
+      +pvp/list
+    """
 
     key = "+pvp/list"
     locks = "cmd:all()"
@@ -47,7 +55,11 @@ class CmdPvpList(Command):
 
 
 class CmdPvpCreate(Command):
-    """Create a new PVP request."""
+    """Create a new PVP request.
+
+    Usage:
+      +pvp/create [password]
+    """
 
     key = "+pvp/create"
     locks = "cmd:all()"
@@ -64,7 +76,11 @@ class CmdPvpCreate(Command):
 
 
 class CmdPvpJoin(Command):
-    """Join an existing PVP request."""
+    """Join an existing PVP request.
+
+    Usage:
+      +pvp/join <player> [password]
+    """
 
     key = "+pvp/join"
     locks = "cmd:all()"
@@ -87,7 +103,11 @@ class CmdPvpJoin(Command):
 
 
 class CmdPvpAbort(Command):
-    """Abort your active PVP request."""
+    """Abort your active PVP request.
+
+    Usage:
+      +pvp/abort
+    """
 
     key = "+pvp/abort"
     locks = "cmd:all()"
@@ -99,7 +119,11 @@ class CmdPvpAbort(Command):
 
 
 class CmdPvpStart(Command):
-    """Start a PVP battle."""
+    """Start a PVP battle.
+
+    Usage:
+      +pvp/start
+    """
 
     key = "+pvp/start"
     locks = "cmd:all()"

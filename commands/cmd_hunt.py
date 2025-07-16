@@ -7,7 +7,11 @@ from world.hunt_system import HuntSystem
 
 
 class CmdHunt(Command):
-    """Attempt to encounter a wild Pokémon in the current room."""
+    """Attempt to encounter a wild Pokémon in the current room.
+
+    Usage:
+      +hunt
+    """
 
     key = "+hunt"
     locks = "cmd:all()"
@@ -20,7 +24,11 @@ class CmdHunt(Command):
 
 
 class CmdLeaveHunt(Command):
-    """Leave a hunting instance."""
+    """Leave a hunting instance.
+
+    Usage:
+      +leave
+    """
 
     key = "+leave"
     locks = "cmd:all()"
@@ -38,7 +46,11 @@ class CmdLeaveHunt(Command):
 
 
 class CmdCustomHunt(Command):
-    """Start a hunt with a specified Pokémon and level."""
+    """Start a hunt with a specified Pokémon and level.
+
+    Usage:
+      +huntcustom <pokemon> <level>
+    """
 
     key = "+huntcustom"
     locks = "cmd:perm(Builders)"

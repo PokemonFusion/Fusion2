@@ -4,7 +4,11 @@ import menus.item_store as item_store
 
 
 class CmdStore(Command):
-    """Access the item store in the current room."""
+    """Access the item store in the current room.
+
+    Usage:
+      store
+    """
 
     key = "store"
     locks = "cmd:all()"

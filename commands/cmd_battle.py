@@ -6,7 +6,11 @@ from pokemon.battle import Action, ActionType, BattleMove
 
 
 class CmdBattleAttack(Command):
-    """Queue a move to use in the current battle."""
+    """Queue a move to use in the current battle.
+
+    Usage:
+      +battleattack <move> [target]
+    """
 
     key = "+battleattack"
     locks = "cmd:all()"
@@ -41,7 +45,11 @@ class CmdBattleAttack(Command):
 
 
 class CmdBattleSwitch(Command):
-    """Switch your active Pokémon in battle."""
+    """Switch your active Pokémon in battle.
+
+    Usage:
+      +battleswitch <slot>
+    """
 
     key = "+battleswitch"
     locks = "cmd:all()"
@@ -70,7 +78,11 @@ class CmdBattleSwitch(Command):
 
 
 class CmdBattleItem(Command):
-    """Use an item during battle."""
+    """Use an item during battle.
+
+    Usage:
+      +battleitem <item>
+    """
 
     key = "+battleitem"
     locks = "cmd:all()"

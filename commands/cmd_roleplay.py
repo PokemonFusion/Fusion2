@@ -2,20 +2,39 @@ from evennia.commands.default.account import CmdIC as DefaultCmdIC, CmdOOC as De
 from evennia import Command
 
 class CmdGOIC(DefaultCmdIC):
-    """Go in-character."""
+    """Go in-character.
+
+    Usage:
+      goic
+    """
+
     key = "goic"
     aliases = ["puppet"]
+    help_category = "General"
 
 class CmdGOOOC(DefaultCmdOOC):
-    """Go out-of-character."""
+    """Go out-of-character.
+
+    Usage:
+      goooc
+    """
+
     key = "goooc"
     aliases = ["unpuppet"]
+    help_category = "General"
 
 class CmdOOC(Command):
-    """Speak or pose out-of-character in bright green."""
+    """Speak or pose out-of-character in bright green.
+
+    Usage:
+      ooc <message>
+      ooc :<pose>
+    """
+
     key = "ooc"
     locks = "cmd:all()"
     arg_regex = None
+    help_category = "General"
 
     def func(self):
         caller = self.caller

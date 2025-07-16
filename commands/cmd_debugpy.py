@@ -20,7 +20,11 @@ except ImportError:  # pragma: no cover - import-time check
 
 
 class CmdDebugPy(COMMAND_DEFAULT_CLASS):
-    """Launch the debugpy debugger and wait for attach on port 5678."""
+    """Launch the debugpy debugger and wait for attach on port 5678.
+
+    Usage:
+      @debugpy
+    """
 
     key = "@debugpy"
     locks = "cmd:perm(Wizards)"

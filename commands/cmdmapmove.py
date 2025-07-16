@@ -2,10 +2,15 @@ from evennia import Command
 
 
 class CmdMapMove(Command):
-    """Move inside the current map."""
+    """Move inside the current map.
+
+    Usage:
+      @mapmove <n|s|e|w>
+    """
 
     key = "@mapmove"
     locks = "cmd:all()"
+    help_category = "General"
 
     def func(self):
         dir_map = {"n": (0, -1), "s": (0, 1), "e": (1, 0), "w": (-1, 0)}

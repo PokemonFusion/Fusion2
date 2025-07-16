@@ -6,7 +6,11 @@ from pokemon.battle.handler import battle_handler
 
 
 class CmdAbortBattle(Command):
-    """Force end an ongoing battle."""
+    """Force end an ongoing battle.
+
+    Usage:
+      +abortbattle <character or battle id>
+    """
 
     key = "+abortbattle"
     locks = "cmd:perm(Wizards)"

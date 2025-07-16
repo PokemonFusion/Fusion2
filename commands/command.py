@@ -130,7 +130,11 @@ class CmdGetPokemonDetails(Command):
 
 
 class CmdUseMove(Command):
-    """Use a Pokémon move in a simple battle simulation."""
+    """Use a Pokémon move in a simple battle simulation.
+
+    Usage:
+      usemove <move> <attacker> <target>
+    """
 
     key = "usemove"
     locks = "cmd:all()"
@@ -185,7 +189,11 @@ class CmdUseMove(Command):
         self.caller.msg("\n".join(out))
 
 class CmdHunt(Command):
-    """Search for a wild Pokémon or a trainer to battle."""
+    """Search for a wild Pokémon or a trainer to battle.
+
+    Usage:
+      +hunt
+    """
 
     key = "+hunt"
     locks = "cmd:all()"
@@ -203,7 +211,11 @@ class CmdHunt(Command):
 
 
 class CmdChooseStarter(Command):
-    """Choose your first Pokémon."""
+    """Choose your first Pokémon.
+
+    Usage:
+      choosestarter <pokemon>
+    """
 
     key = "choosestarter"
     locks = "cmd:all()"
@@ -218,7 +230,11 @@ class CmdChooseStarter(Command):
 
 
 class CmdDepositPokemon(Command):
-    """Deposit a Pokémon into a storage box."""
+    """Deposit a Pokémon into a storage box.
+
+    Usage:
+      deposit <pokemon_id> [box]
+    """
 
     key = "deposit"
     locks = "cmd:all()"
@@ -239,7 +255,11 @@ class CmdDepositPokemon(Command):
 
 
 class CmdWithdrawPokemon(Command):
-    """Withdraw a Pokémon from a storage box."""
+    """Withdraw a Pokémon from a storage box.
+
+    Usage:
+      withdraw <pokemon_id> [box]
+    """
 
     key = "withdraw"
     locks = "cmd:all()"
@@ -260,7 +280,11 @@ class CmdWithdrawPokemon(Command):
 
 
 class CmdShowBox(Command):
-    """Show the contents of a storage box."""
+    """Show the contents of a storage box.
+
+    Usage:
+      showbox <box_number>
+    """
 
     key = "showbox"
     locks = "cmd:all()"
@@ -276,7 +300,11 @@ class CmdShowBox(Command):
 
 
 class CmdSetHoldItem(Command):
-    """Give one of your active Pokémon a held item."""
+    """Give one of your active Pokémon a held item.
+
+    Usage:
+      setholditem <slot>=<item>
+    """
 
     key = "setholditem"
     locks = "cmd:all()"
@@ -312,7 +340,11 @@ class CmdSetHoldItem(Command):
 
 
 class CmdChargenInfo(Command):
-    """Show chargen details and active Pokémon."""
+    """Show chargen details and active Pokémon.
+
+    Usage:
+      chargeninfo
+    """
 
     key = "chargeninfo"
     locks = "cmd:all()"
@@ -372,7 +404,11 @@ class CmdSpoof(Command):
 
 
 class CmdInventory(Command):
-    """Show items in your inventory."""
+    """Show items in your inventory.
+
+    Usage:
+      +inventory
+    """
 
     key = "+inventory"
     locks = "cmd:all()"
@@ -398,7 +434,11 @@ class CmdInventory(Command):
 
 
 class CmdAddItem(Command):
-    """Add an item to your inventory."""
+    """Add an item to your inventory.
+
+    Usage:
+      additem <item> <amount>
+    """
 
     key = "additem"
     locks = "cmd:all()"
@@ -424,7 +464,11 @@ class CmdAddItem(Command):
 
 
 class CmdGiveItem(Command):
-    """Give an item to another player (admin-only)."""
+    """Give an item to another player (admin-only).
+
+    Usage:
+      +giveitem <player> = <item>:<amount>
+    """
 
     key = "+giveitem"
     locks = "cmd:perm(Builder)"
@@ -459,7 +503,12 @@ class CmdGiveItem(Command):
 
 
 class CmdUseItem(Command):
-    """Use an item outside of battle."""
+    """Use an item outside of battle.
+
+    Usage:
+      +useitem <item>
+      +useitem <slot>=<item>
+    """
 
     key = "+useitem"
     locks = "cmd:all()"
@@ -560,7 +609,11 @@ class CmdUseItem(Command):
 
 
 class CmdEvolvePokemon(Command):
-    """Evolve one of your Pokémon if possible."""
+    """Evolve one of your Pokémon if possible.
+
+    Usage:
+      evolve <pokemon_id> [item]
+    """
 
     key = "evolve"
     locks = "cmd:all()"
@@ -598,7 +651,11 @@ class CmdEvolvePokemon(Command):
 
 
 class CmdExpShare(Command):
-    """Toggle the EXP Share effect for your party."""
+    """Toggle the EXP Share effect for your party.
+
+    Usage:
+      +expshare
+    """
 
     key = "+expshare"
     locks = "cmd:all()"
@@ -615,7 +672,11 @@ class CmdExpShare(Command):
 
 
 class CmdHeal(Command):
-    """Heal your Pokémon party at a Pokémon Center."""
+    """Heal your Pokémon party at a Pokémon Center.
+
+    Usage:
+      +heal
+    """
 
     key = "+heal"
     locks = "cmd:all()"
@@ -631,7 +692,11 @@ class CmdHeal(Command):
 
 
 class CmdAdminHeal(Command):
-    """Heal another player's Pokémon party."""
+    """Heal another player's Pokémon party.
+
+    Usage:
+      +adminheal [<player>]
+    """
 
     key = "+adminheal"
     locks = "cmd:perm(Wizards)"
@@ -656,7 +721,11 @@ class CmdAdminHeal(Command):
 
 
 class CmdChooseMoveset(Command):
-    """Select which stored moveset a Pokémon should use."""
+    """Select which stored moveset a Pokémon should use.
+
+    Usage:
+      +moveset <slot>=<set#>
+    """
 
     key = "+moveset"
     locks = "cmd:all()"
@@ -690,7 +759,11 @@ class CmdChooseMoveset(Command):
 
 
 class CmdTeachMove(Command):
-    """Teach a move to one of your active Pokémon."""
+    """Teach a move to one of your active Pokémon.
+
+    Usage:
+      +move <slot>=<move>
+    """
 
     key = "+move"
     locks = "cmd:all()"

@@ -6,7 +6,11 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdSpawns(Command):
-    """Open a menu to edit the current room's spawn table."""
+    """Open a menu to edit the current room's spawn table.
+
+    Usage:
+      +spawns
+    """
 
     key = "+spawns"
     locks = "cmd:perm(Wizards)"

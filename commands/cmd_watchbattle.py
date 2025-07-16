@@ -9,7 +9,11 @@ from pokemon.battle.interface import add_watcher, remove_watcher
 
 
 class CmdWatchBattle(Command):
-    """Watch another character's ongoing battle."""
+    """Watch another character's ongoing battle.
+
+    Usage:
+      +watchbattle <character or battle id>
+    """
 
     key = "+watchbattle"
     locks = "cmd:all()"
@@ -51,7 +55,11 @@ class CmdWatchBattle(Command):
 
 
 class CmdUnwatchBattle(Command):
-    """Stop watching the current battle."""
+    """Stop watching the current battle.
+
+    Usage:
+      +unwatchbattle
+    """
 
     key = "+unwatchbattle"
     locks = "cmd:all()"
