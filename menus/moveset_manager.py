@@ -41,10 +41,10 @@ def node_manage(caller, raw_input=None):
             marker = "*" if i - 1 == poke.active_moveset_index else " "
             moves = ", ".join(s) if s else "(empty)"
             lines.append(f"{marker}{i}. {moves}")
-        lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' to exit.")
+        lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' or 'b' to exit.")
         return "\n".join(lines), [{"key": "_default", "goto": "node_manage"}]
     cmd = raw_input.strip().lower()
-    if cmd == "back":
+    if cmd in ("back", "b"):
         del caller.ndb.ms_pokemon
         return node_start(caller)
     if cmd.isdigit():
@@ -89,8 +89,11 @@ def node_edit(caller, raw_input=None):
         learned = [m.name for m in poke.learned_moves.all().order_by("name")]
         move_list = ", ".join(learned) if learned else "(none)"
         lines = [f"Available moves: {move_list}",
-                 f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}]:"]
+                 f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}] (type 'back' or 'b' to cancel):"]
         return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
+    cmd = raw_input.strip().lower()
+    if cmd in ("back", "b"):
+        return node_manage(caller)
     moves = [m.strip() for m in raw_input.split(',') if m.strip()][:4]
     learned = {m.name.lower() for m in poke.learned_moves.all().order_by("name")}
     invalid = [m for m in moves if m.lower() not in learned]
