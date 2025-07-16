@@ -26,7 +26,7 @@ def node_start(caller, raw_input=None):
         caller.msg("Invalid choice.")
         return "node_start"
     caller.ndb.ms_pokemon = pokemon
-    return node_manage(caller)
+    return "node_manage"
 
 
 def node_manage(caller, raw_input=None):
@@ -51,13 +51,13 @@ def node_manage(caller, raw_input=None):
         idx = int(cmd) - 1
         if 0 <= idx < 4:
             caller.ndb.ms_index = idx
-            return node_edit(caller)
+            return "node_edit"
         caller.msg("Number must be 1-4.")
-        return node_manage(caller)
+        return "node_manage"
     parts = cmd.split(maxsplit=1)
     if len(parts) != 2:
         caller.msg("Invalid command.")
-        return node_manage(caller)
+        return "node_manage"
     action, num = parts
     try:
         idx = int(num) - 1
@@ -73,7 +73,7 @@ def node_manage(caller, raw_input=None):
         return node_manage(caller)
     if action == "edit":
         caller.ndb.ms_index = idx
-        return node_edit(caller)
+        return "node_edit"
     caller.msg("Unknown command.")
     return node_manage(caller)
 
@@ -93,21 +93,21 @@ def node_edit(caller, raw_input=None):
         return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
     cmd = raw_input.strip().lower()
     if cmd in ("back", "b"):
-        return node_manage(caller)
+        return "node_manage"
     moves = [m.strip() for m in raw_input.split(',') if m.strip()][:4]
     learned = {m.name.lower() for m in poke.learned_moves.all().order_by("name")}
     invalid = [m for m in moves if m.lower() not in learned]
     if invalid:
         caller.msg("Invalid move(s): " + ", ".join(invalid))
-        return node_edit(caller)
+        return "node_edit"
     if len({m.lower() for m in moves}) != len(moves):
         caller.msg("Duplicate moves are not allowed.")
-        return node_edit(caller)
+        return "node_edit"
     sets[idx] = moves
     poke.movesets = sets
     if idx == poke.active_moveset_index:
         poke.moves = moves
     poke.save()
     caller.msg(f"Moveset {idx+1} updated.")
-    return node_manage(caller)
+    return "node_manage"
 
