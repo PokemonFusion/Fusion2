@@ -100,6 +100,9 @@ def node_edit(caller, raw_input=None):
     if invalid:
         caller.msg("Invalid move(s): " + ", ".join(invalid))
         return node_edit(caller)
+    if len({m.lower() for m in moves}) != len(moves):
+        caller.msg("Duplicate moves are not allowed.")
+        return node_edit(caller)
     sets[idx] = moves
     poke.movesets = sets
     if idx == poke.active_moveset_index:

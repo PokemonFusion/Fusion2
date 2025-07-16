@@ -204,6 +204,41 @@ def test_edit_rejects_invalid_move():
     assert "Available moves" in text
 
 
+def test_edit_rejects_duplicate_moves():
+    import importlib
+    menu = importlib.import_module("menus.moveset_manager")
+
+    poke = type("DP", (), {})()
+    poke.nickname = "Pika"
+    poke.species = "Pikachu"
+    poke.movesets = [[]]
+    poke.active_moveset_index = 0
+
+    class LM:
+        def all(self):
+            return self
+
+        def order_by(self, field):
+            return [types.SimpleNamespace(name="ember"), types.SimpleNamespace(name="tackle")]
+
+    poke.learned_moves = LM()
+    poke.save = lambda: None
+
+    class DummyCaller:
+        def __init__(self, poke):
+            self.msgs = []
+            self.ndb = types.SimpleNamespace(ms_pokemon=poke, ms_index=0)
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller(poke)
+    text, _ = menu.node_edit(caller, raw_input="tackle, tackle")
+    assert any("Duplicate" in m for m in caller.msgs)
+    assert poke.movesets[0] == []
+    assert "Available moves" in text
+
+
 def test_edit_back_returns_to_manage():
     import importlib
     menu = importlib.import_module("menus.moveset_manager")
