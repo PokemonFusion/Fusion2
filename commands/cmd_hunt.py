@@ -49,17 +49,18 @@ class CmdCustomHunt(Command):
     """Start a hunt with a specified Pokémon and level.
 
     Usage:
-      +huntcustom <pokemon> <level>
+      +customhunt <pokemon> <level>
     """
 
-    key = "+huntcustom"
+    key = "+customhunt"
+    aliases = ["+huntcustom"]
     locks = "cmd:perm(Builders)"
     help_category = "Admin"
 
     def func(self):
         parts = self.args.split()
         if len(parts) != 2:
-            self.caller.msg("Usage: +huntcustom <pokemon> <level>")
+            self.caller.msg("Usage: +customhunt <pokemon> <level>")
             return
 
         name = parts[0]

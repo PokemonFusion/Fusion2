@@ -10,7 +10,43 @@ if "evennia" not in sys.modules:
     evennia = types.ModuleType("evennia")
     evennia.DefaultRoom = type("DefaultRoom", (), {})
     evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
+    evennia.create_object = lambda *a, **k: None
+    evennia.search_object = lambda *a, **k: []
     sys.modules["evennia"] = evennia
+
+# Provide a lightweight battle system stub so ``world.hunt_system`` can import
+# its dependencies without requiring the real game engine.
+if "pokemon.battle.battleinstance" not in sys.modules:
+    battle_mod = types.ModuleType("pokemon.battle.battleinstance")
+
+    class BattleType:
+        WILD = "wild"
+        TRAINER = "trainer"
+
+    class BattleInstance:
+        def __init__(self, player, opponent=None):
+            self.player = player
+
+        def start(self):
+            pass
+
+    def create_battle_pokemon(name, level, is_wild=False):
+        return types.SimpleNamespace(name=name, level=level)
+
+    def generate_trainer_pokemon():
+        return types.SimpleNamespace(name="Rattata", level=5)
+
+    battle_mod.BattleType = BattleType
+    battle_mod.BattleInstance = BattleInstance
+    battle_mod.create_battle_pokemon = create_battle_pokemon
+    battle_mod.generate_trainer_pokemon = generate_trainer_pokemon
+
+    # Ensure the parent packages exist in ``sys.modules``
+    if "pokemon" not in sys.modules:
+        sys.modules["pokemon"] = types.ModuleType("pokemon")
+    if "pokemon.battle" not in sys.modules:
+        sys.modules["pokemon.battle"] = types.ModuleType("pokemon.battle")
+    sys.modules["pokemon.battle.battleinstance"] = battle_mod
 
 from world.hunt_system import HuntSystem
 
@@ -26,6 +62,24 @@ class DummyRoom:
         self.db = DummyDB(allow_hunting=True, encounter_rate=0)
 
 
+class DummyAttr(types.SimpleNamespace):
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+
+class DummyStorage:
+    def get_party(self):
+        return [types.SimpleNamespace(ability=None)]
+
+
+class DummyHunter:
+    def __init__(self):
+        self.key = "hunter"
+        self.db = DummyAttr(training_points=10)
+        self.ndb = DummyAttr()
+        self.storage = DummyStorage()
+
+
 def test_perform_fixed_hunt():
     room = DummyRoom()
     captured = {}
@@ -34,7 +88,8 @@ def test_perform_fixed_hunt():
         captured.update(data)
 
     hs = HuntSystem(room, spawn_callback=cb)
-    msg = hs.perform_fixed_hunt(object(), "Pikachu", 7)
+    hunter = DummyHunter()
+    msg = hs.perform_fixed_hunt(hunter, "Pikachu", 7)
     assert msg == "A wild Pikachu (Lv 7) appeared!"
     assert captured["name"] == "Pikachu"
     assert captured["level"] == 7
