@@ -92,6 +92,11 @@ def node_edit(caller, raw_input=None):
                  f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}]:"]
         return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
     moves = [m.strip() for m in raw_input.split(',') if m.strip()][:4]
+    learned = {m.name.lower() for m in poke.learned_moves.all().order_by("name")}
+    invalid = [m for m in moves if m.lower() not in learned]
+    if invalid:
+        caller.msg("Invalid move(s): " + ", ".join(invalid))
+        return node_edit(caller)
     sets[idx] = moves
     poke.movesets = sets
     if idx == poke.active_moveset_index:
