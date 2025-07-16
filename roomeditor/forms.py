@@ -11,7 +11,19 @@ class RoomForm(forms.Form):
         ("typeclasses.maproom.MapRoom", "Map Room"),
     ]
 
-    room_class = forms.ChoiceField(label="Room Class", choices=ROOM_CLASS_CHOICES)
+    ROOM_CLASS_HELP = (
+        "Room - standard room. "
+        "Fusion Room - supports Pokémon centers, item shops and hunting. "
+        "Battle Room - temporary space for battles. "
+        "Map Room - displays a simple 2D map."
+    )
+
+    room_class = forms.ChoiceField(
+        label="Room Class",
+        choices=ROOM_CLASS_CHOICES,
+        help_text=ROOM_CLASS_HELP,
+        widget=forms.Select(attrs={"title": ROOM_CLASS_HELP}),
+    )
     name = forms.CharField(
         label="Name",
         max_length=80,
