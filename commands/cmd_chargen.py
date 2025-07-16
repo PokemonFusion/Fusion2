@@ -178,7 +178,7 @@ class CmdChargen(Command):
 
 def start(caller, raw_string):
     text = (
-        "Welcome to Pokemon Fusion!\n"
+        "Welcome to Pokemon Fusion 2!\n"
         "A: Play a human trainer with a starter Pokémon.\n"
         "B: Play a Fusion without a starter.\n"
         "______________________________________________________________________________"
