@@ -88,6 +88,7 @@ from commands.cmd_validate import CmdValidate
 from commands.cmd_givepokemon import CmdGivePokemon
 from commands.cmd_adminpokemon import CmdListPokemon, CmdRemovePokemon
 from commands.cmd_gitpull import CmdGitPull
+from commands.cmd_logusage import CmdLogUsage, CmdMarkVerified
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
 from commands.cmd_glance import CmdGlance
 from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
@@ -191,6 +192,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdValidate())
         self.add(CmdMapMove())
         self.add(CmdStartMap())
+        self.add(CmdLogUsage())
+        self.add(CmdMarkVerified())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
