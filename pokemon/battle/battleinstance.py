@@ -25,12 +25,14 @@ def _calc_stats_from_model(poke):
     ivs = data.get("ivs", {})
     evs = data.get("evs", {})
     nature = data.get("nature", "Hardy")
+    name = getattr(poke, "name", "Pikachu")
+    level = getattr(poke, "level", 1)
     try:
         if calculate_stats:
-            return calculate_stats(poke.name, poke.level, ivs, evs, nature)
+            return calculate_stats(name, level, ivs, evs, nature)
         raise Exception
     except Exception:
-        inst = generate_pokemon(poke.name, level=poke.level)
+        inst = generate_pokemon(name, level=level)
         st = getattr(inst, "stats", inst)
         return {
             "hp": getattr(st, "hp", 100),
@@ -57,7 +59,10 @@ def create_battle_pokemon(
         OwnedPokemon = None
 
     inst = generate_pokemon(species, level=level)
-    moves = [Move(name=m) for m in getattr(inst, "moves", [])]
+    move_names = getattr(inst, "moves", [])
+    if not move_names:
+        move_names = ["Flail"]
+    moves = [Move(name=m) for m in move_names]
 
     data = {}
     if hasattr(inst, "ivs"):
@@ -181,7 +186,7 @@ class BattleInstance:
             self.start_pvp()
             return
 
-        origin = self.player.location
+        origin = getattr(self.player, "location", None)
         opponent_poke, opponent_name, battle_type = self._select_opponent()
         player_pokemon = self._prepare_player_party(self.player)
         self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
@@ -192,7 +197,7 @@ class BattleInstance:
         if not self.opponent:
             return
 
-        origin = self.player.location
+        origin = getattr(self.player, "location", None)
 
         player_pokemon = self._prepare_player_party(self.player, full_heal=True)
 
@@ -287,19 +292,24 @@ class BattleInstance:
         )
         pokemons: List[Pokemon] = []
         for poke in party:
+            level = getattr(poke, "level", 1)
+            name = getattr(poke, "name", "Poke")
             stats = _calc_stats_from_model(poke)
-            moves = [Move(name=m) for m in getattr(poke, "moves", [])[:4]]
+            move_names = getattr(poke, "moves", [])
+            if not move_names:
+                move_names = ["Flail"]
+            moves = [Move(name=m) for m in move_names[:4]]
             current_hp = (
-                stats.get("hp", poke.level)
+                stats.get("hp", level)
                 if full_heal
-                else getattr(poke, "current_hp", stats.get("hp", poke.level))
+                else getattr(poke, "current_hp", stats.get("hp", level))
             )
             pokemons.append(
                 Pokemon(
-                    name=poke.name,
-                    level=poke.level,
+                    name=name,
+                    level=level,
                     hp=current_hp,
-                    max_hp=stats.get("hp", poke.level),
+                    max_hp=stats.get("hp", level),
                     moves=moves,
                     ability=getattr(poke, "ability", None),
                     data=getattr(poke, "data", {}),
@@ -346,14 +356,17 @@ class BattleInstance:
     def _setup_battle_room(self) -> None:
         """Move players to the battle room and notify watchers."""
         add_watcher(self.state, self.player)
-        self.watchers.add(self.player.id)
+        if hasattr(self.player, "id"):
+            self.watchers.add(self.player.id)
         self.player.ndb.battle_instance = self
-        self.player.move_to(self.room, quiet=True)
-        self.player.msg("Battle started!")
-        bid = getattr(self.room, "id", 0)
-        self.player.msg(f"Battle ID: {bid}")
+        if hasattr(self.player, "move_to"):
+            self.player.move_to(self.room, quiet=True)
+        if hasattr(self.player, "msg"):
+            self.player.msg("Battle started!")
+            bid = getattr(self.room, "id", 0)
+            self.player.msg(f"Battle ID: {bid}")
         notify_watchers(
-            self.state, f"{self.player.key} has entered battle!", room=self.room
+            self.state, f"{getattr(self.player, 'key', 'Player')} has entered battle!", room=self.room
         )
 
         self.prompt_first_turn()
@@ -407,7 +420,8 @@ class BattleInstance:
     # ------------------------------------------------------------------
     def prompt_first_turn(self) -> None:
         """Notify the player that the battle is ready to begin."""
-        self.player.msg("The battle awaits your move.")
+        if hasattr(self.player, "msg"):
+            self.player.msg("The battle awaits your move.")
 
     def run_turn(self) -> None:
         """Advance the battle by one turn."""
