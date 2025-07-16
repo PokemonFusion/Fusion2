@@ -157,10 +157,20 @@ class HuntSystem:
         return f"A wild {selected_name} (Lv {level}) appeared!"
 
     def perform_fixed_hunt(self, hunter, name: str, level: int) -> str:
-        """Resolve a hunt with a predetermined Pokémon and level."""
+        """Resolve a hunt with a predetermined Pokémon and level.
+
+        This mirrors :meth:`perform_hunt` but skips random encounter logic and
+        itemfinder checks, always spawning the specified Pokémon at the given
+        level.
+        """
+
         room = self.room
-        if not room.db.allow_hunting:
-            return "You can't hunt here."
+
+        err = self._pre_checks(hunter)
+        if err:
+            return err
+
+        self._apply_walk_steps(hunter)
 
         result = {
             "name": name,
@@ -170,20 +180,17 @@ class HuntSystem:
         if self.spawn_callback:
             self.spawn_callback(hunter, result)
 
-        if hasattr(hunter, "key"):
-            poke = create_battle_pokemon(name, level, is_wild=True)
+        poke = create_battle_pokemon(name, level, is_wild=True)
 
-            def _select_override():
-                return poke, "Wild", BattleType.WILD
+        def _select_override():
+            return poke, "Wild", BattleType.WILD
 
-            inst = BattleInstance(hunter)
-            inst._select_opponent = _select_override
-            inst.start()
+        inst = BattleInstance(hunter)
+        inst._select_opponent = _select_override
+        inst.start()
 
-            tp_cost = room.db.get("tp_cost", 0)
-            if tp_cost:
-                hunter.db.training_points = hunter.db.get(
-                    "training_points", 0
-                ) - tp_cost
+        tp_cost = room.db.get("tp_cost", 0)
+        if tp_cost:
+            hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
 
         return f"A wild {name} (Lv {level}) appeared!"
