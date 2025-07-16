@@ -93,7 +93,15 @@ def test_number_select_opens_edit():
             self.nickname = "Pika"
             self.name = "Pikachu"
             self.movesets = [["tackle"]]
-            self.active_moveset = 0
+            self.active_moveset_index = 0
+            class LM:
+                def __init__(self):
+                    self.moves = [types.SimpleNamespace(name="ember"), types.SimpleNamespace(name="tackle")]
+                def all(self):
+                    return self
+                def order_by(self, field):
+                    return sorted(self.moves, key=lambda m: getattr(m, field))
+            self.learned_moves = LM()
 
     class DummyCaller:
         def __init__(self, poke):
@@ -107,3 +115,58 @@ def test_number_select_opens_edit():
     text, opts = menu.node_manage(caller, raw_input="1")
     assert caller.ndb.ms_index == 0
     assert "Enter up to 4 moves" in text
+
+
+def test_manage_lists_active_set_and_species():
+    import importlib
+    menu = importlib.import_module("menus.moveset_manager")
+
+    class DummyPoke:
+        def __init__(self):
+            self.nickname = ""
+            self.species = "Charmander"
+            self.movesets = [["scratch"], []]
+            self.active_moveset_index = 0
+
+    class DummyCaller:
+        def __init__(self, poke):
+            self.msgs = []
+            self.ndb = types.SimpleNamespace(ms_pokemon=poke)
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller(DummyPoke())
+    text, _ = menu.node_manage(caller)
+    assert "*1." in text
+    assert "Charmander" in text
+
+
+def test_edit_lists_learned_moves():
+    import importlib
+    menu = importlib.import_module("menus.moveset_manager")
+
+    poke = type("DP", (), {})()
+    poke.nickname = "Pika"
+    poke.species = "Pikachu"
+    poke.movesets = [["tackle"]]
+    poke.active_moveset_index = 0
+    class LM:
+        def all(self):
+            return self
+        def order_by(self, field):
+            return [types.SimpleNamespace(name="ember"), types.SimpleNamespace(name="tackle")]
+    poke.learned_moves = LM()
+
+    class DummyCaller:
+        def __init__(self, poke):
+            self.msgs = []
+            self.ndb = types.SimpleNamespace(ms_pokemon=poke, ms_index=0)
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller(poke)
+    text, _ = menu.node_edit(caller)
+    assert "Available moves" in text
+    assert "ember, tackle" in text

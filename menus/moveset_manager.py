@@ -13,7 +13,8 @@ def node_start(caller, raw_input=None):
     if not raw_input:
         lines = ["|wSelect a Pokémon to manage|n"]
         for i, mon in enumerate(mons, 1):
-            lines.append(f"  {i}. {mon.nickname} ({mon.name})")
+            disp = mon.nickname or mon.species
+            lines.append(f"  {i}. {disp}")
         lines.append("Enter number or 'quit'.")
         return "\n".join(lines), [{"key": "_default", "goto": "node_start"}]
     if raw_input.strip().lower() == "quit":
@@ -34,9 +35,10 @@ def node_manage(caller, raw_input=None):
     while len(sets) < 4:
         sets.append([])
     if raw_input is None:
-        lines = [f"|wManaging movesets for {poke.nickname} ({poke.name})|n"]
+        disp = poke.nickname or poke.species
+        lines = [f"|wManaging movesets for {disp}|n"]
         for i, s in enumerate(sets, 1):
-            marker = "*" if i - 1 == poke.active_moveset else " "
+            marker = "*" if i - 1 == poke.active_moveset_index else " "
             moves = ", ".join(s) if s else "(empty)"
             lines.append(f"{marker}{i}. {moves}")
         lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' to exit.")
@@ -84,12 +86,15 @@ def node_edit(caller, raw_input=None):
         sets.append([])
     if raw_input is None:
         current = ", ".join(sets[idx]) if sets[idx] else "(empty)"
-        text = f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}]:"
-        return text, [{"key": "_default", "goto": "node_edit"}]
+        learned = [m.name for m in poke.learned_moves.all().order_by("name")]
+        move_list = ", ".join(learned) if learned else "(none)"
+        lines = [f"Available moves: {move_list}",
+                 f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}]:"]
+        return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
     moves = [m.strip() for m in raw_input.split(',') if m.strip()][:4]
     sets[idx] = moves
     poke.movesets = sets
-    if idx == poke.active_moveset:
+    if idx == poke.active_moveset_index:
         poke.moves = moves
     poke.save()
     caller.msg(f"Moveset {idx+1} updated.")
