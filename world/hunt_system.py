@@ -5,12 +5,6 @@ import time
 from typing import Any, Callable, Dict, List, Optional
 
 from evennia import DefaultRoom
-from pokemon.battle.battleinstance import (
-    BattleInstance,
-    BattleType,
-    create_battle_pokemon,
-    generate_trainer_pokemon,
-)
 
 
 class HuntSystem:
@@ -34,6 +28,13 @@ class HuntSystem:
     def _pre_checks(self, hunter) -> Optional[str]:
         """Return an error string if hunting is not allowed."""
         room = self.room
+
+        from pokemon.battle.battleinstance import (
+            BattleInstance,
+            BattleType,
+            create_battle_pokemon,
+        )
+
         if not room.db.allow_hunting:
             return "You can't hunt here."
         if hunter.ndb.get("battle_instance"):
@@ -93,6 +94,13 @@ class HuntSystem:
         item_msg = self._check_itemfinder(hunter)
         if item_msg:
             return item_msg
+
+        from pokemon.battle.battleinstance import (
+            BattleInstance,
+            BattleType,
+            create_battle_pokemon,
+            generate_trainer_pokemon,
+        )
 
         npc_chance = room.db.get("npc_chance", 15)
         tp_cost = room.db.get("tp_cost", 0)
@@ -165,6 +173,12 @@ class HuntSystem:
         """
 
         room = self.room
+
+        from pokemon.battle.battleinstance import (
+            BattleInstance,
+            BattleType,
+            create_battle_pokemon,
+        )
 
         err = self._pre_checks(hunter)
         if err:

@@ -284,6 +284,8 @@ def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
     gender = get_gender(ratio_dict, getattr(species, "gender", None))
 
     moves = get_valid_moves(species.name, level)
+    if not moves:
+        moves = ["Flail"]
     if len(moves) > 4:
         moves = random.sample(moves, 4)
 

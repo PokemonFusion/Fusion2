@@ -239,9 +239,11 @@ class BattleParticipant:
         if not self.active:
             return None
         active_poke = self.active[0]
-        if not hasattr(active_poke, "moves") or not active_poke.moves:
-            return None
-        move_data = active_poke.moves[0]
+        moves = getattr(active_poke, "moves", [])
+        if not moves:
+            move_data = Move(name="Flail")
+        else:
+            move_data = moves[0]
 
         def _norm(name: str) -> str:
             return name.replace(" ", "").replace("-", "").replace("'", "").lower()
