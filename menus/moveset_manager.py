@@ -23,7 +23,7 @@ def node_start(caller, raw_input=None):
         pokemon = mons[idx]
     except (ValueError, IndexError):
         caller.msg("Invalid choice.")
-        return "node_start", {}
+        return "node_start"
     caller.ndb.ms_pokemon = pokemon
     return node_manage(caller)
 
@@ -48,25 +48,25 @@ def node_manage(caller, raw_input=None):
     parts = cmd.split(maxsplit=1)
     if len(parts) != 2:
         caller.msg("Invalid command.")
-        return "node_manage", {}
+        return "node_manage"
     action, num = parts
     try:
         idx = int(num) - 1
     except ValueError:
         caller.msg("Invalid number.")
-        return "node_manage", {}
+        return "node_manage"
     if idx < 0 or idx >= 4:
         caller.msg("Number must be 1-4.")
-        return "node_manage", {}
+        return "node_manage"
     if action == "swap":
         poke.swap_moveset(idx)
         caller.msg(f"Active moveset set to {idx+1}.")
-        return "node_manage", {}
+        return "node_manage"
     if action == "edit":
         caller.ndb.ms_index = idx
-        return "node_edit", {}
+        return "node_edit"
     caller.msg("Unknown command.")
-    return "node_manage", {}
+    return "node_manage"
 
 
 def node_edit(caller, raw_input=None):
