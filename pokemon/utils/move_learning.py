@@ -6,13 +6,14 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 from pokemon.models import Move
 
 
-def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False) -> None:
+def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None) -> None:
     """Teach ``move_name`` to ``pokemon``.
 
     If ``prompt`` is True and ``caller`` is provided, the caller will be asked
     whether to replace one of the Pokémon's active moves with the new move when
     the active moveset is already full. The move is always added to the learned
-    moves list first.
+    moves list first. If ``on_exit`` is given, it will be called with
+    ``(caller, menu)`` when any interactive prompt menu closes.
     """
 
     if not pokemon or not move_name:
@@ -52,5 +53,5 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False) ->
         learn_menu,
         startnode="node_start",
         kwargs={"pokemon": pokemon, "move_name": move_name},
-        cmd_on_exit=None,
+        cmd_on_exit=on_exit,
     )

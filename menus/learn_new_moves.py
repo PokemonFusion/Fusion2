@@ -23,9 +23,19 @@ def node_start(caller, raw_input=None, **kwargs):
     if cmd in {"cancel", "c", "q", "quit", "exit"}:
         return None, None
     if cmd == "all":
-        for mv in moves:
-            learn_move(pokemon, mv, caller=caller, prompt=True)
-        return f"{pokemon.name} learned all available moves.", None
+        def learn_next(idx=0):
+            if idx >= len(moves):
+                caller.msg(f"{pokemon.name} learned all available moves.")
+                return
+            mv = moves[idx]
+
+            def _callback(_caller, _):
+                learn_next(idx + 1)
+
+            learn_move(pokemon, mv, caller=caller, prompt=True, on_exit=_callback)
+
+        learn_next()
+        return None, None
     for mv in moves:
         if mv.lower() == cmd:
             learn_move(pokemon, mv, caller=caller, prompt=True)
