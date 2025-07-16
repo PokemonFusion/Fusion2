@@ -52,6 +52,7 @@ from commands.command import (
     CmdExpShare,
     CmdHeal,
     CmdTeachMove,
+    CmdLearn,
     CmdChooseMoveset,
     CmdAdminHeal,
     CmdChooseStarter,
@@ -155,6 +156,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdExpShare())
         self.add(CmdHeal())
         self.add(CmdTeachMove())
+        self.add(CmdLearn())
         self.add(CmdChooseMoveset())
         self.add(CmdMovesets())
         self.add(CmdAdminHeal())

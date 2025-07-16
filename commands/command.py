@@ -803,3 +803,39 @@ class CmdTeachMove(Command):
         from pokemon.utils.move_learning import learn_move
 
         learn_move(pokemon, self.move_name, caller=self.caller, prompt=True)
+
+class CmdLearn(Command):
+    """Learn level-up moves for a Pokémon.
+
+    Usage:
+      +learn <slot>
+    """
+
+    key = "+learn"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def parse(self):
+        try:
+            self.slot = int(self.args.strip())
+        except (TypeError, ValueError):
+            self.slot = None
+
+    def func(self):
+        if self.slot is None:
+            self.caller.msg("Usage: +learn <slot>")
+            return
+        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+        from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+        from menus import learn_new_moves as learn_menu
+
+        EnhancedEvMenu(
+            self.caller,
+            learn_menu,
+            startnode="node_start",
+            kwargs={"pokemon": pokemon},
+            cmd_on_exit=None,
+        )
