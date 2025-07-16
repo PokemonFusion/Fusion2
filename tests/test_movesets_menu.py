@@ -63,3 +63,47 @@ def test_movesets_invalid_location():
 
     assert not FakeMenu.called
     assert caller.msgs and "Pokémon Center" in caller.msgs[-1]
+
+
+def test_number_select_opens_edit():
+    orig_evennia = sys.modules.get("evennia")
+    fake_evennia = types.ModuleType("evennia")
+    fake_evennia.Command = type("Command", (), {})
+    sys.modules["evennia"] = fake_evennia
+
+    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
+    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    fake_evmod.EnhancedEvMenu = object
+    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+
+    import importlib
+    menu = importlib.import_module("menus.moveset_manager")
+
+    if orig_evennia is not None:
+        sys.modules["evennia"] = orig_evennia
+    else:
+        sys.modules.pop("evennia", None)
+    if orig_evmod is not None:
+        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+    else:
+        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+
+    class DummyPoke:
+        def __init__(self):
+            self.nickname = "Pika"
+            self.name = "Pikachu"
+            self.movesets = [["tackle"]]
+            self.active_moveset = 0
+
+    class DummyCaller:
+        def __init__(self, poke):
+            self.msgs = []
+            self.ndb = types.SimpleNamespace(ms_pokemon=poke)
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller(DummyPoke())
+    text, opts = menu.node_manage(caller, raw_input="1")
+    assert caller.ndb.ms_index == 0
+    assert "Enter up to 4 moves" in text

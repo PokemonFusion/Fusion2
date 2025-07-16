@@ -39,34 +39,41 @@ def node_manage(caller, raw_input=None):
             marker = "*" if i - 1 == poke.active_moveset else " "
             moves = ", ".join(s) if s else "(empty)"
             lines.append(f"{marker}{i}. {moves}")
-        lines.append("Commands: swap <n>, edit <n>, back")
+        lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' to exit.")
         return "\n".join(lines), [{"key": "_default", "goto": "node_manage"}]
     cmd = raw_input.strip().lower()
     if cmd == "back":
         del caller.ndb.ms_pokemon
         return node_start(caller)
+    if cmd.isdigit():
+        idx = int(cmd) - 1
+        if 0 <= idx < 4:
+            caller.ndb.ms_index = idx
+            return node_edit(caller)
+        caller.msg("Number must be 1-4.")
+        return node_manage(caller)
     parts = cmd.split(maxsplit=1)
     if len(parts) != 2:
         caller.msg("Invalid command.")
-        return "node_manage"
+        return node_manage(caller)
     action, num = parts
     try:
         idx = int(num) - 1
     except ValueError:
         caller.msg("Invalid number.")
-        return "node_manage"
+        return node_manage(caller)
     if idx < 0 or idx >= 4:
         caller.msg("Number must be 1-4.")
-        return "node_manage"
+        return node_manage(caller)
     if action == "swap":
         poke.swap_moveset(idx)
         caller.msg(f"Active moveset set to {idx+1}.")
-        return "node_manage"
+        return node_manage(caller)
     if action == "edit":
         caller.ndb.ms_index = idx
-        return "node_edit"
+        return node_edit(caller)
     caller.msg("Unknown command.")
-    return "node_manage"
+    return node_manage(caller)
 
 
 def node_edit(caller, raw_input=None):
