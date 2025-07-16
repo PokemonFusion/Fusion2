@@ -18,7 +18,7 @@ class CmdHunt(Command):
     help_category = "Pokemon"
 
     def func(self):
-        system = HuntSystem(self.obj.location)
+        system = HuntSystem(self.caller.location)
         result = system.perform_hunt(self.caller)
         self.caller.msg(result)
 
@@ -70,6 +70,6 @@ class CmdCustomHunt(Command):
             self.caller.msg("Level must be a number.")
             return
 
-        system = HuntSystem(self.obj.location)
+        system = HuntSystem(self.caller.location)
         result = system.perform_fixed_hunt(self.caller, name, level)
         self.caller.msg(result)
