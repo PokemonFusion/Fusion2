@@ -35,7 +35,9 @@ class HuntSystem:
             create_battle_pokemon,
         )
 
-        if not room.db.allow_hunting:
+        # allow_hunting may be unset; default to False if missing
+        allow = getattr(room.db, "allow_hunting", False)
+        if not bool(allow):
             return "You can't hunt here."
         if hunter.ndb.get("battle_instance"):
             return "You are already in a battle!"
