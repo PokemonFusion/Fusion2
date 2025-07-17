@@ -24,7 +24,7 @@ class CmdBattleAttack(Command):
 
     def func(self):
         if not getattr(self.caller.db, "battle_control", False):
-            self.caller.msg("|o|rWe aren't waiting for you to command right now.")
+            self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
         inst = getattr(self.caller.ndb, "battle_instance", None)
         if not inst or not inst.battle:
