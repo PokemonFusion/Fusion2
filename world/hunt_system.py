@@ -36,7 +36,7 @@ class HuntSystem:
         )
 
         # allow_hunting may be stored as a string or bool; coerce to boolean
-        allow = room.db.get("allow_hunting", False)
+        allow = getattr(room.db, "allow_hunting", False)
         if isinstance(allow, str):
             allow = allow.lower() in {"true", "yes", "1", "on"}
         if not allow:
@@ -52,7 +52,7 @@ class HuntSystem:
         )
         if not party:
             return "You don't have any Pokémon able to battle."
-        tp_cost = self.room.db.get("tp_cost", 0)
+        tp_cost = getattr(self.room.db, "tp_cost", 0)
         if tp_cost:
             if hunter.db.get("training_points", 0) < tp_cost:
                 return "You don't have enough training points."
@@ -76,9 +76,9 @@ class HuntSystem:
     def _check_itemfinder(self, hunter) -> Optional[str]:
         """Return an item message if itemfinder triggers."""
         room = self.room
-        if room.db.get("noitem"):
+        if getattr(room.db, "noitem", False):
             return None
-        rate = room.db.get("itemfinder_rate", 0)
+        rate = getattr(room.db, "itemfinder_rate", 0)
         if random.randint(1, 100) <= rate:
             return "You found a mysterious item!"  # placeholder
         return None
@@ -106,8 +106,8 @@ class HuntSystem:
             generate_trainer_pokemon,
         )
 
-        npc_chance = room.db.get("npc_chance", 15)
-        tp_cost = room.db.get("tp_cost", 0)
+        npc_chance = getattr(room.db, "npc_chance", 15)
+        tp_cost = getattr(room.db, "tp_cost", 0)
         if random.randint(1, 100) <= npc_chance:
             poke = generate_trainer_pokemon()
 
@@ -121,7 +121,7 @@ class HuntSystem:
                 hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
             return f"A trainer challenges you with {poke.name}!"
 
-        encounter_rate = room.db.get("encounter_rate", 100)
+        encounter_rate = getattr(room.db, "encounter_rate", 100)
         if random.randint(1, 100) > encounter_rate:
             return "You didn't find any Pokémon."
 
@@ -207,7 +207,7 @@ class HuntSystem:
         inst._select_opponent = _select_override
         inst.start()
 
-        tp_cost = room.db.get("tp_cost", 0)
+        tp_cost = getattr(room.db, "tp_cost", 0)
         if tp_cost:
             hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
 
