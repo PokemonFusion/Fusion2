@@ -41,9 +41,9 @@ class HuntSystem:
             allow = allow.lower() in {"true", "yes", "1", "on"}
         if not allow:
             return "You can't hunt here."
-        if hunter.ndb.get("battle_instance"):
+        if getattr(hunter.ndb, "battle_instance", None):
             return "You are already in a battle!"
-        last = hunter.ndb.get("last_hunt_time", 0)
+        last = getattr(hunter.ndb, "last_hunt_time", 0)
         if time.time() - last < 3:
             return "You need to wait before hunting again."
         storage = getattr(hunter, "storage", None)
