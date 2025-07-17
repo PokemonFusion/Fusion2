@@ -250,6 +250,7 @@ class DummyStorage:
 class DummyRoom:
     def __init__(self):
         self.db = types.SimpleNamespace(weather="clear")
+        self.ndb = types.SimpleNamespace()
 
 class DummyAttr(types.SimpleNamespace):
     def get(self, key, default=None):
@@ -277,7 +278,7 @@ def test_temp_pokemon_persists_after_restore():
     inst.start()
     pid = inst.temp_pokemon_ids[0]
     assert pid in FakeOwnedPokemon.objects.store
-    restored = BattleInstance.restore(inst.room)
+    restored = BattleInstance.restore(inst.room, player.id)
     assert pid in restored.temp_pokemon_ids
     bi_mod.random.choice = random_choice
 

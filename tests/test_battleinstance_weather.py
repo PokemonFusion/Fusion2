@@ -147,6 +147,7 @@ class DummyStorage:
 class DummyRoom:
     def __init__(self, weather="clear"):
         self.db = types.SimpleNamespace(weather=weather)
+        self.ndb = types.SimpleNamespace()
 
 class DummyPlayer:
     def __init__(self):
