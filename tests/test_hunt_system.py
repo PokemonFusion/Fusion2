@@ -93,3 +93,21 @@ def test_perform_fixed_hunt():
     assert msg == "A wild Pikachu (Lv 7) appeared!"
     assert captured["name"] == "Pikachu"
     assert captured["level"] == 7
+
+
+def test_allow_hunting_string_value():
+    room = DummyRoom()
+    room.db.allow_hunting = "true"
+    hs = HuntSystem(room)
+    hunter = DummyHunter()
+    msg = hs.perform_fixed_hunt(hunter, "Pidgey", 5)
+    assert msg.startswith("A wild Pidgey")
+
+
+def test_hunt_not_allowed():
+    room = DummyRoom()
+    room.db.allow_hunting = False
+    hs = HuntSystem(room)
+    hunter = DummyHunter()
+    msg = hs.perform_fixed_hunt(hunter, "Rattata", 3)
+    assert msg == "You can't hunt here."
