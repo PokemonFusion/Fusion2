@@ -7,8 +7,8 @@ class RoomForm(forms.Form):
     ROOM_CLASS_CHOICES = [
         ("typeclasses.rooms.Room", "Room"),
         ("typeclasses.rooms.FusionRoom", "Fusion Room"),
-        ("typeclasses.battleroom.BattleRoom", "Battle Room"),
-        ("typeclasses.maproom.MapRoom", "Map Room"),
+        ("typeclasses.rooms.BattleRoom", "Battle Room"),
+        ("typeclasses.rooms.MapRoom", "Map Room"),
     ]
 
     ROOM_CLASS_HELP = (
@@ -21,7 +21,6 @@ class RoomForm(forms.Form):
     room_class = forms.ChoiceField(
         label="Room Class",
         choices=ROOM_CLASS_CHOICES,
-        help_text=ROOM_CLASS_HELP,
         widget=forms.Select(attrs={"title": ROOM_CLASS_HELP}),
     )
     name = forms.CharField(

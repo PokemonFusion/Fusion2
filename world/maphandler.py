@@ -1,5 +1,5 @@
 from evennia import create_object
-from typeclasses.maproom import MapRoom
+from typeclasses.rooms import MapRoom
 
 
 def generate_blank_map(width: int, height: int):

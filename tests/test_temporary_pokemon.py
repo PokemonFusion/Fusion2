@@ -42,7 +42,7 @@ orig_generation = sys.modules.get("pokemon.generation")
 orig_spawn = sys.modules.get("world.pokemon_spawn")
 orig_capture = sys.modules.get("pokemon.battle.capture")
 
-battleroom_mod = types.ModuleType("typeclasses.battleroom")
+battleroom_mod = types.ModuleType("typeclasses.rooms")
 class BattleRoom:
     def __init__(self, key=None):
         self.key = key
@@ -51,6 +51,8 @@ class BattleRoom:
     def delete(self):
         pass
 battleroom_mod.BattleRoom = BattleRoom
+battleroom_mod.MapRoom = type("MapRoom", (), {})
+battleroom_mod.Room = type("Room", (), {})
 
 # Interface and handler stubs
 iface = types.ModuleType("pokemon.battle.interface")
@@ -194,7 +196,7 @@ def setup_module(module):
     pokemon_pkg.dex = importlib.import_module("pokemon.dex")
     sys.modules["pokemon"] = pokemon_pkg
     sys.modules["pokemon.breeding"] = pokemon_pkg.breeding
-    sys.modules["typeclasses.battleroom"] = battleroom_mod
+    sys.modules["typeclasses.rooms"] = battleroom_mod
     sys.modules["pokemon.battle.interface"] = iface
     sys.modules["pokemon.battle.handler"] = handler_mod
     sys.modules["pokemon.models"] = models_mod

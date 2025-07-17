@@ -44,12 +44,9 @@ if not hasattr(evennia, "server"):
 if "typeclasses.rooms" not in sys.modules:
     rooms_mod = types.ModuleType("typeclasses.rooms")
     rooms_mod.Room = type("Room", (), {})
+    rooms_mod.BattleRoom = type("BattleRoom", (), {})
+    rooms_mod.MapRoom = type("MapRoom", (), {})
     sys.modules["typeclasses.rooms"] = rooms_mod
-
-if "typeclasses.battleroom" not in sys.modules:
-    battleroom_mod = types.ModuleType("typeclasses.battleroom")
-    battleroom_mod.BattleRoom = type("BattleRoom", (), {})
-    sys.modules["typeclasses.battleroom"] = battleroom_mod
 
 # Setup minimal package hierarchy with stubs
 pkg_root = types.ModuleType('pokemon')

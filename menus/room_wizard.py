@@ -40,8 +40,8 @@ def node_desc(caller, raw_input):
     opts = [
         {"key": "1", "goto": ("node_set_class", {"cls": "typeclasses.rooms.Room"})},
         {"key": "2", "goto": ("node_set_class", {"cls": "typeclasses.rooms.FusionRoom"})},
-        {"key": "3", "goto": ("node_set_class", {"cls": "typeclasses.battleroom.BattleRoom"})},
-        {"key": "4", "goto": ("node_set_class", {"cls": "typeclasses.maproom.MapRoom"})},
+        {"key": "3", "goto": ("node_set_class", {"cls": "typeclasses.rooms.BattleRoom"})},
+        {"key": "4", "goto": ("node_set_class", {"cls": "typeclasses.rooms.MapRoom"})},
     ]
     return text, opts
 
