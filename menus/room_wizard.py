@@ -83,7 +83,7 @@ def node_shop_no(caller, raw_input=None):
     ]
 
 def node_hunt_yes(caller, raw_input=None):
-    caller.ndb.rw_data['has_hunting'] = True
+    caller.ndb.rw_data['allow_hunting'] = True
     text = (
         "Enter the encounter table as `name:rate, name:rate`.\n"
         "Example: |wRattata:60, Pidgey:40|n"
@@ -91,23 +91,23 @@ def node_hunt_yes(caller, raw_input=None):
     return text, [{"key": "_default", "goto": "node_hunt_table"}]
 
 def node_hunt_no(caller, raw_input=None):
-    caller.ndb.rw_data['has_hunting'] = False
+    caller.ndb.rw_data['allow_hunting'] = False
     # skip straight to summary
     return node_summary(caller)
 
 def node_hunt_table(caller, raw_input):
     data = caller.ndb.rw_data
-    table = {}
+    table = []
     for entry in raw_input.split(","):
         try:
             mon, rate = entry.split(":")
-            table[mon.strip()] = int(rate.strip())
+            table.append({"name": mon.strip(), "weight": int(rate.strip())})
         except ValueError:
             return (
                 "Invalid format.  Use `name:rate, name:rate`.",
                 {"goto": "node_hunt_table"}
             )
-    data['hunt_table'] = table
+    data['hunt_chart'] = table
     return node_summary(caller)
 
 def node_summary(caller, raw_input=None):
@@ -120,11 +120,11 @@ def node_summary(caller, raw_input=None):
         f"Class:       {data.get('room_class', 'typeclasses.rooms.Room').split('.')[-1]}\n"
         f"Center:      {'Yes' if data.get('is_center') else 'No'}\n"
         f"Shop:        {'Yes' if data.get('is_shop') else 'No'}\n"
-        f"Hunting:     {'Yes' if data.get('has_hunting') else 'No'}\n"
+        f"Hunting:     {'Yes' if data.get('allow_hunting') else 'No'}\n"
     )
-    if data.get('has_hunting'):
-        for mon, rate in data['hunt_table'].items():
-            text += f"  - {mon}: {rate}%\n"
+    if data.get('allow_hunting'):
+        for entry in data.get('hunt_chart', []):
+            text += f"  - {entry['name']}: {entry.get('weight', 1)}%\n"
     text += "\nType |wcreate|n to finish or |wquit|n to abort."
     opts = [
         {"key": "create", "goto": "node_create"},
@@ -140,8 +140,8 @@ def node_create(caller, raw_input=None):
     room.db.desc                = data['desc']
     room.db.is_pokemon_center   = data.get('is_center', False)
     room.db.is_item_shop        = data.get('is_shop', False)
-    room.db.has_pokemon_hunting = data.get('has_hunting', False)
-    room.db.hunt_table          = data.get('hunt_table', {})
+    room.db.allow_hunting = data.get('allow_hunting', False)
+    room.db.hunt_chart          = data.get('hunt_chart', [])
     caller.msg(f"|gRoom '{room.key}' created successfully! (ID: {room.id})|n")
     caller.ndb.rw_room = room
     del caller.ndb.rw_data

@@ -74,17 +74,17 @@ def room_edit(request, room_id=None):
                 room.db.desc = data["desc"]
                 room.db.is_pokemon_center = data["is_center"]
                 room.db.is_item_shop = data["is_shop"]
-                room.db.has_pokemon_hunting = data["has_hunting"]
-                table = {}
-                for entry in data["hunt_table"].split(','):
+                room.db.allow_hunting = data["allow_hunting"]
+                chart = []
+                for entry in data["hunt_chart"].split(','):
                     if not entry.strip():
                         continue
                     try:
                         mon, rate = entry.split(':')
-                        table[mon.strip()] = int(rate.strip())
+                        chart.append({"name": mon.strip(), "weight": int(rate.strip())})
                     except ValueError:
                         continue
-                room.db.hunt_table = table
+                room.db.hunt_chart = chart
                 room.save()
                 return redirect("roomeditor:room-list")
             else:
@@ -93,15 +93,15 @@ def room_edit(request, room_id=None):
     else:
         initial = {"room_class": "typeclasses.rooms.Room"}
         if room:
-            table = room.db.hunt_table or {}
+            chart = room.db.hunt_chart or []
             initial = {
                 "name": room.key,
                 "desc": room.db.desc,
                 "room_class": room.typeclass_path,
                 "is_center": room.db.is_pokemon_center,
                 "is_shop": room.db.is_item_shop,
-                "has_hunting": room.db.has_pokemon_hunting,
-                "hunt_table": ", ".join(f"{k}:{v}" for k, v in table.items()),
+                "allow_hunting": room.db.allow_hunting,
+                "hunt_chart": ", ".join(f"{entry['name']}:{entry.get('weight',1)}" for entry in chart),
             }
         form = RoomForm(initial=initial)
 

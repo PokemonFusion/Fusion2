@@ -3,7 +3,6 @@ from pokemon.generation import generate_pokemon
 from pokemon.stats import calculate_stats
 
 from pokemon.dex import ITEMDEX
-from pokemon.utils.pokemon_helpers import get_max_hp, get_stats
 
 def heal_party(char):
     """Heal all active Pokemon for the given character."""
@@ -150,7 +149,7 @@ class CmdUseMove(Command):
             self.caller.msg("Usage: usemove <move> <attacker> <target>")
             return
 
-        inst = self.caller.ndb.get("battle_instance")
+        inst = getattr(self.caller.ndb, "battle_instance", None)
         if inst:
             inst.queue_move(move_name)
             return
@@ -202,7 +201,7 @@ class CmdHunt(Command):
     def func(self):
         from pokemon.battle.battleinstance import BattleInstance
 
-        if self.caller.ndb.get("battle_instance"):
+        if getattr(self.caller.ndb, "battle_instance", None):
             self.caller.msg("You are already engaged in a battle.")
             return
 
@@ -803,3 +802,61 @@ class CmdTeachMove(Command):
         from pokemon.utils.move_learning import learn_move
 
         learn_move(pokemon, self.move_name, caller=self.caller, prompt=True)
+
+class CmdLearn(Command):
+    """Learn level-up moves for a Pokémon.
+
+    Usage:
+      +learn <slot>
+    """
+
+    key = "+learn"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def parse(self):
+        try:
+            self.slot = int(self.args.strip())
+        except (TypeError, ValueError):
+            self.slot = None
+
+    def func(self):
+        from pokemon.utils.move_learning import get_learnable_levelup_moves
+
+        if self.slot is None:
+            lines = []
+            for idx in range(1, 7):
+                poke = self.caller.get_active_pokemon_by_slot(idx)
+                if not poke:
+                    continue
+                moves, _ = get_learnable_levelup_moves(poke)
+                if moves:
+                    lines.append(
+                        f"Slot {idx}: {poke.name} ({len(moves)} move{'s' if len(moves) != 1 else ''})"
+                    )
+            if lines:
+                self.caller.msg("Pokémon with moves to learn:\n" + "\n".join(lines))
+            else:
+                self.caller.msg("None of your Pokémon have moves to learn.")
+            return
+
+        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+        if not pokemon:
+            self.caller.msg("No Pokémon in that slot.")
+            return
+
+        moves, level_map = get_learnable_levelup_moves(pokemon)
+        if not moves:
+            self.caller.msg(f"{pokemon.name} has no moves to learn.")
+            return
+
+        from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+        from menus import learn_new_moves as learn_menu
+
+        EnhancedEvMenu(
+            self.caller,
+            learn_menu,
+            startnode="node_start",
+            kwargs={"pokemon": pokemon, "moves": moves, "level_map": level_map},
+            cmd_on_exit=None,
+        )

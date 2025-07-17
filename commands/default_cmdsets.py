@@ -52,6 +52,7 @@ from commands.command import (
     CmdExpShare,
     CmdHeal,
     CmdTeachMove,
+    CmdLearn,
     CmdChooseMoveset,
     CmdAdminHeal,
     CmdChooseStarter,
@@ -71,6 +72,7 @@ from commands.cmd_battle import (
     CmdBattleItem,
 )
 from commands.cmd_store import CmdStore
+from commands.cmd_pokestore import CmdPokestore
 from commands.cmd_movesets import CmdMovesets
 from commands.cmd_pvp import (
     CmdPvpHelp,
@@ -151,10 +153,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGiveItem())
         self.add(CmdUseItem())
         self.add(CmdStore())
+        self.add(CmdPokestore())
         self.add(CmdEvolvePokemon())
         self.add(CmdExpShare())
         self.add(CmdHeal())
         self.add(CmdTeachMove())
+        self.add(CmdLearn())
         self.add(CmdChooseMoveset())
         self.add(CmdMovesets())
         self.add(CmdAdminHeal())

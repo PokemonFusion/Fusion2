@@ -13,7 +13,8 @@ def node_start(caller, raw_input=None):
     if not raw_input:
         lines = ["|wSelect a Pokémon to manage|n"]
         for i, mon in enumerate(mons, 1):
-            lines.append(f"  {i}. {mon.nickname} ({mon.name})")
+            disp = mon.nickname or mon.species
+            lines.append(f"  {i}. {disp}")
         lines.append("Enter number or 'quit'.")
         return "\n".join(lines), [{"key": "_default", "goto": "node_start"}]
     if raw_input.strip().lower() == "quit":
@@ -23,9 +24,9 @@ def node_start(caller, raw_input=None):
         pokemon = mons[idx]
     except (ValueError, IndexError):
         caller.msg("Invalid choice.")
-        return "node_start", {}
+        return "node_start"
     caller.ndb.ms_pokemon = pokemon
-    return node_manage(caller)
+    return "node_manage"
 
 
 def node_manage(caller, raw_input=None):
@@ -34,39 +35,47 @@ def node_manage(caller, raw_input=None):
     while len(sets) < 4:
         sets.append([])
     if raw_input is None:
-        lines = [f"|wManaging movesets for {poke.nickname} ({poke.name})|n"]
+        disp = poke.nickname or poke.species
+        lines = [f"|wManaging movesets for {disp}|n"]
         for i, s in enumerate(sets, 1):
-            marker = "*" if i - 1 == poke.active_moveset else " "
+            marker = "*" if i - 1 == poke.active_moveset_index else " "
             moves = ", ".join(s) if s else "(empty)"
             lines.append(f"{marker}{i}. {moves}")
-        lines.append("Commands: swap <n>, edit <n>, back")
+        lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' or 'b' to exit.")
         return "\n".join(lines), [{"key": "_default", "goto": "node_manage"}]
     cmd = raw_input.strip().lower()
-    if cmd == "back":
+    if cmd in ("back", "b"):
         del caller.ndb.ms_pokemon
         return node_start(caller)
+    if cmd.isdigit():
+        idx = int(cmd) - 1
+        if 0 <= idx < 4:
+            caller.ndb.ms_index = idx
+            return "node_edit"
+        caller.msg("Number must be 1-4.")
+        return "node_manage"
     parts = cmd.split(maxsplit=1)
     if len(parts) != 2:
         caller.msg("Invalid command.")
-        return "node_manage", {}
+        return "node_manage"
     action, num = parts
     try:
         idx = int(num) - 1
     except ValueError:
         caller.msg("Invalid number.")
-        return "node_manage", {}
+        return node_manage(caller)
     if idx < 0 or idx >= 4:
         caller.msg("Number must be 1-4.")
-        return "node_manage", {}
+        return node_manage(caller)
     if action == "swap":
         poke.swap_moveset(idx)
         caller.msg(f"Active moveset set to {idx+1}.")
-        return "node_manage", {}
+        return node_manage(caller)
     if action == "edit":
         caller.ndb.ms_index = idx
-        return "node_edit", {}
+        return "node_edit"
     caller.msg("Unknown command.")
-    return "node_manage", {}
+    return node_manage(caller)
 
 
 def node_edit(caller, raw_input=None):
@@ -77,14 +86,28 @@ def node_edit(caller, raw_input=None):
         sets.append([])
     if raw_input is None:
         current = ", ".join(sets[idx]) if sets[idx] else "(empty)"
-        text = f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}]:"
-        return text, [{"key": "_default", "goto": "node_edit"}]
+        learned = [m.name for m in poke.learned_moves.all().order_by("name")]
+        move_list = ", ".join(learned) if learned else "(none)"
+        lines = [f"Available moves: {move_list}",
+                 f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}] (type 'back' or 'b' to cancel):"]
+        return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
+    cmd = raw_input.strip().lower()
+    if cmd in ("back", "b"):
+        return "node_manage"
     moves = [m.strip() for m in raw_input.split(',') if m.strip()][:4]
+    learned = {m.name.lower() for m in poke.learned_moves.all().order_by("name")}
+    invalid = [m for m in moves if m.lower() not in learned]
+    if invalid:
+        caller.msg("Invalid move(s): " + ", ".join(invalid))
+        return "node_edit"
+    if len({m.lower() for m in moves}) != len(moves):
+        caller.msg("Duplicate moves are not allowed.")
+        return "node_edit"
     sets[idx] = moves
     poke.movesets = sets
-    if idx == poke.active_moveset:
+    if idx == poke.active_moveset_index:
         poke.moves = moves
     poke.save()
     caller.msg(f"Moveset {idx+1} updated.")
-    return node_manage(caller)
+    return "node_manage"
 

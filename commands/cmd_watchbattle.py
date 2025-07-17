@@ -40,7 +40,7 @@ class CmdWatchBattle(Command):
                 self.caller.msg("No such character.")
                 return
             target = target_list[0]
-            inst = target.ndb.get("battle_instance")
+            inst = getattr(target.ndb, "battle_instance", None)
             if not inst:
                 self.caller.msg("They are not currently in battle.")
                 return
@@ -66,7 +66,9 @@ class CmdUnwatchBattle(Command):
     help_category = "Pokemon"
 
     def func(self):
-        inst = self.caller.location.db.instance if self.caller.location else None
+        inst = (
+            self.caller.location.ndb.instance if self.caller.location else None
+        )
         if not inst or not hasattr(inst, "remove_watcher"):
             self.caller.msg("You are not watching a battle.")
             return

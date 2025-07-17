@@ -60,6 +60,7 @@ class DummyRoom:
     def __init__(self):
         # use a 0 encounter rate to ensure fixed hunts ignore it
         self.db = DummyDB(allow_hunting=True, encounter_rate=0)
+        self.ndb = DummyDB()
 
 
 class DummyAttr(types.SimpleNamespace):
@@ -78,6 +79,7 @@ class DummyHunter:
         self.db = DummyAttr(training_points=10)
         self.ndb = DummyAttr()
         self.storage = DummyStorage()
+        self.location = DummyRoom()
 
 
 def test_perform_fixed_hunt():
@@ -89,7 +91,27 @@ def test_perform_fixed_hunt():
 
     hs = HuntSystem(room, spawn_callback=cb)
     hunter = DummyHunter()
+    hunter.location = room
     msg = hs.perform_fixed_hunt(hunter, "Pikachu", 7)
     assert msg == "A wild Pikachu (Lv 7) appeared!"
     assert captured["name"] == "Pikachu"
     assert captured["level"] == 7
+
+
+def test_allow_hunting_string_value():
+    room = DummyRoom()
+    room.db.allow_hunting = "true"
+    hs = HuntSystem(room)
+    hunter = DummyHunter()
+    hunter.location = room
+    msg = hs.perform_fixed_hunt(hunter, "Pidgey", 5)
+    assert msg.startswith("A wild Pidgey")
+
+
+def test_hunt_not_allowed():
+    room = DummyRoom()
+    room.db.allow_hunting = False
+    hs = HuntSystem(room)
+    hunter = DummyHunter()
+    msg = hs.perform_fixed_hunt(hunter, "Rattata", 3)
+    assert msg == "You can't hunt here."

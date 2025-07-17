@@ -111,7 +111,7 @@ def setup_modules():
 
     learn_mod = types.ModuleType("pokemon.utils.move_learning")
 
-    def learn_move(pokemon, move_name, caller=None, prompt=False):
+    def learn_move(pokemon, move_name, caller=None, prompt=False, on_exit=None):
         sets = pokemon.movesets
         if len(sets[0]) < 4:
             sets[0].append(move_name)

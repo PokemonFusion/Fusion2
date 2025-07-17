@@ -31,7 +31,8 @@ class EnhancedEvMenu(EvMenu):
         use_pokemon_style=True,
         show_footer=True,
         footer_prompt="Number",
-        **kwargs,
+        kwargs=None,
+        **evkwargs,
     ):
         self.on_abort = on_abort
         self.invalid_message = invalid_message or _HELP_NO_OPTION_MATCH
@@ -41,7 +42,19 @@ class EnhancedEvMenu(EvMenu):
         self.use_pokemon_style = use_pokemon_style
         self.show_footer = show_footer
         self.footer_prompt = footer_prompt
-        super().__init__(*args, **kwargs)
+
+        startnode_input = evkwargs.pop("startnode_input", "")
+        if kwargs:
+            if isinstance(startnode_input, (tuple, list)) and len(startnode_input) > 1:
+                raw, extra = startnode_input[:2]
+                if not isinstance(extra, dict):
+                    extra = {}
+                extra.update(kwargs)
+                startnode_input = (raw, extra)
+            else:
+                startnode_input = (startnode_input, kwargs)
+
+        super().__init__(*args, startnode_input=startnode_input, **evkwargs)
 
     def parse_input(self, raw_string):
         """Custom input parsing supporting the ``_repeat`` target."""
@@ -69,11 +82,21 @@ class EnhancedEvMenu(EvMenu):
             self.msg(f"|rNo help for '{topic}'.|n")
             return
 
-        # collect option definitions for later reference
-        option_defs = self.test_options or []
-        option_defs = (
-            option_defs if isinstance(option_defs, (list, tuple)) else [option_defs]
-        )
+        # collect option definitions for later reference. If not provided
+        # explicitly (used only in tests), fall back to the menu's current
+        # options so normal input works.
+        option_defs = getattr(self, "test_options", None)
+        if option_defs is None:
+            option_defs = [
+                {"key": key, "goto": goto}
+                for key, goto in (self.options or {}).items()
+            ]
+            if self.default:
+                option_defs.append({"key": "_default", "goto": self.default})
+        else:
+            option_defs = (
+                option_defs if isinstance(option_defs, (list, tuple)) else [option_defs]
+            )
 
         match_opt = None
         default_opt = None
