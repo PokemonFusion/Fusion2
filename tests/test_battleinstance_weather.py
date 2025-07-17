@@ -40,7 +40,7 @@ else:
     evennia.create_object = lambda cls, key=None: cls()
 
 # Stub BattleRoom
-battleroom_mod = types.ModuleType("typeclasses.battleroom")
+rooms_mod = types.ModuleType("typeclasses.rooms")
 class BattleRoom:
     def __init__(self, key=None):
         self.key = key
@@ -48,8 +48,10 @@ class BattleRoom:
         self.locks = types.SimpleNamespace(add=lambda *a, **k: None)
     def delete(self):
         pass
-battleroom_mod.BattleRoom = BattleRoom
-sys.modules["typeclasses.battleroom"] = battleroom_mod
+rooms_mod.BattleRoom = BattleRoom
+rooms_mod.MapRoom = type("MapRoom", (), {})
+rooms_mod.Room = type("Room", (), {})
+sys.modules["typeclasses.rooms"] = rooms_mod
 
 # Stub interface functions
 iface = types.ModuleType("pokemon.battle.interface")

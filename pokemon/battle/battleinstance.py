@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from evennia import create_object, search_object
 
-from typeclasses.battleroom import BattleRoom
+from typeclasses.rooms import BattleRoom
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
