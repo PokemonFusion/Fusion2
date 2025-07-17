@@ -403,9 +403,9 @@ class BattleInstance:
             if hasattr(self.room.db, "temp_pokemon_ids"):
                 del self.room.db.temp_pokemon_ids
             self.room.delete()
-        if self.player.ndb.get("battle_instance"):
+        if getattr(self.player.ndb, "battle_instance", None):
             del self.player.ndb.battle_instance
-        if self.opponent and self.opponent.ndb.get("battle_instance"):
+        if self.opponent and getattr(self.opponent.ndb, "battle_instance", None):
             del self.opponent.ndb.battle_instance
         self.battle = None
         if self.state:

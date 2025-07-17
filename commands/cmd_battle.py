@@ -25,7 +25,7 @@ class CmdBattleAttack(Command):
         if not self.move_name:
             self.caller.msg("Usage: +battleattack <move> [target]")
             return
-        inst = self.caller.ndb.get("battle_instance")
+        inst = getattr(self.caller.ndb, "battle_instance", None)
         if not inst or not inst.battle:
             self.caller.msg("You are not currently in battle.")
             return
@@ -60,7 +60,7 @@ class CmdBattleSwitch(Command):
         if not slot:
             self.caller.msg("Usage: +battleswitch <slot>")
             return
-        inst = self.caller.ndb.get("battle_instance")
+        inst = getattr(self.caller.ndb, "battle_instance", None)
         if not inst or not inst.battle:
             self.caller.msg("You are not currently in battle.")
             return
@@ -96,7 +96,7 @@ class CmdBattleItem(Command):
         if not self.caller.has_item(item_name):
             self.caller.msg(f"You do not have any {item_name}.")
             return
-        inst = self.caller.ndb.get("battle_instance")
+        inst = getattr(self.caller.ndb, "battle_instance", None)
         if not inst or not inst.battle:
             self.caller.msg("You are not currently in battle.")
             return

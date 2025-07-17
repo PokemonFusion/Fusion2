@@ -52,6 +52,11 @@ def test_preview_context():
     sys.modules["evennia"] = fake_evennia
     sys.modules["evennia.objects"] = fake_objects
     sys.modules["evennia.objects.models"] = fake_models
+    fake_web = types.ModuleType("evennia.web")
+    fake_web.urls = types.ModuleType("evennia.web.urls")
+    fake_web.urls.urlpatterns = []
+    sys.modules["evennia.web"] = fake_web
+    sys.modules["evennia.web.urls"] = fake_web.urls
     sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
     sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
     sys.modules["typeclasses.rooms"].Room = type("Room", (), {})
@@ -156,6 +161,11 @@ def test_save_redirects_to_list():
     sys.modules["evennia"] = fake_evennia
     sys.modules["evennia.objects"] = fake_objects
     sys.modules["evennia.objects.models"] = fake_models
+    fake_web = types.ModuleType("evennia.web")
+    fake_web.urls = types.ModuleType("evennia.web.urls")
+    fake_web.urls.urlpatterns = []
+    sys.modules["evennia.web"] = fake_web
+    sys.modules["evennia.web.urls"] = fake_web.urls
     sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
     sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
     sys.modules["typeclasses.rooms"].Room = type("Room", (), {})

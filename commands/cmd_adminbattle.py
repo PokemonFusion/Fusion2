@@ -33,7 +33,7 @@ class CmdAbortBattle(Command):
                 self.caller.msg("No such character.")
                 return
             target = targets[0]
-            inst = target.ndb.get("battle_instance")
+            inst = getattr(target.ndb, "battle_instance", None)
             if not inst:
                 self.caller.msg("They are not currently in battle.")
                 return

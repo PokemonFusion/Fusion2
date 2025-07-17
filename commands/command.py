@@ -149,7 +149,7 @@ class CmdUseMove(Command):
             self.caller.msg("Usage: usemove <move> <attacker> <target>")
             return
 
-        inst = self.caller.ndb.get("battle_instance")
+        inst = getattr(self.caller.ndb, "battle_instance", None)
         if inst:
             inst.queue_move(move_name)
             return
@@ -201,7 +201,7 @@ class CmdHunt(Command):
     def func(self):
         from pokemon.battle.battleinstance import BattleInstance
 
-        if self.caller.ndb.get("battle_instance"):
+        if getattr(self.caller.ndb, "battle_instance", None):
             self.caller.msg("You are already engaged in a battle.")
             return
 

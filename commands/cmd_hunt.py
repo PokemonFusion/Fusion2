@@ -35,7 +35,7 @@ class CmdLeaveHunt(Command):
     help_category = "Pokemon"
 
     def func(self):
-        room = self.caller.ndb.get("hunt_room")
+        room = getattr(self.caller.ndb, "hunt_room", None)
         if not room:
             self.caller.msg("You are not hunting.")
             return
