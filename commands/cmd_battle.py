@@ -3,6 +3,7 @@ from __future__ import annotations
 from evennia import Command
 
 from pokemon.battle import Action, ActionType, BattleMove
+from utils.battle_display import render_move_gui
 
 
 class CmdBattleAttack(Command):
@@ -22,6 +23,9 @@ class CmdBattleAttack(Command):
         self.target_name = parts[1] if len(parts) > 1 else ""
 
     def func(self):
+        if not getattr(self.caller.db, "battle_control", False):
+            self.caller.msg("|o|rWe aren't waiting for you to command right now.")
+            return
         inst = getattr(self.caller.ndb, "battle_instance", None)
         if not inst or not inst.battle:
             self.caller.msg("You are not currently in battle.")
@@ -35,23 +39,71 @@ class CmdBattleAttack(Command):
         slots = getattr(active, "activemoveslot_set", None)
         if slots:
             try:
-                qs = slots.all().order_by("slot")
+                qs = list(slots.all().order_by("slot"))
             except Exception:
                 qs = list(slots)
         else:
             qs = []
-        moves = [s.move.name for s in qs]
+
+        from pokemon.dex import MOVEDEX
+
+        # build move data for display
+        letters = ["A", "B", "C", "D"]
+        moves_map = {}
+        for slot_obj, letter in zip(qs, letters):
+            move = slot_obj.move
+            dex = MOVEDEX.get(move.name.lower(), None)
+            max_pp = getattr(move, "pp", None)
+            if dex and not max_pp:
+                max_pp = dex.pp
+            cur_pp = getattr(slot_obj, "current_pp", None)
+            moves_map[letter] = {
+                "name": move.name,
+                "type": getattr(move, "type", None) or (dex.type if dex else None),
+                "category": getattr(move, "category", None) or (dex.category if dex else None),
+                "pp": (
+                    cur_pp if cur_pp is not None else max_pp,
+                    max_pp or 0,
+                ),
+                "power": getattr(move, "power", 0) or (dex.power if dex else 0),
+                "accuracy": getattr(move, "accuracy", 100) if getattr(move, "accuracy", None) is not None else (dex.accuracy if dex else 100),
+            }
 
         move_name = self.move_name
-        if not move_name or move_name.lower() not in [m.lower() for m in moves]:
-            lines = ["Available moves:"]
-            lines += [f"  {m}" for m in moves]
-            targets = [p.name for p in inst.battle.participants if p is not participant]
-            if targets:
-                lines.append("Valid targets:")
-                lines += [f"  {t}" for t in targets]
-            self.caller.msg("\n".join(lines))
+        # forced move checks
+        encore = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("encore")
+        choice = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("choicelock")
+        if encore:
+            move_name = encore
+        elif choice:
+            move_name = choice.get("move")
+        else:
+            pp_vals = [info["pp"][0] for info in moves_map.values() if info and info["pp"][0] is not None]
+            if pp_vals and all(val == 0 for val in pp_vals):
+                move_name = "Struggle"
+
+        if not move_name:
+            self.caller.msg(render_move_gui(moves_map))
             return
+
+        if move_name.lower() in {".abort", "abort"}:
+            self.caller.msg("Action cancelled.")
+            return
+
+        # handle selection by letter
+        letter = move_name.upper()
+        if letter in moves_map:
+            move_name = moves_map[letter]["name"]
+        else:
+            found = False
+            for info in moves_map.values():
+                if info["name"].lower() == move_name.lower():
+                    move_name = info["name"]
+                    found = True
+                    break
+            if not found:
+                self.caller.msg(render_move_gui(moves_map))
+                return
 
         targets = [p for p in inst.battle.participants if p is not participant]
         target = None

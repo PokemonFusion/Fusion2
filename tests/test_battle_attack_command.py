@@ -56,7 +56,10 @@ def restore_modules(orig_evennia, orig_battle):
     if orig_evennia is not None:
         sys.modules["evennia"] = orig_evennia
     else:
-        sys.modules.pop("evennia", None)
+        evennia = types.ModuleType("evennia")
+        evennia.search_object = lambda *a, **k: []
+        evennia.create_object = lambda *a, **k: None
+        sys.modules["evennia"] = evennia
     if orig_battle is not None:
         sys.modules["pokemon.battle"] = orig_battle
     else:
@@ -88,6 +91,7 @@ class DummyCaller:
     def __init__(self):
         self.msgs = []
         self.ndb = types.SimpleNamespace()
+        self.db = types.SimpleNamespace(battle_control=True)
     def msg(self, text):
         self.msgs.append(text)
 
@@ -102,6 +106,7 @@ def test_battleattack_lists_moves_and_targets():
     battle = FakeBattle([player, opp])
     caller = DummyCaller()
     caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
+    caller.db.battle_control = True
 
     cmd = cmd_mod.CmdBattleAttack()
     cmd.caller = caller
@@ -111,9 +116,8 @@ def test_battleattack_lists_moves_and_targets():
 
     restore_modules(orig_evennia, orig_battle)
     joined = '\n'.join(caller.msgs)
-    assert 'Available moves' in joined
+    assert 'Pick an attack' in joined
     assert 'tackle' in joined.lower()
-    assert 'enemy' in joined.lower()
 
 
 def test_battleattack_auto_target_single():
@@ -126,6 +130,7 @@ def test_battleattack_auto_target_single():
     battle = FakeBattle([player, enemy])
     caller = DummyCaller()
     caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
+    caller.db.battle_control = True
 
     cmd = cmd_mod.CmdBattleAttack()
     cmd.caller = caller
@@ -149,6 +154,7 @@ def test_battleattack_requires_target_when_multiple():
     battle = FakeBattle([player, e1, e2])
     caller = DummyCaller()
     caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
+    caller.db.battle_control = True
 
     cmd = cmd_mod.CmdBattleAttack()
     cmd.caller = caller
