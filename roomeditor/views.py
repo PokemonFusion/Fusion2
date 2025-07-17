@@ -155,6 +155,15 @@ def delete_exit(request, exit_id, room_id):
 
 @login_required
 @user_passes_test(is_builder)
+def delete_room(request, room_id):
+    """Delete an existing room and return to the list."""
+    room = get_object_or_404(ObjectDB, id=room_id)
+    room.delete()
+    return redirect("roomeditor:room-list")
+
+
+@login_required
+@user_passes_test(is_builder)
 def edit_exit(request, room_id, exit_id):
     """Edit an existing exit."""
     room = get_object_or_404(ObjectDB, id=room_id)

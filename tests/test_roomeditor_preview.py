@@ -202,3 +202,40 @@ def test_save_redirects_to_list():
 
     assert resp.status_code == 302
     assert resp.url == reverse("roomeditor:room-list")
+
+
+def test_delete_room():
+    import importlib
+    from django.urls import reverse
+    if not settings.configured:
+        settings.configure(
+            SECRET_KEY="test",
+            DEFAULT_CHARSET="utf-8",
+            INSTALLED_APPS=[],
+            USE_I18N=False,
+            ROOT_URLCONF="tests.urls",
+        )
+        import django
+        django.setup()
+
+    views = importlib.import_module("roomeditor.views")
+    rf = RequestFactory()
+    request = rf.get("/roomeditor/1/delete/")
+    request.user = types.SimpleNamespace(is_authenticated=True, is_superuser=True)
+
+    deleted = {"flag": False}
+
+    class DummyRoom:
+        def delete(self):
+            deleted["flag"] = True
+
+    orig_get = views.get_object_or_404
+    views.get_object_or_404 = lambda *a, **k: DummyRoom()
+    try:
+        resp = views.delete_room.__wrapped__(request, room_id=1)
+    finally:
+        views.get_object_or_404 = orig_get
+
+    assert deleted["flag"] is True
+    assert resp.status_code == 302
+    assert resp.url == reverse("roomeditor:room-list")

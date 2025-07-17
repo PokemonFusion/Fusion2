@@ -25,6 +25,7 @@
               <td>{{ room.typeclass_path|class_name }}</td>
               <td>
                 <a class="btn btn-sm btn-secondary" href="{% url 'roomeditor:room-edit' room.id %}">Edit</a>
+                <a class="btn btn-sm btn-danger ml-1" href="{% url 'roomeditor:delete-room' room.id %}">Delete</a>
                 {% if room.id in dangling_ids %}
                 <span class="badge badge-warning">No incoming exits</span>
                 {% endif %}
