@@ -12,7 +12,7 @@
         <p><a href="{% url 'roomeditor:room-create' %}" class="btn btn-primary btn-sm">Create New Room</a></p>
         <hr />
         {% if rooms %}
-        <table class="table table-striped">
+        <table id="room-table" class="table table-striped">
           <thead>
             <tr><th>ID</th><th>Name</th><th>Description</th><th>Class</th><th></th></tr>
           </thead>
@@ -33,6 +33,31 @@
           {% endfor %}
           </tbody>
         </table>
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const table = document.getElementById('room-table');
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            const headers = table.querySelectorAll('th');
+            const getVal = (row, idx) => row.children[idx].innerText;
+            const sorter = (idx, asc) => (a, b) => {
+              const v1 = getVal(asc ? a : b, idx);
+              const v2 = getVal(asc ? b : a, idx);
+              return v1.localeCompare(v2, undefined, {numeric: true});
+            };
+            headers.forEach((th, idx) => {
+              if (idx === headers.length - 1) return;
+              let asc = true;
+              th.style.cursor = 'pointer';
+              th.addEventListener('click', () => {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort(sorter(idx, asc));
+                rows.forEach(r => tbody.appendChild(r));
+                asc = !asc;
+              });
+            });
+          });
+        </script>
         {% else %}
         <p>No rooms found.</p>
         {% endif %}
