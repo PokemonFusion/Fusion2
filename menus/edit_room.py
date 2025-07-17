@@ -30,8 +30,8 @@ def node_start(caller, raw_input=None):
         "desc": room.db.desc or "",
         "is_center": room.db.is_pokemon_center,
         "is_shop": room.db.is_item_shop,
-        "has_hunting": room.db.has_pokemon_hunting,
-        "hunt_table": room.db.hunt_table or {},
+        "allow_hunting": room.db.allow_hunting,
+        "hunt_chart": room.db.hunt_chart or [],
     }
     return node_name(caller)
 
@@ -81,7 +81,7 @@ def node_center_no(caller, raw_input=None):
 
 def node_shop_yes(caller, raw_input=None):
     caller.ndb.er_data['is_shop'] = True
-    text = f"Allow Pokémon hunting? (yes/no) [current: {'yes' if caller.ndb.er_data.get('has_hunting') else 'no'}]"
+    text = f"Allow Pokémon hunting? (yes/no) [current: {'yes' if caller.ndb.er_data.get('allow_hunting') else 'no'}]"
     return text, [
         {"key": "yes", "goto": "node_hunt_yes"},
         {"key": "no", "goto": "node_hunt_no"},
@@ -90,7 +90,7 @@ def node_shop_yes(caller, raw_input=None):
 
 def node_shop_no(caller, raw_input=None):
     caller.ndb.er_data['is_shop'] = False
-    text = f"Allow Pokémon hunting? (yes/no) [current: {'yes' if caller.ndb.er_data.get('has_hunting') else 'no'}]"
+    text = f"Allow Pokémon hunting? (yes/no) [current: {'yes' if caller.ndb.er_data.get('allow_hunting') else 'no'}]"
     return text, [
         {"key": "yes", "goto": "node_hunt_yes"},
         {"key": "no", "goto": "node_hunt_no"},
@@ -98,14 +98,14 @@ def node_shop_no(caller, raw_input=None):
 
 
 def node_hunt_yes(caller, raw_input=None):
-    caller.ndb.er_data['has_hunting'] = True
+    caller.ndb.er_data['allow_hunting'] = True
     return "Enter encounter table as name:rate, name:rate or blank to keep:", [
         {"key": "_default", "goto": "node_hunt_table"}
     ]
 
 
 def node_hunt_no(caller, raw_input=None):
-    caller.ndb.er_data['has_hunting'] = False
+    caller.ndb.er_data['allow_hunting'] = False
     return node_summary(caller)
 
 
@@ -121,7 +121,10 @@ def node_hunt_table(caller, raw_input):
         except ValueError:
             caller.msg("Invalid format. Use name:rate, name:rate")
             return "", {"goto": "node_hunt_table"}
-    data['hunt_table'] = table
+    data['hunt_chart'] = [
+        {"name": mon.strip(), "weight": int(rate.strip())}
+        for mon, rate in table.items()
+    ]
     return node_summary(caller)
 
 
@@ -133,11 +136,11 @@ def node_summary(caller, raw_input=None):
         f"Description: {data['desc']}\n"
         f"Center:      {'Yes' if data.get('is_center') else 'No'}\n"
         f"Shop:        {'Yes' if data.get('is_shop') else 'No'}\n"
-        f"Hunting:     {'Yes' if data.get('has_hunting') else 'No'}\n"
+        f"Hunting:     {'Yes' if data.get('allow_hunting') else 'No'}\n"
     )
-    if data.get('has_hunting'):
-        for mon, rate in data['hunt_table'].items():
-            text += f"  - {mon}: {rate}%\n"
+    if data.get("allow_hunting"):
+        for entry in data.get("hunt_chart", []):
+            text += f"  - {entry['name']}: {entry.get('weight', 1)}%\n"
     text += "\nType |wsave|n to apply changes or |wquit|n to abort."
     return text, [
         {"key": "save", "goto": "node_save"},
@@ -152,8 +155,8 @@ def node_save(caller, raw_input=None):
     room.db.desc = data['desc']
     room.db.is_pokemon_center = data.get('is_center', False)
     room.db.is_item_shop = data.get('is_shop', False)
-    room.db.has_pokemon_hunting = data.get('has_hunting', False)
-    room.db.hunt_table = data.get('hunt_table', {})
+    room.db.allow_hunting = data.get('allow_hunting', False)
+    room.db.hunt_chart = data.get('hunt_chart', [])
     caller.msg(f"|gRoom '{room.key}' updated.|n")
     caller.ndb.rw_room = room
     del caller.ndb.er_data

@@ -25,8 +25,8 @@ class RoomForm(forms.Form):
     )
     is_center = forms.BooleanField(label="Pokémon Center", required=False)
     is_shop = forms.BooleanField(label="Item Shop", required=False)
-    has_hunting = forms.BooleanField(label="Allow Hunting", required=False)
-    hunt_table = forms.CharField(
+    allow_hunting = forms.BooleanField(label="Allow Hunting", required=False)
+    hunt_chart = forms.CharField(
         label="Hunt Table", required=False,
         help_text="Format: name:rate, name:rate",
     )

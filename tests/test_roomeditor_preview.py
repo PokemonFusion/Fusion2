@@ -65,8 +65,8 @@ def test_preview_context():
         "desc": "A sample room",
         "is_center": True,
         "is_shop": False,
-        "has_hunting": True,
-        "hunt_table": "Pikachu:5",
+        "allow_hunting": True,
+        "hunt_chart": "Pikachu:5",
         "preview_room": "1",
     }
     request = rf.post("/roomeditor/new/", data)
@@ -169,8 +169,8 @@ def test_save_redirects_to_list():
         "desc": "A sample room",
         "is_center": False,
         "is_shop": False,
-        "has_hunting": False,
-        "hunt_table": "",
+        "allow_hunting": False,
+        "hunt_chart": "",
         "save_room": "1",
     }
     request = rf.post("/roomeditor/new/", data)
