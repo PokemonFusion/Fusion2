@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import time
+import builtins
 from typing import Any, Callable, Dict, List, Optional
 
 from evennia import DefaultRoom
@@ -37,7 +38,7 @@ class HuntSystem:
 
         # allow_hunting may be stored as a string or bool; coerce to boolean
         allow = getattr(room.db, "allow_hunting", False)
-        if isinstance(allow, str):
+        if builtins.isinstance(allow, str):
             allow = allow.lower() in {"true", "yes", "1", "on"}
         if not allow:
             return "You can't hunt here."
