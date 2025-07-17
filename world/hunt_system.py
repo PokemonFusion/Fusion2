@@ -44,7 +44,7 @@ class HuntSystem:
         if getattr(hunter.ndb, "battle_instance", None):
             return "You are already in a battle!"
         last = getattr(hunter.ndb, "last_hunt_time", 0)
-        if time.time() - last < 3:
+        if last and time.time() - last < 3:
             return "You need to wait before hunting again."
         storage = getattr(hunter, "storage", None)
         party = (
