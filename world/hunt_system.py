@@ -30,6 +30,9 @@ class HuntSystem:
         """Return an error string if hunting is not allowed."""
         room = self.room
 
+        if not room:
+            return "You can't hunt here."
+
         from pokemon.battle.battleinstance import (
             BattleInstance,
             BattleType,
