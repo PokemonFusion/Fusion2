@@ -21,7 +21,6 @@ class RoomForm(forms.Form):
     room_class = forms.ChoiceField(
         label="Room Class",
         choices=ROOM_CLASS_CHOICES,
-        help_text=ROOM_CLASS_HELP,
         widget=forms.Select(attrs={"title": ROOM_CLASS_HELP}),
     )
     name = forms.CharField(
