@@ -45,6 +45,7 @@ class BattleRoom:
     def __init__(self, key=None):
         self.key = key
         self.db = types.SimpleNamespace()
+        self.ndb = types.SimpleNamespace()
         self.locks = types.SimpleNamespace(add=lambda *a, **k: None)
     def delete(self):
         pass

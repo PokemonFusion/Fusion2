@@ -150,7 +150,8 @@ class BattleInstance:
         self.player = player
         self.opponent = opponent
         self.room = create_object(BattleRoom, key=f"Battle-{player.key}")
-        self.room.db.instance = self
+        # store instance non-persistently on the room to avoid pickling errors
+        self.room.ndb.instance = self
         self.data: BattleData | None = None
         self.battle: Battle | None = None
         self.state: BattleState | None = None
@@ -168,7 +169,8 @@ class BattleInstance:
         obj.player = None
         obj.opponent = None
         obj.room = room
-        room.db.instance = obj
+        # keep a temporary reference on the room without persisting it
+        room.ndb.instance = obj
         obj.data = BattleData.from_dict(data)
         obj.battle = obj.data.battle
         obj.state = BattleState.from_dict(state)
@@ -392,8 +394,8 @@ class BattleInstance:
             ).delete()
         self.temp_pokemon_ids.clear()
         if self.room:
-            if hasattr(self.room.db, "instance"):
-                del self.room.db.instance
+            if hasattr(self.room.ndb, "instance"):
+                del self.room.ndb.instance
             if hasattr(self.room.db, "battle_data"):
                 del self.room.db.battle_data
             if hasattr(self.room.db, "battle_state"):
