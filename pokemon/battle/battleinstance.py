@@ -160,7 +160,6 @@ class BattleInstance:
         self.battle_id = getattr(player, "id", 0)
         if hasattr(player, "db"):
             player.db.battle_id = self.battle_id
-            player.db.battle_instance = self
         battle_instances = getattr(self.room.ndb, "battle_instances", None)
         if not isinstance(battle_instances, dict):
             battle_instances = {}
@@ -200,7 +199,6 @@ class BattleInstance:
             watcher.ndb.battle_instance = obj
             if hasattr(watcher, "db"):
                 watcher.db.battle_id = battle_id
-                watcher.db.battle_instance = obj
             if obj.player is None:
                 obj.player = watcher
             elif obj.opponent is None:
@@ -266,10 +264,8 @@ class BattleInstance:
         self.opponent.ndb.battle_instance = self
         if hasattr(self.player, "db"):
             self.player.db.battle_id = self.battle_id
-            self.player.db.battle_instance = self
         if hasattr(self.opponent, "db"):
             self.opponent.db.battle_id = self.battle_id
-            self.opponent.db.battle_instance = self
         self.player.msg("PVP battle started!")
         self.opponent.msg("PVP battle started!")
         self.player.msg(f"Battle ID: {self.battle_id}")
@@ -390,7 +386,6 @@ class BattleInstance:
         self.player.ndb.battle_instance = self
         if hasattr(self.player, "db"):
             self.player.db.battle_id = self.battle_id
-            self.player.db.battle_instance = self
         if hasattr(self.player, "msg"):
             self.player.msg("Battle started!")
             self.player.msg(f"Battle ID: {self.battle_id}")
@@ -436,15 +431,11 @@ class BattleInstance:
         if hasattr(self.player, "db"):
             if hasattr(self.player.db, "battle_id"):
                 del self.player.db.battle_id
-            if hasattr(self.player.db, "battle_instance"):
-                del self.player.db.battle_instance
         if self.opponent and getattr(self.opponent.ndb, "battle_instance", None):
             del self.opponent.ndb.battle_instance
         if self.opponent and hasattr(self.opponent, "db"):
             if hasattr(self.opponent.db, "battle_id"):
                 del self.opponent.db.battle_id
-            if hasattr(self.opponent.db, "battle_instance"):
-                del self.opponent.db.battle_instance
         self.battle = None
         if self.state:
             notify_watchers(self.state, "The battle has ended.", room=self.room)

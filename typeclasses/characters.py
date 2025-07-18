@@ -19,8 +19,6 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 
     def at_init(self):
         super().at_init()
-        if self.db.battle_instance and not getattr(self.ndb, "battle_instance", None):
-            self.ndb.battle_instance = self.db.battle_instance
         bid = self.db.battle_id
         if bid is not None and not getattr(self.ndb, "battle_instance", None):
             room = self.location
@@ -32,8 +30,6 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 
     def at_post_puppet(self):
         super().at_post_puppet()
-        if self.db.battle_instance and not getattr(self.ndb, "battle_instance", None):
-            self.ndb.battle_instance = self.db.battle_instance
         bid = self.db.battle_id
         if bid is not None and not getattr(self.ndb, "battle_instance", None):
             room = self.location
