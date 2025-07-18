@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from evennia import Command
 
+NOT_IN_BATTLE_MSG = "You are not currently in battle."
+
 from pokemon.battle import Action, ActionType, BattleMove
 from utils.battle_display import render_move_gui
 
@@ -15,7 +17,7 @@ class CmdBattleAttack(Command):
 
     key = "+battleattack"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def parse(self):
         parts = self.args.split()
@@ -27,8 +29,15 @@ class CmdBattleAttack(Command):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
         inst = getattr(self.caller.ndb, "battle_instance", None)
+        if not inst:
+            room = getattr(self.caller, "location", None)
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(getattr(self.caller, "id", None))
+                if inst:
+                    self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
-            self.caller.msg("You are not currently in battle.")
+            self.caller.msg(NOT_IN_BATTLE_MSG)
             return
         participant = inst.battle.participants[0]
         active = participant.active[0] if participant.active else None
@@ -134,13 +143,20 @@ class CmdBattleSwitch(Command):
 
     key = "+battleswitch"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def func(self):
         slot = self.args.strip()
         inst = getattr(self.caller.ndb, "battle_instance", None)
+        if not inst:
+            room = getattr(self.caller, "location", None)
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(getattr(self.caller, "id", None))
+                if inst:
+                    self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
-            self.caller.msg("You are not currently in battle.")
+            self.caller.msg(NOT_IN_BATTLE_MSG)
             return
         participant = inst.battle.participants[0]
 
@@ -200,7 +216,7 @@ class CmdBattleItem(Command):
 
     key = "+battleitem"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def func(self):
         item_name = self.args.strip()
@@ -211,8 +227,15 @@ class CmdBattleItem(Command):
             self.caller.msg(f"You do not have any {item_name}.")
             return
         inst = getattr(self.caller.ndb, "battle_instance", None)
+        if not inst:
+            room = getattr(self.caller, "location", None)
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(getattr(self.caller, "id", None))
+                if inst:
+                    self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
-            self.caller.msg("You are not currently in battle.")
+            self.caller.msg(NOT_IN_BATTLE_MSG)
             return
         participant = inst.battle.participants[0]
         target = inst.battle.opponent_of(participant)
