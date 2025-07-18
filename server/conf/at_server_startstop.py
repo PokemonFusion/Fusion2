@@ -22,6 +22,17 @@ import logging
 
 from utils.error_logging import setup_daily_error_log
 from utils.usage_logging import setup_daily_usage_log
+from utils.logging_patch import patch_open_log_file
+
+
+def _flush_logging_handlers() -> None:
+    """Flush all handlers attached to configured loggers."""
+    for logger in [logging.getLogger(name) for name in logging.root.manager.loggerDict.keys()] + [logging.getLogger()]:
+        for handler in getattr(logger, "handlers", []):
+            try:
+                handler.flush()
+            except Exception:
+                pass
 
 
 def at_server_init():
@@ -33,6 +44,8 @@ def at_server_init():
     log_dir = base_dir / "logs"
     setup_daily_error_log(log_dir)
     setup_daily_usage_log(log_dir)
+    # ensure evennia log files reopen properly after shutdown
+    patch_open_log_file()
 
 
 def at_server_start():
@@ -51,8 +64,8 @@ def at_server_stop():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.save()
-    # gracefully close all logging handlers to avoid writes after shutdown
-    logging.shutdown()
+    # flush logging handlers to ensure log buffers are written without closing
+    _flush_logging_handlers()
 
 
 def at_server_reload_start():
@@ -84,5 +97,5 @@ def at_server_cold_stop():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.save()
-    # ensure log files are flushed when the server fully stops
-    logging.shutdown()
+    # ensure log files are flushed when the server fully stops without closing
+    _flush_logging_handlers()
