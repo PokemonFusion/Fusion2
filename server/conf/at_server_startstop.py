@@ -18,6 +18,7 @@ at_server_cold_stop()
 """
 
 from pathlib import Path
+import logging
 
 from utils.error_logging import setup_daily_error_log
 from utils.usage_logging import setup_daily_usage_log
@@ -50,6 +51,8 @@ def at_server_stop():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.save()
+    # gracefully close all logging handlers to avoid writes after shutdown
+    logging.shutdown()
 
 
 def at_server_reload_start():
@@ -81,3 +84,5 @@ def at_server_cold_stop():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.save()
+    # ensure log files are flushed when the server fully stops
+    logging.shutdown()
