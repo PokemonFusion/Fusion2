@@ -138,24 +138,57 @@ class CmdBattleSwitch(Command):
 
     def func(self):
         slot = self.args.strip()
-        if not slot:
-            self.caller.msg("Usage: +battleswitch <slot>")
-            return
         inst = getattr(self.caller.ndb, "battle_instance", None)
         if not inst or not inst.battle:
             self.caller.msg("You are not currently in battle.")
             return
         participant = inst.battle.participants[0]
+
+        if not slot:
+            lines = []
+            for idx, poke in enumerate(participant.pokemons, 1):
+                status = " (fainted)" if getattr(poke, "hp", 0) <= 0 else ""
+                active = " (active)" if poke in participant.active else ""
+                lines.append(f"{idx}. {poke.name}{active}{status}")
+            lines.append("0. Cancel")
+            self.caller.ndb.switch_prompt = True
+            self.caller.msg(
+                "Choose a Pokémon to switch to or 0 to cancel:\n" + "\n".join(lines)
+            )
+            return
+
+        if slot.lower() in {"0", "cancel", "quit", "exit", "abort", ".abort"}:
+            if getattr(self.caller.ndb, "switch_prompt", False):
+                self.caller.msg("Switch cancelled.")
+                self.caller.ndb.switch_prompt = False
+            else:
+                self.caller.msg("Usage: +battleswitch <slot>")
+            return
         try:
             index = int(slot) - 1
             pokemon = participant.pokemons[index]
         except (ValueError, IndexError):
             self.caller.msg("Invalid Pokémon slot.")
+            self.caller.ndb.switch_prompt = False
+            return
+        if pokemon in participant.active:
+            self.caller.msg(f"{pokemon.name} is already active.")
+            self.caller.ndb.switch_prompt = False
+            return
+        if getattr(pokemon, "hp", 0) <= 0:
+            self.caller.msg(f"{pokemon.name} has fainted and cannot battle.")
+            self.caller.ndb.switch_prompt = False
             return
         action = Action(participant, ActionType.SWITCH)
         action.target = pokemon
         participant.pending_action = action
         self.caller.msg(f"You prepare to switch to {pokemon.name}.")
+        self.caller.ndb.switch_prompt = False
+        if hasattr(inst, "run_turn"):
+            try:
+                inst.run_turn()
+            except Exception:
+                pass
 
 
 class CmdBattleItem(Command):
