@@ -153,6 +153,8 @@ class BattleInstance:
         if self.room is None:
             raise ValueError("BattleInstance requires the player to have a location")
         self.battle_id = getattr(player, "id", 0)
+        if hasattr(player, "db"):
+            player.db.battle_id = self.battle_id
         battle_instances = getattr(self.room.ndb, "battle_instances", None)
         if not isinstance(battle_instances, dict):
             battle_instances = {}
@@ -187,7 +189,10 @@ class BattleInstance:
         for wid in obj.watchers:
             targets = search_object(wid)
             if targets:
-                targets[0].ndb.battle_instance = obj
+                watcher = targets[0]
+                watcher.ndb.battle_instance = obj
+                if hasattr(watcher, "db"):
+                    watcher.db.battle_id = battle_id
         return obj
 
     def start(self) -> None:
@@ -245,9 +250,12 @@ class BattleInstance:
         add_watcher(self.state, self.player)
         add_watcher(self.state, self.opponent)
         self.watchers.update({self.player.id, self.opponent.id})
-
         self.player.ndb.battle_instance = self
         self.opponent.ndb.battle_instance = self
+        if hasattr(self.player, "db"):
+            self.player.db.battle_id = self.battle_id
+        if hasattr(self.opponent, "db"):
+            self.opponent.db.battle_id = self.battle_id
         self.player.msg("PVP battle started!")
         self.opponent.msg("PVP battle started!")
         self.player.msg(f"Battle ID: {self.battle_id}")
@@ -366,6 +374,8 @@ class BattleInstance:
         if hasattr(self.player, "id"):
             self.watchers.add(self.player.id)
         self.player.ndb.battle_instance = self
+        if hasattr(self.player, "db"):
+            self.player.db.battle_id = self.battle_id
         if hasattr(self.player, "msg"):
             self.player.msg("Battle started!")
             self.player.msg(f"Battle ID: {self.battle_id}")
@@ -408,8 +418,12 @@ class BattleInstance:
                 delattr(self.room.db, f"temp_pokemon_ids_{self.battle_id}")
         if getattr(self.player.ndb, "battle_instance", None):
             del self.player.ndb.battle_instance
+        if hasattr(self.player, "db") and hasattr(self.player.db, "battle_id"):
+            del self.player.db.battle_id
         if self.opponent and getattr(self.opponent.ndb, "battle_instance", None):
             del self.opponent.ndb.battle_instance
+        if self.opponent and hasattr(self.opponent, "db") and hasattr(self.opponent.db, "battle_id"):
+            del self.opponent.db.battle_id
         self.battle = None
         if self.state:
             notify_watchers(self.state, "The battle has ended.", room=self.room)
