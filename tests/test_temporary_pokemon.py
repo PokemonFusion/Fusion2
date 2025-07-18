@@ -65,7 +65,8 @@ handler_mod = types.ModuleType("pokemon.battle.handler")
 handler_mod.battle_handler = types.SimpleNamespace(register=lambda *a, **k: None,
                                                    unregister=lambda *a, **k: None,
                                                    restore=lambda *a, **k: None,
-                                                   save=lambda *a, **k: None)
+                                                   save=lambda *a, **k: None,
+                                                   next_id=lambda: 1)
 
 # Pokemon model stub
 class FakeCollection:
@@ -280,7 +281,7 @@ def test_temp_pokemon_persists_after_restore():
     inst.start()
     pid = inst.temp_pokemon_ids[0]
     assert pid in FakeOwnedPokemon.objects.store
-    restored = BattleInstance.restore(inst.room, player.id)
+    restored = BattleInstance.restore(inst.room, inst.battle_id)
     assert pid in restored.temp_pokemon_ids
     bi_mod.random.choice = random_choice
 

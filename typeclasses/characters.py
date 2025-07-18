@@ -15,13 +15,26 @@ from utils.pokedex import DexTrackerMixin
 
 
 class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
-    """
-    The Character just re-implements some of the Object's methods and hooks
-    to represent a Character entity in-game.
+    """Default in-game character."""
 
-    See mygame/typeclasses/objects.py for a list of
-    properties and methods available on all Object child classes like this.
+    def at_init(self):
+        super().at_init()
+        bid = self.db.battle_id
+        if bid is not None and not getattr(self.ndb, "battle_instance", None):
+            room = self.location
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(bid)
+                if inst:
+                    self.ndb.battle_instance = inst
 
-    """
-
-    pass
+    def at_post_puppet(self):
+        super().at_post_puppet()
+        bid = self.db.battle_id
+        if bid is not None and not getattr(self.ndb, "battle_instance", None):
+            room = self.location
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(bid)
+                if inst:
+                    self.ndb.battle_instance = inst

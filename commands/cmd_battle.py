@@ -34,7 +34,8 @@ class CmdBattleAttack(Command):
             room = getattr(self.caller, "location", None)
             bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
             if isinstance(bmap, dict):
-                inst = bmap.get(getattr(self.caller, "id", None))
+                bid = getattr(self.caller.db, "battle_id", getattr(self.caller, "id", None))
+                inst = bmap.get(bid)
                 if inst:
                     self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
@@ -153,7 +154,8 @@ class CmdBattleSwitch(Command):
             room = getattr(self.caller, "location", None)
             bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
             if isinstance(bmap, dict):
-                inst = bmap.get(getattr(self.caller, "id", None))
+                bid = getattr(self.caller.db, "battle_id", getattr(self.caller, "id", None))
+                inst = bmap.get(bid)
                 if inst:
                     self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
@@ -251,7 +253,8 @@ class CmdBattleItem(Command):
             room = getattr(self.caller, "location", None)
             bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
             if isinstance(bmap, dict):
-                inst = bmap.get(getattr(self.caller, "id", None))
+                bid = getattr(self.caller.db, "battle_id", getattr(self.caller, "id", None))
+                inst = bmap.get(bid)
                 if inst:
                     self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:

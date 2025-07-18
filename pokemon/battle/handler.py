@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING
 
 from evennia import search_object
 from evennia.server.models import ServerConfig
@@ -16,27 +16,33 @@ class BattleHandler:
         self.instances: Dict[int, BattleInstance] = {}
 
     # -------------------------------------------------------------
+    # ID generation
+    # -------------------------------------------------------------
+    def next_id(self) -> int:
+        """Return the next unique battle id."""
+        current = ServerConfig.objects.conf("next_battle_id", default=1)
+        ServerConfig.objects.conf(key="next_battle_id", value=current + 1)
+        return current
+
+    # -------------------------------------------------------------
     # Persistence helpers
     # -------------------------------------------------------------
     def _save(self) -> None:
-        """Persist the current list of active battle room ids."""
-        ServerConfig.objects.conf(
-            key="active_battle_rooms", value=list(self.instances.keys())
-        )
+        """Persist the current active battle rooms and ids."""
+        data = {rid: inst.battle_id for rid, inst in self.instances.items()}
+        ServerConfig.objects.conf(key="active_battle_rooms", value=data)
 
     def restore(self) -> None:
         """Reload any battle instances stored on the server."""
-        ids: List[int] = ServerConfig.objects.conf(
-            "active_battle_rooms", default=[]
-        )
+        mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
         from .battleinstance import BattleInstance
-        for rid in ids:
+        for rid, bid in mapping.items():
             rooms = search_object(rid)
             if not rooms:
                 continue
             room = rooms[0]
             try:
-                inst = BattleInstance.restore(room)
+                inst = BattleInstance.restore(room, bid)
             except Exception:
                 continue
             if inst:
