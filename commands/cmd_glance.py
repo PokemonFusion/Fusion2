@@ -1,6 +1,7 @@
 from evennia import Command
 from evennia.utils.evtable import EvTable
 from evennia.utils import utils
+from evennia.objects.objects import DefaultCharacter
 
 class CmdGlance(Command):
     """Show a brief overview of online characters in the room.
@@ -22,7 +23,7 @@ class CmdGlance(Command):
 
         chars = []
         for obj in location.contents:
-            if not obj.is_typeclass("typeclasses.characters.Character", exact=False):
+            if not obj.is_typeclass(DefaultCharacter, exact=False):
                 continue
             if not obj.sessions.all():
                 continue
