@@ -3,7 +3,10 @@ from __future__ import annotations
 from collections import defaultdict
 from itertools import chain
 
-from evennia.commands.default.help import CmdHelp as DefaultCmdHelp
+from evennia.commands.default.help import (
+    CmdHelp as DefaultCmdHelp,
+    DEFAULT_HELP_CATEGORY,
+)
 from evennia.utils.utils import format_grid, pad
 
 
@@ -13,7 +16,7 @@ class CmdHelp(DefaultCmdHelp):
     def collect_topics(self, caller, mode="list"):
         cmd, db, file = super().collect_topics(caller, mode=mode)
         for entry in chain(cmd.values(), db.values(), file.values()):
-            cat = getattr(entry, "help_category", self.DEFAULT_HELP_CATEGORY)
+            cat = getattr(entry, "help_category", DEFAULT_HELP_CATEGORY)
             entry.category_path = [p.strip() for p in cat.split("/") if p.strip()]
         return cmd, db, file
 
