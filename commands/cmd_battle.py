@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from evennia import Command
+from evennia.utils.evmenu import get_input
+
+NOT_IN_BATTLE_MSG = "You are not currently in battle."
 
 from pokemon.battle import Action, ActionType, BattleMove
 from utils.battle_display import render_move_gui
@@ -15,7 +18,7 @@ class CmdBattleAttack(Command):
 
     key = "+battleattack"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def parse(self):
         parts = self.args.split()
@@ -27,8 +30,15 @@ class CmdBattleAttack(Command):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
         inst = getattr(self.caller.ndb, "battle_instance", None)
+        if not inst:
+            room = getattr(self.caller, "location", None)
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(getattr(self.caller, "id", None))
+                if inst:
+                    self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
-            self.caller.msg("You are not currently in battle.")
+            self.caller.msg(NOT_IN_BATTLE_MSG)
             return
         participant = inst.battle.participants[0]
         active = participant.active[0] if participant.active else None
@@ -134,28 +144,87 @@ class CmdBattleSwitch(Command):
 
     key = "+battleswitch"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def func(self):
         slot = self.args.strip()
-        if not slot:
-            self.caller.msg("Usage: +battleswitch <slot>")
-            return
         inst = getattr(self.caller.ndb, "battle_instance", None)
+        if not inst:
+            room = getattr(self.caller, "location", None)
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(getattr(self.caller, "id", None))
+                if inst:
+                    self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
-            self.caller.msg("You are not currently in battle.")
+            self.caller.msg(NOT_IN_BATTLE_MSG)
             return
         participant = inst.battle.participants[0]
+
+        if not slot:
+            lines = []
+            for idx, poke in enumerate(participant.pokemons, 1):
+                status = " (fainted)" if getattr(poke, "hp", 0) <= 0 else ""
+                active = " (active)" if poke in participant.active else ""
+                lines.append(f"{idx}. {poke.name}{active}{status}")
+            lines.append("0. Cancel")
+
+            def _callback(caller, prompt, result):
+                choice = result.strip().lower()
+                if choice in {"0", "cancel", "quit", "exit", "abort", ".abort"}:
+                    caller.msg("Switch cancelled.")
+                    return False
+                try:
+                    idx = int(choice) - 1
+                    poke = participant.pokemons[idx]
+                except (ValueError, IndexError):
+                    caller.msg("Invalid Pokémon slot.")
+                    return True
+                if poke in participant.active:
+                    caller.msg(f"{poke.name} is already active.")
+                    return True
+                if getattr(poke, "hp", 0) <= 0:
+                    caller.msg(f"{poke.name} has fainted and cannot battle.")
+                    return True
+                action = Action(participant, ActionType.SWITCH)
+                action.target = poke
+                participant.pending_action = action
+                caller.msg(f"You prepare to switch to {poke.name}.")
+                if hasattr(inst, "run_turn"):
+                    try:
+                        inst.run_turn()
+                    except Exception:
+                        pass
+                return False
+
+            prompt = "Choose a Pokémon to switch to or 0 to cancel:\n" + "\n".join(lines)
+            get_input(self.caller, prompt, _callback)
+            return
+
+        if slot.lower() in {"0", "cancel", "quit", "exit", "abort", ".abort"}:
+            self.caller.msg("Switch cancelled.")
+            return
         try:
             index = int(slot) - 1
             pokemon = participant.pokemons[index]
         except (ValueError, IndexError):
             self.caller.msg("Invalid Pokémon slot.")
             return
+        if pokemon in participant.active:
+            self.caller.msg(f"{pokemon.name} is already active.")
+            return
+        if getattr(pokemon, "hp", 0) <= 0:
+            self.caller.msg(f"{pokemon.name} has fainted and cannot battle.")
+            return
         action = Action(participant, ActionType.SWITCH)
         action.target = pokemon
         participant.pending_action = action
         self.caller.msg(f"You prepare to switch to {pokemon.name}.")
+        if hasattr(inst, "run_turn"):
+            try:
+                inst.run_turn()
+            except Exception:
+                pass
 
 
 class CmdBattleItem(Command):
@@ -167,7 +236,7 @@ class CmdBattleItem(Command):
 
     key = "+battleitem"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def func(self):
         item_name = self.args.strip()
@@ -178,8 +247,15 @@ class CmdBattleItem(Command):
             self.caller.msg(f"You do not have any {item_name}.")
             return
         inst = getattr(self.caller.ndb, "battle_instance", None)
+        if not inst:
+            room = getattr(self.caller, "location", None)
+            bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+            if isinstance(bmap, dict):
+                inst = bmap.get(getattr(self.caller, "id", None))
+                if inst:
+                    self.caller.ndb.battle_instance = inst
         if not inst or not inst.battle:
-            self.caller.msg("You are not currently in battle.")
+            self.caller.msg(NOT_IN_BATTLE_MSG)
             return
         participant = inst.battle.participants[0]
         target = inst.battle.opponent_of(participant)

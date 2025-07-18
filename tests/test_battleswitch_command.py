@@ -17,11 +17,6 @@ def load_cmd_module():
     spec.loader.exec_module(mod)
     return mod
 
-class FakeQS(list):
-    def all(self):
-        return self
-    def order_by(self, field):
-        return self
 
 def setup_modules():
     orig_evennia = sys.modules.get("evennia")
@@ -46,6 +41,7 @@ def setup_modules():
     battle_mod = types.ModuleType("pokemon.battle")
     class ActionType(Enum):
         MOVE = 1
+        SWITCH = 2
     @dataclass
     class Action:
         actor: object
@@ -53,13 +49,9 @@ def setup_modules():
         target: object = None
         move: object = None
         priority: int = 0
-    class BattleMove:
-        def __init__(self, name, priority=0):
-            self.name = name
-            self.priority = priority
     battle_mod.Action = Action
     battle_mod.ActionType = ActionType
-    battle_mod.BattleMove = BattleMove
+    battle_mod.BattleMove = type("BattleMove", (), {})
     sys.modules["pokemon.battle"] = battle_mod
 
     return orig_evennia, orig_battle
@@ -88,26 +80,35 @@ def restore_modules(orig_evennia, orig_battle):
         sys.modules.pop("pokemon.battle", None)
 
 
-class FakeSlot:
-    def __init__(self, name, slot):
-        self.move = types.SimpleNamespace(name=name)
-        self.slot = slot
-
 class FakeParticipant:
-    def __init__(self, name, pokemon):
+    def __init__(self, name, pokemons):
         self.name = name
-        self.pokemons = [pokemon]
-        self.active = [pokemon]
+        self.pokemons = pokemons
+        self.active = [pokemons[0]]
         self.pending_action = None
+
 
 class FakeBattle:
     def __init__(self, participants):
         self.participants = participants
+        self.ran = False
     def opponent_of(self, part):
         for p in self.participants:
             if p is not part:
                 return p
         return None
+    def run_turn(self):
+        self.ran = True
+
+
+class FakeInstance:
+    def __init__(self, battle):
+        self.battle = battle
+        self.ran = False
+    def run_turn(self):
+        self.ran = True
+        self.battle.run_turn()
+
 
 class DummyCaller:
     def __init__(self):
@@ -118,72 +119,59 @@ class DummyCaller:
         self.msgs.append(text)
 
 
-def test_battleattack_lists_moves_and_targets():
+def test_battleswitch_prompts_when_no_arg():
     orig_evennia, orig_battle = setup_modules()
     cmd_mod = load_cmd_module()
 
-    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1), FakeSlot('growl',2)]))
-    opp = FakeParticipant('Enemy', poke)
-    player = FakeParticipant('Player', poke)
-    battle = FakeBattle([player, opp])
+    poke1 = types.SimpleNamespace(name="Pika", hp=10)
+    poke2 = types.SimpleNamespace(name="Bulba", hp=10)
+    player = FakeParticipant("Player", [poke1, poke2])
+    enemy = FakeParticipant("Enemy", [poke2])
+    battle = FakeBattle([player, enemy])
+    inst = FakeInstance(battle)
     caller = DummyCaller()
-    caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
-    caller.db.battle_control = True
+    caller.ndb.battle_instance = inst
 
-    cmd = cmd_mod.CmdBattleAttack()
+    cmd = cmd_mod.CmdBattleSwitch()
     cmd.caller = caller
-    cmd.args = ''
-    cmd.parse()
+    cmd.args = ""
     cmd.func()
 
+    joined = "\n".join(caller.msgs)
+    assert "Choose a Pokémon" in joined
+    assert "Pika" in joined
+
+    cb = caller.ndb.last_prompt_callback
+    assert cb is not None
+    cb(caller, "", "2")
+
     restore_modules(orig_evennia, orig_battle)
-    joined = '\n'.join(caller.msgs)
-    assert 'Pick an attack' in joined
-    assert 'tackle' in joined.lower()
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert player.pending_action.target is poke2
+    assert inst.ran is True
+    assert battle.ran is True
 
 
-def test_battleattack_auto_target_single():
+def test_battleswitch_queues_action_and_runs_turn():
     orig_evennia, orig_battle = setup_modules()
     cmd_mod = load_cmd_module()
 
-    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
-    player = FakeParticipant('Player', poke)
-    enemy = FakeParticipant('Enemy', poke)
+    poke1 = types.SimpleNamespace(name="Pika", hp=10)
+    poke2 = types.SimpleNamespace(name="Bulba", hp=10)
+    player = FakeParticipant("Player", [poke1, poke2])
+    enemy = FakeParticipant("Enemy", [poke1])
     battle = FakeBattle([player, enemy])
+    inst = FakeInstance(battle)
     caller = DummyCaller()
-    caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
-    caller.db.battle_control = True
+    caller.ndb.battle_instance = inst
 
-    cmd = cmd_mod.CmdBattleAttack()
+    cmd = cmd_mod.CmdBattleSwitch()
     cmd.caller = caller
-    cmd.args = 'tackle'
-    cmd.parse()
+    cmd.args = "2"
     cmd.func()
 
     restore_modules(orig_evennia, orig_battle)
     assert isinstance(player.pending_action, cmd_mod.Action)
-    assert player.pending_action.target is enemy
-
-
-def test_battleattack_requires_target_when_multiple():
-    orig_evennia, orig_battle = setup_modules()
-    cmd_mod = load_cmd_module()
-
-    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
-    player = FakeParticipant('Player', poke)
-    e1 = FakeParticipant('Foe1', poke)
-    e2 = FakeParticipant('Foe2', poke)
-    battle = FakeBattle([player, e1, e2])
-    caller = DummyCaller()
-    caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
-    caller.db.battle_control = True
-
-    cmd = cmd_mod.CmdBattleAttack()
-    cmd.caller = caller
-    cmd.args = 'tackle'
-    cmd.parse()
-    cmd.func()
-
-    restore_modules(orig_evennia, orig_battle)
-    assert player.pending_action is None
-    assert 'Valid targets' in caller.msgs[-1]
+    assert player.pending_action.target is poke2
+    assert inst.ran is True
+    assert battle.ran is True

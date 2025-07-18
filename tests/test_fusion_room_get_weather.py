@@ -25,9 +25,13 @@ def test_get_weather_handles_get_attribute_shadow():
     fake_objects_objects.DefaultObject = DefaultObject
     fake_objects.objects = fake_objects_objects
     evennia.objects = fake_objects
+    fake_utils = types.ModuleType("evennia.utils")
+    fake_utils.ansi = types.SimpleNamespace(parse_ansi=lambda txt: txt)
+    evennia.utils = fake_utils
     sys.modules["evennia"] = evennia
     sys.modules["evennia.objects"] = fake_objects
     sys.modules["evennia.objects.objects"] = fake_objects_objects
+    sys.modules["evennia.utils"] = fake_utils
     # Minimal stub for typeclasses.objects required by rooms.py
     fake_tc_objects = types.ModuleType("typeclasses.objects")
     fake_tc_objects.ObjectParent = type("ObjectParent", (), {})
