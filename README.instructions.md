@@ -85,3 +85,11 @@ helpers in `pokemon/dex/functions/pokedex_funcs.py` such as
 Admins can update the server's code from within the game by using the
 `@gitpull` command. The command runs `git pull` and returns any output to
 the caller.
+
+## Help Subcategories
+
+The `help_category` of a command can include slashes (`/`) to build nested
+categories in the in-game help index. For instance, using
+`help_category = "Pokemon/Battle"` will place the command under the
+"Pokemon" section with a "Battle" subcategory. Multiple levels are
+supported by separating each with `/`.

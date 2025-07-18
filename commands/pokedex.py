@@ -33,7 +33,7 @@ class CmdPokedexSearch(Command):
     key = "pokedex"
     aliases = ["+dex", "poke"]  # Adding aliases
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Dex"
 
     def parse(self):
         """Parse optional /region switch."""
@@ -133,7 +133,7 @@ class CmdPokedexAll(CmdPokedexSearch):
     key = "+dex/all"
     aliases = ["pokedex/all"]
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Dex"
 
     def func(self):
         entries = get_national_entries()
@@ -150,7 +150,7 @@ class CmdMovedexSearch(Command):
     key = "movedex"
     aliases = ["mdex", "move"]
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Dex"
 
     def func(self):
         args = self.args.strip()
@@ -177,7 +177,7 @@ class CmdMovesetSearch(Command):
     key = "moveset"
     aliases = ["learnset", "movelist"]
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Dex"
 
     def func(self):
         args = self.args.strip()
@@ -202,7 +202,7 @@ class CmdPokedexNumber(Command):
     key = "pokenum"
     aliases = ["dexnum"]
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Dex"
 
     def func(self):
         arg = self.args.strip()
@@ -230,7 +230,7 @@ class CmdStarterList(Command):
     key = "starterlist"
     aliases = ["starters"]
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Dex"
 
     def func(self):
         names = get_starter_names()

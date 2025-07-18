@@ -19,7 +19,7 @@ class CmdPvpHelp(Command):
 
     key = "+pvp"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/PvP"
 
     def func(self):
         lines = ["|wPlayer vs Player commands|n"]
@@ -40,7 +40,7 @@ class CmdPvpList(Command):
 
     key = "+pvp/list"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/PvP"
 
     def func(self):
         reqs = get_requests(self.caller.location)
@@ -63,7 +63,7 @@ class CmdPvpCreate(Command):
 
     key = "+pvp/create"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/PvP"
 
     def func(self):
         password = self.args.strip() or None
@@ -84,7 +84,7 @@ class CmdPvpJoin(Command):
 
     key = "+pvp/join"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/PvP"
 
     def func(self):
         if not self.args:
@@ -111,7 +111,7 @@ class CmdPvpAbort(Command):
 
     key = "+pvp/abort"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/PvP"
 
     def func(self):
         remove_request(self.caller)
@@ -127,7 +127,7 @@ class CmdPvpStart(Command):
 
     key = "+pvp/start"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/PvP"
 
     def func(self):
         reqs = get_requests(self.caller.location)

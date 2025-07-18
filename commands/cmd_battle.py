@@ -15,7 +15,7 @@ class CmdBattleAttack(Command):
 
     key = "+battleattack"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def parse(self):
         parts = self.args.split()
@@ -134,7 +134,7 @@ class CmdBattleSwitch(Command):
 
     key = "+battleswitch"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def func(self):
         slot = self.args.strip()
@@ -167,7 +167,7 @@ class CmdBattleItem(Command):
 
     key = "+battleitem"
     locks = "cmd:all()"
-    help_category = "Pokemon"
+    help_category = "Pokemon/Battle"
 
     def func(self):
         item_name = self.args.strip()
