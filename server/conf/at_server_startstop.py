@@ -22,7 +22,7 @@ import logging
 
 from utils.error_logging import setup_daily_error_log
 from utils.usage_logging import setup_daily_usage_log
-from utils.logging_patch import patch_open_log_file
+from utils.logging_patch import patch_open_log_file, patch_file_observer
 
 
 def _flush_logging_handlers() -> None:
@@ -46,6 +46,7 @@ def at_server_init():
     setup_daily_usage_log(log_dir)
     # ensure evennia log files reopen properly after shutdown
     patch_open_log_file()
+    patch_file_observer()
 
 
 def at_server_start():
