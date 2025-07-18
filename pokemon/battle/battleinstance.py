@@ -188,11 +188,16 @@ class BattleInstance:
         obj.temp_pokemon_ids = list(getattr(room.db, f"temp_pokemon_ids_{battle_id}", []))
         for wid in obj.watchers:
             targets = search_object(wid)
-            if targets:
-                watcher = targets[0]
-                watcher.ndb.battle_instance = obj
-                if hasattr(watcher, "db"):
-                    watcher.db.battle_id = battle_id
+            if not targets:
+                continue
+            watcher = targets[0]
+            watcher.ndb.battle_instance = obj
+            if hasattr(watcher, "db"):
+                watcher.db.battle_id = battle_id
+            if obj.player is None:
+                obj.player = watcher
+            elif obj.opponent is None:
+                obj.opponent = watcher
         return obj
 
     def start(self) -> None:
