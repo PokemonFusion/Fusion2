@@ -153,9 +153,11 @@ class BattleInstance:
         if self.room is None:
             raise ValueError("BattleInstance requires the player to have a location")
         self.battle_id = getattr(player, "id", 0)
-        if not hasattr(self.room.ndb, "battle_instances"):
-            self.room.ndb.battle_instances = {}
-        self.room.ndb.battle_instances[self.battle_id] = self
+        battle_instances = getattr(self.room.ndb, "battle_instances", None)
+        if not isinstance(battle_instances, dict):
+            battle_instances = {}
+            self.room.ndb.battle_instances = battle_instances
+        battle_instances[self.battle_id] = self
         self.data: BattleData | None = None
         self.battle: Battle | None = None
         self.state: BattleState | None = None
