@@ -51,8 +51,9 @@ def at_server_stop():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.save()
-    # gracefully close all logging handlers to avoid writes after shutdown
-    logging.shutdown()
+    # Avoid calling logging.shutdown() here because Evennia and Twisted manage
+    # their own logging shutdown. Forcing it can lead to "I/O operation on
+    # closed file" errors if any component tries to log during shutdown.
 
 
 def at_server_reload_start():
@@ -84,5 +85,4 @@ def at_server_cold_stop():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.save()
-    # ensure log files are flushed when the server fully stops
-    logging.shutdown()
+    # Do not call logging.shutdown() — Evennia/Twisted handles this safely
