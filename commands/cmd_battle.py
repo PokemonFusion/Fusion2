@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from evennia import Command
+from evennia.utils.evmenu import get_input
 
 NOT_IN_BATTLE_MSG = "You are not currently in battle."
 
@@ -167,39 +168,58 @@ class CmdBattleSwitch(Command):
                 active = " (active)" if poke in participant.active else ""
                 lines.append(f"{idx}. {poke.name}{active}{status}")
             lines.append("0. Cancel")
-            self.caller.ndb.switch_prompt = True
-            self.caller.msg(
-                "Choose a Pokémon to switch to or 0 to cancel:\n" + "\n".join(lines)
-            )
+
+            def _callback(caller, prompt, result):
+                choice = result.strip().lower()
+                if choice in {"0", "cancel", "quit", "exit", "abort", ".abort"}:
+                    caller.msg("Switch cancelled.")
+                    return False
+                try:
+                    idx = int(choice) - 1
+                    poke = participant.pokemons[idx]
+                except (ValueError, IndexError):
+                    caller.msg("Invalid Pokémon slot.")
+                    return True
+                if poke in participant.active:
+                    caller.msg(f"{poke.name} is already active.")
+                    return True
+                if getattr(poke, "hp", 0) <= 0:
+                    caller.msg(f"{poke.name} has fainted and cannot battle.")
+                    return True
+                action = Action(participant, ActionType.SWITCH)
+                action.target = poke
+                participant.pending_action = action
+                caller.msg(f"You prepare to switch to {poke.name}.")
+                if hasattr(inst, "run_turn"):
+                    try:
+                        inst.run_turn()
+                    except Exception:
+                        pass
+                return False
+
+            prompt = "Choose a Pokémon to switch to or 0 to cancel:\n" + "\n".join(lines)
+            get_input(self.caller, prompt, _callback)
             return
 
         if slot.lower() in {"0", "cancel", "quit", "exit", "abort", ".abort"}:
-            if getattr(self.caller.ndb, "switch_prompt", False):
-                self.caller.msg("Switch cancelled.")
-                self.caller.ndb.switch_prompt = False
-            else:
-                self.caller.msg("Usage: +battleswitch <slot>")
+            self.caller.msg("Switch cancelled.")
             return
         try:
             index = int(slot) - 1
             pokemon = participant.pokemons[index]
         except (ValueError, IndexError):
             self.caller.msg("Invalid Pokémon slot.")
-            self.caller.ndb.switch_prompt = False
             return
         if pokemon in participant.active:
             self.caller.msg(f"{pokemon.name} is already active.")
-            self.caller.ndb.switch_prompt = False
             return
         if getattr(pokemon, "hp", 0) <= 0:
             self.caller.msg(f"{pokemon.name} has fainted and cannot battle.")
-            self.caller.ndb.switch_prompt = False
             return
         action = Action(participant, ActionType.SWITCH)
         action.target = pokemon
         participant.pending_action = action
         self.caller.msg(f"You prepare to switch to {pokemon.name}.")
-        self.caller.ndb.switch_prompt = False
         if hasattr(inst, "run_turn"):
             try:
                 inst.run_turn()
