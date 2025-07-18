@@ -14,6 +14,7 @@ class FakeBaseHelp:
     index_topic_clr = ""
     subtopic_separator_char = "/"
     DEFAULT_HELP_CATEGORY = "General"
+    clickable_topics = True
 
     default_cmd = {}
     default_db = {}
@@ -30,6 +31,11 @@ class FakeBaseHelp:
 
     def msg_help(self, text, **kwargs):
         self.last_msg = text
+
+
+class FakeHelpCategory:
+    def __init__(self, key):
+        self.key = key
 
 # utility to load command module with stub
 
@@ -49,6 +55,7 @@ def setup_module():
     fake_mod = types.ModuleType("evennia.commands.default.help")
     fake_mod.CmdHelp = FakeBaseHelp
     fake_mod.DEFAULT_HELP_CATEGORY = "General"
+    fake_mod.HelpCategory = FakeHelpCategory
     sys.modules["evennia.commands.default.help"] = fake_mod
 
     # minimal evennia.utils.utils implementation
@@ -103,3 +110,36 @@ def test_collect_topics_category_path():
     cmd = cmd_mod.CmdHelp()
     cmd_topics, _, _ = cmd.collect_topics(None)
     assert cmd_topics["attack"].category_path == ["Pokemon", "Battle"]
+
+
+def test_help_subcategory_lookup():
+    cmd_mod = load_cmd_module()
+    entry = types.SimpleNamespace(help_category="Pokemon/Battle", entrytext="atk help")
+    FakeBaseHelp.default_cmd = {"attack": entry}
+    FakeBaseHelp.default_db = {}
+    FakeBaseHelp.default_file = {}
+    cmd = cmd_mod.CmdHelp()
+    cmd.caller = object()
+    cmd.args = "Pokemon/Battle"
+    cmd.parse()
+    cmd.func()
+    assert "attack" in cmd.last_msg
+
+
+def test_help_category_lists_subgroups():
+    cmd_mod = load_cmd_module()
+    entry1 = types.SimpleNamespace(help_category="Pokemon/Battle", entrytext="atk")
+    entry2 = types.SimpleNamespace(help_category="Pokemon/Dex", entrytext="dex")
+    FakeBaseHelp.default_cmd = {"attack": entry1, "pokedex": entry2}
+    FakeBaseHelp.default_db = {}
+    FakeBaseHelp.default_file = {}
+    cmd = cmd_mod.CmdHelp()
+    cmd.caller = object()
+    cmd.args = "Pokemon"
+    cmd.parse()
+    cmd.func()
+    output = cmd.last_msg
+    assert "Battle" in output
+    assert "Dex" in output
+    assert "attack" not in output
+    assert "pokedex" not in output
