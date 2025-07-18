@@ -16,6 +16,15 @@ class BattleHandler:
         self.instances: Dict[int, BattleInstance] = {}
 
     # -------------------------------------------------------------
+    # ID generation
+    # -------------------------------------------------------------
+    def next_id(self) -> int:
+        """Return the next unique battle id."""
+        current = ServerConfig.objects.conf("next_battle_id", default=1)
+        ServerConfig.objects.conf(key="next_battle_id", value=current + 1)
+        return current
+
+    # -------------------------------------------------------------
     # Persistence helpers
     # -------------------------------------------------------------
     def _save(self) -> None:

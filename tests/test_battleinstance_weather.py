@@ -66,7 +66,8 @@ handler_mod = types.ModuleType("pokemon.battle.handler")
 handler_mod.battle_handler = types.SimpleNamespace(register=lambda *a, **k: None,
                                                    unregister=lambda *a, **k: None,
                                                    restore=lambda *a, **k: None,
-                                                   save=lambda *a, **k: None)
+                                                   save=lambda *a, **k: None,
+                                                   next_id=lambda: 1)
 sys.modules["pokemon.battle.handler"] = handler_mod
 
 # Stub pokemon generation

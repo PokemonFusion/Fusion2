@@ -152,7 +152,7 @@ class BattleInstance:
         self.room = getattr(player, "location", None)
         if self.room is None:
             raise ValueError("BattleInstance requires the player to have a location")
-        self.battle_id = getattr(player, "id", 0)
+        self.battle_id = battle_handler.next_id()
         if hasattr(player, "db"):
             player.db.battle_id = self.battle_id
         battle_instances = getattr(self.room.ndb, "battle_instances", None)
