@@ -79,9 +79,11 @@ class BattleHandler:
         from .battleinstance import BattleInstance
 
         for inst in list(self.instances.values()):
-            if not hasattr(inst.room.ndb, "battle_instances"):
-                inst.room.ndb.battle_instances = {}
-            inst.room.ndb.battle_instances[inst.battle_id] = inst
+            battle_instances = getattr(inst.room.ndb, "battle_instances", None)
+            if not isinstance(battle_instances, dict):
+                battle_instances = {}
+                inst.room.ndb.battle_instances = battle_instances
+            battle_instances[inst.battle_id] = inst
 
             for obj in inst.trainers + list(inst.observers):
                 if obj:

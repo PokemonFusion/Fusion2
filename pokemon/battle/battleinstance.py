@@ -260,9 +260,11 @@ class BattleInstance:
         obj.trainers = []
         obj.observers = set()
         obj.turn_state = {}
-        if not hasattr(room.ndb, "battle_instances"):
-            room.ndb.battle_instances = {}
-        room.ndb.battle_instances[battle_id] = obj
+        battle_instances = getattr(room.ndb, "battle_instances", None)
+        if not isinstance(battle_instances, dict):
+            battle_instances = {}
+            room.ndb.battle_instances = battle_instances
+        battle_instances[battle_id] = obj
         battles = getattr(room.db, "battles", None)
         if not isinstance(battles, list):
             battles = []
