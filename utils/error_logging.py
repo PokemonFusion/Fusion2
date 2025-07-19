@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def setup_daily_error_log(log_dir: str | Path) -> None:
-    """Attach a daily rotating error log handler to the root logger.
+    """Attach a daily rotating error log handler to the ``errors`` logger.
 
     Parameters
     ----------
@@ -20,7 +20,7 @@ def setup_daily_error_log(log_dir: str | Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
     log_file = path / "errors.log"
 
-    logger = logging.getLogger()
+    logger = logging.getLogger("errors")
     for handler in logger.handlers:
         if isinstance(handler, TimedRotatingFileHandler) and Path(handler.baseFilename) == log_file:
             return logger # handler already configured

@@ -71,5 +71,21 @@ class BattleHandler:
             del self.instances[rid]
             self._save()
 
+    # -------------------------------------------------------------
+    # Reload helpers
+    # -------------------------------------------------------------
+    def rebuild_ndb(self) -> None:
+        """Repopulate ndb attributes for all tracked battle instances."""
+        from .battleinstance import BattleInstance
+
+        for inst in list(self.instances.values()):
+            if not hasattr(inst.room.ndb, "battle_instances"):
+                inst.room.ndb.battle_instances = {}
+            inst.room.ndb.battle_instances[inst.battle_id] = inst
+
+            for obj in inst.trainers + list(inst.observers):
+                if obj:
+                    obj.ndb.battle_instance = inst
+
 
 battle_handler = BattleHandler()

@@ -42,6 +42,7 @@ def at_server_start():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.restore()
+    battle_handler.rebuild_ndb()
 
 
 def at_server_stop():
@@ -60,7 +61,8 @@ def at_server_reload_start():
     """
     This is called only when server starts back up after a reload.
     """
-    pass
+    from pokemon.battle.handler import battle_handler
+    battle_handler.rebuild_ndb()
 
 
 def at_server_reload_stop():

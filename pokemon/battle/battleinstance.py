@@ -181,14 +181,52 @@ class BattleInstance:
         if not isinstance(battles, list):
             battles = []
             setattr(self.room.db, "battles", battles)
-        if self not in battles:
-            battles.append(self)
+        if self.battle_id not in battles:
+            battles.append(self.battle_id)
 
         self.data: BattleData | None = None
         self.battle: Battle | None = None
         self.state: BattleState | None = None
         self.watchers: set[int] = set()
         self.temp_pokemon_ids: List[int] = []
+
+    # ------------------------------------------------------------
+    # Helper utilities
+    # ------------------------------------------------------------
+
+    @staticmethod
+    def ensure_for_player(player) -> "BattleInstance | None":
+        """Return the active battle instance for ``player`` if possible.
+
+        This checks ``player.ndb.battle_instance`` first, then tries to
+        rebuild it from persistent data on the player's room. It returns
+        the instance if found, otherwise ``None``.
+        """
+
+        inst = getattr(player.ndb, "battle_instance", None)
+        if inst:
+            return inst
+
+        room = getattr(player, "location", None)
+        if not room:
+            return None
+
+        bid = getattr(player.db, "battle_id", None)
+        if bid is None:
+            return None
+
+        bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
+        if isinstance(bmap, dict):
+            inst = bmap.get(bid)
+            if inst:
+                player.ndb.battle_instance = inst
+                return inst
+
+        # try restoring from persistent room data
+        inst = BattleInstance.restore(room, bid)
+        if inst:
+            player.ndb.battle_instance = inst
+        return inst
 
     # ------------------------------------------------------------
     # Messaging helpers
@@ -229,8 +267,8 @@ class BattleInstance:
         if not isinstance(battles, list):
             battles = []
             setattr(room.db, "battles", battles)
-        if obj not in battles:
-            battles.append(obj)
+        if battle_id not in battles:
+            battles.append(battle_id)
         obj.data = BattleData.from_dict(data)
         obj.battle = obj.data.battle
         obj.state = BattleState.from_dict(state)
@@ -470,8 +508,8 @@ class BattleInstance:
             if hasattr(self.room.db, f"temp_pokemon_ids_{self.battle_id}"):
                 delattr(self.room.db, f"temp_pokemon_ids_{self.battle_id}")
             battles = getattr(self.room.db, "battles", None)
-            if isinstance(battles, list) and self in battles:
-                battles.remove(self)
+            if isinstance(battles, list) and self.battle_id in battles:
+                battles.remove(self.battle_id)
                 if not battles:
                     delattr(self.room.db, "battles")
         if getattr(self.player.ndb, "battle_instance", None):
