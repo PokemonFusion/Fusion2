@@ -722,7 +722,12 @@ class BattleInstance(_DefaultScript):
 
     def at_server_reload(self):  # pragma: no cover - not triggered in tests
         """Reattach non-persistent references after a reload."""
-        for obj in self.trainers + list(self.observers):
+        trainers = getattr(self, "trainers", None)
+        observers = getattr(self, "observers", None)
+        if not trainers:
+            # Attributes will be restored later by ``BattleHandler.rebuild_ndb``
+            return
+        for obj in trainers + list(observers or []):
             if obj:
                 obj.ndb.battle_instance = self
 
