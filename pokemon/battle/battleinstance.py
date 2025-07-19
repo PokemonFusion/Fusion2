@@ -272,8 +272,27 @@ class BattleInstance:
         if battle_id not in battles:
             battles.append(battle_id)
         obj.data = BattleData.from_dict(data)
-        obj.battle = obj.data.battle
         obj.state = BattleState.from_dict(state)
+
+        # rebuild the engine Battle object with participants
+        team_a = obj.data.teams.get("A")
+        team_b = obj.data.teams.get("B")
+        part_a = BattleParticipant(team_a.trainer, [p for p in team_a.returnlist() if p], is_ai=False)
+        part_b = BattleParticipant(team_b.trainer, [p for p in team_b.returnlist() if p])
+        # determine if the opponent should act as AI
+        part_b.is_ai = obj.state.ai_type != "Player"
+        pos_a = obj.data.turndata.teamPositions("A").get("A1")
+        if pos_a and pos_a.pokemon:
+            part_a.active = [pos_a.pokemon]
+        pos_b = obj.data.turndata.teamPositions("B").get("B1")
+        if pos_b and pos_b.pokemon:
+            part_b.active = [pos_b.pokemon]
+        try:
+            btype = BattleType[obj.state.ai_type.upper()]
+        except KeyError:
+            btype = BattleType.WILD
+        obj.battle = Battle(btype, [part_a, part_b])
+        obj.battle.turn_count = obj.data.battle.turn
         obj.watchers = set(obj.state.watchers.keys())
         obj.temp_pokemon_ids = list(getattr(room.db, f"temp_pokemon_ids_{battle_id}", []))
         for wid in obj.watchers:
