@@ -367,12 +367,25 @@ class BattleSession:
         )
         battle_map = getattr(room.db, "battle_data", None)
         if not isinstance(battle_map, dict):
-            log_info("No battle_data map on room; aborting restore")
+            log_info("No battle_data map on room; checking legacy attributes")
             battle_map = {}
         entry = battle_map.get(battle_id)
         if not entry:
-            log_info(f"No stored entry for battle {battle_id}")
-            return None
+            legacy_data = getattr(room.db, f"battle_data_{battle_id}", None)
+            legacy_state = getattr(room.db, f"battle_state_{battle_id}", None)
+            if legacy_data is not None and legacy_state is not None:
+                log_info(
+                    f"Using legacy battle_data_{battle_id} attributes for restore"
+                )
+                entry = {
+                    "logic": {"data": legacy_data, "state": legacy_state},
+                    "temp_pokemon_ids": list(
+                        getattr(room.db, f"temp_pokemon_ids_{battle_id}", [])
+                    ),
+                }
+            else:
+                log_info(f"No stored entry for battle {battle_id}")
+                return None
         log_info("Loaded battle data and state for restore")
         logic_info = entry.get("logic", entry)
         data = logic_info.get("data")
