@@ -23,7 +23,7 @@ if "pokemon.battle.battleinstance" not in sys.modules:
         WILD = "wild"
         TRAINER = "trainer"
 
-    class BattleInstance:
+    class BattleSession:
         def __init__(self, player, opponent=None):
             self.player = player
 
@@ -37,7 +37,7 @@ if "pokemon.battle.battleinstance" not in sys.modules:
         return types.SimpleNamespace(name="Rattata", level=5)
 
     battle_mod.BattleType = BattleType
-    battle_mod.BattleInstance = BattleInstance
+    battle_mod.BattleSession = BattleSession
     battle_mod.create_battle_pokemon = create_battle_pokemon
     battle_mod.generate_trainer_pokemon = generate_trainer_pokemon
 

@@ -18,6 +18,30 @@ from .handler import battle_handler
 from ..generation import generate_pokemon
 from world.pokemon_spawn import get_spawn
 
+try:
+    from evennia import DefaultScript as _ScriptBase  # type: ignore
+    if _ScriptBase is None:  # handle stubs defining this as None
+        raise Exception
+except Exception:  # pragma: no cover - fallback for tests without Evennia
+    class _ScriptBase:
+        """Minimal stand-in for Evennia's DefaultScript used in tests."""
+
+        def stop(self):
+            pass
+
+
+class BattleInstance(_ScriptBase):
+    """Legacy placeholder kept to clean up old script-based battles."""
+
+    def at_script_creation(self):
+        self.persistent = False
+
+    def at_server_start(self):
+        try:
+            self.stop()
+        except Exception:
+            pass
+
 
 def _calc_stats_from_model(poke):
     """Return calculated stats for a stored Pokemon model."""
@@ -190,20 +214,20 @@ class BattleLogic:
         return cls(battle, data, state)
 
 
-class BattleInstance:
+class BattleSession:
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
         player = getattr(self.player, "key", getattr(self.player, "id", "?"))
         opp = getattr(self.opponent, "key", getattr(self.opponent, "id", "?")) if self.opponent else None
-        return f"<BattleInstance id={self.battle_id} player={player} opponent={opp}>"
+        return f"<BattleSession id={self.battle_id} player={player} opponent={opp}>"
 
     def __init__(self, player, opponent: Optional[object] = None):
         self.player = player
         self.opponent = opponent
         self.room = getattr(player, "location", None)
         if self.room is None:
-            raise ValueError("BattleInstance requires the player to have a location")
+            raise ValueError("BattleSession requires the player to have a location")
 
         self.trainers: List[object] = [player] if opponent is None else [player, opponent]
         self.observers: set[object] = set()
@@ -256,7 +280,7 @@ class BattleInstance:
     # ------------------------------------------------------------
 
     @staticmethod
-    def ensure_for_player(player) -> "BattleInstance | None":
+    def ensure_for_player(player) -> "BattleSession | None":
         """Return the active battle instance for ``player`` if possible.
 
         This checks ``player.ndb.battle_instance`` first, then tries to
@@ -284,7 +308,7 @@ class BattleInstance:
                 return inst
 
         # try restoring from persistent room data
-        inst = BattleInstance.restore(room, bid)
+        inst = BattleSession.restore(room, bid)
         if inst:
             player.ndb.battle_instance = inst
         return inst
@@ -307,7 +331,7 @@ class BattleInstance:
                 obj.msg(msg)
 
     @classmethod
-    def restore(cls, room, battle_id: int) -> "BattleInstance | None":
+    def restore(cls, room, battle_id: int) -> "BattleSession | None":
         """Recreate an instance from a stored battle on a room."""
         battle_map = getattr(room.db, "battle_data", {})
         entry = battle_map.get(battle_id)
@@ -686,5 +710,6 @@ class BattleInstance:
                 del watcher.ndb.battle_instance
             if self.state:
                 remove_watcher(self.state, watcher)
-                self.watchers.discard(getattr(watcher, "id", 0))
+        self.watchers.discard(getattr(watcher, "id", 0))
 
+__all__ = ["BattleSession", "BattleInstance"]

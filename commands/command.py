@@ -199,13 +199,13 @@ class CmdHunt(Command):
     help_category = "Pokemon"
 
     def func(self):
-        from pokemon.battle.battleinstance import BattleInstance
+        from pokemon.battle.battleinstance import BattleSession
 
         if getattr(self.caller.ndb, "battle_instance", None):
             self.caller.msg("You are already engaged in a battle.")
             return
 
-        battle = BattleInstance(self.caller)
+        battle = BattleSession(self.caller)
         battle.start()
 
 

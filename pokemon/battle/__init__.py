@@ -3,13 +3,13 @@ from .battledata import BattleData, Team, Pokemon, TurnData, Field, Move
 from .turnorder import calculateTurnorder
 try:
     from .battleinstance import (
-        BattleInstance,
+        BattleSession,
         generate_trainer_pokemon,
         generate_wild_pokemon,
         create_battle_pokemon,
     )
 except Exception:  # pragma: no cover - allow partial imports during tests
-    BattleInstance = None
+    BattleSession = None
     generate_trainer_pokemon = generate_wild_pokemon = create_battle_pokemon = None
 from .state import BattleState
 try:
@@ -28,7 +28,7 @@ __all__ = [
     "Field",
     "Move",
     "calculateTurnorder",
-    "BattleInstance",
+    "BattleSession",
     "generate_trainer_pokemon",
     "generate_wild_pokemon",
     "create_battle_pokemon",

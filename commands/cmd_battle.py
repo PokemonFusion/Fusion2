@@ -29,9 +29,9 @@ class CmdBattleAttack(Command):
         if not getattr(self.caller.db, "battle_control", False):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
-        from pokemon.battle.battleinstance import BattleInstance
+        from pokemon.battle.battleinstance import BattleSession
 
-        inst = BattleInstance.ensure_for_player(self.caller)
+        inst = BattleSession.ensure_for_player(self.caller)
         if not inst or not inst.battle:
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return
@@ -143,9 +143,9 @@ class CmdBattleSwitch(Command):
 
     def func(self):
         slot = self.args.strip()
-        from pokemon.battle.battleinstance import BattleInstance
+        from pokemon.battle.battleinstance import BattleSession
 
-        inst = BattleInstance.ensure_for_player(self.caller)
+        inst = BattleSession.ensure_for_player(self.caller)
         if not inst or not inst.battle:
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return
@@ -236,9 +236,9 @@ class CmdBattleItem(Command):
         if not self.caller.has_item(item_name):
             self.caller.msg(f"You do not have any {item_name}.")
             return
-        from pokemon.battle.battleinstance import BattleInstance
+        from pokemon.battle.battleinstance import BattleSession
 
-        inst = BattleInstance.ensure_for_player(self.caller)
+        inst = BattleSession.ensure_for_player(self.caller)
         if not inst or not inst.battle:
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return

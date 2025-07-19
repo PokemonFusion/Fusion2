@@ -9,14 +9,14 @@ from evennia import search_object
 from evennia.server.models import ServerConfig
 
 if TYPE_CHECKING:
-    from .battleinstance import BattleInstance
+    from .battleinstance import BattleSession
 
 
 class BattleHandler:
     """Track and persist active battle instances."""
 
     def __init__(self):
-        self.instances: Dict[int, BattleInstance] = {}
+        self.instances: Dict[int, BattleSession] = {}
 
     # -------------------------------------------------------------
     # ID generation
@@ -38,14 +38,14 @@ class BattleHandler:
     def restore(self) -> None:
         """Reload any battle instances stored on the server."""
         mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
-        from .battleinstance import BattleInstance
+        from .battleinstance import BattleSession
         for rid, bid in mapping.items():
             rooms = search_object(rid)
             if not rooms:
                 continue
             room = rooms[0]
             try:
-                inst = BattleInstance.restore(room, bid)
+                inst = BattleSession.restore(room, bid)
             except Exception:
                 continue
             if inst:
@@ -64,11 +64,11 @@ class BattleHandler:
     # -------------------------------------------------------------
     # Management API
     # -------------------------------------------------------------
-    def register(self, inst: BattleInstance) -> None:
+    def register(self, inst: BattleSession) -> None:
         self.instances[inst.room.id] = inst
         self._save()
 
-    def unregister(self, inst: BattleInstance) -> None:
+    def unregister(self, inst: BattleSession) -> None:
         rid = inst.room.id
         if rid in self.instances:
             del self.instances[rid]
@@ -79,7 +79,7 @@ class BattleHandler:
     # -------------------------------------------------------------
     def rebuild_ndb(self) -> None:
         """Repopulate ndb attributes for all tracked battle instances."""
-        from .battleinstance import BattleInstance
+        from .battleinstance import BattleSession
 
         logger.info("Rebuilding ndb data for %d active battles", len(self.instances))
         for inst in list(self.instances.values()):

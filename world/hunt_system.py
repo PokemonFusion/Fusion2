@@ -34,7 +34,7 @@ class HuntSystem:
             return "You can't hunt here."
 
         from pokemon.battle.battleinstance import (
-            BattleInstance,
+            BattleSession,
             BattleType,
             create_battle_pokemon,
         )
@@ -104,7 +104,7 @@ class HuntSystem:
             return item_msg
 
         from pokemon.battle.battleinstance import (
-            BattleInstance,
+            BattleSession,
             BattleType,
             create_battle_pokemon,
             generate_trainer_pokemon,
@@ -118,7 +118,7 @@ class HuntSystem:
             def _sel():
                 return poke, "Trainer", BattleType.TRAINER
 
-            inst = BattleInstance(hunter)
+            inst = BattleSession(hunter)
             inst._select_opponent = _sel
             inst.start()
             if tp_cost:
@@ -163,7 +163,7 @@ class HuntSystem:
         def _select_override():
             return poke, "Wild", BattleType.WILD
 
-        inst = BattleInstance(hunter)
+        inst = BattleSession(hunter)
         inst._select_opponent = _select_override
         inst.start()
 
@@ -183,7 +183,7 @@ class HuntSystem:
         room = self.room
 
         from pokemon.battle.battleinstance import (
-            BattleInstance,
+            BattleSession,
             BattleType,
             create_battle_pokemon,
         )
@@ -207,7 +207,7 @@ class HuntSystem:
         def _select_override():
             return poke, "Wild", BattleType.WILD
 
-        inst = BattleInstance(hunter)
+        inst = BattleSession(hunter)
         inst._select_opponent = _select_override
         inst.start()
 
