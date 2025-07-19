@@ -87,7 +87,7 @@ class BattleHandler:
         """Repopulate ndb attributes for all tracked battle instances."""
         from .battleinstance import BattleSession
 
-        log_info("Rebuilding ndb data for %d active battles", len(self.instances))
+        log_info(f"Rebuilding ndb data for {len(self.instances)} active battles")
         for inst in list(self.instances.values()):
             battle_instances = getattr(inst.room.ndb, "battle_instances", None)
             if not isinstance(battle_instances, dict):
@@ -95,11 +95,9 @@ class BattleHandler:
                 inst.room.ndb.battle_instances = battle_instances
             battle_instances[inst.battle_id] = inst
 
+            room_key = getattr(inst.room, "key", inst.room.id)
             log_info(
-                "Restored battle %s in room '%s' (#%s)",
-                inst.battle_id,
-                getattr(inst.room, "key", inst.room.id),
-                inst.room.id,
+                f"Restored battle {inst.battle_id} in room '{room_key}' (#" f"{inst.room.id})"
             )
 
             # rebuild live logic from stored room data if needed
