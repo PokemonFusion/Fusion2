@@ -85,6 +85,16 @@ class BattleHandler:
                 inst.room.ndb.battle_instances = battle_instances
             battle_instances[inst.battle_id] = inst
 
+            # rebuild live logic from stored room data if needed
+            if not inst.logic:
+                data_map = getattr(inst.room.db, "battle_data", {})
+                entry = data_map.get(inst.battle_id)
+                if entry:
+                    from .battleinstance import BattleLogic
+
+                    inst.logic = BattleLogic.from_dict(entry.get("logic", entry))
+                    inst.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
+
             for obj in inst.trainers + list(inst.observers):
                 if obj:
                     obj.ndb.battle_instance = inst
