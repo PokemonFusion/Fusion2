@@ -385,6 +385,14 @@ class BattleSession:
 
     def start(self) -> None:
         """Start a battle against a wild Pokémon, trainer or another player."""
+        # make sure this battle's ID is tracked on the room
+        room = self.player.location
+        battle_id = self.battle_id
+        existing_ids = getattr(room.db, "battles", [])
+        if battle_id not in existing_ids:
+            existing_ids.append(battle_id)
+            room.db.battles = existing_ids
+
         if self.opponent:
             self.start_pvp()
             return
