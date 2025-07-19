@@ -9,11 +9,17 @@ from evennia.objects.objects import DefaultRoom
 import random
 import textwrap
 import re
-import logging
 from utils.ansi import ansi
 from pokemon.battle.battleinstance import BattleSession
 
-logger = logging.getLogger(__name__)
+try:
+    from evennia.utils.logger import log_info
+except Exception:  # pragma: no cover - fallback if Evennia not available
+    import logging
+    _log = logging.getLogger(__name__)
+
+    def log_info(*args, **kwargs):
+        _log.info(*args, **kwargs)
 
 
 from .objects import ObjectParent
@@ -70,10 +76,10 @@ class FusionRoom(Room):
 
     def at_init(self):
         """Rebuild non-persistent battle data after reload."""
-        logger.info(f"FusionRoom #{self.id} running at_init()...")
+        log_info(f"FusionRoom #{self.id} running at_init()...")
         battle_ids = getattr(self.db, "battles", [])
         for bid in battle_ids:
-            logger.info(f"Restoring BattleSession {bid} in FusionRoom #{self.id}")
+            log_info(f"Restoring BattleSession {bid} in FusionRoom #{self.id}")
             BattleSession.restore(self, bid)
 
     def get_random_pokemon(self):

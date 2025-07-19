@@ -1,9 +1,18 @@
 from __future__ import annotations
 
 from typing import Dict, TYPE_CHECKING
-import logging
 
-logger = logging.getLogger(__name__)
+try:
+    from evennia.utils.logger import log_info, log_debug
+except Exception:  # pragma: no cover - fallback if Evennia not available
+    import logging
+    _log = logging.getLogger(__name__)
+
+    def log_info(*args, **kwargs):
+        _log.info(*args, **kwargs)
+
+    def log_debug(*args, **kwargs):
+        _log.debug(*args, **kwargs)
 
 from evennia import search_object
 from evennia.server.models import ServerConfig
@@ -81,7 +90,7 @@ class BattleHandler:
         """Repopulate ndb attributes for all tracked battle instances."""
         from .battleinstance import BattleSession
 
-        logger.info("Rebuilding ndb data for %d active battles", len(self.instances))
+        log_info("Rebuilding ndb data for %d active battles", len(self.instances))
         for inst in list(self.instances.values()):
             battle_instances = getattr(inst.room.ndb, "battle_instances", None)
             if not isinstance(battle_instances, dict):
@@ -89,7 +98,7 @@ class BattleHandler:
                 inst.room.ndb.battle_instances = battle_instances
             battle_instances[inst.battle_id] = inst
 
-            logger.info(
+            log_info(
                 "Restored battle %s in room '%s' (#%s)",
                 inst.battle_id,
                 getattr(inst.room, "key", inst.room.id),
