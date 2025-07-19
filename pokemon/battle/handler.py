@@ -98,7 +98,9 @@ class BattleHandler:
 
             # rebuild live logic from stored room data if needed
             if not inst.logic:
-                data_map = getattr(inst.room.db, "battle_data", {})
+                data_map = getattr(inst.room.db, "battle_data", None)
+                if not isinstance(data_map, dict):
+                    data_map = {}
                 entry = data_map.get(inst.battle_id)
                 if entry:
                     from .battleinstance import BattleLogic

@@ -333,7 +333,9 @@ class BattleSession:
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":
         """Recreate an instance from a stored battle on a room."""
-        battle_map = getattr(room.db, "battle_data", {})
+        battle_map = getattr(room.db, "battle_data", None)
+        if not isinstance(battle_map, dict):
+            battle_map = {}
         entry = battle_map.get(battle_id)
         if not entry:
             return None
@@ -431,7 +433,9 @@ class BattleSession:
 
         self.logic = BattleLogic(battle, data, state)
 
-        room_data = getattr(self.room.db, "battle_data", {})
+        room_data = getattr(self.room.db, "battle_data", None)
+        if not isinstance(room_data, dict):
+            room_data = {}
         room_data[self.battle_id] = {
             "logic": self.logic.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
@@ -556,7 +560,9 @@ class BattleSession:
 
         self.logic = BattleLogic(battle, data, state)
 
-        room_data = getattr(self.room.db, "battle_data", {})
+        room_data = getattr(self.room.db, "battle_data", None)
+        if not isinstance(room_data, dict):
+            room_data = {}
         room_data[self.battle_id] = {
             "logic": self.logic.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
@@ -604,7 +610,9 @@ class BattleSession:
                 self.room.ndb.battle_instances.pop(self.battle_id, None)
                 if not self.room.ndb.battle_instances:
                     del self.room.ndb.battle_instances
-            data = getattr(self.room.db, "battle_data", {})
+            data = getattr(self.room.db, "battle_data", None)
+            if not isinstance(data, dict):
+                data = {}
             if self.battle_id in data:
                 del data[self.battle_id]
                 if data:
@@ -653,7 +661,9 @@ class BattleSession:
         if not pos:
             return
         pos.declareAttack(target, Move(name=move_name))
-        data = getattr(self.room.db, "battle_data", {})
+        data = getattr(self.room.db, "battle_data", None)
+        if not isinstance(data, dict):
+            data = {}
         if self.battle_id in data:
             info = data[self.battle_id]
             info["logic"] = self.logic.to_dict()
