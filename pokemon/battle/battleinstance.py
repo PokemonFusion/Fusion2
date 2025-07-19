@@ -3,7 +3,35 @@ from __future__ import annotations
 import random
 from typing import List, Optional
 
-from evennia import search_object
+from types import SimpleNamespace
+
+try:
+    from evennia.scripts.scripts import DefaultScript as _DefaultScript
+    from evennia import search_object
+except Exception:  # pragma: no cover - fallback for tests without Evennia
+    class _DefaultScript:
+        def __init__(self, *args, **kwargs):
+            self.db = SimpleNamespace()
+            self.ndb = SimpleNamespace()
+
+        def at_script_creation(self):
+            pass
+
+        def at_server_reload(self):
+            pass
+
+        def at_stop(self):
+            pass
+
+        def start(self):
+            pass
+
+        def stop(self):
+            pass
+
+    def search_object(dbref):
+        return []
+
 
 from typeclasses.rooms import BattleRoom
 from .battledata import BattleData, Team, Pokemon, Move
@@ -143,7 +171,7 @@ def generate_trainer_pokemon(trainer=None) -> Pokemon:
     return create_battle_pokemon("Charmander", 5, trainer=trainer, is_wild=False)
 
 
-class BattleInstance:
+class BattleInstance(_DefaultScript):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
@@ -151,7 +179,12 @@ class BattleInstance:
         opp = getattr(self.opponent, "key", getattr(self.opponent, "id", "?")) if self.opponent else None
         return f"<BattleInstance id={self.battle_id} player={player} opponent={opp}>"
 
+    def at_script_creation(self):
+        self.persistent = True
+
     def __init__(self, player, opponent: Optional[object] = None):
+        super().__init__()
+        self.at_script_creation()
         self.player = player
         self.opponent = opponent
         self.room = getattr(player, "location", None)
@@ -625,3 +658,19 @@ class BattleInstance:
             if self.state:
                 remove_watcher(self.state, watcher)
                 self.watchers.discard(getattr(watcher, "id", 0))
+
+    # ------------------------------------------------------------
+    # Script hooks
+    # ------------------------------------------------------------
+
+    def at_server_reload(self):  # pragma: no cover - not triggered in tests
+        """Reattach non-persistent references after a reload."""
+        for obj in self.trainers + list(self.observers):
+            if obj:
+                obj.ndb.battle_instance = self
+
+    def at_stop(self):  # pragma: no cover - not triggered in tests
+        """Clean up references when the script stops."""
+        for obj in self.trainers + list(self.observers):
+            if getattr(obj.ndb, "battle_instance", None) == self:
+                del obj.ndb.battle_instance
