@@ -3,16 +3,13 @@ from __future__ import annotations
 from typing import Dict, TYPE_CHECKING
 
 try:
-    from evennia.utils.logger import log_info, log_debug
+    from evennia.utils.logger import log_info
 except Exception:  # pragma: no cover - fallback if Evennia not available
     import logging
     _log = logging.getLogger(__name__)
 
     def log_info(*args, **kwargs):
         _log.info(*args, **kwargs)
-
-    def log_debug(*args, **kwargs):
-        _log.debug(*args, **kwargs)
 
 from evennia import search_object
 from evennia.server.models import ServerConfig
