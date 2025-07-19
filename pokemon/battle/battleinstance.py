@@ -378,6 +378,8 @@ class BattleSession:
                 obj.player = watcher
             elif obj.opponent is None:
                 obj.opponent = watcher
+            else:
+                obj.observers.add(watcher)
         obj.trainers = [t for t in (obj.player, obj.opponent) if t]
         return obj
 
