@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def setup_daily_error_log(log_dir: str | Path) -> None:
-    """Attach a daily rotating error log handler to the root logger.
+    """Attach a daily rotating error log handler to the ``errors`` logger.
 
     Parameters
     ----------

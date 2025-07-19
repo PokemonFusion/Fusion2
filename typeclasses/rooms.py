@@ -9,7 +9,11 @@ from evennia.objects.objects import DefaultRoom
 import random
 import textwrap
 import re
+import logging
 from utils.ansi import ansi
+from pokemon.battle.battleinstance import BattleSession
+
+logger = logging.getLogger(__name__)
 
 
 from .objects import ObjectParent
@@ -52,6 +56,25 @@ class FusionRoom(Room):
     def set_hunt_chart(self, chart):
         """Helper to set this room's hunt chart."""
         self.db.hunt_chart = chart
+
+    def at_object_receive(self, moved_obj, source_location):
+        super().at_object_receive(moved_obj, source_location)
+        if not hasattr(moved_obj, "id"):
+            return
+
+        battle_id = getattr(moved_obj.db, "battle_id", None)
+        if battle_id is not None:
+            instance = BattleSession.restore(self, battle_id)
+            if instance:
+                moved_obj.ndb.battle_instance = instance
+
+    def at_init(self):
+        """Rebuild non-persistent battle data after reload."""
+        logger.info(f"FusionRoom #{self.id} running at_init()...")
+        battle_ids = getattr(self.db, "battles", [])
+        for bid in battle_ids:
+            logger.info(f"Restoring BattleSession {bid} in FusionRoom #{self.id}")
+            BattleSession.restore(self, bid)
 
     def get_random_pokemon(self):
         """Return a Pokémon name selected from the hunt chart."""

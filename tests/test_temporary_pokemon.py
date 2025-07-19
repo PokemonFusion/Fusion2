@@ -242,7 +242,7 @@ def setup_module(module):
     module.bi_mod = importlib.util.module_from_spec(bi_spec)
     sys.modules[bi_spec.name] = module.bi_mod
     bi_spec.loader.exec_module(module.bi_mod)
-    module.BattleInstance = module.bi_mod.BattleInstance
+    module.BattleSession = module.bi_mod.BattleSession
 
 # Dummy classes
 class DummyStorage:
@@ -277,11 +277,11 @@ def test_temp_pokemon_persists_after_restore():
     random_choice = bi_mod.random.choice
     bi_mod.random.choice = lambda opts: "pokemon"
     player = DummyPlayer()
-    inst = BattleInstance(player)
+    inst = BattleSession(player)
     inst.start()
     pid = inst.temp_pokemon_ids[0]
     assert pid in FakeOwnedPokemon.objects.store
-    restored = BattleInstance.restore(inst.room, inst.battle_id)
+    restored = BattleSession.restore(inst.room, inst.battle_id)
     assert pid in restored.temp_pokemon_ids
     bi_mod.random.choice = random_choice
 
@@ -309,7 +309,7 @@ def test_uncaught_pokemon_deleted_on_end():
     random_choice = bi_mod.random.choice
     bi_mod.random.choice = lambda opts: "pokemon"
     player = DummyPlayer()
-    inst = BattleInstance(player)
+    inst = BattleSession(player)
     inst.start()
     pid = inst.temp_pokemon_ids[0]
     inst.end()

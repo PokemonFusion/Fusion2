@@ -3,7 +3,7 @@
 This module implements a very small subset of the MUF-based PVP logic
 found in ``reference_material/battletypes.txt``. It allows players to
 create PVP requests, join them and start a battle using the existing
-``BattleInstance`` helper.
+``BattleSession`` helper.
 """
 
 from __future__ import annotations
@@ -61,9 +61,9 @@ def find_request(location, host_name: str) -> Optional[PVPRequest]:
 
 
 def start_pvp_battle(host, opponent) -> None:
-    """Create and start a PVP ``BattleInstance`` between ``host`` and ``opponent``."""
-    from .battleinstance import BattleInstance
+    """Create and start a PVP ``BattleSession`` between ``host`` and ``opponent``."""
+    from .battleinstance import BattleSession
 
-    battle = BattleInstance(host, opponent)
+    battle = BattleSession(host, opponent)
     battle.start_pvp()
 
