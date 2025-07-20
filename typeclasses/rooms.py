@@ -13,9 +13,10 @@ from utils.ansi import ansi
 from pokemon.battle.battleinstance import BattleSession
 
 try:
-    from evennia.utils.logger import log_info
+    from evennia.utils.logger import log_info, log_err
 except Exception:  # pragma: no cover - fallback if Evennia not available
     import logging
+
     _log = logging.getLogger(__name__)
 
     def log_info(*args, **kwargs):
@@ -64,7 +65,9 @@ class FusionRoom(Room):
         self.db.hunt_chart = chart
 
     def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
-        super().at_object_receive(moved_obj, source_location, move_type=move_type, **kwargs)
+        super().at_object_receive(
+            moved_obj, source_location, move_type=move_type, **kwargs
+        )
         if not hasattr(moved_obj, "id"):
             return
 
@@ -78,10 +81,19 @@ class FusionRoom(Room):
         """Rebuild non-persistent battle data after reload."""
         super().at_init()
         log_info(f"FusionRoom #{self.id} running at_init()...")
-        battle_ids = getattr(self.db, "battles", [])
+        battle_ids = getattr(self.db, "battles", None)
+        if not isinstance(battle_ids, list):
+            log_info("No battle list found or invalid format; skipping restore")
+            return
         for bid in battle_ids:
             log_info(f"Restoring BattleSession {bid} in FusionRoom #{self.id}")
-            BattleSession.restore(self, bid)
+            try:
+                BattleSession.restore(self, bid)
+            except Exception:
+                log_err(
+                    f"Error restoring BattleSession {bid} in FusionRoom #{self.id}",
+                    exc_info=True,
+                )
 
     def get_random_pokemon(self):
         """Return a Pokémon name selected from the hunt chart."""
@@ -177,7 +189,9 @@ class FusionRoom(Room):
         characters = self.filter_visible(
             self.contents_get(content_type="character"), looker, **kwargs
         )
-        players = [c for c in characters if c.has_account and not c.attributes.get("npc")]
+        players = [
+            c for c in characters if c.has_account and not c.attributes.get("npc")
+        ]
         # Make sure the looker shows up in the player list even if filtered out
         if (
             looker.has_account
@@ -216,9 +230,13 @@ class FusionRoom(Room):
             box.append(green_rule)
 
         if self.db.is_item_store:
-            box.append("|yThere is a store here, use +store/list to see its contents.|n")
+            box.append(
+                "|yThere is a store here, use +store/list to see its contents.|n"
+            )
         if self.db.is_pokemon_center:
-            box.append("|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
+            box.append(
+                "|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n"
+            )
 
         output.append("\n".join(box))
 
@@ -252,7 +270,9 @@ class MapRoom(Room):
             }
 
     def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
-        super().at_object_receive(moved_obj, source_location, move_type=move_type, **kwargs)
+        super().at_object_receive(
+            moved_obj, source_location, move_type=move_type, **kwargs
+        )
         if not moved_obj.attributes.has("xy"):
             moved_obj.db.xy = (0, 0)
         self.display_map(moved_obj)
