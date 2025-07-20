@@ -76,6 +76,7 @@ class FusionRoom(Room):
 
     def at_init(self):
         """Rebuild non-persistent battle data after reload."""
+        super().at_init()
         log_info(f"FusionRoom #{self.id} running at_init()...")
         battle_ids = getattr(self.db, "battles", [])
         for bid in battle_ids:
