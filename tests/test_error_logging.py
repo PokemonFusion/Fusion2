@@ -13,7 +13,7 @@ def test_setup_daily_error_log(tmp_path):
     mod = importlib.import_module("utils.error_logging")
     mod.setup_daily_error_log(log_dir)
 
-    root = logging.getLogger()
+    root = logging.getLogger("errors")
     log_path = log_dir / "errors.log"
     handlers = [
         h

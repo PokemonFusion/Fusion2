@@ -2,18 +2,27 @@ from __future__ import annotations
 
 from typing import Dict, TYPE_CHECKING
 
+try:
+    from evennia.utils.logger import log_info
+except Exception:  # pragma: no cover - fallback if Evennia not available
+    import logging
+    _log = logging.getLogger(__name__)
+
+    def log_info(*args, **kwargs):
+        _log.info(*args, **kwargs)
+
 from evennia import search_object
 from evennia.server.models import ServerConfig
 
 if TYPE_CHECKING:
-    from .battleinstance import BattleInstance
+    from .battleinstance import BattleSession
 
 
 class BattleHandler:
     """Track and persist active battle instances."""
 
     def __init__(self):
-        self.instances: Dict[int, BattleInstance] = {}
+        self.instances: Dict[int, BattleSession] = {}
 
     # -------------------------------------------------------------
     # ID generation
@@ -35,14 +44,14 @@ class BattleHandler:
     def restore(self) -> None:
         """Reload any battle instances stored on the server."""
         mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
-        from .battleinstance import BattleInstance
+        from .battleinstance import BattleSession
         for rid, bid in mapping.items():
             rooms = search_object(rid)
             if not rooms:
                 continue
             room = rooms[0]
             try:
-                inst = BattleInstance.restore(room, bid)
+                inst = BattleSession.restore(room, bid)
             except Exception:
                 continue
             if inst:
@@ -61,15 +70,51 @@ class BattleHandler:
     # -------------------------------------------------------------
     # Management API
     # -------------------------------------------------------------
-    def register(self, inst: BattleInstance) -> None:
+    def register(self, inst: BattleSession) -> None:
         self.instances[inst.room.id] = inst
         self._save()
 
-    def unregister(self, inst: BattleInstance) -> None:
+    def unregister(self, inst: BattleSession) -> None:
         rid = inst.room.id
         if rid in self.instances:
             del self.instances[rid]
             self._save()
+
+    # -------------------------------------------------------------
+    # Reload helpers
+    # -------------------------------------------------------------
+    def rebuild_ndb(self) -> None:
+        """Repopulate ndb attributes for all tracked battle instances."""
+        from .battleinstance import BattleSession
+
+        log_info(f"Rebuilding ndb data for {len(self.instances)} active battles")
+        for inst in list(self.instances.values()):
+            battle_instances = getattr(inst.room.ndb, "battle_instances", None)
+            if not isinstance(battle_instances, dict):
+                battle_instances = {}
+                inst.room.ndb.battle_instances = battle_instances
+            battle_instances[inst.battle_id] = inst
+
+            room_key = getattr(inst.room, "key", inst.room.id)
+            log_info(
+                f"Restored battle {inst.battle_id} in room '{room_key}' (#" f"{inst.room.id})"
+            )
+
+            # rebuild live logic from stored room data if needed
+            if not inst.logic:
+                data_map = getattr(inst.room.db, "battle_data", None)
+                if not isinstance(data_map, dict):
+                    data_map = {}
+                entry = data_map.get(inst.battle_id)
+                if entry:
+                    from .battleinstance import BattleLogic
+
+                    inst.logic = BattleLogic.from_dict(entry.get("logic", entry))
+                    inst.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
+
+            for obj in inst.trainers + list(inst.observers):
+                if obj:
+                    obj.ndb.battle_instance = inst
 
 
 battle_handler = BattleHandler()

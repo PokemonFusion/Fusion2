@@ -42,6 +42,7 @@ def at_server_start():
     """
     from pokemon.battle.handler import battle_handler
     battle_handler.restore()
+    battle_handler.rebuild_ndb()
 
 
 def at_server_stop():
@@ -59,8 +60,17 @@ def at_server_stop():
 def at_server_reload_start():
     """
     This is called only when server starts back up after a reload.
+
+    We must restore and repopulate ``ndb`` attributes here so that any
+    active battles continue to work immediately after the server
+    reloads.  This mirrors the initialization done in ``at_server_start``.
     """
-    pass
+    from pokemon.battle.handler import battle_handler
+
+    # Recreate active instances from persistent storage and then rebuild
+    # their non-persistent references.
+    battle_handler.restore()
+    battle_handler.rebuild_ndb()
 
 
 def at_server_reload_stop():
@@ -75,7 +85,12 @@ def at_server_cold_start():
     This is called only when the server starts "cold", i.e. after a
     shutdown or a reset.
     """
-    pass
+    from pokemon.battle.handler import battle_handler
+
+    # Recreate any saved battle instances since non-persistent
+    # attributes were wiped as part of the shutdown.
+    battle_handler.restore()
+    battle_handler.rebuild_ndb()
 
 
 def at_server_cold_stop():

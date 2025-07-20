@@ -135,7 +135,7 @@ bi_spec = importlib.util.spec_from_file_location("pokemon.battle.battleinstance"
 bi_mod = importlib.util.module_from_spec(bi_spec)
 sys.modules[bi_spec.name] = bi_mod
 bi_spec.loader.exec_module(bi_mod)
-BattleInstance = bi_mod.BattleInstance
+BattleSession = bi_mod.BattleSession
 
 # Dummy player
 class DummyPoke:
@@ -168,7 +168,7 @@ class DummyPlayer:
 
 def test_battle_state_uses_room_weather():
     player = DummyPlayer()
-    inst = BattleInstance(player)
+    inst = BattleSession(player)
     inst.start()
     assert inst.state.roomweather == "rain"
     evennia.create_object = orig_create_object
