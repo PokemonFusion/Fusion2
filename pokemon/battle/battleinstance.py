@@ -440,18 +440,49 @@ class BattleSession:
         obj.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
         log_info("Restored logic and temp Pokemon ids")
 
+        trainer_info = entry.get("trainers", {})
+        player_id = trainer_info.get("player")
+        opponent_id = trainer_info.get("opponent")
+
+        watcher_data = getattr(obj.state, "watchers", None)
+        if not isinstance(watcher_data, dict):
+            watcher_data = {}
+        if player_id and player_id not in watcher_data:
+            watcher_data[player_id] = 1
+        if opponent_id and opponent_id not in watcher_data:
+            watcher_data[opponent_id] = 1
+        obj.state.watchers = watcher_data
+
+        if player_id and obj.player is None:
+            targets = search_object(player_id)
+            if targets:
+                obj.player = targets[0]
+        if opponent_id and obj.opponent is None:
+            targets = search_object(opponent_id)
+            if targets:
+                obj.opponent = targets[0]
+
         watcher_data = getattr(obj.state, "watchers", None)
         if isinstance(watcher_data, dict):
             obj.watchers = set(watcher_data.keys())
         else:
             obj.watchers = set()
+        if player_id:
+            obj.watchers.add(player_id)
+        if opponent_id:
+            obj.watchers.add(opponent_id)
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
-            targets = search_object(wid)
-            if not targets:
-                log_info(f"Could not find watcher {wid}")
-                continue
-            watcher = targets[0]
+            if wid == player_id and obj.player is not None:
+                watcher = obj.player
+            elif wid == opponent_id and obj.opponent is not None:
+                watcher = obj.opponent
+            else:
+                targets = search_object(wid)
+                if not targets:
+                    log_info(f"Could not find watcher {wid}")
+                    continue
+                watcher = targets[0]
             watcher.ndb.battle_instance = obj
             if hasattr(watcher, "db"):
                 watcher.db.battle_id = battle_id
@@ -553,10 +584,18 @@ class BattleSession:
         room_data = getattr(self.room.db, "battle_data", None)
         if not isinstance(room_data, dict):
             room_data = {}
-        room_data[self.battle_id] = {
+        room_entry = {
             "logic": self.logic.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
         }
+        trainer_ids = {}
+        if hasattr(self.player, "id"):
+            trainer_ids["player"] = self.player.id
+        if self.opponent and hasattr(self.opponent, "id"):
+            trainer_ids["opponent"] = self.opponent.id
+        if trainer_ids:
+            room_entry["trainers"] = trainer_ids
+        room_data[self.battle_id] = room_entry
         self.room.db.battle_data = room_data
         log_info("Saved PvP battle data to room")
 
@@ -693,10 +732,18 @@ class BattleSession:
         room_data = getattr(self.room.db, "battle_data", None)
         if not isinstance(room_data, dict):
             room_data = {}
-        room_data[self.battle_id] = {
+        room_entry = {
             "logic": self.logic.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
         }
+        trainer_ids = {}
+        if hasattr(self.player, "id"):
+            trainer_ids["player"] = self.player.id
+        if self.opponent and hasattr(self.opponent, "id"):
+            trainer_ids["opponent"] = self.opponent.id
+        if trainer_ids:
+            room_entry["trainers"] = trainer_ids
+        room_data[self.battle_id] = room_entry
         self.room.db.battle_data = room_data
         log_info(f"Saved battle data for id {self.battle_id}")
 

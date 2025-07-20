@@ -203,3 +203,28 @@ def test_restore_registers_instance():
     # restore should populate the room's map and return the instance
     assert restored is not None
     assert room.ndb.battle_instances[inst.battle_id] is restored
+
+
+def test_trainer_ids_saved_and_restored():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    entry = room.db.battle_data[inst.battle_id]
+    assert entry.get("trainers") == {"player": 1, "opponent": 2}
+
+    p1.ndb.battle_instance = None
+    p2.ndb.battle_instance = None
+    room.ndb.battle_instances = {}
+
+    orig_search = bi_mod.search_object
+    bi_mod.search_object = lambda oid: [p1] if oid == 1 else ([p2] if oid == 2 else [])
+    try:
+        restored = BattleSession.restore(room, inst.battle_id)
+    finally:
+        bi_mod.search_object = orig_search
+
+    assert restored.player is p1
+    assert restored.opponent is p2
