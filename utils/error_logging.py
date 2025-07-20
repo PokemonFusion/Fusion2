@@ -36,5 +36,6 @@ def setup_daily_error_log(log_dir: str | Path) -> None:
         logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
     )
     logger.addHandler(handler)
+    logging.getLogger().addHandler(handler)
     logger.setLevel(logging.ERROR)
     return logger
