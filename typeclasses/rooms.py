@@ -63,8 +63,8 @@ class FusionRoom(Room):
         """Helper to set this room's hunt chart."""
         self.db.hunt_chart = chart
 
-    def at_object_receive(self, moved_obj, source_location):
-        super().at_object_receive(moved_obj, source_location)
+    def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
+        super().at_object_receive(moved_obj, source_location, move_type=move_type, **kwargs)
         if not hasattr(moved_obj, "id"):
             return
 
@@ -250,8 +250,8 @@ class MapRoom(Room):
                 for y in range(self.map_height)
             }
 
-    def at_object_receive(self, moved_obj, source_location):
-        super().at_object_receive(moved_obj, source_location)
+    def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
+        super().at_object_receive(moved_obj, source_location, move_type=move_type, **kwargs)
         if not moved_obj.attributes.has("xy"):
             moved_obj.db.xy = (0, 0)
         self.display_map(moved_obj)
