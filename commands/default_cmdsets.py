@@ -17,6 +17,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 from evennia import default_cmds
 from commands.cmd_help import CmdHelp
 from commands.cmd_debugpy import CmdDebugPy
+from commands.cmd_examine import CmdExamine
 from bboard.commands import (
     CmdBBList,
     CmdBBRead,
@@ -115,8 +116,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         """
         super().at_cmdset_creation()
         self.remove("help")
+        self.remove("@examine")
         self.add(CmdHelp())
         self.add(CmdDebugPy)
+        self.add(CmdExamine())
         #
         # any commands you add below will overload the default ones.
         #
@@ -222,7 +225,9 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         """
         super().at_cmdset_creation()
         self.remove("help")
+        self.remove("@examine")
         self.add(CmdHelp())
+        self.add(CmdExamine())
         #
         # any commands you add below will overload the default ones.
         #
