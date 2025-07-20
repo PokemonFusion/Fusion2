@@ -4,6 +4,7 @@ try:
     from evennia.utils.logger import log_info, log_warn, log_err
 except Exception:  # pragma: no cover - fallback if Evennia not available
     import logging
+
     _log = logging.getLogger(__name__)
 
     def log_info(*args, **kwargs):
@@ -15,12 +16,14 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
     def log_err(*args, **kwargs):
         _log.error(*args, **kwargs)
 
+
 import random
 from typing import List, Optional
 
 try:
     from evennia import search_object
 except Exception:  # pragma: no cover - fallback for tests without Evennia
+
     def search_object(dbref):
         return []
 
@@ -40,9 +43,11 @@ except Exception:  # pragma: no cover - allow restore in tests without module
 
 try:
     from evennia import DefaultScript as _ScriptBase  # type: ignore
+
     if _ScriptBase is None:  # handle stubs defining this as None
         raise Exception
 except Exception:  # pragma: no cover - fallback for tests without Evennia
+
     class _ScriptBase:
         """Minimal stand-in for Evennia's DefaultScript used in tests."""
 
@@ -216,8 +221,12 @@ class BattleLogic:
 
         team_a = data.teams.get("A")
         team_b = data.teams.get("B")
-        part_a = BattleParticipant(team_a.trainer, [p for p in team_a.returnlist() if p], is_ai=False)
-        part_b = BattleParticipant(team_b.trainer, [p for p in team_b.returnlist() if p])
+        part_a = BattleParticipant(
+            team_a.trainer, [p for p in team_a.returnlist() if p], is_ai=False
+        )
+        part_b = BattleParticipant(
+            team_b.trainer, [p for p in team_b.returnlist() if p]
+        )
         part_b.is_ai = state.ai_type != "Player"
         pos_a = data.turndata.teamPositions("A").get("A1")
         if pos_a and pos_a.pokemon:
@@ -239,7 +248,11 @@ class BattleSession:
 
     def __repr__(self) -> str:
         player = getattr(self.player, "key", getattr(self.player, "id", "?"))
-        opp = getattr(self.opponent, "key", getattr(self.opponent, "id", "?")) if self.opponent else None
+        opp = (
+            getattr(self.opponent, "key", getattr(self.opponent, "id", "?"))
+            if self.opponent
+            else None
+        )
         return f"<BattleSession id={self.battle_id} player={player} opponent={opp}>"
 
     def __init__(self, player, opponent: Optional[object] = None):
@@ -252,7 +265,9 @@ class BattleSession:
         if self.room is None:
             raise ValueError("BattleSession requires the player to have a location")
 
-        self.trainers: List[object] = [player] if opponent is None else [player, opponent]
+        self.trainers: List[object] = (
+            [player] if opponent is None else [player, opponent]
+        )
         self.observers: set[object] = set()
         self.turn_state: dict = {}
 
@@ -319,7 +334,9 @@ class BattleSession:
 
         inst = getattr(player.ndb, "battle_instance", None)
         if inst:
-            log_info(f"Found existing instance {getattr(inst, 'battle_id', 'N/A')} on ndb")
+            log_info(
+                f"Found existing instance {getattr(inst, 'battle_id', 'N/A')} on ndb"
+            )
             return inst
 
         room = getattr(player, "location", None)
@@ -382,9 +399,7 @@ class BattleSession:
             legacy_data = getattr(room.db, f"battle_data_{battle_id}", None)
             legacy_state = getattr(room.db, f"battle_state_{battle_id}", None)
             if legacy_data is not None and legacy_state is not None:
-                log_info(
-                    f"Using legacy battle_data_{battle_id} attributes for restore"
-                )
+                log_info(f"Using legacy battle_data_{battle_id} attributes for restore")
                 entry = {
                     "logic": {"data": legacy_data, "state": legacy_state},
                     "temp_pokemon_ids": list(
@@ -425,7 +440,11 @@ class BattleSession:
         obj.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
         log_info("Restored logic and temp Pokemon ids")
 
-        obj.watchers = set(obj.state.watchers.keys())
+        watcher_data = getattr(obj.state, "watchers", None)
+        if isinstance(watcher_data, dict):
+            obj.watchers = set(watcher_data.keys())
+        else:
+            obj.watchers = set()
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
             targets = search_object(wid)
@@ -481,7 +500,9 @@ class BattleSession:
         opponent_poke, opponent_name, battle_type = self._select_opponent()
         player_pokemon = self._prepare_player_party(self.player)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
-        self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
+        self._init_battle_state(
+            origin, player_pokemon, opponent_poke, opponent_name, battle_type
+        )
         self._setup_battle_room()
 
     def start_pvp(self) -> None:
@@ -582,9 +603,7 @@ class BattleSession:
                 self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.TRAINER
             opponent_name = "Trainer"
-            self.msg(
-                f"A trainer challenges you with {opponent_poke.name}!"
-            )
+            self.msg(f"A trainer challenges you with {opponent_poke.name}!")
             log_info(f"Trainer opponent {opponent_poke.name} generated")
         return opponent_poke, opponent_name, battle_type
 
@@ -643,9 +662,7 @@ class BattleSession:
         battle_type: BattleType,
     ) -> None:
         """Create battle objects and state."""
-        log_info(
-            f"Initializing battle state for {self.player.key} vs {opponent_name}"
-        )
+        log_info(f"Initializing battle state for {self.player.key} vs {opponent_name}")
         opponent_participant = BattleParticipant(
             opponent_name, [opponent_poke], is_ai=True
         )
@@ -695,7 +712,9 @@ class BattleSession:
         self.msg("Battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         notify_watchers(
-            self.state, f"{getattr(self.player, 'key', 'Player')} has entered battle!", room=self.room
+            self.state,
+            f"{getattr(self.player, 'key', 'Player')} has entered battle!",
+            room=self.room,
         )
 
         self.prompt_first_turn()
@@ -851,5 +870,6 @@ class BattleSession:
                 remove_watcher(self.state, watcher)
         self.watchers.discard(getattr(watcher, "id", 0))
         log_info(f"Observer {getattr(watcher, 'key', watcher)} removed")
+
 
 __all__ = ["BattleSession", "BattleInstance"]
