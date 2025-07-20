@@ -34,6 +34,11 @@ from ..generation import generate_pokemon
 from world.pokemon_spawn import get_spawn
 
 try:
+    from typeclasses.rooms import FusionRoom
+except Exception:  # pragma: no cover - allow restore in tests without module
+    FusionRoom = None
+
+try:
     from evennia import DefaultScript as _ScriptBase  # type: ignore
     if _ScriptBase is None:  # handle stubs defining this as None
         raise Exception
@@ -365,6 +370,9 @@ class BattleSession:
         log_info(
             f"Attempting restore of battle {battle_id} in room #{getattr(room, 'id', '?')}"
         )
+        if FusionRoom is not None and not isinstance(room, FusionRoom):
+            log_info("Room is not a FusionRoom; skipping restore")
+            return None
         battle_map = getattr(room.db, "battle_data", None)
         if not isinstance(battle_map, dict):
             log_info("No battle_data map on room; checking legacy attributes")
