@@ -112,9 +112,7 @@ def test_number_select_opens_edit():
             self.msgs.append(text)
 
     caller = DummyCaller(DummyPoke())
-    result = menu.node_manage(caller, raw_input="1")
-    assert result == "node_edit"
-    text, _ = menu.node_edit(caller)
+    text, _ = menu.node_manage(caller, raw_input="1")
     assert caller.ndb.ms_index == 0
     assert "Enter up to 4 moves" in text
 
@@ -200,11 +198,9 @@ def test_edit_rejects_invalid_move():
             self.msgs.append(text)
 
     caller = DummyCaller(poke)
-    result = menu.node_edit(caller, raw_input="tackle")
-    assert result == "node_edit"
+    text, _ = menu.node_edit(caller, raw_input="tackle")
     assert any("Invalid move" in m for m in caller.msgs)
     assert poke.movesets[0] == []
-    text, _ = menu.node_edit(caller)
     assert "Available moves" in text
 
 
@@ -237,11 +233,9 @@ def test_edit_rejects_duplicate_moves():
             self.msgs.append(text)
 
     caller = DummyCaller(poke)
-    result = menu.node_edit(caller, raw_input="tackle, tackle")
-    assert result == "node_edit"
+    text, _ = menu.node_edit(caller, raw_input="tackle, tackle")
     assert any("Duplicate" in m for m in caller.msgs)
     assert poke.movesets[0] == []
-    text, _ = menu.node_edit(caller)
     assert "Available moves" in text
 
 
@@ -270,7 +264,5 @@ def test_edit_back_returns_to_manage():
             self.msgs.append(text)
 
     caller = DummyCaller(poke)
-    result = menu.node_edit(caller, raw_input="back")
-    assert result == "node_manage"
-    text, _ = menu.node_manage(caller)
+    text, _ = menu.node_edit(caller, raw_input="back")
     assert "Managing movesets" in text
