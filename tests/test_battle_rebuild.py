@@ -183,3 +183,23 @@ def test_rebuild_ndb_restores_instance():
     assert p1.ndb.battle_instance is inst
     assert p2.ndb.battle_instance is inst
     assert room.ndb.battle_instances[inst.battle_id] is inst
+
+
+def test_restore_registers_instance():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    # Simulate reload by clearing ndb references and handler state
+    p1.ndb.battle_instance = None
+    p2.ndb.battle_instance = None
+    room.ndb.battle_instances = {}
+
+    bi_mod.battle_handler.clear()
+    restored = BattleSession.restore(room, inst.battle_id)
+
+    # restore should populate the room's map and return the instance
+    assert restored is not None
+    assert room.ndb.battle_instances[inst.battle_id] is restored

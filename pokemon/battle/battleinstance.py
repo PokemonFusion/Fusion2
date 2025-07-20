@@ -440,6 +440,15 @@ class BattleSession:
             f"opponent={getattr(obj.opponent, 'key', obj.opponent) if obj.opponent else None} "
             f"observers={len(obj.observers)}"
         )
+
+        # ensure restored battles remain tracked across further reloads
+        try:
+            from .handler import battle_handler
+
+            battle_handler.register(obj)
+        except Exception:
+            pass
+
         return obj
 
     def start(self) -> None:
