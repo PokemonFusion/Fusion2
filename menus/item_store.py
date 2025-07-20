@@ -36,26 +36,26 @@ def node_buy(caller, raw_input=None):
     parts = cmd.split()
     if len(parts) != 2:
         caller.msg("Usage: <item> <amount> or 'back'.")
-        return "node_buy", {}
+        return node_buy(caller)
     item, amt = parts[0], parts[1]
     try:
         amt = int(amt)
     except ValueError:
         caller.msg("Amount must be a number.")
-        return "node_buy", {}
+        return node_buy(caller)
     data = inv.get(item)
     if not data or data.get("quantity", 0) < amt:
         caller.msg("The store doesn't have that many.")
-        return "node_buy", {}
+        return node_buy(caller)
     cost = data.get("price", 0) * amt
     if caller.trainer.money < cost:
         caller.msg("You can't afford that.")
-        return "node_buy", {}
+        return node_buy(caller)
     caller.spend_money(cost)
     room.db.store_inventory[item]["quantity"] -= amt
     caller.add_item(item, amt)
     caller.msg(f"You purchase {amt} x {item} for ${cost}.")
-    return "node_buy", {}
+    return node_buy(caller)
 
 
 def node_sell(caller, raw_input=None):
@@ -74,16 +74,16 @@ def node_sell(caller, raw_input=None):
     parts = cmd.split()
     if len(parts) != 2:
         caller.msg("Usage: <item> <amount> or 'back'.")
-        return "node_sell", {}
+        return node_sell(caller)
     item, amt = parts[0], parts[1]
     try:
         amt = int(amt)
     except ValueError:
         caller.msg("Amount must be a number.")
-        return "node_sell", {}
+        return node_sell(caller)
     if not caller.has_item(item, amt):
         caller.msg("You don't have enough of that item.")
-        return "node_sell", {}
+        return node_sell(caller)
     price = inv.get(item, {}).get("price", 0) // 2
     total = price * amt
     caller.remove_item(item, amt)
@@ -93,7 +93,7 @@ def node_sell(caller, raw_input=None):
     caller.trainer.money += total
     caller.trainer.save()
     caller.msg(f"You sold {amt} x {item} for ${total}.")
-    return "node_sell", {}
+    return node_sell(caller)
 
 
 def node_edit(caller, raw_input=None):
@@ -108,7 +108,7 @@ def node_edit(caller, raw_input=None):
         return text, [{"key": "_default", "goto": "node_edit"}]
     parts = raw_input.strip().split()
     if not parts:
-        return "node_edit", {}
+        return node_edit(caller)
     cmd = parts[0].lower()
     if cmd == "done":
         room.db.store_inventory = inv
@@ -137,7 +137,7 @@ def node_edit(caller, raw_input=None):
     else:
         caller.msg("Unknown command.")
     room.db.store_inventory = inv
-    return "node_edit", {}
+    return node_edit(caller)
 
 
 def node_quit(caller, raw_input=None):
