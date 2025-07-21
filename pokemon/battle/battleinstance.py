@@ -281,15 +281,13 @@ class BattleSession:
             opponent.ndb.battle_instance = self
 
         battle_instances = getattr(self.room.ndb, "battle_instances", None)
-        if not isinstance(battle_instances, dict):
+        if not battle_instances:
             battle_instances = {}
             self.room.ndb.battle_instances = battle_instances
         battle_instances[self.battle_id] = self
 
-        battles = getattr(self.room.db, "battles", None)
-        if not isinstance(battles, list):
-            battles = []
-            setattr(self.room.db, "battles", battles)
+        battles = getattr(self.room.db, "battles", None) or []
+        setattr(self.room.db, "battles", battles)
         if self.battle_id not in battles:
             battles.append(self.battle_id)
 
@@ -387,13 +385,15 @@ class BattleSession:
         log_info(
             f"Attempting restore of battle {battle_id} in room #{getattr(room, 'id', '?')}"
         )
-        if FusionRoom is not None and not isinstance(room, FusionRoom):
-            log_info("Room is not a FusionRoom; skipping restore")
-            return None
-        battle_map = getattr(room.db, "battle_data", None)
-        if not isinstance(battle_map, dict):
+        try:
+            if FusionRoom and not isinstance(room, FusionRoom):
+                log_info("Room is not a FusionRoom; skipping restore")
+                return None
+        except Exception as err:
+            log_err(f"Room type check failed: {err}")
+        battle_map = getattr(room.db, "battle_data", {}) or {}
+        if not battle_map:
             log_info("No battle_data map on room; checking legacy attributes")
-            battle_map = {}
         entry = battle_map.get(battle_id)
         if not entry:
             legacy_data = getattr(room.db, f"battle_data_{battle_id}", None)
@@ -422,16 +422,14 @@ class BattleSession:
         obj.observers = set()
         obj.turn_state = {}
         battle_instances = getattr(room.ndb, "battle_instances", None)
-        if not isinstance(battle_instances, dict):
+        if not battle_instances:
             log_info("Creating battle_instances map on room.nbd")
             battle_instances = {}
             room.ndb.battle_instances = battle_instances
         battle_instances[battle_id] = obj
         log_info("Registered restored instance in room ndb")
-        battles = getattr(room.db, "battles", None)
-        if not isinstance(battles, list):
-            battles = []
-            setattr(room.db, "battles", battles)
+        battles = getattr(room.db, "battles", None) or []
+        setattr(room.db, "battles", battles)
         if battle_id not in battles:
             battles.append(battle_id)
         log_info(f"Recorded battle {battle_id} in room.db.battles")
@@ -444,9 +442,7 @@ class BattleSession:
         player_id = trainer_info.get("player")
         opponent_id = trainer_info.get("opponent")
 
-        watcher_data = getattr(obj.state, "watchers", None)
-        if not isinstance(watcher_data, dict):
-            watcher_data = {}
+        watcher_data = getattr(obj.state, "watchers", None) or {}
         if player_id and player_id not in watcher_data:
             watcher_data[player_id] = 1
         if opponent_id and opponent_id not in watcher_data:
@@ -454,19 +450,16 @@ class BattleSession:
         obj.state.watchers = watcher_data
 
         if player_id and obj.player is None:
-            targets = search_object(player_id)
+            targets = search_object(f"#{player_id}")
             if targets:
                 obj.player = targets[0]
         if opponent_id and obj.opponent is None:
-            targets = search_object(opponent_id)
+            targets = search_object(f"#{opponent_id}")
             if targets:
                 obj.opponent = targets[0]
 
-        watcher_data = getattr(obj.state, "watchers", None)
-        if isinstance(watcher_data, dict):
-            obj.watchers = set(watcher_data.keys())
-        else:
-            obj.watchers = set()
+        watcher_data = getattr(obj.state, "watchers", None) or {}
+        obj.watchers = set(watcher_data.keys())
         if player_id:
             obj.watchers.add(player_id)
         if opponent_id:
@@ -478,7 +471,7 @@ class BattleSession:
             elif wid == opponent_id and obj.opponent is not None:
                 watcher = obj.opponent
             else:
-                targets = search_object(wid)
+                targets = search_object(f"#{wid}")
                 if not targets:
                     log_info(f"Could not find watcher {wid}")
                     continue

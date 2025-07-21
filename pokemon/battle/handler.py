@@ -46,7 +46,7 @@ class BattleHandler:
         mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
         from .battleinstance import BattleSession
         for rid, bid in mapping.items():
-            rooms = search_object(rid)
+            rooms = search_object(f"#{rid}")
             if not rooms:
                 continue
             room = rooms[0]

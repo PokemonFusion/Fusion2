@@ -220,7 +220,7 @@ def test_trainer_ids_saved_and_restored():
     room.ndb.battle_instances = {}
 
     orig_search = bi_mod.search_object
-    bi_mod.search_object = lambda oid: [p1] if oid == 1 else ([p2] if oid == 2 else [])
+    bi_mod.search_object = lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
     try:
         restored = BattleSession.restore(room, inst.battle_id)
     finally:
