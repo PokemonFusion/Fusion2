@@ -392,23 +392,10 @@ class BattleSession:
         except Exception as err:
             log_err(f"Room type check failed: {err}")
         battle_map = getattr(room.db, "battle_data", {}) or {}
-        if not battle_map:
-            log_info("No battle_data map on room; checking legacy attributes")
         entry = battle_map.get(battle_id)
         if not entry:
-            legacy_data = getattr(room.db, f"battle_data_{battle_id}", None)
-            legacy_state = getattr(room.db, f"battle_state_{battle_id}", None)
-            if legacy_data is not None and legacy_state is not None:
-                log_info(f"Using legacy battle_data_{battle_id} attributes for restore")
-                entry = {
-                    "logic": {"data": legacy_data, "state": legacy_state},
-                    "temp_pokemon_ids": list(
-                        getattr(room.db, f"temp_pokemon_ids_{battle_id}", [])
-                    ),
-                }
-            else:
-                log_info(f"No stored entry for battle {battle_id}")
-                return None
+            log_info(f"No stored entry for battle {battle_id}")
+            return None
         log_info("Loaded battle data and state for restore")
         logic_info = entry.get("logic", entry)
         data = logic_info.get("data")
@@ -421,26 +408,16 @@ class BattleSession:
         obj.trainers = []
         obj.observers = set()
         obj.turn_state = {}
-        battle_instances = getattr(room.ndb, "battle_instances", None)
-        if not battle_instances:
-            log_info("Creating battle_instances map on room.nbd")
-            battle_instances = {}
-            room.ndb.battle_instances = battle_instances
-        battle_instances[battle_id] = obj
-        log_info("Registered restored instance in room ndb")
-        battles = getattr(room.db, "battles", None) or []
-        setattr(room.db, "battles", battles)
-        if battle_id not in battles:
-            battles.append(battle_id)
-        log_info(f"Recorded battle {battle_id} in room.db.battles")
         logic = BattleLogic.from_dict({"data": data, "state": state})
         obj.logic = logic
         obj.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
         log_info("Restored logic and temp Pokemon ids")
 
         trainer_info = entry.get("trainers", {})
-        player_id = trainer_info.get("player")
-        opponent_id = trainer_info.get("opponent")
+        team_a = trainer_info.get("teamA", [])
+        team_b = trainer_info.get("teamB", [])
+        player_id = team_a[0] if team_a else None
+        opponent_id = team_b[0] if team_b else None
 
         watcher_data = getattr(obj.state, "watchers", None) or {}
         if player_id and player_id not in watcher_data:
@@ -449,27 +426,33 @@ class BattleSession:
             watcher_data[opponent_id] = 1
         obj.state.watchers = watcher_data
 
-        if player_id and obj.player is None:
-            targets = search_object(f"#{player_id}")
+        team_a_objs = []
+        for tid in team_a:
+            targets = search_object(f"#{tid}")
             if targets:
-                obj.player = targets[0]
-        if opponent_id and obj.opponent is None:
-            targets = search_object(f"#{opponent_id}")
+                member = targets[0]
+                team_a_objs.append(member)
+                if obj.player is None:
+                    obj.player = member
+        team_b_objs = []
+        for tid in team_b:
+            targets = search_object(f"#{tid}")
             if targets:
-                obj.opponent = targets[0]
+                member = targets[0]
+                team_b_objs.append(member)
+                if obj.opponent is None:
+                    obj.opponent = member
 
         watcher_data = getattr(obj.state, "watchers", None) or {}
         obj.watchers = set(watcher_data.keys())
-        if player_id:
-            obj.watchers.add(player_id)
-        if opponent_id:
-            obj.watchers.add(opponent_id)
+        obj.watchers.update(team_a)
+        obj.watchers.update(team_b)
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
-            if wid == player_id and obj.player is not None:
-                watcher = obj.player
-            elif wid == opponent_id and obj.opponent is not None:
-                watcher = obj.opponent
+            if wid in team_a and team_a_objs:
+                watcher = next((w for w in team_a_objs if getattr(w, 'id', 0) == wid), None)
+            elif wid in team_b and team_b_objs:
+                watcher = next((w for w in team_b_objs if getattr(w, 'id', 0) == wid), None)
             else:
                 targets = search_object(f"#{wid}")
                 if not targets:
@@ -479,18 +462,42 @@ class BattleSession:
             watcher.ndb.battle_instance = obj
             if hasattr(watcher, "db"):
                 watcher.db.battle_id = battle_id
-            if obj.player is None:
-                obj.player = watcher
-            elif obj.opponent is None:
-                obj.opponent = watcher
+            if wid in team_a:
+                if obj.player is None:
+                    obj.player = watcher
+                if watcher not in team_a_objs:
+                    team_a_objs.append(watcher)
+                obj.trainers.append(watcher)
+            elif wid in team_b:
+                if obj.opponent is None:
+                    obj.opponent = watcher
+                if watcher not in team_b_objs:
+                    team_b_objs.append(watcher)
+                obj.trainers.append(watcher)
             else:
                 obj.observers.add(watcher)
-        obj.trainers = [t for t in (obj.player, obj.opponent) if t]
+        if obj.player or obj.opponent:
+            obj.trainers = team_a_objs + team_b_objs
+        else:
+            obj.trainers = []
+
         log_info(
             f"Restore complete: player={getattr(obj.player, 'key', obj.player)} "
             f"opponent={getattr(obj.opponent, 'key', obj.opponent) if obj.opponent else None} "
             f"observers={len(obj.observers)}"
         )
+
+        battle_instances = getattr(room.ndb, "battle_instances", None)
+        if not isinstance(battle_instances, dict):
+            battle_instances = {}
+            room.ndb.battle_instances = battle_instances
+        battle_instances[battle_id] = obj
+        log_info("Registered restored instance in room ndb")
+        battles = getattr(room.db, "battles", None) or []
+        setattr(room.db, "battles", battles)
+        if battle_id not in battles:
+            battles.append(battle_id)
+        log_info(f"Recorded battle {battle_id} in room.db.battles")
 
         # ensure restored battles remain tracked across further reloads
         try:
@@ -583,9 +590,9 @@ class BattleSession:
         }
         trainer_ids = {}
         if hasattr(self.player, "id"):
-            trainer_ids["player"] = self.player.id
+            trainer_ids.setdefault("teamA", []).append(self.player.id)
         if self.opponent and hasattr(self.opponent, "id"):
-            trainer_ids["opponent"] = self.opponent.id
+            trainer_ids.setdefault("teamB", []).append(self.opponent.id)
         if trainer_ids:
             room_entry["trainers"] = trainer_ids
         room_data[self.battle_id] = room_entry
@@ -731,9 +738,9 @@ class BattleSession:
         }
         trainer_ids = {}
         if hasattr(self.player, "id"):
-            trainer_ids["player"] = self.player.id
+            trainer_ids.setdefault("teamA", []).append(self.player.id)
         if self.opponent and hasattr(self.opponent, "id"):
-            trainer_ids["opponent"] = self.opponent.id
+            trainer_ids.setdefault("teamB", []).append(self.opponent.id)
         if trainer_ids:
             room_entry["trainers"] = trainer_ids
         room_data[self.battle_id] = room_entry

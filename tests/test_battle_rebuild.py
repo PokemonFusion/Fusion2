@@ -213,7 +213,7 @@ def test_trainer_ids_saved_and_restored():
     inst.start_pvp()
 
     entry = room.db.battle_data[inst.battle_id]
-    assert entry.get("trainers") == {"player": 1, "opponent": 2}
+    assert entry.get("trainers") == {"teamA": [1], "teamB": [2]}
 
     p1.ndb.battle_instance = None
     p2.ndb.battle_instance = None
