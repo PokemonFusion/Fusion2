@@ -77,34 +77,74 @@ class Pokemon:
             self.toxic_counter = 0
 
     def to_dict(self) -> Dict:
-        return {
-            "name": self.name,
-            "level": self.level,
-            "hp": self.hp,
-            "max_hp": self.max_hp,
+        """Return a minimal serialisable representation of this Pokémon."""
+
+        info = {
+            "current_hp": self.hp,
             "status": self.status,
-            "moves": [m.to_dict() for m in self.moves],
-            "tempvals": self.tempvals,
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
-            "ability": getattr(self.ability, "name", self.ability),
-            "data": self.data,
-            "model_id": self.model_id,
+            "tempvals": self.tempvals,
         }
+
+        if self.ability is not None:
+            info["ability"] = getattr(self.ability, "name", self.ability)
+        if self.data:
+            info["data"] = self.data
+        if self.model_id:
+            info["model_id"] = self.model_id
+        else:
+            info.update(
+                {
+                    "name": self.name,
+                    "level": self.level,
+                    "max_hp": self.max_hp,
+                    "moves": [m.to_dict() for m in self.moves],
+                }
+            )
+
+        return info
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Pokemon":
+        """Recreate a ``Pokemon`` from its minimal serialised form."""
+
+        name = data.get("name", "Pikachu")
+        level = data.get("level", 1)
+        moves = [Move.from_dict(m) for m in data.get("moves", [])]
+        max_hp = data.get("max_hp")
+        model_id = data.get("model_id")
+
+        if model_id and not data.get("name"):
+            try:
+                from ..models import OwnedPokemon
+            except Exception:  # pragma: no cover - DB not available in tests
+                OwnedPokemon = None
+
+            if OwnedPokemon:
+                try:
+                    poke = OwnedPokemon.objects.get(unique_id=model_id)
+                    name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
+                    level = getattr(poke, "level", 1)
+                    if max_hp is None:
+                        max_hp = getattr(poke, "current_hp", None)
+                    if not moves:
+                        move_names = getattr(poke, "movesets", [["Tackle"]])[poke.active_moveset_index][:4]
+                        moves = [Move(name=m) for m in move_names]
+                except Exception:
+                    pass
+
         obj = cls(
-            name=data["name"],
-            level=data.get("level", 1),
-            hp=data.get("hp", 100),
-            max_hp=data.get("max_hp"),
+            name=name,
+            level=level,
+            hp=data.get("current_hp", data.get("hp", 100)),
+            max_hp=max_hp,
             status=data.get("status", 0),
-            moves=[Move.from_dict(m) for m in data.get("moves", [])],
+            moves=moves,
             toxic_counter=data.get("toxic_counter", 0),
             ability=data.get("ability"),
             data=data.get("data"),
-            model_id=data.get("model_id"),
+            model_id=model_id,
         )
         obj.tempvals = data.get("tempvals", {})
         obj.boosts = data.get(
