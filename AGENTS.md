@@ -11,6 +11,9 @@ This repository hosts a text-based Pokémon game built on the Evennia MUD framew
 - When recreating Pokémon stats such as max HP during tests or data restoration,
   use the `get_max_hp` function from `pokemon.utils.pokemon_helpers` with the
   Pokémon's IVs, EVs, nature and level rather than hardcoded values.
+- The same module also exposes `get_stats` and `_get_stats_from_data` which
+  should be used when you need a full stat dictionary or to calculate stats
+  from stored data.
 
 ## Development Workflow
 
