@@ -244,3 +244,46 @@ def test_pokemon_serialization_minimal():
     restored = bd_mod.Pokemon.from_dict(data)
     assert restored.model_id == "abc"
     assert restored.hp == 20
+
+
+def test_from_dict_calculates_max_hp():
+    fake_models = types.ModuleType("pokemon.models")
+
+    class FakeOwned:
+        class Manager:
+            def get(self, unique_id=None):
+                return FakeOwned()
+
+        objects = Manager()
+
+        def __init__(self):
+            self.name = "Bulbasaur"
+            self.species = "Bulbasaur"
+            self.level = 5
+            self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
+            self.movesets = [["tackle"]]
+            self.active_moveset_index = 0
+            self.current_hp = 5
+
+    fake_models.OwnedPokemon = FakeOwned
+    orig_models = sys.modules.get("pokemon.models")
+    sys.modules["pokemon.models"] = fake_models
+
+    helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
+    helpers_mod.get_max_hp = lambda mon: 42
+    orig_helpers = sys.modules.get("pokemon.utils.pokemon_helpers")
+    sys.modules["pokemon.utils.pokemon_helpers"] = helpers_mod
+
+    try:
+        poke = bd_mod.Pokemon.from_dict({"model_id": "uid"})
+    finally:
+        if orig_models is not None:
+            sys.modules["pokemon.models"] = orig_models
+        else:
+            sys.modules.pop("pokemon.models", None)
+        if orig_helpers is not None:
+            sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+        else:
+            sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+
+    assert poke.max_hp == 42

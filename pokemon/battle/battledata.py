@@ -127,7 +127,12 @@ class Pokemon:
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     level = getattr(poke, "level", 1)
                     if max_hp is None:
-                        max_hp = getattr(poke, "current_hp", None)
+                        try:
+                            from pokemon.utils.pokemon_helpers import get_max_hp
+
+                            max_hp = get_max_hp(poke)
+                        except Exception:
+                            max_hp = getattr(poke, "current_hp", None)
                     if not moves:
                         move_names = getattr(poke, "movesets", [["Tackle"]])[poke.active_moveset_index][:4]
                         moves = [Move(name=m) for m in move_names]
