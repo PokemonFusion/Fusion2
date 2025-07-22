@@ -6,11 +6,34 @@ from evennia.objects.models import ObjectDB
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
+from .stats import EV_LIMIT, STAT_EV_LIMIT
 import uuid
 import math
 
 # Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
 MAX_PP_MULTIPLIER = 1.6
+
+
+def validate_ivs(value):
+    """Validate that IV list has six integers between 0 and 31."""
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        raise ValidationError("IVs must contain six integers.")
+    for v in value:
+        if not isinstance(v, int) or v < 0 or v > 31:
+            raise ValidationError("IV values must be between 0 and 31.")
+
+
+def validate_evs(value):
+    """Validate that EV list has six integers in allowed ranges."""
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        raise ValidationError("EVs must contain six integers.")
+    for v in value:
+        if not isinstance(v, int) or v < 0 or v > STAT_EV_LIMIT:
+            raise ValidationError(
+                f"EV values must be between 0 and {STAT_EV_LIMIT}."
+            )
+    if sum(value) > EV_LIMIT:
+        raise ValidationError(f"Total EVs cannot exceed {EV_LIMIT}.")
 
 
 class Gender(models.TextChoices):
@@ -78,9 +101,24 @@ class BasePokemon(models.Model):
     ability = models.CharField(max_length=50, blank=True)
     nature = models.CharField(max_length=20, blank=True, choices=Nature.choices)
     gender = models.CharField(max_length=10, blank=True, choices=Gender.choices)
-    ivs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list)
-    evs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list)
+    ivs = ArrayField(
+        models.PositiveSmallIntegerField(),
+        size=6,
+        default=list,
+        validators=[validate_ivs],
+    )
+    evs = ArrayField(
+        models.PositiveSmallIntegerField(),
+        size=6,
+        default=list,
+        validators=[validate_evs],
+    )
     held_item = models.CharField(max_length=50, blank=True)
+
+    def clean(self):
+        super().clean()
+        validate_ivs(self.ivs)
+        validate_evs(self.evs)
 
     class Meta:
         abstract = True
