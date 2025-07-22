@@ -1,13 +1,17 @@
-from django.db import migrations
+from django.db import migrations, models
 
 
 def sync_levels(apps, schema_editor):
+    """Ensure the new ``level`` field reflects stored experience."""
+
     OwnedPokemon = apps.get_model("pokemon", "OwnedPokemon")
     from pokemon.stats import level_for_exp
 
     for mon in OwnedPokemon.objects.all():
-        mon.level = level_for_exp(mon.total_exp)
-        mon.save(update_fields=["level"])
+        level = level_for_exp(mon.total_exp)
+        if hasattr(mon, "level"):
+            mon.level = level
+            mon.save(update_fields=["level"])
 
 
 class Migration(migrations.Migration):
@@ -16,6 +20,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name="ownedpokemon",
+            name="level",
+            field=models.PositiveSmallIntegerField(default=1),
+        ),
         migrations.RunPython(sync_levels, migrations.RunPython.noop),
     ]
 
