@@ -30,7 +30,7 @@ def notify_watchers(state: BattleState, message: str, room=None) -> None:
     if not state.watchers:
         return
     for wid in list(state.watchers.keys()):
-        objs = search_object(wid)
+        objs = search_object(f"#{wid}")
         if not objs:
             continue
         watcher = objs[0]

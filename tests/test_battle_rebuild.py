@@ -203,3 +203,148 @@ def test_restore_registers_instance():
     # restore should populate the room's map and return the instance
     assert restored is not None
     assert room.ndb.battle_instances[inst.battle_id] is restored
+
+
+def test_trainer_ids_saved_and_restored():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    entry = room.db.battle_data[inst.battle_id]
+    assert entry.get("trainers") == {"teamA": [1], "teamB": [2]}
+
+    p1.ndb.battle_instance = None
+    p2.ndb.battle_instance = None
+    room.ndb.battle_instances = {}
+
+    orig_search = bi_mod.search_object
+    bi_mod.search_object = lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    try:
+        restored = BattleSession.restore(room, inst.battle_id)
+    finally:
+        bi_mod.search_object = orig_search
+
+    assert restored.player is p1
+    assert restored.opponent is p2
+
+
+def test_pokemon_serialization_minimal():
+    poke = bd_mod.Pokemon("Bulbasaur", level=5, hp=20, max_hp=30, model_id="abc")
+    data = poke.to_dict()
+
+    assert "name" not in data
+    assert "level" not in data
+    assert "max_hp" not in data
+    assert "moves" not in data
+    assert data.get("model_id") == "abc"
+    assert data.get("current_hp") == 20
+
+    restored = bd_mod.Pokemon.from_dict(data)
+    assert restored.model_id == "abc"
+    assert restored.hp == 20
+
+
+def test_from_dict_calculates_max_hp():
+    fake_models = types.ModuleType("pokemon.models")
+
+    class FakeOwned:
+        class Manager:
+            def get(self, unique_id=None):
+                return FakeOwned()
+
+        objects = Manager()
+
+        def __init__(self):
+            self.name = "Bulbasaur"
+            self.species = "Bulbasaur"
+            self.level = 5
+            self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
+            self.movesets = [["tackle"]]
+            self.active_moveset_index = 0
+            self.current_hp = 5
+
+    fake_models.OwnedPokemon = FakeOwned
+    orig_models = sys.modules.get("pokemon.models")
+    sys.modules["pokemon.models"] = fake_models
+
+    helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
+    helpers_mod.get_max_hp = lambda mon: 42
+    orig_helpers = sys.modules.get("pokemon.utils.pokemon_helpers")
+    sys.modules["pokemon.utils.pokemon_helpers"] = helpers_mod
+
+    try:
+        poke = bd_mod.Pokemon.from_dict({"model_id": "uid"})
+    finally:
+        if orig_models is not None:
+            sys.modules["pokemon.models"] = orig_models
+        else:
+            sys.modules.pop("pokemon.models", None)
+        if orig_helpers is not None:
+            sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+        else:
+            sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+
+    assert poke.max_hp == 42
+
+
+def test_battle_state_serialization_new_fields():
+    """BattleState should persist ability_holder and pokemon_control."""
+
+    state_cls = st_mod.BattleState
+    state = state_cls()
+    state.ability_holder = "poke-123"
+    state.pokemon_control = {"poke-123": "1"}
+
+    data = state.to_dict()
+    assert data.get("ability_holder") == "poke-123"
+    assert data.get("pokemon_control") == {"poke-123": "1"}
+
+    restored = state_cls.from_dict(data)
+    assert restored.ability_holder == "poke-123"
+    assert restored.pokemon_control == {"poke-123": "1"}
+
+
+def test_pokemon_control_restored_after_reload():
+    room = DummyRoom()
+
+    class StoredPoke:
+        def __init__(self, uid):
+            self.name = "Bulbasaur"
+            self.level = 5
+            self.moves = ["tackle"]
+            self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
+            self.current_hp = 20
+            self.unique_id = uid
+
+    class StorageWithPoke(DummyStorage):
+        def __init__(self, uid):
+            self.poke = StoredPoke(uid)
+
+        def get_party(self):
+            return [self.poke]
+
+    p1 = DummyPlayer(1, room)
+    p1.storage = StorageWithPoke("uid1")
+    p2 = DummyPlayer(2, room)
+    p2.storage = StorageWithPoke("uid2")
+
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    assert inst.state.pokemon_control == {"uid1": "1", "uid2": "2"}
+
+    # clear ndb refs simulating reload
+    p1.ndb.battle_instance = None
+    p2.ndb.battle_instance = None
+    room.ndb.battle_instances = {}
+
+    orig_search = bi_mod.search_object
+    bi_mod.search_object = lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    try:
+        restored = BattleSession.restore(room, inst.battle_id)
+    finally:
+        bi_mod.search_object = orig_search
+
+    assert restored.state.pokemon_control == {"uid1": "1", "uid2": "2"}

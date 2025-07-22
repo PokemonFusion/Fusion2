@@ -11,7 +11,7 @@ class BattleState:
     """Representation of an ongoing battle."""
 
     ai_type: str = "Wild"
-    ability_holder: Optional[int] = None
+    ability_holder: Optional[str] = None
     first_ability: Optional[str] = None
     first_turn_taken: bool = False
     how_many: int = 1
@@ -28,6 +28,7 @@ class BattleState:
     xp: bool = True
     txp: bool = True
     four_moves: bool = False
+    pokemon_control: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
         """Return a serialisable representation of this state."""
