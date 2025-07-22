@@ -56,17 +56,18 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
     if not pokemon.learned_moves.filter(name__iexact=move_name).exists():
         pokemon.learned_moves.add(move_obj)
 
-    # ensure movesets structure exists
-    sets = pokemon.movesets or [[]]
-    if not sets:
-        sets = [[]]
-    active_idx = pokemon.active_moveset_index if pokemon.active_moveset_index < len(sets) else 0
-    active = sets[active_idx]
+    # ensure moveset structure exists
+    if not pokemon.movesets.exists():
+        ms = pokemon.movesets.create(index=0)
+        pokemon.active_moveset = ms
+        pokemon.save()
+    active_ms = pokemon.active_moveset or pokemon.movesets.order_by("index").first()
+    active = [s.move.name for s in active_ms.slots.order_by("slot")] if active_ms else []
 
     # if there's space, add automatically
     if len(active) < 4 and move_name not in active:
-        active.append(move_name)
-        pokemon.movesets = sets
+        move_obj, _ = Move.objects.get_or_create(name=move_name.capitalize())
+        active_ms.slots.create(move=move_obj, slot=len(active) + 1)
         pokemon.save()
         pokemon.apply_active_moveset()
         if caller:

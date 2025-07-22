@@ -134,7 +134,12 @@ class Pokemon:
                         except Exception:
                             max_hp = getattr(poke, "current_hp", None)
                     if not moves:
-                        move_names = getattr(poke, "movesets", [["Tackle"]])[poke.active_moveset_index][:4]
+                        if getattr(poke, "active_moveset", None):
+                            move_names = [
+                                s.move.name for s in poke.active_moveset.slots.order_by("slot")
+                            ][:4]
+                        else:
+                            move_names = ["Tackle"]
                         moves = [Move(name=m) for m in move_names]
                 except Exception:
                     pass

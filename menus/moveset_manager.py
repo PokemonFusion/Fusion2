@@ -31,14 +31,17 @@ def node_start(caller, raw_input=None):
 
 def node_manage(caller, raw_input=None):
     poke = caller.ndb.ms_pokemon
-    sets = poke.movesets or []
+    sets = []
+    for ms in poke.movesets.order_by("index"):
+        sets.append([s.move.name for s in ms.slots.order_by("slot")])
     while len(sets) < 4:
         sets.append([])
     if raw_input is None:
         disp = poke.nickname or poke.species
         lines = [f"|wManaging movesets for {disp}|n"]
+        active_idx = poke.active_moveset.index if poke.active_moveset else -1
         for i, s in enumerate(sets, 1):
-            marker = "*" if i - 1 == poke.active_moveset_index else " "
+            marker = "*" if i - 1 == active_idx else " "
             moves = ", ".join(s) if s else "(empty)"
             lines.append(f"{marker}{i}. {moves}")
         lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' or 'b' to exit.")
@@ -81,15 +84,17 @@ def node_manage(caller, raw_input=None):
 def node_edit(caller, raw_input=None):
     poke = caller.ndb.ms_pokemon
     idx = caller.ndb.ms_index
-    sets = poke.movesets or []
-    while len(sets) < 4:
-        sets.append([])
+    sets = {ms.index: ms for ms in poke.movesets.all()}
     if raw_input is None:
-        current = ", ".join(sets[idx]) if sets[idx] else "(empty)"
+        current = ", ".join(
+            [s.move.name for s in sets.get(idx).slots.order_by("slot")] if idx in sets else []
+        ) or "(empty)"
         learned = [m.name for m in poke.learned_moves.all().order_by("name")]
         move_list = ", ".join(learned) if learned else "(none)"
-        lines = [f"Available moves: {move_list}",
-                 f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}] (type 'back' or 'b' to cancel):"]
+        lines = [
+            f"Available moves: {move_list}",
+            f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}] (type 'back' or 'b' to cancel):",
+        ]
         return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
     cmd = raw_input.strip().lower()
     if cmd in ("back", "b"):
@@ -103,11 +108,14 @@ def node_edit(caller, raw_input=None):
     if len({m.lower() for m in moves}) != len(moves):
         caller.msg("Duplicate moves are not allowed.")
         return node_edit(caller)
-    sets[idx] = moves
-    poke.movesets = sets
-    if idx == poke.active_moveset_index:
-        poke.moves = moves
-    poke.save()
+    from pokemon.models import Move as MoveModel
+    ms, _ = poke.movesets.get_or_create(index=idx)
+    ms.slots.all().delete()
+    for i, mv in enumerate(moves, 1):
+        obj, _ = MoveModel.objects.get_or_create(name=mv.capitalize())
+        ms.slots.create(move=obj, slot=i)
+    if poke.active_moveset and poke.active_moveset.index == idx:
+        poke.apply_active_moveset()
     caller.msg(f"Moveset {idx+1} updated.")
     return node_manage(caller)
 

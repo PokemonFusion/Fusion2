@@ -749,7 +749,7 @@ class CmdChooseMoveset(Command):
         if not pokemon:
             self.caller.msg("No Pokémon in that slot.")
             return
-        sets = pokemon.movesets or []
+        sets = list(pokemon.movesets.order_by("index"))
         if self.index < 0 or self.index >= len(sets):
             self.caller.msg("Invalid moveset number.")
             return
