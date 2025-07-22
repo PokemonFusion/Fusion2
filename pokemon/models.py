@@ -427,12 +427,23 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         else:
             slot_iter = []
 
+        updated = []
         for slot in slot_iter:
             base = MOVEDEX.get(slot.move.name.lower(), {}).get("pp")
             bonus = bonuses.get(slot.move.name.lower(), 0)
             if base is not None:
                 slot.current_pp = base + bonus
-                slot.save()
+                updated.append(slot)
+
+        if updated:
+            try:
+                slots.bulk_update(updated, ["current_pp"])
+            except Exception:  # pragma: no cover - fallback for stubs
+                for slot in updated:
+                    try:
+                        slot.save()
+                    except Exception:
+                        pass
 
         try:
             self.save()
