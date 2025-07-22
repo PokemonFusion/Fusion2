@@ -4,6 +4,7 @@ from evennia import DefaultObject
 from evennia.utils.idmapper.models import SharedMemoryModel
 from evennia.objects.models import ObjectDB
 from django.db import models
+
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from .stats import EV_LIMIT, STAT_EV_LIMIT
@@ -613,31 +614,37 @@ class InventoryEntry(models.Model):
 
 
 class PokemonFusion(models.Model):
-    """Record a fusion between two Pokémon using their unique IDs."""
+    """Record a fusion between a trainer and a Pokémon."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    parent_a = models.ForeignKey(
-        OwnedPokemon,
+    trainer = models.ForeignKey(
+        Trainer,
         on_delete=models.CASCADE,
-        related_name="fusion_parent_a",
+        related_name="pokemon_fusions",
     )
-    parent_b = models.ForeignKey(
+    pokemon = models.ForeignKey(
         OwnedPokemon,
         on_delete=models.CASCADE,
-        related_name="fusion_parent_b",
+        related_name="trainer_fusions",
     )
     result = models.OneToOneField(
         OwnedPokemon,
         on_delete=models.CASCADE,
         related_name="fusion_result",
     )
+    permanent = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("parent_a", "parent_b")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["trainer", "pokemon"],
+                name="unique_trainer_pokemon_fusion",
+            )
+        ]
 
     def __str__(self) -> str:
-        return f"Fusion of {self.parent_a} + {self.parent_b} -> {self.result}"
+        return f"Fusion of {self.trainer} + {self.pokemon} -> {self.result}"
 
 
 class MovePPBoost(models.Model):
