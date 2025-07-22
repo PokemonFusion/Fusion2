@@ -88,12 +88,38 @@ def test_number_select_opens_edit():
     else:
         sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
 
+    class Slots(list):
+        def order_by(self, field):
+            return self
+        def create(self, move, slot):
+            obj = types.SimpleNamespace(move=move, slot=slot)
+            self.append(obj)
+            return obj
+
+    class Moveset:
+        def __init__(self, index):
+            self.index = index
+            self.slots = Slots([types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)])
+
+    class Manager(list):
+        def order_by(self, field):
+            return sorted(self, key=lambda m: m.index)
+        def all(self):
+            return self
+        def get_or_create(self, index):
+            for m in self:
+                if m.index == index:
+                    return m, False
+            ms = Moveset(index)
+            self.append(ms)
+            return ms, True
+
     class DummyPoke:
         def __init__(self):
             self.nickname = "Pika"
             self.name = "Pikachu"
-            self.movesets = [["tackle"]]
-            self.active_moveset_index = 0
+            self.movesets = Manager([Moveset(0)])
+            self.active_moveset = self.movesets[0]
             class LM:
                 def __init__(self):
                     self.moves = [types.SimpleNamespace(name="ember"), types.SimpleNamespace(name="tackle")]
@@ -125,8 +151,23 @@ def test_manage_lists_active_set_and_species():
         def __init__(self):
             self.nickname = ""
             self.species = "Charmander"
-            self.movesets = [["scratch"], []]
-            self.active_moveset_index = 0
+            class Slots(list):
+                def order_by(self, field):
+                    return self
+
+            class Moveset:
+                def __init__(self, index):
+                    self.index = index
+                    self.slots = Slots([types.SimpleNamespace(move=types.SimpleNamespace(name="scratch"), slot=1)]) if index == 0 else Slots()
+
+            class Manager(list):
+                def order_by(self, field):
+                    return sorted(self, key=lambda m: m.index)
+                def all(self):
+                    return self
+
+            self.movesets = Manager([Moveset(0), Moveset(1)])
+            self.active_moveset = self.movesets[0]
 
     class DummyCaller:
         def __init__(self, poke):
@@ -149,8 +190,22 @@ def test_edit_lists_learned_moves():
     poke = type("DP", (), {})()
     poke.nickname = "Pika"
     poke.species = "Pikachu"
-    poke.movesets = [["tackle"]]
-    poke.active_moveset_index = 0
+    class Slots(list):
+        def order_by(self, field):
+            return self
+    class Moveset:
+        def __init__(self):
+            self.index = 0
+            self.slots = Slots([types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)])
+    class Manager(list):
+        def order_by(self, field):
+            return self
+        def all(self):
+            return self
+        def get_or_create(self, index):
+            return self[0], False
+    poke.movesets = Manager([Moveset()])
+    poke.active_moveset = poke.movesets[0]
     class LM:
         def all(self):
             return self
@@ -179,8 +234,26 @@ def test_edit_rejects_invalid_move():
     poke = type("DP", (), {})()
     poke.nickname = "Pika"
     poke.species = "Pikachu"
-    poke.movesets = [[]]
-    poke.active_moveset_index = 0
+    class Slots(list):
+        def order_by(self, field):
+            return self
+        def create(self, move, slot):
+            obj = types.SimpleNamespace(move=move, slot=slot)
+            self.append(obj)
+            return obj
+    class Moveset:
+        def __init__(self):
+            self.index = 0
+            self.slots = Slots()
+    class Manager(list):
+        def order_by(self, field):
+            return self
+        def all(self):
+            return self
+        def get_or_create(self, index):
+            return self[0], False
+    poke.movesets = Manager([Moveset()])
+    poke.active_moveset = poke.movesets[0]
     class LM:
         def all(self):
             return self
@@ -200,7 +273,7 @@ def test_edit_rejects_invalid_move():
     caller = DummyCaller(poke)
     text, _ = menu.node_edit(caller, raw_input="tackle")
     assert any("Invalid move" in m for m in caller.msgs)
-    assert poke.movesets[0] == []
+    assert len(poke.movesets[0].slots) == 0
     assert "Available moves" in text
 
 
@@ -211,8 +284,26 @@ def test_edit_rejects_duplicate_moves():
     poke = type("DP", (), {})()
     poke.nickname = "Pika"
     poke.species = "Pikachu"
-    poke.movesets = [[]]
-    poke.active_moveset_index = 0
+    class Slots(list):
+        def order_by(self, field):
+            return self
+        def create(self, move, slot):
+            obj = types.SimpleNamespace(move=move, slot=slot)
+            self.append(obj)
+            return obj
+    class Moveset:
+        def __init__(self):
+            self.index = 0
+            self.slots = Slots()
+    class Manager(list):
+        def order_by(self, field):
+            return self
+        def all(self):
+            return self
+        def get_or_create(self, index):
+            return self[0], False
+    poke.movesets = Manager([Moveset()])
+    poke.active_moveset = poke.movesets[0]
 
     class LM:
         def all(self):
@@ -235,7 +326,7 @@ def test_edit_rejects_duplicate_moves():
     caller = DummyCaller(poke)
     text, _ = menu.node_edit(caller, raw_input="tackle, tackle")
     assert any("Duplicate" in m for m in caller.msgs)
-    assert poke.movesets[0] == []
+    assert len(poke.movesets[0].slots) == 0
     assert "Available moves" in text
 
 
@@ -246,8 +337,23 @@ def test_edit_back_returns_to_manage():
     poke = type("DP", (), {})()
     poke.nickname = "Pika"
     poke.species = "Pikachu"
-    poke.movesets = [["tackle"], []]
-    poke.active_moveset_index = 0
+    class Slots(list):
+        def order_by(self, field):
+            return self
+    class Moveset:
+        def __init__(self, index):
+            self.index = index
+            initial = [types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)] if index == 0 else []
+            self.slots = Slots(initial)
+    class Manager(list):
+        def order_by(self, field):
+            return sorted(self, key=lambda m: m.index)
+        def all(self):
+            return self
+        def get_or_create(self, index):
+            return self[index], False
+    poke.movesets = Manager([Moveset(0), Moveset(1)])
+    poke.active_moveset = poke.movesets[0]
     class LM:
         def all(self):
             return self

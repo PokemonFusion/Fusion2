@@ -54,11 +54,42 @@ def test_on_exit_called_when_auto_learn():
         def add(self, obj):
             self.append(obj)
 
+    class DummySlots(list):
+        def order_by(self, field):
+            return self
+        def create(self, move, slot):
+            obj = types.SimpleNamespace(move=move, slot=slot)
+            self.append(obj)
+            return obj
+
+    class DummyMoveset:
+        def __init__(self, index):
+            self.index = index
+            self.slots = DummySlots()
+
+    class MovesetManager(list):
+        def all(self):
+            return self
+        def order_by(self, field):
+            return sorted(self, key=lambda m: m.index)
+        def exists(self):
+            return bool(self)
+        def create(self, index):
+            ms = DummyMoveset(index)
+            self.append(ms)
+            return ms
+        def get_or_create(self, index):
+            for ms in self:
+                if ms.index == index:
+                    return ms, False
+            return self.create(index), True
+
     class DummyPokemon:
         def __init__(self):
             self.name = "Pika"
-            self.movesets = [[]]
-            self.active_moveset_index = 0
+            self.movesets = MovesetManager()
+            ms = self.movesets.create(0)
+            self.active_moveset = ms
             self.learned_moves = DummyMoves()
             self.species = "pika"
             self.level = 5

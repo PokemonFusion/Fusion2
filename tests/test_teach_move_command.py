@@ -35,8 +35,37 @@ class FakePokemon:
         self.species = "pika"
         self.level = 10
         self.learned_moves = DummyQS()
-        self.movesets = [[]]
-        self.active_moveset_index = 0
+        class Slots(list):
+            def order_by(self, field):
+                return self
+            def create(self, move, slot):
+                obj = types.SimpleNamespace(move=move, slot=slot)
+                self.append(obj)
+                return obj
+
+        class Moveset:
+            def __init__(self, index):
+                self.index = index
+                self.slots = Slots()
+
+        class Manager(list):
+            def order_by(self, field):
+                return sorted(self, key=lambda m: m.index)
+            def exists(self):
+                return bool(self)
+            def create(self, index):
+                ms = Moveset(index)
+                self.append(ms)
+                return ms
+            def get_or_create(self, index):
+                for m in self:
+                    if m.index == index:
+                        return m, False
+                return self.create(index), True
+
+        self.movesets = Manager()
+        ms = self.movesets.create(0)
+        self.active_moveset = ms
         self.name = "Pika"
         self.saved = False
         self.applied = False
@@ -116,10 +145,11 @@ def setup_modules():
     learn_mod = types.ModuleType("pokemon.utils.move_learning")
 
     def learn_move(pokemon, move_name, caller=None, prompt=False, on_exit=None):
-        sets = pokemon.movesets
-        if len(sets[0]) < 4:
-            sets[0].append(move_name)
-        pokemon.movesets = sets
+        ms = pokemon.active_moveset
+        if len(ms.slots) < 4:
+            ms.slots.append(
+                types.SimpleNamespace(move=FakeMove(move_name), slot=len(ms.slots) + 1)
+            )
         pokemon.save()
         pokemon.apply_active_moveset()
         if caller:
@@ -206,5 +236,5 @@ def test_teach_move_command():
     restore_modules(*origs)
 
     assert poke.saved and poke.applied
-    assert "tackle" in poke.movesets[0]
+    assert any(s.move.name == "tackle" for s in poke.movesets[0].slots)
     assert caller.msgs and "learned" in caller.msgs[-1].lower()

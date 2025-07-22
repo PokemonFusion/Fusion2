@@ -247,13 +247,18 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     current_hp = models.PositiveIntegerField(default=0)
     total_exp = models.BigIntegerField(default=0)
     learned_moves = models.ManyToManyField(Move, related_name="owners")
-    active_moveset = models.ManyToManyField(
+    active_moves = models.ManyToManyField(
         Move,
         through="ActiveMoveslot",
         related_name="active_on",
     )
-    movesets = models.JSONField(blank=True, default=list)
-    active_moveset_index = models.PositiveSmallIntegerField(default=0)
+    active_moveset = models.ForeignKey(
+        "Moveset",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="active_for",
+    )
 
     def __str__(self):
         return f"{self.nickname or self.species} ({self.unique_id})"
@@ -301,41 +306,42 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
                 learn_move(self, mv, caller=caller, prompt=prompt)
                 known.add(mv.lower())
 
-        if not self.movesets:
-            self.movesets = [moves[:4]]
-            self.active_moveset_index = 0
+        if not self.movesets.exists():
+            ms = self.movesets.create(index=0)
+            for i, mv in enumerate(moves[:4], 1):
+                move_obj, _ = Move.objects.get_or_create(name=mv.capitalize())
+                ms.slots.create(move=move_obj, slot=i)
+            self.active_moveset = ms
             self.save()
             self.apply_active_moveset()
 
     def apply_active_moveset(self) -> None:
         """Replace active move slots with the currently selected moveset."""
-        sets = self.movesets or []
-        if not sets:
+        ms = self.active_moveset
+        if not ms:
             return
-        moves = sets[self.active_moveset_index] if self.active_moveset_index < len(sets) else []
+        slots = list(ms.slots.order_by("slot"))
         self.activemoveslot_set.all().delete()
-        for idx, name in enumerate(moves[:4], 1):
-            mv = Move.objects.filter(name__iexact=name).first()
-            if mv:
-                slot = self.activemoveslot_set.create(move=mv, slot=idx)
-                try:
-                    from .dex import MOVEDEX
-                except Exception:  # pragma: no cover - MOVEDEX may be missing in tests
-                    MOVEDEX = {}
-                base_pp = MOVEDEX.get(name.lower(), {}).get("pp")
-                boost_obj = self.pp_boosts.filter(move=mv).first()
-                bonus = boost_obj.bonus_pp if boost_obj else 0
-                if base_pp is not None:
-                    slot.current_pp = base_pp + bonus
-                    slot.save()
+        for slot_obj in slots[:4]:
+            mv = slot_obj.move
+            slot = self.activemoveslot_set.create(move=mv, slot=slot_obj.slot)
+            try:
+                from .dex import MOVEDEX
+            except Exception:  # pragma: no cover - MOVEDEX may be missing in tests
+                MOVEDEX = {}
+            base_pp = MOVEDEX.get(mv.name.lower(), {}).get("pp")
+            boost_obj = self.pp_boosts.filter(move=mv).first()
+            bonus = boost_obj.bonus_pp if boost_obj else 0
+            if base_pp is not None:
+                slot.current_pp = base_pp + bonus
+                slot.save()
 
     def swap_moveset(self, index: int) -> None:
         """Switch to the moveset at ``index`` (0-based)."""
-        if self.movesets is None:
-            self.movesets = []
-        if index < 0 or index >= len(self.movesets):
+        ms = self.movesets.filter(index=index).first()
+        if not ms:
             return
-        self.active_moveset_index = index
+        self.active_moveset = ms
         self.save()
         self.apply_active_moveset()
 
@@ -449,6 +455,37 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
             self.save()
         except Exception:
             pass
+
+
+class Moveset(models.Model):
+    """A set of up to four moves belonging to a Pokémon."""
+
+    pokemon = models.ForeignKey(
+        "OwnedPokemon", on_delete=models.CASCADE, related_name="movesets"
+    )
+    index = models.PositiveSmallIntegerField()
+
+    class Meta:
+        unique_together = ("pokemon", "index")
+
+    def __str__(self) -> str:  # pragma: no cover - simple repr
+        return f"{self.pokemon} set {self.index}"
+
+
+class MovesetSlot(models.Model):
+    """A single move within a moveset."""
+
+    moveset = models.ForeignKey(
+        Moveset, on_delete=models.CASCADE, related_name="slots"
+    )
+    move = models.ForeignKey(Move, on_delete=models.CASCADE)
+    slot = models.PositiveSmallIntegerField()
+
+    class Meta:
+        unique_together = ("moveset", "slot")
+
+    def __str__(self) -> str:  # pragma: no cover - simple repr
+        return f"{self.moveset} [{self.slot}] -> {self.move}"
 
 
 class ActiveMoveslot(models.Model):

@@ -261,8 +261,19 @@ def test_from_dict_calculates_max_hp():
             self.species = "Bulbasaur"
             self.level = 5
             self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
-            self.movesets = [["tackle"]]
-            self.active_moveset_index = 0
+            class MS(list):
+                def order_by(self, field):
+                    return self
+            class Moveset:
+                def __init__(self):
+                    self.index = 0
+                    self.slots = MS([
+                        types.SimpleNamespace(
+                            move=types.SimpleNamespace(name="tackle"), slot=1
+                        )
+                    ])
+            self.movesets = [Moveset()]
+            self.active_moveset = self.movesets[0]
             self.current_hp = 5
 
     fake_models.OwnedPokemon = FakeOwned
