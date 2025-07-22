@@ -52,7 +52,10 @@ class Account(DefaultAccount):
         """.strip()
     )
 
-    pass
+    def at_look(self, target=None, session=None, **kwargs):
+        """Return the account's OOC appearance with custom commands."""
+        text = super().at_look(target=target, session=session, **kwargs)
+        return text.replace("|wic <name>|n", "|wgoic <name>|n")
 
 
 class Guest(DefaultGuest):
