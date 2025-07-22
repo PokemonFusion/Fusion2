@@ -812,7 +812,7 @@ class BattleSession:
                     del self.room.ndb.battle_instances
                 log_info("Removed battle_instances map from room")
             data = getattr(self.room.db, "battle_data", None)
-            if not isinstance(data, dict):
+            if not data:
                 data = {}
             if self.battle_id in data:
                 del data[self.battle_id]
@@ -822,7 +822,7 @@ class BattleSession:
                     delattr(self.room.db, "battle_data")
                 log_info(f"Cleared battle_data entry for {self.battle_id}")
             battles = getattr(self.room.db, "battles", None)
-            if isinstance(battles, list) and self.battle_id in battles:
+            if battles and self.battle_id in battles:
                 battles.remove(self.battle_id)
                 if not battles:
                     delattr(self.room.db, "battles")
