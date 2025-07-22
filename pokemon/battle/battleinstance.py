@@ -577,6 +577,13 @@ class BattleSession:
 
         state = BattleState.from_battle_data(data, ai_type="Player")
         state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
+        state.pokemon_control = {}
+        for poke in player_pokemon:
+            if getattr(poke, "model_id", None):
+                state.pokemon_control[str(poke.model_id)] = str(self.player.id)
+        for poke in opp_pokemon:
+            if getattr(poke, "model_id", None) and self.opponent:
+                state.pokemon_control[str(poke.model_id)] = str(self.opponent.id)
 
         self.logic = BattleLogic(battle, data, state)
         log_info("PvP battle objects created")
@@ -684,6 +691,10 @@ class BattleSession:
                     moves=moves,
                     ability=getattr(poke, "ability", None),
                     data=getattr(poke, "data", {}),
+                    model_id=(
+                        str(getattr(poke, "unique_id", getattr(poke, "model_id", "")))
+                        or None
+                    ),
                 )
             )
             log_info(f"Prepared {name} lvl {level}")
@@ -725,6 +736,12 @@ class BattleSession:
 
         state = BattleState.from_battle_data(data, ai_type=battle_type.name)
         state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
+        state.pokemon_control = {}
+        for poke in player_pokemon:
+            if getattr(poke, "model_id", None):
+                state.pokemon_control[str(poke.model_id)] = str(self.player.id)
+        if getattr(opponent_poke, "model_id", None) and self.opponent:
+            state.pokemon_control[str(opponent_poke.model_id)] = str(self.opponent.id)
 
         self.logic = BattleLogic(battle, data, state)
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")

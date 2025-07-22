@@ -304,3 +304,47 @@ def test_battle_state_serialization_new_fields():
     restored = state_cls.from_dict(data)
     assert restored.ability_holder == "poke-123"
     assert restored.pokemon_control == {"poke-123": "1"}
+
+
+def test_pokemon_control_restored_after_reload():
+    room = DummyRoom()
+
+    class StoredPoke:
+        def __init__(self, uid):
+            self.name = "Bulbasaur"
+            self.level = 5
+            self.moves = ["tackle"]
+            self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
+            self.current_hp = 20
+            self.unique_id = uid
+
+    class StorageWithPoke(DummyStorage):
+        def __init__(self, uid):
+            self.poke = StoredPoke(uid)
+
+        def get_party(self):
+            return [self.poke]
+
+    p1 = DummyPlayer(1, room)
+    p1.storage = StorageWithPoke("uid1")
+    p2 = DummyPlayer(2, room)
+    p2.storage = StorageWithPoke("uid2")
+
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    assert inst.state.pokemon_control == {"uid1": "1", "uid2": "2"}
+
+    # clear ndb refs simulating reload
+    p1.ndb.battle_instance = None
+    p2.ndb.battle_instance = None
+    room.ndb.battle_instances = {}
+
+    orig_search = bi_mod.search_object
+    bi_mod.search_object = lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    try:
+        restored = BattleSession.restore(room, inst.battle_id)
+    finally:
+        bi_mod.search_object = orig_search
+
+    assert restored.state.pokemon_control == {"uid1": "1", "uid2": "2"}
