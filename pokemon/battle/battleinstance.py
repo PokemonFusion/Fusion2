@@ -802,7 +802,7 @@ class BattleSession:
         if OwnedPokemon:
             OwnedPokemon.objects.filter(
                 is_battle_instance=True,
-                battle_slot__fainted=True,
+                battleslot__fainted=True,
             ).delete()
         self.temp_pokemon_ids.clear()
         if self.room:
