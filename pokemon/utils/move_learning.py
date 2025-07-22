@@ -23,7 +23,7 @@ def get_learnable_levelup_moves(pokemon):
         lvl_moves = [
             (lvl, mv)
             for lvl, mv in moveset["level-up"]
-            if lvl <= pokemon.level and mv.lower() not in known
+            if lvl <= pokemon.computed_level and mv.lower() not in known
         ]
         lvl_moves.sort(key=lambda x: x[0])
         moves = [mv for lvl, mv in lvl_moves]
@@ -31,7 +31,7 @@ def get_learnable_levelup_moves(pokemon):
     else:
         moves = [
             mv
-            for mv in get_valid_moves(pokemon.species, pokemon.level)
+            for mv in get_valid_moves(pokemon.species, pokemon.computed_level)
             if mv.lower() not in known
         ]
         level_map = {}

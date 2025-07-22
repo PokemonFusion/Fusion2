@@ -51,6 +51,10 @@ def test_learn_all_prompts_sequentially():
             self.level = 5
             self.learned_moves = DummyMoves([])
 
+        @property
+        def computed_level(self):
+            return self.level
+
     class DummyCaller:
         def __init__(self):
             self.msgs = []
@@ -127,6 +131,10 @@ def test_order_moves_by_level():
             self.species = "charmander"
             self.level = 10
             self.learned_moves = DummyMoves([])
+
+        @property
+        def computed_level(self):
+            return self.level
 
     caller = types.SimpleNamespace(msgs=[], msg=lambda t: caller.msgs.append(t))
 

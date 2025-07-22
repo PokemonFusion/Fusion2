@@ -13,13 +13,15 @@ def node_start(caller, raw_input=None, **kwargs):
         _, moveset = get_moveset_by_name(pokemon.species)
         if moveset:
             lvl_moves = [
-                (lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= pokemon.level
+                (lvl, mv)
+                for lvl, mv in moveset["level-up"]
+                if lvl <= pokemon.computed_level
             ]
             lvl_moves.sort(key=lambda x: x[0])
             ordered = [mv for _, mv in lvl_moves]
             level_map = {mv: lvl for lvl, mv in lvl_moves}
         else:
-            ordered = get_valid_moves(pokemon.species, pokemon.level)
+            ordered = get_valid_moves(pokemon.species, pokemon.computed_level)
             level_map = {}
         moves = [m for m in ordered if m.lower() not in known]
         if not moves:

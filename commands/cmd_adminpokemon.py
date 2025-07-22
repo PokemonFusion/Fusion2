@@ -30,13 +30,15 @@ class CmdListPokemon(Command):
         if party:
             lines.append(" Active party:")
             for idx, mon in enumerate(party, start=1):
-                lines.append(f"  {idx}. {mon.name} Lv{mon.level} ID:{mon.unique_id}")
+                lines.append(
+                    f"  {mon.name} Lv{mon.computed_level} ID:{mon.unique_id}"
+                )
         else:
             lines.append(" No active Pokémon.")
         if stored:
             lines.append(" Stored Pokémon:")
             for mon in stored:
-                lines.append(f"  {mon.name} Lv{mon.level} ID:{mon.unique_id}")
+                lines.append(f"  {mon.name} Lv{mon.computed_level} ID:{mon.unique_id}")
         else:
             lines.append(" No stored Pokémon.")
         self.caller.msg("\n".join(lines))

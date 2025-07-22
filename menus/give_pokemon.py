@@ -86,9 +86,11 @@ def node_level(caller, raw_input=None, **kwargs):
     pokemon.learn_level_up_moves()
     target.storage.add_active_pokemon(pokemon)
     caller.msg(
-        f"Gave {pokemon.species} (Lv {pokemon.level}) to {target.key}."
+        f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}."
     )
     if target != caller:
-        target.msg(f"You received {pokemon.species} (Lv {pokemon.level}) from {caller.key}.")
+        target.msg(
+            f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}."
+        )
     del caller.ndb.givepoke
     return None, None

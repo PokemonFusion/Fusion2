@@ -41,6 +41,10 @@ class FakePokemon:
         self.saved = False
         self.applied = False
 
+    @property
+    def computed_level(self):
+        return self.level
+
     def save(self):
         self.saved = True
 

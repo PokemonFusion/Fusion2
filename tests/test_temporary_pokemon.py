@@ -149,6 +149,10 @@ class FakeOwnedPokemon:
         self.unique_id = str(self.__class__.objects.counter)
         self.current_hp = current_hp
 
+    @property
+    def computed_level(self):
+        return self.level
+
     def set_level(self, lvl):
         self.level = lvl
 

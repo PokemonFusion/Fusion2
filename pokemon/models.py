@@ -263,17 +263,18 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         return self.nickname or self.species
 
     @property
-    def level(self) -> int:
-        """Return the Pokémon's level derived from experience."""
+    def computed_level(self) -> int:
+        """Return the Pokémon's level derived from its stored experience."""
         from .stats import level_for_exp
 
         return level_for_exp(self.total_exp)
 
     def set_level(self, level: int) -> None:
-        """Set ``total_exp`` based on the desired level."""
+        """Set ``total_exp`` and persist the corresponding level."""
         from .stats import exp_for_level
 
         self.total_exp = exp_for_level(level)
+        self.level = level
 
     def delete_if_wild(self) -> None:
         """Delete this Pokémon if it is an uncaptured wild encounter."""
@@ -292,7 +293,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         from .generation import get_valid_moves
         from pokemon.utils.move_learning import learn_move
 
-        moves = get_valid_moves(self.species, self.level)
+        moves = get_valid_moves(self.species, self.computed_level)
         known = {m.name.lower() for m in self.learned_moves.all()}
         for mv in moves:
             if mv.lower() not in known:

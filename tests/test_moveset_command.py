@@ -28,6 +28,7 @@ def test_choose_moveset_command():
     orig_dex = sys.modules.get("pokemon.dex")
     fake_dex = types.ModuleType("pokemon.dex")
     fake_dex.ITEMDEX = {}
+    fake_dex.POKEDEX = {}
     sys.modules["pokemon.dex"] = fake_dex
 
     # Load command module with stubs
@@ -60,6 +61,10 @@ def test_choose_moveset_command():
             self.movesets = [["tackle"], [], [], []]
             self.called = None
             self.name = "Dummy"
+
+        @property
+        def computed_level(self):
+            return 1
 
         def swap_moveset(self, idx):
             self.called = idx

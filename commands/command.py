@@ -366,7 +366,7 @@ class CmdChargenInfo(Command):
                 lines.append("  Active Pokémon:")
                 for mon in mons:
                     lines.append(
-                        f"    {mon.name} (Lv {mon.level}, Ability: {mon.ability})"
+                        f"    {mon.name} (Lv {mon.computed_level}, Ability: {mon.ability})"
                     )
             else:
                 lines.append("  Active Pokémon: None")
@@ -791,7 +791,9 @@ class CmdTeachMove(Command):
         from pokemon.generation import get_valid_moves
         from pokemon.models import Move
 
-        valid = [m.lower() for m in get_valid_moves(pokemon.species, pokemon.level)]
+        valid = [
+            m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)
+        ]
         if self.move_name.lower() not in valid:
             self.caller.msg(f"{pokemon.name} cannot learn {self.move_name}.")
             return

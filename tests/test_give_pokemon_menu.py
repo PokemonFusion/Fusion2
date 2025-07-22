@@ -7,6 +7,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 # stub modules required by menu
+orig_pokedex = sys.modules.get("pokemon.dex")
 fake_pokedex = types.ModuleType("pokemon.dex")
 fake_pokedex.POKEDEX = {"Pikachu": {}}
 sys.modules["pokemon.dex"] = fake_pokedex
@@ -38,6 +39,9 @@ class OwnedPokemon:
     objects = DummyObjects()
     def set_level(self, lvl):
         self.level = lvl
+    @property
+    def computed_level(self):
+        return self.level
     current_hp = 10
     def learn_level_up_moves(self):
         pass
@@ -107,3 +111,10 @@ def test_invalid_level_keeps_target():
     text, opts = menu.node_level(caller, raw_input="foo", target=target)
     option = opts[0]
     assert option.get("goto")[1].get("target") is target
+
+
+def teardown_module():
+    if orig_pokedex is not None:
+        sys.modules["pokemon.dex"] = orig_pokedex
+    else:
+        sys.modules.pop("pokemon.dex", None)
