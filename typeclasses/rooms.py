@@ -79,12 +79,12 @@ class FusionRoom(Room):
 
     def at_init(self):
         """Rebuild non-persistent battle data after reload."""
-        super().at_init()
+        result = super().at_init()
         log_info(f"FusionRoom #{self.id} running at_init()...")
         battle_ids = getattr(self.db, "battles", None)
         if not isinstance(battle_ids, list):
             log_info("No battle list found or invalid format; skipping restore")
-            return
+            return result or ""
         for bid in battle_ids:
             log_info(f"Restoring BattleSession {bid} in FusionRoom #{self.id}")
             try:
@@ -94,6 +94,7 @@ class FusionRoom(Room):
                     f"Error restoring BattleSession {bid} in FusionRoom #{self.id}",
                     exc_info=True,
                 )
+        return result or ""
 
     def get_random_pokemon(self):
         """Return a Pokémon name selected from the hunt chart."""
