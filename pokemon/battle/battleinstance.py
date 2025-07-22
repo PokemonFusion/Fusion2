@@ -826,15 +826,15 @@ class BattleSession:
                 battles.remove(self.battle_id)
                 if not battles:
                     delattr(self.room.db, "battles")
-        if getattr(self.player.ndb, "battle_instance", None):
-            del self.player.ndb.battle_instance
-        if hasattr(self.player, "db"):
-            if hasattr(self.player.db, "battle_id"):
+        if self.player:
+            if getattr(getattr(self.player, "ndb", None), "battle_instance", None):
+                del self.player.ndb.battle_instance
+            if hasattr(self.player, "db") and hasattr(self.player.db, "battle_id"):
                 del self.player.db.battle_id
-        if self.opponent and getattr(self.opponent.ndb, "battle_instance", None):
-            del self.opponent.ndb.battle_instance
-        if self.opponent and hasattr(self.opponent, "db"):
-            if hasattr(self.opponent.db, "battle_id"):
+        if self.opponent:
+            if getattr(getattr(self.opponent, "ndb", None), "battle_instance", None):
+                del self.opponent.ndb.battle_instance
+            if hasattr(self.opponent, "db") and hasattr(self.opponent.db, "battle_id"):
                 del self.opponent.db.battle_id
         self.logic = None
         if self.state:
