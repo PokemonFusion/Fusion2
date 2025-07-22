@@ -287,3 +287,20 @@ def test_from_dict_calculates_max_hp():
             sys.modules.pop("pokemon.utils.pokemon_helpers", None)
 
     assert poke.max_hp == 42
+
+
+def test_battle_state_serialization_new_fields():
+    """BattleState should persist ability_holder and pokemon_control."""
+
+    state_cls = st_mod.BattleState
+    state = state_cls()
+    state.ability_holder = "poke-123"
+    state.pokemon_control = {"poke-123": "1"}
+
+    data = state.to_dict()
+    assert data.get("ability_holder") == "poke-123"
+    assert data.get("pokemon_control") == {"poke-123": "1"}
+
+    restored = state_cls.from_dict(data)
+    assert restored.ability_holder == "poke-123"
+    assert restored.pokemon_control == {"poke-123": "1"}
