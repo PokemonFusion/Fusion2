@@ -3,14 +3,32 @@
 from pokemon.models import PokemonFusion
 
 
-def record_fusion(result, parent_a, parent_b):
-    """Create a fusion record linking ``parent_a`` and ``parent_b`` to ``result``."""
-    return PokemonFusion.objects.create(result=result, parent_a=parent_a, parent_b=parent_b)
+def record_fusion(result, trainer, pokemon, permanent=False):
+    """Create or fetch a trainer/Pokémon fusion.
+
+    Parameters
+    ----------
+    result
+        The resulting ``OwnedPokemon`` instance.
+    trainer
+        ``Trainer`` who fused with the Pokémon.
+    pokemon
+        ``OwnedPokemon`` fused with ``trainer``.
+    permanent
+        Whether this fusion is permanent.
+    """
+
+    fusion, _ = PokemonFusion.objects.get_or_create(
+        trainer=trainer,
+        pokemon=pokemon,
+        defaults={"result": result, "permanent": permanent},
+    )
+    return fusion
 
 
 def get_fusion_parents(result):
-    """Return the parent Pokémon for ``result`` if a fusion record exists."""
+    """Return the trainer and Pokémon for ``result`` if available."""
     entry = PokemonFusion.objects.filter(result=result).first()
     if entry:
-        return entry.parent_a, entry.parent_b
+        return entry.trainer, entry.pokemon
     return None, None
