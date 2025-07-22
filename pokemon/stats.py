@@ -66,7 +66,9 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
             )
             if hasattr(pokemon, "data") and isinstance(pokemon.data, dict):
                 growth = pokemon.data.get("growth_rate", "medium_fast")
-        # level property will derive from total_exp
+        # ensure DB field stays in sync when present
+        if hasattr(pokemon, "level"):
+            pokemon.level = level_for_exp(pokemon.total_exp, growth)
     else:
         pokemon.experience = getattr(pokemon, "experience", 0) + amount
         growth = rate or getattr(pokemon, "growth_rate", None)
