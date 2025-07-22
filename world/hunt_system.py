@@ -7,6 +7,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from evennia import DefaultRoom
 
+from pokemon.battle.battleinstance import (
+    BattleSession,
+    BattleType,
+    create_battle_pokemon,
+    generate_trainer_pokemon,
+)
+
 
 class HuntSystem:
     """Utility for resolving Pokémon hunts in a room."""
@@ -33,19 +40,13 @@ class HuntSystem:
         if not room:
             return "You can't hunt here."
 
-        from pokemon.battle.battleinstance import (
-            BattleSession,
-            BattleType,
-            create_battle_pokemon,
-        )
-
         # allow_hunting may be stored as a string or bool; coerce to boolean
         allow = getattr(room.db, "allow_hunting", False)
         if builtins.isinstance(allow, str):
             allow = allow.lower() in {"true", "yes", "1", "on"}
         if not allow:
             return "You can't hunt here."
-        if getattr(hunter.ndb, "battle_instance", None):
+        if BattleSession.ensure_for_player(hunter):
             return "You are already in a battle!"
         last = getattr(hunter.ndb, "last_hunt_time", 0)
         if last and time.time() - last < 3:
@@ -102,13 +103,6 @@ class HuntSystem:
         item_msg = self._check_itemfinder(hunter)
         if item_msg:
             return item_msg
-
-        from pokemon.battle.battleinstance import (
-            BattleSession,
-            BattleType,
-            create_battle_pokemon,
-            generate_trainer_pokemon,
-        )
 
         npc_chance = getattr(room.db, "npc_chance", 15)
         tp_cost = getattr(room.db, "tp_cost", 0)
@@ -181,12 +175,6 @@ class HuntSystem:
         """
 
         room = self.room
-
-        from pokemon.battle.battleinstance import (
-            BattleSession,
-            BattleType,
-            create_battle_pokemon,
-        )
 
         err = self._pre_checks(hunter)
         if err:
