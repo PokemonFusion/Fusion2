@@ -18,7 +18,6 @@ at_server_cold_stop()
 """
 
 from pathlib import Path
-import logging
 
 from utils.error_logging import setup_daily_error_log
 from utils.usage_logging import setup_daily_usage_log
