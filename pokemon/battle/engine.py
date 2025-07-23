@@ -42,6 +42,7 @@ from typing import Callable, List, Optional, Dict, Any
 import random
 
 from pokemon.dex import MOVEDEX
+from pokemon.dex.entities import Move
 try:
     from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
 except Exception:
@@ -52,6 +53,12 @@ try:
 except Exception:
     moves_funcs = None
     conditions_funcs = None
+
+
+def _normalize_key(name: str) -> str:
+    """Normalize move names for lookup in ``MOVEDEX``."""
+
+    return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 
 
 @dataclass
@@ -231,11 +238,6 @@ class BattleParticipant:
         if not self.is_ai:
             return None
 
-        if not self.is_ai:
-            action = self.pending_action
-            self.pending_action = None
-            return action
-
         if not self.active:
             return None
         active_poke = self.active[0]
@@ -245,10 +247,7 @@ class BattleParticipant:
         else:
             move_data = moves[0]
 
-        def _norm(name: str) -> str:
-            return name.replace(" ", "").replace("-", "").replace("'", "").lower()
-
-        move_entry = MOVEDEX.get(_norm(move_data.name))
+        move_entry = MOVEDEX.get(_normalize_key(move_data.name))
         on_hit_func = None
         on_try_func = None
         base_power_cb = None
