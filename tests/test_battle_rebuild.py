@@ -376,3 +376,19 @@ def test_multiple_battles_saved_in_room():
     data = room.db.battle_data
     assert set(data.keys()) == {inst1.battle_id, inst2.battle_id}
     assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
+
+
+def test_multiple_hunts_saved_in_room():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+
+    inst1 = BattleSession(p1)
+    inst1.start()
+
+    inst2 = BattleSession(p2)
+    inst2.start()
+
+    data = room.db.battle_data
+    assert set(data.keys()) == {inst1.battle_id, inst2.battle_id}
+    assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
