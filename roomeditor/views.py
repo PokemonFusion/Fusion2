@@ -37,8 +37,11 @@ def is_builder(user):
 @user_passes_test(is_builder)
 def room_list(request):
     """Display a list of all rooms."""
-    rooms = ObjectDB.objects.filter(
-        db_location__isnull=True, db_typeclass_path__contains="rooms"
+    rooms = (
+        ObjectDB.objects.filter(
+            db_location__isnull=True, db_typeclass_path__contains="rooms"
+        )
+        .order_by("id")
     )
     dangling = {
         room.id: not ObjectDB.objects.filter(db_destination=room).exists()
