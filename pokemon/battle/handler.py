@@ -22,6 +22,7 @@ class BattleHandler:
     """Track and persist active battle instances."""
 
     def __init__(self):
+        # map active battle_id -> BattleSession
         self.instances: Dict[int, BattleSession] = {}
 
     # -------------------------------------------------------------
@@ -37,25 +38,25 @@ class BattleHandler:
     # Persistence helpers
     # -------------------------------------------------------------
     def _save(self) -> None:
-        """Persist the current active battle rooms and ids."""
-        data = {rid: inst.battle_id for rid, inst in self.instances.items()}
+        """Persist the current active battle ids and their rooms."""
+        data = {bid: inst.room.id for bid, inst in self.instances.items()}
         ServerConfig.objects.conf(key="active_battle_rooms", value=data)
 
     def restore(self) -> None:
         """Reload any battle instances stored on the server."""
         mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
         from .battleinstance import BattleSession
-        for rid, bid in mapping.items():
+        for bid, rid in mapping.items():
             rooms = search_object(f"#{rid}")
             if not rooms:
                 continue
             room = rooms[0]
             try:
-                inst = BattleSession.restore(room, bid)
+                inst = BattleSession.restore(room, int(bid))
             except Exception:
                 continue
             if inst:
-                self.instances[rid] = inst
+                self.instances[int(bid)] = inst
         self._save()
 
     def save(self) -> None:
@@ -71,13 +72,14 @@ class BattleHandler:
     # Management API
     # -------------------------------------------------------------
     def register(self, inst: BattleSession) -> None:
-        self.instances[inst.room.id] = inst
+        """Track the given battle session."""
+        self.instances[inst.battle_id] = inst
         self._save()
 
     def unregister(self, inst: BattleSession) -> None:
-        rid = inst.room.id
-        if rid in self.instances:
-            del self.instances[rid]
+        bid = inst.battle_id
+        if bid in self.instances:
+            del self.instances[bid]
             self._save()
 
     # -------------------------------------------------------------
