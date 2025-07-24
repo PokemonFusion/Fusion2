@@ -397,9 +397,12 @@ class BattleSession:
             log_info(f"No stored entry for battle {battle_id}")
             return None
         log_info("Loaded battle data and state for restore")
-        logic_info = entry.get("logic", entry)
-        data = logic_info.get("data")
-        state = logic_info.get("state")
+        data = entry.get("data")
+        state = entry.get("state")
+        if data is None or state is None:
+            logic_info = entry.get("logic", {})
+            data = data or logic_info.get("data")
+            state = state or logic_info.get("state")
         obj = cls.__new__(cls)
         obj.player = None
         obj.opponent = None
@@ -592,7 +595,8 @@ class BattleSession:
         if not room_data or not hasattr(room_data, "__setitem__"):
             room_data = {}
         room_entry = {
-            "logic": self.logic.to_dict(),
+            "data": self.logic.data.to_dict(),
+            "state": self.logic.state.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
         }
         trainer_ids = {}
@@ -750,7 +754,8 @@ class BattleSession:
         if not room_data or not hasattr(room_data, "__setitem__"):
             room_data = {}
         room_entry = {
-            "logic": self.logic.to_dict(),
+            "data": self.logic.data.to_dict(),
+            "state": self.logic.state.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
         }
         trainer_ids = {}
@@ -874,7 +879,8 @@ class BattleSession:
             data = {}
         if self.battle_id in data:
             info = data[self.battle_id]
-            info["logic"] = self.logic.to_dict()
+            info["data"] = self.logic.data.to_dict()
+            info["state"] = self.logic.state.to_dict()
             self.room.db.battle_data = data
         log_info("Saved queued move to room data")
         self.maybe_run_turn()

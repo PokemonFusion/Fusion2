@@ -111,7 +111,13 @@ class BattleHandler:
                 if entry:
                     from .battleinstance import BattleLogic
 
-                    inst.logic = BattleLogic.from_dict(entry.get("logic", entry))
+                    data = entry.get("data")
+                    state = entry.get("state")
+                    if data is None or state is None:
+                        logic_info = entry.get("logic", {})
+                        data = data or logic_info.get("data")
+                        state = state or logic_info.get("state")
+                    inst.logic = BattleLogic.from_dict({"data": data, "state": state})
                     inst.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
 
             for obj in inst.trainers + list(inst.observers):
