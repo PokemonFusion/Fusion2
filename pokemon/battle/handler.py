@@ -13,6 +13,7 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
 
 from evennia import search_object
 from evennia.server.models import ServerConfig
+from .storage import BattleDataWrapper
 
 if TYPE_CHECKING:
     from .battleinstance import BattleSession
@@ -104,21 +105,19 @@ class BattleHandler:
 
             # rebuild live logic from stored room data if needed
             if not inst.logic:
-                data_map = getattr(inst.room.db, "battle_data", None)
-                if not data_map or not hasattr(data_map, "get"):
-                    data_map = {}
-                entry = data_map.get(inst.battle_id)
-                if entry:
+                storage = BattleDataWrapper(inst.room, inst.battle_id)
+                data = storage.get("data")
+                state = storage.get("state")
+                if data is not None or state is not None or storage.get("logic") is not None:
                     from .battleinstance import BattleLogic
 
-                    data = entry.get("data")
-                    state = entry.get("state")
                     if data is None or state is None:
-                        logic_info = entry.get("logic", {})
+                        logic_info = storage.get("logic", {}) or {}
                         data = data or logic_info.get("data")
                         state = state or logic_info.get("state")
                     inst.logic = BattleLogic.from_dict({"data": data, "state": state})
-                    inst.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
+                    inst.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
+                inst.storage = storage
 
             for obj in inst.trainers + list(inst.observers):
                 if obj:

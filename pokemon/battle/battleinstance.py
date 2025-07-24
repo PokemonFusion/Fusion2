@@ -33,6 +33,7 @@ from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
 from .interface import add_watcher, notify_watchers, remove_watcher
 from .handler import battle_handler
+from .storage import BattleDataWrapper
 from ..generation import generate_pokemon
 from world.pokemon_spawn import get_spawn
 
@@ -291,6 +292,9 @@ class BattleSession:
             battles.append(self.battle_id)
         self.room.db.battles = battles
 
+        # helper for accessing persistent battle data
+        self.storage = BattleDataWrapper(self.room, self.battle_id)
+
         self.logic: BattleLogic | None = None
         self.watchers: set[int] = set()
         self.temp_pokemon_ids: List[int] = []
@@ -391,16 +395,15 @@ class BattleSession:
                 return None
         except Exception as err:
             log_err(f"Room type check failed: {err}")
-        battle_map = getattr(room.db, "battle_data", {}) or {}
-        entry = battle_map.get(battle_id)
-        if not entry:
+        storage = BattleDataWrapper(room, battle_id)
+        data = storage.get("data")
+        state = storage.get("state")
+        if data is None and state is None and storage.get("logic") is None:
             log_info(f"No stored entry for battle {battle_id}")
             return None
         log_info("Loaded battle data and state for restore")
-        data = entry.get("data")
-        state = entry.get("state")
         if data is None or state is None:
-            logic_info = entry.get("logic", {})
+            logic_info = storage.get("logic", {}) or {}
             data = data or logic_info.get("data")
             state = state or logic_info.get("state")
         obj = cls.__new__(cls)
@@ -408,15 +411,16 @@ class BattleSession:
         obj.opponent = None
         obj.room = room
         obj.battle_id = battle_id
+        obj.storage = storage
         obj.trainers = []
         obj.observers = set()
         obj.turn_state = {}
         logic = BattleLogic.from_dict({"data": data, "state": state})
         obj.logic = logic
-        obj.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
+        obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
         log_info("Restored logic and temp Pokemon ids")
 
-        trainer_info = entry.get("trainers", {})
+        trainer_info = storage.get("trainers", {}) or {}
         team_a = trainer_info.get("teamA", [])
         team_b = trainer_info.get("teamB", [])
         player_id = team_a[0] if team_a else None
@@ -591,23 +595,17 @@ class BattleSession:
         self.logic = BattleLogic(battle, data, state)
         log_info("PvP battle objects created")
 
-        room_data = getattr(self.room.db, "battle_data", None)
-        if not room_data or not hasattr(room_data, "__setitem__"):
-            room_data = {}
-        room_entry = {
-            "data": self.logic.data.to_dict(),
-            "state": self.logic.state.to_dict(),
-            "temp_pokemon_ids": list(self.temp_pokemon_ids),
-        }
+        # persist battle info on the room
+        self.storage.set("data", self.logic.data.to_dict())
+        self.storage.set("state", self.logic.state.to_dict())
+        self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
         trainer_ids = {}
         if hasattr(self.player, "id"):
             trainer_ids.setdefault("teamA", []).append(self.player.id)
         if self.opponent and hasattr(self.opponent, "id"):
             trainer_ids.setdefault("teamB", []).append(self.opponent.id)
         if trainer_ids:
-            room_entry["trainers"] = trainer_ids
-        room_data[self.battle_id] = room_entry
-        self.room.db.battle_data = room_data
+            self.storage.set("trainers", trainer_ids)
         log_info("Saved PvP battle data to room")
 
         add_watcher(self.state, self.player)
@@ -750,23 +748,17 @@ class BattleSession:
         self.logic = BattleLogic(battle, data, state)
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
 
-        room_data = getattr(self.room.db, "battle_data", None)
-        if not room_data or not hasattr(room_data, "__setitem__"):
-            room_data = {}
-        room_entry = {
-            "data": self.logic.data.to_dict(),
-            "state": self.logic.state.to_dict(),
-            "temp_pokemon_ids": list(self.temp_pokemon_ids),
-        }
+        # store battle info for restoration
+        self.storage.set("data", self.logic.data.to_dict())
+        self.storage.set("state", self.logic.state.to_dict())
+        self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
         trainer_ids = {}
         if hasattr(self.player, "id"):
             trainer_ids.setdefault("teamA", []).append(self.player.id)
         if self.opponent and hasattr(self.opponent, "id"):
             trainer_ids.setdefault("teamB", []).append(self.opponent.id)
         if trainer_ids:
-            room_entry["trainers"] = trainer_ids
-        room_data[self.battle_id] = room_entry
-        self.room.db.battle_data = room_data
+            self.storage.set("trainers", trainer_ids)
         log_info(f"Saved battle data for id {self.battle_id}")
 
     def _setup_battle_room(self) -> None:
@@ -816,16 +808,9 @@ class BattleSession:
                 if not self.room.ndb.battle_instances:
                     del self.room.ndb.battle_instances
                 log_info("Removed battle_instances map from room")
-            data = getattr(self.room.db, "battle_data", None)
-            if not data:
-                data = {}
-            if self.battle_id in data:
-                del data[self.battle_id]
-                if data:
-                    self.room.db.battle_data = data
-                else:
-                    delattr(self.room.db, "battle_data")
-                log_info(f"Cleared battle_data entry for {self.battle_id}")
+            for part in ["data", "state", "logic", "trainers", "temp_pokemon_ids"]:
+                self.storage.delete(part)
+            log_info(f"Cleared battle data for {self.battle_id}")
             battles = getattr(self.room.db, "battles", None)
             if battles and self.battle_id in battles:
                 battles.remove(self.battle_id)
@@ -874,14 +859,8 @@ class BattleSession:
             return
         pos.declareAttack(target, Move(name=move_name))
         log_info(f"Queued move {move_name} targeting {target}")
-        data = getattr(self.room.db, "battle_data", None)
-        if not data or not hasattr(data, "__setitem__"):
-            data = {}
-        if self.battle_id in data:
-            info = data[self.battle_id]
-            info["data"] = self.logic.data.to_dict()
-            info["state"] = self.logic.state.to_dict()
-            self.room.db.battle_data = data
+        self.storage.set("data", self.logic.data.to_dict())
+        self.storage.set("state", self.logic.state.to_dict())
         log_info("Saved queued move to room data")
         self.maybe_run_turn()
 

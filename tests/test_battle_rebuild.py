@@ -121,6 +121,15 @@ st_mod = importlib.util.module_from_spec(st_spec)
 sys.modules[st_spec.name] = st_mod
 st_spec.loader.exec_module(st_mod)
 
+storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
+storage_spec = importlib.util.spec_from_file_location(
+    "pokemon.battle.storage", storage_path
+)
+storage_mod = importlib.util.module_from_spec(storage_spec)
+sys.modules[storage_spec.name] = storage_mod
+storage_spec.loader.exec_module(storage_mod)
+BattleDataWrapper = storage_mod.BattleDataWrapper
+
 eng_path = os.path.join(ROOT, "pokemon", "battle", "engine.py")
 eng_spec = importlib.util.spec_from_file_location("pokemon.battle.engine", eng_path)
 eng_mod = importlib.util.module_from_spec(eng_spec)
@@ -212,8 +221,8 @@ def test_trainer_ids_saved_and_restored():
     inst = BattleSession(p1, p2)
     inst.start_pvp()
 
-    entry = room.db.battle_data[inst.battle_id]
-    assert entry.get("trainers") == {"teamA": [1], "teamB": [2]}
+    storage = BattleDataWrapper(room, inst.battle_id)
+    assert storage.get("trainers") == {"teamA": [1], "teamB": [2]}
 
     p1.ndb.battle_instance = None
     p2.ndb.battle_instance = None
@@ -377,8 +386,10 @@ def test_multiple_battles_saved_in_room():
     inst2 = BattleSession(p3, p4)
     inst2.start_pvp()
 
-    data = room.db.battle_data
-    assert set(data.keys()) == {inst1.battle_id, inst2.battle_id}
+    s1 = BattleDataWrapper(room, inst1.battle_id)
+    s2 = BattleDataWrapper(room, inst2.battle_id)
+    assert s1.get("data") is not None
+    assert s2.get("data") is not None
     assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
 
 
@@ -393,6 +404,8 @@ def test_multiple_hunts_saved_in_room():
     inst2 = BattleSession(p2)
     inst2.start()
 
-    data = room.db.battle_data
-    assert set(data.keys()) == {inst1.battle_id, inst2.battle_id}
+    s1 = BattleDataWrapper(room, inst1.battle_id)
+    s2 = BattleDataWrapper(room, inst2.battle_id)
+    assert s1.get("data") is not None
+    assert s2.get("data") is not None
     assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
