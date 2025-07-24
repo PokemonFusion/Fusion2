@@ -113,6 +113,8 @@ class HuntSystem:
                 return poke, "Trainer", BattleType.TRAINER
 
             inst = BattleSession(hunter)
+            if getattr(poke, "model_id", None):
+                inst.temp_pokemon_ids.append(poke.model_id)
             inst._select_opponent = _sel
             inst.start()
             if tp_cost:
@@ -158,6 +160,8 @@ class HuntSystem:
             return poke, "Wild", BattleType.WILD
 
         inst = BattleSession(hunter)
+        if getattr(poke, "model_id", None):
+            inst.temp_pokemon_ids.append(poke.model_id)
         inst._select_opponent = _select_override
         inst.start()
 
@@ -196,6 +200,8 @@ class HuntSystem:
             return poke, "Wild", BattleType.WILD
 
         inst = BattleSession(hunter)
+        if getattr(poke, "model_id", None):
+            inst.temp_pokemon_ids.append(poke.model_id)
         inst._select_opponent = _select_override
         inst.start()
 
