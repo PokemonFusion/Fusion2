@@ -241,7 +241,7 @@ def test_pokemon_serialization_minimal():
     assert "max_hp" not in data
     assert "moves" not in data
     assert "data" not in data
-    assert data.get("ability") == "Overgrow"
+    assert "ability" not in data
     assert data.get("model_id") == "abc"
     assert data.get("current_hp") == 20
 
