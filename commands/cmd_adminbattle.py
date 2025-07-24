@@ -39,7 +39,7 @@ class CmdAbortBattle(Command):
             if not inst:
                 self.caller.msg("They are not currently in battle.")
                 return
-        bid = inst.room.id
+        bid = inst.battle_id
         inst.end()
         self.caller.msg(f"Battle #{bid} aborted.")
 
