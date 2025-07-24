@@ -129,6 +129,15 @@ st_mod = importlib.util.module_from_spec(st_spec)
 sys.modules[st_spec.name] = st_mod
 st_spec.loader.exec_module(st_mod)
 
+# Load storage module for battleinstance
+storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
+storage_spec = importlib.util.spec_from_file_location(
+    "pokemon.battle.storage", storage_path
+)
+storage_mod = importlib.util.module_from_spec(storage_spec)
+sys.modules[storage_spec.name] = storage_mod
+storage_spec.loader.exec_module(storage_mod)
+
 # Now load battleinstance
 bi_path = os.path.join(ROOT, "pokemon", "battle", "battleinstance.py")
 bi_spec = importlib.util.spec_from_file_location("pokemon.battle.battleinstance", bi_path)

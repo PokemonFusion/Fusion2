@@ -17,6 +17,7 @@ try:
 except Exception:  # pragma: no cover - optional for lightweight test stubs
     BattleType = BattleParticipant = Battle = BattleMove = Action = ActionType = None
 from .capture import attempt_capture
+from .storage import BattleDataWrapper
 
 __all__ = [
     "DamageResult",
@@ -40,4 +41,5 @@ __all__ = [
     "ActionType",
     "BattleState",
     "attempt_capture",
+    "BattleDataWrapper",
 ]

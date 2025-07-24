@@ -13,6 +13,13 @@ if "evennia" not in sys.modules:
     evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
     sys.modules["evennia"] = evennia
 
+# ensure battle storage module can be imported
+storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
+storage_spec = importlib.util.spec_from_file_location("pokemon.battle.storage", storage_path)
+storage_mod = importlib.util.module_from_spec(storage_spec)
+sys.modules[storage_spec.name] = storage_mod
+storage_spec.loader.exec_module(storage_mod)
+
 from world.hunt_system import HuntSystem
 
 class DummyDB(types.SimpleNamespace):
