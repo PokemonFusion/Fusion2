@@ -92,7 +92,7 @@ class BattleHandler:
         log_info(f"Rebuilding ndb data for {len(self.instances)} active battles")
         for inst in list(self.instances.values()):
             battle_instances = getattr(inst.room.ndb, "battle_instances", None)
-            if not isinstance(battle_instances, dict):
+            if not battle_instances or not hasattr(battle_instances, "__setitem__"):
                 battle_instances = {}
                 inst.room.ndb.battle_instances = battle_instances
             battle_instances[inst.battle_id] = inst
@@ -105,7 +105,7 @@ class BattleHandler:
             # rebuild live logic from stored room data if needed
             if not inst.logic:
                 data_map = getattr(inst.room.db, "battle_data", None)
-                if not isinstance(data_map, dict):
+                if not data_map or not hasattr(data_map, "get"):
                     data_map = {}
                 entry = data_map.get(inst.battle_id)
                 if entry:

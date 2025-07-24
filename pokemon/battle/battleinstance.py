@@ -348,7 +348,7 @@ class BattleSession:
             return None
 
         bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
-        if isinstance(bmap, dict):
+        if bmap and hasattr(bmap, "get"):
             inst = bmap.get(bid)
             if inst:
                 log_info(f"Reusing instance {bid} from room ndb")
@@ -488,7 +488,7 @@ class BattleSession:
         )
 
         battle_instances = getattr(room.ndb, "battle_instances", None)
-        if not isinstance(battle_instances, dict):
+        if not battle_instances or not hasattr(battle_instances, "__setitem__"):
             battle_instances = {}
             room.ndb.battle_instances = battle_instances
         battle_instances[battle_id] = obj
@@ -589,7 +589,7 @@ class BattleSession:
         log_info("PvP battle objects created")
 
         room_data = getattr(self.room.db, "battle_data", None)
-        if not isinstance(room_data, dict):
+        if not room_data or not hasattr(room_data, "__setitem__"):
             room_data = {}
         room_entry = {
             "logic": self.logic.to_dict(),
@@ -747,7 +747,7 @@ class BattleSession:
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
 
         room_data = getattr(self.room.db, "battle_data", None)
-        if not isinstance(room_data, dict):
+        if not room_data or not hasattr(room_data, "__setitem__"):
             room_data = {}
         room_entry = {
             "logic": self.logic.to_dict(),
@@ -870,7 +870,7 @@ class BattleSession:
         pos.declareAttack(target, Move(name=move_name))
         log_info(f"Queued move {move_name} targeting {target}")
         data = getattr(self.room.db, "battle_data", None)
-        if not isinstance(data, dict):
+        if not data or not hasattr(data, "__setitem__"):
             data = {}
         if self.battle_id in data:
             info = data[self.battle_id]
