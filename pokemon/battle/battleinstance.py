@@ -287,9 +287,9 @@ class BattleSession:
         battle_instances[self.battle_id] = self
 
         battles = getattr(self.room.db, "battles", None) or []
-        setattr(self.room.db, "battles", battles)
         if self.battle_id not in battles:
             battles.append(self.battle_id)
+        self.room.db.battles = battles
 
         self.logic: BattleLogic | None = None
         self.watchers: set[int] = set()
@@ -494,9 +494,9 @@ class BattleSession:
         battle_instances[battle_id] = obj
         log_info("Registered restored instance in room ndb")
         battles = getattr(room.db, "battles", None) or []
-        setattr(room.db, "battles", battles)
         if battle_id not in battles:
             battles.append(battle_id)
+        room.db.battles = battles
         log_info(f"Recorded battle {battle_id} in room.db.battles")
 
         # ensure restored battles remain tracked across further reloads
@@ -824,7 +824,9 @@ class BattleSession:
             battles = getattr(self.room.db, "battles", None)
             if battles and self.battle_id in battles:
                 battles.remove(self.battle_id)
-                if not battles:
+                if battles:
+                    self.room.db.battles = battles
+                else:
                     delattr(self.room.db, "battles")
         if self.player:
             if getattr(getattr(self.player, "ndb", None), "battle_instance", None):
