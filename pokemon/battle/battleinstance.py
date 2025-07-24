@@ -682,7 +682,14 @@ class BattleSession:
             level = getattr(poke, "level", 1)
             name = getattr(poke, "name", "Poke")
             stats = _calc_stats_from_model(poke)
-            move_names = getattr(poke, "moves", [])
+            move_names = getattr(poke, "moves", None)
+            slots = getattr(poke, "activemoveslot_set", None)
+            if not move_names and slots is not None:
+                try:
+                    iterable = slots.all().order_by("slot")
+                except Exception:
+                    iterable = slots
+                move_names = [getattr(s.move, "name", "") for s in iterable]
             if not move_names:
                 move_names = ["Flail"]
             moves = [Move(name=m) for m in move_names[:4]]
@@ -691,8 +698,7 @@ class BattleSession:
                 if full_heal
                 else getattr(poke, "current_hp", stats.get("hp", level))
             )
-            pokemons.append(
-                Pokemon(
+            battle_poke = Pokemon(
                     name=name,
                     level=level,
                     hp=current_hp,
@@ -704,8 +710,10 @@ class BattleSession:
                         str(getattr(poke, "unique_id", getattr(poke, "model_id", "")))
                         or None
                     ),
-                )
             )
+            if slots is not None:
+                battle_poke.activemoveslot_set = slots
+            pokemons.append(battle_poke)
             log_info(f"Prepared {name} lvl {level}")
         log_info(
             f"Prepared {len(pokemons)} pokemons for {getattr(trainer, 'key', trainer)}"
