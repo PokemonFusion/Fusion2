@@ -89,8 +89,6 @@ class Pokemon:
 
         if self.model_id:
             info["model_id"] = self.model_id
-            if self.ability is not None:
-                info["ability"] = getattr(self.ability, "name", self.ability)
             return info
 
         if self.ability is not None:
@@ -117,8 +115,10 @@ class Pokemon:
         moves = [Move.from_dict(m) for m in data.get("moves", [])]
         max_hp = data.get("max_hp")
         model_id = data.get("model_id")
+        ability = data.get("ability")
+        extra_data = data.get("data")
 
-        if model_id and not data.get("name"):
+        if model_id:
             try:
                 from ..models import OwnedPokemon
             except Exception:  # pragma: no cover - DB not available in tests
@@ -129,6 +129,8 @@ class Pokemon:
                     poke = OwnedPokemon.objects.get(unique_id=model_id)
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     level = getattr(poke, "level", 1)
+                    ability = getattr(poke, "ability", ability)
+                    extra_data = getattr(poke, "data", extra_data)
                     if max_hp is None:
                         try:
                             from pokemon.utils.pokemon_helpers import get_max_hp
@@ -155,8 +157,8 @@ class Pokemon:
             status=data.get("status", 0),
             moves=moves,
             toxic_counter=data.get("toxic_counter", 0),
-            ability=data.get("ability"),
-            data=data.get("data"),
+            ability=ability,
+            data=extra_data,
             model_id=model_id,
         )
         obj.tempvals = data.get("tempvals", {})
