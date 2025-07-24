@@ -409,3 +409,54 @@ def test_multiple_hunts_saved_in_room():
     assert s1.get("data") is not None
     assert s2.get("data") is not None
     assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
+
+def test_battle_segments_removed_on_end():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    storage = BattleDataWrapper(room, inst.battle_id)
+    assert storage.get("data") is not None
+    assert storage.get("state") is not None
+    assert storage.get("trainers") == {"teamA": [1], "teamB": [2]}
+    assert storage.get("temp_pokemon_ids") == []
+
+    inst.end()
+
+    assert storage.get("data") is None
+    assert storage.get("state") is None
+    assert storage.get("trainers") is None
+    assert storage.get("temp_pokemon_ids") is None
+    assert inst.battle_id not in getattr(room.db, "battles", [])
+
+
+def test_independent_storage_between_battles():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    p3 = DummyPlayer(3, room)
+    p4 = DummyPlayer(4, room)
+
+    inst1 = BattleSession(p1, p2)
+    inst1.start_pvp()
+    inst2 = BattleSession(p3, p4)
+    inst2.start_pvp()
+
+    s1 = BattleDataWrapper(room, inst1.battle_id)
+    s2 = BattleDataWrapper(room, inst2.battle_id)
+    assert s1.get("data") is not None
+    assert s2.get("data") is not None
+    assert hasattr(room.db, f"battle_{inst1.battle_id}_data")
+    assert hasattr(room.db, f"battle_{inst2.battle_id}_data")
+
+    inst1.end()
+
+    assert not hasattr(room.db, f"battle_{inst1.battle_id}_data")
+    assert hasattr(room.db, f"battle_{inst2.battle_id}_data")
+
+    inst2.end()
+
+    assert not hasattr(room.db, f"battle_{inst2.battle_id}_data")
+    assert not hasattr(room.db, f"battle_{inst2.battle_id}_state")
