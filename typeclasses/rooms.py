@@ -96,6 +96,17 @@ class FusionRoom(Room):
                 )
         return result or ""
 
+    def at_examine(self, examiner, **kwargs):
+        """Filter out battle-related attrs before delegating to parent."""
+        attrs = kwargs.get("attrs") or kwargs.get("attributes")
+        if attrs:
+            filtered = [key for key in attrs if not str(key).startswith("battle_")]
+            if "attrs" in kwargs:
+                kwargs["attrs"] = filtered
+            else:
+                kwargs["attributes"] = filtered
+        return super().at_examine(examiner, **kwargs)
+
     def get_random_pokemon(self):
         """Return a Pokémon name selected from the hunt chart."""
         if not self.db.allow_hunting or not self.db.hunt_chart:
