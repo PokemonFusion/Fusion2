@@ -142,6 +142,9 @@ class CmdBattleSwitch(Command):
     help_category = "Pokemon/Battle"
 
     def func(self):
+        if not getattr(self.caller.db, "battle_control", False):
+            self.caller.msg("|rWe aren't waiting for you to command right now.")
+            return
         slot = self.args.strip()
         from pokemon.battle.battleinstance import BattleSession
 
@@ -229,6 +232,9 @@ class CmdBattleItem(Command):
     help_category = "Pokemon/Battle"
 
     def func(self):
+        if not getattr(self.caller.db, "battle_control", False):
+            self.caller.msg("|rWe aren't waiting for you to command right now.")
+            return
         item_name = self.args.strip()
         if not item_name:
             self.caller.msg("Usage: +battleitem <item>")
