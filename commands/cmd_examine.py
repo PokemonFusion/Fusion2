@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from django.conf import settings
 import pprint
+import re
+from types import SimpleNamespace
 
 import evennia.commands.default.building as building
 from evennia.commands.default.building import CmdExamine as DefaultCmdExamine
@@ -57,18 +59,36 @@ class CmdExamine(DefaultCmdExamine):
             return f"{self.header_color}{key}|n={value}{typ}"
 
     def format_attributes(self, obj):
-        """Return formatted persistent attributes, hiding battle data for rooms."""
+        """Return formatted persistent attributes, grouping battle data by ID."""
         attrs = obj.db_attributes.all()
-        try:
-            from typeclasses.rooms import FusionRoom
 
-            if isinstance(obj, FusionRoom):
-                attrs = [attr for attr in attrs if not attr.db_key.startswith("battle_")]
-        except Exception:
-            pass
+        battle_attrs = {}
+        other_attrs = []
 
-        output = "\n  " + "\n  ".join(
-            sorted(self.format_single_attribute(attr) for attr in attrs)
-        )
-        if output.strip():
-            return output
+        for attr in attrs:
+            match = re.match(r"^battle_(\d+)_(.+)$", attr.db_key)
+            if match:
+                bid = int(match.group(1))
+                name = match.group(2)
+                battle_attrs.setdefault(bid, []).append((name, attr))
+            else:
+                other_attrs.append(attr)
+
+        lines = []
+        # group battle attributes by id
+        for bid in sorted(battle_attrs):
+            lines.append(f"Battle {bid}:")
+            for name, attr in sorted(battle_attrs[bid], key=lambda itm: itm[0]):
+                tmp = SimpleNamespace(
+                    db_key=name,
+                    db_category=attr.db_category,
+                    value=attr.value,
+                    strvalue=getattr(attr, "strvalue", None),
+                )
+                lines.append("  " + self.format_single_attribute(tmp))
+
+        other_lines = sorted(self.format_single_attribute(attr) for attr in other_attrs)
+        lines.extend(other_lines)
+
+        if lines:
+            return "\n  " + "\n  ".join(lines)
