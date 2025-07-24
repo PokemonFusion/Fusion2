@@ -302,6 +302,7 @@ class BattleSession:
         log_info(
             f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}"
         )
+        self._set_player_control(False)
 
     # ------------------------------------------------------------
     # Convenience accessors
@@ -322,6 +323,12 @@ class BattleSession:
     # ------------------------------------------------------------
     # Helper utilities
     # ------------------------------------------------------------
+
+    def _set_player_control(self, value: bool) -> None:
+        """Enable or disable battle commands for all trainers."""
+        for trainer in self.trainers:
+            if hasattr(trainer, "db"):
+                trainer.db.battle_control = value
 
     @staticmethod
     def ensure_for_player(player) -> "BattleSession | None":
@@ -626,7 +633,7 @@ class BattleSession:
             room=self.room,
         )
 
-        self.prompt_first_turn()
+        self.prompt_next_turn()
         battle_handler.register(self)
         log_info(f"PvP battle {self.battle_id} registered with handler")
 
@@ -778,13 +785,14 @@ class BattleSession:
             room=self.room,
         )
 
-        self.prompt_first_turn()
+        self.prompt_next_turn()
         battle_handler.register(self)
         log_info(f"Battle {self.battle_id} registered with handler")
 
     def end(self) -> None:
         """End the battle and clean up."""
         log_info(f"Ending battle {self.battle_id}")
+        self._set_player_control(False)
         try:
             from ..models import OwnedPokemon
         except Exception:  # pragma: no cover
@@ -841,16 +849,20 @@ class BattleSession:
     # ------------------------------------------------------------------
     # Battle helpers
     # ------------------------------------------------------------------
-    def prompt_first_turn(self) -> None:
-        """Notify the player that the battle is ready to begin."""
+    def prompt_next_turn(self) -> None:
+        """Prompt the player to issue a command for the next turn."""
+        self._set_player_control(True)
         self.msg("The battle awaits your move.")
-        log_info(f"Prompted first turn for battle {self.battle_id}")
+        if self.battle and getattr(self.battle, "turn_count", 0) == 1:
+            log_info(f"Prompted first turn for battle {self.battle_id}")
 
     def run_turn(self) -> None:
         """Advance the battle by one turn."""
         if self.battle:
             log_info(f"Running turn for battle {self.battle_id}")
+            self._set_player_control(False)
             self.battle.run_turn()
+            self.prompt_next_turn()
 
     def queue_move(self, move_name: str, target: str = "B1") -> None:
         """Queue a move and run the turn if ready."""
