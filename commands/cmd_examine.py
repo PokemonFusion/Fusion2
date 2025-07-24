@@ -55,3 +55,20 @@ class CmdExamine(DefaultCmdExamine):
             return f"{self.header_color}{key}|n[{category}]={value}{typ}"
         else:
             return f"{self.header_color}{key}|n={value}{typ}"
+
+    def format_attributes(self, obj):
+        """Return formatted persistent attributes, hiding battle data for rooms."""
+        attrs = obj.db_attributes.all()
+        try:
+            from typeclasses.rooms import FusionRoom
+
+            if isinstance(obj, FusionRoom):
+                attrs = [attr for attr in attrs if not attr.db_key.startswith("battle_")]
+        except Exception:
+            pass
+
+        output = "\n  " + "\n  ".join(
+            sorted(self.format_single_attribute(attr) for attr in attrs)
+        )
+        if output.strip():
+            return output

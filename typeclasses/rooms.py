@@ -96,6 +96,7 @@ class FusionRoom(Room):
                 )
         return result or ""
 
+
     def get_random_pokemon(self):
         """Return a Pokémon name selected from the hunt chart."""
         if not self.db.allow_hunting or not self.db.hunt_chart:
