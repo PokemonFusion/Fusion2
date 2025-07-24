@@ -87,21 +87,24 @@ class Pokemon:
             "tempvals": self.tempvals,
         }
 
+        if self.model_id:
+            info["model_id"] = self.model_id
+            if self.ability is not None:
+                info["ability"] = getattr(self.ability, "name", self.ability)
+            return info
+
         if self.ability is not None:
             info["ability"] = getattr(self.ability, "name", self.ability)
         if self.data:
             info["data"] = self.data
-        if self.model_id:
-            info["model_id"] = self.model_id
-        else:
-            info.update(
-                {
-                    "name": self.name,
-                    "level": self.level,
-                    "max_hp": self.max_hp,
-                    "moves": [m.to_dict() for m in self.moves],
-                }
-            )
+        info.update(
+            {
+                "name": self.name,
+                "level": self.level,
+                "max_hp": self.max_hp,
+                "moves": [m.to_dict() for m in self.moves],
+            }
+        )
 
         return info
 

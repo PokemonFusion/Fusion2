@@ -287,9 +287,9 @@ class BattleSession:
         battle_instances[self.battle_id] = self
 
         battles = getattr(self.room.db, "battles", None) or []
-        setattr(self.room.db, "battles", battles)
         if self.battle_id not in battles:
             battles.append(self.battle_id)
+        self.room.db.battles = battles
 
         self.logic: BattleLogic | None = None
         self.watchers: set[int] = set()
@@ -348,7 +348,7 @@ class BattleSession:
             return None
 
         bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
-        if isinstance(bmap, dict):
+        if bmap and hasattr(bmap, "get"):
             inst = bmap.get(bid)
             if inst:
                 log_info(f"Reusing instance {bid} from room ndb")
@@ -397,9 +397,12 @@ class BattleSession:
             log_info(f"No stored entry for battle {battle_id}")
             return None
         log_info("Loaded battle data and state for restore")
-        logic_info = entry.get("logic", entry)
-        data = logic_info.get("data")
-        state = logic_info.get("state")
+        data = entry.get("data")
+        state = entry.get("state")
+        if data is None or state is None:
+            logic_info = entry.get("logic", {})
+            data = data or logic_info.get("data")
+            state = state or logic_info.get("state")
         obj = cls.__new__(cls)
         obj.player = None
         obj.opponent = None
@@ -488,15 +491,15 @@ class BattleSession:
         )
 
         battle_instances = getattr(room.ndb, "battle_instances", None)
-        if not isinstance(battle_instances, dict):
+        if not battle_instances or not hasattr(battle_instances, "__setitem__"):
             battle_instances = {}
             room.ndb.battle_instances = battle_instances
         battle_instances[battle_id] = obj
         log_info("Registered restored instance in room ndb")
         battles = getattr(room.db, "battles", None) or []
-        setattr(room.db, "battles", battles)
         if battle_id not in battles:
             battles.append(battle_id)
+        room.db.battles = battles
         log_info(f"Recorded battle {battle_id} in room.db.battles")
 
         # ensure restored battles remain tracked across further reloads
@@ -517,7 +520,7 @@ class BattleSession:
         # make sure this battle's ID is tracked on the room
         room = self.player.location
         battle_id = self.battle_id
-        existing_ids = getattr(room.db, "battles", [])
+        existing_ids = getattr(room.db, "battles", None) or []
         if battle_id not in existing_ids:
             existing_ids.append(battle_id)
             room.db.battles = existing_ids
@@ -589,10 +592,11 @@ class BattleSession:
         log_info("PvP battle objects created")
 
         room_data = getattr(self.room.db, "battle_data", None)
-        if not isinstance(room_data, dict):
+        if not room_data or not hasattr(room_data, "__setitem__"):
             room_data = {}
         room_entry = {
-            "logic": self.logic.to_dict(),
+            "data": self.logic.data.to_dict(),
+            "state": self.logic.state.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
         }
         trainer_ids = {}
@@ -747,10 +751,11 @@ class BattleSession:
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
 
         room_data = getattr(self.room.db, "battle_data", None)
-        if not isinstance(room_data, dict):
+        if not room_data or not hasattr(room_data, "__setitem__"):
             room_data = {}
         room_entry = {
-            "logic": self.logic.to_dict(),
+            "data": self.logic.data.to_dict(),
+            "state": self.logic.state.to_dict(),
             "temp_pokemon_ids": list(self.temp_pokemon_ids),
         }
         trainer_ids = {}
@@ -824,7 +829,9 @@ class BattleSession:
             battles = getattr(self.room.db, "battles", None)
             if battles and self.battle_id in battles:
                 battles.remove(self.battle_id)
-                if not battles:
+                if battles:
+                    self.room.db.battles = battles
+                else:
                     delattr(self.room.db, "battles")
         if self.player:
             if getattr(getattr(self.player, "ndb", None), "battle_instance", None):
@@ -868,11 +875,12 @@ class BattleSession:
         pos.declareAttack(target, Move(name=move_name))
         log_info(f"Queued move {move_name} targeting {target}")
         data = getattr(self.room.db, "battle_data", None)
-        if not isinstance(data, dict):
+        if not data or not hasattr(data, "__setitem__"):
             data = {}
         if self.battle_id in data:
             info = data[self.battle_id]
-            info["logic"] = self.logic.to_dict()
+            info["data"] = self.logic.data.to_dict()
+            info["state"] = self.logic.state.to_dict()
             self.room.db.battle_data = data
         log_info("Saved queued move to room data")
         self.maybe_run_turn()

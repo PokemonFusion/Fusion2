@@ -232,12 +232,16 @@ def test_trainer_ids_saved_and_restored():
 
 def test_pokemon_serialization_minimal():
     poke = bd_mod.Pokemon("Bulbasaur", level=5, hp=20, max_hp=30, model_id="abc")
+    poke.ability = "Overgrow"
+    poke.data = {"foo": "bar"}
     data = poke.to_dict()
 
     assert "name" not in data
     assert "level" not in data
     assert "max_hp" not in data
     assert "moves" not in data
+    assert "data" not in data
+    assert data.get("ability") == "Overgrow"
     assert data.get("model_id") == "abc"
     assert data.get("current_hp") == 20
 
@@ -359,3 +363,36 @@ def test_pokemon_control_restored_after_reload():
         bi_mod.search_object = orig_search
 
     assert restored.state.pokemon_control == {"uid1": "1", "uid2": "2"}
+
+def test_multiple_battles_saved_in_room():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    p3 = DummyPlayer(3, room)
+    p4 = DummyPlayer(4, room)
+
+    inst1 = BattleSession(p1, p2)
+    inst1.start_pvp()
+
+    inst2 = BattleSession(p3, p4)
+    inst2.start_pvp()
+
+    data = room.db.battle_data
+    assert set(data.keys()) == {inst1.battle_id, inst2.battle_id}
+    assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
+
+
+def test_multiple_hunts_saved_in_room():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+
+    inst1 = BattleSession(p1)
+    inst1.start()
+
+    inst2 = BattleSession(p2)
+    inst2.start()
+
+    data = room.db.battle_data
+    assert set(data.keys()) == {inst1.battle_id, inst2.battle_id}
+    assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}

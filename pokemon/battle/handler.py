@@ -22,6 +22,7 @@ class BattleHandler:
     """Track and persist active battle instances."""
 
     def __init__(self):
+        # map active battle_id -> BattleSession
         self.instances: Dict[int, BattleSession] = {}
 
     # -------------------------------------------------------------
@@ -37,25 +38,25 @@ class BattleHandler:
     # Persistence helpers
     # -------------------------------------------------------------
     def _save(self) -> None:
-        """Persist the current active battle rooms and ids."""
-        data = {rid: inst.battle_id for rid, inst in self.instances.items()}
+        """Persist the current active battle ids and their rooms."""
+        data = {bid: inst.room.id for bid, inst in self.instances.items()}
         ServerConfig.objects.conf(key="active_battle_rooms", value=data)
 
     def restore(self) -> None:
         """Reload any battle instances stored on the server."""
         mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
         from .battleinstance import BattleSession
-        for rid, bid in mapping.items():
+        for bid, rid in mapping.items():
             rooms = search_object(f"#{rid}")
             if not rooms:
                 continue
             room = rooms[0]
             try:
-                inst = BattleSession.restore(room, bid)
+                inst = BattleSession.restore(room, int(bid))
             except Exception:
                 continue
             if inst:
-                self.instances[rid] = inst
+                self.instances[int(bid)] = inst
         self._save()
 
     def save(self) -> None:
@@ -71,13 +72,14 @@ class BattleHandler:
     # Management API
     # -------------------------------------------------------------
     def register(self, inst: BattleSession) -> None:
-        self.instances[inst.room.id] = inst
+        """Track the given battle session."""
+        self.instances[inst.battle_id] = inst
         self._save()
 
     def unregister(self, inst: BattleSession) -> None:
-        rid = inst.room.id
-        if rid in self.instances:
-            del self.instances[rid]
+        bid = inst.battle_id
+        if bid in self.instances:
+            del self.instances[bid]
             self._save()
 
     # -------------------------------------------------------------
@@ -90,7 +92,7 @@ class BattleHandler:
         log_info(f"Rebuilding ndb data for {len(self.instances)} active battles")
         for inst in list(self.instances.values()):
             battle_instances = getattr(inst.room.ndb, "battle_instances", None)
-            if not isinstance(battle_instances, dict):
+            if not battle_instances or not hasattr(battle_instances, "__setitem__"):
                 battle_instances = {}
                 inst.room.ndb.battle_instances = battle_instances
             battle_instances[inst.battle_id] = inst
@@ -103,13 +105,19 @@ class BattleHandler:
             # rebuild live logic from stored room data if needed
             if not inst.logic:
                 data_map = getattr(inst.room.db, "battle_data", None)
-                if not isinstance(data_map, dict):
+                if not data_map or not hasattr(data_map, "get"):
                     data_map = {}
                 entry = data_map.get(inst.battle_id)
                 if entry:
                     from .battleinstance import BattleLogic
 
-                    inst.logic = BattleLogic.from_dict(entry.get("logic", entry))
+                    data = entry.get("data")
+                    state = entry.get("state")
+                    if data is None or state is None:
+                        logic_info = entry.get("logic", {})
+                        data = data or logic_info.get("data")
+                        state = state or logic_info.get("state")
+                    inst.logic = BattleLogic.from_dict({"data": data, "state": state})
                     inst.temp_pokemon_ids = list(entry.get("temp_pokemon_ids", []))
 
             for obj in inst.trainers + list(inst.observers):
