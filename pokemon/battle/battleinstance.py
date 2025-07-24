@@ -808,9 +808,8 @@ class BattleSession:
                 if not self.room.ndb.battle_instances:
                     del self.room.ndb.battle_instances
                 log_info("Removed battle_instances map from room")
-            for part in ["data", "state", "logic", "trainers", "temp_pokemon_ids"]:
+            for part in ["logic", "trainers", "temp_pokemon_ids"]:
                 self.storage.delete(part)
-            log_info(f"Cleared battle data for {self.battle_id}")
             battles = getattr(self.room.db, "battles", None)
             if battles and self.battle_id in battles:
                 battles.remove(self.battle_id)
@@ -833,6 +832,9 @@ class BattleSession:
             notify_watchers(self.state, "The battle has ended.", room=self.room)
         self.watchers.clear()
         battle_handler.unregister(self)
+        for seg in ("data", "state", "meta", "field", "active"):
+            self.storage.delete(seg)
+        log_info(f"Cleared battle data for {self.battle_id}")
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")
 
