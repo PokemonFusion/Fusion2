@@ -148,11 +148,17 @@ def test_battleattack_lists_moves_and_targets():
     cmd.args = ''
     cmd.parse()
     cmd.func()
-
-    restore_modules(orig_evennia, orig_battle, orig_bi)
     joined = '\n'.join(caller.msgs)
     assert 'Pick an attack' in joined
     assert 'tackle' in joined.lower()
+
+    cb = caller.ndb.last_prompt_callback
+    assert cb is not None
+    cb(caller, '', 'tackle')
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert player.pending_action.target is opp
 
 
 def test_battleattack_auto_target_single():
@@ -219,8 +225,14 @@ def test_battleattack_falls_back_to_move_list():
     cmd.args = ''
     cmd.parse()
     cmd.func()
-
-    restore_modules(orig_evennia, orig_battle, orig_bi)
     msg = '\n'.join(caller.msgs)
     assert 'tackle' in msg.lower()
-    assert '/-----------------A' in msg
+    assert '/----------------[A]' in msg
+
+    cb = caller.ndb.last_prompt_callback
+    assert cb is not None
+    cb(caller, '', 'A')
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert player.pending_action.target is enemy

@@ -98,6 +98,28 @@ class CmdBattleAttack(Command):
                 }
 
         move_name = self.move_name
+
+        def _prompt_move() -> None:
+            """Prompt the caller to select a move interactively."""
+
+            def _callback(caller, prompt, result):
+                choice = result.strip()
+                if choice.lower() in {
+                    "abort",
+                    ".abort",
+                    "cancel",
+                    "quit",
+                    "exit",
+                }:
+                    caller.msg("Action cancelled.")
+                    return False
+                self.move_name = choice
+                self.target_name = ""
+                self.func()
+                return False
+
+            get_input(self.caller, render_move_gui(moves_map), _callback)
+
         # forced move checks
         encore = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("encore")
         choice = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("choicelock")
@@ -111,7 +133,7 @@ class CmdBattleAttack(Command):
                 move_name = "Struggle"
 
         if not move_name:
-            self.caller.msg(render_move_gui(moves_map))
+            _prompt_move()
             return
 
         if move_name.lower() in {".abort", "abort"}:
@@ -130,7 +152,7 @@ class CmdBattleAttack(Command):
                     found = True
                     break
             if not found:
-                self.caller.msg(render_move_gui(moves_map))
+                _prompt_move()
                 return
 
         targets = [p for p in inst.battle.participants if p is not participant]
