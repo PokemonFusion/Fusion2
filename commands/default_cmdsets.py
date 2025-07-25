@@ -95,7 +95,11 @@ from commands.cmd_roomwizard import CmdRoomWizard
 from commands.cmd_editroom import CmdEditRoom
 from commands.cmd_validate import CmdValidate
 from commands.cmd_givepokemon import CmdGivePokemon
-from commands.cmd_adminpokemon import CmdListPokemon, CmdRemovePokemon
+from commands.cmd_adminpokemon import (
+    CmdListPokemon,
+    CmdRemovePokemon,
+    CmdPokemonInfo,
+)
 from commands.cmd_gitpull import CmdGitPull
 from commands.cmd_logusage import CmdLogUsage, CmdMarkVerified
 from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
@@ -191,6 +195,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGivePokemon())
         self.add(CmdListPokemon())
         self.add(CmdRemovePokemon())
+        self.add(CmdPokemonInfo())
         self.add(CmdGitPull())
         # PVP commands
         self.add(CmdPvpHelp())
