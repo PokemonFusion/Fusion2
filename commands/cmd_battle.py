@@ -42,37 +42,60 @@ class CmdBattleAttack(Command):
             return
 
         slots = getattr(active, "activemoveslot_set", None)
+        qs = []
         if slots:
             try:
                 qs = list(slots.all().order_by("slot"))
             except Exception:
-                qs = list(slots)
-        else:
-            qs = []
+                try:
+                    qs = list(slots.order_by("slot"))
+                except Exception:
+                    qs = list(slots)
 
         from pokemon.dex import MOVEDEX
 
         # build move data for display
         letters = ["A", "B", "C", "D"]
         moves_map = {}
-        for slot_obj, letter in zip(qs, letters):
-            move = slot_obj.move
-            dex = MOVEDEX.get(move.name.lower(), None)
-            max_pp = getattr(move, "pp", None)
-            if dex and not max_pp:
-                max_pp = dex.pp
-            cur_pp = getattr(slot_obj, "current_pp", None)
-            moves_map[letter] = {
-                "name": move.name,
-                "type": getattr(move, "type", None) or (dex.type if dex else None),
-                "category": getattr(move, "category", None) or (dex.category if dex else None),
-                "pp": (
-                    cur_pp if cur_pp is not None else max_pp,
-                    max_pp or 0,
-                ),
-                "power": getattr(move, "power", 0) or (dex.power if dex else 0),
-                "accuracy": getattr(move, "accuracy", 100) if getattr(move, "accuracy", None) is not None else (dex.accuracy if dex else 100),
-            }
+        if qs:
+            for slot_obj, letter in zip(qs, letters):
+                move = slot_obj.move
+                move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                dex = MOVEDEX.get(move_key.lower(), None)
+                max_pp = getattr(move, "pp", None)
+                if dex and not max_pp:
+                    max_pp = dex.pp
+                cur_pp = getattr(slot_obj, "current_pp", None)
+                moves_map[letter] = {
+                    "name": move.name,
+                    "type": getattr(move, "type", None) or (dex.type if dex else None),
+                    "category": getattr(move, "category", None) or (dex.category if dex else None),
+                    "pp": (
+                        cur_pp if cur_pp is not None else max_pp,
+                        max_pp or 0,
+                    ),
+                    "power": getattr(move, "power", 0) or (dex.power if dex else 0),
+                    "accuracy": getattr(move, "accuracy", 100)
+                    if getattr(move, "accuracy", None) is not None
+                    else (dex.accuracy if dex else 100),
+                }
+        else:
+            for move, letter in zip(getattr(active, "moves", [])[:4], letters):
+                move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                dex = MOVEDEX.get(move_key.lower(), None)
+                max_pp = getattr(move, "pp", None)
+                if dex and not max_pp:
+                    max_pp = dex.pp
+                moves_map[letter] = {
+                    "name": getattr(move, "name", dex.name if dex else move_key.capitalize() or "???"),
+                    "type": getattr(move, "type", None) or (dex.type if dex else None),
+                    "category": getattr(move, "category", None) or (dex.category if dex else None),
+                    "pp": (max_pp, max_pp or 0),
+                    "power": getattr(move, "power", 0) or (dex.power if dex else 0),
+                    "accuracy": getattr(move, "accuracy", 100)
+                    if getattr(move, "accuracy", None) is not None
+                    else (dex.accuracy if dex else 100),
+                }
 
         move_name = self.move_name
         # forced move checks

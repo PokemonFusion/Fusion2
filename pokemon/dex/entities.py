@@ -268,7 +268,8 @@ def load_movedex(path: Path) -> Dict[str, Move]:
         data = getattr(mod, "py_dict")
     else:
         data = _load_json(path)
-    return {name: Move.from_dict(name, details) for name, details in data.items()}
+    # Store entries keyed by lowercase names for case-insensitive lookup
+    return {name.lower(): Move.from_dict(name, details) for name, details in data.items()}
 
 
 def load_abilitydex(path: Path) -> Dict[str, Ability]:

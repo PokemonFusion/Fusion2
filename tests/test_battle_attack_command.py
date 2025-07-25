@@ -43,6 +43,7 @@ def setup_modules():
     sys.modules["evennia.utils.evmenu"] = evmenu_mod
 
     orig_battle = sys.modules.get("pokemon.battle")
+    orig_battleinstance = sys.modules.get("pokemon.battle.battleinstance")
     battle_mod = types.ModuleType("pokemon.battle")
     class ActionType(Enum):
         MOVE = 1
@@ -62,10 +63,18 @@ def setup_modules():
     battle_mod.BattleMove = BattleMove
     sys.modules["pokemon.battle"] = battle_mod
 
-    return orig_evennia, orig_battle
+    battleinstance_mod = types.ModuleType("pokemon.battle.battleinstance")
+    class BattleSession:
+        @staticmethod
+        def ensure_for_player(caller):
+            return getattr(caller.ndb, "battle_instance", None)
+    battleinstance_mod.BattleSession = BattleSession
+    sys.modules["pokemon.battle.battleinstance"] = battleinstance_mod
+
+    return orig_evennia, orig_battle, orig_battleinstance
 
 
-def restore_modules(orig_evennia, orig_battle):
+def restore_modules(orig_evennia, orig_battle, orig_battleinstance):
     if orig_evennia is not None:
         sys.modules["evennia"] = orig_evennia
     else:
@@ -86,6 +95,10 @@ def restore_modules(orig_evennia, orig_battle):
         sys.modules["pokemon.battle"] = orig_battle
     else:
         sys.modules.pop("pokemon.battle", None)
+    if orig_battleinstance is not None:
+        sys.modules["pokemon.battle.battleinstance"] = orig_battleinstance
+    else:
+        sys.modules.pop("pokemon.battle.battleinstance", None)
 
 
 class FakeSlot:
@@ -119,7 +132,7 @@ class DummyCaller:
 
 
 def test_battleattack_lists_moves_and_targets():
-    orig_evennia, orig_battle = setup_modules()
+    orig_evennia, orig_battle, orig_bi = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1), FakeSlot('growl',2)]))
@@ -136,14 +149,14 @@ def test_battleattack_lists_moves_and_targets():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle)
+    restore_modules(orig_evennia, orig_battle, orig_bi)
     joined = '\n'.join(caller.msgs)
     assert 'Pick an attack' in joined
     assert 'tackle' in joined.lower()
 
 
 def test_battleattack_auto_target_single():
-    orig_evennia, orig_battle = setup_modules()
+    orig_evennia, orig_battle, orig_bi = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
@@ -160,13 +173,13 @@ def test_battleattack_auto_target_single():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle)
+    restore_modules(orig_evennia, orig_battle, orig_bi)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is enemy
 
 
 def test_battleattack_requires_target_when_multiple():
-    orig_evennia, orig_battle = setup_modules()
+    orig_evennia, orig_battle, orig_bi = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
@@ -184,6 +197,30 @@ def test_battleattack_requires_target_when_multiple():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle)
+    restore_modules(orig_evennia, orig_battle, orig_bi)
     assert player.pending_action is None
     assert 'Valid targets' in caller.msgs[-1]
+
+
+def test_battleattack_falls_back_to_move_list():
+    orig_evennia, orig_battle, orig_bi = setup_modules()
+    cmd_mod = load_cmd_module()
+
+    poke = types.SimpleNamespace(moves=[types.SimpleNamespace(name='tackle'), types.SimpleNamespace(name='growl')])
+    player = FakeParticipant('Player', poke)
+    enemy = FakeParticipant('Enemy', poke)
+    battle = FakeBattle([player, enemy])
+    caller = DummyCaller()
+    caller.ndb.battle_instance = types.SimpleNamespace(battle=battle)
+    caller.db.battle_control = True
+
+    cmd = cmd_mod.CmdBattleAttack()
+    cmd.caller = caller
+    cmd.args = ''
+    cmd.parse()
+    cmd.func()
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    msg = '\n'.join(caller.msgs)
+    assert 'tackle' in msg.lower()
+    assert '/-----------------A' in msg

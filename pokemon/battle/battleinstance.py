@@ -684,11 +684,18 @@ class BattleSession:
             stats = _calc_stats_from_model(poke)
             move_names = getattr(poke, "moves", None)
             slots = getattr(poke, "activemoveslot_set", None)
+            if slots is None:
+                active_ms = getattr(poke, "active_moveset", None)
+                if active_ms is not None:
+                    slots = getattr(active_ms, "slots", None)
             if not move_names and slots is not None:
                 try:
                     iterable = slots.all().order_by("slot")
                 except Exception:
-                    iterable = slots
+                    try:
+                        iterable = slots.order_by("slot")
+                    except Exception:
+                        iterable = slots
                 move_names = [getattr(s.move, "name", "") for s in iterable]
             if not move_names:
                 move_names = ["Flail"]
