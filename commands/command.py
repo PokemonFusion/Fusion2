@@ -158,7 +158,8 @@ class CmdUseMove(Command):
         from pokemon.battle import damage_calc
         import copy
 
-        movedata = MOVEDEX.get(move_name.capitalize())
+        # MOVEDEX keys are stored in lowercase
+        movedata = MOVEDEX.get(move_name.lower())
         if not movedata:
             self.caller.msg(f"Unknown move '{move_name}'.")
             return
