@@ -60,7 +60,8 @@ class CmdBattleAttack(Command):
         if qs:
             for slot_obj, letter in zip(qs, letters):
                 move = slot_obj.move
-                dex = MOVEDEX.get(move.name.lower(), None)
+                move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                dex = MOVEDEX.get(move_key.lower(), None)
                 max_pp = getattr(move, "pp", None)
                 if dex and not max_pp:
                     max_pp = dex.pp
@@ -80,12 +81,13 @@ class CmdBattleAttack(Command):
                 }
         else:
             for move, letter in zip(getattr(active, "moves", [])[:4], letters):
-                dex = MOVEDEX.get(getattr(move, "name", "").lower(), None)
+                move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                dex = MOVEDEX.get(move_key.lower(), None)
                 max_pp = getattr(move, "pp", None)
                 if dex and not max_pp:
                     max_pp = dex.pp
                 moves_map[letter] = {
-                    "name": getattr(move, "name", "???"),
+                    "name": getattr(move, "name", dex.name if dex else move_key.capitalize() or "???"),
                     "type": getattr(move, "type", None) or (dex.type if dex else None),
                     "category": getattr(move, "category", None) or (dex.category if dex else None),
                     "pp": (max_pp, max_pp or 0),
