@@ -71,3 +71,53 @@ class CmdRemovePokemon(Command):
         pokemon.boxes.clear()
         pokemon.delete()
         self.caller.msg(f"Removed {name} ({pid}).")
+
+class CmdPokemonInfo(Command):
+    """Display detailed information about a Pokémon by GUID.
+
+    Usage:
+      @pokemoninfo <pokemon_id>
+    """
+
+    key = "@pokemoninfo"
+    locks = "cmd:perm(Wizards)"
+    help_category = "Admin"
+
+    def func(self):
+        pid = self.args.strip()
+        if not pid:
+            self.caller.msg("Usage: @pokemoninfo <pokemon_id>")
+            return
+        pokemon = (
+            OwnedPokemon.objects.select_related("active_moveset")
+            .prefetch_related("learned_moves", "movesets__slots", "activemoveslot_set")
+            .filter(unique_id=pid)
+            .first()
+        )
+        if not pokemon:
+            self.caller.msg("No Pokémon found with that ID.")
+            return
+
+        from django.forms.models import model_to_dict
+
+        data = model_to_dict(
+            pokemon,
+            exclude=["learned_moves", "active_moves", "active_moveset"],
+        )
+        lines = [f"Data for {pokemon.name} ({pokemon.unique_id}):"]
+        for key, val in data.items():
+            lines.append(f"  {key}: {val}")
+
+        lines.append("Movesets:")
+        for ms in pokemon.movesets.order_by("index"):
+            moves = [s.move.name for s in ms.slots.order_by("slot")]
+            marker = " (active)" if pokemon.active_moveset and ms.pk == pokemon.active_moveset.pk else ""
+            move_str = ", ".join(moves) if moves else "(empty)"
+            lines.append(f"  {ms.index + 1}: {move_str}{marker}")
+
+        active_moves = [s.move.name for s in pokemon.activemoveslot_set.order_by("slot")]
+        if active_moves:
+            lines.append("Active moves: " + ", ".join(active_moves))
+        else:
+            lines.append("Active moves: (none)")
+        self.caller.msg("\n".join(lines))
