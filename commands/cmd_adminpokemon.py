@@ -1,5 +1,6 @@
 from evennia import Command
-from pokemon.models import OwnedPokemon
+from pokemon.models import OwnedPokemon, Trainer
+import uuid
 
 
 class CmdListPokemon(Command):
@@ -88,6 +89,11 @@ class CmdPokemonInfo(Command):
         if not pid:
             self.caller.msg("Usage: @pokemoninfo <pokemon_id>")
             return
+        try:
+            uuid.UUID(pid)
+        except Exception:
+            self.caller.msg("|rInvalid GUID.|n")
+            return
         pokemon = (
             OwnedPokemon.objects.select_related("active_moveset")
             .prefetch_related("learned_moves", "movesets__slots", "activemoveslot_set")
@@ -106,6 +112,10 @@ class CmdPokemonInfo(Command):
         )
         lines = [f"Data for {pokemon.name} ({pokemon.unique_id}):"]
         for key, val in data.items():
+            if key == "trainer" and val:
+                trainer = Trainer.objects.filter(pk=val).select_related("user").first()
+                if trainer and hasattr(trainer, "user") and trainer.user:
+                    val = f"{val} ({trainer.user.key})"
             lines.append(f"  {key}: {val}")
 
         lines.append("Movesets:")
