@@ -72,7 +72,22 @@ def restore_evennia(orig):
 
 class FakeRoom:
     def __init__(self):
-        self.db = types.SimpleNamespace(pvp_requests=None)
+        class CountingDB:
+            def __init__(self):
+                self._vals = {}
+                self.sets = 0
+
+            def __getattr__(self, key):
+                return self._vals.get(key)
+
+            def __setattr__(self, key, value):
+                if key in {"_vals", "sets"}:
+                    object.__setattr__(self, key, value)
+                else:
+                    self._vals[key] = value
+                    self.sets += 1
+
+        self.db = CountingDB()
         self.msgs = []
 
     def msg_contents(self, text):
@@ -91,6 +106,7 @@ def test_create_request_locks_and_announces():
     assert room.db.pvp_requests[1] is req
     assert getattr(host.db, "pvp_locked", False) is True
     assert room.msgs and "alice" in room.msgs[0].lower()
+    assert room.db.sets >= 2
 
     restore_evennia(orig)
 
@@ -107,6 +123,7 @@ def test_remove_request_unlocks():
 
     assert room.db.pvp_requests == {}
     assert getattr(host.db, "pvp_locked", False) is False
+    assert room.db.sets >= 3
 
     restore_evennia(orig)
 

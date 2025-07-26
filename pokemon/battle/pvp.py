@@ -44,6 +44,8 @@ def create_request(host, password: Optional[str] = None) -> PVPRequest:
         raise ValueError("You are already hosting a PVP request.")
     req = PVPRequest(host=host, password=password)
     reqs[host.id] = req
+    # persist after mutation
+    host.location.db.pvp_requests = reqs
 
     # lock the host in place until the request is resolved
     if hasattr(host, "db"):
@@ -65,6 +67,7 @@ def create_request(host, password: Optional[str] = None) -> PVPRequest:
 def remove_request(host) -> None:
     reqs = get_requests(host.location)
     reqs.pop(host.id, None)
+    host.location.db.pvp_requests = reqs
     if hasattr(host, "db"):
         host.db.pvp_locked = False
 
