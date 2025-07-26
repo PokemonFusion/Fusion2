@@ -94,7 +94,13 @@ class CmdPvpJoin(Command):
         host_name = parts[0]
         password = parts[1] if len(parts) > 1 else None
         req = find_request(self.caller.location, host_name)
-        if not req or not req.is_joinable(password):
+        if not req:
+            self.caller.msg("No joinable request found.")
+            return
+        if req.password and req.password != password:
+            self.caller.msg("Incorrect password.")
+            return
+        if not req.is_joinable(password):
             self.caller.msg("No joinable request found.")
             return
         req.opponent_id = self.caller.id
