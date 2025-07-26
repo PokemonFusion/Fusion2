@@ -5,7 +5,12 @@ from evennia.utils.evmenu import get_input
 
 NOT_IN_BATTLE_MSG = "You are not currently in battle."
 
-from pokemon.battle import Action, ActionType, BattleMove
+try:
+    from pokemon.battle import Action, ActionType, BattleMove
+    if Action is None or ActionType is None or BattleMove is None:
+        raise ImportError
+except Exception:  # pragma: no cover - fallback if engine isn't loaded
+    from pokemon.battle.engine import Action, ActionType, BattleMove
 from utils.battle_display import render_move_gui
 
 
@@ -98,6 +103,67 @@ class CmdBattleAttack(Command):
                 }
 
         move_name = self.move_name
+
+        def _process_move(selected: str) -> None:
+            """Handle a chosen move name or letter."""
+
+            if selected.lower() in {".abort", "abort", "cancel", "quit", "exit"}:
+                self.caller.msg("Action cancelled.")
+                return
+
+            # handle selection by letter or name
+            letter = selected.upper()
+            if letter in moves_map:
+                move = moves_map[letter]
+            else:
+                move = next(
+                    (m for m in moves_map.values() if m["name"].lower() == selected.lower()),
+                    None,
+                )
+            if not move:
+                _prompt_move()
+                return
+
+            targets = [p for p in inst.battle.participants if p is not participant]
+            target = None
+            if len(targets) == 1:
+                target = targets[0]
+            elif self.target_name:
+                for part in targets:
+                    if part.name.lower().startswith(self.target_name.lower()):
+                        target = part
+                        break
+            if target is None:
+                names = ", ".join(p.name for p in targets)
+                self.caller.msg(f"Valid targets: {names}")
+                return
+
+            move_obj = BattleMove(name=move["name"])
+            action = Action(
+                participant,
+                ActionType.MOVE,
+                target,
+                move_obj,
+                getattr(move_obj, "priority", 0),
+            )
+            participant.pending_action = action
+            self.caller.msg(f"You prepare to use {move_obj.name}.")
+            if hasattr(inst, "run_turn"):
+                try:
+                    inst.run_turn()
+                except Exception:
+                    pass
+
+        def _prompt_move() -> None:
+            """Prompt the caller to select a move interactively."""
+
+            def _callback(caller, prompt, result):
+                choice = result.strip()
+                _process_move(choice)
+                return False
+
+            get_input(self.caller, render_move_gui(moves_map), _callback)
+
         # forced move checks
         encore = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("encore")
         choice = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("choicelock")
@@ -111,46 +177,10 @@ class CmdBattleAttack(Command):
                 move_name = "Struggle"
 
         if not move_name:
-            self.caller.msg(render_move_gui(moves_map))
+            _prompt_move()
             return
 
-        if move_name.lower() in {".abort", "abort"}:
-            self.caller.msg("Action cancelled.")
-            return
-
-        # handle selection by letter
-        letter = move_name.upper()
-        if letter in moves_map:
-            move_name = moves_map[letter]["name"]
-        else:
-            found = False
-            for info in moves_map.values():
-                if info["name"].lower() == move_name.lower():
-                    move_name = info["name"]
-                    found = True
-                    break
-            if not found:
-                self.caller.msg(render_move_gui(moves_map))
-                return
-
-        targets = [p for p in inst.battle.participants if p is not participant]
-        target = None
-        if len(targets) == 1:
-            target = targets[0]
-        elif self.target_name:
-            for part in targets:
-                if part.name.lower().startswith(self.target_name.lower()):
-                    target = part
-                    break
-        if target is None:
-            names = ", ".join(p.name for p in targets)
-            self.caller.msg(f"Valid targets: {names}")
-            return
-
-        move = BattleMove(name=move_name)
-        action = Action(participant, ActionType.MOVE, target, move, getattr(move, "priority", 0))
-        participant.pending_action = action
-        self.caller.msg(f"You prepare to use {move_name}.")
+        _process_move(move_name)
 
 
 class CmdBattleSwitch(Command):

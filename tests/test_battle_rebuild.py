@@ -40,6 +40,7 @@ try:
     DummySC.objects = DummySC
 
     evennia.server.models.ServerConfig = DummySC
+    DummySC.objects = DummySC
     sys.modules["evennia.server"] = evennia.server
     sys.modules["evennia.server.models"] = evennia.server.models
 except Exception:
@@ -75,6 +76,7 @@ except Exception:
             return cls.store.get(key, default)
 
     evennia.server.models.ServerConfig = DummySC
+    DummySC.objects = DummySC
     sys.modules["evennia"] = evennia
     sys.modules["evennia.server"] = evennia.server
     sys.modules["evennia.server.models"] = evennia.server.models
