@@ -46,6 +46,11 @@ def setup_evennia():
     objs.DefaultObject = DefaultObj
     objects_mod.objects = objs
     fake_evennia.objects = objects_mod
+
+    def search_object(obj_id):
+        return [types.SimpleNamespace(id=obj_id)]
+
+    fake_evennia.search_object = search_object
     sys.modules["evennia.objects"] = objects_mod
     sys.modules["evennia.objects.objects"] = objs
 

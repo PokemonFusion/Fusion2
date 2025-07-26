@@ -16,12 +16,34 @@ from typing import Dict, Optional
 class PVPRequest:
     """Represents a pending PVP request in a room."""
 
-    host: object
+    host_id: int
+    host_key: str
     password: Optional[str] = None
-    opponent: Optional[object] = None
+    opponent_id: Optional[int] = None
+
+    def get_host(self):
+        """Return the host object if available."""
+        try:
+            from evennia import search_object
+
+            return search_object(self.host_id)[0]
+        except Exception:
+            return None
+
+    def get_opponent(self):
+        """Return the opponent object if available."""
+        if self.opponent_id is None:
+            return None
+        try:
+            from evennia import search_object
+
+            return search_object(self.opponent_id)[0]
+        except Exception:
+            return None
 
     def is_joinable(self, password: Optional[str] = None) -> bool:
-        if self.opponent:
+        """Return ``True`` if this request can be joined."""
+        if self.opponent_id is not None:
             return False
         if self.password and self.password != password:
             return False
@@ -42,7 +64,7 @@ def create_request(host, password: Optional[str] = None) -> PVPRequest:
     reqs = get_requests(host.location)
     if host.id in reqs:
         raise ValueError("You are already hosting a PVP request.")
-    req = PVPRequest(host=host, password=password)
+    req = PVPRequest(host_id=host.id, host_key=host.key, password=password)
     reqs[host.id] = req
     # persist after mutation
     host.location.db.pvp_requests = reqs
@@ -74,7 +96,7 @@ def remove_request(host) -> None:
 
 def find_request(location, host_name: str) -> Optional[PVPRequest]:
     for req in get_requests(location).values():
-        if req.host.key.lower().startswith(host_name.lower()):
+        if req.host_key.lower().startswith(host_name.lower()):
             return req
     return None
 
