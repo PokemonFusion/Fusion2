@@ -49,8 +49,8 @@ class CmdPvpList(Command):
             return
         lines = ["|wActive PVP requests|n"]
         for req in reqs.values():
-            status = "(joined)" if req.opponent else ""
-            lines.append(f"  {req.host.key} {status}")
+            status = "(joined)" if req.opponent_id is not None else ""
+            lines.append(f"  {req.host_key} {status}")
         self.caller.msg("\n".join(lines))
 
 
@@ -97,9 +97,11 @@ class CmdPvpJoin(Command):
         if not req or not req.is_joinable(password):
             self.caller.msg("No joinable request found.")
             return
-        req.opponent = self.caller
-        self.caller.msg(f"You join {req.host.key}'s PVP request.")
-        req.host.msg(f"{self.caller.key} has joined your PVP request.")
+        req.opponent_id = self.caller.id
+        self.caller.msg(f"You join {req.host_key}'s PVP request.")
+        host = req.get_host()
+        if host:
+            host.msg(f"{self.caller.key} has joined your PVP request.")
 
 
 class CmdPvpAbort(Command):
@@ -135,10 +137,10 @@ class CmdPvpStart(Command):
         if not req:
             self.caller.msg("You are not hosting a PVP request.")
             return
-        if not req.opponent:
+        if req.opponent_id is None:
             self.caller.msg("No opponent has joined yet.")
             return
-        opponent = req.opponent
+        opponent = req.get_opponent()
         remove_request(self.caller)
         start_pvp_battle(self.caller, opponent)
 
