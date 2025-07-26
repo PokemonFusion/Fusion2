@@ -148,6 +148,11 @@ class CmdBattleAttack(Command):
             )
             participant.pending_action = action
             self.caller.msg(f"You prepare to use {move_obj.name}.")
+            if hasattr(inst, "run_turn"):
+                try:
+                    inst.run_turn()
+                except Exception:
+                    pass
 
         def _prompt_move() -> None:
             """Prompt the caller to select a move interactively."""
