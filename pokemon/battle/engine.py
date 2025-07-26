@@ -43,6 +43,9 @@ import random
 
 from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Move
+import logging
+
+battle_logger = logging.getLogger("battle")
 try:
     from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
 except Exception:
@@ -308,6 +311,7 @@ class BattleParticipant:
             return None
         target = opponent.active[0]
         priority = getattr(move, "priority", 0)
+        battle_logger.info("%s chooses %s", self.name, move.name)
         return Action(self, ActionType.MOVE, target, move, priority)
 
 

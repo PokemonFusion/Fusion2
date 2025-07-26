@@ -116,11 +116,22 @@ class FakeParticipant:
 class FakeBattle:
     def __init__(self, participants):
         self.participants = participants
+        self.ran = False
     def opponent_of(self, part):
         for p in self.participants:
             if p is not part:
                 return p
         return None
+    def run_turn(self):
+        self.ran = True
+
+class FakeInstance:
+    def __init__(self, battle):
+        self.battle = battle
+        self.ran = False
+    def run_turn(self):
+        self.ran = True
+        self.battle.run_turn()
 
 class DummyCaller:
     def __init__(self):
@@ -148,11 +159,17 @@ def test_battleattack_lists_moves_and_targets():
     cmd.args = ''
     cmd.parse()
     cmd.func()
-
-    restore_modules(orig_evennia, orig_battle, orig_bi)
     joined = '\n'.join(caller.msgs)
     assert 'Pick an attack' in joined
     assert 'tackle' in joined.lower()
+
+    cb = caller.ndb.last_prompt_callback
+    assert cb is not None
+    cb(caller, '', 'tackle')
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert player.pending_action.target is opp
 
 
 def test_battleattack_auto_target_single():
@@ -176,6 +193,62 @@ def test_battleattack_auto_target_single():
     restore_modules(orig_evennia, orig_battle, orig_bi)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is enemy
+
+
+def test_battleattack_prompt_runs_turn_after_callback():
+    orig_evennia, orig_battle, orig_bi = setup_modules()
+    cmd_mod = load_cmd_module()
+
+    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
+    player = FakeParticipant('Player', poke)
+    enemy = FakeParticipant('Enemy', poke)
+    battle = FakeBattle([player, enemy])
+    inst = FakeInstance(battle)
+    caller = DummyCaller()
+    caller.ndb.battle_instance = inst
+    caller.db.battle_control = True
+
+    cmd = cmd_mod.CmdBattleAttack()
+    cmd.caller = caller
+    cmd.args = ''
+    cmd.parse()
+    cmd.func()
+    assert inst.ran is False
+    assert battle.ran is False
+
+    cb = caller.ndb.last_prompt_callback
+    assert cb is not None
+    cb(caller, '', 'tackle')
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert inst.ran is True
+    assert battle.ran is True
+
+
+def test_battleattack_arg_runs_turn():
+    orig_evennia, orig_battle, orig_bi = setup_modules()
+    cmd_mod = load_cmd_module()
+
+    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
+    player = FakeParticipant('Player', poke)
+    enemy = FakeParticipant('Enemy', poke)
+    battle = FakeBattle([player, enemy])
+    inst = FakeInstance(battle)
+    caller = DummyCaller()
+    caller.ndb.battle_instance = inst
+    caller.db.battle_control = True
+
+    cmd = cmd_mod.CmdBattleAttack()
+    cmd.caller = caller
+    cmd.args = 'tackle'
+    cmd.parse()
+    cmd.func()
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert inst.ran is True
+    assert battle.ran is True
 
 
 def test_battleattack_requires_target_when_multiple():
@@ -219,8 +292,14 @@ def test_battleattack_falls_back_to_move_list():
     cmd.args = ''
     cmd.parse()
     cmd.func()
-
-    restore_modules(orig_evennia, orig_battle, orig_bi)
     msg = '\n'.join(caller.msgs)
     assert 'tackle' in msg.lower()
-    assert '/-----------------A' in msg
+    assert '/----------------[A]' in msg
+
+    cb = caller.ndb.last_prompt_callback
+    assert cb is not None
+    cb(caller, '', 'A')
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert player.pending_action.target is enemy

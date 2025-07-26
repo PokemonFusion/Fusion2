@@ -38,3 +38,10 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
                 inst = bmap.get(bid)
                 if inst:
                     self.ndb.battle_instance = inst
+
+    def at_pre_move(self, destination, **kwargs):
+        """Prevent leaving while hosting a PVP request."""
+        if getattr(self.db, "pvp_locked", False):
+            self.msg("|rYou can't leave while waiting for a PVP battle.|n")
+            return False
+        return super().at_pre_move(destination, **kwargs)
