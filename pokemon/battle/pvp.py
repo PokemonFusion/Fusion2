@@ -44,12 +44,29 @@ def create_request(host, password: Optional[str] = None) -> PVPRequest:
         raise ValueError("You are already hosting a PVP request.")
     req = PVPRequest(host=host, password=password)
     reqs[host.id] = req
+
+    # lock the host in place until the request is resolved
+    if hasattr(host, "db"):
+        host.db.pvp_locked = True
+
+    # announce the request to the room
+    loc = getattr(host, "location", None)
+    if loc:
+        try:
+            loc.msg_contents(
+                f"{host.key} has created a PVP request. Use |w+pvp/join {host.key}|n to accept."
+            )
+        except Exception:
+            pass
+
     return req
 
 
 def remove_request(host) -> None:
     reqs = get_requests(host.location)
     reqs.pop(host.id, None)
+    if hasattr(host, "db"):
+        host.db.pvp_locked = False
 
 
 def find_request(location, host_name: str) -> Optional[PVPRequest]:
