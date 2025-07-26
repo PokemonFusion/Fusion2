@@ -669,11 +669,15 @@ class PokemonFusion(models.Model):
         Trainer,
         on_delete=models.CASCADE,
         related_name="pokemon_fusions",
+        null=True,
+        blank=True,
     )
     pokemon = models.ForeignKey(
         OwnedPokemon,
         on_delete=models.CASCADE,
         related_name="trainer_fusions",
+        null=True,
+        blank=True,
     )
     result = models.OneToOneField(
         OwnedPokemon,
