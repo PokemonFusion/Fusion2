@@ -5,7 +5,12 @@ from evennia.utils.evmenu import get_input
 
 NOT_IN_BATTLE_MSG = "You are not currently in battle."
 
-from pokemon.battle import Action, ActionType, BattleMove
+try:
+    from pokemon.battle import Action, ActionType, BattleMove
+    if Action is None or ActionType is None or BattleMove is None:
+        raise ImportError
+except Exception:  # pragma: no cover - fallback if engine isn't loaded
+    from pokemon.battle.engine import Action, ActionType, BattleMove
 from utils.battle_display import render_move_gui
 
 
