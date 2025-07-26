@@ -21,6 +21,7 @@ from pathlib import Path
 
 from utils.error_logging import setup_daily_error_log
 from utils.usage_logging import setup_daily_usage_log
+from utils.battle_logging import setup_daily_battle_log
 
 
 def at_server_init():
@@ -32,6 +33,7 @@ def at_server_init():
     log_dir = base_dir / "logs"
     setup_daily_error_log(log_dir)
     setup_daily_usage_log(log_dir)
+    setup_daily_battle_log(log_dir)
 
 
 def at_server_start():
