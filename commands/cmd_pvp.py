@@ -146,7 +146,15 @@ class CmdPvpStart(Command):
         if req.opponent_id is None:
             self.caller.msg("No opponent has joined yet.")
             return
+        if getattr(self.caller.ndb, "battle_instance", None):
+            self.caller.msg("You are already engaged in a battle.")
+            return
+
         opponent = req.get_opponent()
+        if opponent and getattr(opponent.ndb, "battle_instance", None):
+            self.caller.msg("Your opponent is already engaged in a battle.")
+            return
+
         remove_request(self.caller)
         start_pvp_battle(self.caller, opponent)
 
