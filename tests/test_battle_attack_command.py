@@ -223,4 +223,4 @@ def test_battleattack_falls_back_to_move_list():
     restore_modules(orig_evennia, orig_battle, orig_bi)
     msg = '\n'.join(caller.msgs)
     assert 'tackle' in msg.lower()
-    assert '/-----------------A' in msg
+    assert '/----------------[A]' in msg
