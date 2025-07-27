@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import logging
 
 from django.conf import settings
 from evennia.utils import utils
@@ -34,6 +35,9 @@ class CmdDebugPy(COMMAND_DEFAULT_CLASS):
         caller = self.caller
         caller.msg("Waiting for debugger attach...")
         yield 0.1  # ensure message is sent before blocking
-        debugpy.listen(5678)
+        host, port = debugpy.listen(5678)
         debugpy.wait_for_client()
         caller.msg("Debugger attached.")
+        logging.getLogger(__name__).info(
+            "debugpy debugger connected on %s:%d", host, port
+        )
