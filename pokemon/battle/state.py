@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from .battledata import BattleData, Pokemon, Team
 
@@ -22,7 +22,7 @@ class BattleState:
     recycle: Dict[str, str] = field(default_factory=dict)
     expshare: Dict[str, str] = field(default_factory=dict)
     roomweather: str = "clear"
-    watchers: Dict[int, int] = field(default_factory=dict)
+    watchers: Set[int] = field(default_factory=set)
     tier: int = 1
     turn: int = 1
     xp: bool = True
