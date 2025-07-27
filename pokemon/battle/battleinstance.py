@@ -260,15 +260,13 @@ class BattleSession:
         log_info(
             f"Initializing BattleSession {getattr(player, 'id', '?')} between {getattr(player, 'key', player)} and {getattr(opponent, 'key', opponent) if opponent else '<wild>'}"
         )
-        self.player = player
-        self.opponent = opponent
+        self.team_a: List[object] = [player]
+        self.team_b: List[object] = [opponent] if opponent else []
         self.room = getattr(player, "location", None)
         if self.room is None:
             raise ValueError("BattleSession requires the player to have a location")
 
-        self.trainers: List[object] = (
-            [player] if opponent is None else [player, opponent]
-        )
+        self.trainers: List[object] = self.team_a + self.team_b
         self.observers: set[object] = set()
         self.turn_state: dict = {}
 
@@ -307,6 +305,31 @@ class BattleSession:
     # ------------------------------------------------------------
     # Convenience accessors
     # ------------------------------------------------------------
+
+    @property
+    def player(self):
+        return self.team_a[0] if self.team_a else None
+
+    @player.setter
+    def player(self, value) -> None:
+        if self.team_a:
+            self.team_a[0] = value
+        elif value is not None:
+            self.team_a.append(value)
+
+    @property
+    def opponent(self):
+        return self.team_b[0] if self.team_b else None
+
+    @opponent.setter
+    def opponent(self, value) -> None:
+        if self.team_b:
+            if value is None:
+                self.team_b = []
+            else:
+                self.team_b[0] = value
+        elif value is not None:
+            self.team_b.append(value)
 
     @property
     def data(self) -> BattleData | None:
@@ -414,8 +437,8 @@ class BattleSession:
             data = data or logic_info.get("data")
             state = state or logic_info.get("state")
         obj = cls.__new__(cls)
-        obj.player = None
-        obj.opponent = None
+        obj.team_a = []
+        obj.team_b = []
         obj.room = room
         obj.battle_id = battle_id
         obj.storage = storage
@@ -456,6 +479,8 @@ class BattleSession:
                 team_b_objs.append(member)
                 if obj.opponent is None:
                     obj.opponent = member
+        obj.team_a = team_a_objs
+        obj.team_b = team_b_objs
 
         watcher_data = getattr(obj.state, "watchers", None) or {}
         obj.watchers = set(watcher_data.keys())
@@ -494,6 +519,8 @@ class BattleSession:
             obj.trainers = team_a_objs + team_b_objs
         else:
             obj.trainers = []
+        obj.team_a = team_a_objs
+        obj.team_b = team_b_objs
 
         log_info(
             f"Restore complete: player={getattr(obj.player, 'key', obj.player)} "
@@ -840,16 +867,11 @@ class BattleSession:
                     self.room.db.battles = battles
                 else:
                     delattr(self.room.db, "battles")
-        if self.player:
-            if getattr(getattr(self.player, "ndb", None), "battle_instance", None):
-                del self.player.ndb.battle_instance
-            if hasattr(self.player, "db") and hasattr(self.player.db, "battle_id"):
-                del self.player.db.battle_id
-        if self.opponent:
-            if getattr(getattr(self.opponent, "ndb", None), "battle_instance", None):
-                del self.opponent.ndb.battle_instance
-            if hasattr(self.opponent, "db") and hasattr(self.opponent.db, "battle_id"):
-                del self.opponent.db.battle_id
+        for trainer in list(self.team_a) + list(self.team_b):
+            if getattr(getattr(trainer, "ndb", None), "battle_instance", None):
+                del trainer.ndb.battle_instance
+            if hasattr(trainer, "db") and hasattr(trainer.db, "battle_id"):
+                del trainer.db.battle_id
         self.logic = None
         if self.state:
             notify_watchers(self.state, "The battle has ended.", room=self.room)
