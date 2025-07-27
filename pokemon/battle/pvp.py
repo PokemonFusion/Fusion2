@@ -26,7 +26,7 @@ class PVPRequest:
         try:
             from evennia import search_object
 
-            return search_object(self.host_id)[0]
+            return search_object(f"#{self.host_id}")[0]
         except Exception:
             return None
 
@@ -37,7 +37,7 @@ class PVPRequest:
         try:
             from evennia import search_object
 
-            return search_object(self.opponent_id)[0]
+            return search_object(f"#{self.opponent_id}")[0]
         except Exception:
             return None
 
