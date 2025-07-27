@@ -69,7 +69,7 @@ class Pokemon:
     def getName(self) -> str:
         return self.name
 
-    def setStatus(self, status: int) -> None:
+    def setStatus(self, status: str | int) -> None:
         self.status = status
         if status == "tox":
             self.toxic_counter = 1
