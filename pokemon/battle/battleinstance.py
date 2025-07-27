@@ -36,6 +36,7 @@ from .handler import battle_handler
 from .storage import BattleDataWrapper
 from ..generation import generate_pokemon
 from world.pokemon_spawn import get_spawn
+from utils.pokemon_utils import build_battle_pokemon_from_model
 
 try:
     from typeclasses.rooms import FusionRoom
@@ -706,49 +707,9 @@ class BattleSession:
         )
         pokemons: List[Pokemon] = []
         for poke in party:
-            level = getattr(poke, "level", 1)
-            name = getattr(poke, "name", "Poke")
-            stats = _calc_stats_from_model(poke)
-            move_names = getattr(poke, "moves", None)
-            slots = getattr(poke, "activemoveslot_set", None)
-            if slots is None:
-                active_ms = getattr(poke, "active_moveset", None)
-                if active_ms is not None:
-                    slots = getattr(active_ms, "slots", None)
-            if not move_names and slots is not None:
-                try:
-                    iterable = slots.all().order_by("slot")
-                except Exception:
-                    try:
-                        iterable = slots.order_by("slot")
-                    except Exception:
-                        iterable = slots
-                move_names = [getattr(s.move, "name", "") for s in iterable]
-            if not move_names:
-                move_names = ["Flail"]
-            moves = [Move(name=m) for m in move_names[:4]]
-            current_hp = (
-                stats.get("hp", level)
-                if full_heal
-                else getattr(poke, "current_hp", stats.get("hp", level))
-            )
-            battle_poke = Pokemon(
-                    name=name,
-                    level=level,
-                    hp=current_hp,
-                    max_hp=stats.get("hp", level),
-                    moves=moves,
-                    ability=getattr(poke, "ability", None),
-                    data=getattr(poke, "data", {}),
-                    model_id=(
-                        str(getattr(poke, "unique_id", getattr(poke, "model_id", "")))
-                        or None
-                    ),
-            )
-            if slots is not None:
-                battle_poke.activemoveslot_set = slots
+            battle_poke = build_battle_pokemon_from_model(poke, full_heal=full_heal)
             pokemons.append(battle_poke)
-            log_info(f"Prepared {name} lvl {level}")
+            log_info(f"Prepared {battle_poke.name} lvl {battle_poke.level}")
         log_info(
             f"Prepared {len(pokemons)} pokemons for {getattr(trainer, 'key', trainer)}"
         )
