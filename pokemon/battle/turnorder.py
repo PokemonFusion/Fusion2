@@ -41,8 +41,13 @@ class _Priority:
 
 
 def calculateTurnorder(battleround) -> List[str]:
-    priorities = {key: _Priority(pos.turninit, pos.pokemon)
-                  for key, pos in battleround.positions.items()}
+    """Return the resolution order for the given turn."""
+
+    _Priority.priorities.clear()
+    priorities = {
+        key: _Priority(pos.turninit, pos.pokemon)
+        for key, pos in battleround.positions.items()
+    }
 
     turnorder: List[str] = []
     for pri in range(_Priority.max(), _Priority.min() - 1, -1):
