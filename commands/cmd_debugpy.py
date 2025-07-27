@@ -13,11 +13,10 @@ ERROR_MSG = (
     "\nAfter that please reboot Evennia with `evennia reboot`"
 )
 
-try:
+try:  # pragma: no cover - optional debugpy dependency
     import debugpy  # type: ignore
 except ImportError:  # pragma: no cover - import-time check
-    print(ERROR_MSG)
-    sys.exit()
+    debugpy = None  # type: ignore
 
 
 class CmdDebugPy(COMMAND_DEFAULT_CLASS):
@@ -32,6 +31,10 @@ class CmdDebugPy(COMMAND_DEFAULT_CLASS):
     help_category = "Admin"
 
     def func(self):
+        if debugpy is None:
+            self.caller.msg(ERROR_MSG)
+            return
+
         caller = self.caller
         caller.msg("Waiting for debugger attach...")
         yield 0.1  # ensure message is sent before blocking

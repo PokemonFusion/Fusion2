@@ -24,6 +24,8 @@ def test_preview_context():
     else:
         if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
             settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
+        if not hasattr(settings, "USE_I18N"):
+            settings.USE_I18N = False
     prev_evennia = sys.modules.get("evennia")
     prev_objects = sys.modules.get("evennia.objects")
     prev_models = sys.modules.get("evennia.objects.models")
@@ -137,6 +139,8 @@ def test_save_redirects_to_list():
     else:
         if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
             settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
+        if not hasattr(settings, "USE_I18N"):
+            settings.USE_I18N = False
     prev_evennia = sys.modules.get("evennia")
     prev_objects = sys.modules.get("evennia.objects")
     prev_models = sys.modules.get("evennia.objects.models")
@@ -239,6 +243,8 @@ def test_delete_room():
     else:
         if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
             settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
+        if not hasattr(settings, "USE_I18N"):
+            settings.USE_I18N = False
 
     prev_evennia = sys.modules.get("evennia")
     prev_objects = sys.modules.get("evennia.objects")
