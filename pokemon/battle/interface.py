@@ -14,22 +14,22 @@ from .state import BattleState
 
 def add_watcher(state: BattleState, watcher) -> None:
     """Register a watcher for battle notifications."""
-    if not state.watchers:
-        state.watchers = {}
-    state.watchers[watcher.id] = 1
+    if state.watchers is None:
+        state.watchers = set()
+    state.watchers.add(getattr(watcher, "id", 0))
 
 
 def remove_watcher(state: BattleState, watcher) -> None:
     """Remove a watcher from the battle."""
-    if state.watchers and watcher.id in state.watchers:
-        del state.watchers[watcher.id]
+    if state.watchers:
+        state.watchers.discard(getattr(watcher, "id", 0))
 
 
 def notify_watchers(state: BattleState, message: str, room=None) -> None:
     """Send `message` to all watchers currently present."""
     if not state.watchers:
         return
-    for wid in list(state.watchers.keys()):
+    for wid in list(state.watchers):
         objs = search_object(f"#{wid}")
         if not objs:
             continue

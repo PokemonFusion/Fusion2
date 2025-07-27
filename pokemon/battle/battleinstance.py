@@ -456,11 +456,11 @@ class BattleSession:
         player_id = team_a[0] if team_a else None
         opponent_id = team_b[0] if team_b else None
 
-        watcher_data = getattr(obj.state, "watchers", None) or {}
-        if player_id and player_id not in watcher_data:
-            watcher_data[player_id] = 1
-        if opponent_id and opponent_id not in watcher_data:
-            watcher_data[opponent_id] = 1
+        watcher_data = getattr(obj.state, "watchers", None) or set()
+        if player_id:
+            watcher_data.add(player_id)
+        if opponent_id:
+            watcher_data.add(opponent_id)
         obj.state.watchers = watcher_data
 
         team_a_objs = []
@@ -482,8 +482,8 @@ class BattleSession:
         obj.team_a = team_a_objs
         obj.team_b = team_b_objs
 
-        watcher_data = getattr(obj.state, "watchers", None) or {}
-        obj.watchers = set(watcher_data.keys())
+        watcher_data = getattr(obj.state, "watchers", None) or set()
+        obj.watchers = set(watcher_data)
         obj.watchers.update(team_a)
         obj.watchers.update(team_b)
         for wid in obj.watchers:
