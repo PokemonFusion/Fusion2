@@ -97,17 +97,31 @@ class CmdPvpJoin(Command):
         if not req:
             self.caller.msg("No joinable request found.")
             return
-        if req.password and req.password != password:
-            self.caller.msg("Incorrect password.")
+
+        def _finish_join(passwd: str) -> None:
+            if req.password and req.password != passwd:
+                self.caller.msg("Incorrect password.")
+                return
+            if not req.is_joinable():
+                self.caller.msg("No joinable request found.")
+                return
+            req.opponent_id = self.caller.id
+            self.caller.msg(f"You join {req.host_key}'s PVP request.")
+            host = req.get_host()
+            if host:
+                host.msg(f"{self.caller.key} has joined your PVP request.")
+
+        if req.password and password is None:
+            from evennia.utils.evmenu import get_input
+
+            def _callback(caller, prompt, result):
+                _finish_join(result.strip())
+                return False
+
+            get_input(self.caller, "Password:", _callback)
             return
-        if not req.is_joinable(password):
-            self.caller.msg("No joinable request found.")
-            return
-        req.opponent_id = self.caller.id
-        self.caller.msg(f"You join {req.host_key}'s PVP request.")
-        host = req.get_host()
-        if host:
-            host.msg(f"{self.caller.key} has joined your PVP request.")
+
+        _finish_join(password)
 
 
 class CmdPvpAbort(Command):
