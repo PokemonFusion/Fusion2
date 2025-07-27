@@ -10,7 +10,7 @@ methods used for JSON serialisation.  `BattleData` also provides
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 
 
@@ -230,10 +230,12 @@ class TurnInit:
         )
 
 
+@dataclass
 class PositionData:
-    def __init__(self, pokedata: Optional[Pokemon] = None):
-        self.pokemon = pokedata
-        self.turninit = TurnInit()
+    """Container for a Pokémon and its declared action."""
+
+    pokemon: Optional[Pokemon] = None
+    turninit: TurnInit = field(default_factory=TurnInit)
 
     def getTarget(self) -> Optional[str]:
         return self.turninit.getTarget()
@@ -261,20 +263,36 @@ class PositionData:
     @classmethod
     def from_dict(cls, data: Dict) -> "PositionData":
         poke = Pokemon.from_dict(data["pokemon"]) if data.get("pokemon") else None
-        obj = cls(pokedata=poke)
-        obj.turninit = TurnInit.from_dict(data.get("turninit", {}))
-        return obj
+        turninit = TurnInit.from_dict(data.get("turninit", {}))
+        return cls(pokemon=poke, turninit=turninit)
 
 
+@dataclass(init=False)
 class Team:
-    def __init__(self, trainer: str, pokemon_list: Optional[List[Pokemon]] = None):
+    """Representation of a trainer's party."""
+
+    trainer: str
+    slot1: Optional[Pokemon] = None
+    slot2: Optional[Pokemon] = None
+    slot3: Optional[Pokemon] = None
+    slot4: Optional[Pokemon] = None
+    slot5: Optional[Pokemon] = None
+    slot6: Optional[Pokemon] = None
+
+    def __init__(self, trainer: str, pokemon_list: Optional[List[Pokemon]] = None) -> None:
         self.trainer = trainer
         pokemon_list = pokemon_list or []
         slots = [None] * 6
         for i, poke in enumerate(pokemon_list[:6]):
             slots[i] = poke
-        (self.slot1, self.slot2, self.slot3,
-         self.slot4, self.slot5, self.slot6) = slots
+        (
+            self.slot1,
+            self.slot2,
+            self.slot3,
+            self.slot4,
+            self.slot5,
+            self.slot6,
+        ) = slots
 
     def returnlist(self) -> List[Optional[Pokemon]]:
         return [self.slot1, self.slot2, self.slot3,
