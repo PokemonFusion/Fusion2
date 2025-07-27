@@ -462,3 +462,14 @@ def test_independent_storage_between_battles():
 
     assert not hasattr(room.db, f"battle_{inst2.battle_id}_data")
     assert not hasattr(room.db, f"battle_{inst2.battle_id}_state")
+
+
+def test_pvp_ai_type_stored_correctly():
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+
+    inst = BattleSession(p1, p2)
+    inst.start_pvp()
+
+    assert inst.state.ai_type == "PVP"

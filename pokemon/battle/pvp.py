@@ -26,7 +26,7 @@ class PVPRequest:
         try:
             from evennia import search_object
 
-            return search_object(self.host_id)[0]
+            return search_object(f"#{self.host_id}")[0]
         except Exception:
             return None
 
@@ -37,17 +37,13 @@ class PVPRequest:
         try:
             from evennia import search_object
 
-            return search_object(self.opponent_id)[0]
+            return search_object(f"#{self.opponent_id}")[0]
         except Exception:
             return None
 
-    def is_joinable(self, password: Optional[str] = None) -> bool:
+    def is_joinable(self) -> bool:
         """Return ``True`` if this request can be joined."""
-        if self.opponent_id is not None:
-            return False
-        if self.password and self.password != password:
-            return False
-        return True
+        return self.opponent_id is None
 
 
 def get_requests(location) -> Dict[int, PVPRequest]:

@@ -589,7 +589,7 @@ class BattleSession:
         team_b = Team(trainer=self.opponent.key, pokemon_list=opp_pokemon)
         data = BattleData(team_a, team_b)
 
-        state = BattleState.from_battle_data(data, ai_type="Player")
+        state = BattleState.from_battle_data(data, ai_type=BattleType.PVP.name)
         state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
         state.pokemon_control = {}
         for poke in player_pokemon:

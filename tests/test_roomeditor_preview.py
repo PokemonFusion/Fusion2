@@ -17,9 +17,15 @@ def test_preview_context():
             INSTALLED_APPS=[],
             USE_I18N=False,
             ROOT_URLCONF="tests.urls",
+            CHANNEL_LOG_NUM_TAIL_LINES=100,
         )
         import django
         django.setup()
+    else:
+        if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
+            settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
+        if not hasattr(settings, "USE_I18N"):
+            settings.USE_I18N = False
     prev_evennia = sys.modules.get("evennia")
     prev_objects = sys.modules.get("evennia.objects")
     prev_models = sys.modules.get("evennia.objects.models")
@@ -126,9 +132,15 @@ def test_save_redirects_to_list():
             INSTALLED_APPS=[],
             USE_I18N=False,
             ROOT_URLCONF="tests.urls",
+            CHANNEL_LOG_NUM_TAIL_LINES=100,
         )
         import django
         django.setup()
+    else:
+        if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
+            settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
+        if not hasattr(settings, "USE_I18N"):
+            settings.USE_I18N = False
     prev_evennia = sys.modules.get("evennia")
     prev_objects = sys.modules.get("evennia.objects")
     prev_models = sys.modules.get("evennia.objects.models")
@@ -224,9 +236,57 @@ def test_delete_room():
             INSTALLED_APPS=[],
             USE_I18N=False,
             ROOT_URLCONF="tests.urls",
+            CHANNEL_LOG_NUM_TAIL_LINES=100,
         )
         import django
         django.setup()
+    else:
+        if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
+            settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
+        if not hasattr(settings, "USE_I18N"):
+            settings.USE_I18N = False
+
+    prev_evennia = sys.modules.get("evennia")
+    prev_objects = sys.modules.get("evennia.objects")
+    prev_models = sys.modules.get("evennia.objects.models")
+    prev_rooms = sys.modules.get("typeclasses.rooms")
+    prev_exits = sys.modules.get("typeclasses.exits")
+
+    fake_evennia = types.ModuleType("evennia")
+
+    def fake_create_object(*a, **k):
+        obj = types.SimpleNamespace(id=1, key=k.get("key"))
+        obj.db = types.SimpleNamespace()
+        obj.typeclass_path = a[0]
+        obj.swap_typeclass = lambda *args, **kw: None
+        obj.save = lambda: None
+        return obj
+
+    fake_evennia.create_object = fake_create_object
+    fake_objects = types.ModuleType("evennia.objects")
+    fake_models = types.ModuleType("evennia.objects.models")
+
+    class DummyQuery:
+        def filter(self, *a, **k):
+            return []
+
+        def exists(self):
+            return False
+
+    fake_models.ObjectDB = type("ObjectDB", (), {"objects": DummyQuery()})
+    fake_evennia.objects = fake_objects
+    sys.modules["evennia"] = fake_evennia
+    sys.modules["evennia.objects"] = fake_objects
+    sys.modules["evennia.objects.models"] = fake_models
+    fake_web = types.ModuleType("evennia.web")
+    fake_web.urls = types.ModuleType("evennia.web.urls")
+    fake_web.urls.urlpatterns = []
+    sys.modules["evennia.web"] = fake_web
+    sys.modules["evennia.web.urls"] = fake_web.urls
+    sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
+    sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
+    sys.modules["typeclasses.rooms"].Room = type("Room", (), {})
+    sys.modules["typeclasses.exits"].Exit = type("Exit", (), {})
 
     views = importlib.import_module("roomeditor.views")
     rf = RequestFactory()
@@ -245,6 +305,26 @@ def test_delete_room():
         resp = views.delete_room.__wrapped__(request, room_id=1)
     finally:
         views.get_object_or_404 = orig_get
+        if prev_evennia is not None:
+            sys.modules["evennia"] = prev_evennia
+        else:
+            sys.modules.pop("evennia", None)
+        if prev_objects is not None:
+            sys.modules["evennia.objects"] = prev_objects
+        else:
+            sys.modules.pop("evennia.objects", None)
+        if prev_models is not None:
+            sys.modules["evennia.objects.models"] = prev_models
+        else:
+            sys.modules.pop("evennia.objects.models", None)
+        if prev_rooms is not None:
+            sys.modules["typeclasses.rooms"] = prev_rooms
+        else:
+            sys.modules.pop("typeclasses.rooms", None)
+        if prev_exits is not None:
+            sys.modules["typeclasses.exits"] = prev_exits
+        else:
+            sys.modules.pop("typeclasses.exits", None)
 
     assert deleted["flag"] is True
     assert resp.status_code == 302
