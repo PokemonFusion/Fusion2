@@ -494,6 +494,22 @@ class BattleSession:
         obj.team_a = team_a_objs
         obj.team_b = team_b_objs
 
+        # expose battle info on trainers for the interface
+        try:
+            if obj.player:
+                obj.player.team = [p for p in obj.logic.data.teams["A"].returnlist() if p]
+                part_a = obj.logic.battle.participants[0]
+                if part_a.active:
+                    obj.player.active_pokemon = part_a.active[0]
+            if obj.opponent:
+                obj.opponent.team = [p for p in obj.logic.data.teams["B"].returnlist() if p]
+                if len(obj.logic.battle.participants) > 1:
+                    part_b = obj.logic.battle.participants[1]
+                    if part_b.active:
+                        obj.opponent.active_pokemon = part_b.active[0]
+        except Exception:
+            pass
+
         watcher_data = getattr(obj.state, "watchers", None) or set()
         obj.watchers = set(watcher_data)
         obj.watchers.update(team_a)
@@ -641,6 +657,17 @@ class BattleSession:
         self.logic = BattleLogic(battle, data, state)
         log_info("PvP battle objects created")
 
+        # expose battle info on trainers for the interface
+        try:
+            self.player.team = player_pokemon
+            self.opponent.team = opp_pokemon
+            if player_participant.active:
+                self.player.active_pokemon = player_participant.active[0]
+            if opponent_participant.active:
+                self.opponent.active_pokemon = opponent_participant.active[0]
+        except Exception:
+            pass
+
         # persist battle info on the room
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
@@ -768,6 +795,14 @@ class BattleSession:
 
         self.logic = BattleLogic(battle, data, state)
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
+
+        # expose battle info on trainers for the interface
+        try:
+            self.player.team = player_pokemon
+            if player_participant.active:
+                self.player.active_pokemon = player_participant.active[0]
+        except Exception:
+            pass
 
         # store battle info for restoration
         self.storage.set("data", self.logic.data.to_dict())
