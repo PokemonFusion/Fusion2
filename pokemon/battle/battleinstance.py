@@ -877,9 +877,12 @@ class BattleSession:
         self.maybe_run_turn()
 
     def is_turn_ready(self) -> bool:
-        if not self.data:
-            return False
-        return all(p.getAction() for p in self.data.turndata.positions.values())
+        if self.data:
+            if all(p.getAction() for p in self.data.turndata.positions.values()):
+                return True
+        if self.battle and getattr(self.battle, "participants", None):
+            return all(getattr(p, "pending_action", None) for p in self.battle.participants)
+        return False
 
     def maybe_run_turn(self) -> None:
         if self.is_turn_ready():

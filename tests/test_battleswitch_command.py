@@ -108,6 +108,8 @@ class FakeInstance:
     def run_turn(self):
         self.ran = True
         self.battle.run_turn()
+    def maybe_run_turn(self):
+        pass
 
 
 class DummyCaller:
@@ -148,8 +150,9 @@ def test_battleswitch_prompts_when_no_arg():
     restore_modules(orig_evennia, orig_battle)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is poke2
-    assert inst.ran is True
-    assert battle.ran is True
+    assert player.pending_action.priority == 6
+    assert inst.ran is False
+    assert battle.ran is False
 
 
 def test_battleswitch_queues_action_and_runs_turn():
@@ -173,5 +176,6 @@ def test_battleswitch_queues_action_and_runs_turn():
     restore_modules(orig_evennia, orig_battle)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is poke2
-    assert inst.ran is True
-    assert battle.ran is True
+    assert player.pending_action.priority == 6
+    assert inst.ran is False
+    assert battle.ran is False

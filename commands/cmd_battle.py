@@ -148,9 +148,9 @@ class CmdBattleAttack(Command):
             )
             participant.pending_action = action
             self.caller.msg(f"You prepare to use {move_obj.name}.")
-            if hasattr(inst, "run_turn"):
+            if hasattr(inst, "maybe_run_turn"):
                 try:
-                    inst.run_turn()
+                    inst.maybe_run_turn()
                 except Exception:
                     pass
 
@@ -232,13 +232,13 @@ class CmdBattleSwitch(Command):
                 if getattr(poke, "hp", 0) <= 0:
                     caller.msg(f"{poke.name} has fainted and cannot battle.")
                     return True
-                action = Action(participant, ActionType.SWITCH)
+                action = Action(participant, ActionType.SWITCH, priority=6)
                 action.target = poke
                 participant.pending_action = action
                 caller.msg(f"You prepare to switch to {poke.name}.")
-                if hasattr(inst, "run_turn"):
+                if hasattr(inst, "maybe_run_turn"):
                     try:
-                        inst.run_turn()
+                        inst.maybe_run_turn()
                     except Exception:
                         pass
                 return False
@@ -262,13 +262,13 @@ class CmdBattleSwitch(Command):
         if getattr(pokemon, "hp", 0) <= 0:
             self.caller.msg(f"{pokemon.name} has fainted and cannot battle.")
             return
-        action = Action(participant, ActionType.SWITCH)
+        action = Action(participant, ActionType.SWITCH, priority=6)
         action.target = pokemon
         participant.pending_action = action
         self.caller.msg(f"You prepare to switch to {pokemon.name}.")
-        if hasattr(inst, "run_turn"):
+        if hasattr(inst, "maybe_run_turn"):
             try:
-                inst.run_turn()
+                inst.maybe_run_turn()
             except Exception:
                 pass
 
@@ -314,4 +314,9 @@ class CmdBattleItem(Command):
         if hasattr(self.caller, "trainer"):
             self.caller.trainer.remove_item(item_name)
         self.caller.msg(f"You prepare to use {item_name}.")
+        if hasattr(inst, "maybe_run_turn"):
+            try:
+                inst.maybe_run_turn()
+            except Exception:
+                pass
 
