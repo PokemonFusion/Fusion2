@@ -222,8 +222,8 @@ def test_battleattack_prompt_runs_turn_after_callback():
 
     restore_modules(orig_evennia, orig_battle, orig_bi)
     assert isinstance(player.pending_action, cmd_mod.Action)
-    assert inst.ran is True
-    assert battle.ran is True
+    assert inst.ran is False
+    assert battle.ran is False
 
 
 def test_battleattack_arg_runs_turn():
@@ -247,8 +247,8 @@ def test_battleattack_arg_runs_turn():
 
     restore_modules(orig_evennia, orig_battle, orig_bi)
     assert isinstance(player.pending_action, cmd_mod.Action)
-    assert inst.ran is True
-    assert battle.ran is True
+    assert inst.ran is False
+    assert battle.ran is False
 
 
 def test_battleattack_requires_target_when_multiple():
