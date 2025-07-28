@@ -303,3 +303,31 @@ def test_battleattack_falls_back_to_move_list():
     restore_modules(orig_evennia, orig_battle, orig_bi)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is enemy
+
+def test_battleattack_uses_caller_participant():
+    orig_evennia, orig_battle, orig_bi = setup_modules()
+    cmd_mod = load_cmd_module()
+
+    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle', 1)]))
+    caller1 = DummyCaller()
+    caller2 = DummyCaller()
+
+    p1 = FakeParticipant('P1', poke)
+    p1.player = caller1
+    p2 = FakeParticipant('P2', poke)
+    p2.player = caller2
+    battle = FakeBattle([p1, p2])
+
+    caller2.ndb.battle_instance = types.SimpleNamespace(battle=battle)
+    caller2.db.battle_control = True
+
+    cmd = cmd_mod.CmdBattleAttack()
+    cmd.caller = caller2
+    cmd.args = 'tackle'
+    cmd.parse()
+    cmd.func()
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(p2.pending_action, cmd_mod.Action)
+    assert p1.pending_action is None
+
