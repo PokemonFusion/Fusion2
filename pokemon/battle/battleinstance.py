@@ -31,7 +31,18 @@ except Exception:  # pragma: no cover - fallback for tests without Evennia
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
-from .interface import add_watcher, notify_watchers, remove_watcher
+try:
+    from .interface import (
+        add_watcher,
+        notify_watchers,
+        remove_watcher,
+        display_battle_interface,
+    )
+except Exception:  # pragma: no cover - allow partial stubs in tests
+    from .interface import add_watcher, notify_watchers, remove_watcher
+
+    def display_battle_interface(*_a, **_k):
+        return ""
 from .handler import battle_handler
 from .storage import BattleDataWrapper
 from ..generation import generate_pokemon
@@ -850,6 +861,12 @@ class BattleSession:
     def prompt_next_turn(self) -> None:
         """Prompt the player to issue a command for the next turn."""
         self._set_player_control(True)
+        if self.player and self.state and self.opponent is not None:
+            try:
+                iface = display_battle_interface(self.player, self.opponent, self.state)
+                self.msg(iface)
+            except Exception:
+                log_warn("Failed to display battle interface", exc_info=True)
         self.msg("The battle awaits your move.")
         if self.battle and getattr(self.battle, "turn_count", 0) == 1:
             log_info(f"Prompted first turn for battle {self.battle_id}")
