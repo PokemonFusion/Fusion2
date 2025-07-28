@@ -1,4 +1,8 @@
-"""Execute every move and ability in a minimal battle to catch errors."""
+"""Execute every move and ability in a minimal battle to catch errors.
+
+These tests are slow so they are skipped unless ``--run-dex-tests`` is passed
+to ``pytest``.
+"""
 
 import random
 import sys
@@ -6,6 +10,9 @@ from pathlib import Path
 import importlib
 
 import pytest
+
+# mark the entire module as part of the optional dex suite
+pytestmark = pytest.mark.dex
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
