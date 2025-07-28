@@ -3221,12 +3221,17 @@ class Magnetrise:
             user.volatiles["magnetrise"] = True
         return True
     def onTry(self, *args, **kwargs):
-        target = args[0] if args else None
-        battle = args[3] if len(args) > 3 else kwargs.get('battle')
-        if target and (target.volatiles.get('smackdown') or target.volatiles.get('ingrain')):
+        user = args[0] if args else kwargs.get("user")
+        battle = args[3] if len(args) > 3 else kwargs.get("battle")
+
+        vols = getattr(user, "volatiles", {}) if user else {}
+        if vols.get("smackdown") or vols.get("ingrain"):
             return False
-        if battle and getattr(getattr(battle, 'field', None), 'pseudo_weather', {}).get('Gravity'):
+
+        field = getattr(battle, "field", None) if battle else None
+        if field and getattr(field, "pseudo_weather", {}).get("Gravity"):
             return False
+
         return True
 
 class Magnitude:
