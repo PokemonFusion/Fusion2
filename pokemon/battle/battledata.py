@@ -251,6 +251,14 @@ class PositionData:
     def declareSwitch(self, slotswitch) -> None:
         self.turninit = TurnInit(switch=slotswitch)
 
+    def declareItem(self, item: str) -> None:
+        """Declare use of an item this turn."""
+        self.turninit = TurnInit(item=item)
+
+    def declareRun(self) -> None:
+        """Declare attempting to flee this turn."""
+        self.turninit = TurnInit(run=True)
+
     def removeDeclare(self) -> None:
         self.turninit = TurnInit()
 
