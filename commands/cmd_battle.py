@@ -14,6 +14,18 @@ except Exception:  # pragma: no cover - fallback if engine isn't loaded
 from utils.battle_display import render_move_gui
 
 
+def _get_participant(inst, caller):
+    """Return battle participant for caller or fallback to first."""
+    if inst and getattr(inst, "battle", None):
+        for part in getattr(inst.battle, "participants", []):
+            if getattr(part, "player", None) is caller:
+                return part
+        if getattr(inst.battle, "participants", []):
+            return inst.battle.participants[0]
+    return None
+
+
+
 class CmdBattleAttack(Command):
     """Queue a move to use in the current battle.
 
@@ -40,7 +52,7 @@ class CmdBattleAttack(Command):
         if not inst or not inst.battle:
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return
-        participant = inst.battle.participants[0]
+        participant = _get_participant(inst, self.caller)
         active = participant.active[0] if participant.active else None
         if not active:
             self.caller.msg("You have no active Pokémon.")
@@ -205,7 +217,7 @@ class CmdBattleSwitch(Command):
         if not inst or not inst.battle:
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return
-        participant = inst.battle.participants[0]
+        participant = _get_participant(inst, self.caller)
 
         if not slot:
             lines = []
@@ -301,7 +313,7 @@ class CmdBattleItem(Command):
         if not inst or not inst.battle:
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return
-        participant = inst.battle.participants[0]
+        participant = _get_participant(inst, self.caller)
         target = inst.battle.opponent_of(participant)
         action = Action(
             participant,
