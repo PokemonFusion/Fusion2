@@ -1,3 +1,5 @@
+"""Execute every move and ability in a minimal battle to catch errors."""
+
 import random
 import sys
 from pathlib import Path
@@ -10,6 +12,8 @@ sys.path.insert(0, str(ROOT))
 
 
 def get_dex_data():
+    """Reload ``pokemon.dex`` and return MOVEDEX and ABILITYDEX."""
+
     mod = importlib.import_module("pokemon.dex")
     importlib.reload(mod)
     from pokemon.dex import entities as ent_mod
@@ -31,6 +35,8 @@ ABILITY_FAILS = []
 
 @pytest.fixture(scope="session", autouse=True)
 def _report_results(request):
+    """Write a report summarizing any move or ability failures."""
+
     yield
     report_path = Path(__file__).resolve().parents[1] / "move_ability_report.txt"
     with open(report_path, "w") as fh:
@@ -50,6 +56,8 @@ def _report_results(request):
 
 
 def build_move(entry):
+    """Construct a ``BattleMove`` from a dex entry."""
+
     from importlib import import_module
 
     moves_funcs = import_module("pokemon.dex.functions.moves_funcs")
@@ -109,6 +117,8 @@ def build_move(entry):
 
 
 def setup_battle(move: BattleMove, ability=None):
+    """Return a simple battle with ``move`` queued."""
+
     MOVEDEX, ABILITYDEX, Stats, Ability = get_dex_data()
     user = Pokemon("User", ability=ability)
     target = Pokemon("Target")

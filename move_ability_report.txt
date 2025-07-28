@@ -1,4 +1,0 @@
-Failed Moves:
-magnetrise: 'Pokemon' object has no attribute 'volatiles'
-
-All abilities executed without exception.
