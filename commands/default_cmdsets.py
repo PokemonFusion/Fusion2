@@ -77,6 +77,7 @@ from commands.cmd_battle import (
     CmdBattleAttack,
     CmdBattleSwitch,
     CmdBattleItem,
+    CmdBattleFlee,
 )
 from commands.cmd_store import CmdStore
 from commands.cmd_pokestore import CmdPokestore
@@ -191,6 +192,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdBattleAttack())
         self.add(CmdBattleSwitch())
         self.add(CmdBattleItem())
+        self.add(CmdBattleFlee())
         self.add(CmdSpawns())
         self.add(CmdGivePokemon())
         self.add(CmdListPokemon())

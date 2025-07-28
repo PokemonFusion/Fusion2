@@ -111,6 +111,14 @@ class FakeInstance:
     def maybe_run_turn(self):
         pass
 
+class FakeQueueInstance(FakeInstance):
+    def __init__(self, battle):
+        super().__init__(battle)
+        self.queued = []
+
+    def queue_switch(self, slot: int):
+        self.queued.append(slot)
+
 
 class DummyCaller:
     def __init__(self):
@@ -179,3 +187,26 @@ def test_battleswitch_queues_action_and_runs_turn():
     assert player.pending_action.priority == 6
     assert inst.ran is False
     assert battle.ran is False
+
+
+def test_battleswitch_persists_declare_via_queue_switch():
+    orig_evennia, orig_battle = setup_modules()
+    cmd_mod = load_cmd_module()
+
+    poke1 = types.SimpleNamespace(name="Pika", hp=10)
+    poke2 = types.SimpleNamespace(name="Bulba", hp=10)
+    player = FakeParticipant("Player", [poke1, poke2])
+    enemy = FakeParticipant("Enemy", [poke1])
+    battle = FakeBattle([player, enemy])
+    inst = FakeQueueInstance(battle)
+    caller = DummyCaller()
+    caller.ndb.battle_instance = inst
+
+    cmd = cmd_mod.CmdBattleSwitch()
+    cmd.caller = caller
+    cmd.args = "2"
+    cmd.func()
+
+    restore_modules(orig_evennia, orig_battle)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert inst.queued == [2]

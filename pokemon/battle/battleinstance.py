@@ -893,6 +893,48 @@ class BattleSession:
         log_info("Saved queued move to room data")
         self.maybe_run_turn()
 
+    def queue_switch(self, slot: int) -> None:
+        """Queue a Pokémon switch and run the turn if ready."""
+        if not self.data or not self.battle:
+            return
+        pos = self.data.turndata.teamPositions("A").get("A1")
+        if not pos:
+            return
+        pos.declareSwitch(slot)
+        log_info(f"Queued switch to slot {slot}")
+        self.storage.set("data", self.logic.data.to_dict())
+        self.storage.set("state", self.logic.state.to_dict())
+        log_info("Saved queued switch to room data")
+        self.maybe_run_turn()
+
+    def queue_item(self, item_name: str, target: str = "B1") -> None:
+        """Queue an item use and run the turn if ready."""
+        if not self.data or not self.battle:
+            return
+        pos = self.data.turndata.teamPositions("A").get("A1")
+        if not pos:
+            return
+        pos.declareItem(item_name)
+        log_info(f"Queued item {item_name} targeting {target}")
+        self.storage.set("data", self.logic.data.to_dict())
+        self.storage.set("state", self.logic.state.to_dict())
+        log_info("Saved queued item to room data")
+        self.maybe_run_turn()
+
+    def queue_run(self) -> None:
+        """Queue a flee attempt and run the turn if ready."""
+        if not self.data or not self.battle:
+            return
+        pos = self.data.turndata.teamPositions("A").get("A1")
+        if not pos:
+            return
+        pos.declareRun()
+        log_info("Queued attempt to flee")
+        self.storage.set("data", self.logic.data.to_dict())
+        self.storage.set("state", self.logic.state.to_dict())
+        log_info("Saved flee attempt to room data")
+        self.maybe_run_turn()
+
     def is_turn_ready(self) -> bool:
         if self.data:
             if all(p.getAction() for p in self.data.turndata.positions.values()):

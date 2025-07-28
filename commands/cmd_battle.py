@@ -160,7 +160,12 @@ class CmdBattleAttack(Command):
             )
             participant.pending_action = action
             self.caller.msg(f"You prepare to use {move_obj.name}.")
-            if hasattr(inst, "maybe_run_turn"):
+            if hasattr(inst, "queue_move"):
+                try:
+                    inst.queue_move(move_obj.name)
+                except Exception:
+                    pass
+            elif hasattr(inst, "maybe_run_turn"):
                 try:
                     inst.maybe_run_turn()
                 except Exception:
@@ -248,7 +253,12 @@ class CmdBattleSwitch(Command):
                 action.target = poke
                 participant.pending_action = action
                 caller.msg(f"You prepare to switch to {poke.name}.")
-                if hasattr(inst, "maybe_run_turn"):
+                if hasattr(inst, "queue_switch"):
+                    try:
+                        inst.queue_switch(idx + 1)
+                    except Exception:
+                        pass
+                elif hasattr(inst, "maybe_run_turn"):
                     try:
                         inst.maybe_run_turn()
                     except Exception:
@@ -278,7 +288,12 @@ class CmdBattleSwitch(Command):
         action.target = pokemon
         participant.pending_action = action
         self.caller.msg(f"You prepare to switch to {pokemon.name}.")
-        if hasattr(inst, "maybe_run_turn"):
+        if hasattr(inst, "queue_switch"):
+            try:
+                inst.queue_switch(index + 1)
+            except Exception:
+                pass
+        elif hasattr(inst, "maybe_run_turn"):
             try:
                 inst.maybe_run_turn()
             except Exception:
@@ -326,7 +341,45 @@ class CmdBattleItem(Command):
         if hasattr(self.caller, "trainer"):
             self.caller.trainer.remove_item(item_name)
         self.caller.msg(f"You prepare to use {item_name}.")
-        if hasattr(inst, "maybe_run_turn"):
+        if hasattr(inst, "queue_item"):
+            try:
+                inst.queue_item(item_name)
+            except Exception:
+                pass
+        elif hasattr(inst, "maybe_run_turn"):
+            try:
+                inst.maybe_run_turn()
+            except Exception:
+                pass
+
+
+class CmdBattleFlee(Command):
+    """Attempt to flee from battle."""
+
+    key = "+battleflee"
+    locks = "cmd:all()"
+    help_category = "Pokemon/Battle"
+
+    def func(self):
+        if not getattr(self.caller.db, "battle_control", False):
+            self.caller.msg("|rWe aren't waiting for you to command right now.")
+            return
+        from pokemon.battle.battleinstance import BattleSession
+
+        inst = BattleSession.ensure_for_player(self.caller)
+        if not inst or not inst.battle:
+            self.caller.msg(NOT_IN_BATTLE_MSG)
+            return
+        participant = _get_participant(inst, self.caller)
+        action = Action(participant, ActionType.RUN, priority=9)
+        participant.pending_action = action
+        self.caller.msg("You attempt to flee!")
+        if hasattr(inst, "queue_run"):
+            try:
+                inst.queue_run()
+            except Exception:
+                pass
+        elif hasattr(inst, "maybe_run_turn"):
             try:
                 inst.maybe_run_turn()
             except Exception:

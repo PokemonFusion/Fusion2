@@ -133,6 +133,14 @@ class FakeInstance:
         self.ran = True
         self.battle.run_turn()
 
+class FakeQueueInstance(FakeInstance):
+    def __init__(self, battle):
+        super().__init__(battle)
+        self.queued = []
+
+    def queue_move(self, move_name, target="B1"):
+        self.queued.append((move_name, target))
+
 class DummyCaller:
     def __init__(self):
         self.msgs = []
@@ -330,4 +338,28 @@ def test_battleattack_uses_caller_participant():
     restore_modules(orig_evennia, orig_battle, orig_bi)
     assert isinstance(p2.pending_action, cmd_mod.Action)
     assert p1.pending_action is None
+
+
+def test_battleattack_persists_declare_via_queue_move():
+    orig_evennia, orig_battle, orig_bi = setup_modules()
+    cmd_mod = load_cmd_module()
+
+    poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle', 1)]))
+    player = FakeParticipant('Player', poke)
+    enemy = FakeParticipant('Enemy', poke)
+    battle = FakeBattle([player, enemy])
+    inst = FakeQueueInstance(battle)
+    caller = DummyCaller()
+    caller.ndb.battle_instance = inst
+    caller.db.battle_control = True
+
+    cmd = cmd_mod.CmdBattleAttack()
+    cmd.caller = caller
+    cmd.args = 'tackle'
+    cmd.parse()
+    cmd.func()
+
+    restore_modules(orig_evennia, orig_battle, orig_bi)
+    assert isinstance(player.pending_action, cmd_mod.Action)
+    assert inst.queued == [('tackle', 'B1')]
 
