@@ -246,11 +246,10 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     tera_type = models.CharField(max_length=20, blank=True)
     current_hp = models.PositiveIntegerField(default=0)
     total_exp = models.BigIntegerField(default=0)
-    learned_moves = models.ManyToManyField(Move, related_name="owners")
-    active_moves = models.ManyToManyField(
+    learned_moves = models.ManyToManyField(
         Move,
-        through="ActiveMoveslot",
-        related_name="active_on",
+        related_name="owners",
+        through="PokemonLearnedMove",
     )
     active_moveset = models.ForeignKey(
         "Moveset",
@@ -274,6 +273,11 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         from .stats import level_for_exp
 
         return level_for_exp(self.total_exp)
+
+    @property
+    def active_moves(self):
+        """Return active moves ordered by slot."""
+        return [s.move for s in self.activemoveslot_set.order_by("slot")]
 
     def set_level(self, level: int) -> None:
         """Set ``total_exp`` and persist the corresponding level."""
@@ -457,6 +461,27 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
             pass
 
 
+class PokemonLearnedMove(models.Model):
+    """Through table linking a Pokémon to a learned move."""
+
+    pokemon = models.ForeignKey(
+        "OwnedPokemon",
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
+    move = models.ForeignKey(Move, on_delete=models.CASCADE, db_index=True)
+
+    class Meta:
+        unique_together = ("pokemon", "move")
+        indexes = [
+            models.Index(fields=["pokemon"]),
+            models.Index(fields=["move"]),
+        ]
+
+    def __str__(self) -> str:  # pragma: no cover - simple repr
+        return f"{self.pokemon} knows {self.move}"
+
+
 class Moveset(models.Model):
     """A set of up to four moves belonging to a Pokémon."""
 
@@ -466,10 +491,25 @@ class Moveset(models.Model):
     index = models.PositiveSmallIntegerField()
 
     class Meta:
-        unique_together = ("pokemon", "index")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pokemon", "index"],
+                name="unique_moveset_index",
+            ),
+            models.CheckConstraint(
+                check=models.Q(index__gte=0, index__lte=3),
+                name="moveset_index_range",
+            ),
+        ]
 
     def __str__(self) -> str:  # pragma: no cover - simple repr
         return f"{self.pokemon} set {self.index}"
+
+    def clean(self):
+        """Validate moveset count per Pokémon."""
+        super().clean()
+        if self.pokemon and self.pokemon.movesets.exclude(pk=self.pk).count() >= 4:
+            raise ValidationError("A Pokémon may only have four movesets.")
 
 
 class MovesetSlot(models.Model):
@@ -482,7 +522,16 @@ class MovesetSlot(models.Model):
     slot = models.PositiveSmallIntegerField()
 
     class Meta:
-        unique_together = ("moveset", "slot")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["moveset", "slot"],
+                name="unique_moveset_slot",
+            ),
+            models.CheckConstraint(
+                check=models.Q(slot__gte=1, slot__lte=4),
+                name="movesetslot_slot_range",
+            ),
+        ]
 
     def __str__(self) -> str:  # pragma: no cover - simple repr
         return f"{self.moveset} [{self.slot}] -> {self.move}"

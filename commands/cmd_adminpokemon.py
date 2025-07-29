@@ -108,7 +108,7 @@ class CmdPokemonInfo(Command):
 
         data = model_to_dict(
             pokemon,
-            exclude=["learned_moves", "active_moves", "active_moveset"],
+            exclude=["learned_moves", "active_moveset"],
         )
         lines = [f"Data for {pokemon.name} ({pokemon.unique_id}):"]
         for key, val in data.items():
@@ -125,7 +125,7 @@ class CmdPokemonInfo(Command):
             move_str = ", ".join(moves) if moves else "(empty)"
             lines.append(f"  {ms.index + 1}: {move_str}{marker}")
 
-        active_moves = [s.move.name for s in pokemon.activemoveslot_set.order_by("slot")]
+        active_moves = [m.name for m in pokemon.active_moves]
         if active_moves:
             lines.append("Active moves: " + ", ".join(active_moves))
         else:
