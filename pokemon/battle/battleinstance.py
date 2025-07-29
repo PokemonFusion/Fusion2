@@ -701,6 +701,9 @@ class BattleSession:
             room=self.room,
         )
 
+        if self.battle and hasattr(self.battle, "start_turn"):
+            self.battle.start_turn()
+
         self.prompt_next_turn()
         battle_handler.register(self)
         log_info(f"PvP battle {self.battle_id} registered with handler")
@@ -835,6 +838,9 @@ class BattleSession:
             f"{getattr(self.captainA, 'key', 'Player')} has entered battle!",
             room=self.room,
         )
+
+        if self.battle and hasattr(self.battle, "start_turn"):
+            self.battle.start_turn()
 
         self.prompt_next_turn()
         battle_handler.register(self)
