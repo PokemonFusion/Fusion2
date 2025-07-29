@@ -237,8 +237,8 @@ def test_trainer_ids_saved_and_restored():
     finally:
         bi_mod.search_object = orig_search
 
-    assert restored.player is p1
-    assert restored.opponent is p2
+    assert restored.captainA is p1
+    assert restored.captainB is p2
 
 
 def test_pokemon_serialization_minimal():

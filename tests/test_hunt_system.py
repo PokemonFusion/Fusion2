@@ -25,8 +25,8 @@ if "pokemon.battle.battleinstance" not in sys.modules:
 
     class BattleSession:
         def __init__(self, player, opponent=None):
-            self.player = player
-
+            self.captainA = player
+        
         def start(self):
             pass
 
