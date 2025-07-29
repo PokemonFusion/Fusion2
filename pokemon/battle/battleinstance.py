@@ -232,13 +232,13 @@ class BattleLogic:
         data = BattleData.from_dict(info.get("data", {}))
         state = BattleState.from_dict(info.get("state", {}))
 
-        team_a = data.teams.get("A")
-        team_b = data.teams.get("B")
+        teamA = data.teams.get("A")
+        teamB = data.teams.get("B")
         part_a = BattleParticipant(
-            team_a.trainer, [p for p in team_a.returnlist() if p], is_ai=False
+            teamA.trainer, [p for p in teamA.returnlist() if p], is_ai=False
         )
         part_b = BattleParticipant(
-            team_b.trainer, [p for p in team_b.returnlist() if p]
+            teamB.trainer, [p for p in teamB.returnlist() if p]
         )
         part_b.is_ai = state.ai_type != "Player"
         pos_a = data.turndata.teamPositions("A").get("A1")
@@ -260,25 +260,27 @@ class BattleSession:
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
-        player = getattr(self.player, "key", getattr(self.player, "id", "?"))
+        player = getattr(self.captainA, "key", getattr(self.captainA, "id", "?"))
         opp = (
-            getattr(self.opponent, "key", getattr(self.opponent, "id", "?"))
-            if self.opponent
+            getattr(self.captainB, "key", getattr(self.captainB, "id", "?"))
+            if self.captainB
             else None
         )
-        return f"<BattleSession id={self.battle_id} player={player} opponent={opp}>"
+        return (
+            f"<BattleSession id={self.battle_id} captainA={player} captainB={opp}>"
+        )
 
     def __init__(self, player, opponent: Optional[object] = None):
         log_info(
             f"Initializing BattleSession {getattr(player, 'id', '?')} between {getattr(player, 'key', player)} and {getattr(opponent, 'key', opponent) if opponent else '<wild>'}"
         )
-        self.team_a: List[object] = [player]
-        self.team_b: List[object] = [opponent] if opponent else []
+        self.teamA: List[object] = [player]
+        self.teamB: List[object] = [opponent] if opponent else []
         self.room = getattr(player, "location", None)
         if self.room is None:
             raise ValueError("BattleSession requires the player to have a location")
 
-        self.trainers: List[object] = self.team_a + self.team_b
+        self.trainers: List[object] = self.teamA + self.teamB
         self.observers: set[object] = set()
         self.turn_state: dict = {}
 
@@ -319,29 +321,29 @@ class BattleSession:
     # ------------------------------------------------------------
 
     @property
-    def player(self):
-        return self.team_a[0] if self.team_a else None
+    def captainA(self):
+        return self.teamA[0] if self.teamA else None
 
-    @player.setter
-    def player(self, value) -> None:
-        if self.team_a:
-            self.team_a[0] = value
+    @captainA.setter
+    def captainA(self, value) -> None:
+        if self.teamA:
+            self.teamA[0] = value
         elif value is not None:
-            self.team_a.append(value)
+            self.teamA.append(value)
 
     @property
-    def opponent(self):
-        return self.team_b[0] if self.team_b else None
+    def captainB(self):
+        return self.teamB[0] if self.teamB else None
 
-    @opponent.setter
-    def opponent(self, value) -> None:
-        if self.team_b:
+    @captainB.setter
+    def captainB(self, value) -> None:
+        if self.teamB:
             if value is None:
-                self.team_b = []
+                self.teamB = []
             else:
-                self.team_b[0] = value
+                self.teamB[0] = value
         elif value is not None:
-            self.team_b.append(value)
+            self.teamB.append(value)
 
     @property
     def data(self) -> BattleData | None:
@@ -415,7 +417,7 @@ class BattleSession:
     def msg(self, text: str) -> None:
         """Send `text` to trainers and observers with a battle prefix."""
         if not self.trainers:
-            trainers = [t for t in (self.player, self.opponent) if t]
+            trainers = [t for t in (self.captainA, self.captainB) if t]
         else:
             trainers = self.trainers
         names = [getattr(t, "key", str(t)) for t in trainers]
@@ -449,8 +451,8 @@ class BattleSession:
             data = data or logic_info.get("data")
             state = state or logic_info.get("state")
         obj = cls.__new__(cls)
-        obj.team_a = []
-        obj.team_b = []
+        obj.teamA = []
+        obj.teamB = []
         obj.room = room
         obj.battle_id = battle_id
         obj.storage = storage
@@ -463,10 +465,10 @@ class BattleSession:
         log_info("Restored logic and temp Pokemon ids")
 
         trainer_info = storage.get("trainers", {}) or {}
-        team_a = trainer_info.get("teamA", [])
-        team_b = trainer_info.get("teamB", [])
-        player_id = team_a[0] if team_a else None
-        opponent_id = team_b[0] if team_b else None
+        teamA = trainer_info.get("teamA", [])
+        teamB = trainer_info.get("teamB", [])
+        player_id = teamA[0] if teamA else None
+        opponent_id = teamB[0] if teamB else None
 
         watcher_data = getattr(obj.state, "watchers", None) or set()
         if player_id:
@@ -476,49 +478,49 @@ class BattleSession:
         obj.state.watchers = watcher_data
 
         team_a_objs = []
-        for tid in team_a:
+        for tid in teamA:
             targets = search_object(f"#{tid}")
             if targets:
                 member = targets[0]
                 team_a_objs.append(member)
-                if obj.player is None:
-                    obj.player = member
+                if obj.captainA is None:
+                    obj.captainA = member
         team_b_objs = []
-        for tid in team_b:
+        for tid in teamB:
             targets = search_object(f"#{tid}")
             if targets:
                 member = targets[0]
                 team_b_objs.append(member)
-                if obj.opponent is None:
-                    obj.opponent = member
-        obj.team_a = team_a_objs
-        obj.team_b = team_b_objs
+                if obj.captainB is None:
+                    obj.captainB = member
+        obj.teamA = team_a_objs
+        obj.teamB = team_b_objs
 
         # expose battle info on trainers for the interface
         try:
-            if obj.player:
-                obj.player.team = [p for p in obj.logic.data.teams["A"].returnlist() if p]
+            if obj.captainA:
+                obj.captainA.team = [p for p in obj.logic.data.teams["A"].returnlist() if p]
                 part_a = obj.logic.battle.participants[0]
                 if part_a.active:
-                    obj.player.active_pokemon = part_a.active[0]
-            if obj.opponent:
-                obj.opponent.team = [p for p in obj.logic.data.teams["B"].returnlist() if p]
+                    obj.captainA.active_pokemon = part_a.active[0]
+            if obj.captainB:
+                obj.captainB.team = [p for p in obj.logic.data.teams["B"].returnlist() if p]
                 if len(obj.logic.battle.participants) > 1:
                     part_b = obj.logic.battle.participants[1]
                     if part_b.active:
-                        obj.opponent.active_pokemon = part_b.active[0]
+                        obj.captainB.active_pokemon = part_b.active[0]
         except Exception:
             pass
 
         watcher_data = getattr(obj.state, "watchers", None) or set()
         obj.watchers = set(watcher_data)
-        obj.watchers.update(team_a)
-        obj.watchers.update(team_b)
+        obj.watchers.update(teamA)
+        obj.watchers.update(teamB)
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
-            if wid in team_a and team_a_objs:
+            if wid in teamA and team_a_objs:
                 watcher = next((w for w in team_a_objs if getattr(w, 'id', 0) == wid), None)
-            elif wid in team_b and team_b_objs:
+            elif wid in teamB and team_b_objs:
                 watcher = next((w for w in team_b_objs if getattr(w, 'id', 0) == wid), None)
             else:
                 targets = search_object(f"#{wid}")
@@ -529,30 +531,30 @@ class BattleSession:
             watcher.ndb.battle_instance = obj
             if hasattr(watcher, "db"):
                 watcher.db.battle_id = battle_id
-            if wid in team_a:
-                if obj.player is None:
-                    obj.player = watcher
+            if wid in teamA:
+                if obj.captainA is None:
+                    obj.captainA = watcher
                 if watcher not in team_a_objs:
                     team_a_objs.append(watcher)
                 obj.trainers.append(watcher)
-            elif wid in team_b:
-                if obj.opponent is None:
-                    obj.opponent = watcher
+            elif wid in teamB:
+                if obj.captainB is None:
+                    obj.captainB = watcher
                 if watcher not in team_b_objs:
                     team_b_objs.append(watcher)
                 obj.trainers.append(watcher)
             else:
                 obj.observers.add(watcher)
-        if obj.player or obj.opponent:
+        if obj.captainA or obj.captainB:
             obj.trainers = team_a_objs + team_b_objs
         else:
             obj.trainers = []
-        obj.team_a = team_a_objs
-        obj.team_b = team_b_objs
+        obj.teamA = team_a_objs
+        obj.teamB = team_b_objs
 
         log_info(
-            f"Restore complete: player={getattr(obj.player, 'key', obj.player)} "
-            f"opponent={getattr(obj.opponent, 'key', obj.opponent) if obj.opponent else None} "
+            f"Restore complete: player={getattr(obj.captainA, 'key', obj.captainA)} "
+            f"opponent={getattr(obj.captainB, 'key', obj.captainB) if obj.captainB else None} "
             f"observers={len(obj.observers)}"
         )
 
@@ -584,21 +586,21 @@ class BattleSession:
             f"Starting battle {self.battle_id} in room #{getattr(self.room, 'id', '?')}"
         )
         # make sure this battle's ID is tracked on the room
-        room = self.player.location
+        room = self.captainA.location
         battle_id = self.battle_id
         existing_ids = getattr(room.db, "battles", None) or []
         if battle_id not in existing_ids:
             existing_ids.append(battle_id)
             room.db.battles = existing_ids
 
-        if self.opponent:
+        if self.captainB:
             log_info("Opponent present, starting PvP")
             self.start_pvp()
             return
 
-        origin = getattr(self.player, "location", None)
+        origin = getattr(self.captainA, "location", None)
         opponent_poke, opponent_name, battle_type = self._select_opponent()
-        player_pokemon = self._prepare_player_party(self.player)
+        player_pokemon = self._prepare_player_party(self.captainA)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
         self._init_battle_state(
             origin, player_pokemon, opponent_poke, opponent_name, battle_type
@@ -607,31 +609,31 @@ class BattleSession:
 
     def start_pvp(self) -> None:
         """Start a battle between two players."""
-        if not self.opponent:
+        if not self.captainB:
             return
 
-        origin = getattr(self.player, "location", None)
+        origin = getattr(self.captainA, "location", None)
 
         log_info(
-            f"Initializing PvP battle {self.battle_id} between {self.player.key} and {self.opponent.key}"
+            f"Initializing PvP battle {self.battle_id} between {self.captainA.key} and {self.captainB.key}"
         )
 
-        player_pokemon = self._prepare_player_party(self.player, full_heal=True)
+        player_pokemon = self._prepare_player_party(self.captainA, full_heal=True)
 
-        opp_pokemon = self._prepare_player_party(self.opponent)
+        opp_pokemon = self._prepare_player_party(self.captainB)
 
         try:
             player_participant = BattleParticipant(
-                self.player.key, player_pokemon, player=self.player
+                self.captainA.key, player_pokemon, player=self.captainA
             )
         except TypeError:
-            player_participant = BattleParticipant(self.player.key, player_pokemon)
+            player_participant = BattleParticipant(self.captainA.key, player_pokemon)
         try:
             opponent_participant = BattleParticipant(
-                self.opponent.key, opp_pokemon, player=self.opponent
+                self.captainB.key, opp_pokemon, player=self.captainB
             )
         except TypeError:
-            opponent_participant = BattleParticipant(self.opponent.key, opp_pokemon)
+            opponent_participant = BattleParticipant(self.captainB.key, opp_pokemon)
 
         if player_participant.pokemons:
             player_participant.active = [player_participant.pokemons[0]]
@@ -640,31 +642,31 @@ class BattleSession:
 
         battle = Battle(BattleType.PVP, [player_participant, opponent_participant])
 
-        team_a = Team(trainer=self.player.key, pokemon_list=player_pokemon)
-        team_b = Team(trainer=self.opponent.key, pokemon_list=opp_pokemon)
-        data = BattleData(team_a, team_b)
+        teamA = Team(trainer=self.captainA.key, pokemon_list=player_pokemon)
+        teamB = Team(trainer=self.captainB.key, pokemon_list=opp_pokemon)
+        data = BattleData(teamA, teamB)
 
         state = BattleState.from_battle_data(data, ai_type=BattleType.PVP.name)
         state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
         state.pokemon_control = {}
         for poke in player_pokemon:
             if getattr(poke, "model_id", None):
-                state.pokemon_control[str(poke.model_id)] = str(self.player.id)
+                state.pokemon_control[str(poke.model_id)] = str(self.captainA.id)
         for poke in opp_pokemon:
-            if getattr(poke, "model_id", None) and self.opponent:
-                state.pokemon_control[str(poke.model_id)] = str(self.opponent.id)
+            if getattr(poke, "model_id", None) and self.captainB:
+                state.pokemon_control[str(poke.model_id)] = str(self.captainB.id)
 
         self.logic = BattleLogic(battle, data, state)
         log_info("PvP battle objects created")
 
         # expose battle info on trainers for the interface
         try:
-            self.player.team = player_pokemon
-            self.opponent.team = opp_pokemon
+            self.captainA.team = player_pokemon
+            self.captainB.team = opp_pokemon
             if player_participant.active:
-                self.player.active_pokemon = player_participant.active[0]
+                self.captainA.active_pokemon = player_participant.active[0]
             if opponent_participant.active:
-                self.opponent.active_pokemon = opponent_participant.active[0]
+                self.captainB.active_pokemon = opponent_participant.active[0]
         except Exception:
             pass
 
@@ -673,29 +675,29 @@ class BattleSession:
         self.storage.set("state", self.logic.state.to_dict())
         self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
         trainer_ids = {}
-        if hasattr(self.player, "id"):
-            trainer_ids.setdefault("teamA", []).append(self.player.id)
-        if self.opponent and hasattr(self.opponent, "id"):
-            trainer_ids.setdefault("teamB", []).append(self.opponent.id)
+        if hasattr(self.captainA, "id"):
+            trainer_ids.setdefault("teamA", []).append(self.captainA.id)
+        if self.captainB and hasattr(self.captainB, "id"):
+            trainer_ids.setdefault("teamB", []).append(self.captainB.id)
         if trainer_ids:
             self.storage.set("trainers", trainer_ids)
         log_info("Saved PvP battle data to room")
 
-        add_watcher(self.state, self.player)
-        add_watcher(self.state, self.opponent)
-        self.watchers.update({self.player.id, self.opponent.id})
-        self.player.ndb.battle_instance = self
-        self.opponent.ndb.battle_instance = self
-        if hasattr(self.player, "db"):
-            self.player.db.battle_id = self.battle_id
-        if hasattr(self.opponent, "db"):
-            self.opponent.db.battle_id = self.battle_id
+        add_watcher(self.state, self.captainA)
+        add_watcher(self.state, self.captainB)
+        self.watchers.update({self.captainA.id, self.captainB.id})
+        self.captainA.ndb.battle_instance = self
+        self.captainB.ndb.battle_instance = self
+        if hasattr(self.captainA, "db"):
+            self.captainA.db.battle_id = self.battle_id
+        if hasattr(self.captainB, "db"):
+            self.captainB.db.battle_id = self.battle_id
         self.msg("PVP battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         log_info(f"PvP battle {self.battle_id} started")
         notify_watchers(
             self.state,
-            f"{self.player.key} and {self.opponent.key} begin a battle!",
+            f"{self.captainA.key} and {self.captainB.key} begin a battle!",
             room=self.room,
         )
 
@@ -711,7 +713,7 @@ class BattleSession:
         opponent_kind = random.choice(["pokemon", "trainer"])
         log_info(f"Selecting opponent: {opponent_kind}")
         if opponent_kind == "pokemon":
-            opponent_poke = generate_wild_pokemon(self.player.location)
+            opponent_poke = generate_wild_pokemon(self.captainA.location)
             if getattr(opponent_poke, "model_id", None):
                 self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.WILD
@@ -762,16 +764,16 @@ class BattleSession:
         battle_type: BattleType,
     ) -> None:
         """Create battle objects and state."""
-        log_info(f"Initializing battle state for {self.player.key} vs {opponent_name}")
+        log_info(f"Initializing battle state for {self.captainA.key} vs {opponent_name}")
         opponent_participant = BattleParticipant(
             opponent_name, [opponent_poke], is_ai=True
         )
         try:
             player_participant = BattleParticipant(
-                self.player.key, player_pokemon, player=self.player
+                self.captainA.key, player_pokemon, player=self.captainA
             )
         except TypeError:
-            player_participant = BattleParticipant(self.player.key, player_pokemon)
+            player_participant = BattleParticipant(self.captainA.key, player_pokemon)
 
         if player_participant.pokemons:
             player_participant.active = [player_participant.pokemons[0]]
@@ -780,7 +782,7 @@ class BattleSession:
 
         battle = Battle(battle_type, [player_participant, opponent_participant])
 
-        player_team = Team(trainer=self.player.key, pokemon_list=player_pokemon)
+        player_team = Team(trainer=self.captainA.key, pokemon_list=player_pokemon)
         opponent_team = Team(trainer=opponent_name, pokemon_list=[opponent_poke])
         data = BattleData(player_team, opponent_team)
 
@@ -789,18 +791,18 @@ class BattleSession:
         state.pokemon_control = {}
         for poke in player_pokemon:
             if getattr(poke, "model_id", None):
-                state.pokemon_control[str(poke.model_id)] = str(self.player.id)
-        if getattr(opponent_poke, "model_id", None) and self.opponent:
-            state.pokemon_control[str(opponent_poke.model_id)] = str(self.opponent.id)
+                state.pokemon_control[str(poke.model_id)] = str(self.captainA.id)
+        if getattr(opponent_poke, "model_id", None) and self.captainB:
+            state.pokemon_control[str(opponent_poke.model_id)] = str(self.captainB.id)
 
         self.logic = BattleLogic(battle, data, state)
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
 
         # expose battle info on trainers for the interface
         try:
-            self.player.team = player_pokemon
+            self.captainA.team = player_pokemon
             if player_participant.active:
-                self.player.active_pokemon = player_participant.active[0]
+                self.captainA.active_pokemon = player_participant.active[0]
         except Exception:
             pass
 
@@ -809,10 +811,10 @@ class BattleSession:
         self.storage.set("state", self.logic.state.to_dict())
         self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
         trainer_ids = {}
-        if hasattr(self.player, "id"):
-            trainer_ids.setdefault("teamA", []).append(self.player.id)
-        if self.opponent and hasattr(self.opponent, "id"):
-            trainer_ids.setdefault("teamB", []).append(self.opponent.id)
+        if hasattr(self.captainA, "id"):
+            trainer_ids.setdefault("teamA", []).append(self.captainA.id)
+        if self.captainB and hasattr(self.captainB, "id"):
+            trainer_ids.setdefault("teamB", []).append(self.captainB.id)
         if trainer_ids:
             self.storage.set("trainers", trainer_ids)
         log_info(f"Saved battle data for id {self.battle_id}")
@@ -820,17 +822,17 @@ class BattleSession:
     def _setup_battle_room(self) -> None:
         """Move players to the battle room and notify watchers."""
         log_info(f"Setting up battle room for {self.battle_id}")
-        add_watcher(self.state, self.player)
-        if hasattr(self.player, "id"):
-            self.watchers.add(self.player.id)
-        self.player.ndb.battle_instance = self
-        if hasattr(self.player, "db"):
-            self.player.db.battle_id = self.battle_id
+        add_watcher(self.state, self.captainA)
+        if hasattr(self.captainA, "id"):
+            self.watchers.add(self.captainA.id)
+        self.captainA.ndb.battle_instance = self
+        if hasattr(self.captainA, "db"):
+            self.captainA.db.battle_id = self.battle_id
         self.msg("Battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         notify_watchers(
             self.state,
-            f"{getattr(self.player, 'key', 'Player')} has entered battle!",
+            f"{getattr(self.captainA, 'key', 'Player')} has entered battle!",
             room=self.room,
         )
 
@@ -874,7 +876,7 @@ class BattleSession:
                     self.room.db.battles = battles
                 else:
                     delattr(self.room.db, "battles")
-        for trainer in list(self.team_a) + list(self.team_b):
+        for trainer in list(self.teamA) + list(self.teamB):
             if getattr(getattr(trainer, "ndb", None), "battle_instance", None):
                 del trainer.ndb.battle_instance
             if hasattr(trainer, "db") and hasattr(trainer.db, "battle_id"):
@@ -896,9 +898,9 @@ class BattleSession:
     def prompt_next_turn(self) -> None:
         """Prompt the player to issue a command for the next turn."""
         self._set_player_control(True)
-        if self.player and self.state and self.opponent is not None:
+        if self.captainA and self.state and self.captainB is not None:
             try:
-                iface = display_battle_interface(self.player, self.opponent, self.state)
+                iface = display_battle_interface(self.captainA, self.captainB, self.state)
                 self.msg(iface)
             except Exception:
                 log_warn("Failed to display battle interface", exc_info=True)
