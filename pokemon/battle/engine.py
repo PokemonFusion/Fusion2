@@ -780,6 +780,24 @@ class Battle:
             if move.pp > 0:
                 move.pp -= 1
             return
+
+        slots = getattr(pokemon, "activemoveslot_set", None)
+        if slots is not None:
+            try:
+                slot_iter = slots.all()
+            except Exception:  # pragma: no cover - fallback for stubs
+                slot_iter = slots
+            for slot in slot_iter:
+                if getattr(getattr(slot, "move", None), "name", None) == move.name:
+                    if getattr(slot, "current_pp", None) and slot.current_pp > 0:
+                        slot.current_pp -= 1
+                        if hasattr(slot, "save"):
+                            try:
+                                slot.save()
+                            except Exception:
+                                pass
+                    return
+
         moves = getattr(pokemon, "moves", [])
         for m in moves:
             if getattr(m, "name", None) == move.name and hasattr(m, "pp"):
@@ -793,6 +811,35 @@ class Battle:
             return
 
         user = action.actor.active[0]
+        # Ensure we have full move data loaded from the dex
+        dex_move = MOVEDEX.get(_normalize_key(action.move.name))
+        if dex_move:
+            if not action.move.raw:
+                action.move.raw = dict(dex_move.raw)
+            if action.move.power in (None, 0) and dex_move.power not in (None, 0):
+                action.move.power = dex_move.power
+            if action.move.accuracy is None:
+                action.move.accuracy = dex_move.accuracy
+            if action.move.type is None:
+                action.move.type = dex_move.type
+            if action.move.priority == 0:
+                action.move.priority = dex_move.raw.get("priority", 0)
+
+        slots = getattr(user, "activemoveslot_set", None)
+        if slots is not None:
+            try:
+                slot_iter = slots.all()
+            except Exception:  # pragma: no cover - fallback for stubs
+                slot_iter = slots
+            for slot in slot_iter:
+                if getattr(getattr(slot, "move", None), "name", "").lower() == action.move.name.lower():
+                    current = getattr(slot, "current_pp", None)
+                    if current is not None:
+                        if current <= 0:
+                            return
+                        if action.move.pp is None:
+                            action.move.pp = current
+                    break
         if self.status_prevents_move(user):
             return
 
