@@ -118,6 +118,7 @@ class Pokemon:
         ability = data.get("ability")
         extra_data = data.get("data")
 
+        slots = None
         if model_id:
             try:
                 from ..models import OwnedPokemon
@@ -139,7 +140,17 @@ class Pokemon:
                         except Exception:
                             max_hp = getattr(poke, "current_hp", None)
                     if not moves:
-                        if getattr(poke, "active_moveset", None):
+                        slots = getattr(poke, "activemoveslot_set", None)
+                        if slots is not None:
+                            try:
+                                iterable = slots.all().order_by("slot")
+                            except Exception:
+                                try:
+                                    iterable = slots.order_by("slot")
+                                except Exception:
+                                    iterable = slots
+                            move_names = [getattr(s.move, "name", "") for s in iterable][:4]
+                        elif getattr(poke, "active_moveset", None):
                             move_names = [
                                 s.move.name for s in poke.active_moveset.slots.order_by("slot")
                             ][:4]
@@ -161,6 +172,8 @@ class Pokemon:
             data=extra_data,
             model_id=model_id,
         )
+        if slots is not None:
+            obj.activemoveslot_set = slots
         obj.tempvals = data.get("tempvals", {})
         obj.boosts = data.get(
             "boosts",
