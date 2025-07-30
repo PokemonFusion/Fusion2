@@ -1552,6 +1552,21 @@ class Battle:
                         except Exception:
                             pass
 
+    def lock_choices(self) -> None:
+        """Apply locked-in transformations like Mega Evolution or Terastallization."""
+
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for poke in part.active:
+                if getattr(poke, "pending_mega", False):
+                    self.perform_mega_evolution(poke)
+                    poke.pending_mega = False
+                tera = getattr(poke, "pending_tera", None)
+                if tera:
+                    self.perform_tera_change(poke, tera)
+                    poke.pending_tera = None
+
     def select_actions(self) -> List[Action]:
         actions: List[Action] = []
         for part in self.participants:
@@ -1959,12 +1974,25 @@ class Battle:
 
     def run_turn(self) -> None:
         battle_logger.info("Run turn %s begin", self.turn_count + 1)
+        self.dispatcher.dispatch("turn_start", battle=self)
         self.start_turn()
         battle_logger.info("After start_turn")
         self.before_turn()
         battle_logger.info("After before_turn")
-        self.run_action()
-        battle_logger.info("After run_action")
+        self.dispatcher.dispatch("lock_choices", battle=self)
+        self.lock_choices()
+        battle_logger.info("After lock_choices")
+        self.dispatcher.dispatch("switch", battle=self)
+        self.run_switch()
+        self.run_after_switch()
+        battle_logger.info("After switch")
+        self.dispatcher.dispatch("move", battle=self)
+        self.run_move()
+        self.run_faint()
+        battle_logger.info("After move")
+        self.dispatcher.dispatch("residual", battle=self)
+        self.residual()
+        battle_logger.info("After residual")
         self.end_turn()
         battle_logger.info("Run turn %s end", self.turn_count)
 
