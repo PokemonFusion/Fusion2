@@ -683,6 +683,8 @@ class Battle:
     def run_switch(self) -> None:
         """Handle Pokémon switches before moves are executed."""
 
+        battle_logger.info("Checking for Pokémon switches")
+
         for part in self.participants:
             if part.has_lost:
                 continue
@@ -752,6 +754,8 @@ class Battle:
     def run_after_switch(self) -> None:
         """Trigger simple events after Pokémon have switched in."""
 
+        battle_logger.info("Running after-switch events")
+
         for part in self.participants:
             if part.has_lost:
                 continue
@@ -807,6 +811,11 @@ class Battle:
 
     def use_move(self, action: Action) -> None:
         """Attempt to use the chosen move applying simple failure rules."""
+        battle_logger.info(
+            "%s uses %s",
+            getattr(action.actor, "name", "?"),
+            getattr(action.move, "name", "?"),
+        )
         if not action.move or not action.actor.active:
             return
 
@@ -1020,6 +1029,7 @@ class Battle:
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
+        battle_logger.info("Executing moves")
         actions = self.select_actions()
         actions = self.order_actions(actions)
 
@@ -1031,6 +1041,8 @@ class Battle:
 
     def run_faint(self) -> None:
         """Handle fainted Pokémon and mark participants as losing if needed."""
+
+        battle_logger.info("Checking for fainted Pokémon")
 
         for part in self.participants:
             if part.has_lost:
@@ -1077,6 +1089,8 @@ class Battle:
 
     def residual(self) -> None:
         """Process residual effects and handle end-of-turn fainting."""
+
+        battle_logger.info("Processing residual effects")
 
         # Apply residual damage from status conditions
         for part in self.participants:
@@ -1206,6 +1220,8 @@ class Battle:
     def run_action(self) -> None:
         """Main action runner modeled on Showdown's `runAction`."""
 
+        battle_logger.info("Running actions")
+
         self.run_switch()
         self.run_after_switch()
         self.run_move()
@@ -1218,6 +1234,7 @@ class Battle:
     def start_turn(self) -> None:
         """Reset temporary flags or display status."""
         self.turn_count += 1
+        battle_logger.info("Starting turn %s", self.turn_count)
         if self.turn_count == 1:
             for part in self.participants:
                 for poke in part.active:
@@ -1228,6 +1245,7 @@ class Battle:
 
     def before_turn(self) -> None:
         """Run simple BeforeTurn events for all active Pokémon."""
+        battle_logger.info("Processing before-turn events")
         try:
             from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
         except Exception:
@@ -1672,6 +1690,7 @@ class Battle:
         setattr(pokemon, "tera_type", tera_type)
 
     def end_turn(self) -> None:
+        battle_logger.info("Ending turn %s", self.turn_count)
         for part in self.participants:
             if all(getattr(p, "hp", 1) <= 0 for p in part.pokemons):
                 part.has_lost = True
@@ -1682,6 +1701,7 @@ class Battle:
         self.check_victory()
 
     def run_turn(self) -> None:
+        battle_logger.info("Running battle turn")
         self.start_turn()
         self.before_turn()
         self.run_action()

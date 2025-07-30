@@ -983,13 +983,26 @@ class BattleSession:
             if all(p.getAction() for p in self.data.turndata.positions.values()):
                 return True
         if self.battle and getattr(self.battle, "participants", None):
-            return all(getattr(p, "pending_action", None) for p in self.battle.participants)
+            ready = all(getattr(p, "pending_action", None) for p in self.battle.participants)
+            if not ready:
+                waiting = [
+                    getattr(p, "name", str(i))
+                    for i, p in enumerate(self.battle.participants)
+                    if not getattr(p, "pending_action", None)
+                ]
+                if waiting:
+                    log_info(
+                        f"Waiting for actions from: {', '.join(waiting)}"
+                    )
+            return ready
         return False
 
     def maybe_run_turn(self) -> None:
         if self.is_turn_ready():
             log_info(f"Turn ready for battle {self.battle_id}")
             self.run_turn()
+        else:
+            log_info(f"Turn not ready for battle {self.battle_id}")
 
     # ------------------------------------------------------------------
     # Watcher helpers
