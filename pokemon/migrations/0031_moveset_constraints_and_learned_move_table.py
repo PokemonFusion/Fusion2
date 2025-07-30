@@ -58,7 +58,12 @@ class Migration(migrations.Migration):
             ],
             options={
                 "unique_together": {("pokemon", "move")},
-                "indexes": [models.Index(fields=["pokemon"]), models.Index(fields=["move"])],
+                "indexes": [
+                    models.Index(
+                        fields=["pokemon"], name="pokemonlearnedmove_pokemon_idx"
+                    ),
+                    models.Index(fields=["move"], name="pokemonlearnedmove_move_idx"),
+                ],
             },
         ),
         migrations.AlterField(
