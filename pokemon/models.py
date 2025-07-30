@@ -474,8 +474,10 @@ class PokemonLearnedMove(models.Model):
     class Meta:
         unique_together = ("pokemon", "move")
         indexes = [
-            models.Index(fields=["pokemon"]),
-            models.Index(fields=["move"]),
+            models.Index(
+                fields=["pokemon"], name="pokemonlearnedmove_pokemon_idx"
+            ),
+            models.Index(fields=["move"], name="pokemonlearnedmove_move_idx"),
         ]
 
     def __str__(self) -> str:  # pragma: no cover - simple repr
