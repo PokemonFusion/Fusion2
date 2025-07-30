@@ -236,12 +236,13 @@ class Action:
     priority: int = 0
     priority_mod: float = 0.0
     speed: int = 0
+    pokemon: Optional[Any] = None
 
 
 class BattleParticipant:
     """Represents one side of a battle."""
 
-    def __init__(self, name: str, pokemons: List, is_ai: bool = False, player=None):
+    def __init__(self, name: str, pokemons: List, is_ai: bool = False, player=None, max_active: int = 1):
         self.name = name
         self.pokemons = pokemons
         self.active: List = []
@@ -250,6 +251,7 @@ class BattleParticipant:
         self.pending_action: Optional[Action] = None
         self.side = BattleSide()
         self.player = player
+        self.max_active = max_active
         for poke in self.pokemons:
             if poke is not None:
                 setattr(poke, "side", self.side)
@@ -340,7 +342,88 @@ class BattleParticipant:
         target = opponent.active[0]
         priority = getattr(move, "priority", 0)
         battle_logger.info("%s chooses %s", self.name, move.name)
-        return Action(self, ActionType.MOVE, target, move, priority)
+        return Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke)
+
+    def choose_actions(self, battle: "Battle") -> List[Action]:
+        """Return a list of actions for all active Pokémon."""
+        if self.pending_action:
+            action = self.pending_action
+            self.pending_action = None
+            if isinstance(action, list):
+                return action
+            return [action]
+
+        if not self.is_ai:
+            return []
+
+        actions: List[Action] = []
+        for active_poke in self.active:
+            moves = getattr(active_poke, "moves", [])
+            move_data = moves[0] if moves else Move(name="Flail")
+            move_entry = MOVEDEX.get(_normalize_key(move_data.name))
+            on_hit_func = None
+            on_try_func = None
+            base_power_cb = None
+            if move_entry:
+                on_hit = move_entry.raw.get("onHit")
+                if isinstance(on_hit, str):
+                    try:
+                        cls_name, func_name = on_hit.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst = cls()
+                            candidate = getattr(inst, func_name, None)
+                            if callable(candidate):
+                                on_hit_func = candidate
+                    except Exception:
+                        on_hit_func = None
+
+                on_try = move_entry.raw.get("onTry")
+                if isinstance(on_try, str):
+                    try:
+                        cls_name, func_name = on_try.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst = cls()
+                            cand = getattr(inst, func_name, None)
+                            if callable(cand):
+                                on_try_func = cand
+                    except Exception:
+                        on_try_func = None
+                base_cb = move_entry.raw.get("basePowerCallback")
+                if isinstance(base_cb, str):
+                    try:
+                        cls_name, func_name = base_cb.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst = cls()
+                            cand = getattr(inst, func_name, None)
+                            if callable(cand):
+                                base_power_cb = cand
+                    except Exception:
+                        base_power_cb = None
+
+                move = BattleMove(
+                    name=move_entry.name,
+                    power=getattr(move_entry, "power", 0),
+                    accuracy=getattr(move_entry, "accuracy", 100),
+                    priority=move_entry.raw.get("priority", 0),
+                    onHit=on_hit_func,
+                    onTry=on_try_func,
+                    basePowerCallback=base_power_cb,
+                    type=getattr(move_entry, "type", None),
+                    raw=move_entry.raw,
+                )
+            else:
+                move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
+            opponent = battle.opponent_of(self)
+            if not opponent or not opponent.active:
+                continue
+            target = opponent
+            priority = getattr(move, "priority", 0)
+            battle_logger.info("%s chooses %s", self.name, move.name)
+            actions.append(Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke))
+        return actions
 
 
 class Battle:
@@ -363,14 +446,12 @@ class Battle:
         for participant in self.participants:
             if participant.active:
                 continue
-            first = None
             for poke in participant.pokemons:
                 if getattr(poke, "hp", 1) > 0:
-                    first = poke
-                    break
-            if first is not None:
-                participant.active = [first]
-                self.on_enter_battle(first)
+                    participant.active.append(poke)
+                    self.on_enter_battle(poke)
+                    if len(participant.active) >= getattr(participant, "max_active", 1):
+                        break
 
     def send_out_pokemon(self, pokemon, slot: int = 0) -> None:
         """Place ``pokemon`` into the active slot for its participant."""
@@ -384,20 +465,23 @@ class Battle:
             self.on_switch_out(old)
             part.active[slot] = pokemon
         else:
-            part.active.insert(slot, pokemon)
+            if len(part.active) < getattr(part, "max_active", 1):
+                part.active.insert(slot, pokemon)
+            else:
+                return
         self.on_enter_battle(pokemon)
 
-    def switch_pokemon(self, participant: BattleParticipant, new_pokemon) -> None:
-        """Switch the active Pokémon for ``participant`` with ``new_pokemon``."""
-        if not participant.active:
-            participant.active = [new_pokemon]
+    def switch_pokemon(self, participant: BattleParticipant, new_pokemon, slot: int = 0) -> None:
+        """Switch the active Pokémon for ``participant`` in ``slot``."""
+        if len(participant.active) <= slot:
+            participant.active.append(new_pokemon)
             self.on_enter_battle(new_pokemon)
             return
-        current = participant.active[0]
+        current = participant.active[slot]
         if current is new_pokemon:
             return
         self.on_switch_out(current)
-        participant.active[0] = new_pokemon
+        participant.active[slot] = new_pokemon
         self.on_enter_battle(new_pokemon)
         self.apply_entry_hazards(new_pokemon)
 
@@ -761,65 +845,70 @@ class Battle:
         for part in self.participants:
             if part.has_lost:
                 continue
+            # Ensure correct number of active Pokémon
+            for slot in range(part.max_active):
+                if len(part.active) <= slot:
+                    replacement = None
+                    for poke in part.pokemons:
+                        if poke not in part.active and getattr(poke, "hp", 0) > 0:
+                            replacement = poke
+                            break
+                    if replacement:
+                        part.active.append(replacement)
+                        setattr(replacement, "side", part.side)
+                        self.register_handlers(replacement)
+                        self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
+                        self.apply_entry_hazards(replacement)
+                    continue
 
-            # If no active Pokémon, bring out the first healthy one
-            if not part.active:
-                for poke in part.pokemons:
-                    if getattr(poke, "hp", 0) > 0:
-                        part.active = [poke]
-                        setattr(poke, "side", part.side)
-                        self.register_handlers(poke)
-                        self.dispatcher.dispatch("start", pokemon=poke, battle=self)
-                        self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
-                        self.apply_entry_hazards(poke)
-                        break
-                continue
+                active = part.active[slot]
 
-            active = part.active[0]
+                if getattr(active, "tempvals", {}).get("baton_pass") or getattr(active, "tempvals", {}).get("switch_out"):
+                    replacement = None
+                    for poke in part.pokemons:
+                        if poke is active:
+                            continue
+                        if getattr(poke, "hp", 0) > 0 and poke not in part.active:
+                            replacement = poke
+                            break
+                    if replacement:
+                        part.active[slot] = replacement
+                        setattr(replacement, "side", part.side)
+                        self.register_handlers(replacement)
+                        self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
 
-            # Handle voluntary switch-outs (e.g. Baton Pass)
-            if getattr(active, "tempvals", {}).get("baton_pass") or getattr(
-                active, "tempvals", {}
-            ).get("switch_out"):
-                replacement = None
-                for poke in part.pokemons:
-                    if poke is active:
-                        continue
-                    if getattr(poke, "hp", 0) > 0:
-                        replacement = poke
-                        break
-                if replacement:
-                    part.active = [replacement]
-                    setattr(replacement, "side", part.side)
-                    self.register_handlers(replacement)
-                    self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
-                    self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
+                        if active.tempvals.get("baton_pass"):
+                            if hasattr(active, "boosts") and hasattr(replacement, "boosts"):
+                                replacement.boosts = dict(active.boosts)
+                            sub = getattr(active, "volatiles", {}).pop("substitute", None)
+                            if sub:
+                                if not hasattr(replacement, "volatiles"):
+                                    replacement.volatiles = {}
+                                replacement.volatiles["substitute"] = dict(sub)
+                            active.tempvals.pop("baton_pass", None)
+                        active.tempvals.pop("switch_out", None)
+                        self.apply_entry_hazards(replacement)
+                    continue
 
-                    if active.tempvals.get("baton_pass"):
-                        if hasattr(active, "boosts") and hasattr(replacement, "boosts"):
-                            replacement.boosts = dict(active.boosts)
-                        sub = getattr(active, "volatiles", {}).pop("substitute", None)
-                        if sub:
-                            if not hasattr(replacement, "volatiles"):
-                                replacement.volatiles = {}
-                            replacement.volatiles["substitute"] = dict(sub)
-                        active.tempvals.pop("baton_pass", None)
-                    active.tempvals.pop("switch_out", None)
-                    self.apply_entry_hazards(replacement)
-                continue
+                if getattr(active, "hp", 0) <= 0:
+                    replacement = None
+                    for poke in part.pokemons:
+                        if poke is active or poke in part.active:
+                            continue
+                        if getattr(poke, "hp", 0) > 0:
+                            replacement = poke
+                            break
+                    if replacement:
+                        part.active[slot] = replacement
+                        setattr(replacement, "side", part.side)
+                        self.register_handlers(replacement)
+                        self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
+                        self.apply_entry_hazards(replacement)
 
-            # Replace fainted active Pokémon if possible
-            if getattr(active, "hp", 0) <= 0:
-                for poke in part.pokemons:
-                    if poke is active:
-                        continue
-                    if getattr(poke, "hp", 0) > 0:
-                        part.active = [poke]
-                        setattr(poke, "side", part.side)
-                        self.register_handlers(poke)
-                        self.dispatcher.dispatch("start", pokemon=poke, battle=self)
-                        self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
-                        break
+
 
     def run_after_switch(self) -> None:
         """Trigger simple events after Pokémon have switched in."""
@@ -877,12 +966,62 @@ class Battle:
                     m.pp -= 1
                 break
 
+    def _deal_damage(self, user, target, move: BattleMove, *, spread: bool = False) -> int:
+        """Apply simplified damage calculation to ``target``."""
+        from .damage import damage_calc
+        from pokemon.dex.entities import Move
+
+        raw = dict(move.raw)
+        if move.basePowerCallback:
+            raw["basePowerCallback"] = move.basePowerCallback
+        temp_move = Move(
+            name=move.name,
+            num=0,
+            type=move.type,
+            category="Physical",
+            power=move.power,
+            accuracy=move.accuracy,
+            pp=None,
+            raw=raw,
+        )
+        if move.basePowerCallback:
+            try:
+                temp_move.basePowerCallback = move.basePowerCallback
+                move.basePowerCallback(user, target, temp_move)
+            except Exception:
+                temp_move.basePowerCallback = None
+
+        result = damage_calc(user, target, temp_move, battle=self)
+        dmg = sum(result.debug.get("damage", []))
+        if spread:
+            dmg = int(dmg * 0.75)
+        if moves_funcs:
+            for vol in getattr(target, "volatiles", {}):
+                cls = getattr(moves_funcs, vol.capitalize(), None)
+                if cls:
+                    cb = getattr(cls(), "onSourceModifyDamage", None)
+                    if callable(cb):
+                        try:
+                            new_dmg = cb(dmg, target, user, temp_move)
+                        except Exception:
+                            new_dmg = cb(dmg, target, user)
+                        if isinstance(new_dmg, (int, float)):
+                            dmg = int(new_dmg)
+        if hasattr(target, "hp"):
+            target.hp = max(0, target.hp - dmg)
+            if dmg > 0:
+                try:
+                    target.tempvals["took_damage"] = True
+                except Exception:
+                    pass
+        return dmg
+
     def use_move(self, action: Action) -> None:
         """Attempt to use the chosen move applying simple failure rules."""
-        if not action.move or not action.actor.active:
+        if not action.move:
             return
 
-        user = action.actor.active[0]
+        user = action.pokemon or (action.actor.active[0] if action.actor.active else None)
         # Ensure we have full move data loaded from the dex
         dex_move = MOVEDEX.get(_normalize_key(action.move.name))
         if dex_move:
@@ -1094,6 +1233,15 @@ class Battle:
         except Exception:
             pass
 
+        if action.move.raw.get("target") in {"allAdjacent", "allAdjacentFoes"}:
+            extra = []
+            if target_part and target_part.active:
+                for t in target_part.active:
+                    if t is not target and getattr(t, "hp", 0) > 0:
+                        extra.append(t)
+            for t in extra:
+                self._deal_damage(user, t, action.move, spread=True)
+
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
         actions = self.select_actions()
@@ -1138,17 +1286,20 @@ class Battle:
                 part.has_lost = True
                 continue
 
-            # If the active slot is empty, automatically send the first healthy Pokémon
-            if not part.active:
-                for poke in part.pokemons:
-                    if getattr(poke, "hp", 0) > 0:
-                        part.active = [poke]
-                        setattr(poke, "side", part.side)
-                        self.register_handlers(poke)
-                        self.dispatcher.dispatch("start", pokemon=poke, battle=self)
-                        self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
-                        self.apply_entry_hazards(poke)
-                        break
+            for slot in range(part.max_active):
+                if len(part.active) <= slot:
+                    replacement = None
+                    for poke in part.pokemons:
+                        if poke not in part.active and getattr(poke, "hp", 0) > 0:
+                            replacement = poke
+                            break
+                    if replacement:
+                        part.active.append(replacement)
+                        setattr(replacement, "side", part.side)
+                        self.register_handlers(replacement)
+                        self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
+                        self.apply_entry_hazards(replacement)
 
     def residual(self) -> None:
         """Process residual effects and handle end-of-turn fainting."""
@@ -1353,9 +1504,16 @@ class Battle:
         for part in self.participants:
             if part.has_lost:
                 continue
-            action = part.choose_action(self)
-            if action:
-                actions.append(action)
+            if hasattr(part, "choose_actions"):
+                part_actions = part.choose_actions(self)
+                if isinstance(part_actions, list):
+                    actions.extend(part_actions)
+                elif part_actions:
+                    actions.append(part_actions)
+            else:
+                action = part.choose_action(self)
+                if action:
+                    actions.append(action)
         return actions
 
     # Simple wrapper for external API compatibility
@@ -1374,7 +1532,7 @@ class Battle:
         trick_room = bool(self.field.get_pseudo_weather("trickroom"))
 
         for action in actions:
-            poke = action.actor.active[0] if action.actor.active else None
+            poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
             move = action.move
             base_priority = action.priority
             priority = base_priority
@@ -1383,7 +1541,9 @@ class Battle:
             item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
 
             if poke:
-                target = action.target.active[0] if action.target and action.target.active else None
+                target = None
+                if action.target and action.target.active:
+                    target = action.target.active[0]
                 priority = self.apply_priority_modifiers(poke, move, priority, target)
 
             action.priority = priority
@@ -1626,10 +1786,13 @@ class Battle:
     def execute_actions(self, actions: List[Action]) -> None:
         for action in actions:
             if action.action_type is ActionType.MOVE and action.move:
-                actor_poke = action.actor.active[0]
+                actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
                 if self.status_prevents_move(actor_poke):
                     continue
-                action.move.execute(actor_poke, action.target.active[0], self)
+                target_poke = None
+                if action.target and action.target.active:
+                    target_poke = action.target.active[0]
+                action.move.execute(actor_poke, target_poke, self)
                 try:
                     actor_poke.tempvals["moved"] = True
                 except Exception:
