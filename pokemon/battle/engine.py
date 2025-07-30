@@ -41,6 +41,34 @@ from enum import Enum, auto
 from typing import Callable, List, Optional, Dict, Any
 import random
 
+try:
+    from .events import EventDispatcher
+except Exception:  # pragma: no cover - fallback for tests with stubs
+    from collections import defaultdict
+    import inspect
+
+    class EventDispatcher:
+        def __init__(self) -> None:
+            self._handlers = defaultdict(list)
+
+        def register(self, event: str, handler: Callable[..., Any]) -> None:
+            self._handlers[event].append(handler)
+
+        def dispatch(self, event: str, **context: Any) -> None:
+            for handler in list(self._handlers.get(event, [])):
+                try:
+                    sig = inspect.signature(handler)
+                    if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+                        params = context
+                    else:
+                        params = {k: v for k, v in context.items() if k in sig.parameters}
+                    handler(**params)
+                except Exception:
+                    try:
+                        handler()
+                    except Exception:
+                        pass
+
 from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Move
 import logging
@@ -323,6 +351,7 @@ class Battle:
         self.participants = participants
         self.turn_count = 0
         self.battle_over = False
+        self.dispatcher = EventDispatcher()
         from .battledata import Field
         self.field = Field()
 
@@ -639,25 +668,71 @@ class Battle:
     # ------------------------------------------------------------------
     # Battle event hooks
     # ------------------------------------------------------------------
+
+    def _register_callbacks(self, data: Dict[str, Any], pokemon) -> None:
+        """Helper to register callbacks from ability or item data."""
+        event_map = {
+            "onStart": "start",
+            "onSwitchIn": "switch_in",
+            "onSwitchOut": "switch_out",
+            "onBeforeTurn": "before_turn",
+            "onBeforeMove": "before_move",
+            "onAfterMove": "after_move",
+            "onEnd": "end_turn",
+        }
+
+        for key, event in event_map.items():
+            cb = data.get(key)
+            if not cb:
+                continue
+
+            if isinstance(cb, str):
+                try:
+                    mod_name, func_name = cb.split(".", 1)
+                    module = __import__(
+                        f"pokemon.dex.functions.{mod_name.lower()}", fromlist=[mod_name]
+                    )
+                    cls = getattr(module, mod_name, None)
+                    cb = getattr(cls(), func_name) if cls else None
+                except Exception:
+                    cb = None
+            if not callable(cb):
+                continue
+
+            def handler(cb=cb, pokemon=pokemon):
+                def wrapped(**ctx):
+                    if ctx.get("pokemon") is not pokemon:
+                        return
+                    try:
+                        cb(pokemon=pokemon, battle=self)
+                    except TypeError:
+                        cb(pokemon, self)
+
+                return wrapped
+
+            self.dispatcher.register(event, handler())
+
+            self.dispatcher.register(event, handler)
+
+    def register_handlers(self, pokemon) -> None:
+        """Register ability and item callbacks for ``pokemon``."""
+        ability = getattr(pokemon, "ability", None)
+        if ability and isinstance(getattr(ability, "raw", None), dict):
+            self._register_callbacks(ability.raw, pokemon)
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        if item and isinstance(getattr(item, "raw", None), dict):
+            self._register_callbacks(item.raw, pokemon)
     def on_enter_battle(self, pokemon) -> None:
         """Trigger events when ``pokemon`` enters the field."""
-        ability = getattr(pokemon, "ability", None)
-        if ability and hasattr(ability, "call"):
-            try:
-                ability.call("onStart", pokemon, self)
-                ability.call("onSwitchIn", pokemon, self)
-            except Exception:
-                pass
+        self.register_handlers(pokemon)
+        self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
+        self.dispatcher.dispatch("switch_in", pokemon=pokemon, battle=self)
         self.apply_entry_hazards(pokemon)
 
     def on_switch_out(self, pokemon) -> None:
         """Handle effects when ``pokemon`` leaves the field."""
-        ability = getattr(pokemon, "ability", None)
-        if ability and hasattr(ability, "call"):
-            try:
-                ability.call("onSwitchOut", pokemon, self)
-            except Exception:
-                pass
+        self.dispatcher.dispatch("switch_out", pokemon=pokemon, battle=self)
         vols = list(getattr(pokemon, "volatiles", {}).keys())
         for vol in vols:
             pokemon.volatiles[vol] = False
@@ -693,10 +768,9 @@ class Battle:
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
                         setattr(poke, "side", part.side)
-                        ability = getattr(poke, "ability", None)
-                        if ability and hasattr(ability, "call"):
-                            ability.call("onStart", poke, self)
-                            ability.call("onSwitchIn", poke, self)
+                        self.register_handlers(poke)
+                        self.dispatcher.dispatch("start", pokemon=poke, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
                         self.apply_entry_hazards(poke)
                         break
                 continue
@@ -717,10 +791,9 @@ class Battle:
                 if replacement:
                     part.active = [replacement]
                     setattr(replacement, "side", part.side)
-                    ability = getattr(replacement, "ability", None)
-                    if ability and hasattr(ability, "call"):
-                        ability.call("onStart", replacement, self)
-                        ability.call("onSwitchIn", replacement, self)
+                    self.register_handlers(replacement)
+                    self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
+                    self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
 
                     if active.tempvals.get("baton_pass"):
                         if hasattr(active, "boosts") and hasattr(replacement, "boosts"):
@@ -743,10 +816,9 @@ class Battle:
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
                         setattr(poke, "side", part.side)
-                        ability = getattr(poke, "ability", None)
-                        if ability and hasattr(ability, "call"):
-                            ability.call("onStart", poke, self)
-                            ability.call("onSwitchIn", poke, self)
+                        self.register_handlers(poke)
+                        self.dispatcher.dispatch("start", pokemon=poke, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
                         break
 
     def run_after_switch(self) -> None:
@@ -862,6 +934,7 @@ class Battle:
             return
 
         self.deduct_pp(user, action.move)
+        self.dispatcher.dispatch("before_move", user=user, target=target, move=action.move, battle=self)
 
         # Handle onTryMove callbacks for multi-turn moves or special behaviour
         cb_name = action.move.raw.get("onTryMove") if action.move.raw else None
@@ -1008,6 +1081,9 @@ class Battle:
             return
 
         action.move.execute(user, target, self)
+        self.dispatcher.dispatch(
+            "after_move", user=user, target=target, move=action.move, battle=self
+        )
         sd = action.move.raw.get("selfdestruct")
         if sd:
             hit = getattr(target, "tempvals", {}).get("took_damage")
@@ -1068,10 +1144,9 @@ class Battle:
                     if getattr(poke, "hp", 0) > 0:
                         part.active = [poke]
                         setattr(poke, "side", part.side)
-                        ability = getattr(poke, "ability", None)
-                        if ability and hasattr(ability, "call"):
-                            ability.call("onStart", poke, self)
-                            ability.call("onSwitchIn", poke, self)
+                        self.register_handlers(poke)
+                        self.dispatcher.dispatch("start", pokemon=poke, battle=self)
+                        self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
                         self.apply_entry_hazards(poke)
                         break
 
@@ -1221,10 +1296,9 @@ class Battle:
         if self.turn_count == 1:
             for part in self.participants:
                 for poke in part.active:
-                    ability = getattr(poke, "ability", None)
-                    if ability and hasattr(ability, "call"):
-                        ability.call("onStart", poke, self)
-                        ability.call("onSwitchIn", poke, self)
+                    self.register_handlers(poke)
+                    self.dispatcher.dispatch("start", pokemon=poke, battle=self)
+                    self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
 
     def before_turn(self) -> None:
         """Run simple BeforeTurn events for all active Pokémon."""
@@ -1241,19 +1315,7 @@ class Battle:
             if part.has_lost:
                 continue
             for poke in part.active:
-                ability = getattr(poke, "ability", None)
-                if ability and hasattr(ability, "call"):
-                    try:
-                        ability.call("onBeforeTurn", poke, self)
-                    except Exception:
-                        pass
-
-                item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
-                if item and hasattr(item, "call"):
-                    try:
-                        item.call("onBeforeTurn", pokemon=poke, battle=self)
-                    except Exception:
-                        pass
+                self.dispatcher.dispatch("before_turn", pokemon=poke, battle=self)
 
                 status = getattr(poke, "status", None)
                 handler = CONDITION_HANDLERS.get(status)
@@ -1676,9 +1738,7 @@ class Battle:
             if all(getattr(p, "hp", 1) <= 0 for p in part.pokemons):
                 part.has_lost = True
             for poke in part.active:
-                ability = getattr(poke, "ability", None)
-                if ability and hasattr(ability, "call"):
-                    ability.call("onEnd", poke, self)
+                self.dispatcher.dispatch("end_turn", pokemon=poke, battle=self)
         self.check_victory()
 
     def run_turn(self) -> None:
