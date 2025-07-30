@@ -2,6 +2,13 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def copy_learned_moves_forwards(apps, schema_editor):
+    OwnedPokemon = apps.get_model("pokemon", "OwnedPokemon")
+    for pokemon in OwnedPokemon.objects.all():
+        for move in pokemon.learned_moves.all():
+            pokemon.learned_moves_new.add(move)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -66,9 +73,35 @@ class Migration(migrations.Migration):
                 ],
             },
         ),
+        migrations.AddField(
+            model_name="ownedpokemon",
+            name="learned_moves_new",
+            field=models.ManyToManyField(
+                related_name="owners_new",
+                through="pokemon.PokemonLearnedMove",
+                to="pokemon.move",
+            ),
+        ),
+        migrations.RunPython(
+            code=copy_learned_moves_forwards,
+            reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.RemoveField(
+            model_name="ownedpokemon",
+            name="learned_moves",
+        ),
+        migrations.RenameField(
+            model_name="ownedpokemon",
+            old_name="learned_moves_new",
+            new_name="learned_moves",
+        ),
         migrations.AlterField(
             model_name="ownedpokemon",
             name="learned_moves",
-            field=models.ManyToManyField(related_name="owners", through="pokemon.PokemonLearnedMove", to="pokemon.move"),
+            field=models.ManyToManyField(
+                related_name="owners",
+                through="pokemon.PokemonLearnedMove",
+                to="pokemon.move",
+            ),
         ),
     ]
