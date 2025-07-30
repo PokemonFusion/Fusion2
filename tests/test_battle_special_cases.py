@@ -111,6 +111,26 @@ def test_pursuit_before_switch():
     assert p2.active[0] is def2
 
 
+def test_switch_resolves_before_attack():
+    atk = make_pokemon("Atk", 1)
+    sw1 = make_pokemon("Sw1", 2)
+    sw2 = make_pokemon("Sw2", 3)
+    move = BattleMove("Tackle", power=40, accuracy=100)
+    p1 = BattleParticipant("A", [atk], is_ai=False)
+    p2 = BattleParticipant("B", [sw1, sw2], is_ai=False)
+    p1.active = [atk]
+    p2.active = [sw1]
+    act = Action(p1, ActionType.MOVE, p2, move, move.priority, pokemon=atk)
+    p1.pending_action = act
+    sw1.tempvals = {"switch_out": True}
+    battle = Battle(BattleType.WILD, [p1, p2])
+    random.seed(0)
+    battle.run_turn()
+    assert p2.active[0] is sw2
+    assert sw1.hp == 100
+    assert sw2.hp < 100
+
+
 def test_spread_modifier():
     a = make_pokemon("A", 1)
     b = make_pokemon("B", 2)
