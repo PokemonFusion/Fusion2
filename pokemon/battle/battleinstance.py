@@ -916,11 +916,23 @@ class BattleSession:
 
     def run_turn(self) -> None:
         """Advance the battle by one turn."""
-        if self.battle:
-            log_info(f"Running turn for battle {self.battle_id}")
-            self._set_player_control(False)
+        if not self.battle:
+            return
+
+        log_info(f"Running turn for battle {self.battle_id}")
+        self._set_player_control(False)
+        try:
             self.battle.run_turn()
-            self.prompt_next_turn()
+        except Exception:
+            log_err(
+                f"Error while running turn for battle {self.battle_id}",
+                exc_info=True,
+            )
+        else:
+            log_info(
+                f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
+            )
+        self.prompt_next_turn()
 
     def queue_move(self, move_name: str, target: str = "B1") -> None:
         """Queue a move and run the turn if ready."""
@@ -980,16 +992,36 @@ class BattleSession:
 
     def is_turn_ready(self) -> bool:
         if self.data:
-            if all(p.getAction() for p in self.data.turndata.positions.values()):
-                return True
+            missing = [
+                name
+                for name, pos in self.data.turndata.positions.items()
+                if not pos.getAction()
+            ]
+            if missing:
+                log_info(
+                    f"Waiting for actions from positions {missing} in battle {self.battle_id}"
+                )
+                return False
         if self.battle and getattr(self.battle, "participants", None):
-            return all(getattr(p, "pending_action", None) for p in self.battle.participants)
+            incomplete = [
+                getattr(p, "name", str(p))
+                for p in self.battle.participants
+                if not getattr(p, "pending_action", None)
+            ]
+            if incomplete:
+                log_info(
+                    f"Waiting for pending actions from {incomplete} in battle {self.battle_id}"
+                )
+                return False
+            return True
         return False
 
     def maybe_run_turn(self) -> None:
         if self.is_turn_ready():
             log_info(f"Turn ready for battle {self.battle_id}")
             self.run_turn()
+        else:
+            log_info(f"Turn not ready for battle {self.battle_id}")
 
     # ------------------------------------------------------------------
     # Watcher helpers

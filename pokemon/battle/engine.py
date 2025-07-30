@@ -1682,10 +1682,15 @@ class Battle:
         self.check_victory()
 
     def run_turn(self) -> None:
+        battle_logger.info("Run turn %s begin", self.turn_count + 1)
         self.start_turn()
+        battle_logger.info("After start_turn")
         self.before_turn()
+        battle_logger.info("After before_turn")
         self.run_action()
+        battle_logger.info("After run_action")
         self.end_turn()
+        battle_logger.info("Run turn %s end", self.turn_count)
 
     # ------------------------------------------------------------------
     # Logging and feedback helpers
