@@ -266,6 +266,13 @@ class BattleParticipant:
         if self.pending_action:
             action = self.pending_action
             self.pending_action = None
+            # Validate the target against remaining opponents
+            if action.target and action.target not in battle.participants:
+                action.target = None
+            if not action.target:
+                opponents = battle.opponents_of(self)
+                if opponents:
+                    action.target = opponents[0]
             return action
 
         if not self.is_ai:
@@ -336,10 +343,13 @@ class BattleParticipant:
             )
         else:
             move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
-        opponent = battle.opponent_of(self)
-        if not opponent or not opponent.active:
+        opponents = battle.opponents_of(self)
+        if not opponents:
             return None
-        target = opponent.active[0]
+        opponent = random.choice(opponents)
+        if not opponent.active:
+            return None
+        target = opponent
         priority = getattr(move, "priority", 0)
         battle_logger.info("%s chooses %s", self.name, move.name)
         return Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke)
@@ -350,7 +360,20 @@ class BattleParticipant:
             action = self.pending_action
             self.pending_action = None
             if isinstance(action, list):
+                for act in action:
+                    if act.target and act.target not in battle.participants:
+                        act.target = None
+                    if not act.target:
+                        opps = battle.opponents_of(self)
+                        if opps:
+                            act.target = opps[0]
                 return action
+            if action.target and action.target not in battle.participants:
+                action.target = None
+            if not action.target:
+                opps = battle.opponents_of(self)
+                if opps:
+                    action.target = opps[0]
             return [action]
 
         if not self.is_ai:
@@ -416,8 +439,11 @@ class BattleParticipant:
                 )
             else:
                 move = BattleMove(name=move_data.name, priority=getattr(move_data, "priority", 0))
-            opponent = battle.opponent_of(self)
-            if not opponent or not opponent.active:
+            opponents = battle.opponents_of(self)
+            if not opponents:
+                continue
+            opponent = random.choice(opponents)
+            if not opponent.active:
                 continue
             target = opponent
             priority = getattr(move, "priority", 0)
@@ -427,9 +453,10 @@ class BattleParticipant:
 
 
 class Battle:
-    """Main battle controller."""
+    """Main battle controller for one or more sides."""
 
     def __init__(self, battle_type: BattleType, participants: List[BattleParticipant]):
+        """Create a new battle with arbitrary participants."""
         self.type = battle_type
         self.participants = participants
         self.turn_count = 0
@@ -532,10 +559,15 @@ class Battle:
     # Helper methods
     # ------------------------------------------------------------------
     def opponent_of(self, participant: BattleParticipant) -> Optional[BattleParticipant]:
+        """Return the first available opponent of ``participant``."""
         for part in self.participants:
-            if part is not participant:
+            if part is not participant and not part.has_lost:
                 return part
         return None
+
+    def opponents_of(self, participant: BattleParticipant) -> List[BattleParticipant]:
+        """Return a list of all active opponents for ``participant``."""
+        return [p for p in self.participants if p is not participant and not p.has_lost]
 
     def restore_transforms(self) -> None:
         """Revert any Pokémon transformed via the Transform move."""
@@ -1094,7 +1126,10 @@ class Battle:
         if self.status_prevents_move(user):
             return
 
-        target_part = action.target or self.opponent_of(action.actor)
+        target_part = action.target
+        if target_part not in self.participants or target_part.has_lost:
+            opponents = self.opponents_of(action.actor)
+            target_part = opponents[0] if opponents else None
         target = None
         if target_part and target_part.active:
             candidate = target_part.active[0]
@@ -1878,7 +1913,10 @@ class Battle:
     def execute_item(self, action: Action) -> None:
         """Handle item usage during battle."""
         item_name = action.item.lower()
-        target = action.target or self.opponent_of(action.actor)
+        target = action.target
+        if target not in self.participants or target.has_lost or not target.active:
+            opponents = self.opponents_of(action.actor)
+            target = opponents[0] if opponents else None
         if not target or not target.active:
             return
 
