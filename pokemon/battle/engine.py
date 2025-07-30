@@ -865,6 +865,18 @@ class Battle:
                 active = part.active[slot]
 
                 if getattr(active, "tempvals", {}).get("baton_pass") or getattr(active, "tempvals", {}).get("switch_out"):
+                    for opp in self.participants:
+                        if opp is part or opp.has_lost:
+                            continue
+                        act = getattr(opp, "pending_action", None)
+                        if act and act.action_type is ActionType.MOVE and act.move and act.move.name.lower() == "pursuit":
+                            target_check = act.target.active[0] if act.target and act.target.active else None
+                            if target_check is active or act.target is part:
+                                active.tempvals["switching"] = True
+                                self.use_move(act)
+                                active.tempvals.pop("switching", None)
+                                opp.pending_action = None
+
                     replacement = None
                     for poke in part.pokemons:
                         if poke is active:
@@ -1016,6 +1028,34 @@ class Battle:
                     pass
         return dmg
 
+    def _do_move(self, user, target, move: BattleMove) -> bool:
+        """Execute ``move`` handling two-turn charge phases."""
+
+        cb_name = move.raw.get("onTryMove") if move.raw else None
+        if cb_name:
+            if isinstance(cb_name, str) and moves_funcs:
+                cls_name, func_name = cb_name.split(".", 1)
+                cls = getattr(moves_funcs, cls_name, None)
+                cb = getattr(cls(), func_name, None) if cls else None
+            else:
+                cb = cb_name
+            if callable(cb):
+                try:
+                    result = cb(user, target, move)
+                except Exception:
+                    result = cb(user, target)
+                if result is False:
+                    self.dispatcher.dispatch(
+                        "charge_move", user=user, target=target, move=move, battle=self
+                    )
+                    return False
+
+        self.dispatcher.dispatch(
+            "execute_move", user=user, target=target, move=move, battle=self
+        )
+        move.execute(user, target, self)
+        return True
+
     def use_move(self, action: Action) -> None:
         """Attempt to use the chosen move applying simple failure rules."""
         if not action.move:
@@ -1074,30 +1114,6 @@ class Battle:
 
         self.deduct_pp(user, action.move)
         self.dispatcher.dispatch("before_move", user=user, target=target, move=action.move, battle=self)
-
-        # Handle onTryMove callbacks for multi-turn moves or special behaviour
-        cb_name = action.move.raw.get("onTryMove") if action.move.raw else None
-        if cb_name:
-            if isinstance(cb_name, str) and moves_funcs:
-                cls_name, func_name = cb_name.split(".", 1)
-                cls = getattr(moves_funcs, cls_name, None)
-                if cls:
-                    cb = getattr(cls(), func_name, None)
-                else:
-                    cb = None
-            else:
-                cb = cb_name
-            if callable(cb):
-                try:
-                    result = cb(user, target, action.move)
-                except Exception:
-                    result = cb(user, target)
-                if result is False:
-                    try:
-                        user.tempvals["moved"] = True
-                    except Exception:
-                        pass
-                    return
 
         if getattr(target, "volatiles", {}).get("protect"):
             try:
@@ -1219,7 +1235,14 @@ class Battle:
                 user.hp = 0
             return
 
-        action.move.execute(user, target, self)
+        executed = self._do_move(user, target, action.move)
+        if not executed:
+            try:
+                user.tempvals["moved"] = True
+            except Exception:
+                pass
+            return
+
         self.dispatcher.dispatch(
             "after_move", user=user, target=target, move=action.move, battle=self
         )
@@ -1431,6 +1454,36 @@ class Battle:
 
     def run_action(self) -> None:
         """Main action runner modeled on Showdown's `runAction`."""
+        for part in self.participants:
+            acts = getattr(part, "pending_action", None)
+            if not acts:
+                continue
+            if not isinstance(acts, list):
+                acts = [acts]
+            if part.active:
+                switching = part.active[0]
+            else:
+                switching = None
+            for act in list(acts):
+                if act.action_type is ActionType.SWITCH and switching:
+                    for opp in self.participants:
+                        if opp is part or opp.has_lost:
+                            continue
+                        opp_act = getattr(opp, "pending_action", None)
+                        if isinstance(opp_act, list):
+                            opp_candidates = opp_act
+                        else:
+                            opp_candidates = [opp_act] if opp_act else []
+                        for oa in opp_candidates:
+                            if oa and oa.action_type is ActionType.MOVE and oa.move and oa.move.name.lower() == "pursuit":
+                                switching.tempvals["switching"] = True
+                                self.use_move(oa)
+                                switching.tempvals.pop("switching", None)
+                                if isinstance(opp_act, list):
+                                    opp_candidates.remove(oa)
+                                    opp.pending_action = opp_candidates
+                                else:
+                                    opp.pending_action = None
 
         self.run_switch()
         self.run_after_switch()
