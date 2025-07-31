@@ -427,6 +427,19 @@ class BattleSession:
             if hasattr(obj, "msg"):
                 obj.msg(msg)
 
+    def _msg_to(self, obj, text: str) -> None:
+        """Send `text` to a single object with battle prefix."""
+        names = [
+            getattr(self.captainA, "key", str(self.captainA)),
+            getattr(self.captainB, "key", str(self.captainB))
+            if self.captainB
+            else None,
+        ]
+        names = [n for n in names if n]
+        prefix = f"[Battle: {' vs. '.join(names)}]"
+        if hasattr(obj, "msg"):
+            obj.msg(f"{prefix} {text}")
+
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":
         """Recreate an instance from a stored battle on a room."""
@@ -906,8 +919,30 @@ class BattleSession:
         self._set_player_control(True)
         if self.captainA and self.state and self.captainB is not None:
             try:
-                iface = display_battle_interface(self.captainA, self.captainB, self.state)
-                self.msg(iface)
+                iface_a = display_battle_interface(
+                    self.captainA,
+                    self.captainB,
+                    self.state,
+                    viewer_team="A",
+                )
+                iface_b = display_battle_interface(
+                    self.captainB,
+                    self.captainA,
+                    self.state,
+                    viewer_team="B",
+                )
+                iface_w = display_battle_interface(
+                    self.captainA,
+                    self.captainB,
+                    self.state,
+                    viewer_team=None,
+                )
+                for t in self.teamA:
+                    self._msg_to(t, iface_a)
+                for t in self.teamB:
+                    self._msg_to(t, iface_b)
+                for w in self.observers:
+                    self._msg_to(w, iface_w)
             except Exception:
                 log_warn("Failed to display battle interface", exc_info=True)
         self.msg("The battle awaits your move.")
@@ -1022,6 +1057,66 @@ class BattleSession:
             self.run_turn()
         else:
             log_info(f"Turn not ready for battle {self.battle_id}")
+            waiting_team = None
+            waiting_poke = None
+            if self.data:
+                for name, pos in self.data.turndata.positions.items():
+                    if not pos.getAction() and pos.pokemon:
+                        waiting_team = name[0]
+                        waiting_poke = pos.pokemon
+                        break
+            if waiting_poke:
+                self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
+                try:
+                    if waiting_team == "A":
+                        iface_a = display_battle_interface(
+                            self.captainA,
+                            self.captainB,
+                            self.state,
+                            viewer_team="A",
+                        )
+                        iface_b = display_battle_interface(
+                            self.captainB,
+                            self.captainA,
+                            self.state,
+                            viewer_team="B",
+                            waiting_on=waiting_poke,
+                        )
+                    else:
+                        iface_a = display_battle_interface(
+                            self.captainA,
+                            self.captainB,
+                            self.state,
+                            viewer_team="A",
+                            waiting_on=waiting_poke,
+                        )
+                        iface_b = display_battle_interface(
+                            self.captainB,
+                            self.captainA,
+                            self.state,
+                            viewer_team="B",
+                        )
+                    iface_w = display_battle_interface(
+                        self.captainA,
+                        self.captainB,
+                        self.state,
+                        viewer_team=None,
+                        waiting_on=waiting_poke,
+                    )
+                    if waiting_team == "A":
+                        for t in self.teamA:
+                            self._msg_to(t, iface_a)
+                        for t in self.teamB:
+                            self._msg_to(t, iface_b)
+                    else:
+                        for t in self.teamA:
+                            self._msg_to(t, iface_a)
+                        for t in self.teamB:
+                            self._msg_to(t, iface_b)
+                    for w in self.observers:
+                        self._msg_to(w, iface_w)
+                except Exception:
+                    log_warn("Failed to display waiting interface", exc_info=True)
 
     # ------------------------------------------------------------------
     # Watcher helpers
