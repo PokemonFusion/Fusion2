@@ -116,7 +116,7 @@ class FakeQueueInstance(FakeInstance):
         super().__init__(battle)
         self.queued = []
 
-    def queue_switch(self, slot: int):
+    def queue_switch(self, slot: int, caller=None):
         self.queued.append(slot)
 
 

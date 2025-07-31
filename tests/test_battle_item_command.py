@@ -99,7 +99,8 @@ class FakeInstance:
     def __init__(self, battle):
         self.battle = battle
         self.queued = []
-    def queue_item(self, item_name, target="B1"):
+
+    def queue_item(self, item_name, target="B1", caller=None):
         self.queued.append((item_name, target))
 
 class DummyCaller:

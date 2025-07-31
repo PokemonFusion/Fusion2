@@ -1824,7 +1824,9 @@ class Pressure:
         return deduction + 1
 
     def onStart(self, pokemon=None):
-        pass
+        if pokemon:
+            pokemon.abilityState = getattr(pokemon, "abilityState", {})
+            pokemon.abilityState["pressure"] = True
 
 class Primordialsea:
     def onAnySetWeather(self, target=None, source=None, weather=None):
@@ -2700,7 +2702,9 @@ class Thermalexchange:
             return False
 
     def onUpdate(self, pokemon=None):
-        pass
+        if pokemon and getattr(pokemon, "status", None) == "brn":
+            if hasattr(pokemon, "setStatus"):
+                pokemon.setStatus(0)
 
 class Thickfat:
     def onSourceModifyAtk(self, atk, source=None, target=None, move=None):
@@ -3006,7 +3010,9 @@ class Windrider:
             apply_boost(pokemon, {"atk": 1})
 
     def onStart(self, pokemon=None):
-        pass
+        if pokemon and getattr(pokemon, "side", None):
+            if getattr(pokemon.side, "conditions", {}).get("tailwind"):
+                apply_boost(pokemon, {"atk": 1})
 
     def onTryHit(self, target=None, source=None, move=None):
         if move and move.flags.get("wind") and target:

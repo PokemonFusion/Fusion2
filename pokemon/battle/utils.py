@@ -3,6 +3,7 @@
 from typing import Dict
 
 
+
 def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
     """Modify a Pokémon's stat stages, clamped between -6 and 6."""
 
@@ -17,10 +18,16 @@ def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
 def get_modified_stat(pokemon, stat: str) -> int:
     """Return a stat value after applying temporary boosts."""
 
-    base = 0
-    if hasattr(pokemon, "base_stats"):
-        base = getattr(pokemon.base_stats, stat, 0)
-    stage = getattr(getattr(pokemon, "boosts", {}), stat, 0)
+    try:
+        from pokemon.utils.pokemon_helpers import get_stats
+        base = get_stats(pokemon).get(stat, 0)
+    except Exception:
+        base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
+    boosts = getattr(pokemon, "boosts", {})
+    if isinstance(boosts, dict):
+        stage = boosts.get(stat, 0)
+    else:
+        stage = getattr(boosts, stat, 0)
 
     if stat in {"accuracy", "evasion"}:
         if stage >= 0:

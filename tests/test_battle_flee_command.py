@@ -93,7 +93,8 @@ class FakeInstance:
     def __init__(self, battle):
         self.battle = battle
         self.queued = False
-    def queue_run(self):
+
+    def queue_run(self, caller=None):
         self.queued = True
 
 class DummyCaller:

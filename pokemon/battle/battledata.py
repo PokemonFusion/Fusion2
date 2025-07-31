@@ -13,6 +13,11 @@ import json
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 
+try:
+    from pokemon.dex import POKEDEX  # type: ignore
+except Exception:  # pragma: no cover - optional in tests
+    POKEDEX = {}
+
 
 @dataclass
 class Move:
@@ -132,6 +137,7 @@ class Pokemon:
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
                     extra_data = getattr(poke, "data", extra_data)
+                    species_name = getattr(poke, "species", None)
                     if max_hp is None:
                         try:
                             from pokemon.utils.pokemon_helpers import get_max_hp

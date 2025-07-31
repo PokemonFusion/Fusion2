@@ -110,7 +110,11 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
 
 
 def damage_phrase(target: Pokemon, damage: int) -> str:
-    maxhp = target.base_stats.hp
+    try:
+        from pokemon.utils.pokemon_helpers import get_max_hp
+        maxhp = get_max_hp(target)
+    except Exception:  # pragma: no cover - fallback when helpers unavailable
+        maxhp = getattr(getattr(target, "base_stats", None), "hp", 0)
     percent = (damage * 100) / maxhp
     if percent >= 100:
         return "EPIC"
@@ -129,7 +133,7 @@ def damage_phrase(target: Pokemon, damage: int) -> str:
     return "no"
 
 
-def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None) -> DamageResult:
+def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, spread: bool = False) -> DamageResult:
     result = DamageResult()
     numhits = 1
     multihit = move.raw.get("multihit") if move.raw else None
@@ -161,10 +165,31 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None) -> 
             atk_stat = utils.get_modified_stat(attacker, atk_key)
             def_stat = utils.get_modified_stat(target, def_key)
         else:
-            atk_stat = getattr(attacker.base_stats, atk_key)
-            def_stat = getattr(target.base_stats, def_key)
+            try:
+                from pokemon.utils.pokemon_helpers import get_stats
+                atk_stat = get_stats(attacker).get(atk_key, 0)
+                def_stat = get_stats(target).get(def_key, 0)
+            except Exception:  # pragma: no cover - fallback when helpers fail
+                atk_stat = getattr(getattr(attacker, "base_stats", None), atk_key, 0)
+                def_stat = getattr(getattr(target, "base_stats", None), def_key, 0)
 
         power = move.power or 0
+        if battle is not None:
+            field = getattr(battle, "field", None)
+            if field:
+                terrain_handler = getattr(field, "terrain_handler", None)
+                if terrain_handler:
+                    cb = getattr(terrain_handler, "onBasePower", None)
+                    if callable(cb):
+                        try:
+                            new_pow = cb(attacker, target, move)
+                        except Exception:
+                            try:
+                                new_pow = cb(attacker, target, move=move)
+                            except Exception:
+                                new_pow = cb(attacker, move)
+                        if isinstance(new_pow, (int, float)):
+                            power = int(new_pow)
         if move.raw:
             cb = move.raw.get("basePowerCallback")
             if callable(cb):
@@ -175,16 +200,73 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None) -> 
                 except Exception:
                     pass
 
-        dmg = base_damage(attacker.num, power, atk_stat, def_stat)
+        # ``base_damage`` expects the attacker's level.  Older stubs used in
+        # tests only define ``num`` so we fall back to that when ``level`` is
+        # missing for backwards compatibility.
+        level = getattr(attacker, "level", None)
+        if level is None:
+            level = getattr(attacker, "num", 1)
+        dmg = base_damage(level, power, atk_stat, def_stat)
+        if battle is not None:
+            field = getattr(battle, "field", None)
+            if field:
+                weather_handler = getattr(field, "weather_handler", None)
+                if weather_handler:
+                    cb = getattr(weather_handler, "onWeatherModifyDamage", None)
+                    if callable(cb):
+                        try:
+                            wmult = cb(move)
+                        except Exception:
+                            wmult = cb(move=move)
+                        if isinstance(wmult, (int, float)):
+                            dmg = floor(dmg * wmult)
         dmg = floor(dmg * stab_multiplier(attacker, move))
         eff = type_effectiveness(target, move)
         dmg = floor(dmg * eff)
-        if critical_hit_check():
+
+        # Critical hit calculation with simple ratio handling
+        crit_ratio = 0
+        if move.raw:
+            crit_ratio = int(move.raw.get("critRatio", 0))
+        ability = getattr(attacker, "ability", None)
+        if ability and hasattr(ability, "call"):
+            try:
+                new_ratio = ability.call("onModifyCritRatio", crit_ratio, attacker=attacker, defender=target, move=move)
+            except Exception:
+                new_ratio = ability.call("onModifyCritRatio", crit_ratio)
+            if isinstance(new_ratio, (int, float)):
+                crit_ratio = int(new_ratio)
+        item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
+        if item and hasattr(item, "call"):
+            try:
+                new_ratio = item.call("onModifyCritRatio", crit_ratio, pokemon=attacker, target=target)
+            except Exception:
+                new_ratio = item.call("onModifyCritRatio", crit_ratio)
+            if isinstance(new_ratio, (int, float)):
+                crit_ratio = int(new_ratio)
+        if getattr(attacker, "volatiles", {}).get("focusenergy"):
+            crit_ratio += 2
+        if getattr(attacker, "volatiles", {}).get("laserfocus"):
+            crit_ratio = max(crit_ratio, 3)
+
+        chances = {0: 1 / 24, 1: 1 / 8, 2: 1 / 2}
+        crit = False
+        if move.raw and move.raw.get("willCrit"):
+            crit = True
+        else:
+            chance = chances.get(crit_ratio, 1.0)
+            crit = percent_check(chance)
+        if crit:
             dmg = floor(dmg * 1.5)
+            result.debug.setdefault("critical", []).append(True)
+        else:
+            result.debug.setdefault("critical", []).append(False)
         phrase = damage_phrase(target, dmg)
         result.text.append(
             f"{attacker.name} uses {move.name} on {target.name} and deals {phrase} damage!"
         )
+        if spread:
+            dmg = int(dmg * 0.75)
         result.debug.setdefault("damage", []).append(dmg)
 
         # apply simple status effects like burns

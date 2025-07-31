@@ -18,6 +18,7 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
 
 
 import random
+import traceback
 from typing import List, Optional
 
 try:
@@ -427,6 +428,19 @@ class BattleSession:
             if hasattr(obj, "msg"):
                 obj.msg(msg)
 
+    def _msg_to(self, obj, text: str) -> None:
+        """Send `text` to a single object with battle prefix."""
+        names = [
+            getattr(self.captainA, "key", str(self.captainA)),
+            getattr(self.captainB, "key", str(self.captainB))
+            if self.captainB
+            else None,
+        ]
+        names = [n for n in names if n]
+        prefix = f"[Battle: {' vs. '.join(names)}]"
+        if hasattr(obj, "msg"):
+            obj.msg(f"{prefix} {text}")
+
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":
         """Recreate an instance from a stored battle on a room."""
@@ -794,9 +808,13 @@ class BattleSession:
         state.pokemon_control = {}
         for poke in player_pokemon:
             if getattr(poke, "model_id", None):
-                state.pokemon_control[str(poke.model_id)] = str(self.captainA.id)
+                owner_id = getattr(self.captainA, "id", getattr(self.captainA, "key", None))
+                if owner_id is not None:
+                    state.pokemon_control[str(poke.model_id)] = str(owner_id)
         if getattr(opponent_poke, "model_id", None) and self.captainB:
-            state.pokemon_control[str(opponent_poke.model_id)] = str(self.captainB.id)
+            owner_id = getattr(self.captainB, "id", getattr(self.captainB, "key", None))
+            if owner_id is not None:
+                state.pokemon_control[str(opponent_poke.model_id)] = str(owner_id)
 
         self.logic = BattleLogic(battle, data, state)
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
@@ -906,8 +924,30 @@ class BattleSession:
         self._set_player_control(True)
         if self.captainA and self.state and self.captainB is not None:
             try:
-                iface = display_battle_interface(self.captainA, self.captainB, self.state)
-                self.msg(iface)
+                iface_a = display_battle_interface(
+                    self.captainA,
+                    self.captainB,
+                    self.state,
+                    viewer_team="A",
+                )
+                iface_b = display_battle_interface(
+                    self.captainB,
+                    self.captainA,
+                    self.state,
+                    viewer_team="B",
+                )
+                iface_w = display_battle_interface(
+                    self.captainA,
+                    self.captainB,
+                    self.state,
+                    viewer_team=None,
+                )
+                for t in self.teamA:
+                    self._msg_to(t, iface_a)
+                for t in self.teamB:
+                    self._msg_to(t, iface_b)
+                for w in self.observers:
+                    self._msg_to(w, iface_w)
             except Exception:
                 log_warn("Failed to display battle interface", exc_info=True)
         self.msg("The battle awaits your move.")
@@ -924,21 +964,42 @@ class BattleSession:
         try:
             self.battle.run_turn()
         except Exception:
+            err_txt = traceback.format_exc()
+            self.turn_state["error"] = err_txt
             log_err(
-                f"Error while running turn for battle {self.battle_id}",
-                exc_info=True,
+                f"Error while running turn for battle {self.battle_id}:\n{err_txt}",
+                exc_info=False,
             )
+            self.notify(f"Battle error:\n{err_txt}")
         else:
             log_info(
                 f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
             )
         self.prompt_next_turn()
 
-    def queue_move(self, move_name: str, target: str = "B1") -> None:
+    def _get_position_for_trainer(self, trainer):
+        """Return the battle position associated with ``trainer``."""
+        if not self.data:
+            return None
+        team = None
+        if trainer in self.teamA:
+            team = "A"
+        elif trainer in self.teamB:
+            team = "B"
+        else:
+            for idx, part in enumerate(getattr(self.battle, "participants", [])):
+                if getattr(part, "player", None) is trainer:
+                    team = "A" if idx == 0 else "B"
+                    break
+        if not team:
+            return None
+        return self.data.turndata.positions.get(f"{team}1")
+
+    def queue_move(self, move_name: str, target: str = "B1", caller=None) -> None:
         """Queue a move and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareAttack(target, Move(name=move_name))
@@ -948,11 +1009,11 @@ class BattleSession:
         log_info("Saved queued move to room data")
         self.maybe_run_turn()
 
-    def queue_switch(self, slot: int) -> None:
+    def queue_switch(self, slot: int, caller=None) -> None:
         """Queue a Pokémon switch and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareSwitch(slot)
@@ -962,11 +1023,11 @@ class BattleSession:
         log_info("Saved queued switch to room data")
         self.maybe_run_turn()
 
-    def queue_item(self, item_name: str, target: str = "B1") -> None:
+    def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
         """Queue an item use and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareItem(item_name)
@@ -976,11 +1037,11 @@ class BattleSession:
         log_info("Saved queued item to room data")
         self.maybe_run_turn()
 
-    def queue_run(self) -> None:
+    def queue_run(self, caller=None) -> None:
         """Queue a flee attempt and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareRun()
@@ -1022,6 +1083,66 @@ class BattleSession:
             self.run_turn()
         else:
             log_info(f"Turn not ready for battle {self.battle_id}")
+            waiting_team = None
+            waiting_poke = None
+            if self.data:
+                for name, pos in self.data.turndata.positions.items():
+                    if not pos.getAction() and pos.pokemon:
+                        waiting_team = name[0]
+                        waiting_poke = pos.pokemon
+                        break
+            if waiting_poke:
+                self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
+                try:
+                    if waiting_team == "A":
+                        iface_a = display_battle_interface(
+                            self.captainA,
+                            self.captainB,
+                            self.state,
+                            viewer_team="A",
+                        )
+                        iface_b = display_battle_interface(
+                            self.captainB,
+                            self.captainA,
+                            self.state,
+                            viewer_team="B",
+                            waiting_on=waiting_poke,
+                        )
+                    else:
+                        iface_a = display_battle_interface(
+                            self.captainA,
+                            self.captainB,
+                            self.state,
+                            viewer_team="A",
+                            waiting_on=waiting_poke,
+                        )
+                        iface_b = display_battle_interface(
+                            self.captainB,
+                            self.captainA,
+                            self.state,
+                            viewer_team="B",
+                        )
+                    iface_w = display_battle_interface(
+                        self.captainA,
+                        self.captainB,
+                        self.state,
+                        viewer_team=None,
+                        waiting_on=waiting_poke,
+                    )
+                    if waiting_team == "A":
+                        for t in self.teamA:
+                            self._msg_to(t, iface_a)
+                        for t in self.teamB:
+                            self._msg_to(t, iface_b)
+                    else:
+                        for t in self.teamA:
+                            self._msg_to(t, iface_a)
+                        for t in self.teamB:
+                            self._msg_to(t, iface_b)
+                    for w in self.observers:
+                        self._msg_to(w, iface_w)
+                except Exception:
+                    log_warn("Failed to display waiting interface", exc_info=True)
 
     # ------------------------------------------------------------------
     # Watcher helpers

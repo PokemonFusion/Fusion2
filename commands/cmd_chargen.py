@@ -235,7 +235,7 @@ def fusion_gender(caller, raw_string, **kwargs):
 def human_type(caller, raw_string, **kwargs):
     # stash gender so we can re-enter with the same kwarg
     gender = kwargs["gender"]
-    caller.ndb.chargen["gender"] = gender
+    caller.ndb.chargen["player_gender"] = gender
 
     text = "Choose your favored Pokémon type:\n" + format_columns(TYPES) + "\n"
 
@@ -258,7 +258,7 @@ def human_type(caller, raw_string, **kwargs):
 
 
 def fusion_species(caller, raw_string, **kwargs):
-    caller.ndb.chargen["gender"] = kwargs.get("gender")
+    caller.ndb.chargen["player_gender"] = kwargs.get("gender")
     text = "Enter the species for your fusion:"
     options = (
         {"key": "_default", "goto": "fusion_ability"},
@@ -450,7 +450,7 @@ def starter_confirm(caller, raw_string, **kwargs):
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
     if kwargs.get("gender"):
-        caller.ndb.chargen["gender"] = kwargs["gender"]
+        caller.ndb.chargen["starter_gender"] = kwargs["gender"]
 
     species = caller.ndb.chargen["species"]
     low = species.lower()
@@ -465,7 +465,7 @@ def starter_confirm(caller, raw_string, **kwargs):
 
     text = (
         f"You chose {caller.ndb.chargen['species']} "
-        f"({caller.ndb.chargen['gender']}) "
+        f"({caller.ndb.chargen['starter_gender']}) "
         f"with ability {caller.ndb.chargen['ability']} as your starter.\n"
         "Proceed? (Y/N)"
     )
@@ -511,9 +511,9 @@ def finish_human(caller, raw_string):
         caller,
         key,
         data.get("ability"),
-        data.get("gender"),
+        data.get("starter_gender"),
     )
-    caller.db.gender = data.get("gender")
+    caller.db.gender = data.get("player_gender")
     caller.db.favored_type = data.get("favored_type")
     caller.msg(f"You received {pk.name} with ability {pk.ability} as your starter!")
     caller.msg("Character generation complete.")
@@ -522,7 +522,7 @@ def finish_human(caller, raw_string):
 
 def finish_fusion(caller, raw_string):
     data = caller.ndb.chargen or {}
-    caller.db.gender = data.get("gender")
+    caller.db.gender = data.get("player_gender")
     caller.db.fusion_species = data.get("species")
     caller.db.fusion_ability = data.get("ability")
     caller.msg(
