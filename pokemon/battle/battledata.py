@@ -13,6 +13,11 @@ import json
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 
+try:
+    from pokemon.dex import POKEDEX  # type: ignore
+except Exception:  # pragma: no cover - optional in tests
+    POKEDEX = {}
+
 
 @dataclass
 class Move:
@@ -44,6 +49,7 @@ class Pokemon:
         ability=None,
         data: Optional[Dict] = None,
         model_id: Optional[int] = None,
+        base_stats=None,
     ):
         self.name = name
         self.level = level
@@ -55,6 +61,15 @@ class Pokemon:
         self.ability = ability
         self.model_id = model_id
         self.data = data or {}
+        self.base_stats = base_stats
+        if self.base_stats is None:
+            species = (
+                POKEDEX.get(name)
+                or POKEDEX.get(name.lower())
+                or POKEDEX.get(name.capitalize())
+            )
+            if species is not None:
+                self.base_stats = getattr(species, "base_stats", None)
         self.tempvals: Dict[str, int] = {}
         self.boosts: Dict[str, int] = {
             "atk": 0,
@@ -119,6 +134,7 @@ class Pokemon:
         extra_data = data.get("data")
 
         slots = None
+        base_stats = None
         if model_id:
             try:
                 from ..models import OwnedPokemon
@@ -132,6 +148,15 @@ class Pokemon:
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
                     extra_data = getattr(poke, "data", extra_data)
+                    species_name = getattr(poke, "species", None)
+                    if species_name:
+                        base_stats = (
+                            POKEDEX.get(species_name)
+                            or POKEDEX.get(str(species_name).lower())
+                            or POKEDEX.get(str(species_name).capitalize())
+                        )
+                        if base_stats is not None:
+                            base_stats = getattr(base_stats, "base_stats", None)
                     if max_hp is None:
                         try:
                             from pokemon.utils.pokemon_helpers import get_max_hp
@@ -160,6 +185,15 @@ class Pokemon:
                 except Exception:
                     pass
 
+        if base_stats is None:
+            base_stats = (
+                POKEDEX.get(name)
+                or POKEDEX.get(name.lower())
+                or POKEDEX.get(name.capitalize())
+            )
+            if base_stats is not None:
+                base_stats = getattr(base_stats, "base_stats", None)
+
         obj = cls(
             name=name,
             level=level,
@@ -172,6 +206,11 @@ class Pokemon:
             data=extra_data,
             model_id=model_id,
         )
+        if base_stats is not None:
+            try:
+                obj.base_stats = base_stats
+            except Exception:
+                pass
         if slots is not None:
             obj.activemoveslot_set = slots
         obj.tempvals = data.get("tempvals", {})
