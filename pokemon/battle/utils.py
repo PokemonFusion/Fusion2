@@ -20,7 +20,11 @@ def get_modified_stat(pokemon, stat: str) -> int:
     base = 0
     if hasattr(pokemon, "base_stats"):
         base = getattr(pokemon.base_stats, stat, 0)
-    stage = getattr(getattr(pokemon, "boosts", {}), stat, 0)
+    boosts = getattr(pokemon, "boosts", {})
+    if isinstance(boosts, dict):
+        stage = boosts.get(stat, 0)
+    else:
+        stage = getattr(boosts, stat, 0)
 
     if stat in {"accuracy", "evasion"}:
         if stage >= 0:
