@@ -61,8 +61,9 @@ def _party_icons(trainer) -> str:
     return "[" + " ".join(icons) + "]"
 
 
-def _hp_bar(mon) -> tuple[str, int]:
-    """Return a coloured HP bar and percent."""
+def _hp_bar(mon, show_numbers: bool = False) -> tuple[str, str]:
+    """Return a coloured HP bar and percent/number display."""
+
     hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
     max_hp = getattr(mon, "max_hp", hp or getattr(mon, "max_hp", 1)) or 1
     ratio = max(0.0, min(1.0, hp / max_hp))
@@ -74,7 +75,13 @@ def _hp_bar(mon) -> tuple[str, int]:
         bar = ansi.YELLOW(bar)
     else:
         bar = ansi.RED(bar)
-    return bar, int(round(ratio * 100))
+
+    pct = int(round(ratio * 100))
+    if show_numbers:
+        display = f"{hp}/{max_hp} ({pct}%)"
+    else:
+        display = f"{pct}%"
+    return bar, display
 
 
 def _format_status(status: str) -> str:
@@ -95,20 +102,29 @@ def _format_status(status: str) -> str:
     return code
 
 
-def _active_info(trainer) -> list[str]:
+def _active_info(trainer, *, show_numbers: bool = False) -> list[str]:
     """Return formatted info lines for the trainer's active Pokémon."""
+
     mon = getattr(trainer, "active_pokemon", None)
     if not mon:
         return ["No active Pokémon."]
+
     name = getattr(mon, "name", "Unknown")
     level = getattr(mon, "level", "?")
-    bar, pct = _hp_bar(mon)
+    bar, disp = _hp_bar(mon, show_numbers=show_numbers)
     status = _format_status(getattr(mon, "status", ""))
     status_part = f" [{status}]" if status else ""
-    return [f"{name} Lv{level}", f"HP: {bar} {pct}%{status_part}"]
+    return [f"{name} Lv{level}", f"HP: {bar} {disp}{status_part}"]
 
 
-def display_battle_interface(trainer, opponent, battle_state) -> str:
+def display_battle_interface(
+    trainer,
+    opponent,
+    battle_state,
+    *,
+    viewer_team: str | None = None,
+    waiting_on=None,
+) -> str:
     """Return a formatted battle interface string."""
 
     t_party = _party_icons(trainer)
@@ -120,9 +136,12 @@ def display_battle_interface(trainer, opponent, battle_state) -> str:
     lines.append(f"{t_party:<38}{o_party:>38}")
     lines.append("")
 
-    for line in _active_info(trainer):
+    show_a = viewer_team == "A"
+    show_b = viewer_team == "B"
+
+    for line in _active_info(trainer, show_numbers=show_a):
         lines.append(line)
-    for line in _active_info(opponent):
+    for line in _active_info(opponent, show_numbers=show_b):
         lines.append(line)
 
     lines.append("")
@@ -132,16 +151,20 @@ def display_battle_interface(trainer, opponent, battle_state) -> str:
     lines.append(f"Weather: {weather}    Field: {field}    Round: {rnd}")
 
     mon = getattr(trainer, "active_pokemon", None)
-    active_name = getattr(mon, "name", "Pokémon") if mon else "Pokémon"
     lines.append("")
-    lines.append(f"What will {active_name} do?")
-    moves = getattr(mon, "moves", []) if mon else []
-    for idx in range(4):
-        if idx < len(moves):
-            mname = getattr(moves[idx], "name", str(moves[idx]))
-        else:
-            mname = "-"
-        lines.append(f"{idx + 1}) {mname}")
+    if waiting_on is not None:
+        w_name = getattr(waiting_on, "name", str(waiting_on))
+        lines.append(f"Waiting on {w_name}...")
+    else:
+        active_name = getattr(mon, "name", "Pokémon") if mon else "Pokémon"
+        lines.append(f"What will {active_name} do?")
+        moves = getattr(mon, "moves", []) if mon else []
+        for idx in range(4):
+            if idx < len(moves):
+                mname = getattr(moves[idx], "name", str(moves[idx]))
+            else:
+                mname = "-"
+            lines.append(f"{idx + 1}) {mname}")
 
-    lines.append("+switch   +item   +flee")
+        lines.append("+switch   +item   +flee")
     return "\n".join(lines)
