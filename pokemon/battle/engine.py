@@ -39,6 +39,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Callable, List, Optional, Dict, Any
+
 import random
 
 try:
@@ -1658,9 +1659,25 @@ class Battle:
                     try:
                         speed = utils.get_modified_stat(poke, "spe")
                     except Exception:
-                        speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
+                        try:
+                            from pokemon.utils.pokemon_helpers import get_stats
+                        except Exception:  # pragma: no cover - tests may stub
+                            def get_stats(p):
+                                return {"spe": getattr(getattr(p, "base_stats", None), "spe", 0)}
+                        try:
+                            speed = get_stats(poke).get("spe", 0)
+                        except Exception:
+                            speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
                 else:
-                    speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
+                    try:
+                        from pokemon.utils.pokemon_helpers import get_stats
+                    except Exception:  # pragma: no cover
+                        def get_stats(p):
+                            return {"spe": getattr(getattr(p, "base_stats", None), "spe", 0)}
+                    try:
+                        speed = get_stats(poke).get("spe", 0)
+                    except Exception:
+                        speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
 
                 if ability and hasattr(ability, "call"):
                     try:
@@ -1878,8 +1895,15 @@ class Battle:
             from . import utils
             return utils.get_modified_stat(pokemon, stat)
         except Exception:
-            base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
-            return int(base)
+            try:
+                from pokemon.utils.pokemon_helpers import get_stats
+            except Exception:  # pragma: no cover
+                def get_stats(p):
+                    return {stat: getattr(getattr(p, "base_stats", None), stat, 0)}
+            try:
+                return int(get_stats(pokemon).get(stat, 0))
+            except Exception:
+                return int(getattr(getattr(pokemon, "base_stats", None), stat, 0))
 
     def reset_stat_changes(self, pokemon) -> None:
         """Clear temporary stat modifiers for ``pokemon``."""
