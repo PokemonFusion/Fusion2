@@ -9,6 +9,11 @@ try:
 except Exception:  # pragma: no cover - allow tests to stub
     Pokemon = Move = None
 
+try:
+    from pokemon.dex import POKEDEX  # type: ignore
+except Exception:  # pragma: no cover - optional in tests
+    POKEDEX = {}
+
 
 def _get_calc_stats_from_model():
     try:
@@ -107,6 +112,17 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     if not full_heal:
         current_hp = getattr(model, "current_hp", current_hp)
 
+    base_stats = None
+    species_name = getattr(model, "species", None)
+    if species_name:
+        base_stats = (
+            POKEDEX.get(species_name)
+            or POKEDEX.get(str(species_name).lower())
+            or POKEDEX.get(str(species_name).capitalize())
+        )
+        if base_stats is not None:
+            base_stats = getattr(base_stats, "base_stats", None)
+
     battle_poke = Pokemon(
         name=name,
         level=level,
@@ -115,8 +131,15 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         moves=moves,
         ability=getattr(model, "ability", None),
         data=getattr(model, "data", {}),
-        model_id=str(getattr(model, "unique_id", getattr(model, "model_id", ""))) or None,
+        model_id=str(
+            getattr(model, "unique_id", getattr(model, "model_id", "")) or None
+        ),
     )
+    if base_stats is not None:
+        try:
+            battle_poke.base_stats = base_stats
+        except Exception:
+            pass
     if slots is not None:
         battle_poke.activemoveslot_set = slots
     return battle_poke

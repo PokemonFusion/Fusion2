@@ -808,9 +808,13 @@ class BattleSession:
         state.pokemon_control = {}
         for poke in player_pokemon:
             if getattr(poke, "model_id", None):
-                state.pokemon_control[str(poke.model_id)] = str(self.captainA.id)
+                owner_id = getattr(self.captainA, "id", getattr(self.captainA, "key", None))
+                if owner_id is not None:
+                    state.pokemon_control[str(poke.model_id)] = str(owner_id)
         if getattr(opponent_poke, "model_id", None) and self.captainB:
-            state.pokemon_control[str(opponent_poke.model_id)] = str(self.captainB.id)
+            owner_id = getattr(self.captainB, "id", getattr(self.captainB, "key", None))
+            if owner_id is not None:
+                state.pokemon_control[str(opponent_poke.model_id)] = str(owner_id)
 
         self.logic = BattleLogic(battle, data, state)
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
