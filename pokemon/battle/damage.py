@@ -191,7 +191,13 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
                 except Exception:
                     pass
 
-        dmg = base_damage(attacker.num, power, atk_stat, def_stat)
+        # ``base_damage`` expects the attacker's level.  Older stubs used in
+        # tests only define ``num`` so we fall back to that when ``level`` is
+        # missing for backwards compatibility.
+        level = getattr(attacker, "level", None)
+        if level is None:
+            level = getattr(attacker, "num", 1)
+        dmg = base_damage(level, power, atk_stat, def_stat)
         if battle is not None:
             field = getattr(battle, "field", None)
             if field:
