@@ -151,7 +151,7 @@ class CmdUseMove(Command):
 
         inst = getattr(self.caller.ndb, "battle_instance", None)
         if inst:
-            inst.queue_move(move_name)
+            inst.queue_move(move_name, caller=self.caller)
             return
 
         from pokemon.dex import MOVEDEX, POKEDEX, Move

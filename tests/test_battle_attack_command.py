@@ -138,7 +138,7 @@ class FakeQueueInstance(FakeInstance):
         super().__init__(battle)
         self.queued = []
 
-    def queue_move(self, move_name, target="B1"):
+    def queue_move(self, move_name, target="B1", caller=None):
         self.queued.append((move_name, target))
 
 class DummyCaller:

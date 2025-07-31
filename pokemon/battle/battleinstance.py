@@ -934,11 +934,29 @@ class BattleSession:
             )
         self.prompt_next_turn()
 
-    def queue_move(self, move_name: str, target: str = "B1") -> None:
+    def _get_position_for_trainer(self, trainer):
+        """Return the battle position associated with ``trainer``."""
+        if not self.data:
+            return None
+        team = None
+        if trainer in self.teamA:
+            team = "A"
+        elif trainer in self.teamB:
+            team = "B"
+        else:
+            for idx, part in enumerate(getattr(self.battle, "participants", [])):
+                if getattr(part, "player", None) is trainer:
+                    team = "A" if idx == 0 else "B"
+                    break
+        if not team:
+            return None
+        return self.data.turndata.positions.get(f"{team}1")
+
+    def queue_move(self, move_name: str, target: str = "B1", caller=None) -> None:
         """Queue a move and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareAttack(target, Move(name=move_name))
@@ -948,11 +966,11 @@ class BattleSession:
         log_info("Saved queued move to room data")
         self.maybe_run_turn()
 
-    def queue_switch(self, slot: int) -> None:
+    def queue_switch(self, slot: int, caller=None) -> None:
         """Queue a Pokémon switch and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareSwitch(slot)
@@ -962,11 +980,11 @@ class BattleSession:
         log_info("Saved queued switch to room data")
         self.maybe_run_turn()
 
-    def queue_item(self, item_name: str, target: str = "B1") -> None:
+    def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
         """Queue an item use and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareItem(item_name)
@@ -976,11 +994,11 @@ class BattleSession:
         log_info("Saved queued item to room data")
         self.maybe_run_turn()
 
-    def queue_run(self) -> None:
+    def queue_run(self, caller=None) -> None:
         """Queue a flee attempt and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self.data.turndata.teamPositions("A").get("A1")
+        pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareRun()

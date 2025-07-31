@@ -162,7 +162,7 @@ class CmdBattleAttack(Command):
             self.caller.msg(f"You prepare to use {move_obj.name}.")
             if hasattr(inst, "queue_move"):
                 try:
-                    inst.queue_move(move_obj.name)
+                    inst.queue_move(move_obj.name, caller=self.caller)
                 except Exception:
                     pass
             elif hasattr(inst, "maybe_run_turn"):
@@ -255,7 +255,7 @@ class CmdBattleSwitch(Command):
                 caller.msg(f"You prepare to switch to {poke.name}.")
                 if hasattr(inst, "queue_switch"):
                     try:
-                        inst.queue_switch(idx + 1)
+                        inst.queue_switch(idx + 1, caller=self.caller)
                     except Exception:
                         pass
                 elif hasattr(inst, "maybe_run_turn"):
@@ -290,7 +290,7 @@ class CmdBattleSwitch(Command):
         self.caller.msg(f"You prepare to switch to {pokemon.name}.")
         if hasattr(inst, "queue_switch"):
             try:
-                inst.queue_switch(index + 1)
+                inst.queue_switch(index + 1, caller=self.caller)
             except Exception:
                 pass
         elif hasattr(inst, "maybe_run_turn"):
@@ -343,7 +343,7 @@ class CmdBattleItem(Command):
         self.caller.msg(f"You prepare to use {item_name}.")
         if hasattr(inst, "queue_item"):
             try:
-                inst.queue_item(item_name)
+                inst.queue_item(item_name, caller=self.caller)
             except Exception:
                 pass
         elif hasattr(inst, "maybe_run_turn"):
@@ -376,7 +376,7 @@ class CmdBattleFlee(Command):
         self.caller.msg("You attempt to flee!")
         if hasattr(inst, "queue_run"):
             try:
-                inst.queue_run()
+                inst.queue_run(caller=self.caller)
             except Exception:
                 pass
         elif hasattr(inst, "maybe_run_turn"):
