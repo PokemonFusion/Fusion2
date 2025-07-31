@@ -18,6 +18,7 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
 
 
 import random
+import traceback
 from typing import List, Optional
 
 try:
@@ -959,10 +960,13 @@ class BattleSession:
         try:
             self.battle.run_turn()
         except Exception:
+            err_txt = traceback.format_exc()
+            self.turn_state["error"] = err_txt
             log_err(
-                f"Error while running turn for battle {self.battle_id}",
-                exc_info=True,
+                f"Error while running turn for battle {self.battle_id}:\n{err_txt}",
+                exc_info=False,
             )
+            self.notify(f"Battle error:\n{err_txt}")
         else:
             log_info(
                 f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
