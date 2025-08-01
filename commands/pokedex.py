@@ -9,6 +9,8 @@ from pokemon.middleware import (
     format_move_details,
     get_moveset_by_name,
     format_moveset,
+    POKEMON_BY_NAME,
+    _normalize_key,
 )
 from pokemon.dex.functions.pokedex_funcs import (
     get_region_entries,
@@ -47,28 +49,32 @@ class CmdPokedexSearch(Command):
 
     def _list_entries(self, entries, include_forms=False):
         lines = []
-        for num, key in entries:
+        for entry in entries:
+            if len(entry) == 3:
+                num, canonical, details = entry
+            else:
+                num, key = entry
+                canonical, details = POKEMON_BY_NAME.get(
+                    _normalize_key(key), (key, None)
+                )
             if num <= 0:
                 continue
-            canonical, details = get_pokemon_by_name(key)
-            display_name = None
-            if isinstance(details, dict):
-                display_name = details.get("name")
-            else:
-                display_name = getattr(details, "name", None)
-            if display_name is None:
-                display_name = canonical
 
-            forme = None
-            if isinstance(details, dict):
-                forme = details.get("forme")
+            if details:
+                if isinstance(details, dict):
+                    display_name = details.get("name", canonical)
+                    forme = details.get("forme")
+                else:
+                    display_name = getattr(details, "name", canonical)
+                    forme = getattr(details, "forme", None)
             else:
-                forme = getattr(details, "forme", None)
+                display_name = canonical
+                forme = None
 
             if not include_forms:
                 if forme and ("mega" in forme.lower() or "gmax" in forme.lower()):
                     continue
-                if "mega" in key.lower() or "gmax" in key.lower():
+                if "mega" in canonical.lower() or "gmax" in canonical.lower():
                     continue
                 if "mega" in display_name.lower() or "gmax" in display_name.lower():
                     continue
