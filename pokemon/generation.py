@@ -1,7 +1,6 @@
 """Utilities for generating Pokémon instances from dex data."""
 
 from dataclasses import dataclass
-import re
 import random
 from typing import Dict, List, Optional
 
@@ -12,6 +11,31 @@ from .dex.entities import Stats, Pokemon as SpeciesPokemon
 
 # Mapping for numeric dex-number lookups
 POKEDEX_BY_NUM = {mon.num: mon for mon in POKEDEX.values()}
+
+
+# Preprocess learnset level-up data at import time to avoid repeated parsing.
+# The resulting structure maps ``species -> level -> {move: generation}``.
+LEVEL_UP_LEARNSETS: Dict[str, Dict[int, Dict[str, int]]] = {}
+
+for _name, _data in LEARNSETS.items():
+    _learnset = _data.get("learnset", {})
+    level_map: Dict[int, Dict[str, int]] = {}
+    for _move, _codes in _learnset.items():
+        for _code in _codes:
+            if "L" not in _code:
+                continue
+            gen_part, level_part = _code.split("L", 1)
+            if not gen_part.isdigit() or not level_part.isdigit():
+                continue
+            gen = int(gen_part)
+            lvl = int(level_part)
+            moves_at_level = level_map.setdefault(lvl, {})
+            # Keep the highest generation for a given move/level pair
+            existing_gen = moves_at_level.get(_move)
+            if existing_gen is None or gen > existing_gen:
+                moves_at_level[_move] = gen
+    if level_map:
+        LEVEL_UP_LEARNSETS[_name] = level_map
 
 
 @dataclass
@@ -74,30 +98,23 @@ def get_gender(
     return "F" if r < female_ratio else "M"
 
 
-_LEVEL_CODE = re.compile(r"(?P<gen>\d+)L(?P<level>\d+)")
-
 def get_valid_moves(species_name: str, level: int) -> List[str]:
     """Return a list of moves learnable at or below the given level."""
     key = species_name.lower()
-    data = LEARNSETS.get(key)
-    if not data:
+    level_map = LEVEL_UP_LEARNSETS.get(key)
+    if not level_map:
         return []
 
-    learned: List[tuple[int, int, str]] = []
-    learnset = data.get("learnset", {})
-    for move, codes in learnset.items():
-        for code in codes:
-            m = _LEVEL_CODE.match(code)
-            if not m:
-                continue
-            lvl = int(m.group("level"))
-            if lvl <= level:
-                gen = int(m.group("gen"))
-                learned.append((gen, lvl, move))
-                break
-    learned.sort(key=lambda x: (-x[0], -x[1]))
-    moves = []
-    for _, _, mv in learned:
+    entries: List[tuple[int, int, str]] = []
+    for lvl, moves in level_map.items():
+        if lvl > level:
+            continue
+        for move, gen in moves.items():
+            entries.append((gen, lvl, move))
+
+    entries.sort(key=lambda x: (-x[0], -x[1]))
+    moves: List[str] = []
+    for _, _, mv in entries:
         if mv not in moves:
             moves.append(mv)
     return moves
@@ -126,29 +143,23 @@ def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = Fa
 
     types = [t.lower() for t in species.types]
 
-    data = LEARNSETS.get(key)
-    if not data:
+    level_map = LEVEL_UP_LEARNSETS.get(key, {})
+    if not level_map:
         return ["Struggle"]
 
-    learnset = data.get("learnset", {})
-    level_moves: List[tuple[int, str]] = []
-    for move, codes in learnset.items():
-        learned_at: Optional[int] = None
-        for code in codes:
-            m = _LEVEL_CODE.match(code)
-            if not m:
-                continue
-            lvl = int(m.group("level"))
-            if lvl <= level and (learned_at is None or lvl > learned_at):
-                learned_at = lvl
-        if learned_at is not None:
-            level_moves.append((learned_at, move))
+    move_to_level: Dict[str, int] = {}
+    for lvl in sorted(level_map):
+        if lvl > level:
+            break
+        for move in level_map[lvl]:
+            move_to_level[move] = lvl
 
-    if not level_moves:
+    if not move_to_level:
         return ["Struggle"]
 
-    # Sort by level descending for recency
-    level_moves.sort(key=lambda x: x[0], reverse=True)
+    level_moves: List[tuple[int, str]] = sorted(
+        ((lvl, mv) for mv, lvl in move_to_level.items()), key=lambda x: x[0], reverse=True
+    )
 
     def is_stab(mv: str) -> bool:
         md = MOVEDEX.get(mv.lower())
@@ -183,6 +194,7 @@ def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = Fa
 
     if allow_special and random.random() < 0.05:
         special_pool: List[str] = []
+        learnset = LEARNSETS.get(key, {}).get("learnset", {})
         for move, codes in learnset.items():
             for code in codes:
                 if code.endswith("M") or code.endswith("E"):
