@@ -21,6 +21,8 @@ class HuntSystem:
     def __init__(self, room: DefaultRoom, spawn_callback: Optional[Callable[[Any, Dict[str, Any]], Any]] = None) -> None:
         self.room = room
         self.spawn_callback = spawn_callback
+        self._spawn_index: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+        self._spawn_chart_cache: Optional[List[Dict[str, Any]]] = None
 
     def get_time_of_day(self) -> str:
         """Return the current time of day. Override for custom logic."""
@@ -88,6 +90,38 @@ class HuntSystem:
             return "You found a mysterious item!"  # placeholder
         return None
 
+    def _build_spawn_index(self) -> None:
+        """Precompute spawn entries grouped by time of day and weather."""
+        chart = self.room.db.hunt_chart or []
+        index: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+        for entry in chart:
+            times = entry.get("time", ["any"])
+            weathers = entry.get("weather", ["any"])
+            times = ["any"] if "any" in times else times
+            weathers = ["any"] if "any" in weathers else weathers
+            for t in times:
+                bucket = index.setdefault(t, {})
+                for w in weathers:
+                    bucket.setdefault(w, []).append(entry)
+        self._spawn_index = index
+        self._spawn_chart_cache = chart
+
+    def _get_valid_entries(self, time_of_day: str, weather: str) -> List[Dict[str, Any]]:
+        """Return spawn entries valid for the given time and weather."""
+        chart = self.room.db.hunt_chart or []
+        if self._spawn_chart_cache != chart:
+            self._build_spawn_index()
+        valid: List[Dict[str, Any]] = []
+        seen = set()
+        for t in (time_of_day, "any"):
+            bucket = self._spawn_index.get(t, {})
+            for w in (weather, "any"):
+                for entry in bucket.get(w, []):
+                    if id(entry) not in seen:
+                        valid.append(entry)
+                        seen.add(id(entry))
+        return valid
+
     # ------------------------------------------------------------------
     # Main hunt entry points
     # ------------------------------------------------------------------
@@ -125,26 +159,17 @@ class HuntSystem:
         if random.randint(1, 100) > encounter_rate:
             return "You didn't find any Pokémon."
 
-        chart: List[Dict[str, Any]] = room.db.hunt_chart or []
         time_of_day = self.get_time_of_day()
         weather = self.get_current_weather()
 
-        valid: List[Dict[str, Any]] = []
-        for entry in chart:
-            times = entry.get("time", ["any"])
-            weathers = entry.get("weather", ["any"])
-            if ("any" in times or time_of_day in times) and (
-                "any" in weathers or weather in weathers
-            ):
-                valid.append(entry)
-
+        valid = self._get_valid_entries(time_of_day, weather)
         if not valid:
             return "No Pokémon are active right now."
 
-        names = [entry["name"] for entry in valid]
-        weights = [entry.get("weight", 1) for entry in valid]
-        selected_name = random.choices(names, weights=weights, k=1)[0]
-        selected_entry = next(e for e in valid if e["name"] == selected_name)
+        selected_entry = random.choices(
+            valid, weights=[e.get("weight", 1) for e in valid], k=1
+        )[0]
+        selected_name = selected_entry["name"]
         min_level = selected_entry.get("min_level", 1)
         max_level = selected_entry.get("max_level", min_level)
         level = random.randint(min_level, max_level)
