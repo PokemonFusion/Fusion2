@@ -47,7 +47,9 @@ class Pokemon:
         moves: Optional[List[Move]] = None,
         toxic_counter: int = 0,
         ability=None,
-        data: Optional[Dict] = None,
+        ivs: Optional[List[int]] = None,
+        evs: Optional[List[int]] = None,
+        nature: str = "Hardy",
         model_id: Optional[int] = None,
     ):
         self.name = name
@@ -59,7 +61,9 @@ class Pokemon:
         self.moves = moves or []
         self.ability = ability
         self.model_id = model_id
-        self.data = data or {}
+        self.ivs = ivs or [0, 0, 0, 0, 0, 0]
+        self.evs = evs or [0, 0, 0, 0, 0, 0]
+        self.nature = nature
         self.tempvals: Dict[str, int] = {}
         self.boosts: Dict[str, int] = {
             "atk": 0,
@@ -98,14 +102,15 @@ class Pokemon:
 
         if self.ability is not None:
             info["ability"] = getattr(self.ability, "name", self.ability)
-        if self.data:
-            info["data"] = self.data
         info.update(
             {
                 "name": self.name,
                 "level": self.level,
                 "max_hp": self.max_hp,
                 "moves": [m.to_dict() for m in self.moves],
+                "ivs": self.ivs,
+                "evs": self.evs,
+                "nature": self.nature,
             }
         )
 
@@ -121,7 +126,10 @@ class Pokemon:
         max_hp = data.get("max_hp")
         model_id = data.get("model_id")
         ability = data.get("ability")
-        extra_data = data.get("data")
+        ivs = data.get("ivs")
+        evs = data.get("evs")
+        nature = data.get("nature", "Hardy")
+        types = data.get("types")
 
         slots = None
         if model_id:
@@ -136,8 +144,10 @@ class Pokemon:
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
-                    extra_data = getattr(poke, "data", extra_data)
-                    species_name = getattr(poke, "species", None)
+                    ivs = getattr(poke, "ivs", ivs)
+                    evs = getattr(poke, "evs", evs)
+                    nature = getattr(poke, "nature", nature)
+                    types = getattr(poke, "type_", types)
                     if max_hp is None:
                         try:
                             from pokemon.utils.pokemon_helpers import get_max_hp
@@ -175,9 +185,15 @@ class Pokemon:
             moves=moves,
             toxic_counter=data.get("toxic_counter", 0),
             ability=ability,
-            data=extra_data,
+            ivs=ivs,
+            evs=evs,
+            nature=nature,
             model_id=model_id,
         )
+        if types:
+            obj.types = (
+                [t.strip() for t in types.split(",")] if isinstance(types, str) else list(types)
+            )
         if slots is not None:
             obj.activemoveslot_set = slots
         obj.tempvals = data.get("tempvals", {})

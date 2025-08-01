@@ -112,7 +112,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     if not full_heal:
         current_hp = getattr(model, "current_hp", current_hp)
 
-
+    ivs = getattr(model, "ivs", [0, 0, 0, 0, 0, 0])
+    evs = getattr(model, "evs", [0, 0, 0, 0, 0, 0])
+    nature = getattr(model, "nature", "Hardy")
 
     battle_poke = Pokemon(
         name=name,
@@ -121,7 +123,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         max_hp=stats.get("hp", getattr(model, "current_hp", level)),
         moves=moves,
         ability=getattr(model, "ability", None),
-        data=getattr(model, "data", {}),
+        ivs=ivs,
+        evs=evs,
+        nature=nature,
         model_id=str(
             getattr(model, "unique_id", getattr(model, "model_id", "")) or None
         ),

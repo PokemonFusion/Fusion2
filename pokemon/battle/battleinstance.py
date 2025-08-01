@@ -88,12 +88,29 @@ def _calc_stats_from_model(poke):
         from ..stats import calculate_stats
     except Exception:  # pragma: no cover
         calculate_stats = None
-    data = getattr(poke, "data", {}) or {}
-    ivs = data.get("ivs", {})
-    evs = data.get("evs", {})
-    nature = data.get("nature", "Hardy")
-    name = getattr(poke, "name", "Pikachu")
+    ivs = getattr(poke, "ivs", [0, 0, 0, 0, 0, 0])
+    evs = getattr(poke, "evs", [0, 0, 0, 0, 0, 0])
+    nature = getattr(poke, "nature", "Hardy")
+    name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
     level = getattr(poke, "level", 1)
+    if isinstance(ivs, list):
+        ivs = {
+            "hp": ivs[0],
+            "atk": ivs[1],
+            "def": ivs[2],
+            "spa": ivs[3],
+            "spd": ivs[4],
+            "spe": ivs[5],
+        }
+    if isinstance(evs, list):
+        evs = {
+            "hp": evs[0],
+            "atk": evs[1],
+            "def": evs[2],
+            "spa": evs[3],
+            "spd": evs[4],
+            "spe": evs[5],
+        }
     try:
         if calculate_stats:
             return calculate_stats(name, level, ivs, evs, nature)
@@ -131,23 +148,16 @@ def create_battle_pokemon(
         move_names = ["Flail"]
     moves = [Move(name=m) for m in move_names]
 
-    data = {}
-    if hasattr(inst, "ivs"):
-        data.update(
-            {
-                "ivs": {
-                    "hp": getattr(inst.ivs, "hp", 0),
-                    "atk": getattr(inst.ivs, "atk", 0),
-                    "def": getattr(inst.ivs, "def_", 0),
-                    "spa": getattr(inst.ivs, "spa", 0),
-                    "spd": getattr(inst.ivs, "spd", 0),
-                    "spe": getattr(inst.ivs, "spe", 0),
-                },
-                "evs": {stat: 0 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]},
-                "nature": getattr(inst, "nature", "Hardy"),
-                "gender": getattr(inst, "gender", "N"),
-            }
-        )
+    ivs_list = [
+        getattr(getattr(inst, "ivs", None), "hp", 0),
+        getattr(getattr(inst, "ivs", None), "atk", 0),
+        getattr(getattr(inst, "ivs", None), "def_", 0),
+        getattr(getattr(inst, "ivs", None), "spa", 0),
+        getattr(getattr(inst, "ivs", None), "spd", 0),
+        getattr(getattr(inst, "ivs", None), "spe", 0),
+    ]
+    evs_list = [0, 0, 0, 0, 0, 0]
+    nature = getattr(inst, "nature", "Hardy")
 
     db_obj = None
     if OwnedPokemon:
@@ -182,7 +192,9 @@ def create_battle_pokemon(
         max_hp=getattr(inst.stats, "hp", level),
         moves=moves,
         ability=getattr(inst, "ability", None),
-        data=data,
+        ivs=ivs_list,
+        evs=evs_list,
+        nature=nature,
         model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
     )
 

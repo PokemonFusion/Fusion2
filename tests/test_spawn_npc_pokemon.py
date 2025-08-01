@@ -44,8 +44,10 @@ class FakeOwnedPokemon:
         self.unique_id = f"uid{len(FakeOwnedPokemon.objects.data)}"
         self.activemoveslot_set = FakeQS([types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)])
         self.learned_moves = types.SimpleNamespace(all=lambda: [])
-        self.data = {}
         self.ability = None
+        self.ivs = [0, 0, 0, 0, 0, 0]
+        self.evs = [0, 0, 0, 0, 0, 0]
+        self.nature = "Hardy"
 
     @property
     def computed_level(self):
@@ -69,14 +71,16 @@ class Move:
     def __init__(self, name):
         self.name = name
 class Pokemon:
-    def __init__(self, name, level=1, hp=10, max_hp=10, moves=None, ability=None, data=None, model_id=None):
+    def __init__(self, name, level=1, hp=10, max_hp=10, moves=None, ability=None, ivs=None, evs=None, nature="Hardy", model_id=None):
         self.name = name
         self.level = level
         self.hp = hp
         self.max_hp = max_hp
         self.moves = moves or []
         self.ability = ability
-        self.data = data or {}
+        self.ivs = ivs or [0, 0, 0, 0, 0, 0]
+        self.evs = evs or [0, 0, 0, 0, 0, 0]
+        self.nature = nature
         self.model_id = model_id
 battledata.Move = Move
 battledata.Pokemon = Pokemon

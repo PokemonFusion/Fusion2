@@ -13,16 +13,6 @@ def get_display_xp(pokemon: PokemonLike) -> int:
         val = getattr(pokemon, attr, None)
         if val is not None:
             return int(val)
-
-    data = getattr(pokemon, "data", None)
-    if data is not None:
-        get = getattr(data, "get", None)
-        if callable(get):
-            for key in ("xp", "experience", "total_exp"):
-                val = get(key)
-                if val is not None:
-                    return int(val)
-
     return 0
 
 
@@ -31,15 +21,7 @@ def get_next_level_xp(pokemon: PokemonLike) -> int:
 
     xp = get_display_xp(pokemon)
 
-    growth = getattr(pokemon, "growth_rate", None)
-    if growth is None:
-        data = getattr(pokemon, "data", None)
-        if data is not None:
-            get = getattr(data, "get", None)
-            if callable(get):
-                growth = get("growth_rate")
-    if growth is None:
-        growth = "medium_fast"
+    growth = getattr(pokemon, "growth_rate", "medium_fast")
 
     level = level_for_exp(xp, growth)
     next_level = min(level + 1, 100)

@@ -9,6 +9,21 @@ sys.path.insert(0, ROOT)
 
 def load_module():
     path = os.path.join(ROOT, "pokemon", "battle", "battleinstance.py")
+    iface = types.ModuleType("pokemon.battle.interface")
+    iface.add_watcher = lambda *a, **k: None
+    iface.notify_watchers = lambda *a, **k: None
+    iface.remove_watcher = lambda *a, **k: None
+    iface.display_battle_interface = lambda *a, **k: None
+    sys.modules["pokemon.battle.interface"] = iface
+    handler_mod = types.ModuleType("pokemon.battle.handler")
+    handler_mod.battle_handler = types.SimpleNamespace(
+        register=lambda *a, **k: None,
+        unregister=lambda *a, **k: None,
+        restore=lambda *a, **k: None,
+        save=lambda *a, **k: None,
+        next_id=lambda: 1,
+    )
+    sys.modules["pokemon.battle.handler"] = handler_mod
     spec = importlib.util.spec_from_file_location("pokemon.battle.battleinstance", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
@@ -39,7 +54,9 @@ def test_prepare_party_uses_active_moves():
             self.current_hp = 30
             self.activemoveslot_set = FakeQS([FakeSlot("tackle", 1), FakeSlot("growl", 2)])
             self.ability = None
-            self.data = {}
+            self.ivs = [0, 0, 0, 0, 0, 0]
+            self.evs = [0, 0, 0, 0, 0, 0]
+            self.nature = "Hardy"
 
     class FakeStorage:
         def get_party(self):
@@ -80,7 +97,9 @@ def test_prepare_party_uses_moveset_when_no_slots():
             self.current_hp = 30
             self.active_moveset = FakeMoveset()
             self.ability = None
-            self.data = {}
+            self.ivs = [0, 0, 0, 0, 0, 0]
+            self.evs = [0, 0, 0, 0, 0, 0]
+            self.nature = "Hardy"
 
     class FakeStorage:
         def get_party(self):

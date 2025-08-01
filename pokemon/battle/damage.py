@@ -48,20 +48,16 @@ def stab_multiplier(attacker: Pokemon, move: Move) -> float:
     """Return the STAB multiplier for ``attacker`` using ``move``.
 
     This helper tolerates different container layouts.  If ``attacker`` does
-    not define a ``types`` attribute, the function falls back to common
-    alternatives such as ``species.types`` or ``data['types']``.  Ability hooks
-    may further modify the multiplier via ``onModifySTAB``.
+    not define a ``types`` attribute, the function falls back to ``species.types``.
+    Ability hooks may further modify the multiplier via ``onModifySTAB``.
     """
 
     if not move.type:
         return 1.0
 
     types = getattr(attacker, "types", None)
-    if types is None:
-        if hasattr(attacker, "species") and getattr(attacker.species, "types", None):
-            types = attacker.species.types
-        elif hasattr(attacker, "data"):
-            types = attacker.data.get("types")
+    if types is None and hasattr(attacker, "species") and getattr(attacker.species, "types", None):
+        types = attacker.species.types
     types = types or []
 
     has_type = move.type.lower() in {t.lower() for t in types}

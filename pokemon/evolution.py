@@ -65,6 +65,4 @@ def attempt_evolution(pokemon, *, item: Optional[str] = None) -> Optional[str]:
     pokemon.name = target
     if hasattr(pokemon, "type_") and data:
         pokemon.type_ = ", ".join(data.types)
-    if hasattr(pokemon, "data") and data:
-        pokemon.data.update(data.raw)
     return target
