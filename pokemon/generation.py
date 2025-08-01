@@ -10,6 +10,10 @@ from .data.learnsets.learnsets import LEARNSETS
 from .dex.entities import Stats, Pokemon as SpeciesPokemon
 
 
+# Mapping for numeric dex-number lookups
+POKEDEX_BY_NUM = {mon.num: mon for mon in POKEDEX.values()}
+
+
 @dataclass
 class PokemonInstance:
     """A generated Pokémon with stats, moves and other metadata."""
@@ -110,18 +114,15 @@ def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = Fa
     key = species_name.lower()
     species = POKEDEX.get(key)
     if not species:
-        # allow lookup by dex number provided as string or int
         try:
             num = int(species_name)
         except (TypeError, ValueError):
             return []
-        for name, data in POKEDEX.items():
-            if data.num == num:
-                species = data
-                key = name.lower()
-                break
-    if not species:
-        return []
+        species = POKEDEX_BY_NUM.get(num)
+        if species:
+            key = species.name.lower()
+        else:
+            return []
 
     types = [t.lower() for t in species.types]
 
@@ -248,11 +249,12 @@ NATURES: Dict[str, tuple[Optional[str], Optional[str]]] = {
 
 def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
     """Create a Pokémon instance from dex data."""
-    species: Optional[SpeciesPokemon] = None
-    for name, data in POKEDEX.items():
-        if name.lower() == species_name.lower():
-            species = data
-            break
+    species = POKEDEX.get(species_name.lower())
+    if not species:
+        try:
+            species = POKEDEX_BY_NUM.get(int(species_name))
+        except (TypeError, ValueError):
+            species = None
     if not species:
         raise ValueError(f"Species '{species_name}' not found in Pokedex")
 
