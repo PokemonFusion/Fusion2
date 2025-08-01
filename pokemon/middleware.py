@@ -6,6 +6,12 @@ from pokemon.data.learnsets.learnsets import LEARNSETS
 from pokemon.data.text import MOVES_TEXT
 
 
+def _normalize_key(name: str) -> str:
+    """Normalize names for case-insensitive dex lookups."""
+
+    return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+
+
 def _get(obj, key, default=None):
     """Helper to get an attribute or dict entry from ``obj``."""
 
@@ -18,25 +24,29 @@ def _get(obj, key, default=None):
         return raw.get(key, default)
     return default
 
+
+# Build lookup indices for faster pokémon retrieval
+POKEMON_BY_NUMBER = {}
+POKEMON_BY_NAME = {}
+for mon_name, details in pokedex.items():
+    number = _get(details, "num")
+    if number is not None and number not in POKEMON_BY_NUMBER:
+        POKEMON_BY_NUMBER[number] = (mon_name, details)
+    for alias in {mon_name, _get(details, "name", mon_name)}:
+        key = _normalize_key(alias)
+        POKEMON_BY_NAME[key] = (mon_name, details)
+
+
 def get_pokemon_by_number(number):
     """Return pokémon data for the given dex number."""
 
-    for name, details in pokedex.items():
-        if _get(details, "num") == number:
-            return name, details
-    return None, None
+    return POKEMON_BY_NUMBER.get(number, (None, None))
+
 
 def get_pokemon_by_name(name):
     """Return pokémon data by name."""
 
-    key = name.lower()
-    if key in pokedex:
-        return key, pokedex[key]
-    for mon_name, details in pokedex.items():
-        alt = _get(details, "name", mon_name).lower()
-        if mon_name.lower() == key or alt == key:
-            return mon_name, details
-    return None, None
+    return POKEMON_BY_NAME.get(_normalize_key(name), (None, None))
 
 def format_gender(details):
     """Return a formatted gender ratio string."""
@@ -114,11 +124,6 @@ def format_pokemon_details(name, details):
     egg_groups = _get(details, "eggGroups", _get(details, "egg_groups", []))
     msg += f"Egg Groups: {', '.join(egg_groups)}\n"
     return msg
-
-
-def _normalize_key(name: str) -> str:
-    """Normalize names for lookup in MOVEDEX."""
-    return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 
 
 def get_move_by_name(name):
