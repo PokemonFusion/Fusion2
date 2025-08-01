@@ -5,6 +5,9 @@ from pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
 from pokemon.data.learnsets.learnsets import LEARNSETS
 from pokemon.data.text import MOVES_TEXT
 
+# Cache for built movesets keyed by normalized Pokémon name
+MOVESET_CACHE = {}
+
 
 def _normalize_key(name: str) -> str:
     """Normalize names for case-insensitive dex lookups."""
@@ -231,14 +234,24 @@ def build_moveset(learnset):
 
 
 def get_moveset_by_name(name):
-    """Return a moveset for the given Pokémon name."""
+    """Return a moveset for the given Pokémon name.
+
+    The moveset is constructed once per species and cached for future
+    lookups to avoid repeatedly rebuilding the same data.
+    """
 
     key = name.lower()
+    if key in MOVESET_CACHE:
+        return key, MOVESET_CACHE[key]
+
     data = LEARNSETS.get(key)
     if not data:
         return None, None
+
     learnset = data.get("learnset", {})
-    return key, build_moveset(learnset)
+    moveset = build_moveset(learnset)
+    MOVESET_CACHE[key] = moveset
+    return key, moveset
 
 
 def format_moveset(name, moveset):
