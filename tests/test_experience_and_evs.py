@@ -49,7 +49,7 @@ def test_exp_level_conversion():
 
 
 def test_add_experience_updates_level():
-    mon = types.SimpleNamespace(experience=0, level=1, data={"growth_rate": "medium_fast"})
+    mon = types.SimpleNamespace(experience=0, level=1, growth_rate="medium_fast")
     add_experience(mon, exp_for_level(10) - 1)
     assert mon.level == 9
     add_experience(mon, 1)

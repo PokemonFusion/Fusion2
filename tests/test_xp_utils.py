@@ -16,8 +16,8 @@ def test_get_display_xp_attribute():
     assert get_display_xp(mon) == 250
 
 
-def test_get_display_xp_from_data():
-    mon = DummyMon(data={'total_exp': 300})
+def test_get_display_xp_from_total_exp():
+    mon = DummyMon(total_exp=300)
     assert get_display_xp(mon) == 300
 
 

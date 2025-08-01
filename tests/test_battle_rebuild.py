@@ -244,14 +244,15 @@ def test_trainer_ids_saved_and_restored():
 def test_pokemon_serialization_minimal():
     poke = bd_mod.Pokemon("Bulbasaur", level=5, hp=20, max_hp=30, model_id="abc")
     poke.ability = "Overgrow"
-    poke.data = {"foo": "bar"}
     data = poke.to_dict()
 
     assert "name" not in data
     assert "level" not in data
     assert "max_hp" not in data
     assert "moves" not in data
-    assert "data" not in data
+    assert "ivs" not in data
+    assert "evs" not in data
+    assert "nature" not in data
     assert "ability" not in data
     assert data.get("model_id") == "abc"
     assert data.get("current_hp") == 20
@@ -275,7 +276,9 @@ def test_from_dict_calculates_max_hp():
             self.name = "Bulbasaur"
             self.species = "Bulbasaur"
             self.level = 5
-            self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
+            self.ivs = [0, 0, 0, 0, 0, 0]
+            self.evs = [0, 0, 0, 0, 0, 0]
+            self.nature = "Hardy"
             class MS(list):
                 def order_by(self, field):
                     return self
@@ -340,7 +343,9 @@ def test_pokemon_control_restored_after_reload():
             self.name = "Bulbasaur"
             self.level = 5
             self.moves = ["tackle"]
-            self.data = {"ivs": {}, "evs": {}, "nature": "Hardy"}
+            self.ivs = [0, 0, 0, 0, 0, 0]
+            self.evs = [0, 0, 0, 0, 0, 0]
+            self.nature = "Hardy"
             self.current_hp = 20
             self.unique_id = uid
 

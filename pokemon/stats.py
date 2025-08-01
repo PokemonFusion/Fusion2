@@ -57,27 +57,31 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 
     prev_level = getattr(pokemon, "level", None)
 
+    def _get_growth_rate(poke) -> str:
+        if rate:
+            return rate
+        growth = getattr(poke, "growth_rate", None)
+        if growth:
+            return growth
+        name = getattr(poke, "species", getattr(poke, "name", None))
+        if name:
+            species = (
+                POKEDEX.get(name)
+                or POKEDEX.get(str(name).lower())
+                or POKEDEX.get(str(name).capitalize())
+            )
+            if species:
+                return species.raw.get("growthRate", "medium_fast")
+        return "medium_fast"
+
     if hasattr(pokemon, "total_exp"):
         pokemon.total_exp = getattr(pokemon, "total_exp", 0) + amount
-        growth = rate or getattr(pokemon, "growth_rate", None)
-        if growth is None:
-            growth = getattr(getattr(pokemon, "data", {}), "get", lambda x, d=None: d)(
-                "growth_rate", "medium_fast"
-            )
-            if hasattr(pokemon, "data") and isinstance(pokemon.data, dict):
-                growth = pokemon.data.get("growth_rate", "medium_fast")
-        # ensure DB field stays in sync when present
+        growth = _get_growth_rate(pokemon)
         if hasattr(pokemon, "level"):
             pokemon.level = level_for_exp(pokemon.total_exp, growth)
     else:
         pokemon.experience = getattr(pokemon, "experience", 0) + amount
-        growth = rate or getattr(pokemon, "growth_rate", None)
-        if growth is None:
-            growth = getattr(getattr(pokemon, "data", {}), "get", lambda x, d=None: d)(
-                "growth_rate", "medium_fast"
-            )
-            if hasattr(pokemon, "data") and isinstance(pokemon.data, dict):
-                growth = pokemon.data.get("growth_rate", "medium_fast")
+        growth = _get_growth_rate(pokemon)
         pokemon.level = level_for_exp(pokemon.experience, growth)
 
     new_level = getattr(pokemon, "level", None)

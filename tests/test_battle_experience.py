@@ -59,7 +59,7 @@ class DummyMon:
     def __init__(self):
         self.experience = 0
         self.level = 1
-        self.data = {"growth_rate": "medium_fast"}
+        self.growth_rate = "medium_fast"
         self.evs = {}
     def save(self):
         pass

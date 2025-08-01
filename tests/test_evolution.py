@@ -55,7 +55,6 @@ class DummyMon:
         self.name = name
         self.level = level
         self.type_ = "Grass"
-        self.data = {}
 
 def test_get_evolution_items_empty():
     assert evo_mod.get_evolution_items() == []

@@ -5,34 +5,34 @@ from pokemon.stats import calculate_stats
 
 
 def _get_stats_from_data(pokemon):
-    """Return calculated stats based on stored data."""
-    data = getattr(pokemon, "data", {}) or {}
-    if not data and hasattr(pokemon, "ivs"):
-        ivs = {
-            "hp": pokemon.ivs[0],
-            "atk": pokemon.ivs[1],
-            "def": pokemon.ivs[2],
-            "spa": pokemon.ivs[3],
-            "spd": pokemon.ivs[4],
-            "spe": pokemon.ivs[5],
-        }
-        evs = {
-            "hp": pokemon.evs[0],
-            "atk": pokemon.evs[1],
-            "def": pokemon.evs[2],
-            "spa": pokemon.evs[3],
-            "spd": pokemon.evs[4],
-            "spe": pokemon.evs[5],
-        }
-        nature = getattr(pokemon, "nature", "Hardy")
-        name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
-        level = getattr(pokemon, "level", 1)
+    """Return calculated stats based on stored attributes."""
+    ivs_attr = getattr(pokemon, "ivs", [0, 0, 0, 0, 0, 0])
+    evs_attr = getattr(pokemon, "evs", [0, 0, 0, 0, 0, 0])
+    if isinstance(ivs_attr, dict):
+        ivs = {k: ivs_attr.get(k, 0) for k in ["hp", "atk", "def", "spa", "spd", "spe"]}
     else:
-        ivs = data.get("ivs", {})
-        evs = data.get("evs", {})
-        nature = data.get("nature", "Hardy")
-        name = getattr(pokemon, "name", getattr(pokemon, "species", ""))
-        level = getattr(pokemon, "level", 1)
+        ivs = {
+            "hp": ivs_attr[0],
+            "atk": ivs_attr[1],
+            "def": ivs_attr[2],
+            "spa": ivs_attr[3],
+            "spd": ivs_attr[4],
+            "spe": ivs_attr[5],
+        }
+    if isinstance(evs_attr, dict):
+        evs = {k: evs_attr.get(k, 0) for k in ["hp", "atk", "def", "spa", "spd", "spe"]}
+    else:
+        evs = {
+            "hp": evs_attr[0],
+            "atk": evs_attr[1],
+            "def": evs_attr[2],
+            "spa": evs_attr[3],
+            "spd": evs_attr[4],
+            "spe": evs_attr[5],
+        }
+    nature = getattr(pokemon, "nature", "Hardy")
+    name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
+    level = getattr(pokemon, "level", 1)
     try:
         return calculate_stats(name, level, ivs, evs, nature)
     except Exception:
