@@ -31,12 +31,12 @@ def _get_stats_from_data(pokemon):
             "spe": evs_attr[5],
         }
     nature = getattr(pokemon, "nature", "Hardy")
-    name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
+    species = getattr(pokemon, "species", getattr(pokemon, "name", ""))
     level = getattr(pokemon, "level", 1)
     try:
-        return calculate_stats(name, level, ivs, evs, nature)
+        return calculate_stats(species, level, ivs, evs, nature)
     except Exception:
-        inst = generate_pokemon(name, level=level)
+        inst = generate_pokemon(species, level=level)
         return {
             "hp": inst.stats.hp,
             "atk": inst.stats.atk,
