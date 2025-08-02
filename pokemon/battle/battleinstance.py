@@ -990,6 +990,17 @@ class BattleSession:
             log_info(
                 f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
             )
+        if self.state:
+            self.state.declare.clear()
+        if self.data:
+            for pos in self.data.turndata.positions.values():
+                pos.removeDeclare()
+        if getattr(self, "storage", None):
+            try:
+                self.storage.set("data", self.logic.data.to_dict())
+                self.storage.set("state", self.logic.state.to_dict())
+            except Exception:
+                log_warn("Failed to persist battle state", exc_info=True)
         self.prompt_next_turn()
 
     def _get_position_for_trainer(self, trainer):
@@ -1026,6 +1037,40 @@ class BattleSession:
         pos_name = f"{team}1"
         return pos_name, self.data.turndata.positions.get(pos_name)
 
+    def _already_queued(self, pos_name, pos, caller, action_desc: str) -> bool:
+        """Check if a position already has an action queued.
+
+        Parameters
+        ----------
+        pos_name : str
+            Name of the position (e.g. ``"A1"``).
+        pos : PositionData
+            Position data object for the active Pokémon.
+        caller : object | None
+            Trainer attempting the action. Used for notifications.
+        action_desc : str
+            Description of the attempted action for logging.
+
+        Returns
+        -------
+        bool
+            ``True`` if an action was already queued and the new request should
+            be ignored, otherwise ``False``.
+        """
+
+        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        if pos.getAction() or (self.state and pos_name in self.state.declare):
+            self._msg_to(
+                caller or self.captainA,
+                f"{pokemon_name} already has an action queued this turn.",
+            )
+            log_info(
+                f"Ignored {action_desc} for {pokemon_name} at {pos_name}: action already queued"
+            )
+            self.maybe_run_turn()
+            return True
+        return False
+
     def queue_move(self, move_name: str, target: str = "B1", caller=None) -> None:
         """Queue a move and run the turn if ready."""
         if not self.data or not self.battle:
@@ -1033,8 +1078,10 @@ class BattleSession:
         pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
-        pos.declareAttack(target, Move(name=move_name))
         pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        if self._already_queued(pos_name, pos, caller, f"move {move_name}"):
+            return
+        pos.declareAttack(target, Move(name=move_name))
         log_info(
             f"Queued move {move_name} targeting {target} from {pokemon_name} at {pos_name}"
         )
@@ -1061,8 +1108,10 @@ class BattleSession:
         pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
-        pos.declareSwitch(slot)
         pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        if self._already_queued(pos_name, pos, caller, "switch"):
+            return
+        pos.declareSwitch(slot)
         log_info(f"Queued switch to slot {slot} for {pokemon_name} at {pos_name}")
         if self.state:
             actor_id = str(getattr(caller or self.captainA, "id", ""))
@@ -1086,8 +1135,10 @@ class BattleSession:
         pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
-        pos.declareItem(item_name)
         pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        if self._already_queued(pos_name, pos, caller, f"item {item_name}"):
+            return
+        pos.declareItem(item_name)
         log_info(
             f"Queued item {item_name} targeting {target} from {pokemon_name} at {pos_name}"
         )
@@ -1114,8 +1165,10 @@ class BattleSession:
         pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
-        pos.declareRun()
         pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        if self._already_queued(pos_name, pos, caller, "flee attempt"):
+            return
+        pos.declareRun()
         log_info(f"Queued attempt to flee by {pokemon_name} at {pos_name}")
         if self.state:
             actor_id = str(getattr(caller or self.captainA, "id", ""))
@@ -1134,17 +1187,26 @@ class BattleSession:
 
     def is_turn_ready(self) -> bool:
         if self.data:
-            missing = [
-                name
-                for name, pos in self.data.turndata.positions.items()
-                if not pos.getAction()
-            ]
+            if self.state:
+                missing = [
+                    name
+                    for name in self.data.turndata.positions
+                    if name not in self.state.declare
+                ]
+            else:
+                missing = [
+                    name
+                    for name, pos in self.data.turndata.positions.items()
+                    if not pos.getAction()
+                ]
             if missing:
                 log_info(
                     f"Waiting for actions from positions {missing} in battle {self.battle_id}"
                 )
                 return False
         if self.battle and getattr(self.battle, "participants", None):
+            if self.state:
+                return True
             incomplete = [
                 getattr(p, "name", str(p))
                 for p in self.battle.participants
