@@ -72,11 +72,11 @@ class DummyMon:
         self.hp = hp
         self.max_hp = max_hp
         self.boosts = {
-            "atk": 0,
-            "def": 0,
-            "spa": 0,
-            "spd": 0,
-            "spe": 0,
+            "attack": 0,
+            "defense": 0,
+            "special_attack": 0,
+            "special_defense": 0,
+            "speed": 0,
             "accuracy": 0,
             "evasion": 0,
         }
@@ -103,7 +103,7 @@ def test_intimidate_lowers_attack():
         foe = DummyMon()
         user._foes = [foe]
         ab_mod.Intimidate().onStart(pokemon=user)
-        assert foe.boosts["atk"] == -1
+        assert foe.boosts["attack"] == -1
     finally:
         cleanup(mods)
 

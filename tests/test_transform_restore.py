@@ -116,13 +116,13 @@ def test_transform_restored_on_battle_end():
 
     assert user.transformed
     assert "transform_backup" in user.tempvals
-    assert user.base_stats.atk == base_target.atk
+    assert user.base_stats.attack == base_target.attack
 
     p2.has_lost = True
     battle.end_turn()
 
     assert not getattr(user, "transformed", False)
     assert "transform_backup" not in user.tempvals
-    assert user.base_stats.atk == base_user.atk
+    assert user.base_stats.attack == base_user.attack
 
     cleanup_modules(originals)

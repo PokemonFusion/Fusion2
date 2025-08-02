@@ -122,6 +122,6 @@ def test_imposter_transforms_on_switch_in():
 
         assert getattr(user, "transformed", False)
         assert "transform_backup" in user.tempvals
-        assert user.base_stats.atk == base_target.atk
+        assert user.base_stats.attack == base_target.attack
     finally:
         cleanup_modules(originals)

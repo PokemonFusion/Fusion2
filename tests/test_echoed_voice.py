@@ -80,7 +80,14 @@ def test_ontry_creates_field_effect():
     battle = eng_mod.Battle(eng_mod.BattleType.WILD, [])
     user = Pokemon("User")
     target = Pokemon("Target")
-    stats = types.SimpleNamespace(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+    stats = types.SimpleNamespace(
+        hp=100,
+        attack=50,
+        defense=50,
+        special_attack=50,
+        special_defense=50,
+        speed=50,
+    )
     user.base_stats = stats
     target.base_stats = stats
     user.num = 1
@@ -102,7 +109,14 @@ def test_base_power_scales_with_multiplier():
     battle.field.add_pseudo_weather("echoedvoice", {"duration": 2, "multiplier": 3})
     user = Pokemon("User")
     target = Pokemon("Target")
-    stats = types.SimpleNamespace(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+    stats = types.SimpleNamespace(
+        hp=100,
+        attack=50,
+        defense=50,
+        special_attack=50,
+        special_defense=50,
+        speed=50,
+    )
     user.base_stats = stats
     target.base_stats = stats
     user.num = 1

@@ -100,7 +100,14 @@ sys.modules[d_spec.name] = d_mod
 d_spec.loader.exec_module(d_mod)
 
 # Helper to run a simple damage calculation
-StatsBase = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+StatsBase = Stats(
+    hp=100,
+    attack=50,
+    defense=50,
+    special_attack=50,
+    special_defense=50,
+    speed=50,
+)
 species = PokemonData('Charmander', num=4, types=['Fire'], base_stats=StatsBase)
 
 random.seed(0)

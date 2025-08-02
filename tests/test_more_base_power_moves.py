@@ -45,7 +45,14 @@ sys.modules[mv_spec.name] = mv_mod
 mv_spec.loader.exec_module(mv_mod)
 
 # helper to create pokemon with stats
-base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+base = Stats(
+    hp=100,
+    attack=50,
+    defense=50,
+    special_attack=50,
+    special_defense=50,
+    speed=50,
+)
 
 def make_poke(**kwargs):
     p = Pokemon("Poke")
@@ -58,10 +65,30 @@ def make_poke(**kwargs):
 
 
 MOVES = [
-        (mv_mod.Electroball().basePowerCallback,
-         make_poke(base_stats=Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=40)),
-         make_poke(base_stats=Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=100)),
-         40),
+        (
+            mv_mod.Electroball().basePowerCallback,
+            make_poke(
+                base_stats=Stats(
+                    hp=100,
+                    attack=50,
+                    defense=50,
+                    special_attack=50,
+                    special_defense=50,
+                    speed=40,
+                )
+            ),
+            make_poke(
+                base_stats=Stats(
+                    hp=100,
+                    attack=50,
+                    defense=50,
+                    special_attack=50,
+                    special_defense=50,
+                    speed=100,
+                )
+            ),
+            40,
+        ),
         (mv_mod.Eruption().basePowerCallback,
         make_poke(hp=50, max_hp=100),
         make_poke(),

@@ -154,8 +154,8 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 
         from . import utils
 
-        atk_key = "atk" if move.category == "Physical" else "spa"
-        def_key = "def_" if move.category == "Physical" else "spd"
+        atk_key = "attack" if move.category == "Physical" else "special_attack"
+        def_key = "defense" if move.category == "Physical" else "special_defense"
 
         if hasattr(utils, "get_modified_stat"):
             atk_stat = utils.get_modified_stat(attacker, atk_key)

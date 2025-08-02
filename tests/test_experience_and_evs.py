@@ -21,10 +21,18 @@ pokemon_dex.POKEDEX = {
         num=1,
         types=["Grass", "Poison"],
         gender_ratio=None,
-        base_stats=ent_mod.Stats(hp=45, atk=49, def_=49, spa=65, spd=65, spe=45),
+        base_stats=ent_mod.Stats(
+            hp=45,
+            attack=49,
+            defense=49,
+            special_attack=65,
+            special_defense=65,
+            speed=45,
+        ),
         abilities={},
     )
 }
+pokemon_dex.MOVEDEX = {}
 sys.modules["pokemon.dex"] = pokemon_dex
 import pokemon.stats as stats_mod
 stats_mod.POKEDEX = pokemon_dex.POKEDEX
@@ -59,19 +67,36 @@ def test_add_experience_updates_level():
 def test_add_evs_limits():
     mon = types.SimpleNamespace(evs={})
     add_evs(mon, {"atk": 100, "def": 200, "spa": 300})
-    assert mon.evs["atk"] == 100
-    assert mon.evs["def"] == 200
-    assert mon.evs["spa"] == 210
+    assert mon.evs["attack"] == 100
+    assert mon.evs["defense"] == 200
+    assert mon.evs["special_attack"] == 210
     assert sum(mon.evs.values()) == 510
 
 
 def test_calculate_stats_with_ivs_evs_and_nature():
-    ivs = {stat: 31 for stat in ["hp", "atk", "def", "spa", "spd", "spe"]}
-    evs = {"atk": 100, "def": 200, "spa": 210, "hp": 0, "spd": 0, "spe": 0}
+    ivs = {
+        stat: 31
+        for stat in [
+            "hp",
+            "attack",
+            "defense",
+            "special_attack",
+            "special_defense",
+            "speed",
+        ]
+    }
+    evs = {
+        "attack": 100,
+        "defense": 200,
+        "special_attack": 210,
+        "hp": 0,
+        "special_defense": 0,
+        "speed": 0,
+    }
     stats = calculate_stats("Bulbasaur", 50, ivs, evs, "Adamant")
     assert stats["hp"] == 120
-    assert stats["atk"] == 90
-    assert stats["def"] == 94
-    assert stats["spa"] == 99
-    assert stats["spd"] == 85
-    assert stats["spe"] == 65
+    assert stats["attack"] == 90
+    assert stats["defense"] == 94
+    assert stats["special_attack"] == 99
+    assert stats["special_defense"] == 85
+    assert stats["speed"] == 65

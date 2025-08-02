@@ -58,11 +58,11 @@ def roll_ivs() -> Stats:
     """Return random IVs between 0 and 31 for each stat."""
     return Stats(
         hp=random.randint(0, 31),
-        atk=random.randint(0, 31),
-        def_=random.randint(0, 31),
-        spa=random.randint(0, 31),
-        spd=random.randint(0, 31),
-        spe=random.randint(0, 31),
+        attack=random.randint(0, 31),
+        defense=random.randint(0, 31),
+        special_attack=random.randint(0, 31),
+        special_defense=random.randint(0, 31),
+        speed=random.randint(0, 31),
     )
 
 
@@ -230,29 +230,29 @@ def get_random_ability(abilities: Dict[str, str]) -> str:
 
 NATURES: Dict[str, tuple[Optional[str], Optional[str]]] = {
     "Hardy": (None, None),
-    "Lonely": ("atk", "def"),
-    "Brave": ("atk", "spe"),
-    "Adamant": ("atk", "spa"),
-    "Naughty": ("atk", "spd"),
-    "Bold": ("def", "atk"),
+    "Lonely": ("attack", "defense"),
+    "Brave": ("attack", "speed"),
+    "Adamant": ("attack", "special_attack"),
+    "Naughty": ("attack", "special_defense"),
+    "Bold": ("defense", "attack"),
     "Docile": (None, None),
-    "Relaxed": ("def", "spe"),
-    "Impish": ("def", "spa"),
-    "Lax": ("def", "spd"),
-    "Timid": ("spe", "atk"),
-    "Hasty": ("spe", "def"),
+    "Relaxed": ("defense", "speed"),
+    "Impish": ("defense", "special_attack"),
+    "Lax": ("defense", "special_defense"),
+    "Timid": ("speed", "attack"),
+    "Hasty": ("speed", "defense"),
     "Serious": (None, None),
-    "Jolly": ("spe", "spa"),
-    "Naive": ("spe", "spd"),
-    "Modest": ("spa", "atk"),
-    "Mild": ("spa", "def"),
-    "Quiet": ("spa", "spe"),
+    "Jolly": ("speed", "special_attack"),
+    "Naive": ("speed", "special_defense"),
+    "Modest": ("special_attack", "attack"),
+    "Mild": ("special_attack", "defense"),
+    "Quiet": ("special_attack", "speed"),
     "Bashful": (None, None),
-    "Rash": ("spa", "spd"),
-    "Calm": ("spd", "atk"),
-    "Gentle": ("spd", "def"),
-    "Sassy": ("spd", "spe"),
-    "Careful": ("spd", "spa"),
+    "Rash": ("special_attack", "special_defense"),
+    "Calm": ("special_defense", "attack"),
+    "Gentle": ("special_defense", "defense"),
+    "Sassy": ("special_defense", "speed"),
+    "Careful": ("special_defense", "special_attack"),
     "Quirky": (None, None),
 }
 
@@ -284,11 +284,27 @@ def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
 
     stats = Stats(
         hp=calculate_stat(species.base_stats.hp, ivs.hp, level, is_hp=True),
-        atk=calculate_stat(species.base_stats.atk, ivs.atk, level, modifier=mod("atk")),
-        def_=calculate_stat(species.base_stats.def_, ivs.def_, level, modifier=mod("def")),
-        spa=calculate_stat(species.base_stats.spa, ivs.spa, level, modifier=mod("spa")),
-        spd=calculate_stat(species.base_stats.spd, ivs.spd, level, modifier=mod("spd")),
-        spe=calculate_stat(species.base_stats.spe, ivs.spe, level, modifier=mod("spe")),
+        attack=calculate_stat(
+            species.base_stats.attack, ivs.attack, level, modifier=mod("attack")
+        ),
+        defense=calculate_stat(
+            species.base_stats.defense, ivs.defense, level, modifier=mod("defense")
+        ),
+        special_attack=calculate_stat(
+            species.base_stats.special_attack,
+            ivs.special_attack,
+            level,
+            modifier=mod("special_attack"),
+        ),
+        special_defense=calculate_stat(
+            species.base_stats.special_defense,
+            ivs.special_defense,
+            level,
+            modifier=mod("special_defense"),
+        ),
+        speed=calculate_stat(
+            species.base_stats.speed, ivs.speed, level, modifier=mod("speed")
+        ),
     )
 
     ability = get_random_ability({k: v.name if hasattr(v, "name") else v for k, v in species.abilities.items()})

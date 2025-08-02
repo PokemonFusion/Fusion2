@@ -100,5 +100,5 @@ def test_award_experience_on_faint():
 
     gain = GAIN_INFO["Pikachu"]
     assert player_mon.experience == gain["exp"]
-    assert player_mon.evs.get("spe") == gain["evs"]["spe"]
+    assert player_mon.evs.get("speed") == gain["evs"]["spe"]
 

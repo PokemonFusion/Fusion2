@@ -1657,27 +1657,27 @@ class Battle:
             if poke:
                 if utils and hasattr(utils, "get_modified_stat"):
                     try:
-                        speed = utils.get_modified_stat(poke, "spe")
+                        speed = utils.get_modified_stat(poke, "speed")
                     except Exception:
                         try:
                             from pokemon.utils.pokemon_helpers import get_stats
                         except Exception:  # pragma: no cover - tests may stub
                             def get_stats(p):
-                                return {"spe": getattr(getattr(p, "base_stats", None), "spe", 0)}
+                                return {"speed": getattr(getattr(p, "base_stats", None), "speed", 0)}
                         try:
-                            speed = get_stats(poke).get("spe", 0)
+                            speed = get_stats(poke).get("speed", 0)
                         except Exception:
-                            speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
+                            speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
                 else:
                     try:
                         from pokemon.utils.pokemon_helpers import get_stats
                     except Exception:  # pragma: no cover
                         def get_stats(p):
-                            return {"spe": getattr(getattr(p, "base_stats", None), "spe", 0)}
+                            return {"speed": getattr(getattr(p, "base_stats", None), "speed", 0)}
                     try:
-                        speed = get_stats(poke).get("spe", 0)
+                        speed = get_stats(poke).get("speed", 0)
                     except Exception:
-                        speed = getattr(getattr(poke, "base_stats", None), "spe", 0)
+                        speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
 
                 if ability and hasattr(ability, "call"):
                     try:

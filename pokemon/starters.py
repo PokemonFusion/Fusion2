@@ -1,6 +1,8 @@
 """Helpers for determining valid starter Pokémon."""
 
 from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple
+
 from pokemon.dex import POKEDEX
 
 # Forms or categories we explicitly exclude from “starter” status

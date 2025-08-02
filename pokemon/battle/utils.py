@@ -2,6 +2,8 @@
 
 from typing import Dict
 
+from pokemon.stats import STAT_KEY_MAP
+
 
 
 def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
@@ -10,14 +12,20 @@ def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
     if not hasattr(pokemon, "boosts"):
         return
 
+    current_boosts = getattr(pokemon, "boosts", {})
+    if isinstance(current_boosts, dict):
+        pokemon.boosts = {STAT_KEY_MAP.get(k, k): v for k, v in current_boosts.items()}
+
     for stat, amount in boosts.items():
-        current = pokemon.boosts.get(stat, 0)
-        pokemon.boosts[stat] = max(-6, min(6, current + amount))
+        full = STAT_KEY_MAP.get(stat, stat)
+        current = pokemon.boosts.get(full, 0)
+        pokemon.boosts[full] = max(-6, min(6, current + amount))
 
 
 def get_modified_stat(pokemon, stat: str) -> int:
     """Return a stat value after applying temporary boosts."""
 
+    stat = STAT_KEY_MAP.get(stat, stat)
     try:
         from pokemon.utils.pokemon_helpers import get_stats
         base = get_stats(pokemon).get(stat, 0)
@@ -25,6 +33,8 @@ def get_modified_stat(pokemon, stat: str) -> int:
         base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
     boosts = getattr(pokemon, "boosts", {})
     if isinstance(boosts, dict):
+        boosts = {STAT_KEY_MAP.get(k, k): v for k, v in boosts.items()}
+        pokemon.boosts = boosts
         stage = boosts.get(stat, 0)
     else:
         stage = getattr(boosts, stat, 0)
