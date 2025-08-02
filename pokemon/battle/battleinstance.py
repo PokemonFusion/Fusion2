@@ -990,9 +990,24 @@ class BattleSession:
         self.prompt_next_turn()
 
     def _get_position_for_trainer(self, trainer):
-        """Return the battle position associated with ``trainer``."""
+        """Return the battle position and key associated with ``trainer``.
+
+        Parameters
+        ----------
+        trainer : object
+            Trainer for which to locate the position.
+
+        Returns
+        -------
+        tuple[str | None, PositionData | None]
+            A tuple of the position name (e.g. ``"A1"``) and the
+            :class:`~pokemon.battle.battledata.PositionData` for that
+            trainer.  If no position can be found, ``(None, None)`` is
+            returned.
+        """
+
         if not self.data:
-            return None
+            return None, None
         team = None
         if trainer in self.teamA:
             team = "A"
@@ -1004,63 +1019,114 @@ class BattleSession:
                     team = "A" if idx == 0 else "B"
                     break
         if not team:
-            return None
-        return self.data.turndata.positions.get(f"{team}1")
+            return None, None
+        pos_name = f"{team}1"
+        return pos_name, self.data.turndata.positions.get(pos_name)
 
     def queue_move(self, move_name: str, target: str = "B1", caller=None) -> None:
         """Queue a move and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self._get_position_for_trainer(caller or self.captainA)
+        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareAttack(target, Move(name=move_name))
-        log_info(f"Queued move {move_name} targeting {target}")
+        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        log_info(
+            f"Queued move {move_name} targeting {target} from {pokemon_name} at {pos_name}"
+        )
+        if self.state:
+            actor_id = str(getattr(caller or self.captainA, "id", ""))
+            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
+            self.state.declare[pos_name] = {
+                "move": move_name,
+                "target": target,
+                "trainer": actor_id,
+                "pokemon": poke_id,
+            }
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
-        log_info("Saved queued move to room data")
+        log_info(
+            f"Saved queued move for {pokemon_name} at {pos_name} to room data"
+        )
         self.maybe_run_turn()
 
     def queue_switch(self, slot: int, caller=None) -> None:
         """Queue a Pokémon switch and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self._get_position_for_trainer(caller or self.captainA)
+        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareSwitch(slot)
-        log_info(f"Queued switch to slot {slot}")
+        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        log_info(f"Queued switch to slot {slot} for {pokemon_name} at {pos_name}")
+        if self.state:
+            actor_id = str(getattr(caller or self.captainA, "id", ""))
+            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
+            self.state.declare[pos_name] = {
+                "switch": slot,
+                "trainer": actor_id,
+                "pokemon": poke_id,
+            }
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
-        log_info("Saved queued switch to room data")
+        log_info(
+            f"Saved queued switch for {pokemon_name} at {pos_name} to room data"
+        )
         self.maybe_run_turn()
 
     def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
         """Queue an item use and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self._get_position_for_trainer(caller or self.captainA)
+        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareItem(item_name)
-        log_info(f"Queued item {item_name} targeting {target}")
+        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        log_info(
+            f"Queued item {item_name} targeting {target} from {pokemon_name} at {pos_name}"
+        )
+        if self.state:
+            actor_id = str(getattr(caller or self.captainA, "id", ""))
+            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
+            self.state.declare[pos_name] = {
+                "item": item_name,
+                "target": target,
+                "trainer": actor_id,
+                "pokemon": poke_id,
+            }
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
-        log_info("Saved queued item to room data")
+        log_info(
+            f"Saved queued item for {pokemon_name} at {pos_name} to room data"
+        )
         self.maybe_run_turn()
 
     def queue_run(self, caller=None) -> None:
         """Queue a flee attempt and run the turn if ready."""
         if not self.data or not self.battle:
             return
-        pos = self._get_position_for_trainer(caller or self.captainA)
+        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pos.declareRun()
-        log_info("Queued attempt to flee")
+        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        log_info(f"Queued attempt to flee by {pokemon_name} at {pos_name}")
+        if self.state:
+            actor_id = str(getattr(caller or self.captainA, "id", ""))
+            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
+            self.state.declare[pos_name] = {
+                "run": "1",
+                "trainer": actor_id,
+                "pokemon": poke_id,
+            }
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
-        log_info("Saved flee attempt to room data")
+        log_info(
+            f"Saved flee attempt for {pokemon_name} at {pos_name} to room data"
+        )
         self.maybe_run_turn()
 
     def is_turn_ready(self) -> bool:

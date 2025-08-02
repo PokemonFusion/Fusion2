@@ -478,3 +478,31 @@ def test_pvp_ai_type_stored_correctly():
     inst.start_pvp()
 
     assert inst.state.ai_type == "PVP"
+
+
+def test_queue_actions_saved_per_battle_with_trainer():
+    """Ensure queued actions are stored separately for each battle."""
+
+    room = DummyRoom()
+    p1 = DummyPlayer(1, room)
+    p2 = DummyPlayer(2, room)
+    p3 = DummyPlayer(3, room)
+    p4 = DummyPlayer(4, room)
+
+    inst1 = BattleSession(p1, p2)
+    inst1.start_pvp()
+    inst2 = BattleSession(p3, p4)
+    inst2.start_pvp()
+
+    inst1.queue_move("tackle", caller=p1)
+    inst2.queue_move("tackle", caller=p3)
+
+    s1 = BattleDataWrapper(room, inst1.battle_id)
+    s2 = BattleDataWrapper(room, inst2.battle_id)
+    decl1 = s1.get("state")["declare"]
+    decl2 = s2.get("state")["declare"]
+
+    assert decl1["A1"]["trainer"] == str(p1.id)
+    assert decl1["A1"]["move"].lower() == "tackle"
+    assert decl2["A1"]["trainer"] == str(p3.id)
+    assert decl2["A1"]["move"].lower() == "tackle"
