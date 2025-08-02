@@ -6,6 +6,17 @@ from math import floor
 from ..dex import Move, Pokemon
 from ..data import TYPE_CHART
 
+try:  # pragma: no cover - default text may not be available in tests
+    from ..data.text import DEFAULT_TEXT
+except Exception:  # pragma: no cover
+    DEFAULT_TEXT = {
+        "default": {
+            "superEffective": "  It's super effective!",
+            "resisted": "  It's not very effective...",
+            "immune": "  It doesn't affect [POKEMON]...",
+        }
+    }
+
 
 @dataclass
 class DamageResult:
@@ -218,6 +229,20 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
                             dmg = floor(dmg * wmult)
         dmg = floor(dmg * stab_multiplier(attacker, move))
         eff = type_effectiveness(target, move)
+        temp_eff = eff
+        if temp_eff > 1:
+            while temp_eff > 1:
+                result.text.append(DEFAULT_TEXT["default"]["superEffective"])
+                temp_eff /= 2
+        elif 0 < temp_eff < 1:
+            while temp_eff < 1:
+                result.text.append(DEFAULT_TEXT["default"]["resisted"])
+                temp_eff *= 2
+        elif temp_eff == 0:
+            result.text.append(
+                DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name)
+            )
+            continue
         dmg = floor(dmg * eff)
 
         # Critical hit calculation with simple ratio handling
