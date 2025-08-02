@@ -116,6 +116,7 @@ class BattleHandler:
                         data = data or logic_info.get("data")
                         state = state or logic_info.get("state")
                     inst.logic = BattleLogic.from_dict({"data": data, "state": state})
+                    inst.logic.battle.log_action = inst.notify
                     inst.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
                 inst.storage = storage
 

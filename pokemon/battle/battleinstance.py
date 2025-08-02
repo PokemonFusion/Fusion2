@@ -487,6 +487,7 @@ class BattleSession:
         obj.turn_state = {}
         logic = BattleLogic.from_dict({"data": data, "state": state})
         obj.logic = logic
+        obj.logic.battle.log_action = obj.notify
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
         log_info("Restored logic and temp Pokemon ids")
 
@@ -683,6 +684,7 @@ class BattleSession:
                 state.pokemon_control[str(poke.model_id)] = str(self.captainB.id)
 
         self.logic = BattleLogic(battle, data, state)
+        self.logic.battle.log_action = self.notify
         log_info("PvP battle objects created")
 
         # expose battle info on trainers for the interface
@@ -829,6 +831,7 @@ class BattleSession:
                 state.pokemon_control[str(opponent_poke.model_id)] = str(owner_id)
 
         self.logic = BattleLogic(battle, data, state)
+        self.logic.battle.log_action = self.notify
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
 
         # expose battle info on trainers for the interface
