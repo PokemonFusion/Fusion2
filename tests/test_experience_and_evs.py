@@ -21,7 +21,14 @@ pokemon_dex.POKEDEX = {
         num=1,
         types=["Grass", "Poison"],
         gender_ratio=None,
-        base_stats=ent_mod.Stats(hp=45, atk=49, def_=49, spa=65, spd=65, spe=45),
+        base_stats=ent_mod.Stats(
+            hp=45,
+            attack=49,
+            defense=49,
+            special_attack=65,
+            special_defense=65,
+            speed=45,
+        ),
         abilities={},
     )
 }

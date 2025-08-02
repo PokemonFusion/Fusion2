@@ -9,6 +9,7 @@ from utils.display_helpers import (
     get_egg_description,
 )
 from pokemon.utils.pokemon_helpers import get_max_hp, get_stats
+from pokemon.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP
 from utils.xp_utils import get_display_xp, get_next_level_xp
 from pokemon.stats import level_for_exp
 from utils.faction_utils import get_faction_and_rank
@@ -58,9 +59,33 @@ def display_trainer_sheet(character) -> str:
 
     stats = character.db.stats or {}
     if stats:
-        table = EvTable("HP", "Atk", "Def", "SpA", "SpD", "Spe")
+        stats_full = {STAT_KEY_MAP.get(k, k): v for k, v in stats.items()}
+        headers = [
+            DISPLAY_STAT_MAP[s]
+            for s in [
+                "hp",
+                "attack",
+                "defense",
+                "special_attack",
+                "special_defense",
+                "speed",
+            ]
+        ]
+        table = EvTable(*headers)
         table.add_row(
-            *(str(stats.get(k, "N/A")) for k in ["hp", "atk", "def", "spa", "spd", "spe"])
+            *(
+                str(
+                    stats_full.get(s, "N/A")
+                )
+                for s in [
+                    "hp",
+                    "attack",
+                    "defense",
+                    "special_attack",
+                    "special_defense",
+                    "speed",
+                ]
+            )
         )
         lines.append(str(table))
 
@@ -116,9 +141,34 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
     type_str = "/".join(types) if types else "?"
     lines.append(f"Type: {type_str}")
 
-    stats = get_stats(pokemon)
-    table = EvTable("HP", "Atk", "Def", "SpA", "SpD", "Spe")
-    table.add_row(*(str(stats.get(k, "?")) for k in ["hp", "atk", "def", "spa", "spd", "spe"]))
+    stats = {STAT_KEY_MAP.get(k, k): v for k, v in get_stats(pokemon).items()}
+    headers = [
+        DISPLAY_STAT_MAP[s]
+        for s in [
+            "hp",
+            "attack",
+            "defense",
+            "special_attack",
+            "special_defense",
+            "speed",
+        ]
+    ]
+    table = EvTable(*headers)
+    table.add_row(
+        *(
+            str(
+                stats.get(s, "?")
+            )
+            for s in [
+                "hp",
+                "attack",
+                "defense",
+                "special_attack",
+                "special_defense",
+                "speed",
+            ]
+        )
+    )
     lines.append(str(table))
 
     moves = getattr(pokemon, "moves", []) or []

@@ -124,24 +124,100 @@ class Condition:
         return None
 
 
-@dataclass
+@dataclass(init=False)
 class Stats:
+    """Container for a Pokémon's stat values using full names."""
+
     hp: int = 0
-    atk: int = 0
-    def_: int = 0
-    spa: int = 0
-    spd: int = 0
-    spe: int = 0
+    attack: int = 0
+    defense: int = 0
+    special_attack: int = 0
+    special_defense: int = 0
+    speed: int = 0
+
+    def __init__(self, **kwargs):
+        mapping = {
+            "hp": "hp",
+            "atk": "attack",
+            "attack": "attack",
+            "def": "defense",
+            "def_": "defense",
+            "defense": "defense",
+            "spa": "special_attack",
+            "special_attack": "special_attack",
+            "spd": "special_defense",
+            "special_defense": "special_defense",
+            "spe": "speed",
+            "speed": "speed",
+        }
+        for key, attr in mapping.items():
+            if key in kwargs:
+                setattr(self, attr, kwargs.pop(key))
+        for attr in [
+            "hp",
+            "attack",
+            "defense",
+            "special_attack",
+            "special_defense",
+            "speed",
+        ]:
+            if not hasattr(self, attr):
+                setattr(self, attr, 0)
+
+    # ------------------------------------------------------------------
+    # Compatibility aliases
+    # ------------------------------------------------------------------
+    @property
+    def atk(self) -> int:  # pragma: no cover - simple property
+        return self.attack
+
+    @atk.setter
+    def atk(self, value: int) -> None:  # pragma: no cover - simple property
+        self.attack = value
+
+    @property
+    def def_(self) -> int:  # pragma: no cover - simple property
+        return self.defense
+
+    @def_.setter
+    def def_(self, value: int) -> None:  # pragma: no cover - simple property
+        self.defense = value
+
+    @property
+    def spa(self) -> int:  # pragma: no cover - simple property
+        return self.special_attack
+
+    @spa.setter
+    def spa(self, value: int) -> None:  # pragma: no cover - simple property
+        self.special_attack = value
+
+    @property
+    def spd(self) -> int:  # pragma: no cover - simple property
+        return self.special_defense
+
+    @spd.setter
+    def spd(self, value: int) -> None:  # pragma: no cover - simple property
+        self.special_defense = value
+
+    @property
+    def spe(self) -> int:  # pragma: no cover - simple property
+        return self.speed
+
+    @spe.setter
+    def spe(self, value: int) -> None:  # pragma: no cover - simple property
+        self.speed = value
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]):
+        """Create :class:`Stats` from a dict using shorthand or full keys."""
+
         return cls(
-            hp=data.get("hp", 0),
-            atk=data.get("atk", 0),
-            def_=data.get("def", 0),
-            spa=data.get("spa", 0),
-            spd=data.get("spd", 0),
-            spe=data.get("spe", 0),
+            hp=data.get("hp", data.get("hp", 0)),
+            attack=data.get("attack", data.get("atk", 0)),
+            defense=data.get("defense", data.get("def", 0)),
+            special_attack=data.get("special_attack", data.get("spa", 0)),
+            special_defense=data.get("special_defense", data.get("spd", 0)),
+            speed=data.get("speed", data.get("spe", 0)),
         )
 
 

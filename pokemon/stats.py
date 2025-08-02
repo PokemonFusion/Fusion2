@@ -7,6 +7,27 @@ from typing import Dict
 from .dex import POKEDEX
 from .generation import NATURES
 
+STAT_KEY_MAP = {
+    "hp": "hp",
+    "atk": "attack",
+    "def": "defense",
+    "spa": "special_attack",
+    "spd": "special_defense",
+    "spe": "speed",
+}
+
+REVERSE_STAT_KEY_MAP = {v: k for k, v in STAT_KEY_MAP.items()}
+ALL_STATS = list(STAT_KEY_MAP.values())
+
+DISPLAY_STAT_MAP = {
+    "hp": "HP",
+    "attack": "Atk",
+    "defense": "Def",
+    "special_attack": "SpA",
+    "special_defense": "SpD",
+    "speed": "Spe",
+}
+
 # EV limits
 EV_LIMIT = 510
 STAT_EV_LIMIT = 252
@@ -95,19 +116,36 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 
 def add_evs(pokemon, gains: Dict[str, int]) -> None:
     """Apply EV gains to ``pokemon`` respecting limits."""
-    evs = dict(getattr(pokemon, "evs", {}) or {})
+
+    evs_attr = getattr(pokemon, "evs", {}) or {}
+    if isinstance(evs_attr, dict):
+        evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs_attr.items()}
+    else:
+        evs = {
+            "hp": evs_attr[0],
+            "attack": evs_attr[1],
+            "defense": evs_attr[2],
+            "special_attack": evs_attr[3],
+            "special_defense": evs_attr[4],
+            "speed": evs_attr[5],
+        }
+
     total = sum(evs.values())
     for stat, val in gains.items():
-        if stat not in ("hp", "atk", "def", "spa", "spd", "spe"):
+        full = STAT_KEY_MAP.get(stat, stat)
+        if full not in ALL_STATS:
             continue
         if total >= EV_LIMIT:
             break
-        current = evs.get(stat, 0)
+        current = evs.get(full, 0)
         allowed = min(val, STAT_EV_LIMIT - current, EV_LIMIT - total)
         if allowed <= 0:
             continue
-        evs[stat] = current + allowed
+        evs[full] = current + allowed
         total += allowed
+    for abbr, full in STAT_KEY_MAP.items():
+        if full in evs:
+            evs[abbr] = evs[full]
     pokemon.evs = evs
 
 
@@ -166,25 +204,32 @@ def apply_item_ev_mod(pokemon, gains: Dict[str, int]) -> Dict[str, int]:
         except Exception:
             pass
     if item == "machobrace":
-        return {k: v * 2 for k, v in gains.items()}
+        gains = {k: v * 2 for k, v in gains.items()}
     power_items = {
         "powerweight": "hp",
-        "powerbracer": "atk",
-        "powerbelt": "def",
-        "powerlens": "spa",
-        "powerband": "spd",
-        "poweranklet": "spe",
+        "powerbracer": "attack",
+        "powerbelt": "defense",
+        "powerlens": "special_attack",
+        "powerband": "special_defense",
+        "poweranklet": "speed",
     }
     if item in power_items:
         stat = power_items[item]
         mod = gains.copy()
         mod[stat] = mod.get(stat, 0) + 8
-        return mod
-    return gains
+        gains = mod
+    result = {STAT_KEY_MAP.get(k, k): v for k, v in gains.items()}
+    for abbr, full in STAT_KEY_MAP.items():
+        if full in result:
+            result[abbr] = result[full]
+    return result
 
 
-def calculate_stats(species_name: str, level: int, ivs: Dict[str, int], evs: Dict[str, int], nature: str) -> Dict[str, int]:
+def calculate_stats(
+    species_name: str, level: int, ivs: Dict[str, int], evs: Dict[str, int], nature: str
+) -> Dict[str, int]:
     """Return calculated stats for the given Pokémon parameters."""
+
     species = (
         POKEDEX.get(species_name)
         or POKEDEX.get(species_name.capitalize())
@@ -192,46 +237,53 @@ def calculate_stats(species_name: str, level: int, ivs: Dict[str, int], evs: Dic
     )
     if not species:
         raise ValueError(f"Species '{species_name}' not found")
-    ivs = {k: ivs.get(k, 0) for k in ("hp", "atk", "def", "spa", "spd", "spe")}
-    evs = {k: evs.get(k, 0) for k in ("hp", "atk", "def", "spa", "spd", "spe")}
+
+    ivs = {STAT_KEY_MAP.get(k, k): v for k, v in ivs.items()}
+    evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs.items()}
+    ivs = {stat: ivs.get(stat, 0) for stat in ALL_STATS}
+    evs = {stat: evs.get(stat, 0) for stat in ALL_STATS}
+
     stats = {
         "hp": _calc_stat(species.base_stats.hp, ivs["hp"], evs["hp"], level, is_hp=True),
-        "atk": _calc_stat(
-            species.base_stats.atk,
-            ivs["atk"],
-            evs["atk"],
+        "attack": _calc_stat(
+            species.base_stats.attack,
+            ivs["attack"],
+            evs["attack"],
             level,
-            nature_mod=_nature_mod(nature, "atk"),
+            nature_mod=_nature_mod(nature, "attack"),
         ),
-        "def": _calc_stat(
-            species.base_stats.def_,
-            ivs["def"],
-            evs["def"],
+        "defense": _calc_stat(
+            species.base_stats.defense,
+            ivs["defense"],
+            evs["defense"],
             level,
-            nature_mod=_nature_mod(nature, "def"),
+            nature_mod=_nature_mod(nature, "defense"),
         ),
-        "spa": _calc_stat(
-            species.base_stats.spa,
-            ivs["spa"],
-            evs["spa"],
+        "special_attack": _calc_stat(
+            species.base_stats.special_attack,
+            ivs["special_attack"],
+            evs["special_attack"],
             level,
-            nature_mod=_nature_mod(nature, "spa"),
+            nature_mod=_nature_mod(nature, "special_attack"),
         ),
-        "spd": _calc_stat(
-            species.base_stats.spd,
-            ivs["spd"],
-            evs["spd"],
+        "special_defense": _calc_stat(
+            species.base_stats.special_defense,
+            ivs["special_defense"],
+            evs["special_defense"],
             level,
-            nature_mod=_nature_mod(nature, "spd"),
+            nature_mod=_nature_mod(nature, "special_defense"),
         ),
-        "spe": _calc_stat(
-            species.base_stats.spe,
-            ivs["spe"],
-            evs["spe"],
+        "speed": _calc_stat(
+            species.base_stats.speed,
+            ivs["speed"],
+            evs["speed"],
             level,
-            nature_mod=_nature_mod(nature, "spe"),
+            nature_mod=_nature_mod(nature, "speed"),
         ),
     }
+
+    for abbr, full in STAT_KEY_MAP.items():
+        stats[abbr] = stats[full]
     return stats
 
 

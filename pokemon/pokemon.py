@@ -100,11 +100,11 @@ class User(DefaultCharacter, InventoryMixin):
             ability=instance.ability,
             ivs=[
                 instance.ivs.hp,
-                instance.ivs.atk,
-                instance.ivs.def_,
-                instance.ivs.spa,
-                instance.ivs.spd,
-                instance.ivs.spe,
+                instance.ivs.attack,
+                instance.ivs.defense,
+                instance.ivs.special_attack,
+                instance.ivs.special_defense,
+                instance.ivs.speed,
             ],
             evs=[0, 0, 0, 0, 0, 0],
         )

@@ -101,11 +101,11 @@ def format_pokemon_details(name, details):
         stats = getattr(details, "base_stats", None)
         abilities = [a.name for a in getattr(details, "abilities", {}).values()]
         hp = getattr(stats, "hp", 0)
-        atk = getattr(stats, "atk", 0)
-        defe = getattr(stats, "def_", 0)
-        spa = getattr(stats, "spa", 0)
-        spd = getattr(stats, "spd", 0)
-        spe = getattr(stats, "spe", 0)
+        atk = getattr(stats, "attack", 0)
+        defe = getattr(stats, "defense", 0)
+        spa = getattr(stats, "special_attack", 0)
+        spd = getattr(stats, "special_defense", 0)
+        spe = getattr(stats, "speed", 0)
 
     msg += (
         f"Base Stats: HP {hp}, ATK {atk}, DEF {defe}, SPA {spa}, SPD {spd}, SPE {spe}\n"
