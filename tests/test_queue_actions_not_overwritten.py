@@ -39,6 +39,14 @@ def test_queue_run_does_not_overwrite_existing_action():
     assert inst.state.declare["A1"]["run"] == "1"
 
 
+def test_cannot_declare_new_action_if_already_declared():
+    inst, p1, _ = _setup_battle()
+    inst.queue_move("tackle", caller=p1)
+    before = inst.state.declare["A1"].copy()
+    inst.queue_switch(2, caller=p1)
+    assert inst.state.declare["A1"] == before
+
+
 def test_turn_runs_and_clears_declarations():
     """Battle runs once all actions are declared and clears declarations."""
     inst, p1, p2 = _setup_battle()
