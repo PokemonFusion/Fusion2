@@ -1,6 +1,7 @@
 from .damage import DamageResult, damage_calc
 from .battledata import BattleData, Team, Pokemon, TurnData, Field, Move
 from .turnorder import calculateTurnorder
+from .ai import AIMoveSelector
 try:
     from .battleinstance import (
         BattleSession,
@@ -29,6 +30,7 @@ __all__ = [
     "Field",
     "Move",
     "calculateTurnorder",
+    "AIMoveSelector",
     "BattleSession",
     "generate_trainer_pokemon",
     "generate_wild_pokemon",
