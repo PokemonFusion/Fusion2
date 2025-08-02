@@ -1125,6 +1125,9 @@ class Battle:
                             action.move.pp = current
                     break
         if self.status_prevents_move(user):
+            self.log_action(
+                f"{getattr(user, 'name', 'Pokemon')} is unable to move!"
+            )
             return
 
         target_part = action.target
@@ -1146,6 +1149,9 @@ class Battle:
                 pass
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
+            self.log_action(
+                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+            )
             return
 
         self.deduct_pp(user, action.move)
@@ -1158,6 +1164,9 @@ class Battle:
                 pass
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
+            self.log_action(
+                f"{getattr(target, 'name', 'Pokemon')} protected itself!"
+            )
             return
 
         # Check if the target is in an invulnerable state (e.g. Fly, Dig)
@@ -1180,6 +1189,9 @@ class Battle:
                                     pass
                                 if action.move.raw.get("selfdestruct") == "always":
                                     user.hp = 0
+                                self.log_action(
+                                    f"{action.move.name} failed to hit {getattr(target, 'name', 'Pokemon')}!"
+                                )
                                 return
 
         sub = getattr(target, "volatiles", {}).get("substitute")
@@ -1271,13 +1283,28 @@ class Battle:
                 user.hp = 0
             return
 
+        start_hp = getattr(target, "hp", 0)
         executed = self._do_move(user, target, action.move)
+        end_hp = getattr(target, "hp", 0)
         if not executed:
             try:
                 user.tempvals["moved"] = True
             except Exception:
                 pass
+            self.log_action(
+                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+            )
             return
+
+        dmg = start_hp - end_hp
+        if dmg > 0:
+            self.log_action(
+                f"{getattr(user, 'name', 'Pokemon')} used {action.move.name} on {getattr(target, 'name', 'Pokemon')} and dealt {dmg} damage!"
+            )
+        else:
+            self.log_action(
+                f"{getattr(user, 'name', 'Pokemon')} used {action.move.name} on {getattr(target, 'name', 'Pokemon')} but it had no effect!"
+            )
 
         self.dispatcher.dispatch(
             "after_move", user=user, target=target, move=action.move, battle=self
