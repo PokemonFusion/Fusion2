@@ -71,8 +71,22 @@ class Move:
     def __init__(self, name):
         self.name = name
 class Pokemon:
-    def __init__(self, name, level=1, hp=10, max_hp=10, moves=None, ability=None, ivs=None, evs=None, nature="Hardy", model_id=None):
+    def __init__(
+        self,
+        name,
+        level=1,
+        hp=10,
+        max_hp=10,
+        moves=None,
+        ability=None,
+        ivs=None,
+        evs=None,
+        nature="Hardy",
+        model_id=None,
+        species=None,
+    ):
         self.name = name
+        self.species = species or name
         self.level = level
         self.hp = hp
         self.max_hp = max_hp
