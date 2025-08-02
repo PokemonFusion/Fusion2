@@ -210,14 +210,19 @@ class Stats:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]):
         """Create :class:`Stats` from a dict using shorthand or full keys."""
+        def get(*names: str) -> int:
+            for name in names:
+                if name in data:
+                    return data[name]
+            return 0
 
         return cls(
-            hp=data.get("hp", data.get("hp", 0)),
-            attack=data.get("attack", data.get("atk", 0)),
-            defense=data.get("defense", data.get("def", 0)),
-            special_attack=data.get("special_attack", data.get("spa", 0)),
-            special_defense=data.get("special_defense", data.get("spd", 0)),
-            speed=data.get("speed", data.get("spe", 0)),
+            hp=get("hp"),
+            attack=get("attack", "atk"),
+            defense=get("defense", "def", "def_"),
+            special_attack=get("special_attack", "spa"),
+            special_defense=get("special_defense", "spd"),
+            speed=get("speed", "spe"),
         )
 
 

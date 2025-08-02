@@ -20,12 +20,12 @@ def test_lucky_egg_exp_boost():
 def test_macho_brace_ev_double():
     mon = DummyMon("Macho Brace")
     gains = apply_item_ev_mod(mon, {"atk": 1})
-    assert gains["atk"] == 2
+    assert gains["attack"] == 2
 
 
 def test_power_weight_adds_hp_evs():
     mon = DummyMon("Power Weight")
     gains = apply_item_ev_mod(mon, {"atk": 1})
     assert gains["hp"] == 8
-    assert gains["atk"] == 1
+    assert gains["attack"] == 1
 

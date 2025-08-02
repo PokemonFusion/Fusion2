@@ -37,7 +37,7 @@ def test_award_experience_without_share():
     user = DummyUser(False, mons)
     award_experience_to_party(user, 100, {"atk": 2})
     assert mons[0].experience == 100
-    assert mons[0].evs.get("atk") == 2
+    assert mons[0].evs.get("attack") == 2
     assert mons[1].experience == 0
 
 
@@ -46,4 +46,4 @@ def test_award_experience_with_share():
     user = DummyUser(True, mons)
     award_experience_to_party(user, 90, {"atk": 1})
     assert all(m.experience == 30 for m in mons)
-    assert all(m.evs.get("atk") == 1 for m in mons)
+    assert all(m.evs.get("attack") == 1 for m in mons)

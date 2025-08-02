@@ -39,7 +39,7 @@ def _get_stats_from_data(pokemon):
         return calculate_stats(species, level, ivs, evs, nature)
     except Exception:
         inst = generate_pokemon(species, level=level)
-        stats = {
+        return {
             "hp": inst.stats.hp,
             "attack": inst.stats.attack,
             "defense": inst.stats.defense,
@@ -47,9 +47,6 @@ def _get_stats_from_data(pokemon):
             "special_defense": inst.stats.special_defense,
             "speed": inst.stats.speed,
         }
-        for abbr, full in STAT_KEY_MAP.items():
-            stats[abbr] = stats[full]
-        return stats
 
 
 def get_max_hp(pokemon) -> int:

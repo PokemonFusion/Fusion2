@@ -143,9 +143,6 @@ def add_evs(pokemon, gains: Dict[str, int]) -> None:
             continue
         evs[full] = current + allowed
         total += allowed
-    for abbr, full in STAT_KEY_MAP.items():
-        if full in evs:
-            evs[abbr] = evs[full]
     pokemon.evs = evs
 
 
@@ -218,11 +215,7 @@ def apply_item_ev_mod(pokemon, gains: Dict[str, int]) -> Dict[str, int]:
         mod = gains.copy()
         mod[stat] = mod.get(stat, 0) + 8
         gains = mod
-    result = {STAT_KEY_MAP.get(k, k): v for k, v in gains.items()}
-    for abbr, full in STAT_KEY_MAP.items():
-        if full in result:
-            result[abbr] = result[full]
-    return result
+    return {STAT_KEY_MAP.get(k, k): v for k, v in gains.items()}
 
 
 def calculate_stats(
@@ -282,8 +275,6 @@ def calculate_stats(
         ),
     }
 
-    for abbr, full in STAT_KEY_MAP.items():
-        stats[abbr] = stats[full]
     return stats
 
 

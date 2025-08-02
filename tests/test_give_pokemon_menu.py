@@ -20,7 +20,14 @@ class DummyInstance:
         self.gender = "M"
         self.nature = "Hardy"
         self.ability = "Static"
-        self.ivs = types.SimpleNamespace(hp=1, atk=1, def_=1, spa=1, spd=1, spe=1)
+        self.ivs = types.SimpleNamespace(
+            hp=1,
+            attack=1,
+            defense=1,
+            special_attack=1,
+            special_defense=1,
+            speed=1,
+        )
 
 def generate_pokemon(species, level=1):
     return DummyInstance(species, level)
