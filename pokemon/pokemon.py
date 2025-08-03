@@ -7,30 +7,28 @@ from .models import (
     StorageBox,
     Trainer,
     GymBadge,
+    ensure_boxes,
 )
 from .generation import generate_pokemon
 from .dex import POKEDEX
+from pokemon.utils.pokemon_helpers import create_owned_pokemon
 from utils.inventory import InventoryMixin
 
 
 class User(DefaultCharacter, InventoryMixin):
     def _create_owned_pokemon(self, name, level, data=None):
         """Create and return a fully initialized ``OwnedPokemon``."""
-        pokemon = OwnedPokemon.objects.create(
-            trainer=self.trainer,
-            species=name,
-            nickname="",
-            gender=data.get("gender", "") if data else "",
-            nature=data.get("nature", "") if data else "",
-            ability=data.get("ability", "") if data else "",
-            ivs=data.get("ivs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
-            evs=data.get("evs", [0, 0, 0, 0, 0, 0]) if data else [0, 0, 0, 0, 0, 0],
+        data = data or {}
+        return create_owned_pokemon(
+            name,
+            self.trainer,
+            level,
+            gender=data.get("gender", ""),
+            nature=data.get("nature", ""),
+            ability=data.get("ability", ""),
+            ivs=data.get("ivs"),
+            evs=data.get("evs"),
         )
-        pokemon.set_level(level)
-        pokemon.heal()
-
-        pokemon.learn_level_up_moves()
-        return pokemon
 
     def add_pokemon_to_user(self, name, level, type_, data=None):
         pokemon = self._create_owned_pokemon(name, level, data)
@@ -72,9 +70,7 @@ class User(DefaultCharacter, InventoryMixin):
     def storage(self) -> UserStorage:
         """Return this character's storage, creating it if needed."""
         storage, created = UserStorage.objects.get_or_create(user=self)
-        if not storage.boxes.exists():
-            for i in range(1, 9):
-                StorageBox.objects.create(storage=storage, name=f"Box {i}")
+        ensure_boxes(storage)
         return storage
 
     # ------------------------------------------------------------------
@@ -91,14 +87,11 @@ class User(DefaultCharacter, InventoryMixin):
             return "That species does not exist."
 
         instance = generate_pokemon(species.name, level=5)
-        pokemon = OwnedPokemon.objects.create(
-            trainer=self.trainer,
-            species=instance.species.name,
-            nickname="",
-            gender=instance.gender,
-            nature=instance.nature,
-            ability=instance.ability,
-            ivs=[
+        data = {
+            "gender": instance.gender,
+            "nature": instance.nature,
+            "ability": instance.ability,
+            "ivs": [
                 instance.ivs.hp,
                 instance.ivs.attack,
                 instance.ivs.defense,
@@ -106,11 +99,9 @@ class User(DefaultCharacter, InventoryMixin):
                 instance.ivs.special_defense,
                 instance.ivs.speed,
             ],
-            evs=[0, 0, 0, 0, 0, 0],
-        )
-        pokemon.set_level(5)
-        pokemon.heal()
-        pokemon.learn_level_up_moves()
+            "evs": [0, 0, 0, 0, 0, 0],
+        }
+        pokemon = self._create_owned_pokemon(instance.species.name, 5, data)
         self.storage.add_active_pokemon(pokemon)
         return f"You received {pokemon.species}!"
 
