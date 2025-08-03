@@ -30,10 +30,11 @@ class CmdBattleAttack(Command):
     """Queue a move to use in the current battle.
 
     Usage:
-      +battleattack <move> [target]
+      +battle/attack <move> [target]
     """
 
-    key = "+battleattack"
+    key = "+battle/attack"
+    aliases = ["+attack", "+Attack", "+battleattack"]
     locks = "cmd:all()"
     help_category = "Pokemon/Battle"
 
@@ -204,10 +205,11 @@ class CmdBattleSwitch(Command):
     """Switch your active Pokémon in battle.
 
     Usage:
-      +battleswitch <slot>
+      +battle/switch <slot>
     """
 
-    key = "+battleswitch"
+    key = "+battle/switch"
+    aliases = ["+switch", "+Switch", "+battleswitch"]
     locks = "cmd:all()"
     help_category = "Pokemon/Battle"
 
@@ -304,10 +306,11 @@ class CmdBattleItem(Command):
     """Use an item during battle.
 
     Usage:
-      +battleitem <item>
+      +battle/item <item>
     """
 
-    key = "+battleitem"
+    key = "+battle/item"
+    aliases = ["+item", "+Item", "+battleitem"]
     locks = "cmd:all()"
     help_category = "Pokemon/Battle"
 
@@ -317,7 +320,7 @@ class CmdBattleItem(Command):
             return
         item_name = self.args.strip()
         if not item_name:
-            self.caller.msg("Usage: +battleitem <item>")
+            self.caller.msg("Usage: +battle/item <item>")
             return
         if not self.caller.has_item(item_name):
             self.caller.msg(f"You do not have any {item_name}.")
@@ -354,9 +357,14 @@ class CmdBattleItem(Command):
 
 
 class CmdBattleFlee(Command):
-    """Attempt to flee from battle."""
+    """Attempt to flee from battle.
 
-    key = "+battleflee"
+    Usage:
+      +battle/flee
+    """
+
+    key = "+battle/flee"
+    aliases = ["+flee", "+Flee", "+battleflee"]
     locks = "cmd:all()"
     help_category = "Pokemon/Battle"
 
