@@ -8,6 +8,8 @@ sys.path.insert(0, ROOT)
 
 # stub modules required by menu
 orig_pokedex = sys.modules.get("pokemon.dex")
+orig_generation = sys.modules.get("pokemon.generation")
+orig_helpers = sys.modules.get("pokemon.utils.pokemon_helpers")
 fake_pokedex = types.ModuleType("pokemon.dex")
 fake_pokedex.POKEDEX = {"Pikachu": {}}
 sys.modules["pokemon.dex"] = fake_pokedex
@@ -34,28 +36,21 @@ def generate_pokemon(species, level=1):
 fake_generation.generate_pokemon = generate_pokemon
 sys.modules["pokemon.generation"] = fake_generation
 
-fake_models = types.ModuleType("pokemon.models")
-class DummyObjects:
-    def create(self, **kwargs):
-        obj = OwnedPokemon()
-        for k, v in kwargs.items():
-            setattr(obj, k, v)
-        return obj
+fake_helpers = types.ModuleType("pokemon.utils.pokemon_helpers")
 
-class OwnedPokemon:
-    objects = DummyObjects()
-    def set_level(self, lvl):
-        self.level = lvl
-    @property
-    def computed_level(self):
-        return self.level
-    current_hp = 10
-    def learn_level_up_moves(self):
-        pass
-    def heal(self):
-        pass
-fake_models.OwnedPokemon = OwnedPokemon
-sys.modules["pokemon.models"] = fake_models
+class DummyPokemon:
+    def __init__(self, species, level):
+        self.species = species
+        self.level = level
+        self.computed_level = level
+
+
+def create_owned_pokemon(species, trainer, level, **kwargs):
+    return DummyPokemon(species, level)
+
+
+fake_helpers.create_owned_pokemon = create_owned_pokemon
+sys.modules["pokemon.utils.pokemon_helpers"] = fake_helpers
 
 # load menu module with stubs in place
 path = os.path.join(ROOT, "menus", "give_pokemon.py")
@@ -63,6 +58,17 @@ spec = importlib.util.spec_from_file_location("menus.give_pokemon", path)
 menu = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = menu
 spec.loader.exec_module(menu)
+
+# restore patched modules to avoid affecting other tests
+if orig_helpers is not None:
+    sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+else:
+    sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+
+if orig_generation is not None:
+    sys.modules["pokemon.generation"] = orig_generation
+else:
+    sys.modules.pop("pokemon.generation", None)
 
 class DummyTarget:
     def __init__(self, count=0):

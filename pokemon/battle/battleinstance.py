@@ -138,9 +138,9 @@ def create_battle_pokemon(
     """Return a ``Pokemon`` battle object for the given species/level."""
 
     try:
-        from ..models import OwnedPokemon
+        from pokemon.utils.pokemon_helpers import create_owned_pokemon
     except Exception:  # pragma: no cover - optional in tests
-        OwnedPokemon = None
+        create_owned_pokemon = None
 
     inst = generate_pokemon(species, level=level)
     move_names = getattr(inst, "moves", [])
@@ -160,13 +160,15 @@ def create_battle_pokemon(
     nature = getattr(inst, "nature", "Hardy")
 
     db_obj = None
-    if OwnedPokemon:
+    if create_owned_pokemon:
         try:
-            db_obj = OwnedPokemon.objects.create(
-                species=inst.species.name,
-                ability=getattr(inst, "ability", ""),
-                nature=getattr(inst, "nature", ""),
+            db_obj = create_owned_pokemon(
+                inst.species.name,
+                None,
+                inst.level,
                 gender=getattr(inst, "gender", "N"),
+                nature=getattr(inst, "nature", ""),
+                ability=getattr(inst, "ability", ""),
                 ivs=[
                     getattr(getattr(inst, "ivs", None), "hp", 0),
                     getattr(getattr(inst, "ivs", None), "atk", 0),
@@ -176,12 +178,9 @@ def create_battle_pokemon(
                     getattr(getattr(inst, "ivs", None), "spe", 0),
                 ],
                 evs=[0, 0, 0, 0, 0, 0],
-                current_hp=getattr(inst.stats, "hp", level),
                 ai_trainer=trainer,
                 is_wild=is_wild,
             )
-            db_obj.set_level(inst.level)
-            db_obj.save()
         except Exception:
             db_obj = None
 

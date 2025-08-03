@@ -16,6 +16,9 @@ if "evennia" not in sys.modules:
 
 # Provide a lightweight battle system stub so ``world.hunt_system`` can import
 # its dependencies without requiring the real game engine.
+orig_pokemon_pkg = sys.modules.get("pokemon")
+if orig_pokemon_pkg is None:
+    import pokemon as orig_pokemon_pkg  # type: ignore
 if "pokemon.battle.battleinstance" not in sys.modules:
     battle_mod = types.ModuleType("pokemon.battle.battleinstance")
 
@@ -42,8 +45,6 @@ if "pokemon.battle.battleinstance" not in sys.modules:
     battle_mod.generate_trainer_pokemon = generate_trainer_pokemon
 
     # Ensure the parent packages exist in ``sys.modules``
-    if "pokemon" not in sys.modules:
-        sys.modules["pokemon"] = types.ModuleType("pokemon")
     if "pokemon.battle" not in sys.modules:
         sys.modules["pokemon.battle"] = types.ModuleType("pokemon.battle")
     sys.modules["pokemon.battle.battleinstance"] = battle_mod
@@ -96,6 +97,13 @@ def test_perform_fixed_hunt():
     assert msg == "A wild Pikachu (Lv 7) appeared!"
     assert captured["name"] == "Pikachu"
     assert captured["level"] == 7
+
+
+def teardown_module(module):
+    if orig_pokemon_pkg is not None:
+        sys.modules["pokemon"] = orig_pokemon_pkg
+    else:
+        sys.modules.pop("pokemon", None)
 
 
 def test_allow_hunting_string_value():
