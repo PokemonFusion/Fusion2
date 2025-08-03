@@ -74,6 +74,12 @@ class Pokemon:
             "accuracy": 0,
             "evasion": 0,
         }
+        try:
+            from pokemon.utils.pokemon_helpers import refresh_stats
+
+            refresh_stats(self)
+        except Exception:  # pragma: no cover - helpers may be absent in tests
+            pass
 
     def getName(self) -> str:
         return self.name
