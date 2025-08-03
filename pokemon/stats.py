@@ -113,6 +113,14 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
             except TypeError:
                 pokemon.learn_level_up_moves()
 
+    if prev_level is not None and new_level != prev_level:
+        try:
+            from pokemon.utils.pokemon_helpers import refresh_stats
+
+            refresh_stats(pokemon)
+        except Exception:  # pragma: no cover - safe fallback if helpers missing
+            pass
+
 
 def add_evs(pokemon, gains: Dict[str, int]) -> None:
     """Apply EV gains to ``pokemon`` respecting limits."""
@@ -144,6 +152,12 @@ def add_evs(pokemon, gains: Dict[str, int]) -> None:
         evs[full] = current + allowed
         total += allowed
     pokemon.evs = evs
+    try:
+        from pokemon.utils.pokemon_helpers import refresh_stats
+
+        refresh_stats(pokemon)
+    except Exception:  # pragma: no cover - safe fallback
+        pass
 
 
 def _nature_mod(nature: str, stat: str) -> float:

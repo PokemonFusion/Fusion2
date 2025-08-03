@@ -65,4 +65,10 @@ def attempt_evolution(pokemon, *, item: Optional[str] = None) -> Optional[str]:
     pokemon.name = target
     if hasattr(pokemon, "type_") and data:
         pokemon.type_ = ", ".join(data.types)
+    try:
+        from pokemon.utils.pokemon_helpers import refresh_stats
+
+        refresh_stats(pokemon)
+    except Exception:  # pragma: no cover - helpers may not be available
+        pass
     return target

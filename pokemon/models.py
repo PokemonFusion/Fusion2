@@ -285,6 +285,12 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
         self.total_exp = exp_for_level(level)
         self.level = level
+        try:
+            from pokemon.utils.pokemon_helpers import refresh_stats
+
+            refresh_stats(self)
+        except Exception:  # pragma: no cover - helper may be unavailable in tests
+            pass
 
     def delete_if_wild(self) -> None:
         """Delete this Pokémon if it is an uncaptured wild encounter."""

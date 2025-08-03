@@ -1,11 +1,20 @@
-# Utility functions for working with Pokémon data.
+"""Helper functions for working with Pokémon stats.
+
+This module exposes convenience wrappers for calculating and caching a
+Pokémon's stats.  Stats are expensive to compute, so we store the most
+recently calculated values on the object itself and only recompute when
+necessary.  ``refresh_stats`` can be used to force a recalculation when an
+event occurs that would change the numbers (level up, EV gain, species
+change, etc.).
+"""
 
 from pokemon.generation import generate_pokemon
 from pokemon.stats import calculate_stats, STAT_KEY_MAP
 
 
-def _get_stats_from_data(pokemon):
-    """Return calculated stats based on stored attributes."""
+def _calculate_from_data(pokemon):
+    """Return freshly calculated stats based on stored attributes."""
+
     ivs_attr = getattr(pokemon, "ivs", [0, 0, 0, 0, 0, 0])
     evs_attr = getattr(pokemon, "evs", [0, 0, 0, 0, 0, 0])
     if isinstance(ivs_attr, dict):
@@ -47,6 +56,30 @@ def _get_stats_from_data(pokemon):
             "special_defense": inst.stats.special_defense,
             "speed": inst.stats.speed,
         }
+
+
+def _get_stats_from_data(pokemon):
+    """Return cached calculated stats based on stored attributes."""
+
+    cache = getattr(pokemon, "_cached_stats", None)
+    if cache is not None:
+        return cache
+    stats = _calculate_from_data(pokemon)
+    setattr(pokemon, "_cached_stats", stats)
+    return stats
+
+
+def refresh_stats(pokemon):
+    """Recalculate and cache stats for ``pokemon``.
+
+    This helper should be invoked whenever something happens that would
+    alter a Pokémon's stats, such as level changes, EV gains or species
+    changes.  It returns the newly computed stats dictionary.
+    """
+
+    stats = _calculate_from_data(pokemon)
+    setattr(pokemon, "_cached_stats", stats)
+    return stats
 
 
 def get_max_hp(pokemon) -> int:
