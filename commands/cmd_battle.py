@@ -137,7 +137,14 @@ class CmdBattleAttack(Command):
                 _prompt_move()
                 return
 
-            targets = [p for p in inst.battle.participants if p is not participant]
+            # Only opponents are valid targets. Use ``opponents_of`` when
+            # available to respect team assignments. Fall back to excluding the
+            # caller's own participant if the battle implementation does not
+            # provide this helper (as seen in some tests or minimal engines).
+            if hasattr(inst.battle, "opponents_of"):
+                targets = inst.battle.opponents_of(participant)
+            else:
+                targets = [p for p in inst.battle.participants if p is not participant]
             target = None
             if len(targets) == 1:
                 target = targets[0]

@@ -247,12 +247,30 @@ class BattleLogic:
 
         teamA = data.teams.get("A")
         teamB = data.teams.get("B")
-        part_a = BattleParticipant(
-            teamA.trainer, [p for p in teamA.returnlist() if p], is_ai=False
-        )
-        part_b = BattleParticipant(
-            teamB.trainer, [p for p in teamB.returnlist() if p]
-        )
+        try:
+            part_a = BattleParticipant(
+                teamA.trainer,
+                [p for p in teamA.returnlist() if p],
+                is_ai=False,
+                team="A",
+            )
+        except TypeError:
+            part_a = BattleParticipant(
+                teamA.trainer,
+                [p for p in teamA.returnlist() if p],
+                is_ai=False,
+            )
+        try:
+            part_b = BattleParticipant(
+                teamB.trainer,
+                [p for p in teamB.returnlist() if p],
+                team="B",
+            )
+        except TypeError:
+            part_b = BattleParticipant(
+                teamB.trainer,
+                [p for p in teamB.returnlist() if p],
+            )
         part_b.is_ai = state.ai_type != "Player"
         pos_a = data.turndata.teamPositions("A").get("A1")
         if pos_a and pos_a.pokemon:
@@ -651,16 +669,36 @@ class BattleSession:
 
         try:
             player_participant = BattleParticipant(
-                self.captainA.key, player_pokemon, player=self.captainA
+                self.captainA.key,
+                player_pokemon,
+                player=self.captainA,
+                team="A",
             )
         except TypeError:
-            player_participant = BattleParticipant(self.captainA.key, player_pokemon)
+            try:
+                player_participant = BattleParticipant(
+                    self.captainA.key, player_pokemon, team="A"
+                )
+            except TypeError:
+                player_participant = BattleParticipant(
+                    self.captainA.key, player_pokemon
+                )
         try:
             opponent_participant = BattleParticipant(
-                self.captainB.key, opp_pokemon, player=self.captainB
+                self.captainB.key,
+                opp_pokemon,
+                player=self.captainB,
+                team="B",
             )
         except TypeError:
-            opponent_participant = BattleParticipant(self.captainB.key, opp_pokemon)
+            try:
+                opponent_participant = BattleParticipant(
+                    self.captainB.key, opp_pokemon, team="B"
+                )
+            except TypeError:
+                opponent_participant = BattleParticipant(
+                    self.captainB.key, opp_pokemon
+                )
 
         if player_participant.pokemons:
             player_participant.active = [player_participant.pokemons[0]]
@@ -796,15 +834,33 @@ class BattleSession:
     ) -> None:
         """Create battle objects and state."""
         log_info(f"Initializing battle state for {self.captainA.key} vs {opponent_name}")
-        opponent_participant = BattleParticipant(
-            opponent_name, [opponent_poke], is_ai=True
-        )
+        # ``BattleParticipant`` may not accept ``team`` or ``player`` in stub
+        # implementations used by tests. Attempt to pass these keyword
+        # arguments when available and gracefully fall back otherwise.
         try:
-            player_participant = BattleParticipant(
-                self.captainA.key, player_pokemon, player=self.captainA
+            opponent_participant = BattleParticipant(
+                opponent_name, [opponent_poke], is_ai=True, team="B"
             )
         except TypeError:
-            player_participant = BattleParticipant(self.captainA.key, player_pokemon)
+            opponent_participant = BattleParticipant(
+                opponent_name, [opponent_poke], is_ai=True
+            )
+        try:
+            player_participant = BattleParticipant(
+                self.captainA.key,
+                player_pokemon,
+                player=self.captainA,
+                team="A",
+            )
+        except TypeError:
+            try:
+                player_participant = BattleParticipant(
+                    self.captainA.key, player_pokemon, team="A"
+                )
+            except TypeError:
+                player_participant = BattleParticipant(
+                    self.captainA.key, player_pokemon
+                )
 
         if player_participant.pokemons:
             player_participant.active = [player_participant.pokemons[0]]
