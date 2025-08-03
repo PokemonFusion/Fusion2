@@ -318,6 +318,73 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 # Convenience wrappers for the battle engine
 # ----------------------------------------------------------------------
 
+
+def apply_damage(
+    attacker: Pokemon,
+    target: Pokemon,
+    move: Move,
+    battle=None,
+    *,
+    spread: bool = False,
+    update_hp: bool = True,
+) -> DamageResult:
+    """Run :func:`damage_calc` and apply the result to ``target``.
+
+    Parameters
+    ----------
+    attacker, target:
+        Combatants involved in the damage calculation.
+    move:
+        The move being used.
+    battle:
+        Optional battle context passed to :func:`damage_calc`.
+    spread:
+        If ``True`` the move is treated as spread damage.
+    update_hp:
+        When ``True`` (default) the calculated damage is subtracted from the
+        target's HP.  Set to ``False`` to only compute the damage value, e.g.
+        when hitting a substitute.
+
+    Returns
+    -------
+    DamageResult
+        The result object from :func:`damage_calc` with ``debug['damage']``
+        updated to the final damage amount after callbacks.
+    """
+
+    result = damage_calc(attacker, target, move, battle=battle, spread=spread)
+    dmg = sum(result.debug.get("damage", []))
+
+    try:  # pragma: no cover - callbacks may be absent in tests
+        from pokemon.dex.functions import moves_funcs  # type: ignore
+    except Exception:  # pragma: no cover
+        moves_funcs = None
+
+    if moves_funcs:
+        for vol in getattr(target, "volatiles", {}):
+            cls = getattr(moves_funcs, vol.capitalize(), None)
+            if cls:
+                cb = getattr(cls(), "onSourceModifyDamage", None)
+                if callable(cb):
+                    try:
+                        new_dmg = cb(dmg, target, attacker, move)
+                    except Exception:
+                        new_dmg = cb(dmg, target, attacker)
+                    if isinstance(new_dmg, (int, float)):
+                        dmg = int(new_dmg)
+
+    if update_hp and hasattr(target, "hp"):
+        target.hp = max(0, target.hp - dmg)
+        if dmg > 0:
+            try:
+                target.tempvals["took_damage"] = True
+            except Exception:  # pragma: no cover - simple data containers
+                pass
+
+    result.debug["damage"] = [dmg]
+    return result
+
+
 def calculate_damage(attacker: Pokemon, defender: Pokemon, move: Move, battle=None) -> DamageResult:
     """Public helper mirroring :func:`damage_calc`."""
     return damage_calc(attacker, defender, move, battle=battle)
