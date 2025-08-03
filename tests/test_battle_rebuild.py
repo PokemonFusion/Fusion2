@@ -269,6 +269,12 @@ def test_from_dict_calculates_max_hp():
         class Manager:
             def get(self, unique_id=None):
                 return FakeOwned()
+            def filter(self, **kwargs):
+                class QS:
+                    def delete(self_inner):
+                        pass
+
+                return QS()
 
         objects = Manager()
 

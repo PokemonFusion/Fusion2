@@ -92,3 +92,63 @@ def get_stats(pokemon):
     """Return a dict of calculated stats for ``pokemon``."""
     return _get_stats_from_data(pokemon)
 
+
+def create_owned_pokemon(
+    species: str,
+    trainer,
+    level: int,
+    *,
+    gender: str = "",
+    ability: str = "",
+    nature: str = "",
+    ivs: list[int] | None = None,
+    evs: list[int] | None = None,
+    **extra_fields,
+):
+    """Create and initialize an :class:`OwnedPokemon` instance.
+
+    Parameters
+    ----------
+    species:
+        Species name of the Pokémon to create.
+    trainer:
+        Owning trainer or ``None`` for wild/AI-controlled Pokémon.
+    level:
+        Initial level for the Pokémon.
+    gender, ability, nature, ivs, evs:
+        Optional data used to seed model fields. ``ivs`` and ``evs`` default
+        to zeroed lists if not supplied.
+    extra_fields:
+        Additional model fields passed directly to ``objects.create``.
+
+    Returns
+    -------
+    OwnedPokemon
+        The fully initialised Pokémon model with level, health and moves set.
+    """
+
+    from pokemon.models import OwnedPokemon
+
+    ivs = ivs if ivs is not None else [0, 0, 0, 0, 0, 0]
+    evs = evs if evs is not None else [0, 0, 0, 0, 0, 0]
+
+    pokemon = OwnedPokemon.objects.create(
+        trainer=trainer,
+        species=species,
+        nickname="",
+        gender=gender,
+        nature=nature,
+        ability=ability,
+        ivs=ivs,
+        evs=evs,
+        **extra_fields,
+    )
+
+    pokemon.set_level(level)
+    pokemon.heal()
+    try:
+        pokemon.learn_level_up_moves()
+    except Exception:  # pragma: no cover - helper optional in tests
+        pass
+    return pokemon
+
