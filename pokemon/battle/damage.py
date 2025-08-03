@@ -163,22 +163,12 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
 
-        from . import utils
+        from pokemon.battle.utils import get_modified_stat
 
         atk_key = "attack" if move.category == "Physical" else "special_attack"
         def_key = "defense" if move.category == "Physical" else "special_defense"
-
-        if hasattr(utils, "get_modified_stat"):
-            atk_stat = utils.get_modified_stat(attacker, atk_key)
-            def_stat = utils.get_modified_stat(target, def_key)
-        else:
-            try:
-                from pokemon.utils.pokemon_helpers import get_stats
-                atk_stat = get_stats(attacker).get(atk_key, 0)
-                def_stat = get_stats(target).get(def_key, 0)
-            except Exception:  # pragma: no cover - fallback when helpers fail
-                atk_stat = getattr(getattr(attacker, "base_stats", None), atk_key, 0)
-                def_stat = getattr(getattr(target, "base_stats", None), def_key, 0)
+        atk_stat = get_modified_stat(attacker, atk_key)
+        def_stat = get_modified_stat(target, def_key)
 
         power = move.power or 0
         if battle is not None:
