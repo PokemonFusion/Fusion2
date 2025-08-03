@@ -5,7 +5,7 @@ from evennia import Command
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 from pokemon.dex import POKEDEX
-from pokemon.generation import generate_pokemon
+from pokemon.generation import generate_pokemon, NATURES
 from pokemon.models import OwnedPokemon, StorageBox
 from pokemon.starters import get_starter_names, STARTER_LOOKUP
 
@@ -40,7 +40,7 @@ TYPES = [
     "Steel",
     "Water",
 ]
-NATURES = list(generate_pokemon.__globals__["NATURES"].keys())
+NATURES = list(NATURES.keys())
 
 # Starter‐specific lookup (name/key → key)
 STARTER_NAMES = set(STARTER_LOOKUP.keys())

@@ -52,6 +52,15 @@ class PokemonInstance:
     nature: str
 
 
+# Public exports from this module
+__all__ = [
+    "PokemonInstance",
+    "generate_pokemon",
+    "get_valid_moves",
+    "choose_wild_moves",
+    "NATURES",
+]
+
 # --- Helper functions -----------------------------------------------------
 
 def roll_ivs() -> Stats:
