@@ -1912,29 +1912,9 @@ class Battle:
 
     def calculate_stat(self, pokemon, stat: str) -> int:
         """Return ``pokemon``'s stat after modifiers."""
-        try:
-            from . import utils
-        except Exception:  # pragma: no cover - import failure
-            utils = None
+        from pokemon.battle.utils import get_modified_stat
 
-        if utils and hasattr(utils, "get_modified_stat"):
-            try:
-                return utils.get_modified_stat(pokemon, stat)
-            except Exception:
-                pass
-
-        safe_get_stats = getattr(utils, "_safe_get_stats", None)
-        if safe_get_stats is None:
-            try:  # pragma: no cover - import error path
-                from .utils import _safe_get_stats as safe_get_stats
-            except Exception:  # pragma: no cover
-                safe_get_stats = None
-        if safe_get_stats:
-            try:
-                return int(safe_get_stats(pokemon).get(stat, 0))
-            except Exception:
-                pass
-        return int(getattr(getattr(pokemon, "base_stats", None), stat, 0))
+        return get_modified_stat(pokemon, stat)
 
     def reset_stat_changes(self, pokemon) -> None:
         """Clear temporary stat modifiers for ``pokemon``."""
