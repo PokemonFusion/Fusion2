@@ -145,7 +145,7 @@ class BattleMove:
             return
 
         # Default behaviour for moves without custom handlers
-        from .damage import damage_calc
+        from .damage import apply_damage
         from pokemon.dex.entities import Move
 
         raw = dict(self.raw)
@@ -170,28 +170,7 @@ class BattleMove:
             except Exception:
                 move.basePowerCallback = None
 
-        result = damage_calc(user, target, move, battle=battle)
-        dmg = sum(result.debug.get("damage", []))
-        # Apply onSourceModifyDamage callbacks from target volatiles
-        if moves_funcs:
-            for vol in getattr(target, "volatiles", {}):
-                cls = getattr(moves_funcs, vol.capitalize(), None)
-                if cls:
-                    cb = getattr(cls(), "onSourceModifyDamage", None)
-                    if callable(cb):
-                        try:
-                            new_dmg = cb(dmg, target, user, move)
-                        except Exception:
-                            new_dmg = cb(dmg, target, user)
-                        if isinstance(new_dmg, (int, float)):
-                            dmg = int(new_dmg)
-        if hasattr(target, "hp"):
-            target.hp = max(0, target.hp - dmg)
-            if dmg > 0:
-                try:
-                    target.tempvals["took_damage"] = True
-                except Exception:
-                    pass
+        apply_damage(user, target, move, battle=battle)
 
         # Handle side conditions set by this move
         side_cond = self.raw.get("sideCondition") if self.raw else None
@@ -1059,7 +1038,7 @@ class Battle:
 
     def _deal_damage(self, user, target, move: BattleMove, *, spread: bool = False) -> int:
         """Apply simplified damage calculation to ``target``."""
-        from .damage import damage_calc
+        from .damage import apply_damage
         from pokemon.dex.entities import Move
 
         raw = dict(move.raw)
@@ -1082,30 +1061,8 @@ class Battle:
             except Exception:
                 temp_move.basePowerCallback = None
 
-        result = damage_calc(user, target, temp_move, battle=self)
-        dmg = sum(result.debug.get("damage", []))
-        if spread:
-            dmg = int(dmg * 0.75)
-        if moves_funcs:
-            for vol in getattr(target, "volatiles", {}):
-                cls = getattr(moves_funcs, vol.capitalize(), None)
-                if cls:
-                    cb = getattr(cls(), "onSourceModifyDamage", None)
-                    if callable(cb):
-                        try:
-                            new_dmg = cb(dmg, target, user, temp_move)
-                        except Exception:
-                            new_dmg = cb(dmg, target, user)
-                        if isinstance(new_dmg, (int, float)):
-                            dmg = int(new_dmg)
-        if hasattr(target, "hp"):
-            target.hp = max(0, target.hp - dmg)
-            if dmg > 0:
-                try:
-                    target.tempvals["took_damage"] = True
-                except Exception:
-                    pass
-        return dmg
+        result = apply_damage(user, target, temp_move, battle=self, spread=spread)
+        return sum(result.debug.get("damage", []))
 
     def _do_move(self, user, target, move: BattleMove) -> bool:
         """Execute ``move`` handling two-turn charge phases."""
@@ -1242,7 +1199,7 @@ class Battle:
 
         sub = getattr(target, "volatiles", {}).get("substitute")
         if sub and not action.move.raw.get("bypassSub"):
-            from .damage import damage_calc
+            from .damage import apply_damage
             from pokemon.dex.entities import Move
 
             raw = dict(action.move.raw)
@@ -1265,20 +1222,8 @@ class Battle:
                 except Exception:
                     move.basePowerCallback = None
 
-            dmg_result = damage_calc(user, target, move, battle=self)
+            dmg_result = apply_damage(user, target, move, battle=self, update_hp=False)
             dmg = sum(dmg_result.debug.get("damage", []))
-            if moves_funcs:
-                for vol in getattr(target, "volatiles", {}):
-                    cls = getattr(moves_funcs, vol.capitalize(), None)
-                    if cls:
-                        cb = getattr(cls(), "onSourceModifyDamage", None)
-                        if callable(cb):
-                            try:
-                                new_dmg = cb(dmg, target, user, move)
-                            except Exception:
-                                new_dmg = cb(dmg, target, user)
-                            if isinstance(new_dmg, (int, float)):
-                                dmg = int(new_dmg)
             if isinstance(sub, dict):
                 remaining = sub.get("hp", 0) - dmg
                 if remaining <= 0:
