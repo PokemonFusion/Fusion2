@@ -1905,10 +1905,9 @@ class Battle:
     # ------------------------------------------------------------------
     def modify_stat_stage(self, pokemon, stat: str, delta: int) -> None:
         """Modify ``pokemon`` stat stage by ``delta``."""
-        if not hasattr(pokemon, "boosts"):
-            pokemon.boosts = {}
-        current = pokemon.boosts.get(stat, 0)
-        pokemon.boosts[stat] = max(-6, min(6, current + delta))
+        from pokemon.battle.utils import apply_boost
+
+        apply_boost(pokemon, {stat: delta})
 
     def calculate_stat(self, pokemon, stat: str) -> int:
         """Return ``pokemon``'s stat after modifiers."""
