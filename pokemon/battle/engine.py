@@ -1673,28 +1673,31 @@ class Battle:
 
             # Determine effective speed
             if poke:
+                safe_get_stats = getattr(utils, "_safe_get_stats", None)
+                if safe_get_stats is None:
+                    try:  # pragma: no cover - import error path
+                        from .utils import _safe_get_stats as safe_get_stats
+                    except Exception:  # pragma: no cover
+                        safe_get_stats = None
+
                 if utils and hasattr(utils, "get_modified_stat"):
                     try:
                         speed = utils.get_modified_stat(poke, "speed")
                     except Exception:
-                        try:
-                            from pokemon.utils.pokemon_helpers import get_stats
-                        except Exception:  # pragma: no cover - tests may stub
-                            def get_stats(p):
-                                return {"speed": getattr(getattr(p, "base_stats", None), "speed", 0)}
-                        try:
-                            speed = get_stats(poke).get("speed", 0)
-                        except Exception:
+                        if safe_get_stats:
+                            try:
+                                speed = safe_get_stats(poke).get("speed", 0)
+                            except Exception:
+                                speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
+                        else:
                             speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
                 else:
-                    try:
-                        from pokemon.utils.pokemon_helpers import get_stats
-                    except Exception:  # pragma: no cover
-                        def get_stats(p):
-                            return {"speed": getattr(getattr(p, "base_stats", None), "speed", 0)}
-                    try:
-                        speed = get_stats(poke).get("speed", 0)
-                    except Exception:
+                    if safe_get_stats:
+                        try:
+                            speed = safe_get_stats(poke).get("speed", 0)
+                        except Exception:
+                            speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
+                    else:
                         speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
 
                 if ability and hasattr(ability, "call"):
@@ -1911,17 +1914,27 @@ class Battle:
         """Return ``pokemon``'s stat after modifiers."""
         try:
             from . import utils
-            return utils.get_modified_stat(pokemon, stat)
-        except Exception:
+        except Exception:  # pragma: no cover - import failure
+            utils = None
+
+        if utils and hasattr(utils, "get_modified_stat"):
             try:
-                from pokemon.utils.pokemon_helpers import get_stats
-            except Exception:  # pragma: no cover
-                def get_stats(p):
-                    return {stat: getattr(getattr(p, "base_stats", None), stat, 0)}
-            try:
-                return int(get_stats(pokemon).get(stat, 0))
+                return utils.get_modified_stat(pokemon, stat)
             except Exception:
-                return int(getattr(getattr(pokemon, "base_stats", None), stat, 0))
+                pass
+
+        safe_get_stats = getattr(utils, "_safe_get_stats", None)
+        if safe_get_stats is None:
+            try:  # pragma: no cover - import error path
+                from .utils import _safe_get_stats as safe_get_stats
+            except Exception:  # pragma: no cover
+                safe_get_stats = None
+        if safe_get_stats:
+            try:
+                return int(safe_get_stats(pokemon).get(stat, 0))
+            except Exception:
+                pass
+        return int(getattr(getattr(pokemon, "base_stats", None), stat, 0))
 
     def reset_stat_changes(self, pokemon) -> None:
         """Clear temporary stat modifiers for ``pokemon``."""
