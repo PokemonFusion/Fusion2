@@ -1,6 +1,6 @@
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
-from pokemon.models import OwnedPokemon
+from pokemon.utils.pokemon_helpers import create_owned_pokemon
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -64,10 +64,10 @@ def node_level(caller, raw_input=None, **kwargs):
         level = 1
     species = caller.ndb.givepoke.get("species")
     instance = generate_pokemon(species, level=level)
-    pokemon = OwnedPokemon.objects.create(
-        trainer=target.trainer,
-        species=instance.species.name,
-        nickname="",
+    pokemon = create_owned_pokemon(
+        instance.species.name,
+        target.trainer,
+        instance.level,
         gender=instance.gender,
         nature=instance.nature,
         ability=instance.ability,
@@ -81,9 +81,6 @@ def node_level(caller, raw_input=None, **kwargs):
         ],
         evs=[0, 0, 0, 0, 0, 0],
     )
-    pokemon.set_level(instance.level)
-    pokemon.heal()
-    pokemon.learn_level_up_moves()
     target.storage.add_active_pokemon(pokemon)
     caller.msg(
         f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}."

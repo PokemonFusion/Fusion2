@@ -6,7 +6,8 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
-from pokemon.models import OwnedPokemon, StorageBox
+from pokemon.models import StorageBox
+from pokemon.utils.pokemon_helpers import create_owned_pokemon
 from pokemon.starters import get_starter_names, STARTER_LOOKUP
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
@@ -90,13 +91,13 @@ def _generate_instance(species_key: str, level: int):
         return None
 
 
-def _build_owned_pokemon(char, instance, ability: str, gender: str):
+def _build_owned_pokemon(char, instance, ability: str, gender: str, level: int):
     """Create an ``OwnedPokemon`` from a generated instance."""
     chosen_gender = gender or instance.gender
-    return OwnedPokemon.objects.create(
-        trainer=char.trainer,
-        species=instance.species.name,
-        nickname="",
+    return create_owned_pokemon(
+        instance.species.name,
+        char.trainer,
+        level,
         gender=chosen_gender,
         nature=instance.nature,
         ability=ability or instance.ability,
@@ -110,13 +111,6 @@ def _build_owned_pokemon(char, instance, ability: str, gender: str):
         ],
         evs=[0, 0, 0, 0, 0, 0],
     )
-
-
-def _initialize_pokemon(pokemon, level: int) -> None:
-    """Perform common setup steps for a new Pokémon."""
-    pokemon.set_level(level)
-    pokemon.heal()
-    pokemon.learn_level_up_moves()
 
 
 def _add_pokemon_to_storage(char, pokemon) -> None:
@@ -138,8 +132,7 @@ def _create_starter(
         char.msg("That species does not exist.")
         return None
 
-    pokemon = _build_owned_pokemon(char, instance, ability, gender)
-    _initialize_pokemon(pokemon, level)
+    pokemon = _build_owned_pokemon(char, instance, ability, gender, level)
     _add_pokemon_to_storage(char, pokemon)
     return pokemon
 
