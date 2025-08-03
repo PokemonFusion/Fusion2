@@ -8,13 +8,11 @@ from pokemon.stats import STAT_KEY_MAP
 
 def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
     """Modify a Pokémon's stat stages, clamped between -6 and 6."""
-
-    if not hasattr(pokemon, "boosts"):
-        return
-
     current_boosts = getattr(pokemon, "boosts", {})
-    if isinstance(current_boosts, dict):
-        pokemon.boosts = {STAT_KEY_MAP.get(k, k): v for k, v in current_boosts.items()}
+    if not isinstance(current_boosts, dict):
+        current_boosts = {}
+
+    pokemon.boosts = {STAT_KEY_MAP.get(k, k): v for k, v in current_boosts.items()}
 
     for stat, amount in boosts.items():
         full = STAT_KEY_MAP.get(stat, stat)
