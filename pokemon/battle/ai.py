@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 import random
-from typing import List, Sequence
+from typing import Dict, List, Sequence
 
 from .damage import stab_multiplier, type_effectiveness
 
@@ -204,4 +204,153 @@ class AIMoveSelector:
         return (damage_score * dmg_w) + (utility_score * util_w)
 
 
-__all__ = ["AIMoveSelector"]
+def generate_moveset(pokemon, ai_level: int, ai_personality: str) -> List[Move]:
+    """Return up to four synergistic moves for an AI controlled Pokémon.
+
+    The routine filters the Pokémon's move pool according to the AI level and
+    then scores the remaining options based on the Pokémon's inferred role and
+    optional personality profile.  Higher AI levels (``>= 3``) unlock utility
+    considerations such as setup and status moves.
+
+    Parameters
+    ----------
+    pokemon:
+        Pokémon-like object exposing ``types`` and ``move_pool`` or ``moves``.
+    ai_level:
+        Difficulty tier guiding how many move sources are available.
+    ai_personality:
+        Personality string influencing damage versus utility preferences.
+    """
+
+    sources = AIMoveSelector.allowed_sources.get(
+        ai_level, AIMoveSelector.allowed_sources[5]
+    )
+
+    def allowed(move: Move) -> bool:
+        src = getattr(move, "source", "level_up")
+        if "all" in sources:
+            return True
+        if isinstance(src, Sequence) and not isinstance(src, (str, bytes)):
+            return any(s in sources for s in src)
+        return src in sources
+
+    move_pool = list(getattr(pokemon, "move_pool", []))
+    if not move_pool:
+        move_pool = list(getattr(pokemon, "moves", []))
+    candidates = [m for m in move_pool if allowed(m)]
+
+    if ai_level < 3:
+        return candidates[:4]
+
+    if not candidates:
+        return []
+
+    def infer_role() -> str:
+        role = getattr(pokemon, "role", None)
+        if role:
+            return role
+        stats = getattr(pokemon, "stats", None)
+        if stats:
+            atk = getattr(stats, "attack", getattr(stats, "atk", 0))
+            spa = getattr(stats, "special_attack", getattr(stats, "spa", 0))
+            spe = getattr(stats, "speed", 0)
+            hp = getattr(stats, "hp", 0)
+            spd = getattr(stats, "special_defense", getattr(stats, "spd", 0))
+        else:
+            atk = spa = spe = hp = spd = 0
+        if atk >= spa and spe >= 80:
+            return "physical_sweeper"
+        if spd + hp >= atk + spa:
+            return "special_tank"
+        return "utility_support"
+
+    role = infer_role()
+    types = [t.lower() for t in getattr(pokemon, "types", [])]
+
+    def score(move: Move) -> float:
+        tags = set(getattr(move, "tags", []))
+        category = (getattr(move, "category", "") or "").lower()
+        mtype = (getattr(move, "type", "") or "").lower()
+        damage = 0.0
+        utility = 0.0
+        if category != "status":
+            if mtype in types:
+                damage += 3
+            if "coverage" in tags:
+                damage += 2
+            if "priority" in tags:
+                damage += 1
+        if "setup" in tags:
+            if role in {"setup_attacker", "physical_sweeper"}:
+                utility += 2
+            else:
+                utility += 1
+        if ("heal" in tags or "utility" in tags) and ai_level >= 3:
+            utility += 2
+        if "status" in tags and (
+            ai_personality == "tactician" or role == "utility_support"
+        ):
+            utility += 2
+        weights = AIMoveSelector.personality_weights.get(
+            ai_personality, (1.0, 1.0)
+        )
+        return (damage * weights[0]) + (utility * weights[1])
+
+    scored = [(score(mv), mv) for mv in candidates]
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    selected: List[Move] = []
+    type_counts: Dict[str, int] = {}
+    for _, mv in scored:
+        if len(selected) >= 4:
+            break
+        mtype = getattr(mv, "type", None)
+        if mtype:
+            count = type_counts.get(mtype, 0)
+            if count >= 2:
+                continue
+        selected.append(mv)
+        if mtype:
+            type_counts[mtype] = type_counts.get(mtype, 0) + 1
+
+    # Ensure at least one STAB move
+    if not any(
+        getattr(m, "type", "").lower() in types
+        and getattr(m, "category", "").lower() != "status"
+        for m in selected
+    ):
+        for _, mv in scored:
+            if mv in selected:
+                continue
+            if getattr(mv, "type", "").lower() in types and (
+                getattr(mv, "category", "").lower() != "status"
+            ):
+                if selected:
+                    selected[-1] = mv
+                else:
+                    selected.append(mv)
+                break
+
+    # Ensure at least one utility/status move for higher AI levels
+    if ai_level >= 3 and not any(
+        set(getattr(m, "tags", []))
+        & {"status", "utility", "setup", "hazard"}
+        or getattr(m, "category", "").lower() == "status"
+        for m in selected
+    ):
+        for _, mv in scored:
+            if mv in selected:
+                continue
+            tags = set(getattr(mv, "tags", []))
+            category = (getattr(mv, "category", "") or "").lower()
+            if tags & {"status", "utility", "setup", "hazard"} or category == "status":
+                if selected:
+                    selected[-1] = mv
+                else:
+                    selected.append(mv)
+                break
+
+    return selected[:4]
+
+
+__all__ = ["AIMoveSelector", "generate_moveset"]
