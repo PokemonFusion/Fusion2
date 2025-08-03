@@ -198,6 +198,27 @@ class StorageBox(models.Model):
         return f"{self.name} (Owner: {self.storage.user.key})"
 
 
+def ensure_boxes(storage: UserStorage, count: int = 8) -> UserStorage:
+    """Ensure that a storage container has at least ``count`` boxes.
+
+    Parameters
+    ----------
+    storage
+        The storage instance to populate.
+    count
+        Number of boxes to ensure. Defaults to eight.
+
+    Returns
+    -------
+    UserStorage
+        The storage instance, populated with boxes if necessary.
+    """
+    existing = storage.boxes.count()
+    for i in range(existing + 1, count + 1):
+        StorageBox.objects.create(storage=storage, name=f"Box {i}")
+    return storage
+
+
 class OwnedPokemon(SharedMemoryModel, BasePokemon):
     """Persistent data for a player's Pokémon."""
 

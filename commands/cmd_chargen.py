@@ -6,7 +6,7 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
-from pokemon.models import StorageBox
+from pokemon.models import OwnedPokemon, ensure_boxes
 from pokemon.utils.pokemon_helpers import create_owned_pokemon
 from pokemon.starters import get_starter_names, STARTER_LOOKUP
 
@@ -67,22 +67,6 @@ def format_columns(items, columns=4, indent=2):
     return "\n".join(lines)
 
 
-def _populate_boxes(storage, count: int = 8) -> None:
-    """Create a set number of empty boxes for a storage container."""
-    for i in range(1, count + 1):
-        StorageBox.objects.create(storage=storage, name=f"Box {i}")
-
-
-def _ensure_storage(char):
-    """Ensure the character has the expected storage boxes."""
-    storage = char.storage
-    if not storage.boxes.exists():
-        _populate_boxes(storage)
-    return storage
-
-
-
-
 def _generate_instance(species_key: str, level: int):
     """Return a generated Pokémon instance or ``None`` if invalid."""
     try:
@@ -115,7 +99,7 @@ def _build_owned_pokemon(char, instance, ability: str, gender: str, level: int):
 
 def _add_pokemon_to_storage(char, pokemon) -> None:
     """Place a Pokémon into the caller's active party."""
-    storage = _ensure_storage(char)
+    storage = ensure_boxes(char.storage)
     storage.add_active_pokemon(pokemon)
 
 

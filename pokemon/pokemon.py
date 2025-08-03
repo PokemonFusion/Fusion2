@@ -7,6 +7,7 @@ from .models import (
     StorageBox,
     Trainer,
     GymBadge,
+    ensure_boxes,
 )
 from .generation import generate_pokemon
 from .dex import POKEDEX
@@ -69,9 +70,7 @@ class User(DefaultCharacter, InventoryMixin):
     def storage(self) -> UserStorage:
         """Return this character's storage, creating it if needed."""
         storage, created = UserStorage.objects.get_or_create(user=self)
-        if not storage.boxes.exists():
-            for i in range(1, 9):
-                StorageBox.objects.create(storage=storage, name=f"Box {i}")
+        ensure_boxes(storage)
         return storage
 
     # ------------------------------------------------------------------
