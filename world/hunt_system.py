@@ -48,8 +48,13 @@ class HuntSystem:
             allow = allow.lower() in {"true", "yes", "1", "on"}
         if not allow:
             return "You can't hunt here."
-        if BattleSession.ensure_for_player(hunter):
-            return "You are already in a battle!"
+        check_in_battle = getattr(BattleSession, "ensure_for_player", None)
+        if check_in_battle:
+            try:
+                if check_in_battle(hunter):
+                    return "You are already in a battle!"
+            except Exception:
+                pass
         last = getattr(hunter.ndb, "last_hunt_time", 0)
         if last and time.time() - last < 3:
             return "You need to wait before hunting again."

@@ -241,9 +241,34 @@ class Action:
 
 
 class BattleParticipant:
-    """Represents one side of a battle."""
+    """Represents one side of a battle.
 
-    def __init__(self, name: str, pokemons: List, is_ai: bool = False, player=None, max_active: int = 1):
+    Parameters
+    ----------
+    name:
+        Display name for this participant.
+    pokemons:
+        List of Pokémon available to this participant.
+    is_ai:
+        If ``True`` this participant is controlled by the AI.
+    player:
+        Optional Evennia object representing the controlling player.
+    max_active:
+        Maximum number of simultaneously active Pokémon.
+    team:
+        Optional team identifier.  Participants with the same team are treated
+        as allies and should not be targeted by automatic opponent selection.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        pokemons: List,
+        is_ai: bool = False,
+        player=None,
+        max_active: int = 1,
+        team: str | None = None,
+    ):
         self.name = name
         self.pokemons = pokemons
         self.active: List = []
@@ -253,6 +278,10 @@ class BattleParticipant:
         self.side = BattleSide()
         self.player = player
         self.max_active = max_active
+        # Team is optional; if ``None`` participants are assumed to be enemies
+        # of everyone else.  When provided, participants sharing the same team
+        # value are considered allies.
+        self.team = team
         for poke in self.pokemons:
             if poke is not None:
                 setattr(poke, "side", self.side)
@@ -560,15 +589,32 @@ class Battle:
     # Helper methods
     # ------------------------------------------------------------------
     def opponent_of(self, participant: BattleParticipant) -> Optional[BattleParticipant]:
-        """Return the first available opponent of ``participant``."""
-        for part in self.participants:
-            if part is not participant and not part.has_lost:
-                return part
-        return None
+        """Return the first available opponent of ``participant``.
+
+        Respects team assignments when present, falling back to the first
+        non-fainted participant that is not ``participant`` when teams are not
+        specified.
+        """
+        opponents = self.opponents_of(participant)
+        return opponents[0] if opponents else None
 
     def opponents_of(self, participant: BattleParticipant) -> List[BattleParticipant]:
-        """Return a list of all active opponents for ``participant``."""
-        return [p for p in self.participants if p is not participant and not p.has_lost]
+        """Return a list of all active opponents for ``participant``.
+
+        Participants sharing the same ``team`` value are considered allies and
+        excluded from the returned list. If ``participant`` has no team
+        assigned, all other non-fainted participants are treated as opponents.
+        """
+        opponents: List[BattleParticipant] = []
+        my_team = getattr(participant, "team", None)
+        for part in self.participants:
+            if part is participant or part.has_lost:
+                continue
+            other_team = getattr(part, "team", None)
+            if my_team is not None and other_team == my_team:
+                continue
+            opponents.append(part)
+        return opponents
 
     def restore_transforms(self) -> None:
         """Revert any Pokémon transformed via the Transform move."""
