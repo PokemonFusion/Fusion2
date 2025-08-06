@@ -203,6 +203,9 @@ class BattleMove:
                     cb(user, target)
                 except Exception:
                     cb(target)
+            affected = user if self.raw.get("target") == "self" else target
+            if affected and hasattr(affected, "volatiles"):
+                affected.volatiles.setdefault(volatile, True)
 
 
 
