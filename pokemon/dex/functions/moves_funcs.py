@@ -91,7 +91,10 @@ class Anchorshot:
         return True
 
 class Aquaring:
+    """Runtime handler for the Aqua Ring volatile status."""
+
     def onResidual(self, *args, **kwargs):
+        """Heal the user for 1/16 of its maximum HP each turn."""
         user = args[0] if args else None
         if not user:
             return False
@@ -99,7 +102,9 @@ class Aquaring:
         heal = max_hp // 16
         user.hp = min(getattr(user, "hp", 0) + heal, max_hp)
         return True
+
     def onStart(self, *args, **kwargs):
+        """Activate Aqua Ring on the user so residual can process it."""
         user = args[0] if args else None
         if user and hasattr(user, "volatiles"):
             user.volatiles["aquaring"] = True
@@ -138,6 +143,8 @@ class Assurance:
         return base
 
 class Attract:
+    """Runtime handler for the Attract volatile status."""
+
     def onBeforeMove(self, *args, **kwargs):
         """50% chance the infatuated Pokémon can't move."""
         user = args[0] if args else kwargs.get("user")
@@ -146,18 +153,24 @@ class Attract:
                 user.tempvals["cant_move"] = "attract"
             return False
         return True
+
     def onEnd(self, *args, **kwargs):
+        """Remove the Attract effect from the target."""
         target = args[0] if args else kwargs.get("target")
         if target and hasattr(target, "volatiles"):
             target.volatiles.pop("attract", None)
         return True
+
     def onStart(self, *args, **kwargs):
+        """Begin infatuation, marking the target as attracted to the user."""
         user = args[0] if args else None
         target = args[1] if len(args) > 1 else None
         if target and hasattr(target, "volatiles"):
             target.volatiles["attract"] = user
         return True
+
     def onTryImmunity(self, *args, **kwargs):
+        """Fail if genders are same or unknown."""
         target = args[0] if args else kwargs.get("target")
         source = args[1] if len(args) > 1 else kwargs.get("source")
         tg = getattr(target, "gender", "N") if target else "N"
@@ -165,7 +178,9 @@ class Attract:
         if tg == "N" or sg == "N" or tg == sg:
             return False
         return True
+
     def onUpdate(self, *args, **kwargs):
+        """Clear the effect if the source Pokémon has fainted."""
         target = args[0] if args else kwargs.get("target")
         if not target or not hasattr(target, "volatiles"):
             return False
@@ -6413,5 +6428,7 @@ class Yawn:
 VOLATILE_HANDLERS = {
     "leechseed": Leechseed(),
     "substitute": Substitute(),
+    "aquaring": Aquaring(),
+    "attract": Attract(),
 }
 
