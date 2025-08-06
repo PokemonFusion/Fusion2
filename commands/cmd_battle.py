@@ -11,7 +11,17 @@ try:
         raise ImportError
 except Exception:  # pragma: no cover - fallback if engine isn't loaded
     from pokemon.battle.engine import Action, ActionType, BattleMove
+try:
+    from pokemon.battle.engine import _normalize_key
+except Exception:  # pragma: no cover - simple fallback
+    def _normalize_key(name: str) -> str:
+        return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 from utils.battle_display import render_move_gui
+
+try:
+    from pokemon.dex.functions import moves_funcs
+except Exception:  # pragma: no cover - dex functions optional
+    moves_funcs = None
 
 
 def _get_participant(inst, caller):
@@ -158,7 +168,86 @@ class CmdBattleAttack(Command):
                 self.caller.msg(f"Valid targets: {names}")
                 return
 
-            move_obj = BattleMove(name=move["name"])
+            move_entry = MOVEDEX.get(_normalize_key(move["name"]))
+            on_hit_func = on_try_func = None
+            on_before_move = on_after_move = None
+            base_power_cb = None
+            if move_entry:
+                on_hit = move_entry.raw.get("onHit")
+                if isinstance(on_hit, str) and moves_funcs:
+                    try:
+                        cls_name, func_name = on_hit.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst_cb = cls()
+                            cand = getattr(inst_cb, func_name, None)
+                            if callable(cand):
+                                on_hit_func = cand
+                    except Exception:
+                        on_hit_func = None
+                on_try = move_entry.raw.get("onTry")
+                if isinstance(on_try, str) and moves_funcs:
+                    try:
+                        cls_name, func_name = on_try.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst_cb = cls()
+                            cand = getattr(inst_cb, func_name, None)
+                            if callable(cand):
+                                on_try_func = cand
+                    except Exception:
+                        on_try_func = None
+                before_cb = move_entry.raw.get("onBeforeMove")
+                if isinstance(before_cb, str) and moves_funcs:
+                    try:
+                        cls_name, func_name = before_cb.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst_cb = cls()
+                            cand = getattr(inst_cb, func_name, None)
+                            if callable(cand):
+                                on_before_move = cand
+                    except Exception:
+                        on_before_move = None
+                after_cb = move_entry.raw.get("onAfterMove")
+                if isinstance(after_cb, str) and moves_funcs:
+                    try:
+                        cls_name, func_name = after_cb.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst_cb = cls()
+                            cand = getattr(inst_cb, func_name, None)
+                            if callable(cand):
+                                on_after_move = cand
+                    except Exception:
+                        on_after_move = None
+                base_cb = move_entry.raw.get("basePowerCallback")
+                if isinstance(base_cb, str) and moves_funcs:
+                    try:
+                        cls_name, func_name = base_cb.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst_cb = cls()
+                            cand = getattr(inst_cb, func_name, None)
+                            if callable(cand):
+                                base_power_cb = cand
+                    except Exception:
+                        base_power_cb = None
+                move_obj = BattleMove(
+                    name=move_entry.name,
+                    power=getattr(move_entry, "power", 0),
+                    accuracy=getattr(move_entry, "accuracy", 100),
+                    priority=move_entry.raw.get("priority", 0),
+                    onHit=on_hit_func,
+                    onTry=on_try_func,
+                    onBeforeMove=on_before_move,
+                    onAfterMove=on_after_move,
+                    basePowerCallback=base_power_cb,
+                    type=getattr(move_entry, "type", None),
+                    raw=move_entry.raw,
+                )
+            else:
+                move_obj = BattleMove(name=move["name"])
             action = Action(
                 participant,
                 ActionType.MOVE,
