@@ -131,6 +131,8 @@ class BattleMove:
     priority: int = 0
     onHit: Optional[Callable] = None
     onTry: Optional[Callable] = None
+    onBeforeMove: Optional[Callable] = None
+    onAfterMove: Optional[Callable] = None
     basePowerCallback: Optional[Callable] = None
     type: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
@@ -299,6 +301,8 @@ class BattleParticipant:
         move_entry = MOVEDEX.get(_normalize_key(move_data.name))
         on_hit_func = None
         on_try_func = None
+        on_before_move_func = None
+        on_after_move_func = None
         base_power_cb = None
         if move_entry:
             on_hit = move_entry.raw.get("onHit")
@@ -326,6 +330,30 @@ class BattleParticipant:
                             on_try_func = cand
                 except Exception:
                     on_try_func = None
+            before_cb = move_entry.raw.get("onBeforeMove")
+            if isinstance(before_cb, str):
+                try:
+                    cls_name, func_name = before_cb.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        inst = cls()
+                        cand = getattr(inst, func_name, None)
+                        if callable(cand):
+                            on_before_move_func = cand
+                except Exception:
+                    on_before_move_func = None
+            after_cb = move_entry.raw.get("onAfterMove")
+            if isinstance(after_cb, str):
+                try:
+                    cls_name, func_name = after_cb.split(".", 1)
+                    cls = getattr(moves_funcs, cls_name, None)
+                    if cls:
+                        inst = cls()
+                        cand = getattr(inst, func_name, None)
+                        if callable(cand):
+                            on_after_move_func = cand
+                except Exception:
+                    on_after_move_func = None
             base_cb = move_entry.raw.get("basePowerCallback")
             if isinstance(base_cb, str):
                 try:
@@ -346,6 +374,8 @@ class BattleParticipant:
                 priority=move_entry.raw.get("priority", 0),
                 onHit=on_hit_func,
                 onTry=on_try_func,
+                onBeforeMove=on_before_move_func,
+                onAfterMove=on_after_move_func,
                 basePowerCallback=base_power_cb,
                 type=getattr(move_entry, "type", None),
                 raw=move_entry.raw,
@@ -395,6 +425,8 @@ class BattleParticipant:
             move_entry = MOVEDEX.get(_normalize_key(move_data.name))
             on_hit_func = None
             on_try_func = None
+            on_before_move_func = None
+            on_after_move_func = None
             base_power_cb = None
             if move_entry:
                 on_hit = move_entry.raw.get("onHit")
@@ -418,10 +450,34 @@ class BattleParticipant:
                         if cls:
                             inst = cls()
                             cand = getattr(inst, func_name, None)
-                            if callable(cand):
-                                on_try_func = cand
+                        if callable(cand):
+                            on_try_func = cand
                     except Exception:
                         on_try_func = None
+                before_cb = move_entry.raw.get("onBeforeMove")
+                if isinstance(before_cb, str):
+                    try:
+                        cls_name, func_name = before_cb.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst = cls()
+                            cand = getattr(inst, func_name, None)
+                            if callable(cand):
+                                on_before_move_func = cand
+                    except Exception:
+                        on_before_move_func = None
+                after_cb = move_entry.raw.get("onAfterMove")
+                if isinstance(after_cb, str):
+                    try:
+                        cls_name, func_name = after_cb.split(".", 1)
+                        cls = getattr(moves_funcs, cls_name, None)
+                        if cls:
+                            inst = cls()
+                            cand = getattr(inst, func_name, None)
+                            if callable(cand):
+                                on_after_move_func = cand
+                    except Exception:
+                        on_after_move_func = None
                 base_cb = move_entry.raw.get("basePowerCallback")
                 if isinstance(base_cb, str):
                     try:
@@ -442,6 +498,8 @@ class BattleParticipant:
                     priority=move_entry.raw.get("priority", 0),
                     onHit=on_hit_func,
                     onTry=on_try_func,
+                    onBeforeMove=on_before_move_func,
+                    onAfterMove=on_after_move_func,
                     basePowerCallback=base_power_cb,
                     type=getattr(move_entry, "type", None),
                     raw=move_entry.raw,
@@ -1275,6 +1333,11 @@ class Battle:
             return
 
         start_hp = getattr(target, "hp", 0)
+        if action.move.onBeforeMove:
+            try:
+                action.move.onBeforeMove(user, target, self)
+            except Exception:
+                action.move.onBeforeMove(user, target)
         executed = self._do_move(user, target, action.move)
         end_hp = getattr(target, "hp", 0)
         if not executed:
@@ -1296,6 +1359,12 @@ class Battle:
             self.log_action(
                 f"{getattr(user, 'name', 'Pokemon')} used {action.move.name} on {getattr(target, 'name', 'Pokemon')} but it had no effect!"
             )
+
+        if action.move.onAfterMove:
+            try:
+                action.move.onAfterMove(user, target, self)
+            except Exception:
+                action.move.onAfterMove(user, target)
 
         self.dispatcher.dispatch(
             "after_move", user=user, target=target, move=action.move, battle=self
