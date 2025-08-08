@@ -33,6 +33,7 @@ from evennia.settings_default import *
 
 # This is the name of your game. Make it catchy!
 SERVERNAME = "Pokemon Fusion 2"
+GAME_SLOGAN = "Catch, train, become the best!"
 
 MULTISESSION_MODE = 3
 CMD_IGNORE_PREFIXES = "&/"
