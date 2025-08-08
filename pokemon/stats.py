@@ -6,6 +6,7 @@ from typing import Dict
 
 from .dex import POKEDEX
 from .generation import NATURES
+from pokemon.services.move_management import learn_level_up_moves
 
 STAT_KEY_MAP = {
     "hp": "hp",
@@ -107,11 +108,10 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 
     new_level = getattr(pokemon, "level", None)
     if prev_level is not None and new_level and new_level > prev_level:
-        if hasattr(pokemon, "learn_level_up_moves"):
-            try:
-                pokemon.learn_level_up_moves(caller=caller, prompt=True)
-            except TypeError:
-                pokemon.learn_level_up_moves()
+        try:
+            learn_level_up_moves(pokemon, caller=caller, prompt=True)
+        except TypeError:
+            learn_level_up_moves(pokemon)
 
     if prev_level is not None and new_level != prev_level:
         try:
