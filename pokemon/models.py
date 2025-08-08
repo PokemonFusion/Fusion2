@@ -374,6 +374,22 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         """Return active moves ordered by slot."""
         return [s.move for s in self.activemoveslot_set.order_by("slot")]
 
+    @property
+    def party_slot(self) -> int | None:
+        """
+        Returns 1-6 if this mon is in the active party for its owner's storage,
+        otherwise None. Works via the reverse FK on ActivePokemonSlot.
+        """
+        try:
+            slot_rel = self.active_slots.first()
+            return slot_rel.slot if slot_rel else None
+        except Exception:
+            return None
+    
+    @property
+    def in_party(self) -> bool:
+        return self.party_slot is not None
+    
     def set_level(self, level: int) -> None:
         """Set ``total_exp`` and persist the corresponding level."""
         from .stats import exp_for_level

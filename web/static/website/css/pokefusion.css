@@ -219,3 +219,33 @@ a.playbutton:hover {
 .type-dark      { background:#705746; }
 .type-steel     { background:#B7B7CE; color:#222; text-shadow:none; }
 .type-fairy     { background:#D685AD; }
+
+/* Tiny circular indicator for primary type */
+.type-dot {
+  display:inline-block;
+  width:.75rem; height:.75rem; border-radius:50%;
+  margin-right:.5rem; vertical-align:middle;
+  box-shadow:0 0 0 2px rgba(0,0,0,.08);
+}
+.type-dot.type-normal   { background:#A8A77A; }
+.type-dot.type-fire     { background:#EE8130; }
+.type-dot.type-water    { background:#6390F0; }
+.type-dot.type-electric { background:#F7D02C; }
+.type-dot.type-grass    { background:#7AC74C; }
+.type-dot.type-ice      { background:#96D9D6; }
+.type-dot.type-fighting { background:#C22E28; }
+.type-dot.type-poison   { background:#A33EA1; }
+.type-dot.type-ground   { background:#E2BF65; }
+.type-dot.type-flying   { background:#A98FF3; }
+.type-dot.type-psychic  { background:#F95587; }
+.type-dot.type-bug      { background:#A6B91A; }
+.type-dot.type-rock     { background:#B6A136; }
+.type-dot.type-ghost    { background:#735797; }
+.type-dot.type-dragon   { background:#6F35FC; }
+.type-dot.type-dark     { background:#705746; }
+.type-dot.type-steel    { background:#B7B7CE; }
+.type-dot.type-fairy    { background:#D685AD; }
+
+/* fallback for unknown */
+.type-chip.type-unknown { background:#bbb; color:#222; }
+.type-dot.type-unknown { background:#bbb; }
