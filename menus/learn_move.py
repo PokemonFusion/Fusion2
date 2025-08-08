@@ -1,5 +1,6 @@
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from pokemon.models.moves import Move
+from pokemon.services.move_management import apply_active_moveset
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -40,7 +41,7 @@ def node_replace(caller, raw_input=None, **kwargs):
     move_obj, _ = Move.objects.get_or_create(name=move_name.capitalize())
     slots[slot].move = move_obj
     slots[slot].save()
-    pokemon.apply_active_moveset()
+    apply_active_moveset(pokemon)
     return f"{pokemon.name} forgot {old.capitalize()} and learned {move_name.capitalize()}!", None
 
 

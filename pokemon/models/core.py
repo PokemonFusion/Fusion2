@@ -310,6 +310,27 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         except Exception:  # pragma: no cover
             pass
 
+    def learn_level_up_moves(self, *, caller=None, prompt: bool = False) -> None:
+        """Teach any moves this Pokémon should know at its level.
+
+        This method is kept for backwards compatibility and simply delegates
+        to :mod:`pokemon.services.move_management`.
+        """
+
+        from pokemon.services import move_management
+
+        move_management.learn_level_up_moves(self, caller=caller, prompt=prompt)
+
+    def apply_active_moveset(self) -> None:
+        """Sync the active moveset to the active move slots.
+
+        The heavy lifting is performed in :mod:`pokemon.services.move_management`.
+        """
+
+        from pokemon.services import move_management
+
+        move_management.apply_active_moveset(self)
+
     def get_max_hp(self) -> int:
         """Return max HP for this Pokémon."""
         try:  # pragma: no cover - optional dependency

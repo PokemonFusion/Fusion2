@@ -9,11 +9,16 @@ sys.path.insert(0, ROOT)
 
 def test_on_exit_called_when_auto_learn():
     pokemon_pkg = types.ModuleType("pokemon")
+    pokemon_pkg.__path__ = []
     utils_pkg = types.ModuleType("pokemon.utils")
     enhanced_mod = types.ModuleType("pokemon.utils.enhanced_evmenu")
     enhanced_mod.EnhancedEvMenu = object
     utils_pkg.enhanced_evmenu = enhanced_mod
     models_mod = types.ModuleType("pokemon.models.moves")
+    services_pkg = types.ModuleType("pokemon.services")
+    move_service_mod = types.ModuleType("pokemon.services.move_management")
+    move_service_mod.apply_active_moveset = lambda *a, **k: None
+    services_pkg.move_management = move_service_mod
 
     class FakeMove:
         def __init__(self, name):
@@ -34,6 +39,8 @@ def test_on_exit_called_when_auto_learn():
     sys.modules["pokemon.utils"] = utils_pkg
     sys.modules["pokemon.utils.enhanced_evmenu"] = enhanced_mod
     sys.modules["pokemon.models.moves"] = models_mod
+    sys.modules["pokemon.services"] = services_pkg
+    sys.modules["pokemon.services.move_management"] = move_service_mod
 
     path = os.path.join(ROOT, "pokemon", "utils", "move_learning.py")
     spec = importlib.util.spec_from_file_location(
@@ -122,6 +129,8 @@ def test_on_exit_called_when_auto_learn():
         sys.modules["pokemon.models"] = orig_models
     else:
         sys.modules.pop("pokemon.models", None)
+    sys.modules.pop("pokemon.services", None)
+    sys.modules.pop("pokemon.services.move_management", None)
     sys.modules.pop("pokemon.utils.move_learning", None)
 
     assert called

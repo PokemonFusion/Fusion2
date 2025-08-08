@@ -10,6 +10,7 @@ change, etc.).
 
 from pokemon.generation import generate_pokemon
 from pokemon.stats import calculate_stats, STAT_KEY_MAP
+from pokemon.services.move_management import learn_level_up_moves
 
 
 def _calculate_from_data(pokemon):
@@ -147,7 +148,7 @@ def create_owned_pokemon(
     pokemon.set_level(level)
     pokemon.heal()
     try:
-        pokemon.learn_level_up_moves()
+        learn_level_up_moves(pokemon)
     except Exception:  # pragma: no cover - helper optional in tests
         pass
     return pokemon

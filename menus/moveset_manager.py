@@ -1,4 +1,5 @@
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
+from pokemon.services.move_management import apply_active_moveset
 
 
 def node_start(caller, raw_input=None):
@@ -115,7 +116,7 @@ def node_edit(caller, raw_input=None):
         obj, _ = MoveModel.objects.get_or_create(name=mv.capitalize())
         ms.slots.create(move=obj, slot=i)
     if poke.active_moveset and poke.active_moveset.index == idx:
-        poke.apply_active_moveset()
+        apply_active_moveset(poke)
     caller.msg(f"Moveset {idx+1} updated.")
     return node_manage(caller)
 

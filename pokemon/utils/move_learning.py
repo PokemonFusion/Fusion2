@@ -4,6 +4,7 @@ from typing import Optional
 
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 from pokemon.models.moves import Move
+from pokemon.services.move_management import apply_active_moveset
 
 
 def get_learnable_levelup_moves(pokemon):
@@ -69,7 +70,7 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
         move_obj, _ = Move.objects.get_or_create(name=move_name.capitalize())
         active_ms.slots.create(move=move_obj, slot=len(active) + 1)
         pokemon.save()
-        pokemon.apply_active_moveset()
+        apply_active_moveset(pokemon)
         if caller:
             caller.msg(f"{pokemon.name} learned {move_name.capitalize()}!")
         if on_exit:
