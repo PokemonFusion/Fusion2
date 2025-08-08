@@ -1,4 +1,5 @@
 {% extends "website/base.html" %}
+
 {% block titleblock %}My Character Sheet{% endblock %}
 
 {% block content %}
@@ -6,43 +7,33 @@
   <div class="col">
     <div class="card">
       <div class="card-body">
-        <h1 class="card-title mb-0">My Characters</h1>
-        <small class="text-muted">Your trainers and their party</small>
+        <h1 class="card-title">My Characters</h1>
         <hr />
-
         {% for entry in characters %}
-          <div class="mb-4">
-            <div class="d-flex align-items-center mb-2">
-              <h2 class="mr-3 mb-0">{{ entry.character.key }}</h2>
-              {% if entry.trainer %}<span class="badge badge-money">₽ {{ entry.trainer.money }}</span>{% endif %}
-            </div>
+          <h2 class="mb-2">{{ entry.character.key }}</h2>
+          {% if entry.trainer %}
+            <p><strong>Money:</strong> {{ entry.trainer.money }}</p>
+          {% endif %}
 
-            <div class="poke-party">
-              {% if entry.pokemon %}
-                {% for mon in entry.pokemon %}
-                  <div class="poke-card">
-                    <div class="d-flex align-items-center">
-                      {# Optional sprite: expose mon.sprite_url in your model if available #}
-                      {% if mon.sprite_url %}
-                        <img class="sprite mr-3" src="{{ mon.sprite_url }}" alt="{{ mon.name }} sprite" />
-                      {% else %}
-                        <div class="sprite mr-3 d-flex align-items-center justify-content-center bg-light rounded">🎴</div>
-                      {% endif %}
-                      <div>
-                        <div class="name">{{ mon.name }}</div>
-                        <small>Lv {{ mon.level }}</small>
-                      </div>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <p class="text-muted">No Pokémon found.</p>
-              {% endif %}
-            </div>
-          </div>
+          <p class="mb-1"><strong>Pokémon:</strong></p>
+
+          {% if entry.pokemon %}
+            <ul class="list-unstyled">
+              {% for mon in entry.pokemon %}
+                <li class="mb-2">
+                  <strong>{{ mon.name }}</strong> — Lv {{ mon.level }}
+                  {% for t in mon.types %}
+                    <span class="type-chip type-{{ t|lower }}">{{ t }}</span>
+                  {% endfor %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No Pokémon found.</p>
+          {% endif %}
+
           {% if not forloop.last %}<hr />{% endif %}
         {% endfor %}
-
       </div>
     </div>
   </div>

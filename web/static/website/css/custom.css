@@ -1,25 +1,34 @@
-/* undo old sticky-footer hack */
+/* ===========================
+   Layout & Background fixes
+   =========================== */
+
+/* undo old sticky-footer hack from website.css */
 body { margin-bottom: 0 !important; }
 
-/* make the page a flex column so the footer sits at the bottom when short */
+/* make page a flex column so footer sits at bottom on short pages */
 html, body {
   min-height: 100vh;
   height: 100%;
   display: flex;
   flex-direction: column;
   margin: 0;
-  /* keep gradient look but prevent tiling and harsh scroll banding */
+
+  /* soft, non-repeating background */
   background:
     radial-gradient(circle at 20% 10%, rgba(255,255,255,.6), rgba(255,255,255,0) 30%),
-    radial-gradient(circle at 80% 0%, rgba(255,255,255,.35), rgba(255,255,255,0) 25%),
+    radial-gradient(circle at 80% 0%,  rgba(255,255,255,.35), rgba(255,255,255,0) 25%),
     linear-gradient(180deg, #fff, #fafafa 40%, #f3f3f3);
   background-repeat: no-repeat, no-repeat, no-repeat;
   background-size: 1200px 800px, 1200px 800px, 100% 100%;
-  background-attachment: fixed, fixed, fixed;
+  background-attachment: fixed, fixed, fixed; /* comment out on mobile if janky */
 }
 
-/* let main content grow, keep footer at the bottom */
+/* let main content grow; keeps footer pinned to bottom */
 .main-content { flex: 1 0 auto; }
+
+/* ===========================
+   Footer
+   =========================== */
 
 footer.footer {
   position: static !important;
@@ -27,26 +36,153 @@ footer.footer {
   height: auto !important;
   line-height: normal !important;
   flex-shrink: 0;
-  background-color: #eceff1; /* or your black if you prefer */
-  color: #222; /* ensure footer text is visible on light background */
+  background-color: #eceff1;   /* your light footer */
+  color: #222;                  /* readable on light bg */
 }
+
+/* Evennia base uses text-white in footer; override it */
 footer.footer .text-white,
 footer.footer .text-white a {
-  color: #222 !important; /* override Evennia's forced white */
+  color: #222 !important;
 }
+footer.footer a:hover { text-decoration: underline; }
 
-/* Soften card shadows and avoid harsh corner clipping */
+/* ===========================
+   Cards & Shadows
+   =========================== */
+
 .card {
   border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  overflow: hidden; /* prevent shadow cut-off at rounded corners */
+  border: 0;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+  overflow: hidden; /* ensures rounded corners on headers/footers */
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.14);
 }
 .card > .card-header:first-child { border-radius: 1rem 1rem 0 0; }
-.card > .card-footer:last-child { border-radius: 0 0 1rem 1rem; }
+.card > .card-footer:last-child  { border-radius: 0 0 1rem 1rem; }
+.card-header, .card-footer {
+  border: 0;
+  background: #f7f8fa;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.05);
+}
 
-/* Show custom focus outline only for keyboard users */
+/* ===========================
+   Accessibility: keyboard-only focus ring
+   =========================== */
 :focus { outline: none; }
 :focus-visible {
-  outline: 3px solid #ffcb05;
+  outline: 3px solid #ffcb05; /* change to taste */
   outline-offset: 2px;
 }
+
+/* ===========================
+   Navbar polish
+   =========================== */
+.navbar .nav-link { position: relative; font-weight: 800; }
+.navbar .nav-link::after {
+  content: "";
+  position: absolute; left: .5rem; right: .5rem; bottom: .35rem;
+  height: 2px; background: rgba(255,255,255,.8);
+  transform: scaleX(0);
+  transition: transform .18s ease;
+}
+.navbar .nav-link:hover::after,
+.navbar .nav-link:focus-visible::after { transform: scaleX(1); }
+
+/* ===========================
+   Homepage “pizazz”
+   =========================== */
+
+/* 1) Optional hero banner (add .hero-pokeball markup in index.html) */
+.hero-pokeball {
+  position: relative;
+  margin: 1.5rem auto 2rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0,0,0,.12);
+  background: linear-gradient(#e3350d 0 50%, #fff 50% 100%);
+}
+.hero-pokeball::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 6px; transform: translateY(-50%);
+  background: #1b1b1b;
+}
+.hero-pokeball::after {
+  content: "";
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 46px; height: 46px; border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 4px #1b1b1b, inset 0 0 0 8px #fff;
+}
+.hero-pokeball .hero-inner { padding: 2.25rem 1.25rem; text-align: center; }
+.hero-pokeball h1 {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(20px, 3vw, 32px);
+  margin: 0 0 .5rem;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0,0,0,.18);
+}
+.hero-pokeball p { margin: 0 0 1rem; color: #111; font-weight: 700; }
+.btn-poke {
+  background: linear-gradient(180deg,#e3350d,#b2290a);
+  border: 0; border-radius: 999px; color: #fff;
+  padding: .65rem 1.1rem; font-weight: 800;
+  box-shadow: 0 4px 0 rgba(0,0,0,.15);
+}
+.btn-poke:hover { filter: brightness(1.05); color: #fff; }
+
+/* 2) Section accents for the three info cards (apply classes in index.html) */
+.section-accounts .card-header { background: linear-gradient(180deg,#ffe9e9,#fff); }
+.section-recent   .card-header { background: linear-gradient(180deg,#e9f5ff,#fff); }
+.section-db       .card-header { background: linear-gradient(180deg,#e9ffe9,#fff); }
+
+/* 3) Reusable Pokémon-type chips */
+.type-chip {
+  display:inline-block; padding:.2rem .55rem; border-radius:999px;
+  font-weight:800; font-size:.78rem; line-height:1; color:#fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,.15); margin-right:.25rem;
+}
+.type-fire    { background:#ee8130; }
+.type-water   { background:#6390f0; }
+.type-grass   { background:#7ac74c; }
+.type-electric{ background:#f7d02c; color:#222; text-shadow:none; }
+.type-ice     { background:#96d9d6; color:#222; text-shadow:none; }
+.type-psychic { background:#f95587; }
+.type-dragon  { background:#6f35fc; }
+
+/* 4) Optional: faint floating corner sprites (add .page-sprites markup if desired) */
+.page-sprites { position: fixed; inset: 0; pointer-events:none; z-index: 0; }
+.page-sprites img {
+  position: absolute; opacity:.06; image-rendering: pixelated;
+  animation: floaty 6s ease-in-out infinite;
+}
+.page-sprites img.left  { left: 2%;  top: 10%;   width: 96px; }
+.page-sprites img.right { right: 2%; bottom: 12%; width: 96px; animation-delay: 1.5s; }
+@keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-6px) } }
+
+/* Small top accent bar for primary type */
+.poke-accent { height: 6px; border-radius: 1rem 1rem 0 0; }
+.poke-accent.type-normal   { background:#A8A77A; }
+.poke-accent.type-fire     { background:#EE8130; }
+.poke-accent.type-water    { background:#6390F0; }
+.poke-accent.type-electric { background:#F7D02C; }
+.poke-accent.type-grass    { background:#7AC74C; }
+.poke-accent.type-ice      { background:#96D9D6; }
+.poke-accent.type-fighting { background:#C22E28; }
+.poke-accent.type-poison   { background:#A33EA1; }
+.poke-accent.type-ground   { background:#E2BF65; }
+.poke-accent.type-flying   { background:#A98FF3; }
+.poke-accent.type-psychic  { background:#F95587; }
+.poke-accent.type-bug      { background:#A6B91A; }
+.poke-accent.type-rock     { background:#B6A136; }
+.poke-accent.type-ghost    { background:#735797; }
+.poke-accent.type-dragon   { background:#6F35FC; }
+.poke-accent.type-dark     { background:#705746; }
+.poke-accent.type-steel    { background:#B7B7CE; }
+.poke-accent.type-fairy    { background:#D685AD; }
