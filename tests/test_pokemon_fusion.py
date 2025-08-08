@@ -40,13 +40,10 @@ class FakePokemonFusion:
         self.pokemon = pokemon
         self.permanent = permanent
 
-orig_models = sys.modules.get("pokemon.models")
-models_mod = types.ModuleType("pokemon.models")
-if orig_models:
-    for attr in dir(orig_models):
-        setattr(models_mod, attr, getattr(orig_models, attr))
+orig_models = sys.modules.get("pokemon.models.fusion")
+models_mod = types.ModuleType("pokemon.models.fusion")
 models_mod.PokemonFusion = FakePokemonFusion
-sys.modules["pokemon.models"] = models_mod
+sys.modules["pokemon.models.fusion"] = models_mod
 
 fusion_mod = importlib.import_module("utils.fusion")
 
@@ -92,6 +89,6 @@ def test_permanent_flag():
 
 def teardown_module(module):
     if orig_models is not None:
-        sys.modules["pokemon.models"] = orig_models
+        sys.modules["pokemon.models.fusion"] = orig_models
     else:
-        sys.modules.pop("pokemon.models", None)
+        sys.modules.pop("pokemon.models.fusion", None)

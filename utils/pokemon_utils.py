@@ -1,6 +1,6 @@
 from django.db import transaction
 try:
-    from pokemon.models import OwnedPokemon
+    from pokemon.models.core import OwnedPokemon
 except Exception:  # pragma: no cover - optional in tests
     OwnedPokemon = None
 

@@ -7,7 +7,7 @@ import textwrap
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-models_path = os.path.join(ROOT, "pokemon", "models.py")
+models_path = os.path.join(ROOT, "pokemon", "models", "core.py")
 source = open(models_path).read()
 module = ast.parse(source)
 heal_code = None
@@ -116,6 +116,10 @@ class FakePokemon:
         self.pp_boosts = BoostManager([FakeBoost("tackle", 2)])
         self.activemoveslot_set = SlotManager([FakeSlot("tackle"), FakeSlot("growl")])
         self.saved = False
+
+    def get_max_hp(self):
+        from pokemon.utils.pokemon_helpers import get_max_hp
+        return get_max_hp(self)
 
     def save(self):
         self.saved = True

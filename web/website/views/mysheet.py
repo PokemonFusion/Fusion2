@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from pokemon.models import OwnedPokemon
+from pokemon.models.core import OwnedPokemon
 
 
 class MySheetView(LoginRequiredMixin, TemplateView):

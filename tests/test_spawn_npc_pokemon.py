@@ -102,7 +102,7 @@ battledata.Pokemon = Pokemon
 def setup_module(module):
     module.prev_bd = sys.modules.get("pokemon.battle.battledata")
     module.prev_bi = sys.modules.get("pokemon.battle.battleinstance")
-    module.prev_models = sys.modules.get("pokemon.models")
+    module.prev_models_core = sys.modules.get("pokemon.models.core")
     sys.modules["pokemon.battle.battledata"] = battledata
 
     battleinstance = types.ModuleType("pokemon.battle.battleinstance")
@@ -111,10 +111,10 @@ def setup_module(module):
     module.battleinstance = battleinstance
     sys.modules["pokemon.battle.battleinstance"] = battleinstance
 
-    models_mod = types.ModuleType("pokemon.models")
+    models_mod = types.ModuleType("pokemon.models.core")
     models_mod.OwnedPokemon = FakeOwnedPokemon
     module.models_mod = models_mod
-    sys.modules["pokemon.models"] = models_mod
+    sys.modules["pokemon.models.core"] = models_mod
 
     module.mod = load_utils()
     module.mod.clone_pokemon = lambda p, for_ai=True: p
@@ -124,7 +124,7 @@ def teardown_module(module):
     for name, old in [
         ("pokemon.battle.battledata", module.prev_bd),
         ("pokemon.battle.battleinstance", module.prev_bi),
-        ("pokemon.models", module.prev_models),
+        ("pokemon.models.core", module.prev_models_core),
     ]:
         if old is not None:
             sys.modules[name] = old

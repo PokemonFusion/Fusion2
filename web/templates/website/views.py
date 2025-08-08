@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from pokemon.models import OwnedPokemon, ActivePokemonSlot
+from pokemon.models.core import OwnedPokemon
+from pokemon.models.storage import ActivePokemonSlot
 
 def character_sheet(request):
     # Assuming `request.user` is linked to Evennia's Account/Character

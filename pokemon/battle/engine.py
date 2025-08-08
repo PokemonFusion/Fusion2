@@ -2055,7 +2055,7 @@ class Battle:
                     target.pokemons.remove(target_poke)
                 if getattr(target_poke, "model_id", None) is not None:
                     try:
-                        from pokemon.models import OwnedPokemon
+                        from pokemon.models.core import OwnedPokemon
                         dbpoke = OwnedPokemon.objects.get(unique_id=target_poke.model_id)
                         if hasattr(action.actor, "trainer"):
                             dbpoke.trainer = action.actor.trainer

@@ -127,7 +127,7 @@ def create_owned_pokemon(
         The fully initialised Pokémon model with level, health and moves set.
     """
 
-    from pokemon.models import OwnedPokemon
+    from pokemon.models.core import OwnedPokemon
 
     ivs = ivs if ivs is not None else [0, 0, 0, 0, 0, 0]
     evs = evs if evs is not None else [0, 0, 0, 0, 0, 0]

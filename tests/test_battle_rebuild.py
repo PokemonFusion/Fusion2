@@ -263,7 +263,8 @@ def test_pokemon_serialization_minimal():
 
 
 def test_from_dict_calculates_max_hp():
-    fake_models = types.ModuleType("pokemon.models")
+    fake_models_pkg = types.ModuleType("pokemon.models")
+    fake_models_core = types.ModuleType("pokemon.models.core")
 
     class FakeOwned:
         class Manager:
@@ -300,9 +301,17 @@ def test_from_dict_calculates_max_hp():
             self.active_moveset = self.movesets[0]
             self.current_hp = 5
 
-    fake_models.OwnedPokemon = FakeOwned
-    orig_models = sys.modules.get("pokemon.models")
-    sys.modules["pokemon.models"] = fake_models
+        def get_max_hp(self):
+            from pokemon.utils.pokemon_helpers import get_max_hp
+            return get_max_hp(self)
+
+    fake_models_core.OwnedPokemon = FakeOwned
+    fake_models_pkg.OwnedPokemon = FakeOwned
+    fake_models_pkg.core = fake_models_core
+    orig_models_pkg = sys.modules.get("pokemon.models")
+    orig_models_core = sys.modules.get("pokemon.models.core")
+    sys.modules["pokemon.models"] = fake_models_pkg
+    sys.modules["pokemon.models.core"] = fake_models_core
 
     helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
     helpers_mod.get_max_hp = lambda mon: 42
@@ -312,14 +321,18 @@ def test_from_dict_calculates_max_hp():
     try:
         poke = bd_mod.Pokemon.from_dict({"model_id": "uid"})
     finally:
-        if orig_models is not None:
-            sys.modules["pokemon.models"] = orig_models
-        else:
-            sys.modules.pop("pokemon.models", None)
-        if orig_helpers is not None:
-            sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
-        else:
-            sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+            if orig_models_pkg is not None:
+                sys.modules["pokemon.models"] = orig_models_pkg
+            else:
+                sys.modules.pop("pokemon.models", None)
+            if orig_models_core is not None:
+                sys.modules["pokemon.models.core"] = orig_models_core
+            else:
+                sys.modules.pop("pokemon.models.core", None)
+            if orig_helpers is not None:
+                sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+            else:
+                sys.modules.pop("pokemon.utils.pokemon_helpers", None)
 
     assert poke.max_hp == 42
 

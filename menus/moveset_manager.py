@@ -108,7 +108,7 @@ def node_edit(caller, raw_input=None):
     if len({m.lower() for m in moves}) != len(moves):
         caller.msg("Duplicate moves are not allowed.")
         return node_edit(caller)
-    from pokemon.models import Move as MoveModel
+    from pokemon.models.moves import Move as MoveModel
     ms, _ = poke.movesets.get_or_create(index=idx)
     ms.slots.all().delete()
     for i, mv in enumerate(moves, 1):

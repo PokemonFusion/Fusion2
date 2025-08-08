@@ -790,7 +790,7 @@ class CmdTeachMove(Command):
             self.caller.msg("No Pokémon in that slot.")
             return
         from pokemon.generation import get_valid_moves
-        from pokemon.models import Move
+        from pokemon.models.moves import Move
 
         valid = [
             m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)

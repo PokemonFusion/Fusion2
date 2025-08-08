@@ -152,12 +152,18 @@ def setup_modules(remove_counter):
     fake_evennia.Command = type('Command', (), {})
     sys.modules['evennia'] = fake_evennia
 
-    orig_models = sys.modules.get('pokemon.models')
-    fake_models = types.ModuleType('pokemon.models')
-    fake_models.InventoryEntry = type('InventoryEntry', (), {})
-    fake_models.Move = FakeMove
-    fake_models.OwnedPokemon = FakePokemon
-    sys.modules['pokemon.models'] = fake_models
+    orig_core = sys.modules.get('pokemon.models.core')
+    orig_moves = sys.modules.get('pokemon.models.moves')
+    orig_trainer = sys.modules.get('pokemon.models.trainer')
+    fake_core = types.ModuleType('pokemon.models.core')
+    fake_core.OwnedPokemon = FakePokemon
+    fake_moves = types.ModuleType('pokemon.models.moves')
+    fake_moves.Move = FakeMove
+    fake_trainer = types.ModuleType('pokemon.models.trainer')
+    fake_trainer.InventoryEntry = type('InventoryEntry', (), {})
+    sys.modules['pokemon.models.core'] = fake_core
+    sys.modules['pokemon.models.moves'] = fake_moves
+    sys.modules['pokemon.models.trainer'] = fake_trainer
 
     orig_inv = sys.modules.get('utils.inventory')
     fake_inv = types.ModuleType('utils.inventory')
@@ -174,18 +180,26 @@ def setup_modules(remove_counter):
     fake_dex.MOVEDEX = {'tackle': {'pp': 10}}
     sys.modules['pokemon.dex'] = fake_dex
 
-    return orig_evennia, orig_models, orig_inv, orig_dex
+    return orig_evennia, orig_core, orig_moves, orig_trainer, orig_inv, orig_dex
 
 
-def restore_modules(orig_evennia, orig_models, orig_inv, orig_dex):
+def restore_modules(orig_evennia, orig_core, orig_moves, orig_trainer, orig_inv, orig_dex):
     if orig_evennia is not None:
         sys.modules['evennia'] = orig_evennia
     else:
         sys.modules.pop('evennia', None)
-    if orig_models is not None:
-        sys.modules['pokemon.models'] = orig_models
+    if orig_core is not None:
+        sys.modules['pokemon.models.core'] = orig_core
     else:
-        sys.modules.pop('pokemon.models', None)
+        sys.modules.pop('pokemon.models.core', None)
+    if orig_moves is not None:
+        sys.modules['pokemon.models.moves'] = orig_moves
+    else:
+        sys.modules.pop('pokemon.models.moves', None)
+    if orig_trainer is not None:
+        sys.modules['pokemon.models.trainer'] = orig_trainer
+    else:
+        sys.modules.pop('pokemon.models.trainer', None)
     if orig_inv is not None:
         sys.modules['utils.inventory'] = orig_inv
     else:

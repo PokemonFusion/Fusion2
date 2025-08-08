@@ -14,10 +14,10 @@ def test_choose_moveset_command():
     fake_evennia.Command = type("Command", (), {})
     sys.modules["evennia"] = fake_evennia
 
-    orig_models = sys.modules.get("pokemon.models")
-    fake_models = types.ModuleType("pokemon.models")
+    orig_models_trainer = sys.modules.get("pokemon.models.trainer")
+    fake_models = types.ModuleType("pokemon.models.trainer")
     fake_models.InventoryEntry = type("InventoryEntry", (), {})
-    sys.modules["pokemon.models"] = fake_models
+    sys.modules["pokemon.models.trainer"] = fake_models
 
     orig_inv = sys.modules.get("utils.inventory")
     fake_inv = types.ModuleType("utils.inventory")
@@ -43,10 +43,10 @@ def test_choose_moveset_command():
         sys.modules["evennia"] = orig_evennia
     else:
         sys.modules.pop("evennia", None)
-    if orig_models is not None:
-        sys.modules["pokemon.models"] = orig_models
+    if orig_models_trainer is not None:
+        sys.modules["pokemon.models.trainer"] = orig_models_trainer
     else:
-        sys.modules.pop("pokemon.models", None)
+        sys.modules.pop("pokemon.models.trainer", None)
     if orig_inv is not None:
         sys.modules["utils.inventory"] = orig_inv
     else:

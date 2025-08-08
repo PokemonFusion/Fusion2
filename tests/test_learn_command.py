@@ -43,7 +43,9 @@ def setup_modules():
 
     orig_pokemon = sys.modules.get("pokemon")
     orig_gen = sys.modules.get("pokemon.generation")
-    orig_models = sys.modules.get("pokemon.models")
+    orig_models_pkg = sys.modules.get("pokemon.models")
+    orig_models_moves = sys.modules.get("pokemon.models.moves")
+    orig_models_trainer = sys.modules.get("pokemon.models.trainer")
     orig_stats = sys.modules.get("pokemon.stats")
     orig_dex = sys.modules.get("pokemon.dex")
     orig_breeding = sys.modules.get("pokemon.breeding")
@@ -55,15 +57,17 @@ def setup_modules():
     gen_mod = types.ModuleType("pokemon.generation")
     gen_mod.generate_pokemon = lambda *a, **k: None
     gen_mod.get_valid_moves = lambda species, lvl: []
-    models_mod = types.ModuleType("pokemon.models")
-    models_mod.InventoryEntry = type("InventoryEntry", (), {})
+    models_pkg = types.ModuleType("pokemon.models")
+    trainer_mod = types.ModuleType("pokemon.models.trainer")
+    trainer_mod.InventoryEntry = type("InventoryEntry", (), {})
     class FakeMove:
         def __init__(self, name):
             self.name = name
     class Manager:
         def get_or_create(self_inner, name):
             return FakeMove(name), True
-    models_mod.Move = type("Move", (), {"objects": Manager()})
+    moves_mod = types.ModuleType("pokemon.models.moves")
+    moves_mod.Move = type("Move", (), {"objects": Manager()})
     stats_mod = types.ModuleType("pokemon.stats")
     stats_mod.calculate_stats = lambda *a, **k: {}
     dex_mod = types.ModuleType("pokemon.dex")
@@ -73,7 +77,7 @@ def setup_modules():
     mw_mod.get_moveset_by_name = lambda name: (None, {"level-up": []})
 
     pokemon_pkg.generation = gen_mod
-    pokemon_pkg.models = models_mod
+    pokemon_pkg.models = models_pkg
     pokemon_pkg.stats = stats_mod
     pokemon_pkg.dex = dex_mod
     pokemon_pkg.breeding = breeding_mod
@@ -81,7 +85,9 @@ def setup_modules():
 
     sys.modules["pokemon"] = pokemon_pkg
     sys.modules["pokemon.generation"] = gen_mod
-    sys.modules["pokemon.models"] = models_mod
+    sys.modules["pokemon.models"] = models_pkg
+    sys.modules["pokemon.models.moves"] = moves_mod
+    sys.modules["pokemon.models.trainer"] = trainer_mod
     sys.modules["pokemon.stats"] = stats_mod
     sys.modules["pokemon.dex"] = dex_mod
     sys.modules["pokemon.breeding"] = breeding_mod
@@ -112,7 +118,9 @@ def setup_modules():
         orig_evmod,
         orig_pokemon,
         orig_gen,
-        orig_models,
+        orig_models_pkg,
+        orig_models_moves,
+        orig_models_trainer,
         orig_stats,
         orig_dex,
         orig_breeding,
@@ -130,7 +138,9 @@ def restore_modules(
     orig_evmod,
     orig_pokemon,
     orig_gen,
-    orig_models,
+    orig_models_pkg,
+    orig_models_moves,
+    orig_models_trainer,
     orig_stats,
     orig_dex,
     orig_breeding,
@@ -160,10 +170,18 @@ def restore_modules(
         sys.modules["pokemon.generation"] = orig_gen
     else:
         sys.modules.pop("pokemon.generation", None)
-    if orig_models is not None:
-        sys.modules["pokemon.models"] = orig_models
+    if orig_models_pkg is not None:
+        sys.modules["pokemon.models"] = orig_models_pkg
     else:
         sys.modules.pop("pokemon.models", None)
+    if orig_models_moves is not None:
+        sys.modules["pokemon.models.moves"] = orig_models_moves
+    else:
+        sys.modules.pop("pokemon.models.moves", None)
+    if orig_models_trainer is not None:
+        sys.modules["pokemon.models.trainer"] = orig_models_trainer
+    else:
+        sys.modules.pop("pokemon.models.trainer", None)
     if orig_stats is not None:
         sys.modules["pokemon.stats"] = orig_stats
     else:
