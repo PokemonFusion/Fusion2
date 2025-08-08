@@ -21,7 +21,13 @@
             <ul class="list-unstyled">
               {% for mon in entry.pokemon %}
                 <li class="mb-2">
-                  <strong>{{ mon.name }}</strong> — Lv {{ mon.level }}
+                  <span class="type-dot type-{{ (mon.primary_type|default:mon.types.0)|lower|default:'unknown' }}"></span>
+                  <strong>{{ mon.nickname|default:mon.species }}</strong> — Lv {{ mon.level }}
+
+                  {% if mon.in_party %}
+                    <span class="badge badge-success ml-1">Party {{ mon.party_slot }}</span>
+                  {% endif %}
+
                   {% if mon.types %}
                     {% for t in mon.types %}
                       <span class="type-chip type-{{ t|lower }}">{{ t }}</span>
@@ -29,7 +35,16 @@
                   {% else %}
                     <span class="type-chip type-unknown">Unknown</span>
                   {% endif %}
+
+                  <small class="text-muted d-block mt-1">
+                    {% if mon.ability %}Ability: {{ mon.ability }}{% endif %}
+                    {% if mon.held_item %}{% if mon.ability %} • {% endif %}Item: {{ mon.held_item }}{% endif %}
+                    {% if mon.gender %}{% if mon.ability or mon.held_item %} • {% endif %}{{ mon.gender }}{% endif %}
+                    {% if mon.is_shiny %}{% if mon.ability or mon.held_item or mon.gender %} • {% endif %}★ Shiny{% endif %}
+                    {% if mon.status %}{% if mon.ability or mon.held_item or mon.gender or mon.is_shiny %} • {% endif %}Status: {{ mon.status }}{% endif %}
+                  </small>
                 </li>
+
               {% endfor %}
             </ul>
           {% else %}
