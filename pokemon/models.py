@@ -124,6 +124,71 @@ class BasePokemon(models.Model):
     class Meta:
         abstract = True
 
+    # ------------------------------------------------------------------
+    # Type helpers
+    # ------------------------------------------------------------------
+    def _lookup_species_types(self) -> list[str]:
+        """Return a list of types for this Pokémon's species.
+
+        This method is a thin wrapper around whatever Pokédex data source the
+        project provides.  It is defined on the model so that subclasses can
+        easily override the lookup behaviour if they need to.
+        """
+
+        species_name = self.species
+        try:  # pragma: no cover - data source may be unavailable in tests
+            # Example if you have a POKEDEX dict somewhere:
+            # from pokemon.dex import POKEDEX
+            # entry = POKEDEX.get(species_name.lower())
+            # return [t.title() for t in entry.get("types", [])] if entry else []
+            pass
+        except Exception:
+            pass
+        return []
+
+    @property
+    def types(self) -> list[str]:
+        """Return this Pokémon's type or types as a list of names."""
+
+        override = getattr(self, "_types_override", None)
+        if override is not None:
+            return override
+
+        ts = self._lookup_species_types()
+        if ts:
+            return ts
+
+        data = getattr(self, "data", {}) or {}
+        t_from_json = data.get("type") or data.get("types")
+        if isinstance(t_from_json, str):
+            return [
+                p.strip().title()
+                for p in t_from_json.replace(",", "/").split("/")
+                if p.strip()
+            ]
+        if isinstance(t_from_json, (list, tuple)):
+            return [str(p).title() for p in t_from_json if p]
+
+        return []
+
+    @types.setter
+    def types(self, value: list[str]) -> None:
+        """Allow manually overriding the computed types."""
+
+        self._types_override = value
+
+    @property
+    def primary_type(self) -> str | None:
+        """Return the first type if available."""
+
+        return self.types[0] if self.types else None
+
+    @property
+    def secondary_type(self) -> str | None:
+        """Return the second type if present."""
+
+        return self.types[1] if len(self.types) > 1 else None
+
 
 class Pokemon(BasePokemon):
     """Simple Pokémon instance used for starter and storage boxes."""
@@ -791,51 +856,3 @@ class MovePPBoost(models.Model):
 
     def __str__(self) -> str:
         return f"{self.pokemon} {self.move} +{self.bonus_pp} PP"
-
-
-# --- Type helpers (no migration required) -------------------------------
-
-def _lookup_species_types(species_name: str) -> list[str]:
-    """
-    Return a list of types for the given species name.
-    Replace this lookup with whatever source you have (Showdown JSON, your Pokedex, etc).
-    Expected return: ["Fire"] or ["Fire", "Flying"].
-    """
-    try:
-        # Example if you have a POKEDEX dict somewhere:
-        # from pokemon.dex import POKEDEX
-        # entry = POKEDEX.get(species_name.lower())
-        # return [t.title() for t in entry.get("types", [])] if entry else []
-        pass
-    except Exception:
-        pass
-    return []
-
-@property
-def types(self) -> list[str]:
-    """
-    Preferred: derive from a Pokedex source by species.
-    Fallback: try to read a denormalized type string in self.data (e.g. "Fire/Flying").
-    """
-    # 1) Try your Pokedex data
-    ts = _lookup_species_types(self.species)
-    if ts:
-        return ts
-
-    # 2) Optional fallback: if you store a type in JSON (e.g. {"type": "Fire/Flying"})
-    t_from_json = (self.data or {}).get("type") or (self.data or {}).get("types")
-    if isinstance(t_from_json, str):
-        return [p.strip().title() for p in t_from_json.replace(",", "/").split("/") if p.strip()]
-    if isinstance(t_from_json, (list, tuple)):
-        return [str(p).title() for p in t_from_json if p]
-
-    # 3) Last resort: single unknown
-    return []
-
-@property
-def primary_type(self) -> str | None:
-    return self.types[0] if self.types else None
-
-@property
-def secondary_type(self) -> str | None:
-    return self.types[1] if len(self.types) > 1 else None
