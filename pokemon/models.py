@@ -793,3 +793,49 @@ class MovePPBoost(models.Model):
         return f"{self.pokemon} {self.move} +{self.bonus_pp} PP"
 
 
+# --- Type helpers (no migration required) -------------------------------
+
+def _lookup_species_types(species_name: str) -> list[str]:
+    """
+    Return a list of types for the given species name.
+    Replace this lookup with whatever source you have (Showdown JSON, your Pokedex, etc).
+    Expected return: ["Fire"] or ["Fire", "Flying"].
+    """
+    try:
+        # Example if you have a POKEDEX dict somewhere:
+        # from pokemon.dex import POKEDEX
+        # entry = POKEDEX.get(species_name.lower())
+        # return [t.title() for t in entry.get("types", [])] if entry else []
+        pass
+    except Exception:
+        pass
+    return []
+
+@property
+def types(self) -> list[str]:
+    """
+    Preferred: derive from a Pokedex source by species.
+    Fallback: try to read a denormalized type string in self.data (e.g. "Fire/Flying").
+    """
+    # 1) Try your Pokedex data
+    ts = _lookup_species_types(self.species)
+    if ts:
+        return ts
+
+    # 2) Optional fallback: if you store a type in JSON (e.g. {"type": "Fire/Flying"})
+    t_from_json = (self.data or {}).get("type") or (self.data or {}).get("types")
+    if isinstance(t_from_json, str):
+        return [p.strip().title() for p in t_from_json.replace(",", "/").split("/") if p.strip()]
+    if isinstance(t_from_json, (list, tuple)):
+        return [str(p).title() for p in t_from_json if p]
+
+    # 3) Last resort: single unknown
+    return []
+
+@property
+def primary_type(self) -> str | None:
+    return self.types[0] if self.types else None
+
+@property
+def secondary_type(self) -> str | None:
+    return self.types[1] if len(self.types) > 1 else None
