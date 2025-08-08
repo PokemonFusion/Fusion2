@@ -30,6 +30,19 @@ footer.footer {
   background-color: #eceff1; /* or your black if you prefer */
   color: #222; /* ensure footer text is visible on light background */
 }
+footer.footer .text-white,
+footer.footer .text-white a {
+  color: #222 !important; /* override Evennia's forced white */
+}
+
+/* Soften card shadows and avoid harsh corner clipping */
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden; /* prevent shadow cut-off at rounded corners */
+}
+.card > .card-header:first-child { border-radius: 1rem 1rem 0 0; }
+.card > .card-footer:last-child { border-radius: 0 0 1rem 1rem; }
 
 /* Show custom focus outline only for keyboard users */
 :focus { outline: none; }
