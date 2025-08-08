@@ -2,50 +2,49 @@
 {% load static %}
 {% block titleblock %}ANSI Reference{% endblock %}
 {% block header_ext %}
-{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static 'webclient/css/webclient.css' %}">
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'webclient/css/webclient.css' %}">
   <style>
-    /* webclient.css forces a fixed-height body; reset that so the footer sticks */
-    body {
-      overflow: auto;
-      height: auto;
-      min-height: 100%;
-      padding-bottom: 4rem; /* keep footer from covering table */
-    }
-    /* hide footer on this page to avoid overlap issues */
-    footer.footer {
-      display: none;
-    }
+    body { overflow: auto; height: auto; min-height: 100%; padding-bottom: 4rem; }
+    footer.footer { display: none; }
   </style>
 {% endblock %}
 {% block content %}
-<h2>ANSI Color Codes</h2>
-<p>Click a code to copy it to the clipboard.</p>
-<input id="ansi-search" class="form-control mb-2" placeholder="Search...">
-<table class="table table-sm table-bordered">
-  <thead>
-    <tr><th>Markup</th><th>Preview</th><th>Description</th></tr>
-  </thead>
-  <tbody id="ansi-table">
-    {% for entry in codes %}
-    <tr>
-      <td><code class="ansi-code" data-code="{{ entry.code }}">{{ entry.code }}</code></td>
-      <td>{{ entry.sample|safe }}</td>
-      <td>{{ entry.label }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<script>
-  const rows = document.querySelectorAll('#ansi-table tr');
-  document.getElementById('ansi-search').addEventListener('input', e => {
-    const term = e.target.value.toLowerCase();
-    rows.forEach(r => {
-      r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
-    });
-  });
-  document.querySelectorAll('.ansi-code').forEach(el => {
-    el.addEventListener('click', () => navigator.clipboard.writeText(el.dataset.code));
-  });
-</script>
+  <h2>ANSI Color Codes</h2>
+  <p>Click a code to copy it to the clipboard.</p>
+  <label for="ansi-search" class="sr-only">Search ANSI codes</label>
+  <input id="ansi-search" class="form-control mb-2" placeholder="Search..." aria-label="Search ANSI codes">
+  <table class="table table-sm table-bordered ansi-table">
+    <thead>
+      <tr><th>Markup</th><th>Preview</th><th>Description</th></tr>
+    </thead>
+    <tbody id="ansi-table">
+      {% for entry in codes %}
+      <tr>
+        <td><code class="ansi-code" data-code="{{ entry.code }}" tabindex="0">{{ entry.code }}</code></td>
+        <td>{{ entry.sample|safe }}</td>
+        <td>{{ entry.label }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div id="copy-toast" class="alert alert-success" role="status" style="display:none; position:fixed; bottom:1rem; right:1rem;">Copied!</div>
+  <script>
+    (function(){
+      const rows = document.querySelectorAll('#ansi-table tr');
+      const search = document.getElementById('ansi-search');
+      const toast = document.getElementById('copy-toast');
+      search.addEventListener('input', e => {
+        const term = e.target.value.toLowerCase();
+        rows.forEach(r => {
+          r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
+        });
+      });
+      function showToast(){ toast.style.display='block'; setTimeout(()=> toast.style.display='none', 900); }
+      document.querySelectorAll('.ansi-code').forEach(el => {
+        el.addEventListener('click', () => { navigator.clipboard.writeText(el.dataset.code); showToast(); });
+        el.addEventListener('keypress', (ev)=>{ if(ev.key==='Enter' || ev.key===' '){ navigator.clipboard.writeText(el.dataset.code); showToast(); }});
+      });
+    })();
+  </script>
 {% endblock %}
