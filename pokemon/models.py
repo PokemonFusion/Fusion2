@@ -137,11 +137,20 @@ class BasePokemon(models.Model):
 
         species_name = self.species
         try:  # pragma: no cover - data source may be unavailable in tests
-            # Example if you have a POKEDEX dict somewhere:
-            # from pokemon.dex import POKEDEX
-            # entry = POKEDEX.get(species_name.lower())
-            # return [t.title() for t in entry.get("types", [])] if entry else []
-            pass
+            from pokemon.dex import POKEDEX  # type: ignore
+
+            entry = (
+                POKEDEX.get(species_name)
+                or POKEDEX.get(species_name.lower())
+                or POKEDEX.get(species_name.capitalize())
+            )
+
+            if entry:
+                types = getattr(entry, "types", None)
+                if types is None and isinstance(entry, dict):
+                    types = entry.get("types")
+                if types:
+                    return [str(t).title() for t in types if t]
         except Exception:
             pass
         return []
