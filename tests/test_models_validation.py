@@ -1,38 +1,21 @@
-import os
+"""Tests for model validation helpers."""
+
 import sys
-import ast
-import textwrap
-import importlib.util
 import types
+
 import pytest
 from django.core.exceptions import ValidationError
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, ROOT)
-models_path = os.path.join(ROOT, "pokemon", "models", "core.py")
+from pokemon.models.validators import validate_ivs, validate_evs
 
-source = open(models_path).read()
-module = ast.parse(source)
-ns = {"ValidationError": ValidationError}
-orig_stats = sys.modules.get("pokemon.stats")
-stats_mod = types.ModuleType("pokemon.stats")
-stats_mod.EV_LIMIT = 510
-stats_mod.STAT_EV_LIMIT = 252
-sys.modules["pokemon.stats"] = stats_mod
-for node in module.body:
-    if isinstance(node, ast.ImportFrom) and node.module == 'stats' and node.level == 1:
-        exec('from pokemon.stats import EV_LIMIT, STAT_EV_LIMIT', ns)
-    if isinstance(node, ast.FunctionDef) and node.name in ("validate_ivs", "validate_evs"):
-        code = ast.get_source_segment(source, node)
-        exec(textwrap.dedent(code), ns)
 
-validate_ivs = ns['validate_ivs']
-validate_evs = ns['validate_evs']
-
-if orig_stats is not None:
-    sys.modules["pokemon.stats"] = orig_stats
-else:
-    sys.modules.pop("pokemon.stats", None)
+@pytest.fixture(autouse=True)
+def stub_stats(monkeypatch):
+    """Provide a minimal ``pokemon.stats`` module for validator tests."""
+    stats_mod = types.ModuleType("pokemon.stats")
+    stats_mod.EV_LIMIT = 510
+    stats_mod.STAT_EV_LIMIT = 252
+    monkeypatch.setitem(sys.modules, "pokemon.stats", stats_mod)
 
 
 def test_invalid_iv_length():
@@ -63,3 +46,4 @@ def test_invalid_ev_total():
 def test_valid_values_pass():
     validate_ivs([31] * 6)
     validate_evs([0] * 6)
+

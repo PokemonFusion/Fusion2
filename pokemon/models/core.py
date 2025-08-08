@@ -2,77 +2,17 @@
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 from evennia.utils.idmapper.models import SharedMemoryModel
 
 import uuid
 import math
 
+from .validators import validate_ivs, validate_evs
+from .enums import Gender, Nature
+
 
 # Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
 MAX_PP_MULTIPLIER = 1.6
-
-
-def validate_ivs(value):
-    """Validate that IV list has six integers between 0 and 31."""
-    if not isinstance(value, (list, tuple)) or len(value) != 6:
-        raise ValidationError("IVs must contain six integers.")
-    for v in value:
-        if not isinstance(v, int) or v < 0 or v > 31:
-            raise ValidationError("IV values must be between 0 and 31.")
-
-
-def validate_evs(value):
-    """Validate that EV list has six integers in allowed ranges."""
-    if not isinstance(value, (list, tuple)) or len(value) != 6:
-        raise ValidationError("EVs must contain six integers.")
-    from pokemon.stats import EV_LIMIT, STAT_EV_LIMIT  # pragma: no cover
-
-    for v in value:
-        if not isinstance(v, int) or v < 0 or v > STAT_EV_LIMIT:
-            raise ValidationError(
-                f"EV values must be between 0 and {STAT_EV_LIMIT}."
-            )
-    if sum(value) > EV_LIMIT:
-        raise ValidationError(f"Total EVs cannot exceed {EV_LIMIT}.")
-
-
-class Gender(models.TextChoices):
-    """Allowed Pokémon genders."""
-
-    MALE = "M", "Male"
-    FEMALE = "F", "Female"
-    NONE = "N", "None"
-
-
-class Nature(models.TextChoices):
-    """Available Pokémon natures."""
-
-    HARDY = "Hardy", "Hardy"
-    LONELY = "Lonely", "Lonely"
-    BRAVE = "Brave", "Brave"
-    ADAMANT = "Adamant", "Adamant"
-    NAUGHTY = "Naughty", "Naughty"
-    BOLD = "Bold", "Bold"
-    DOCILE = "Docile", "Docile"
-    RELAXED = "Relaxed", "Relaxed"
-    IMPISH = "Impish", "Impish"
-    LAX = "Lax", "Lax"
-    TIMID = "Timid", "Timid"
-    HASTY = "Hasty", "Hasty"
-    SERIOUS = "Serious", "Serious"
-    JOLLY = "Jolly", "Jolly"
-    NAIVE = "Naive", "Naive"
-    MODEST = "Modest", "Modest"
-    MILD = "Mild", "Mild"
-    QUIET = "Quiet", "Quiet"
-    BASHFUL = "Bashful", "Bashful"
-    RASH = "Rash", "Rash"
-    CALM = "Calm", "Calm"
-    GENTLE = "Gentle", "Gentle"
-    SASSY = "Sassy", "Sassy"
-    CAREFUL = "Careful", "Careful"
-    QUIRKY = "Quirky", "Quirky"
 
 
 class SpeciesEntry(models.Model):
