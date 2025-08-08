@@ -142,21 +142,9 @@ footer.footer a:hover { text-decoration: underline; }
 .section-recent   .card-header { background: linear-gradient(180deg,#e9f5ff,#fff); }
 .section-db       .card-header { background: linear-gradient(180deg,#e9ffe9,#fff); }
 
-/* 3) Reusable Pokémon-type chips */
-.type-chip {
-  display:inline-block; padding:.2rem .55rem; border-radius:999px;
-  font-weight:800; font-size:.78rem; line-height:1; color:#fff;
-  text-shadow: 0 1px 0 rgba(0,0,0,.15); margin-right:.25rem;
-}
-.type-fire    { background:#ee8130; }
-.type-water   { background:#6390f0; }
-.type-grass   { background:#7ac74c; }
-.type-electric{ background:#f7d02c; color:#222; text-shadow:none; }
-.type-ice     { background:#96d9d6; color:#222; text-shadow:none; }
-.type-psychic { background:#f95587; }
-.type-dragon  { background:#6f35fc; }
+/* Type chips are defined in pokefusion.css. Modify that file to change chip colors or styles. */
 
-/* 4) Optional: faint floating corner sprites (add .page-sprites markup if desired) */
+/* 3) Optional: faint floating corner sprites (add .page-sprites markup if desired) */
 .page-sprites { position: fixed; inset: 0; pointer-events:none; z-index: 0; }
 .page-sprites img {
   position: absolute; opacity:.06; image-rendering: pixelated;
