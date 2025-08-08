@@ -3,16 +3,22 @@ import sys
 import ast
 import textwrap
 import importlib.util
+import types
 import pytest
 from django.core.exceptions import ValidationError
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
-models_path = os.path.join(ROOT, "pokemon", "models.py")
+models_path = os.path.join(ROOT, "pokemon", "models", "core.py")
 
 source = open(models_path).read()
 module = ast.parse(source)
 ns = {"ValidationError": ValidationError}
+orig_stats = sys.modules.get("pokemon.stats")
+stats_mod = types.ModuleType("pokemon.stats")
+stats_mod.EV_LIMIT = 510
+stats_mod.STAT_EV_LIMIT = 252
+sys.modules["pokemon.stats"] = stats_mod
 for node in module.body:
     if isinstance(node, ast.ImportFrom) and node.module == 'stats' and node.level == 1:
         exec('from pokemon.stats import EV_LIMIT, STAT_EV_LIMIT', ns)
@@ -22,6 +28,11 @@ for node in module.body:
 
 validate_ivs = ns['validate_ivs']
 validate_evs = ns['validate_evs']
+
+if orig_stats is not None:
+    sys.modules["pokemon.stats"] = orig_stats
+else:
+    sys.modules.pop("pokemon.stats", None)
 
 
 def test_invalid_iv_length():

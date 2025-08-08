@@ -1,5 +1,6 @@
 from evennia import Command
-from pokemon.models import OwnedPokemon, Trainer
+from pokemon.models.core import OwnedPokemon
+from pokemon.models.trainer import Trainer
 import uuid
 
 

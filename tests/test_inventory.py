@@ -55,9 +55,9 @@ class FakeInventoryEntry:
         FakeInventoryEntry.objects.store.pop((self.owner, self.item_name), None)
 
 
-models_mod = types.ModuleType("pokemon.models")
+models_mod = types.ModuleType("pokemon.models.trainer")
 models_mod.InventoryEntry = FakeInventoryEntry
-sys.modules["pokemon.models"] = models_mod
+sys.modules["pokemon.models.trainer"] = models_mod
 
 inv_mod = importlib.import_module("utils.inventory")
 InventoryMixin = inv_mod.InventoryMixin

@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from pokemon.models import OwnedPokemon
+from pokemon.models.core import OwnedPokemon
 
 
 @login_required

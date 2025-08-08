@@ -28,16 +28,17 @@ def test_create_owned_pokemon_initializes_model(monkeypatch):
             self.healed = True
         def learn_level_up_moves(self):
             self.moves_learned = True
-    fake_models = types.ModuleType("pokemon.models")
-    fake_models.OwnedPokemon = OwnedPokemon
-    monkeypatch.setitem(sys.modules, "pokemon.models", fake_models)
+    fake_core = types.ModuleType("pokemon.models.core")
+    fake_core.OwnedPokemon = OwnedPokemon
+    monkeypatch.setitem(sys.modules, "pokemon.models.core", fake_core)
+    monkeypatch.setitem(sys.modules, "pokemon.models", types.ModuleType("pokemon.models"))
     pkg = sys.modules.get("pokemon")
     if pkg and getattr(pkg, "__path__", None) is None:
         monkeypatch.delitem(sys.modules, "pokemon")
         pkg = importlib.import_module("pokemon")
     else:
         pkg = importlib.import_module("pokemon")
-    monkeypatch.setattr(pkg, "models", fake_models, raising=False)
+    monkeypatch.setattr(pkg, "models", sys.modules["pokemon.models"], raising=False)
     from pokemon.utils.pokemon_helpers import create_owned_pokemon
     mon = create_owned_pokemon("Pikachu", trainer="Ash", level=5, gender="M")
     assert OwnedPokemon.objects.kwargs["trainer"] == "Ash"

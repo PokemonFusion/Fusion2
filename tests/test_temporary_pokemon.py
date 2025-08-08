@@ -37,7 +37,8 @@ except Exception:
     sys.modules["evennia"] = evennia
 else:
     evennia.create_object = lambda cls, key=None: cls()
-orig_models = sys.modules.get("pokemon.models")
+orig_models_pkg = sys.modules.get("pokemon.models")
+orig_models_core = sys.modules.get("pokemon.models.core")
 orig_generation = sys.modules.get("pokemon.generation")
 orig_spawn = sys.modules.get("world.pokemon_spawn")
 orig_capture = sys.modules.get("pokemon.battle.capture")
@@ -172,8 +173,10 @@ class FakeOwnedPokemon:
         if self.is_wild and self.trainer is None and self.ai_trainer is None:
             self.delete()
 
-models_mod = types.ModuleType("pokemon.models")
-models_mod.OwnedPokemon = FakeOwnedPokemon
+models_pkg = types.ModuleType("pokemon.models")
+models_mod_core = types.ModuleType("pokemon.models.core")
+models_mod_core.OwnedPokemon = FakeOwnedPokemon
+models_pkg.core = models_mod_core
 
 # Generation and stats stubs
 class DummyInst:
@@ -204,15 +207,20 @@ def setup_module(module):
     pokemon_pkg = types.ModuleType("pokemon")
     pokemon_pkg.__path__ = []
     pokemon_pkg.generation = gen_mod
-    pokemon_pkg.models = models_mod
+    pokemon_pkg.models = models_pkg
     pokemon_pkg.breeding = types.ModuleType("pokemon.breeding")
-    pokemon_pkg.dex = importlib.import_module("pokemon.dex")
+    dex_mod = types.ModuleType("pokemon.dex")
+    dex_mod.MOVEDEX = {"tackle": {"pp": 10}}
+    dex_mod.POKEDEX = {}
+    pokemon_pkg.dex = dex_mod
     sys.modules["pokemon"] = pokemon_pkg
     sys.modules["pokemon.breeding"] = pokemon_pkg.breeding
+    sys.modules["pokemon.dex"] = dex_mod
     sys.modules["typeclasses.rooms"] = battleroom_mod
     sys.modules["pokemon.battle.interface"] = iface
     sys.modules["pokemon.battle.handler"] = handler_mod
-    sys.modules["pokemon.models"] = models_mod
+    sys.modules["pokemon.models"] = models_pkg
+    sys.modules["pokemon.models.core"] = models_mod_core
     sys.modules["pokemon.generation"] = gen_mod
     sys.modules["world.pokemon_spawn"] = spawn_mod
 
@@ -333,10 +341,14 @@ def test_uncaught_pokemon_deleted_on_end():
 
 def teardown_module(module):
     evennia.create_object = orig_create_object
-    if orig_models is not None:
-        sys.modules["pokemon.models"] = orig_models
+    if orig_models_pkg is not None:
+        sys.modules["pokemon.models"] = orig_models_pkg
     else:
         sys.modules.pop("pokemon.models", None)
+    if orig_models_core is not None:
+        sys.modules["pokemon.models.core"] = orig_models_core
+    else:
+        sys.modules.pop("pokemon.models.core", None)
     if orig_generation is not None:
         sys.modules["pokemon.generation"] = orig_generation
     else:

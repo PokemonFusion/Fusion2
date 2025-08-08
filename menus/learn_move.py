@@ -1,5 +1,5 @@
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
-from pokemon.models import Move
+from pokemon.models.moves import Move
 
 
 def node_start(caller, raw_input=None, **kwargs):

@@ -2,7 +2,7 @@
 
 import django.contrib.postgres.fields
 import django.db.models.deletion
-import pokemon.models
+from pokemon.models.core import validate_evs, validate_ivs
 from django.db import migrations, models
 
 
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 base_field=models.PositiveSmallIntegerField(),
                 default=list,
                 size=6,
-                validators=[pokemon.models.validate_evs],
+                validators=[validate_evs],
             ),
         ),
         migrations.AlterField(
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                 base_field=models.PositiveSmallIntegerField(),
                 default=list,
                 size=6,
-                validators=[pokemon.models.validate_ivs],
+                validators=[validate_ivs],
             ),
         ),
         migrations.AlterField(
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                 base_field=models.PositiveSmallIntegerField(),
                 default=list,
                 size=6,
-                validators=[pokemon.models.validate_evs],
+                validators=[validate_evs],
             ),
         ),
         migrations.AlterField(
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                 base_field=models.PositiveSmallIntegerField(),
                 default=list,
                 size=6,
-                validators=[pokemon.models.validate_ivs],
+                validators=[validate_ivs],
             ),
         ),
         migrations.AlterField(

@@ -76,7 +76,7 @@ def add_item(trainer, item_name: str, amount: int = 1):
     if hasattr(trainer, "add_item"):
         trainer.add_item(item_name, amount)
     else:
-        from pokemon.models import InventoryEntry
+        from pokemon.models.trainer import InventoryEntry
 
         item_name = item_name.lower()
         entry, _ = InventoryEntry.objects.get_or_create(
@@ -101,7 +101,7 @@ def remove_item(trainer, item_name: str, amount: int = 1) -> bool:
     if hasattr(trainer, "remove_item"):
         return trainer.remove_item(item_name, amount)
 
-    from pokemon.models import InventoryEntry
+    from pokemon.models.trainer import InventoryEntry
 
     item_name = item_name.lower()
     try:
@@ -134,7 +134,7 @@ def get_inventory(trainer):
     if hasattr(trainer, "list_inventory"):
         return trainer.list_inventory()
 
-    from pokemon.models import InventoryEntry
+    from pokemon.models.trainer import InventoryEntry
 
     return InventoryEntry.objects.filter(owner=trainer).order_by("item_name")
 

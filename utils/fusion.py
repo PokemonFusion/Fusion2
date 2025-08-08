@@ -1,6 +1,6 @@
 """Helper functions for managing Pokémon fusions."""
 
-from pokemon.models import PokemonFusion
+from pokemon.models.fusion import PokemonFusion
 
 
 def record_fusion(result, trainer, pokemon, permanent=False):

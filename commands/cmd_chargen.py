@@ -6,7 +6,8 @@ from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon, NATURES
-from pokemon.models import OwnedPokemon, ensure_boxes
+from pokemon.models.core import OwnedPokemon
+from pokemon.models.storage import ensure_boxes
 from pokemon.utils.pokemon_helpers import create_owned_pokemon
 from pokemon.starters import get_starter_names, STARTER_LOOKUP
 

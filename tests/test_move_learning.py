@@ -13,7 +13,7 @@ def test_on_exit_called_when_auto_learn():
     enhanced_mod = types.ModuleType("pokemon.utils.enhanced_evmenu")
     enhanced_mod.EnhancedEvMenu = object
     utils_pkg.enhanced_evmenu = enhanced_mod
-    models_mod = types.ModuleType("pokemon.models")
+    models_mod = types.ModuleType("pokemon.models.moves")
 
     class FakeMove:
         def __init__(self, name):
@@ -33,7 +33,7 @@ def test_on_exit_called_when_auto_learn():
     sys.modules["pokemon"] = pokemon_pkg
     sys.modules["pokemon.utils"] = utils_pkg
     sys.modules["pokemon.utils.enhanced_evmenu"] = enhanced_mod
-    sys.modules["pokemon.models"] = models_mod
+    sys.modules["pokemon.models.moves"] = models_mod
 
     path = os.path.join(ROOT, "pokemon", "utils", "move_learning.py")
     spec = importlib.util.spec_from_file_location(

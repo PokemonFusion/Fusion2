@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
-from pokemon.models import Move
+from pokemon.models.moves import Move
 
 
 def get_learnable_levelup_moves(pokemon):
