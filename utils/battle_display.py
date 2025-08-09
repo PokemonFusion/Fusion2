@@ -1,3 +1,5 @@
+"""Rendering helpers for battle UI elements and move selection boxes."""
+
 from __future__ import annotations
 import re
 import textwrap
@@ -182,6 +184,28 @@ def render_move_gui(moves: dict) -> str:
 
 def colorize(text: str, color_code: str) -> str:
     return f"{color_code}{text}|n"
+
+
+def render_battle_ui(state, viewer, total_width: int = 100) -> str:
+    """Proxy to :func:`pokemon.ui.battle_render.render_battle_ui`.
+
+    This wrapper allows callers to import battle UI rendering from this module
+    alongside other display helpers without creating circular imports.
+
+    Parameters
+    ----------
+    state: object
+        Battle state providing accessors described by
+        :func:`pokemon.ui.battle_render.render_battle_ui`.
+    viewer: object
+        Trainer or player viewing the interface.
+    total_width: int, optional
+        Desired total width of the rendered interface.
+    """
+
+    from pokemon.ui.battle_render import render_battle_ui as _render
+
+    return _render(state, viewer, total_width=total_width)
 
 # ─── Example usage ─────────────────────────────────────────
 if __name__ == "__main__":

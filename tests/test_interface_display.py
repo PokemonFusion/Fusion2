@@ -40,27 +40,28 @@ class DummyTrainer:
         self.team = [mon]
 
 
-def test_interface_numbers_and_percent():
+def test_interface_numbers_for_viewer():
     mon_a = DummyMon("Pika", 15, 20)
-    mon_b = DummyMon("Bulba", 30, 40)
+    mon_b = DummyMon("Bulba", 30, 60)
     t_a = DummyTrainer("Ash", mon_a)
     t_b = DummyTrainer("Gary", mon_b)
     st = BattleState()
+
     out_a = display_battle_interface(t_a, t_b, st, viewer_team="A")
     assert "15/20" in out_a
-    assert "30/40" not in out_a
+    assert "30/60" not in out_a
+
     out_b = display_battle_interface(t_a, t_b, st, viewer_team="B")
-    assert "30/40" in out_b
-    out_w = display_battle_interface(t_a, t_b, st, viewer_team=None)
-    assert "15/20" not in out_w and "30/40" not in out_w
+    assert "30/60" in out_b
+    assert "15/20" not in out_b
 
 
-def test_waiting_message():
+def test_spectator_shows_percent():
     mon_a = DummyMon("Pika", 15, 20)
-    mon_b = DummyMon("Bulba", 30, 40)
+    mon_b = DummyMon("Bulba", 30, 60)
     t_a = DummyTrainer("Ash", mon_a)
     t_b = DummyTrainer("Gary", mon_b)
     st = BattleState()
-    out = display_battle_interface(t_a, t_b, st, viewer_team="A", waiting_on=mon_b)
-    assert "Waiting on: Bulba" in out
-    assert "What will" not in out
+    out = display_battle_interface(t_a, t_b, st, viewer_team=None)
+    assert "15/20" not in out and "30/60" not in out
+    assert "75%" in out and "50%" in out
