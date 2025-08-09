@@ -45,7 +45,7 @@ def calculate_box_width(moves: dict, min_width: int = 38) -> int:
         lines = [
             mv.get("name", "???"),
             f"PP: {mv.get('pp',(0,0))[0]}/{mv.get('pp',(0,0))[1]}",
-            f"Power: {mv.get('power',0)}   Accuracy: {mv.get('accuracy',0)}",
+            f"Power: {mv.get('basePower', mv.get('power', 0))}   Accuracy: {mv.get('accuracy',0)}",
         ]
         for line in lines:
             longest = max(longest, len(strip_ansi(line)) + 4)  # +4 for padding
@@ -58,7 +58,7 @@ def render_box(label: str, mv: dict, box_width: int) -> list[str]:
     mtype = mv.get("type", "???")
     cat   = mv.get("category", "???")
     pp_cur, pp_max = mv.get("pp", (0, 0))
-    power = mv.get("power", 0)
+    power = mv.get("basePower", mv.get("power", 0))
     acc   = mv.get("accuracy", 0)
 
     inner_w = box_width - 4  # subtract borders ("|  " and "  |")
@@ -131,9 +131,37 @@ def colorize(text: str, color_code: str) -> str:
 # ─── Example usage ─────────────────────────────────────────
 if __name__ == "__main__":
     sample = {
-        "A": {"name":"Tackle","type":"Normal","category":"Physical","pp":(35,35),"power":40,"accuracy":100},
-        "B": {"name":"Bulldoze","type":"Ground","category":"Physical","pp":(20,20),"power":60,"accuracy":100},
-        "C": {"name":"Defensecurl","type":"Normal","category":"Status","pp":(40,40),"power":0,"accuracy":1},
-        "D": {"name":"Mudsport","type":"Ground","category":"Status","pp":(15,15),"power":0,"accuracy":1},
+        "A": {
+            "name": "Tackle",
+            "type": "Normal",
+            "category": "Physical",
+            "pp": (35, 35),
+            "basePower": 40,
+            "accuracy": 100,
+        },
+        "B": {
+            "name": "Bulldoze",
+            "type": "Ground",
+            "category": "Physical",
+            "pp": (20, 20),
+            "basePower": 60,
+            "accuracy": 100,
+        },
+        "C": {
+            "name": "Defensecurl",
+            "type": "Normal",
+            "category": "Status",
+            "pp": (40, 40),
+            "basePower": 0,
+            "accuracy": 1,
+        },
+        "D": {
+            "name": "Mudsport",
+            "type": "Ground",
+            "category": "Status",
+            "pp": (15, 15),
+            "basePower": 0,
+            "accuracy": 1,
+        },
     }
     print(render_move_gui(sample))

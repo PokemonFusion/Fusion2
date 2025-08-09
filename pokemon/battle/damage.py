@@ -287,10 +287,6 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
             result.debug.setdefault("critical", []).append(True)
         else:
             result.debug.setdefault("critical", []).append(False)
-        phrase = damage_phrase(target, dmg)
-        result.text.append(
-            f"{attacker.name} uses {move.name} on {target.name} and deals {phrase} damage!"
-        )
         if spread:
             dmg = int(dmg * 0.75)
         result.debug.setdefault("damage", []).append(dmg)
@@ -388,6 +384,16 @@ def apply_damage(
 
     raw_damages = result.debug.get("damage", [])
     result.debug["damage"] = [dmg]
+
+    phrase = damage_phrase(target, dmg)
+    result.text.insert(
+        0,
+        f"{attacker.name} uses {move.name} on {target.name} and deals {phrase} damage!",
+    )
+    if battle is not None and hasattr(battle, "log_action"):
+        for line in result.text:
+            battle.log_action(line)
+
     if battle is not None and getattr(battle, "debug", False):
         levels = result.debug.get("level", [])
         powers = result.debug.get("power", [])
