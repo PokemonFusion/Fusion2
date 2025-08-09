@@ -52,12 +52,19 @@ def calculate_box_width(moves: dict, min_width: int = 38) -> int:
     return longest
 
 # ─── Rendering ──────────────────────────────────────────────
+def dim(s: str) -> str:
+    return f"|[244]{s}"
 
 def render_box(label: str, mv: dict, box_width: int) -> list[str]:
-    name = mv.get("name", "???")
-    mtype = mv.get("type", "???")
-    cat   = mv.get("category", "???")
     pp_cur, pp_max = mv.get("pp", (0, 0))
+    # If out of PP, visually dim name/type/category
+    name_vis = mv.get("name", "???")
+    mtype     = mv.get("type", "???")
+    cat       = mv.get("category", "???")
+    if pp_cur == 0 and pp_max > 0:
+        name_vis = dim(name_vis)
+        mtype    = dim(mtype)
+        cat      = dim(cat)
     power = mv.get("basePower", mv.get("power", 0))
     acc   = mv.get("accuracy", 0)
 
@@ -70,7 +77,7 @@ def render_box(label: str, mv: dict, box_width: int) -> list[str]:
     top_line = "/" + "-" * left + lab + "-" * right + "\\"
 
     # 2) wrap the move name
-    wrapped = textwrap.wrap(name, width=inner_w)
+    wrapped = textwrap.wrap(name_vis, width=inner_w)
     name_lines = [f"|  {line:<{inner_w}}|" for line in wrapped] or [f"|  {'':<{inner_w}}|"]
 
     # 3) type & category at midpoint
@@ -108,22 +115,62 @@ def render_box(label: str, mv: dict, box_width: int) -> list[str]:
     bot_line = "\\" + "-" * (box_width - 2) + "/"
 
     return [top_line] + name_lines + [tc_line, pp_line, pa_line, bot_line]
-
 def render_move_gui(moves: dict) -> str:
     """
-    Assemble four boxes into a 2×2 grid, labeled A/B on the top row
-    and C/D on the bottom, then append the prompt line.
+    Build a 2x2 ASCII grid of move boxes (A,B on the first row; C,D on the second),
+    then append a footer prompt. Uses render_box(...) for each quadrant and
+    calculate_box_width(...) to size the boxes. Safely handles missing entries.
+
+    moves: {
+      "A": {"name":..., "type":..., "category":..., "pp":(cur,max), "power":..., "accuracy":...},
+      "B": {...},
+      "C": {...},
+      "D": {...},
+    }
     """
-    w = calculate_box_width(moves)
+    # --- local helper: pad a box to a uniform height by inserting blank inner lines
+    def _pad_box_to_height(box_lines: list[str], target_h: int, box_width: int) -> list[str]:
+        if not box_lines:
+            return box_lines
+        inner_w = box_width - 4  # accounts for leading "| " and trailing " |"
+        blank = f"|  {'':<{inner_w}}|"
+        # insert blanks just before the bottom border
+        while len(box_lines) < target_h:
+            box_lines.insert(-1, blank)
+        return box_lines
+
+    # Compute a consistent box width for all four boxes
+    box_w = calculate_box_width(moves)
+
+    # Render each quadrant; fall back to empty dict so render_box still returns a frame
     boxes = {
-        k: render_box(k, moves.get(k, {}), w)
-        for k in ("A", "B", "C", "D")
+        "A": render_box("A", moves.get("A", {}) or {}, box_w),
+        "B": render_box("B", moves.get("B", {}) or {}, box_w),
+        "C": render_box("C", moves.get("C", {}) or {}, box_w),
+        "D": render_box("D", moves.get("D", {}) or {}, box_w),
     }
 
-    top = "\n".join(a + "  " + b for a, b in zip(boxes["A"], boxes["B"]))
-    bot = "\n".join(c + "  " + d for c, d in zip(boxes["C"], boxes["D"]))
+    # Normalize heights so side-by-side zip works perfectly
+    target_h = max(len(b) for b in boxes.values())
+    for k in ("A", "B", "C", "D"):
+        boxes[k] = _pad_box_to_height(boxes[k], target_h, box_w)
 
-    return f"{top}\n{bot}\n|r<Battle>|n Pick an attack, use '|r.abort|n' to cancel:"
+    # Stitch rows: A|B on first line set, C|D on second
+    def _stitch(left: list[str], right: list[str]) -> str:
+        return "\n".join(f"{l} {r}" for l, r in zip(left, right))
+
+    grid = _stitch(boxes["A"], boxes["B"]) + "\n" + _stitch(boxes["C"], boxes["D"])
+
+    # Footer prompt — note the target-by-position guidance (A1/B1/etc.)
+    prompt = (
+        "\n"
+        "Choose a move: A/B/C/D or type the name. "
+        "Use position for targets (e.g., B1). "
+        "Type 'cancel' to abort."
+    )
+
+    return grid + prompt
+
 
 def colorize(text: str, color_code: str) -> str:
     return f"{color_code}{text}|n"
