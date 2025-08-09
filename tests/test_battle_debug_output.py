@@ -10,7 +10,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-from pokemon.battle.damage import apply_damage
+from pokemon.battle.damage import apply_damage, damage_phrase
 from pokemon.battle.battledata import Pokemon
 from pokemon.dex.entities import Move, Stats
 
@@ -68,3 +68,17 @@ def test_apply_damage_no_debug_when_disabled():
     apply_damage(attacker, target, move, battle=battle)
     joined = " ".join(battle.logged)
     assert "[DEBUG]" not in joined
+
+
+def test_damage_phrase_attached_to_readout():
+    attacker = _make_pokemon("Attacker")
+    target = _make_pokemon("Target")
+    move = _make_move()
+    battle = DummyBattle(debug=False)
+    random.seed(0)
+    result = apply_damage(attacker, target, move, battle=battle)
+    dmg = sum(result.debug.get("damage", []))
+    phrase = damage_phrase(target, dmg)
+    joined = " ".join(battle.logged)
+    assert phrase in joined
+    assert "damage" in joined
