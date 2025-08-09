@@ -9,7 +9,7 @@ from pokemon.battle.storage import BattleDataWrapper
 from pokemon.battle.handler import battle_handler
 from pokemon.battle.interface import display_battle_interface
 from utils.battle_display import render_move_gui
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field as dc_field
 
 
 class CmdAbortBattle(Command):
@@ -223,7 +223,7 @@ class MockPokemon:
     hp: int = 20
     max_hp: int = 20
     status: str = ""
-    moves: list = field(default_factory=list)
+    moves: list = dc_field(default_factory=list)
     is_fainted: bool = False
 
 
@@ -241,8 +241,8 @@ class MockBattleState:
     weather: str = "Hail"
     field: str = "Electric Terrain"
     round: int = 5
-    declare: dict = field(default_factory=dict)
-    watchers: set = field(default_factory=set)
+    declare: dict = dc_field(default_factory=dict)
+    watchers: set = dc_field(default_factory=set)
 
 
 def make_mock_battle_state() -> MockBattleState:
