@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from evennia import search_object
 from utils.ansi import ansi
-from utils.battle_display import strip_ansi, fit_visible, pad_ansi
+from utils.battle_display import strip_ansi, fit_visible, pad_ansi, render_battle_ui
 
 from .state import BattleState
 
@@ -128,44 +128,52 @@ def display_battle_interface(
     viewer_team=None,
     waiting_on=None,
 ) -> str:
-    """Return a formatted battle interface string."""
-    lines = []
-    lines.append(_title_bar(trainer.name, opponent.name))
-    t_party = _party_icons(trainer)
-    o_party = _party_icons(opponent)
-    line = pad_ansi(fit_visible(f"{t_party:<36}  {o_party:>36}", 76), 76)
-    lines.append(f"║ {line}║")
-    lines.append(_legend_line())
+    """Return a formatted battle interface string using the new renderer.
 
-    # Active mons (your existing _active_info is reused)
-    lines.append("╟" + "─" * 76 + "╢")
-    show_a = viewer_team == "A"
-    show_b = viewer_team == "B"
-    for line in _active_info(trainer, show_numbers=show_a):
-        lines.append(line)
-    for line in _active_info(opponent, show_numbers=show_b):
-        lines.append(line)
+    Parameters
+    ----------
+    trainer, opponent:
+        The two trainers participating in battle.
+    battle_state:
+        Object providing weather, field and round information.
+    viewer_team:
+        "A", "B" or ``None`` to indicate which side the viewer belongs to.
+    waiting_on:
+        Unused placeholder retained for backward compatibility.
+    """
 
-    # Meta row (Weather/Field/Round)
-    lines.append(_meta_line(
-        getattr(battle_state, "weather", getattr(battle_state, "roomweather", "-")),
-        getattr(battle_state, "field", "-"),
-        getattr(battle_state, "round", getattr(battle_state, "turn", "?")),
-    ))
+    class _StateAdapter:
+        """Light adapter exposing the API expected by the renderer."""
 
+        def __init__(self, trainer, opponent, state):
+            self._trainers = {"A": trainer, "B": opponent}
+            self._state = state
 
-    # Action queue for spectators (from state.declare)
-    lines.extend(_action_queue(battle_state))
+        def get_side(self, viewer):
+            if viewer is self._trainers["A"]:
+                return "A"
+            if viewer is self._trainers["B"]:
+                return "B"
+            return None
 
-    # Optional footer (who we’re waiting on)
-    if waiting_on:
-        lines.append("╟" + "─" * 76 + "╢")
-        who = getattr(waiting_on, "name", waiting_on)
-        wait_line = pad_ansi(fit_visible(f"Waiting on: {who}", 76), 76)
-        lines.append(f"║ {wait_line}║")
+        def get_trainer(self, side):
+            return self._trainers.get(side)
 
-    lines.append("╚" + "═" * 76 + "╝")
-    return "\n".join(lines)
+        @property
+        def weather(self):
+            return getattr(self._state, "weather", getattr(self._state, "roomweather", "-"))
+
+        @property
+        def field(self):
+            return getattr(self._state, "field", "-")
+
+        @property
+        def round_no(self):
+            return getattr(self._state, "round", getattr(self._state, "turn", 0))
+
+    viewer = trainer if viewer_team == "A" else opponent if viewer_team == "B" else None
+    adapter = _StateAdapter(trainer, opponent, battle_state)
+    return render_battle_ui(adapter, viewer, total_width=78)
 
 def _title_bar(left: str, right: str, width: int = 78) -> str:
     center = fit_visible(f" {left} VS {right}", width - 2)
