@@ -52,6 +52,17 @@ class FusionRoom(Room):
     WIDTH_DEFAULT = 78
     PAD_LEFT = 2
     UI_DEFAULT_MODE = "fancy"  # fancy | simple | sr
+    # Theme (color) configuration
+    UI_DEFAULT_THEME = "green"  # name of theme
+    THEMES = {
+        # primary = frame/section headings, accent = ids or small notes
+        "green": {"primary": "|g", "accent": "|y"},
+        "blue": {"primary": "|b", "accent": "|y"},
+        "red": {"primary": "|r", "accent": "|y"},
+        "magenta": {"primary": "|m", "accent": "|y"},
+        "cyan": {"primary": "|c", "accent": "|y"},
+        "white": {"primary": "|w", "accent": "|y"},
+    }
 
     def at_object_creation(self):
         super().at_object_creation()
@@ -145,6 +156,16 @@ class FusionRoom(Room):
     def _ansi_len(self, s: str) -> int:
         return len(strip_ansi(s or ""))
 
+    # ---------- Theme helpers ----------
+    def _theme(self, looker):
+        """Return active theme dict for this viewer."""
+        name = getattr(looker.db, "ui_theme", None) or self.UI_DEFAULT_THEME
+        return self.THEMES.get(name, self.THEMES[self.UI_DEFAULT_THEME])
+
+    def _tc(self, looker, key: str) -> str:
+        """Theme color code lookup (primary/accent)."""
+        return self._theme(looker).get(key, "|g")
+
     def _wrap_ansi(self, text: str, width: int, indent: int = 0) -> str:
         """
         Wrap text to `width` while measuring length without ANSI codes.
@@ -171,20 +192,32 @@ class FusionRoom(Room):
             lines.append(cur)
         return "\n".join(lines)
 
-    def _rule(self, width: int, char: str = "─") -> str:
-        """Section rule. Use ASCII '-' for simple mode; box-drawing for fancy."""
-        return "|g" + (char * width) + "|n"
+    def _rule(self, looker, width: int, char: str = "─") -> str:
+        """Section rule using the active theme color."""
+        return self._tc(looker, "primary") + (char * width) + "|n"
 
-    def _title_box(self, title: str, width: int) -> str:
-        """Boxed header for fancy mode."""
+    def _title_box(self, looker, title: str, width: int) -> str:
+        """
+        Boxed header for fancy mode.
+        IMPORTANT: Re-apply theme color after the title text to avoid color bleed
+        if the title contains |n (e.g., from yellow (#id)).
+        """
+        color = self._tc(looker, "primary")
         inner = max(0, width - 2)
         vis = self._ansi_len(title)
         pad_l = max(0, (inner - vis) // 2)
         pad_r = max(0, inner - vis - pad_l)
-        top = "╔" + "═" * inner + "╗"
-        mid = "║" + " " * pad_l + title + " " * pad_r + "║"
-        bot = "╚" + "═" * inner + "╝"
-        return f"|g{top}|n\n|g{mid}|n\n|g{bot}|n"
+        top = f"{color}" + "╔" + "═" * inner + "╗" + "|n"
+        mid = (
+            f"{color}║|n"
+            + " " * pad_l
+            + title
+            + f"{color}"
+            + " " * pad_r
+            + "║|n"
+        )
+        bot = f"{color}" + "╚" + "═" * inner + "╝" + "|n"
+        return "\n".join([top, mid, bot])
 
     def _ui_mode(self, looker) -> str:
         """
@@ -220,12 +253,15 @@ class FusionRoom(Room):
         width = min(self._term_width(looker), self.WIDTH_DEFAULT)
         # Visual style per mode
         if ui_mode == "fancy":
-            rule = self._rule(width, char="─")
+            rule = self._rule(looker, width, char="─")
         else:
-            rule = self._rule(width, char="-")
+            rule = self._rule(looker, width, char="-")
 
         # Title (room name), builder sees dbref.
-        title = f"|g|h{self.key}|n" + (f" |y(#{self.id})|n" if is_builder else "")
+        title = (
+            f"{self._tc(looker,'primary')}|h{self.key}|n"
+            + (f" {self._tc(looker,'accent')}(#{self.id})|n" if is_builder else "")
+        )
 
         # Description (wrapped, ANSI-safe)
         desc = self.db.desc or self.default_description
@@ -233,7 +269,7 @@ class FusionRoom(Room):
 
         # Fancy gets a boxed header; others just the title line
         if ui_mode == "fancy":
-            header = self._title_box(title, width)
+            header = self._title_box(looker, title, width)
             output = [header, "", desc_wrapped]
         else:
             output = [title, "", desc_wrapped]
@@ -302,18 +338,18 @@ class FusionRoom(Room):
         box = []
         if ui_mode in ("fancy", "simple"):
             # Decorative headings
-            box.extend([rule, "|g  :Exits:|n"])
+            box.extend([rule, f"{self._tc(looker,'primary')}  :Exits:|n"])
             if exit_lines:
                 box.extend(exit_lines)
             else:
                 box.append(" " * self.PAD_LEFT + "|xNone|n")
             box.append(rule)
             if player_names:
-                box.append("|g  :Players:|n")
+                box.append(f"{self._tc(looker,'primary')}  :Players:|n")
                 box.append(self._wrap_ansi(", ".join(player_names), width, indent=self.PAD_LEFT))
                 box.append(rule)
             if npc_names:
-                box.append("|g  :Non-Player Characters:|n")
+                box.append(f"{self._tc(looker,'primary')}  :Non-Player Characters:|n")
                 box.append(self._wrap_ansi(", ".join(npc_names), width, indent=self.PAD_LEFT))
                 box.append(rule)
         else:
