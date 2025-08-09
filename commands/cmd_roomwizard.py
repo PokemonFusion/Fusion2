@@ -18,5 +18,5 @@ class CmdRoomWizard(Command):
             self.caller,
             room_wizard,
             startnode="node_start",
-            cmd_on_exit=True
+            cmd_on_exit="look",
         )

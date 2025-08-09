@@ -52,7 +52,8 @@ def node_buy(caller, raw_input=None):
         caller.msg("You can't afford that.")
         return node_buy(caller)
     caller.spend_money(cost)
-    room.db.store_inventory[item]["quantity"] -= amt
+    inv[item]["quantity"] = max(0, inv[item]["quantity"] - amt)
+    room.db.store_inventory = inv
     caller.add_item(item, amt)
     caller.msg(f"You purchase {amt} x {item} for ${cost}.")
     return node_buy(caller)
@@ -63,7 +64,7 @@ def node_sell(caller, raw_input=None):
     inv = room.db.store_inventory or {}
     if not raw_input:
         lines = ["|wYour inventory|n"]
-        for name, qty in caller.inventory.items():
+        for name, qty in getattr(caller, "inventory", {}).items():
             lines.append(f"  {name} x{qty}")
         lines.append("Enter '<item> <amount>' to sell or 'back'.")
         text = "\n".join(lines)
@@ -114,18 +115,33 @@ def node_edit(caller, raw_input=None):
         room.db.store_inventory = inv
         return node_start(caller)
     if cmd == "add" and len(parts) == 4:
-        item, price, qty = parts[1], int(parts[2]), int(parts[3])
+        item = parts[1]
+        try:
+            price, qty = int(parts[2]), int(parts[3])
+        except ValueError:
+            caller.msg("Price and quantity must be numbers.")
+            return node_edit(caller)
         inv[item] = {"price": price, "quantity": qty}
         caller.msg(f"Added {item}.")
     elif cmd == "price" and len(parts) == 3:
-        item, price = parts[1], int(parts[2])
+        item = parts[1]
+        try:
+            price = int(parts[2])
+        except ValueError:
+            caller.msg("Price must be a number.")
+            return node_edit(caller)
         if item in inv:
             inv[item]["price"] = price
             caller.msg("Price updated.")
         else:
             caller.msg("No such item.")
     elif cmd == "qty" and len(parts) == 3:
-        item, qty = parts[1], int(parts[2])
+        item = parts[1]
+        try:
+            qty = int(parts[2])
+        except ValueError:
+            caller.msg("Quantity must be a number.")
+            return node_edit(caller)
         if item in inv:
             inv[item]["quantity"] = qty
             caller.msg("Quantity updated.")

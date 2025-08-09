@@ -80,10 +80,10 @@ def test_pokestore_opens_menu():
     fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
     class FakeMenu:
         called = False
-        kwargs = None
-        def __init__(self, caller, mod, startnode="node_start", kwargs=None, cmd_on_exit=None):
+        start_kwargs = None
+        def __init__(self, caller, mod, startnode="node_start", start_kwargs=None, cmd_on_exit=None):
             FakeMenu.called = True
-            FakeMenu.kwargs = kwargs
+            FakeMenu.start_kwargs = start_kwargs
     fake_evmod.EnhancedEvMenu = FakeMenu
     sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
 

@@ -31,8 +31,8 @@ class EnhancedEvMenu(EvMenu):
         use_pokemon_style=True,
         show_footer=True,
         footer_prompt="Number",
-        kwargs=None,
-        **evkwargs,
+        start_kwargs=None,
+        **menu_kwargs,
     ):
         self.on_abort = on_abort
         self.invalid_message = invalid_message or _HELP_NO_OPTION_MATCH
@@ -43,18 +43,18 @@ class EnhancedEvMenu(EvMenu):
         self.show_footer = show_footer
         self.footer_prompt = footer_prompt
 
-        startnode_input = evkwargs.pop("startnode_input", "")
-        if kwargs:
+        startnode_input = menu_kwargs.pop("startnode_input", "")
+        if start_kwargs:
             if isinstance(startnode_input, (tuple, list)) and len(startnode_input) > 1:
                 raw, extra = startnode_input[:2]
                 if not isinstance(extra, dict):
                     extra = {}
-                extra.update(kwargs)
+                extra.update(start_kwargs)
                 startnode_input = (raw, extra)
             else:
-                startnode_input = (startnode_input, kwargs)
+                startnode_input = (startnode_input, start_kwargs)
 
-        super().__init__(*args, startnode_input=startnode_input, **evkwargs)
+        super().__init__(*args, startnode_input=startnode_input, **menu_kwargs)
 
     def parse_input(self, raw_string):
         """Custom input parsing supporting the ``_repeat`` target."""
@@ -148,11 +148,7 @@ class EnhancedEvMenu(EvMenu):
             _run_exec(default_opt)
             goto = default_opt.get("goto")
             if goto == "_repeat":
-                # repeat current node with cleared input
-                if self.auto_repeat_invalid:
-                    self.goto(None, "")
-                else:
-                    self.goto(None, "")
+                self.goto(None, "")
                 return
             try:
                 super().parse_input(raw_string)
@@ -233,8 +229,16 @@ class EnhancedEvMenu(EvMenu):
             prompt = self.footer_prompt
             if self.use_pokemon_style:
                 result += (
-                    f"\n\n|y== |g[Enter {prompt}] |w| 'q' to quit | 'h' for help|y ==|n"
+                    f"\n\n|y== |g[Enter {prompt}]"
+                    f"{' | |w\'q\' to quit' if self.auto_quit else ''}"
+                    f"{' | \'h\' for help' if self.auto_help else ''}|y ==|n"
                 )
             else:
-                result += f"\n\n[Type {prompt.lower()} or command. 'q' to quit.]"
+                hints = []
+                if self.auto_quit:
+                    hints.append("'q' to quit")
+                if self.auto_help:
+                    hints.append("'h' for help")
+                hint_text = f"; {' · '.join(hints)}" if hints else ""
+                result += f"\n\n[Type {prompt.lower()} or command{hint_text}]"
         return result

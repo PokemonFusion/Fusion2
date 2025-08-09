@@ -47,7 +47,7 @@ def node_start(caller, raw_input=None, **kwargs):
                 return
             mv = moves[idx]
 
-            def _callback(_caller, _):
+            def _callback(*_args, **_kwargs):
                 learn_next(idx + 1)
 
             learn_move(pokemon, mv, caller=caller, prompt=True, on_exit=_callback)

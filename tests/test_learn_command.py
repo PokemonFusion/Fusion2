@@ -32,11 +32,11 @@ def setup_modules():
 
     class FakeMenu:
         called = False
-        kwargs = None
+        start_kwargs = None
 
-        def __init__(self, caller, mod, startnode="node_start", kwargs=None, cmd_on_exit=None):
+        def __init__(self, caller, mod, startnode="node_start", start_kwargs=None, cmd_on_exit=None):
             FakeMenu.called = True
-            FakeMenu.kwargs = kwargs
+            FakeMenu.start_kwargs = start_kwargs
 
     fake_evmod.EnhancedEvMenu = FakeMenu
     sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
@@ -262,7 +262,7 @@ def test_learn_command_opens_menu():
     restore_modules(*origs[:-1])
 
     assert fake_menu.called
-    assert fake_menu.kwargs["pokemon"] is poke
+    assert fake_menu.start_kwargs["pokemon"] is poke
 
 
 def test_learn_lists_pending_when_no_args():

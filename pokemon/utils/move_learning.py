@@ -91,6 +91,6 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
         caller,
         learn_menu,
         startnode="node_start",
-        kwargs={"pokemon": pokemon, "move_name": move_name},
+        start_kwargs={"pokemon": pokemon, "move_name": move_name},
         cmd_on_exit=on_exit,
     )
