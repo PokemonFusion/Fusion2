@@ -51,6 +51,7 @@ class FusionRoom(Room):
     # -------- Layout configuration --------
     WIDTH_DEFAULT = 78
     PAD_LEFT = 2
+    UI_DEFAULT_MODE = "fancy"  # fancy | simple | sr
 
     def at_object_creation(self):
         super().at_object_creation()
@@ -170,8 +171,30 @@ class FusionRoom(Room):
             lines.append(cur)
         return "\n".join(lines)
 
-    def _rule(self, width: int) -> str:
-        return "|g" + "-" * width + "|n"
+    def _rule(self, width: int, char: str = "─") -> str:
+        """Section rule. Use ASCII '-' for simple mode; box-drawing for fancy."""
+        return "|g" + (char * width) + "|n"
+
+    def _title_box(self, title: str, width: int) -> str:
+        """Boxed header for fancy mode."""
+        inner = max(0, width - 2)
+        vis = self._ansi_len(title)
+        pad_l = max(0, (inner - vis) // 2)
+        pad_r = max(0, inner - vis - pad_l)
+        top = "╔" + "═" * inner + "╗"
+        mid = "║" + " " * pad_l + title + " " * pad_r + "║"
+        bot = "╚" + "═" * inner + "╝"
+        return f"|g{top}|n\n|g{mid}|n\n|g{bot}|n"
+
+    def _ui_mode(self, looker) -> str:
+        """
+        Player preference for look rendering.
+        Store per-player via:   <player>.db.ui_mode = "fancy"|"simple"|"sr"
+        """
+        mode = getattr(looker.db, "ui_mode", None)
+        if mode in ("fancy", "simple", "sr"):
+            return mode
+        return self.UI_DEFAULT_MODE
 
     def _color_exit_name(self, name: str) -> str:
         """Return exit name with hotkey parentheses highlighted."""
@@ -192,9 +215,14 @@ class FusionRoom(Room):
             return ""
 
         is_builder = looker.check_permstring("Builder")
+        ui_mode = self._ui_mode(looker)
 
         width = min(self._term_width(looker), self.WIDTH_DEFAULT)
-        rule = self._rule(width)
+        # Visual style per mode
+        if ui_mode == "fancy":
+            rule = self._rule(width, char="─")
+        else:
+            rule = self._rule(width, char="-")
 
         # Title (room name), builder sees dbref.
         title = f"|g|h{self.key}|n" + (f" |y(#{self.id})|n" if is_builder else "")
@@ -203,7 +231,12 @@ class FusionRoom(Room):
         desc = self.db.desc or self.default_description
         desc_wrapped = self._wrap_ansi(desc, width, indent=self.PAD_LEFT)
 
-        output = [title, "", desc_wrapped]
+        # Fancy gets a boxed header; others just the title line
+        if ui_mode == "fancy":
+            header = self._title_box(title, width)
+            output = [header, "", desc_wrapped]
+        else:
+            output = [title, "", desc_wrapped]
 
         # Weather (only if not 'clear')
         weather = (self.get_weather() or "").lower()
@@ -265,20 +298,53 @@ class FusionRoom(Room):
         player_names = [_fmt_char(p, "|w") for p in players]
         npc_names = [_fmt_char(n, "|y") for n in npcs]
 
-        box = [rule, "|g  :Exits:|n"]
-        if exit_lines:
-            box.extend(exit_lines)
+        # ----- Render sections depending on ui_mode -----
+        box = []
+        if ui_mode in ("fancy", "simple"):
+            # Decorative headings
+            box.extend([rule, "|g  :Exits:|n"])
+            if exit_lines:
+                box.extend(exit_lines)
+            else:
+                box.append(" " * self.PAD_LEFT + "|xNone|n")
+            box.append(rule)
+            if player_names:
+                box.append("|g  :Players:|n")
+                box.append(self._wrap_ansi(", ".join(player_names), width, indent=self.PAD_LEFT))
+                box.append(rule)
+            if npc_names:
+                box.append("|g  :Non-Player Characters:|n")
+                box.append(self._wrap_ansi(", ".join(npc_names), width, indent=self.PAD_LEFT))
+                box.append(rule)
         else:
-            box.append(" " * self.PAD_LEFT + "|xNone|n")
-        box.append(rule)
-        if player_names:
-            box.append("|g  :Players:|n")
-            box.append(self._wrap_ansi(", ".join(player_names), width, indent=self.PAD_LEFT))
-            box.append(rule)
-        if npc_names:
-            box.append("|g  :Non-Player Characters:|n")
-            box.append(self._wrap_ansi(", ".join(npc_names), width, indent=self.PAD_LEFT))
-            box.append(rule)
+            # Screen reader: no boxes, one item per line, explicit labels, minimal punctuation
+            box.append("Exits:")
+            if exit_lines:
+                # Rebuild exit lines without spacing tricks; one-per-line
+                for ex in prioritized + unprioritized:
+                    if ex.db.dark and not is_builder:
+                        continue
+                    n = ex.key
+                    flags = []
+                    if not ex.access(looker, "traverse"):
+                        flags.append("Locked")
+                    if ex.db.dark:
+                        flags.append("Dark")
+                    meta = f" #{ex.id}" if is_builder else ""
+                    flag_text = f" [{' '.join(flags)}]" if flags else ""
+                    box.append(f"- {n}{meta}{flag_text}")
+            else:
+                box.append("- None")
+            if player_names:
+                box.append("Players:")
+                for p in players:
+                    meta = f" #{p.id}" if is_builder else ""
+                    box.append(f"- {p.key}{meta}")
+            if npcs:
+                box.append("Non-Player Characters:")
+                for n in npcs:
+                    meta = f" #{n.id}" if is_builder else ""
+                    box.append(f"- {n.key}{meta}")
 
         if self.db.is_item_store:
             box.append(
@@ -289,8 +355,16 @@ class FusionRoom(Room):
                 "|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n"
             )
 
+        # Finalize output
         output.append("\n".join(box))
-        return "\n".join(output)
+        text = "\n".join(output)
+        if ui_mode == "sr":
+            # Remove color codes and box-drawing chars for screen readers
+            text = strip_ansi(text)
+            # Replace box-drawing remnants if any slipped through
+            text = text.replace("╔", "").replace("╗", "").replace("╚", "").replace("╝", "")
+            text = text.replace("║", "")
+        return text
     
     def _truncate_ansi(self, s: str, max_visible: int) -> str:
         """
