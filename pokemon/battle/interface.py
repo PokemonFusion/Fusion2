@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from evennia import search_object
 from utils.ansi import ansi
+from utils.battle_display import strip_ansi, fit_visible, pad_ansi
 
 from .state import BattleState
 
@@ -39,6 +40,11 @@ def notify_watchers(state: BattleState, message: str, room=None) -> None:
         if watcher.attributes.get("battle_ignore_notify"):
             continue
         watcher.msg(message)
+
+
+def format_turn_banner(turn: int) -> str:
+    """Return a simple banner for turn notifications."""
+    return f"╭─ Turn {turn} ─╮"
 
 
 def _party_icons(trainer) -> str:
@@ -101,14 +107,17 @@ def _active_info(trainer, *, show_numbers: bool = False) -> list[str]:
 
     mon = getattr(trainer, "active_pokemon", None)
     if not mon:
-        return ["No active Pokémon."]
+        line = pad_ansi(fit_visible("No active Pokémon.", 76), 76)
+        return [f"║ {line}║"]
 
     name = getattr(mon, "name", "Unknown")
     level = getattr(mon, "level", "?")
     bar, disp = _hp_bar(mon, show_numbers=show_numbers, width=36)
     status = _format_status(getattr(mon, "status", ""))
     status_part = f" [{status}]" if status else ""
-    return [f"{name} Lv{level}", f"HP: {bar} {disp}{status_part}"]
+    name_line = pad_ansi(fit_visible(f"{name} Lv{level}", 76), 76)
+    hp_line = pad_ansi(fit_visible(f"HP: {bar} {disp}{status_part}", 76), 76)
+    return [f"║ {name_line}║", f"║ {hp_line}║"]
 
 
 def display_battle_interface(
@@ -124,7 +133,8 @@ def display_battle_interface(
     lines.append(_title_bar(trainer.name, opponent.name))
     t_party = _party_icons(trainer)
     o_party = _party_icons(opponent)
-    lines.append(f"║ {t_party:<36}  {o_party:>36} ║")
+    line = pad_ansi(fit_visible(f"{t_party:<36}  {o_party:>36}", 76), 76)
+    lines.append(f"║ {line}║")
     lines.append(_legend_line())
 
     # Active mons (your existing _active_info is reused)
@@ -150,21 +160,24 @@ def display_battle_interface(
     # Optional footer (who we’re waiting on)
     if waiting_on:
         lines.append("╟" + "─" * 76 + "╢")
-        lines.append(f"║ Waiting on: {waiting_on:<64}║")
+        who = getattr(waiting_on, "name", waiting_on)
+        wait_line = pad_ansi(fit_visible(f"Waiting on: {who}", 76), 76)
+        lines.append(f"║ {wait_line}║")
 
     lines.append("╚" + "═" * 76 + "╝")
     return "\n".join(lines)
 
 def _title_bar(left: str, right: str, width: int = 78) -> str:
-    center = f" {left} VS {right}"
-    pad = max(0, width - len(center))
+    center = fit_visible(f" {left} VS {right}", width - 2)
+    pad = max(0, width - 2 - len(strip_ansi(center)))
     left_d = pad // 2
     right_d = pad - left_d
-    return "╔" + "═" * left_d + center + "═" * right_d + "╗" 
+    return "╔" + "═" * left_d + center + "═" * right_d + "╗"
 
 def _meta_line(weather: str, field: str, rnd) -> str:
     meta = f"Weather: {weather or '-'}   Field: {field or '-'}   Round: {rnd}"
-    return f"║ {meta:<76}║"
+    meta = pad_ansi(fit_visible(meta, 76), 76)
+    return f"║ {meta}║"
 
 def _legend_line() -> str:
     return "║ O=OK  S=Status  X=Fainted".ljust(77) + "║"
@@ -189,5 +202,6 @@ def _action_queue(battle_state, *, width: int = 78) -> list[str]:
             s = f"{pos}: Attempting to run"
         else:
             s = f"{pos}: …"
-        lines.append(f"║   {s:<73}║")
+        s = pad_ansi(fit_visible(s, 73), 73)
+        lines.append(f"║   {s}║")
     return lines

@@ -62,5 +62,5 @@ def test_waiting_message():
     t_b = DummyTrainer("Gary", mon_b)
     st = BattleState()
     out = display_battle_interface(t_a, t_b, st, viewer_team="A", waiting_on=mon_b)
-    assert "Waiting on Bulba" in out
+    assert "Waiting on: Bulba" in out
     assert "What will" not in out

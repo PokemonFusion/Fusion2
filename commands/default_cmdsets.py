@@ -73,6 +73,7 @@ from commands.cmd_adminbattle import (
     CmdRestoreBattle,
     CmdBattleInfo,
     CmdRetryTurn,
+    CmdUiPreview,
 )
 from commands.cmd_battle import (
     CmdBattleAttack,
@@ -193,6 +194,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRestoreBattle())
         self.add(CmdBattleInfo())
         self.add(CmdRetryTurn())
+        self.add(CmdUiPreview())
         self.add(CmdBattleAttack())
         self.add(CmdBattleSwitch())
         self.add(CmdBattleItem())

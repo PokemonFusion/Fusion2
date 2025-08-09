@@ -38,12 +38,16 @@ try:
         notify_watchers,
         remove_watcher,
         display_battle_interface,
+        format_turn_banner,
     )
 except Exception:  # pragma: no cover - allow partial stubs in tests
     from .interface import add_watcher, notify_watchers, remove_watcher
 
     def display_battle_interface(*_a, **_k):
         return ""
+
+    def format_turn_banner(turn: int) -> str:
+        return f"Turn {turn}"
 from .handler import battle_handler
 from .storage import BattleDataWrapper
 from ..generation import generate_pokemon
@@ -994,6 +998,12 @@ class BattleSession:
     def prompt_next_turn(self) -> None:
         """Prompt the player to issue a command for the next turn."""
         self._set_player_control(True)
+        if self.state and self.battle:
+            notify_watchers(
+                self.state,
+                format_turn_banner(getattr(self.battle, "turn_count", 1)),
+                room=self.room,
+            )
         if self.captainA and self.state and self.captainB is not None:
             try:
                 iface_a = display_battle_interface(
@@ -1030,7 +1040,12 @@ class BattleSession:
         """Advance the battle by one turn."""
         if not self.battle:
             return
-
+        if self.state:
+            notify_watchers(
+                self.state,
+                format_turn_banner(getattr(self.battle, "turn_count", 1)),
+                room=self.room,
+            )
         log_info(f"Running turn for battle {self.battle_id}")
         self._set_player_control(False)
         try:
@@ -1047,6 +1062,12 @@ class BattleSession:
             log_info(
                 f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
             )
+            if self.state:
+                notify_watchers(
+                    self.state,
+                    format_turn_banner(getattr(self.battle, "turn_count", 1)),
+                    room=self.room,
+                )
         if self.state:
             self.state.declare.clear()
         if self.data:
