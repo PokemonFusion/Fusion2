@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from evennia import Command
 from evennia.utils.evmenu import get_input
+import re
 
 NOT_IN_BATTLE_MSG = "You are not currently in battle."
 
@@ -51,7 +52,7 @@ class CmdBattleAttack(Command):
     def parse(self):
         parts = self.args.split()
         self.move_name = parts[0] if parts else ""
-        self.target_name = parts[1] if len(parts) > 1 else ""
+        self.target_token = parts[1] if len(parts) > 1 else ""
 
     def func(self):
         if not getattr(self.caller.db, "battle_control", False):
@@ -147,25 +148,38 @@ class CmdBattleAttack(Command):
                 _prompt_move()
                 return
 
-            # Only opponents are valid targets. Use ``opponents_of`` when
-            # available to respect team assignments. Fall back to excluding the
-            # caller's own participant if the battle implementation does not
-            # provide this helper (as seen in some tests or minimal engines).
             if hasattr(inst.battle, "opponents_of"):
                 targets = inst.battle.opponents_of(participant)
             else:
                 targets = [p for p in inst.battle.participants if p is not participant]
+            pos_map = {}
+            team = "A"
+            if hasattr(inst, "_get_position_for_trainer"):
+                pos_name, _ = inst._get_position_for_trainer(self.caller)
+                if pos_name and pos_name.startswith("B"):
+                    team = "B"
+            opp_team = "B" if team == "A" else "A"
+            for idx, part in enumerate(targets, 1):
+                pos_map[f"{opp_team}{idx}"] = part
             target = None
-            if len(targets) == 1:
-                target = targets[0]
-            elif self.target_name:
-                for part in targets:
-                    if part.name.lower().startswith(self.target_name.lower()):
-                        target = part
-                        break
-            if target is None:
-                names = ", ".join(p.name for p in targets)
-                self.caller.msg(f"Valid targets: {names}")
+            target_pos = ""
+            if len(pos_map) == 1 and not self.target_token:
+                target_pos, target = next(iter(pos_map.items()))
+            elif self.target_token:
+                token = self.target_token.upper()
+                if re.fullmatch(r"[AB]\d+", token):
+                    target_pos = token
+                    target = pos_map.get(token)
+                    if target is None:
+                        self.caller.msg(f"Valid targets: {', '.join(pos_map.keys())}")
+                        return
+                else:
+                    self.caller.msg(
+                        "Please target by position (A1/B1/...). Names can change when switching."
+                    )
+                    return
+            else:
+                self.caller.msg(f"Valid targets: {', '.join(pos_map.keys())}")
                 return
 
             move_entry = MOVEDEX.get(_normalize_key(move["name"]))
@@ -259,7 +273,7 @@ class CmdBattleAttack(Command):
             self.caller.msg(f"You prepare to use {move_obj.name}.")
             if hasattr(inst, "queue_move"):
                 try:
-                    inst.queue_move(move_obj.name, caller=self.caller)
+                    inst.queue_move(move_obj.name, target_pos, caller=self.caller)
                 except Exception:
                     pass
             elif hasattr(inst, "maybe_run_turn"):

@@ -33,6 +33,14 @@ def pad_ansi(s: str, width: int) -> str:
     visible = len(strip_ansi(s))
     return s + " " * max(0, width - visible)
 
+def fit_visible(text: str, maxw: int) -> str:
+    """Truncate `text` to at most `maxw` visible characters."""
+    vis = strip_ansi(text)
+    if len(vis) <= maxw:
+        return text
+    short = vis[: max(0, maxw - 1)] + "…"
+    return short
+
 def calculate_box_width(moves: dict, min_width: int = 38) -> int:
     """
     Determine the minimum box width needed to fit the longest
