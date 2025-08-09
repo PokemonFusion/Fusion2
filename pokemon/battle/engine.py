@@ -534,6 +534,7 @@ class Battle:
         self.dispatcher = EventDispatcher()
         from .battledata import Field
         self.field = Field()
+        self.debug: bool = False
 
     # ------------------------------------------------------------------
     # Battle initialisation helpers

@@ -110,6 +110,7 @@ from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
 from commands.cmdmapmove import CmdMapMove
 from commands.cmdstartmap import CmdStartMap
 from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
+from commands.cmd_debugbattle import CmdDebugBattle
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -185,6 +186,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdLeaveHunt())
         self.add(CmdWatchBattle())
         self.add(CmdUnwatchBattle())
+        self.add(CmdDebugBattle())
         self.add(CmdWatch())
         self.add(CmdUnwatch())
         self.add(CmdAbortBattle())

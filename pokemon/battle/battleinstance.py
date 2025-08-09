@@ -228,6 +228,7 @@ class BattleLogic:
         self.battle = battle
         self.data = data
         self.state = state
+        battle.debug = getattr(state, "debug", False)
 
     def to_dict(self):
         return {
@@ -283,6 +284,7 @@ class BattleLogic:
             btype = BattleType.WILD
         battle = Battle(btype, [part_a, part_b])
         battle.turn_count = data.battle.turn
+        battle.debug = getattr(state, "debug", False)
         return cls(battle, data, state)
 
 

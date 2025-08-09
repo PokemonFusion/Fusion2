@@ -49,10 +49,17 @@ def critical_hit_check() -> bool:
     return percent_check(1 / 24)
 
 
-def base_damage(level: int, power: int, atk: int, defense: int) -> int:
-    dmg = floor(floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50) + 2
+def base_damage(level: int, power: int, atk: int, defense: int, *, return_roll: bool = False):
+    """Return base damage and optionally the random roll used."""
+
+    dmg = floor(
+        floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50
+    ) + 2
     rand_mod = random.randint(85, 100) / 100.0
-    return floor(dmg * rand_mod)
+    result = floor(dmg * rand_mod)
+    if return_roll:
+        return result, rand_mod
+    return result
 
 
 def stab_multiplier(attacker: Pokemon, move: Move) -> float:
@@ -203,7 +210,12 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
         level = getattr(attacker, "level", None)
         if level is None:
             level = getattr(attacker, "num", 1)
-        dmg = base_damage(level, power, atk_stat, def_stat)
+        dmg, rand_mod = base_damage(level, power, atk_stat, def_stat, return_roll=True)
+        result.debug.setdefault("level", []).append(level)
+        result.debug.setdefault("power", []).append(power)
+        result.debug.setdefault("attack", []).append(atk_stat)
+        result.debug.setdefault("defense", []).append(def_stat)
+        result.debug.setdefault("rand", []).append(rand_mod)
         if battle is not None:
             field = getattr(battle, "field", None)
             if field:
@@ -217,8 +229,11 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
                             wmult = cb(move=move)
                         if isinstance(wmult, (int, float)):
                             dmg = floor(dmg * wmult)
-        dmg = floor(dmg * stab_multiplier(attacker, move))
+        stab = stab_multiplier(attacker, move)
+        dmg = floor(dmg * stab)
+        result.debug.setdefault("stab", []).append(stab)
         eff = type_effectiveness(target, move)
+        result.debug.setdefault("type_effectiveness", []).append(eff)
         temp_eff = eff
         if temp_eff > 1:
             while temp_eff > 1:
@@ -371,7 +386,33 @@ def apply_damage(
             except Exception:  # pragma: no cover - simple data containers
                 pass
 
+    raw_damages = result.debug.get("damage", [])
     result.debug["damage"] = [dmg]
+    if battle is not None and getattr(battle, "debug", False):
+        levels = result.debug.get("level", [])
+        powers = result.debug.get("power", [])
+        atks = result.debug.get("attack", [])
+        defs = result.debug.get("defense", [])
+        stabs = result.debug.get("stab", [])
+        effs = result.debug.get("type_effectiveness", [])
+        rolls = result.debug.get("rand", [])
+        crits = result.debug.get("critical", [])
+        for idx, dmg_val in enumerate(raw_damages):
+            battle.log_action(
+                "[DEBUG] lvl=%s pow=%s atk=%s def=%s stab=%.2f eff=%.2f roll=%.2f crit=%s dmg=%s"
+                % (
+                    levels[idx] if idx < len(levels) else "?",
+                    powers[idx] if idx < len(powers) else "?",
+                    atks[idx] if idx < len(atks) else "?",
+                    defs[idx] if idx < len(defs) else "?",
+                    stabs[idx] if idx < len(stabs) else 1.0,
+                    effs[idx] if idx < len(effs) else 1.0,
+                    rolls[idx] if idx < len(rolls) else 1.0,
+                    crits[idx] if idx < len(crits) else False,
+                    dmg_val,
+                )
+            )
+        battle.log_action(f"[DEBUG] total damage={dmg}")
     return result
 
 

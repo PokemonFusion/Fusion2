@@ -29,6 +29,7 @@ class BattleState:
     txp: bool = True
     four_moves: bool = False
     pokemon_control: Dict[str, str] = field(default_factory=dict)
+    debug: bool = False
 
     def to_dict(self) -> Dict:
         """Return a serialisable representation of this state."""
