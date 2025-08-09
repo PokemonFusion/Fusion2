@@ -113,6 +113,7 @@ from commands.cmdstartmap import CmdStartMap
 from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
 from commands.cmd_debugbattle import CmdDebugBattle
 from commands.cmd_uimode import CmdUiMode
+from commands.cmd_uitheme import CmdUiTheme
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -153,6 +154,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGlance())
         self.add(CmdOOC())
         self.add(CmdUiMode())
+        self.add(CmdUiTheme())
 
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
