@@ -168,7 +168,7 @@ def test_battleattack_lists_moves_and_targets():
     cmd.parse()
     cmd.func()
     joined = '\n'.join(caller.msgs)
-    assert 'Pick an attack' in joined
+    assert 'Choose a move' in joined
     assert 'tackle' in joined.lower()
 
     cb = caller.ndb.last_prompt_callback
@@ -281,6 +281,7 @@ def test_battleattack_requires_target_when_multiple():
     restore_modules(orig_evennia, orig_battle, orig_bi)
     assert player.pending_action is None
     assert 'Valid targets' in caller.msgs[-1]
+    assert 'B1' in caller.msgs[-1]
 
 
 def test_battleattack_falls_back_to_move_list():

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from evennia import search_object
 from utils.ansi import ansi
+from utils.battle_display import strip_ansi, fit_visible, pad_ansi
 
 from .state import BattleState
 
@@ -41,6 +42,11 @@ def notify_watchers(state: BattleState, message: str, room=None) -> None:
         watcher.msg(message)
 
 
+def format_turn_banner(turn: int) -> str:
+    """Return a simple banner for turn notifications."""
+    return f"╭─ Turn {turn} ─╮"
+
+
 def _party_icons(trainer) -> str:
     """Return party status icons for a trainer."""
     icons = []
@@ -61,26 +67,20 @@ def _party_icons(trainer) -> str:
     return "[" + " ".join(icons) + "]"
 
 
-def _hp_bar(mon, show_numbers: bool = False) -> tuple[str, str]:
-    """Return a coloured HP bar and percent/number display."""
-
+def _hp_bar(mon, show_numbers: bool = False, width: int = 40) -> tuple[str, str]:
     hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
     max_hp = getattr(mon, "max_hp", hp or getattr(mon, "max_hp", 1)) or 1
     ratio = max(0.0, min(1.0, hp / max_hp))
-    filled = int(round(ratio * 40))
-    bar = "█" * filled + "░" * (40 - filled)
+    filled = int(round(ratio * width))
+    bar = "█" * filled + "░" * (width - filled)
     if ratio > 0.5:
         bar = ansi.GREEN(bar)
     elif ratio > 0.25:
         bar = ansi.YELLOW(bar)
     else:
         bar = ansi.RED(bar)
-
     pct = int(round(ratio * 100))
-    if show_numbers:
-        display = f"{hp}/{max_hp} ({pct}%)"
-    else:
-        display = f"{pct}%"
+    display = f"{hp}/{max_hp} ({pct}%)" if show_numbers else f"{pct}%"
     return bar, display
 
 
@@ -107,14 +107,17 @@ def _active_info(trainer, *, show_numbers: bool = False) -> list[str]:
 
     mon = getattr(trainer, "active_pokemon", None)
     if not mon:
-        return ["No active Pokémon."]
+        line = pad_ansi(fit_visible("No active Pokémon.", 76), 76)
+        return [f"║ {line}║"]
 
     name = getattr(mon, "name", "Unknown")
     level = getattr(mon, "level", "?")
-    bar, disp = _hp_bar(mon, show_numbers=show_numbers)
+    bar, disp = _hp_bar(mon, show_numbers=show_numbers, width=36)
     status = _format_status(getattr(mon, "status", ""))
     status_part = f" [{status}]" if status else ""
-    return [f"{name} Lv{level}", f"HP: {bar} {disp}{status_part}"]
+    name_line = pad_ansi(fit_visible(f"{name} Lv{level}", 76), 76)
+    hp_line = pad_ansi(fit_visible(f"HP: {bar} {disp}{status_part}", 76), 76)
+    return [f"║ {name_line}║", f"║ {hp_line}║"]
 
 
 def display_battle_interface(
@@ -122,49 +125,83 @@ def display_battle_interface(
     opponent,
     battle_state,
     *,
-    viewer_team: str | None = None,
+    viewer_team=None,
     waiting_on=None,
 ) -> str:
     """Return a formatted battle interface string."""
-
+    lines = []
+    lines.append(_title_bar(trainer.name, opponent.name))
     t_party = _party_icons(trainer)
     o_party = _party_icons(opponent)
+    line = pad_ansi(fit_visible(f"{t_party:<36}  {o_party:>36}", 76), 76)
+    lines.append(f"║ {line}║")
+    lines.append(_legend_line())
 
-    lines = []
-    header = f"{trainer.name} VS {opponent.name}"
-    lines.append(header.center(78))
-    lines.append(f"{t_party:<38}{o_party:>38}")
-    lines.append("")
-
+    # Active mons (your existing _active_info is reused)
+    lines.append("╟" + "─" * 76 + "╢")
     show_a = viewer_team == "A"
     show_b = viewer_team == "B"
-
     for line in _active_info(trainer, show_numbers=show_a):
         lines.append(line)
     for line in _active_info(opponent, show_numbers=show_b):
         lines.append(line)
 
-    lines.append("")
-    weather = getattr(battle_state, "weather", "-")
-    field = getattr(battle_state, "field", "-")
-    rnd = getattr(battle_state, "round", getattr(battle_state, "turn", "?"))
-    lines.append(f"Weather: {weather}    Field: {field}    Round: {rnd}")
+    # Meta row (Weather/Field/Round)
+    lines.append(_meta_line(
+        getattr(battle_state, "weather", getattr(battle_state, "roomweather", "-")),
+        getattr(battle_state, "field", "-"),
+        getattr(battle_state, "round", getattr(battle_state, "turn", "?")),
+    ))
 
-    mon = getattr(trainer, "active_pokemon", None)
-    lines.append("")
-    if waiting_on is not None:
-        w_name = getattr(waiting_on, "name", str(waiting_on))
-        lines.append(f"Waiting on {w_name}...")
-    else:
-        active_name = getattr(mon, "name", "Pokémon") if mon else "Pokémon"
-        lines.append(f"What will {active_name} do?")
-        moves = getattr(mon, "moves", []) if mon else []
-        for idx in range(4):
-            if idx < len(moves):
-                mname = getattr(moves[idx], "name", str(moves[idx]))
-            else:
-                mname = "-"
-            lines.append(f"{idx + 1}) {mname}")
 
-        lines.append("+switch   +item   +flee")
+    # Action queue for spectators (from state.declare)
+    lines.extend(_action_queue(battle_state))
+
+    # Optional footer (who we’re waiting on)
+    if waiting_on:
+        lines.append("╟" + "─" * 76 + "╢")
+        who = getattr(waiting_on, "name", waiting_on)
+        wait_line = pad_ansi(fit_visible(f"Waiting on: {who}", 76), 76)
+        lines.append(f"║ {wait_line}║")
+
+    lines.append("╚" + "═" * 76 + "╝")
     return "\n".join(lines)
+
+def _title_bar(left: str, right: str, width: int = 78) -> str:
+    center = fit_visible(f" {left} VS {right}", width - 2)
+    pad = max(0, width - 2 - len(strip_ansi(center)))
+    left_d = pad // 2
+    right_d = pad - left_d
+    return "╔" + "═" * left_d + center + "═" * right_d + "╗"
+
+def _meta_line(weather: str, field: str, rnd) -> str:
+    meta = f"Weather: {weather or '-'}   Field: {field or '-'}   Round: {rnd}"
+    meta = pad_ansi(fit_visible(meta, 76), 76)
+    return f"║ {meta}║"
+
+def _legend_line() -> str:
+    return "║ O=OK  S=Status  X=Fainted".ljust(77) + "║"
+
+def _action_queue(battle_state, *, width: int = 78) -> list[str]:
+    lines = []
+    decl = getattr(battle_state, "declare", {}) or {}
+    if not decl:
+        return lines
+    lines.append("╟" + "─" * (width - 2) + "╢")
+    lines.append("║ Declared actions:".ljust(77) + "║")
+    # Render sorted by position key so A1, B1, A2, B2…
+    for pos in sorted(decl.keys()):
+        info = decl[pos]
+        if "move" in info:
+            s = f"{pos}: {info['move']} → {info.get('target','?')}"
+        elif "switch" in info:
+            s = f"{pos}: Switch → {info['switch']}"
+        elif "item" in info:
+            s = f"{pos}: Item → {info['item']}"
+        elif "run" in info:
+            s = f"{pos}: Attempting to run"
+        else:
+            s = f"{pos}: …"
+        s = pad_ansi(fit_visible(s, 73), 73)
+        lines.append(f"║   {s}║")
+    return lines

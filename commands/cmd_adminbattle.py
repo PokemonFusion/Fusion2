@@ -7,6 +7,9 @@ from pokemon.battle.battleinstance import BattleSession
 from pokemon.battle.storage import BattleDataWrapper
 
 from pokemon.battle.handler import battle_handler
+from pokemon.battle.interface import display_battle_interface
+from utils.battle_display import render_move_gui
+from dataclasses import dataclass, field as dc_field
 
 
 class CmdAbortBattle(Command):
@@ -171,3 +174,99 @@ class CmdRetryTurn(Command):
 
         inst.run_turn()
         self.caller.msg(f"Turn retried for battle {inst.battle_id}.")
+
+
+class CmdUiPreview(Command):
+    """Admin: preview the battle UI with mock data."""
+
+    key = "+ui/preview"
+    aliases = ["+uiprev"]
+    locks = "cmd:perm(Builder)"
+    help_category = "Admin"
+
+    def parse(self):
+        self.switches = {s.lower() for s in self.switches}
+        self.viewer_team = None
+        self.waiting_on = None
+        args = self.args.strip()
+        if "/team " in args:
+            part = args.split("/team ", 1)[1]
+            val = (part.split(None, 1)[0] or "").upper()
+            if val in ("A", "B"):
+                self.viewer_team = val
+        if "/waiting " in args:
+            self.waiting_on = args.split("/waiting ", 1)[1].strip() or None
+
+    def func(self):
+        caller = self.caller
+        state = make_mock_battle_state()
+        trainerA, trainerB = state.trainerA, state.trainerB
+        ui = display_battle_interface(
+            trainerA,
+            trainerB,
+            state,
+            viewer_team=self.viewer_team,
+            waiting_on=self.waiting_on,
+        )
+        caller.msg(ui)
+        view_team = self.viewer_team or "A"
+        active = trainerA.active_pokemon if view_team == "A" else trainerB.active_pokemon
+        mv = build_moves_dict_from_active(active)
+        gui = render_move_gui(mv)
+        caller.msg("\n" + gui)
+
+
+@dataclass
+class MockPokemon:
+    name: str
+    level: int = 5
+    hp: int = 20
+    max_hp: int = 20
+    status: str = ""
+    moves: list = dc_field(default_factory=list)
+    is_fainted: bool = False
+
+
+@dataclass
+class MockTrainer:
+    name: str
+    team: list
+    active_pokemon: MockPokemon
+
+
+@dataclass
+class MockBattleState:
+    trainerA: MockTrainer
+    trainerB: MockTrainer
+    weather: str = "Hail"
+    field: str = "Electric Terrain"
+    round: int = 5
+    declare: dict = dc_field(default_factory=dict)
+    watchers: set = dc_field(default_factory=set)
+
+
+def make_mock_battle_state() -> MockBattleState:
+    move_a = {"name": "Tackle", "type": "Normal", "category": "Physical", "pp": (35, 35), "power": 40, "accuracy": 100}
+    move_b = {"name": "Ember", "type": "Fire", "category": "Special", "pp": (25, 25), "power": 40, "accuracy": 100}
+    mon_a = MockPokemon(name="Eevee", hp=39, max_hp=55, moves=[move_a])
+    mon_b = MockPokemon(name="Charmander", hp=39, max_hp=39, moves=[move_b])
+    trainerA = MockTrainer(name="Red", team=[mon_a], active_pokemon=mon_a)
+    trainerB = MockTrainer(name="Blue", team=[mon_b], active_pokemon=mon_b)
+    state = MockBattleState(trainerA=trainerA, trainerB=trainerB)
+    state.declare = {"A1": {"move": "Tackle", "target": "B1"}, "B1": {"move": "Ember", "target": "A1"}}
+    return state
+
+
+def build_moves_dict_from_active(active) -> dict:
+    letters = ["A", "B", "C", "D"]
+    moves = {}
+    for move, letter in zip(getattr(active, "moves", [])[:4], letters):
+        moves[letter] = {
+            "name": move.get("name", "???"),
+            "type": move.get("type", "Normal"),
+            "category": move.get("category", "Status"),
+            "pp": move.get("pp", (0, 0)),
+            "power": move.get("power", 0),
+            "accuracy": move.get("accuracy", 100),
+        }
+    return moves

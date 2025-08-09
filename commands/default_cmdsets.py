@@ -73,6 +73,7 @@ from commands.cmd_adminbattle import (
     CmdRestoreBattle,
     CmdBattleInfo,
     CmdRetryTurn,
+    CmdUiPreview,
 )
 from commands.cmd_battle import (
     CmdBattleAttack,
@@ -111,6 +112,8 @@ from commands.cmdmapmove import CmdMapMove
 from commands.cmdstartmap import CmdStartMap
 from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
 from commands.cmd_debugbattle import CmdDebugBattle
+from commands.cmd_uimode import CmdUiMode
+from commands.cmd_uitheme import CmdUiTheme
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -150,6 +153,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdSpoof())
         self.add(CmdGlance())
         self.add(CmdOOC())
+        self.add(CmdUiMode())
+        self.add(CmdUiTheme())
 
         # Add Pokémon commands
         self.add(CmdShowPokemonOnUser())
@@ -193,6 +198,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRestoreBattle())
         self.add(CmdBattleInfo())
         self.add(CmdRetryTurn())
+        self.add(CmdUiPreview())
         self.add(CmdBattleAttack())
         self.add(CmdBattleSwitch())
         self.add(CmdBattleItem())

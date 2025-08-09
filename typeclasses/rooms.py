@@ -7,8 +7,13 @@ Rooms are simple containers that has no location of their own.
 
 from evennia.objects.objects import DefaultRoom
 import random
-import textwrap
 import re
+import shutil
+try:
+    from evennia.utils.ansi import strip_ansi
+except Exception:  # pragma: no cover - fallback if Evennia not available
+    def strip_ansi(value: str) -> str:
+        return value
 from utils.ansi import ansi
 from pokemon.battle.battleinstance import BattleSession
 
@@ -42,6 +47,22 @@ class Room(ObjectParent, DefaultRoom):
 
 class FusionRoom(Room):
     """Room with support for hunting and shop flags."""
+
+    # -------- Layout configuration --------
+    WIDTH_DEFAULT = 78
+    PAD_LEFT = 2
+    UI_DEFAULT_MODE = "fancy"  # fancy | simple | sr
+    # Theme (color) configuration
+    UI_DEFAULT_THEME = "green"  # name of theme
+    THEMES = {
+        # primary = frame/section headings, accent = ids or small notes
+        "green": {"primary": "|g", "accent": "|y"},
+        "blue": {"primary": "|b", "accent": "|y"},
+        "red": {"primary": "|r", "accent": "|y"},
+        "magenta": {"primary": "|m", "accent": "|y"},
+        "cyan": {"primary": "|c", "accent": "|y"},
+        "white": {"primary": "|w", "accent": "|y"},
+    }
 
     def at_object_creation(self):
         super().at_object_creation()
@@ -119,55 +140,144 @@ class FusionRoom(Room):
     def set_weather(self, weather: str) -> None:
         """Set the room's weather."""
         self.db.weather = str(weather).lower()
+    # ---------- ANSI + width helpers ----------
+    def _term_width(self, looker) -> int:
+        """
+        Determine target render width for wrapping/alignment.
+        Uses a stored client width if available; otherwise system fallback.
+        Clamps to a reasonable range for readability.
+        """
+        try:
+            cols = getattr(looker.ndb, "cols", None) or shutil.get_terminal_size((80, 25)).columns
+        except Exception:
+            cols = self.WIDTH_DEFAULT + 2
+        return max(60, min(int(cols) - 2, 100))
+
+    def _ansi_len(self, s: str) -> int:
+        return len(strip_ansi(s or ""))
+
+    # ---------- Theme helpers ----------
+    def _theme(self, looker):
+        """Return active theme dict for this viewer."""
+        name = getattr(looker.db, "ui_theme", None) or self.UI_DEFAULT_THEME
+        return self.THEMES.get(name, self.THEMES[self.UI_DEFAULT_THEME])
+
+    def _tc(self, looker, key: str) -> str:
+        """Theme color code lookup (primary/accent)."""
+        return self._theme(looker).get(key, "|g")
+
+    def _wrap_ansi(self, text: str, width: int, indent: int = 0) -> str:
+        """
+        Wrap text to `width` while measuring length without ANSI codes.
+        Preserves ANSI color in the output.
+        """
+        lines = []
+        pad = " " * indent
+        for raw in (text or "").splitlines():
+            raw = raw.rstrip()
+            if not raw:
+                lines.append("")
+                continue
+            words = raw.split(" ")
+            cur = pad
+            cur_len = self._ansi_len(cur)
+            for w in words:
+                add = (w if cur.strip() == "" else " " + w)
+                if cur_len + self._ansi_len(add) > width:
+                    lines.append(cur)
+                    cur = pad + w
+                else:
+                    cur += add
+                cur_len = self._ansi_len(cur)
+            lines.append(cur)
+        return "\n".join(lines)
+
+    def _rule(self, looker, width: int, char: str = "─") -> str:
+        """Section rule using the active theme color."""
+        return self._tc(looker, "primary") + (char * width) + "|n"
+
+    def _title_box(self, looker, title: str, width: int) -> str:
+        """
+        Boxed header for fancy mode.
+        IMPORTANT: Re-apply theme color after the title text to avoid color bleed
+        if the title contains |n (e.g., from yellow (#id)).
+        """
+        color = self._tc(looker, "primary")
+        inner = max(0, width - 2)
+        vis = self._ansi_len(title)
+        pad_l = max(0, (inner - vis) // 2)
+        pad_r = max(0, inner - vis - pad_l)
+        top = f"{color}" + "╔" + "═" * inner + "╗" + "|n"
+        mid = (
+            f"{color}║|n"
+            + " " * pad_l
+            + title
+            + f"{color}"
+            + " " * pad_r
+            + "║|n"
+        )
+        bot = f"{color}" + "╚" + "═" * inner + "╝" + "|n"
+        return "\n".join([top, mid, bot])
+
+    def _ui_mode(self, looker) -> str:
+        """
+        Player preference for look rendering.
+        Store per-player via:   <player>.db.ui_mode = "fancy"|"simple"|"sr"
+        """
+        mode = getattr(looker.db, "ui_mode", None)
+        if mode in ("fancy", "simple", "sr"):
+            return mode
+        return self.UI_DEFAULT_MODE
 
     def _color_exit_name(self, name: str) -> str:
         """Return exit name with hotkey parentheses highlighted."""
         if not name:
-            return "|c|n"
-
+            return ""
         def repl(match: re.Match) -> str:
             inner = match.group(1)
             return f"|c(|w{inner}|c)"
-
         colored = re.sub(r"\(([^)]*)\)", repl, name)
         return f"|c{colored}|n"
 
     # ------------------------------------------------------------------
     # Look/appearance helpers
     # ------------------------------------------------------------------
-
-    BOX_LINE = "|g" + "-" * 76 + "|n"
-
     def return_appearance(self, looker, **kwargs):
         """Return the look description for this room."""
         if not looker:
             return ""
 
         is_builder = looker.check_permstring("Builder")
+        ui_mode = self._ui_mode(looker)
 
-        # Title of the room for display. Show the room name in green and bold.
-        title = f"|g|h{self.key}|n"
-        if is_builder:
-            title += f" |y(#{self.id})|n"
+        width = min(self._term_width(looker), self.WIDTH_DEFAULT)
+        # Visual style per mode
+        if ui_mode == "fancy":
+            rule = self._rule(looker, width, char="─")
+        else:
+            rule = self._rule(looker, width, char="-")
 
+        # Title (room name), builder sees dbref.
+        title = (
+            f"{self._tc(looker,'primary')}|h{self.key}|n"
+            + (f" {self._tc(looker,'accent')}(#{self.id})|n" if is_builder else "")
+        )
+
+        # Description (wrapped, ANSI-safe)
         desc = self.db.desc or self.default_description
-        wrapper = textwrap.TextWrapper(width=76)
-        paragraphs = []
-        for para in desc.splitlines():
-            para = para.strip()
-            if not para:
-                continue
-            paragraphs.append("  " + wrapper.fill(para))
-        desc_text = "\n".join(paragraphs)
+        desc_wrapped = self._wrap_ansi(desc, width, indent=self.PAD_LEFT)
 
-        # Room description follows on the next line without added color so
-        # user-specified codes remain untouched.
-        output = [title, "", desc_text]
+        # Fancy gets a boxed header; others just the title line
+        if ui_mode == "fancy":
+            header = self._title_box(looker, title, width)
+            output = [header, "", desc_wrapped]
+        else:
+            output = [title, "", desc_wrapped]
 
-        weather = self.get_weather()
+        # Weather (only if not 'clear')
+        weather = (self.get_weather() or "").lower()
         if weather and weather != "clear":
-            # Indicate current weather conditions if not clear.
-            output.append(f"|wIt's {weather} here.|n")
+            output.append(self._wrap_ansi(f"|wIt's {weather} here.|n", width, indent=self.PAD_LEFT))
 
         exits = self.filter_visible(
             self.contents_get(content_type="exit"), looker, **kwargs
@@ -179,14 +289,24 @@ class FusionRoom(Room):
         for ex in prioritized + unprioritized:
             if ex.db.dark and not is_builder:
                 continue
-            line = self._color_exit_name(ex.key)
+            name = self._color_exit_name(ex.key)
+            flags = []
             if not ex.access(looker, "traverse"):
-                line += " |r(Locked)|n"
+                flags.append("|rLocked|n")
             if ex.db.dark:
-                line += " |m(Dark)|n"
-            if is_builder:
-                line += f" |y(#{ex.id})|n"
-            exit_lines.append("  " + line)
+                flags.append("|mDark|n")
+            flag_str = f" [{' '.join(flags)}]" if flags else ""
+            id_str = f"|y(#{ex.id})|n" if is_builder else ""
+
+            # align: [name.................][id/flags]
+            reserve = max(10, self._ansi_len(id_str + flag_str) + 1)
+            name_width = max(10, width - self.PAD_LEFT - reserve)
+            shown = name
+            if self._ansi_len(name) > name_width:
+                # basic truncation; ANSI-safe (might cut mid-sequence only if name inserts codes outside color wrapper)
+                shown = self._truncate_ansi(name, name_width)
+            spaces = " " * max(1, width - self.PAD_LEFT - self._ansi_len(shown) - self._ansi_len(id_str + flag_str))
+            exit_lines.append(" " * self.PAD_LEFT + f"{shown}{spaces}{id_str}{flag_str}")
 
         characters = self.filter_visible(
             self.contents_get(content_type="character"), looker, **kwargs
@@ -203,33 +323,64 @@ class FusionRoom(Room):
             players.append(looker)
         npcs = [c for c in characters if not c.has_account or c.attributes.get("npc")]
 
-        player_names = []
-        for p in players:
-            name = f"|w{p.key}|n"
+        def _fmt_char(c, color="|w"):
+            s = f"{color}{c.key}|n"
             if is_builder:
-                name += f" |y(#{p.id})|n"
-            if p.db.dark and is_builder:
-                name += " |m(Dark)|n"
-            player_names.append(name)
+                s += f" |y(#{c.id})|n"
+            if getattr(c.db, "dark", False) and is_builder:
+                s += " |m(Dark)|n"
+            return s
 
-        npc_names = []
-        for npc in npcs:
-            name = f"|y{npc.key}|n"
-            if is_builder:
-                name += f" |y(#{npc.id})|n"
-            npc_names.append(name)
+        player_names = [_fmt_char(p, "|w") for p in players]
+        npc_names = [_fmt_char(n, "|y") for n in npcs]
 
-        green_rule = self.BOX_LINE
-        box = [green_rule, "|g  :Exits:|n"]
-        box.extend(exit_lines)
-        box.append(green_rule)
-        if player_names:
-            box.append("|g  :Players:|n")
-            box.append("  " + ", ".join(player_names))
-            box.append(green_rule)
-        if npc_names:
-            box.append("|g  :Non-Player Characters:|n " + ", ".join(npc_names))
-            box.append(green_rule)
+        # ----- Render sections depending on ui_mode -----
+        box = []
+        if ui_mode in ("fancy", "simple"):
+            # Decorative headings
+            box.extend([rule, f"{self._tc(looker,'primary')}  :Exits:|n"])
+            if exit_lines:
+                box.extend(exit_lines)
+            else:
+                box.append(" " * self.PAD_LEFT + "|xNone|n")
+            box.append(rule)
+            if player_names:
+                box.append(f"{self._tc(looker,'primary')}  :Players:|n")
+                box.append(self._wrap_ansi(", ".join(player_names), width, indent=self.PAD_LEFT))
+                box.append(rule)
+            if npc_names:
+                box.append(f"{self._tc(looker,'primary')}  :Non-Player Characters:|n")
+                box.append(self._wrap_ansi(", ".join(npc_names), width, indent=self.PAD_LEFT))
+                box.append(rule)
+        else:
+            # Screen reader: no boxes, one item per line, explicit labels, minimal punctuation
+            box.append("Exits:")
+            if exit_lines:
+                # Rebuild exit lines without spacing tricks; one-per-line
+                for ex in prioritized + unprioritized:
+                    if ex.db.dark and not is_builder:
+                        continue
+                    n = ex.key
+                    flags = []
+                    if not ex.access(looker, "traverse"):
+                        flags.append("Locked")
+                    if ex.db.dark:
+                        flags.append("Dark")
+                    meta = f" #{ex.id}" if is_builder else ""
+                    flag_text = f" [{' '.join(flags)}]" if flags else ""
+                    box.append(f"- {n}{meta}{flag_text}")
+            else:
+                box.append("- None")
+            if player_names:
+                box.append("Players:")
+                for p in players:
+                    meta = f" #{p.id}" if is_builder else ""
+                    box.append(f"- {p.key}{meta}")
+            if npcs:
+                box.append("Non-Player Characters:")
+                for n in npcs:
+                    meta = f" #{n.id}" if is_builder else ""
+                    box.append(f"- {n.key}{meta}")
 
         if self.db.is_item_store:
             box.append(
@@ -240,9 +391,44 @@ class FusionRoom(Room):
                 "|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n"
             )
 
+        # Finalize output
         output.append("\n".join(box))
+        text = "\n".join(output)
+        if ui_mode == "sr":
+            # Remove color codes and box-drawing chars for screen readers
+            text = strip_ansi(text)
+            # Replace box-drawing remnants if any slipped through
+            text = text.replace("╔", "").replace("╗", "").replace("╚", "").replace("╝", "")
+            text = text.replace("║", "")
+        return text
+    
+    def _truncate_ansi(self, s: str, max_visible: int) -> str:
+        """
+        Truncate ANSI-colored string to max_visible characters (visible width),
+        preserving ANSI sequences. Adds an ellipsis if truncated.
+        """
+        if max_visible <= 0:
+            return ""
+        if self._ansi_len(s) <= max_visible:
+            return s
+        out = []
+        visible = 0
+        i = 0
+        while i < len(s) and visible < max_visible - 1:  # leave room for ellipsis
+            ch = s[i]
+            if ch == "|":  # Evennia-style ANSI pipe codes
+                out.append(ch)
+                i += 1
+                if i < len(s):
+                    out.append(s[i])  # next char (code letter)
+                    i += 1
+                continue
+            out.append(ch)
+            visible += 1
+            i += 1
+        out.append("…")
+        return "".join(out)
 
-        return "\n".join(output)
 
 
 class BattleRoom(Room):
