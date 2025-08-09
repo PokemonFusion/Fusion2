@@ -7,7 +7,6 @@ Rooms are simple containers that has no location of their own.
 
 from evennia.objects.objects import DefaultRoom
 import random
-import textwrap
 import re
 import shutil
 try:
@@ -236,7 +235,7 @@ class FusionRoom(Room):
             shown = name
             if self._ansi_len(name) > name_width:
                 # basic truncation; ANSI-safe (might cut mid-sequence only if name inserts codes outside color wrapper)
-                shown = name[:name_width - 1] + "…"
+                shown = self._truncate_ansi(name, name_width)
             spaces = " " * max(1, width - self.PAD_LEFT - self._ansi_len(shown) - self._ansi_len(id_str + flag_str))
             exit_lines.append(" " * self.PAD_LEFT + f"{shown}{spaces}{id_str}{flag_str}")
 
@@ -292,6 +291,34 @@ class FusionRoom(Room):
 
         output.append("\n".join(box))
         return "\n".join(output)
+    
+    def _truncate_ansi(self, s: str, max_visible: int) -> str:
+        """
+        Truncate ANSI-colored string to max_visible characters (visible width),
+        preserving ANSI sequences. Adds an ellipsis if truncated.
+        """
+        if max_visible <= 0:
+            return ""
+        if self._ansi_len(s) <= max_visible:
+            return s
+        out = []
+        visible = 0
+        i = 0
+        while i < len(s) and visible < max_visible - 1:  # leave room for ellipsis
+            ch = s[i]
+            if ch == "|":  # Evennia-style ANSI pipe codes
+                out.append(ch)
+                i += 1
+                if i < len(s):
+                    out.append(s[i])  # next char (code letter)
+                    i += 1
+                continue
+            out.append(ch)
+            visible += 1
+            i += 1
+        out.append("…")
+        return "".join(out)
+
 
 
 class BattleRoom(Room):
