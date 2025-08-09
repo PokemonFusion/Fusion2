@@ -1,11 +1,17 @@
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
+"""Menu for learning a move and potentially replacing an active one."""
+
 from pokemon.models.moves import Move
 from pokemon.services.move_management import apply_active_moveset
 
 
 def node_start(caller, raw_input=None, **kwargs):
+    """Prompt whether to replace an existing move with the new one."""
     pokemon = kwargs.get("pokemon")
     move_name = kwargs.get("move_name", "").capitalize()
+    if not pokemon:
+        caller.msg("No Pokémon specified for this prompt.")
+        return None, None
     text = f"{pokemon.name} learned {move_name}! Replace an active move with it? (yes/no)"
     return text, [
         {"key": "yes", "goto": ("node_choose", kwargs)},
@@ -14,6 +20,7 @@ def node_start(caller, raw_input=None, **kwargs):
 
 
 def node_choose(caller, raw_input=None, **kwargs):
+    """Let the user pick which move slot to replace."""
     pokemon = kwargs.get("pokemon")
     move_name = kwargs.get("move_name", "").capitalize()
     ms = getattr(pokemon, "active_moveset", None)
@@ -27,6 +34,7 @@ def node_choose(caller, raw_input=None, **kwargs):
 
 
 def node_replace(caller, raw_input=None, **kwargs):
+    """Replace the selected move slot with the new move."""
     pokemon = kwargs.get("pokemon")
     move_name = kwargs.get("move_name")
     slot = kwargs.get("slot", 0)
@@ -46,6 +54,7 @@ def node_replace(caller, raw_input=None, **kwargs):
 
 
 def node_done(caller, raw_input=None, **kwargs):
+    """Final message when move learning is complete."""
     pokemon = kwargs.get("pokemon")
     move_name = kwargs.get("move_name", "")
     return f"{pokemon.name} learned {move_name.capitalize()}.", None

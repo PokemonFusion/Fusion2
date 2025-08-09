@@ -31,7 +31,7 @@ def node_name(caller, raw_input):
 def node_desc(caller, raw_input):
     """Collect description and prompt for room class."""
     if not raw_input:
-        return "I need a description.  (or |wquit|n)", {"goto": "node_desc"}
+        return "I need a description.  (or |wquit|n)", [{"key": "_default", "goto": "node_desc"}]
     caller.ndb.rw_data['desc'] = raw_input
     text = (
         "Select a |wroom class|n:\n"
@@ -105,7 +105,7 @@ def node_hunt_table(caller, raw_input):
         except ValueError:
             return (
                 "Invalid format.  Use `name:rate, name:rate`.",
-                {"goto": "node_hunt_table"}
+                [{"key": "_default", "goto": "node_hunt_table"}]
             )
     data['hunt_chart'] = table
     return node_summary(caller)
@@ -166,21 +166,21 @@ def node_exit_dir(caller, raw_input=None):
     if cmd.lower().startswith("list"):
         lines = [f"{r.id} - {r.key}" for r in Room.objects.all()]
         caller.msg("\n".join(lines))
-        return "Enter exit as <dir>=<id> or 'done':", {"goto": "node_exit_dir"}
+        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
     if cmd.lower() == "done":
         return node_tp_prompt(caller)
     if "=" not in cmd:
         caller.msg("Usage: <direction>=<room_id> or 'done'.")
-        return "", {"goto": "node_exit_dir"}
+        return "Usage: <direction>=<room_id> or 'done'.", [{"key": "_default", "goto": "node_exit_dir"}]
     direction, rid = [s.strip() for s in cmd.split("=", 1)]
     try:
         dest = Room.objects.get(id=int(rid))
     except (ValueError, Room.DoesNotExist):
         caller.msg("Invalid room id.")
-        return "", {"goto": "node_exit_dir"}
+        return "Invalid room id.", [{"key": "_default", "goto": "node_exit_dir"}]
     create_object(Exit, key=direction, location=room, destination=dest)
     caller.msg(f"Created exit '{direction}' to {dest.key}.")
-    return "Add another exit or 'done' when finished:", {"goto": "node_exit_dir"}
+    return "Add another exit or 'done' when finished:", [{"key": "_default", "goto": "node_exit_dir"}]
 
 def node_tp_prompt(caller, raw_input=None):
     """Ask if caller wants to teleport into the room."""

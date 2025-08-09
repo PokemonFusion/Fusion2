@@ -5,7 +5,7 @@ from evennia import Command
 from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
 
 from pokemon.dex import POKEDEX
-from pokemon.generation import generate_pokemon, NATURES
+from pokemon.generation import generate_pokemon, NATURES as NATURES_MAP
 from pokemon.models.core import OwnedPokemon
 from pokemon.models.storage import ensure_boxes
 from pokemon.utils.pokemon_helpers import create_owned_pokemon
@@ -42,7 +42,7 @@ TYPES = [
     "Steel",
     "Water",
 ]
-NATURES = list(NATURES.keys())
+NATURE_NAMES = list(NATURES_MAP.keys())
 
 # Starter‐specific lookup (name/key → key)
 STARTER_NAMES = set(STARTER_LOOKUP.keys())
@@ -60,11 +60,13 @@ def _invalid(caller):
 
 
 def format_columns(items, columns=4, indent=2):
-    """Return items formatted into evenly spaced columns."""
+    """Return items formatted into evenly spaced columns using spaces."""
     lines = []
+    col_width = max((len(str(it)) for it in items), default=0) + 2
     for i in range(0, len(items), columns):
         row = items[i : i + columns]
-        lines.append(" " * indent + "\t".join(str(it) for it in row))
+        padded = [str(it).ljust(col_width) for it in row]
+        lines.append(" " * indent + "".join(padded).rstrip())
     return "\n".join(lines)
 
 
@@ -277,11 +279,11 @@ def fusion_ability(caller, raw_string, **kwargs):
         return fusion_confirm(caller, "")
 
     text = "Choose your fusion's ability:\n" + format_columns(ab_list) + "\n"
-    options = tuple(
+    base_opts = tuple(
         {"key": ab.lower(), "desc": ab, "goto": ("fusion_confirm", {"ability": ab})}
         for ab in ab_list
     )
-    + (
+    options = base_opts + (
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
@@ -491,6 +493,9 @@ def finish_human(caller, raw_string):
         data.get("ability"),
         data.get("starter_gender"),
     )
+    if not pk:
+        caller.msg("Starter creation failed. Please try again.")
+        return None, None
     caller.db.gender = data.get("player_gender")
     caller.db.favored_type = data.get("favored_type")
     caller.msg(f"You received {pk.name} with ability {pk.ability} as your starter!")

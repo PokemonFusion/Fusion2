@@ -20,6 +20,10 @@ class CmdSpawns(Command):
         caller = self.caller
 
         def _menunode_main(caller, raw_input=None, **kwargs):
+            """Show existing spawns and offer editing options."""
+            if not getattr(caller, "location", None):
+                caller.msg("You must be in a room to edit its spawns.")
+                return None, None
             table = caller.location.db.spawn_table or []
             text = "Current spawns:\n"
             for entry in table:
@@ -27,6 +31,7 @@ class CmdSpawns(Command):
             options = (
                 {"desc": "Add spawn", "goto": "add_spawn"},
                 {"desc": "Quit", "goto": "quit"},
+                {"key": "_default", "goto": "_repeat"},
             )
             return text, options
 

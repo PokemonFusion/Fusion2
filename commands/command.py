@@ -860,6 +860,6 @@ class CmdLearn(Command):
             self.caller,
             learn_menu,
             startnode="node_start",
-            kwargs={"pokemon": pokemon, "moves": moves, "level_map": level_map},
+            start_kwargs={"pokemon": pokemon, "moves": moves, "level_map": level_map},
             cmd_on_exit=None,
         )

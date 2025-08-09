@@ -17,13 +17,13 @@ def node_start(caller, raw_input=None):
     cmd = raw_input.strip()
     if cmd.lower().startswith("list"):
         _list_rooms(caller)
-        return "Enter room ID:", {"goto": "node_start"}
+        return "Enter room ID:", [{"key": "_default", "goto": "node_start"}]
     try:
         rid = int(cmd.strip("#"))
         room = Room.objects.get(id=rid)
     except (ValueError, Room.DoesNotExist):
         caller.msg("Invalid room ID.")
-        return "Enter room ID:", {"goto": "node_start"}
+        return "Enter room ID:", [{"key": "_default", "goto": "node_start"}]
     caller.ndb.er_room = room
     caller.ndb.er_data = {
         "name": room.key,
@@ -120,7 +120,7 @@ def node_hunt_table(caller, raw_input):
             table[mon.strip()] = int(rate.strip())
         except ValueError:
             caller.msg("Invalid format. Use name:rate, name:rate")
-            return "", {"goto": "node_hunt_table"}
+            return "Invalid format. Use name:rate, name:rate", [{"key": "_default", "goto": "node_hunt_table"}]
     data['hunt_chart'] = [
         {"name": mon.strip(), "weight": int(rate.strip())}
         for mon, rate in table.items()
@@ -181,21 +181,21 @@ def node_exit_dir(caller, raw_input=None):
     cmd = raw_input.strip()
     if cmd.lower().startswith("list"):
         _list_rooms(caller)
-        return "Enter exit as <dir>=<id> or 'done':", {"goto": "node_exit_dir"}
+        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
     if cmd.lower() == "done":
         return node_quit(caller)
     if "=" not in cmd:
         caller.msg("Usage: <direction>=<room_id> or 'done'.")
-        return "", {"goto": "node_exit_dir"}
+        return "Usage: <direction>=<room_id> or 'done'.", [{"key": "_default", "goto": "node_exit_dir"}]
     direction, rid = [s.strip() for s in cmd.split("=", 1)]
     try:
         dest = Room.objects.get(id=int(rid))
     except (ValueError, Room.DoesNotExist):
         caller.msg("Invalid room id.")
-        return "", {"goto": "node_exit_dir"}
+        return "Invalid room id.", [{"key": "_default", "goto": "node_exit_dir"}]
     create_object(Exit, key=direction, location=room, destination=dest)
     caller.msg(f"Created exit '{direction}' to {dest.key}.")
-    return "Add another exit or 'done' when finished:", {"goto": "node_exit_dir"}
+    return "Add another exit or 'done' when finished:", [{"key": "_default", "goto": "node_exit_dir"}]
 
 
 def node_quit(caller, raw_input=None):
