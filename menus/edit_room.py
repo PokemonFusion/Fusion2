@@ -120,7 +120,9 @@ def node_hunt_table(caller, raw_input):
             table[mon.strip()] = int(rate.strip())
         except ValueError:
             caller.msg("Invalid format. Use name:rate, name:rate")
-            return "Invalid format. Use name:rate, name:rate", [{"key": "_default", "goto": "node_hunt_table"}]
+            return "Enter encounter table as name:rate, name:rate:", [
+                {"key": "_default", "goto": "node_hunt_table"}
+            ]
     data['hunt_chart'] = [
         {"name": mon.strip(), "weight": int(rate.strip())}
         for mon, rate in table.items()
@@ -186,13 +188,13 @@ def node_exit_dir(caller, raw_input=None):
         return node_quit(caller)
     if "=" not in cmd:
         caller.msg("Usage: <direction>=<room_id> or 'done'.")
-        return "Usage: <direction>=<room_id> or 'done'.", [{"key": "_default", "goto": "node_exit_dir"}]
+        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
     direction, rid = [s.strip() for s in cmd.split("=", 1)]
     try:
         dest = Room.objects.get(id=int(rid))
     except (ValueError, Room.DoesNotExist):
         caller.msg("Invalid room id.")
-        return "Invalid room id.", [{"key": "_default", "goto": "node_exit_dir"}]
+        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
     create_object(Exit, key=direction, location=room, destination=dest)
     caller.msg(f"Created exit '{direction}' to {dest.key}.")
     return "Add another exit or 'done' when finished:", [{"key": "_default", "goto": "node_exit_dir"}]
