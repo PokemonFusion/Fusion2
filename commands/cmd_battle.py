@@ -17,7 +17,7 @@ try:
 except Exception:  # pragma: no cover - simple fallback
     def _normalize_key(name: str) -> str:
         return name.replace(" ", "").replace("-", "").replace("'", "").lower()
-from pokemon.ui import render_move_gui
+from utils.battle_display import render_move_gui
 
 try:
     from pokemon.dex.functions import moves_funcs
