@@ -10,8 +10,11 @@ methods used for JSON serialisation.  `BattleData` also provides
 from __future__ import annotations
 
 import json
+import importlib.util
+import sys
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 
 try:
     from pokemon.dex import POKEDEX  # type: ignore
@@ -80,6 +83,66 @@ class Pokemon:
             refresh_stats(self)
         except Exception:  # pragma: no cover - helpers may be absent in tests
             pass
+
+        # Ensure a ``types`` attribute is always available.  Some parts of the
+        # battle engine (such as damage calculation) expect this attribute to
+        # exist.  When explicit type information isn't supplied we look it up
+        # from the Pokédex based on the Pokémon's species name.
+        self.types = self._lookup_species_types()
+
+    def _lookup_species_types(self) -> List[str]:
+        """Return this Pokémon's types inferred from the Pokédex.
+
+        The ``POKEDEX`` mapping may not always be populated during tests so
+        this helper is intentionally defensive and falls back to an empty list
+        if the lookup fails for any reason.
+        """
+
+        species_name = self.name
+        pdex: Dict[str, Any] = {}
+        try:  # pragma: no cover - data lookup is optional in tests
+            from pokemon.dex import (
+                POKEDEX as module_dex,
+                load_pokedex,
+                ABILITYDEX,
+                POKEDEX_PATH,
+            )
+            pdex = module_dex or {}
+            if not pdex and load_pokedex and POKEDEX_PATH:
+                # ``module_dex`` may be an empty stub; attempt to load data
+                pdex = load_pokedex(POKEDEX_PATH, ABILITYDEX)
+        except Exception:
+            pdex = POKEDEX
+
+        if not pdex:
+            try:  # pragma: no cover - last-resort direct file load
+                path = Path(__file__).resolve().parents[1] / "dex" / "pokedex.py"
+                spec = importlib.util.spec_from_file_location(
+                    "pokemon.dex.pokedex", path
+                )
+                module = importlib.util.module_from_spec(spec)
+                sys.modules.setdefault("pokemon.dex.pokedex", module)
+                assert spec and spec.loader  # help mypy
+                spec.loader.exec_module(module)
+                pdex = getattr(module, "pokedex", getattr(module, "POKEDEX", {}))
+            except Exception:
+                pdex = {}
+
+        try:  # pragma: no cover - POKEDEX access is optional
+            entry = (
+                pdex.get(species_name)
+                or pdex.get(species_name.lower())
+                or pdex.get(species_name.capitalize())
+            )
+            if entry:
+                types = getattr(entry, "types", None)
+                if types is None and isinstance(entry, dict):
+                    types = entry.get("types")
+                if types:
+                    return [str(t).title() for t in types if t]
+        except Exception:
+            pass
+        return []
 
     def getName(self) -> str:
         return self.name
