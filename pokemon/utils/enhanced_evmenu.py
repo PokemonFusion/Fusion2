@@ -26,6 +26,7 @@ class EnhancedEvMenu(EvMenu):
         on_abort=None,
         invalid_message=None,
         auto_repeat_invalid=True,
+        brief_invalid=True,
         numbered_options=True,
         menu_title="Pokémon Menu",
         use_pokemon_style=True,
@@ -37,6 +38,7 @@ class EnhancedEvMenu(EvMenu):
         self.on_abort = on_abort
         self.invalid_message = invalid_message or _HELP_NO_OPTION_MATCH
         self.auto_repeat_invalid = auto_repeat_invalid
+        self.brief_invalid = brief_invalid
         self.numbered_options = numbered_options
         self.menu_title = menu_title
         self.use_pokemon_style = use_pokemon_style
@@ -63,9 +65,12 @@ class EnhancedEvMenu(EvMenu):
 
         if not low:
             if self.auto_repeat_invalid:
-                # re-run the current node with a blank entry so any
-                # raw-string dependent logic resets cleanly
-                self.goto(None, "")
+                if self.brief_invalid:
+                    self.invalid_msg()
+                    self._show_footer_hint()
+                else:
+                    # re-run current node to repaint (legacy behavior)
+                    self.goto(None, "")
             return
 
         # abort keys always end the menu
@@ -148,7 +153,9 @@ class EnhancedEvMenu(EvMenu):
             _run_exec(default_opt)
             goto = default_opt.get("goto")
             if goto == "_repeat":
-                self.goto(None, "")
+                # repeat current node with cleared input
+                if self.auto_repeat_invalid:
+                    self.goto(None, "")
                 return
             try:
                 super().parse_input(raw_string)
@@ -159,7 +166,10 @@ class EnhancedEvMenu(EvMenu):
         # completely invalid
         self.invalid_msg()
         if self.auto_repeat_invalid:
-            self.display_nodetext()
+            if self.brief_invalid:
+                self._show_footer_hint()
+            else:
+                self.display_nodetext()
 
     def invalid_msg(self):
         """
@@ -167,6 +177,28 @@ class EnhancedEvMenu(EvMenu):
         Override in subclasses if desired.
         """
         self.msg(self.invalid_message)
+
+    def _show_footer_hint(self):
+        """Show a compact footer hint without repainting the whole node."""
+        if not self.show_footer:
+            return
+        prompt = self.footer_prompt
+        if self.use_pokemon_style:
+            tail = []
+            if self.auto_quit:
+                tail.append("|w'q' to quit|n")
+            if self.auto_help:
+                tail.append("'h' for help")
+            extra = f" | {' | '.join(tail)}" if tail else ""
+            self.msg(f"|y==|n [Enter {prompt}]{extra}")
+        else:
+            tail = []
+            if self.auto_quit:
+                tail.append("'q' to quit")
+            if self.auto_help:
+                tail.append("'h' for help")
+            extra = ("; " + " · ".join(tail)) if tail else ""
+            self.msg(f"[Type {prompt.lower()} or command{extra}]")
 
     def at_abort(self):
         """
@@ -228,17 +260,19 @@ class EnhancedEvMenu(EvMenu):
         if self.show_footer:
             prompt = self.footer_prompt
             if self.use_pokemon_style:
-                result += (
-                    f"\n\n|y== |g[Enter {prompt}]"
-                    f"{' | |w\'q\' to quit' if self.auto_quit else ''}"
-                    f"{' | \'h\' for help' if self.auto_help else ''}|y ==|n"
-                )
-            else:
-                hints = []
+                tail = []
                 if self.auto_quit:
-                    hints.append("'q' to quit")
+                    tail.append("|w'q' to quit|n")
                 if self.auto_help:
-                    hints.append("'h' for help")
-                hint_text = f"; {' · '.join(hints)}" if hints else ""
-                result += f"\n\n[Type {prompt.lower()} or command{hint_text}]"
+                    tail.append("'h' for help")
+                hints = (" | " + " | ".join(tail)) if tail else ""
+                result += f"\n\n|y== |g[Enter {prompt}]|n{hints}|y ==|n"
+            else:
+                tail = []
+                if self.auto_quit:
+                    tail.append("'q' to quit")
+                if self.auto_help:
+                    tail.append("'h' for help")
+                hints = ("; " + " · ".join(tail)) if tail else ""
+                result += f"\n\n[Type {prompt.lower()} or command{hints}]."
         return result
