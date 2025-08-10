@@ -8,7 +8,7 @@ from pokemon.battle.storage import BattleDataWrapper
 
 from pokemon.battle.handler import battle_handler
 from pokemon.battle.interface import display_battle_interface
-from pokemon.ui import render_move_gui
+from utils.battle_display import render_move_gui
 from dataclasses import dataclass, field as dc_field
 from typing import Any, Dict, List, Tuple
 
