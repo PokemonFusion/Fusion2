@@ -90,6 +90,51 @@ def test_default_damage_reduces_hp():
 
     assert target.hp < 100
 
+
+def test_execute_and_deal_damage_consistent():
+    """Direct execution and _deal_damage should inflict the same damage."""
+
+    def base_cb(user, target, move):
+        return (getattr(move, "power", 0) or 0) * 2
+
+    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+
+    # First pair uses BattleMove.execute directly
+    user1 = Pokemon("User1")
+    target1 = Pokemon("Target1")
+    for poke, num in ((user1, 1), (target1, 2)):
+        poke.base_stats = base
+        poke.num = num
+        poke.types = ["Normal"]
+    move1 = BattleMove("Tackle", power=40, accuracy=100, basePowerCallback=base_cb)
+    p1a = BattleParticipant("P1", [user1], is_ai=False)
+    p2a = BattleParticipant("P2", [target1], is_ai=False)
+    p1a.active = [user1]
+    p2a.active = [target1]
+    battle1 = Battle(BattleType.WILD, [p1a, p2a])
+    random.seed(0)
+    move1.execute(user1, target1, battle1)
+    hp_after_execute = target1.hp
+
+    # Second pair uses Battle._deal_damage directly
+    user2 = Pokemon("User2")
+    target2 = Pokemon("Target2")
+    for poke, num in ((user2, 1), (target2, 2)):
+        poke.base_stats = base
+        poke.num = num
+        poke.types = ["Normal"]
+    move2 = BattleMove("Tackle", power=40, accuracy=100, basePowerCallback=base_cb)
+    p1b = BattleParticipant("P1", [user2], is_ai=False)
+    p2b = BattleParticipant("P2", [target2], is_ai=False)
+    p1b.active = [user2]
+    p2b.active = [target2]
+    battle2 = Battle(BattleType.WILD, [p1b, p2b])
+    random.seed(0)
+    dmg = battle2._deal_damage(user2, target2, move2)
+
+    assert target2.hp == hp_after_execute
+    assert dmg == 100 - target2.hp
+
 # Reload real modules for subsequent tests
 del sys.modules["pokemon.dex"]
 del sys.modules["pokemon.data"]
