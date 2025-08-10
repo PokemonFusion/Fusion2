@@ -745,13 +745,14 @@ class BattleSession:
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
         self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
-        trainer_ids = {}
+        trainer_ids = {"teamA": []}
         if hasattr(self.captainA, "id"):
-            trainer_ids.setdefault("teamA", []).append(self.captainA.id)
-        if self.captainB and hasattr(self.captainB, "id"):
-            trainer_ids.setdefault("teamB", []).append(self.captainB.id)
-        if trainer_ids:
-            self.storage.set("trainers", trainer_ids)
+            trainer_ids["teamA"].append(self.captainA.id)
+        if self.captainB:
+            trainer_ids["teamB"] = []
+            if hasattr(self.captainB, "id"):
+                trainer_ids["teamB"].append(self.captainB.id)
+        self.storage.set("trainers", trainer_ids)
         log_info("Saved PvP battle data to room")
 
         add_watcher(self.state, self.captainA)
@@ -907,13 +908,14 @@ class BattleSession:
         self.storage.set("data", self.logic.data.to_dict())
         self.storage.set("state", self.logic.state.to_dict())
         self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
-        trainer_ids = {}
+        trainer_ids = {"teamA": []}
         if hasattr(self.captainA, "id"):
-            trainer_ids.setdefault("teamA", []).append(self.captainA.id)
-        if self.captainB and hasattr(self.captainB, "id"):
-            trainer_ids.setdefault("teamB", []).append(self.captainB.id)
-        if trainer_ids:
-            self.storage.set("trainers", trainer_ids)
+            trainer_ids["teamA"].append(self.captainA.id)
+        if self.captainB:
+            trainer_ids["teamB"] = []
+            if hasattr(self.captainB, "id"):
+                trainer_ids["teamB"].append(self.captainB.id)
+        self.storage.set("trainers", trainer_ids)
         log_info(f"Saved battle data for id {self.battle_id}")
 
     def _setup_battle_room(self) -> None:
