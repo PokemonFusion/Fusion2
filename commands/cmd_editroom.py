@@ -14,5 +14,10 @@ class CmdEditRoom(Command):
     help_category = "Building"
 
     def func(self):
-        EnhancedEvMenu(self.caller, edit_room, startnode="node_start", cmd_on_exit=True)
+        EnhancedEvMenu(
+            self.caller,
+            edit_room,
+            startnode="node_start",
+            cmd_on_exit="look",
+        )
 
