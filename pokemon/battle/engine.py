@@ -93,6 +93,60 @@ def _normalize_key(name: str) -> str:
     return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 
 
+def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, spread: bool = False):
+    """Construct a temporary :class:`pokemon.dex.entities.Move` from ``battle_move``.
+
+    Any ``basePowerCallback`` present on ``battle_move`` is attached to the
+    temporary move and invoked once prior to damage calculation to allow the
+    callback to adjust move data.  The helper then delegates to
+    :func:`apply_damage` and returns its :class:`~pokemon.battle.damage.DamageResult`.
+
+    Parameters
+    ----------
+    user, target:
+        Combatants involved in the interaction.
+    battle_move:
+        The :class:`BattleMove` definition being used.
+    battle:
+        The active :class:`Battle` instance for context.
+    spread:
+        Passed through to :func:`apply_damage` to indicate spread damage.
+
+    Returns
+    -------
+    DamageResult
+        The result of :func:`apply_damage`.
+    """
+
+    from .damage import apply_damage
+    from pokemon.dex.entities import Move
+
+    raw = dict(battle_move.raw)
+    if battle_move.basePowerCallback:
+        raw["basePowerCallback"] = battle_move.basePowerCallback
+
+    move = Move(
+        name=battle_move.name,
+        num=0,
+        type=battle_move.type,
+        category="Physical",
+        power=battle_move.power,
+        accuracy=battle_move.accuracy,
+        pp=None,
+        raw=raw,
+    )
+
+    if battle_move.basePowerCallback:
+        try:
+            move.basePowerCallback = battle_move.basePowerCallback
+            # Allow callback to set up move data before damage calculation
+            battle_move.basePowerCallback(user, target, move)
+        except Exception:
+            move.basePowerCallback = None
+
+    return apply_damage(user, target, move, battle=battle, spread=spread)
+
+
 @dataclass
 class BattleSide:
     """Container for effects active on one side of the battle."""
@@ -147,32 +201,7 @@ class BattleMove:
             return
 
         # Default behaviour for moves without custom handlers
-        from .damage import apply_damage
-        from pokemon.dex.entities import Move
-
-        raw = dict(self.raw)
-        if self.basePowerCallback:
-            raw["basePowerCallback"] = self.basePowerCallback
-        move = Move(
-            name=self.name,
-            num=0,
-            type=self.type,
-            category="Physical",
-            power=self.power,
-            accuracy=self.accuracy,
-            pp=None,
-            raw=raw,
-        )
-
-        if self.basePowerCallback:
-            try:
-                move.basePowerCallback = self.basePowerCallback
-                # allow callback to setup move data before damage calculation
-                self.basePowerCallback(user, target, move)
-            except Exception:
-                move.basePowerCallback = None
-
-        apply_damage(user, target, move, battle=battle)
+        _apply_move_damage(user, target, self, battle)
 
         # Handle side conditions set by this move
         side_cond = self.raw.get("sideCondition") if self.raw else None
@@ -1100,30 +1129,7 @@ class Battle:
 
     def _deal_damage(self, user, target, move: BattleMove, *, spread: bool = False) -> int:
         """Apply simplified damage calculation to ``target``."""
-        from .damage import apply_damage
-        from pokemon.dex.entities import Move
-
-        raw = dict(move.raw)
-        if move.basePowerCallback:
-            raw["basePowerCallback"] = move.basePowerCallback
-        temp_move = Move(
-            name=move.name,
-            num=0,
-            type=move.type,
-            category="Physical",
-            power=move.power,
-            accuracy=move.accuracy,
-            pp=None,
-            raw=raw,
-        )
-        if move.basePowerCallback:
-            try:
-                temp_move.basePowerCallback = move.basePowerCallback
-                move.basePowerCallback(user, target, temp_move)
-            except Exception:
-                temp_move.basePowerCallback = None
-
-        result = apply_damage(user, target, temp_move, battle=self, spread=spread)
+        result = _apply_move_damage(user, target, move, self, spread=spread)
         return sum(result.debug.get("damage", []))
 
     def _do_move(self, user, target, move: BattleMove) -> bool:
