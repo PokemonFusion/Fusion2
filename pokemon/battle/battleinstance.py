@@ -1159,7 +1159,7 @@ class BattleSession:
         pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
         if self._already_queued(pos_name, pos, caller, f"move {move_name}"):
             return
-        pos.declareAttack(target, Move(name=move_name))
+        pos.declareAttack(target, move_name)
         log_info(
             f"Queued move {move_name} targeting {target} from {pokemon_name} at {pos_name}"
         )

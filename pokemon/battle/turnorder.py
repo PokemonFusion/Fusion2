@@ -5,7 +5,18 @@ from __future__ import annotations
 import random
 from typing import List
 
-from .battledata import PositionData, TurnInit, Move
+try:
+    from pokemon.dex import MOVEDEX  # type: ignore
+except Exception:  # pragma: no cover - dex may be unavailable in tests
+    MOVEDEX = {}
+
+try:  # pragma: no cover - fallback when engine not available
+    from pokemon.battle.engine import _normalize_key  # type: ignore
+except Exception:  # pragma: no cover
+    def _normalize_key(name: str) -> str:
+        return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+
+from .battledata import TurnInit
 
 
 class _Priority:
@@ -24,7 +35,12 @@ class _Priority:
         elif turndata.recharge is not None:
             self.priority = 6
         elif turndata.attack:
-            self.priority = turndata.attack.move.priority
+            move_entry = MOVEDEX.get(_normalize_key(turndata.attack.move))
+            self.priority = (
+                getattr(move_entry, "raw", {}).get("priority", 0)
+                if move_entry
+                else 0
+            )
         else:
             self.priority = 0
 
