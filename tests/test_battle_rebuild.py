@@ -239,6 +239,8 @@ def test_trainer_ids_saved_and_restored():
 
     assert restored.captainA is p1
     assert restored.captainB is p2
+    storage_after = BattleDataWrapper(room, inst.battle_id)
+    assert storage_after.get("trainers") == {"teamA": [1], "teamB": [2]}
 
 
 def test_pokemon_serialization_minimal():
