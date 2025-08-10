@@ -124,5 +124,32 @@ class BattleHandler:
                 if obj:
                     obj.ndb.battle_instance = inst
 
+            # expose battle info on the captains after the ndb rebuild
+            try:
+                if inst.captainA:
+                    inst.captainA.team = [
+                        p for p in inst.logic.data.teams["A"].returnlist() if p
+                    ]
+                    part_a = inst.logic.battle.participants[0]
+                    if part_a.active:
+                        inst.captainA.active_pokemon = part_a.active[0]
+                if inst.captainB:
+                    inst.captainB.team = [
+                        p for p in inst.logic.data.teams["B"].returnlist() if p
+                    ]
+                    if len(inst.logic.battle.participants) > 1:
+                        part_b = inst.logic.battle.participants[1]
+                        if part_b.active:
+                            inst.captainB.active_pokemon = part_b.active[0]
+            except Exception:
+                # Logic may be incomplete; fail silently
+                pass
+
+            # ensure trainer list reflects current captains
+            if inst.captainA or inst.captainB:
+                inst.trainers = [t for t in (inst.captainA, inst.captainB) if t]
+            else:
+                inst.trainers = []
+
 
 battle_handler = BattleHandler()
