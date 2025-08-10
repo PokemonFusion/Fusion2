@@ -111,7 +111,7 @@ def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[s
 
 
 # ---------- Main render ----------
-def render_battle_ui(state, viewer, total_width: int = 100) -> str:
+def render_battle_ui(state, viewer, total_width: int = 100, waiting_on=None) -> str:
     """Return a rendered battle UI string for ``viewer``.
 
     Parameters
@@ -123,6 +123,10 @@ def render_battle_ui(state, viewer, total_width: int = 100) -> str:
         The trainer or player viewing the interface.
     total_width:
         Total desired width of the UI box.
+    waiting_on:
+        Optional Pokémon instance to indicate a pending action for.
+        When supplied, a footer line ``"Waiting on <Pokémon>..."`` is
+        appended to the interface.
     """
 
     # layout constants
@@ -181,7 +185,14 @@ def render_battle_ui(state, viewer, total_width: int = 100) -> str:
         f"   Field: {getattr(state, 'field', '-')}   Round: {getattr(state, 'round_no', getattr(state, 'round', getattr(state, 'turn', 0)))}"
     )
     bottom = corner_bl + (border_h * max(0, inner - 2)) + corner_br
+
     # Box with outer vertical borders
-    box = [top] + rows + [border_v + rpad(footer_info, inner) + border_v, bottom]
+    box = [top] + rows + [border_v + rpad(footer_info, inner) + border_v]
+
+    if waiting_on:
+        name = getattr(waiting_on, "name", str(waiting_on))
+        box.append(border_v + rpad(f" Waiting on {name}...", inner) + border_v)
+
+    box.append(bottom)
     return "\n".join(box)
 

@@ -139,7 +139,9 @@ def display_battle_interface(
     viewer_team:
         "A", "B" or ``None`` to indicate which side the viewer belongs to.
     waiting_on:
-        Unused placeholder retained for backward compatibility.
+        Optional Pokémon instance to indicate which combatant has not yet
+        selected an action.  When provided a footer line is displayed showing
+        which Pokémon the system is waiting on.
     """
 
     class _StateAdapter:
@@ -173,7 +175,7 @@ def display_battle_interface(
 
     viewer = trainer if viewer_team == "A" else opponent if viewer_team == "B" else None
     adapter = _StateAdapter(trainer, opponent, battle_state)
-    return render_battle_ui(adapter, viewer, total_width=78)
+    return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)
 
 def _title_bar(left: str, right: str, width: int = 78) -> str:
     center = fit_visible(f" {left} VS {right}", width - 2)

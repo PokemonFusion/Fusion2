@@ -1304,45 +1304,29 @@ class BattleSession:
             self.run_turn()
         else:
             log_info(f"Turn not ready for battle {self.battle_id}")
-            waiting_team = None
             waiting_poke = None
             if self.data:
                 for name, pos in self.data.turndata.positions.items():
                     if not pos.getAction() and pos.pokemon:
-                        waiting_team = name[0]
                         waiting_poke = pos.pokemon
                         break
             if waiting_poke:
                 self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
                 try:
-                    if waiting_team == "A":
-                        iface_a = display_battle_interface(
-                            self.captainA,
-                            self.captainB,
-                            self.state,
-                            viewer_team="A",
-                        )
-                        iface_b = display_battle_interface(
-                            self.captainB,
-                            self.captainA,
-                            self.state,
-                            viewer_team="B",
-                            waiting_on=waiting_poke,
-                        )
-                    else:
-                        iface_a = display_battle_interface(
-                            self.captainA,
-                            self.captainB,
-                            self.state,
-                            viewer_team="A",
-                            waiting_on=waiting_poke,
-                        )
-                        iface_b = display_battle_interface(
-                            self.captainB,
-                            self.captainA,
-                            self.state,
-                            viewer_team="B",
-                        )
+                    iface_a = display_battle_interface(
+                        self.captainA,
+                        self.captainB,
+                        self.state,
+                        viewer_team="A",
+                        waiting_on=waiting_poke,
+                    )
+                    iface_b = display_battle_interface(
+                        self.captainB,
+                        self.captainA,
+                        self.state,
+                        viewer_team="B",
+                        waiting_on=waiting_poke,
+                    )
                     iface_w = display_battle_interface(
                         self.captainA,
                         self.captainB,
@@ -1350,16 +1334,10 @@ class BattleSession:
                         viewer_team=None,
                         waiting_on=waiting_poke,
                     )
-                    if waiting_team == "A":
-                        for t in self.teamA:
-                            self._msg_to(t, iface_a)
-                        for t in self.teamB:
-                            self._msg_to(t, iface_b)
-                    else:
-                        for t in self.teamA:
-                            self._msg_to(t, iface_a)
-                        for t in self.teamB:
-                            self._msg_to(t, iface_b)
+                    for t in self.teamA:
+                        self._msg_to(t, iface_a)
+                    for t in self.teamB:
+                        self._msg_to(t, iface_b)
                     for w in self.observers:
                         self._msg_to(w, iface_w)
                 except Exception:
