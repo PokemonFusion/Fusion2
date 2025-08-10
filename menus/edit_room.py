@@ -1,4 +1,4 @@
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
+from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu, free_input_node
 from evennia import create_object
 from typeclasses.rooms import Room
 from typeclasses.exits import Exit
@@ -9,21 +9,22 @@ def _list_rooms(caller):
     caller.msg("\n".join(lines))
 
 
+@free_input_node
 def node_start(caller, raw_input=None):
     """Select room to edit."""
     if not raw_input:
         text = "Enter room ID to edit or type 'list rooms':"
-        return text, [{"key": "_default", "goto": "node_start"}]
+        return text, {"goto": "node_start"}
     cmd = raw_input.strip()
     if cmd.lower().startswith("list"):
         _list_rooms(caller)
-        return "Enter room ID:", [{"key": "_default", "goto": "node_start"}]
+        return "Enter room ID:", {"goto": "node_start"}
     try:
         rid = int(cmd.strip("#"))
         room = Room.objects.get(id=rid)
     except (ValueError, Room.DoesNotExist):
         caller.msg("Invalid room ID.")
-        return "Enter room ID:", [{"key": "_default", "goto": "node_start"}]
+        return "Enter room ID:", {"goto": "node_start"}
     caller.ndb.er_room = room
     caller.ndb.er_data = {
         "name": room.key,
@@ -36,22 +37,24 @@ def node_start(caller, raw_input=None):
     return node_name(caller)
 
 
+@free_input_node
 def node_name(caller, raw_input=None):
     data = caller.ndb.er_data
     if raw_input is None:
         text = f"Current name: {data['name']}. Enter new name or leave blank:"
-        return text, [{"key": "_default", "goto": "node_name"}]
+        return text, {"goto": "node_name"}
     if raw_input.strip():
         data['name'] = raw_input.strip()
     text = "Enter new description or leave blank to keep current:"
-    return text, [{"key": "_default", "goto": "node_desc"}]
+    return text, {"goto": "node_desc"}
 
 
+@free_input_node
 def node_desc(caller, raw_input):
     data = caller.ndb.er_data
     if raw_input is None:
         text = "Enter new description or leave blank:"
-        return text, [{"key": "_default", "goto": "node_desc"}]
+        return text, {"goto": "node_desc"}
     if raw_input.strip():
         data['desc'] = raw_input
     text = f"Is this a Pokémon Center? (yes/no) [current: {'yes' if data.get('is_center') else 'no'}]"
@@ -97,11 +100,10 @@ def node_shop_no(caller, raw_input=None):
     ]
 
 
+@free_input_node
 def node_hunt_yes(caller, raw_input=None):
     caller.ndb.er_data['allow_hunting'] = True
-    return "Enter encounter table as name:rate, name:rate or blank to keep:", [
-        {"key": "_default", "goto": "node_hunt_table"}
-    ]
+    return "Enter encounter table as name:rate, name:rate or blank to keep:", {"goto": "node_hunt_table"}
 
 
 def node_hunt_no(caller, raw_input=None):
@@ -109,6 +111,7 @@ def node_hunt_no(caller, raw_input=None):
     return node_summary(caller)
 
 
+@free_input_node
 def node_hunt_table(caller, raw_input):
     data = caller.ndb.er_data
     if not raw_input.strip():
@@ -120,9 +123,7 @@ def node_hunt_table(caller, raw_input):
             table[mon.strip()] = int(rate.strip())
         except ValueError:
             caller.msg("Invalid format. Use name:rate, name:rate")
-            return "Enter encounter table as name:rate, name:rate:", [
-                {"key": "_default", "goto": "node_hunt_table"}
-            ]
+            return "Enter encounter table as name:rate, name:rate:", {"goto": "node_hunt_table"}
     data['hunt_chart'] = [
         {"name": mon.strip(), "weight": int(rate.strip())}
         for mon, rate in table.items()
@@ -172,6 +173,7 @@ def node_save(caller, raw_input=None):
     )
 
 
+@free_input_node
 def node_exit_dir(caller, raw_input=None):
     room = caller.ndb.rw_room
     if not raw_input:
@@ -179,25 +181,25 @@ def node_exit_dir(caller, raw_input=None):
             "Enter exit as <direction>=<room_id> or 'list rooms'.\n"
             "Type 'done' when finished."
         )
-        return text, [{"key": "_default", "goto": "node_exit_dir"}]
+        return text, {"goto": "node_exit_dir"}
     cmd = raw_input.strip()
     if cmd.lower().startswith("list"):
         _list_rooms(caller)
-        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
+        return "Enter exit as <dir>=<id> or 'done':", {"goto": "node_exit_dir"}
     if cmd.lower() == "done":
         return node_quit(caller)
     if "=" not in cmd:
         caller.msg("Usage: <direction>=<room_id> or 'done'.")
-        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
+        return "Enter exit as <dir>=<id> or 'done':", {"goto": "node_exit_dir"}
     direction, rid = [s.strip() for s in cmd.split("=", 1)]
     try:
         dest = Room.objects.get(id=int(rid))
     except (ValueError, Room.DoesNotExist):
         caller.msg("Invalid room id.")
-        return "Enter exit as <dir>=<id> or 'done':", [{"key": "_default", "goto": "node_exit_dir"}]
+        return "Enter exit as <dir>=<id> or 'done':", {"goto": "node_exit_dir"}
     create_object(Exit, key=direction, location=room, destination=dest)
     caller.msg(f"Created exit '{direction}' to {dest.key}.")
-    return "Add another exit or 'done' when finished:", [{"key": "_default", "goto": "node_exit_dir"}]
+    return "Add another exit or 'done' when finished:", {"goto": "node_exit_dir"}
 
 
 def node_quit(caller, raw_input=None):

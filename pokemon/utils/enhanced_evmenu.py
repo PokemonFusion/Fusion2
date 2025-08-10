@@ -1,8 +1,38 @@
 """Extensions to :class:`evennia.utils.evmenu.EvMenu`."""
 
-from evennia.utils.evmenu import EvMenu, EvMenuError, _HELP_NO_OPTION_MATCH
+from typing import Any, Callable, Dict, List, Tuple, Union
+
+from evennia.utils.evmenu import EvMenu, EvMenuError
 from evennia.utils.ansi import strip_ansi
 from evennia.utils.utils import make_iter
+
+
+NodeReturn = Tuple[str, Union[None, Dict[str, Any], List[Dict[str, Any]]]]
+
+
+def _ensure_default_option(node_ret: NodeReturn) -> NodeReturn:
+    """Ensure free-form nodes always capture input with ``_default``."""
+
+    if not isinstance(node_ret, tuple) or len(node_ret) != 2:
+        return node_ret
+    text, options = node_ret
+    if isinstance(options, dict):
+        if "goto" in options and "key" not in options:
+            wrapped = {"key": "_default", **options}
+            return text, [wrapped]
+        return text, [options]
+    return node_ret
+
+
+def free_input_node(func: Callable[..., NodeReturn]) -> Callable[..., NodeReturn]:
+    """Decorator adding a ``_default`` option when absent."""
+
+    def wrapper(caller, raw_input=None, **kwargs):
+        ret = func(caller, raw_input, **kwargs)
+        return _ensure_default_option(ret)
+
+    wrapper.__name__ = getattr(func, "__name__", "free_input_node")
+    return wrapper
 
 
 class EnhancedEvMenu(EvMenu):
@@ -24,7 +54,7 @@ class EnhancedEvMenu(EvMenu):
         self,
         *args,
         on_abort=None,
-        invalid_message=None,
+        invalid_message="|rIncorrect input, try again.|n",
         auto_repeat_invalid=True,
         brief_invalid=True,
         numbered_options=True,
@@ -36,7 +66,7 @@ class EnhancedEvMenu(EvMenu):
         **menu_kwargs,
     ):
         self.on_abort = on_abort
-        self.invalid_message = invalid_message or _HELP_NO_OPTION_MATCH
+        self.invalid_message = invalid_message
         self.auto_repeat_invalid = auto_repeat_invalid
         self.brief_invalid = brief_invalid
         self.numbered_options = numbered_options
@@ -60,7 +90,7 @@ class EnhancedEvMenu(EvMenu):
 
     def parse_input(self, raw_string):
         """Custom input parsing supporting the ``_repeat`` target."""
-        cmd = strip_ansi(raw_string.strip())
+        cmd = strip_ansi((raw_string or "").strip())
         low = cmd.lower()
 
         if not low:
@@ -163,13 +193,11 @@ class EnhancedEvMenu(EvMenu):
                 pass
             return
 
-        # completely invalid
+        # completely invalid – keep loop alive without re-spamming full prompt
         self.invalid_msg()
-        if self.auto_repeat_invalid:
-            if self.brief_invalid:
-                self._show_footer_hint()
-            else:
-                self.display_nodetext()
+        # do not re-display nodetext here; user can still see it in client scrollback
+        # and may type again immediately
+        return
 
     def invalid_msg(self):
         """
