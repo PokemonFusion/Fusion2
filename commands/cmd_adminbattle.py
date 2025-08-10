@@ -8,8 +8,9 @@ from pokemon.battle.storage import BattleDataWrapper
 
 from pokemon.battle.handler import battle_handler
 from pokemon.battle.interface import display_battle_interface
-from utils.battle_display import render_move_gui
+from pokemon.ui import render_move_gui
 from dataclasses import dataclass, field as dc_field
+from typing import Any, Dict, List, Tuple
 
 
 class CmdAbortBattle(Command):
@@ -211,8 +212,8 @@ class CmdUiPreview(Command):
         caller.msg(ui)
         view_team = self.viewer_team or "A"
         active = trainerA.active_pokemon if view_team == "A" else trainerB.active_pokemon
-        mv = build_moves_dict_from_active(active)
-        gui = render_move_gui(mv)
+        slots, pp_overrides = build_moves_dict_from_active(active)
+        gui = render_move_gui(slots, pp_overrides=pp_overrides)
         caller.msg("\n" + gui)
 
 
@@ -257,16 +258,25 @@ def make_mock_battle_state() -> MockBattleState:
     return state
 
 
-def build_moves_dict_from_active(active) -> dict:
-    letters = ["A", "B", "C", "D"]
-    moves = {}
-    for move, letter in zip(getattr(active, "moves", [])[:4], letters):
-        moves[letter] = {
-            "name": move.get("name", "???"),
-            "type": move.get("type", "Normal"),
-            "category": move.get("category", "Status"),
-            "pp": move.get("pp", (0, 0)),
-            "power": move.get("power", 0),
-            "accuracy": move.get("accuracy", 100),
-        }
-    return moves
+def build_moves_dict_from_active(active: Any) -> Tuple[List[Any], Dict[int, int]]:
+    """Return move slots and PP overrides for an active Pokémon."""
+
+    slots: List[Any] = []
+    pp_overrides: Dict[int, int] = {}
+    for idx, move in enumerate(getattr(active, "moves", [])[:4]):
+        if isinstance(move, dict):
+            pp_val = move.get("pp")
+            if isinstance(pp_val, (tuple, list)):
+                current, maximum = pp_val
+                move = {**move, "pp": maximum}
+                pp_overrides[idx] = current
+            else:
+                cur = move.get("current_pp")
+                if cur is not None:
+                    pp_overrides[idx] = cur
+        else:
+            cur = getattr(move, "current_pp", None)
+            if cur is not None:
+                pp_overrides[idx] = cur
+        slots.append(move)
+    return slots, pp_overrides
