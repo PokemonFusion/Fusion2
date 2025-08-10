@@ -218,20 +218,29 @@ class Pokemon:
         return obj
 
 
+@dataclass
 class DeclareAttack:
-    def __init__(self, target: str, move: Move):
-        self.target = target
-        self.move = move
+    """Representation of a declared attack.
 
-    def __repr__(self):
-        return f"{self.move.name} -> {self.target}"
+    Only the key of the move and its target are stored. Full move
+    information is retrieved from the dex when needed by the battle
+    engine.
+    """
+
+    target: str
+    move: str
+
+    def __repr__(self) -> str:
+        return f"{self.move} -> {self.target}"
 
     def to_dict(self) -> Dict:
-        return {"target": self.target, "move": self.move.to_dict()}
+        """Serialise this declaration to a dictionary."""
+        return {"target": self.target, "move": self.move}
 
     @classmethod
     def from_dict(cls, data: Dict) -> "DeclareAttack":
-        return cls(target=data["target"], move=Move.from_dict(data["move"]))
+        """Recreate a :class:`DeclareAttack` from stored data."""
+        return cls(target=data["target"], move=data["move"])
 
 
 class TurnInit:
@@ -281,12 +290,23 @@ class PositionData:
     def getTarget(self) -> Optional[str]:
         return self.turninit.getTarget()
 
-    def getAction(self) -> Optional[Move]:
+    def getAction(self) -> Optional[str]:
+        """Return the key of the declared move, if any."""
         if self.turninit.attack:
             return self.turninit.attack.move
         return None
 
-    def declareAttack(self, target: str, move: Move) -> None:
+    def declareAttack(self, target: str, move: str) -> None:
+        """Declare a move to be used this turn.
+
+        Parameters
+        ----------
+        target : str
+            The target position for the move.
+        move : str
+            Key of the move in the move dex.
+        """
+
         self.turninit = TurnInit(attack=DeclareAttack(target, move))
 
     def declareSwitch(self, slotswitch) -> None:

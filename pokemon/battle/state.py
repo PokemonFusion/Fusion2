@@ -67,7 +67,7 @@ class BattleState:
                 state.positions[pos] = id_map.get(pdata.pokemon, 0)
             if pdata.turninit.attack:
                 state.declare[pos] = {
-                    "move": pdata.turninit.attack.move.name,
+                    "move": pdata.turninit.attack.move,
                     "target": pdata.turninit.attack.target,
                 }
             elif pdata.turninit.switch is not None:
