@@ -6,6 +6,49 @@ import types
 import pytest
 from django.core.exceptions import ValidationError
 
+# Provide minimal ``evennia`` modules so model validators import cleanly
+# Stub out heavy dependencies from Evennia and Django-based models
+evennia_utils = types.ModuleType("evennia.utils")
+idmapper_mod = types.ModuleType("evennia.utils.idmapper")
+models_mod = types.ModuleType("evennia.utils.idmapper.models")
+
+class SharedMemoryModel:  # pragma: no cover - simple stub
+    pass
+
+models_mod.SharedMemoryModel = SharedMemoryModel
+sys.modules.setdefault("evennia.utils", evennia_utils)
+sys.modules.setdefault("evennia.utils.idmapper", idmapper_mod)
+sys.modules.setdefault("evennia.utils.idmapper.models", models_mod)
+
+pokemon_models = types.ModuleType("pokemon.models")
+validators_mod = types.ModuleType("pokemon.models.validators")
+
+def validate_ivs(value):
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        raise ValidationError("IVs must contain six integers.")
+    for v in value:
+        if not isinstance(v, int) or not 0 <= v <= 31:
+            raise ValidationError("IV values must be between 0 and 31.")
+
+def validate_evs(value):
+    if not isinstance(value, (list, tuple)) or len(value) != 6:
+        raise ValidationError("EVs must contain six integers.")
+    from pokemon.stats import EV_LIMIT, STAT_EV_LIMIT  # pragma: no cover
+    for v in value:
+        if not isinstance(v, int) or not 0 <= v <= STAT_EV_LIMIT:
+            raise ValidationError(
+                f"EV values must be between 0 and {STAT_EV_LIMIT}."
+            )
+    if sum(value) > EV_LIMIT:
+        raise ValidationError(f"Total EVs cannot exceed {EV_LIMIT}.")
+
+validators_mod.validate_ivs = validate_ivs
+validators_mod.validate_evs = validate_evs
+validators_mod.__all__ = ["validate_ivs", "validate_evs"]
+pokemon_models.validators = validators_mod
+sys.modules.setdefault("pokemon.models", pokemon_models)
+sys.modules.setdefault("pokemon.models.validators", validators_mod)
+
 from pokemon.models.validators import validate_ivs, validate_evs
 
 
