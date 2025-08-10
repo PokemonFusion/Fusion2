@@ -44,12 +44,17 @@ def render_move_gui(
     return _render(slots, pp_overrides=pp_overrides, total_width=total_width)
 
 
-def render_battle_ui(state, viewer, total_width: int = 100) -> str:
-    """Proxy to :func:`pokemon.ui.battle_render.render_battle_ui`."""
+def render_battle_ui(state, viewer, total_width: int = 100, waiting_on=None) -> str:
+    """Proxy to :func:`pokemon.ui.battle_render.render_battle_ui`.
+
+    Parameters mirror :func:`pokemon.ui.battle_render.render_battle_ui` with
+    the addition of ``waiting_on`` which allows rendering a waiting indicator
+    in the footer.
+    """
 
     from pokemon.ui.battle_render import render_battle_ui as _render
 
-    return _render(state, viewer, total_width=total_width)
+    return _render(state, viewer, total_width=total_width, waiting_on=waiting_on)
 
 
 __all__ = [
