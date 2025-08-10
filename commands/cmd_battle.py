@@ -17,7 +17,7 @@ try:
 except Exception:  # pragma: no cover - simple fallback
     def _normalize_key(name: str) -> str:
         return name.replace(" ", "").replace("-", "").replace("'", "").lower()
-from utils.battle_display import render_move_gui
+from pokemon.ui import render_move_gui
 
 try:
     from pokemon.dex.functions import moves_funcs
@@ -70,61 +70,48 @@ class CmdBattleAttack(Command):
             self.caller.msg("You have no active Pokémon.")
             return
 
-        slots = getattr(active, "activemoveslot_set", None)
+        slots_qs = getattr(active, "activemoveslot_set", None)
         qs = []
-        if slots:
+        if slots_qs:
             try:
-                qs = list(slots.all().order_by("slot"))
+                qs = list(slots_qs.all().order_by("slot"))
             except Exception:
                 try:
-                    qs = list(slots.order_by("slot"))
+                    qs = list(slots_qs.order_by("slot"))
                 except Exception:
-                    qs = list(slots)
+                    qs = list(slots_qs)
 
         from pokemon.dex import MOVEDEX
 
-        # build move data for display
+        # build simple slot list and PP overrides
         letters = ["A", "B", "C", "D"]
-        moves_map = {}
+        slots: list = []
+        pp_overrides: dict[int, int] = {}
         if qs:
-            for slot_obj, letter in zip(qs, letters):
+            for idx, slot_obj in enumerate(qs[:4]):
                 move = slot_obj.move
-                move_key = move if isinstance(move, str) else getattr(move, "name", "")
-                dex = MOVEDEX.get(move_key.lower(), None)
-                max_pp = getattr(move, "pp", None)
-                if dex and not max_pp:
-                    max_pp = dex.pp
+                slots.append(move)
                 cur_pp = getattr(slot_obj, "current_pp", None)
-                moves_map[letter] = {
-                    "name": move.name,
-                    "type": getattr(move, "type", None) or (dex.type if dex else None),
-                    "category": getattr(move, "category", None) or (dex.category if dex else None),
-                    "pp": (
-                        cur_pp if cur_pp is not None else max_pp,
-                        max_pp or 0,
-                    ),
-                    "power": getattr(move, "power", 0) or (dex.power if dex else 0),
-                    "accuracy": getattr(move, "accuracy", 100)
-                    if getattr(move, "accuracy", None) is not None
-                    else (dex.accuracy if dex else 100),
-                }
+                if cur_pp is None:
+                    move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                    dex = MOVEDEX.get(move_key.lower(), None)
+                    max_pp = getattr(move, "pp", None) or (dex.pp if dex else None)
+                    if max_pp is not None:
+                        cur_pp = max_pp
+                if cur_pp is not None:
+                    pp_overrides[idx] = cur_pp
         else:
-            for move, letter in zip(getattr(active, "moves", [])[:4], letters):
-                move_key = move if isinstance(move, str) else getattr(move, "name", "")
-                dex = MOVEDEX.get(move_key.lower(), None)
-                max_pp = getattr(move, "pp", None)
-                if dex and not max_pp:
-                    max_pp = dex.pp
-                moves_map[letter] = {
-                    "name": getattr(move, "name", dex.name if dex else move_key.capitalize() or "???"),
-                    "type": getattr(move, "type", None) or (dex.type if dex else None),
-                    "category": getattr(move, "category", None) or (dex.category if dex else None),
-                    "pp": (max_pp, max_pp or 0),
-                    "power": getattr(move, "power", 0) or (dex.power if dex else 0),
-                    "accuracy": getattr(move, "accuracy", 100)
-                    if getattr(move, "accuracy", None) is not None
-                    else (dex.accuracy if dex else 100),
-                }
+            for idx, move in enumerate(getattr(active, "moves", [])[:4]):
+                slots.append(move)
+                cur_pp = getattr(move, "current_pp", None)
+                if cur_pp is None:
+                    move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                    dex = MOVEDEX.get(move_key.lower(), None)
+                    max_pp = getattr(move, "pp", None) or (dex.pp if dex else None)
+                    if max_pp is not None:
+                        cur_pp = max_pp
+                if cur_pp is not None:
+                    pp_overrides[idx] = cur_pp
 
         move_name = self.move_name
 
@@ -136,15 +123,21 @@ class CmdBattleAttack(Command):
                 return
 
             # handle selection by letter or name
+            selected_move = None
             letter = selected.upper()
-            if letter in moves_map:
-                move = moves_map[letter]
+            if letter in letters:
+                idx = letters.index(letter)
+                if idx < len(slots):
+                    selected_move = slots[idx]
             else:
-                move = next(
-                    (m for m in moves_map.values() if m["name"].lower() == selected.lower()),
-                    None,
-                )
-            if not move:
+                for mv in slots:
+                    name = (
+                        mv if isinstance(mv, str) else getattr(mv, "name", "")
+                    )
+                    if name.lower() == selected.lower():
+                        selected_move = mv
+                        break
+            if selected_move is None:
                 _prompt_move()
                 return
 
@@ -182,7 +175,8 @@ class CmdBattleAttack(Command):
                 self.caller.msg(f"Valid targets: {', '.join(pos_map.keys())}")
                 return
 
-            move_entry = MOVEDEX.get(_normalize_key(move["name"]))
+            move_name_sel = selected_move if isinstance(selected_move, str) else getattr(selected_move, "name", "")
+            move_entry = MOVEDEX.get(_normalize_key(move_name_sel))
             on_hit_func = on_try_func = None
             on_before_move = on_after_move = None
             base_power_cb = None
@@ -261,7 +255,7 @@ class CmdBattleAttack(Command):
                     raw=move_entry.raw,
                 )
             else:
-                move_obj = BattleMove(name=move["name"])
+                move_obj = BattleMove(name=move_name_sel)
             action = Action(
                 participant,
                 ActionType.MOVE,
@@ -290,7 +284,11 @@ class CmdBattleAttack(Command):
                 _process_move(choice)
                 return False
 
-            get_input(self.caller, render_move_gui(moves_map), _callback)
+            get_input(
+                self.caller,
+                render_move_gui(slots, pp_overrides=pp_overrides),
+                _callback,
+            )
 
         # forced move checks
         encore = getattr(getattr(active, "volatiles", {}), "get", lambda *_: None)("encore")
@@ -300,7 +298,7 @@ class CmdBattleAttack(Command):
         elif choice:
             move_name = choice.get("move")
         else:
-            pp_vals = [info["pp"][0] for info in moves_map.values() if info and info["pp"][0] is not None]
+            pp_vals = [pp_overrides.get(i, 1) for i in range(len(slots))]
             if pp_vals and all(val == 0 for val in pp_vals):
                 move_name = "Struggle"
 
