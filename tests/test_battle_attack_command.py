@@ -44,6 +44,9 @@ def setup_modules():
 
     orig_battle = sys.modules.get("pokemon.battle")
     orig_battleinstance = sys.modules.get("pokemon.battle.battleinstance")
+    orig_engine = sys.modules.get("pokemon.battle.engine")
+    orig_ui = sys.modules.get("pokemon.ui")
+    orig_ui_move = sys.modules.get("pokemon.ui.move_gui")
     battle_mod = types.ModuleType("pokemon.battle")
     class ActionType(Enum):
         MOVE = 1
@@ -55,13 +58,37 @@ def setup_modules():
         move: object = None
         priority: int = 0
     class BattleMove:
-        def __init__(self, name, priority=0):
+        def __init__(self, name, priority=0, **kwargs):  # pragma: no cover - stub
             self.name = name
             self.priority = priority
     battle_mod.Action = Action
     battle_mod.ActionType = ActionType
     battle_mod.BattleMove = BattleMove
     sys.modules["pokemon.battle"] = battle_mod
+
+    engine_mod = types.ModuleType("pokemon.battle.engine")
+    engine_mod.BattleMove = BattleMove
+
+    def _normalize_key(name: str) -> str:
+        return name
+
+    engine_mod._normalize_key = _normalize_key
+    sys.modules["pokemon.battle.engine"] = engine_mod
+
+    ui_pkg = types.ModuleType("pokemon.ui")
+    ui_move = types.ModuleType("pokemon.ui.move_gui")
+
+    def _render(slots, pp_overrides=None, total_width=76):  # pragma: no cover - stub
+        letters = ["A", "B", "C", "D"]
+        lines = ["Choose a move:"]
+        for idx, s in enumerate(slots[:4]):
+            name = s if isinstance(s, str) else getattr(s, "name", "")
+            lines.append(f"[{letters[idx]} ] {name}")
+        return "\n".join(lines)
+
+    ui_move.render_move_gui = _render
+    sys.modules["pokemon.ui"] = ui_pkg
+    sys.modules["pokemon.ui.move_gui"] = ui_move
 
     battleinstance_mod = types.ModuleType("pokemon.battle.battleinstance")
     class BattleSession:
@@ -71,10 +98,10 @@ def setup_modules():
     battleinstance_mod.BattleSession = BattleSession
     sys.modules["pokemon.battle.battleinstance"] = battleinstance_mod
 
-    return orig_evennia, orig_battle, orig_battleinstance
+    return orig_evennia, orig_battle, orig_battleinstance, orig_engine, orig_ui, orig_ui_move
 
 
-def restore_modules(orig_evennia, orig_battle, orig_battleinstance):
+def restore_modules(orig_evennia, orig_battle, orig_battleinstance, orig_engine, orig_ui, orig_ui_move):
     if orig_evennia is not None:
         sys.modules["evennia"] = orig_evennia
     else:
@@ -99,6 +126,18 @@ def restore_modules(orig_evennia, orig_battle, orig_battleinstance):
         sys.modules["pokemon.battle.battleinstance"] = orig_battleinstance
     else:
         sys.modules.pop("pokemon.battle.battleinstance", None)
+    if orig_engine is not None:
+        sys.modules["pokemon.battle.engine"] = orig_engine
+    else:
+        sys.modules.pop("pokemon.battle.engine", None)
+    if orig_ui is not None:
+        sys.modules["pokemon.ui"] = orig_ui
+    else:
+        sys.modules.pop("pokemon.ui", None)
+    if orig_ui_move is not None:
+        sys.modules["pokemon.ui.move_gui"] = orig_ui_move
+    else:
+        sys.modules.pop("pokemon.ui.move_gui", None)
 
 
 class FakeSlot:
@@ -151,7 +190,7 @@ class DummyCaller:
 
 
 def test_battleattack_lists_moves_and_targets():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1), FakeSlot('growl',2)]))
@@ -175,13 +214,13 @@ def test_battleattack_lists_moves_and_targets():
     assert cb is not None
     cb(caller, '', 'tackle')
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is opp
 
 
 def test_battleattack_auto_target_single():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
@@ -198,13 +237,13 @@ def test_battleattack_auto_target_single():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is enemy
 
 
 def test_battleattack_prompt_runs_turn_after_callback():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
@@ -228,14 +267,14 @@ def test_battleattack_prompt_runs_turn_after_callback():
     assert cb is not None
     cb(caller, '', 'tackle')
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert inst.ran is False
     assert battle.ran is False
 
 
 def test_battleattack_arg_runs_turn():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
@@ -253,14 +292,14 @@ def test_battleattack_arg_runs_turn():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert inst.ran is False
     assert battle.ran is False
 
 
 def test_battleattack_requires_target_when_multiple():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle',1)]))
@@ -278,14 +317,14 @@ def test_battleattack_requires_target_when_multiple():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert player.pending_action is None
     assert 'Valid targets' in caller.msgs[-1]
     assert 'B1' in caller.msgs[-1]
 
 
 def test_battleattack_falls_back_to_move_list():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(moves=[types.SimpleNamespace(name='tackle'), types.SimpleNamespace(name='growl')])
@@ -309,12 +348,12 @@ def test_battleattack_falls_back_to_move_list():
     assert cb is not None
     cb(caller, '', 'A')
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert player.pending_action.target is enemy
 
 def test_battleattack_uses_caller_participant():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle', 1)]))
@@ -336,13 +375,13 @@ def test_battleattack_uses_caller_participant():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(p2.pending_action, cmd_mod.Action)
     assert p1.pending_action is None
 
 
 def test_battleattack_persists_declare_via_queue_move():
-    orig_evennia, orig_battle, orig_bi = setup_modules()
+    orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move = setup_modules()
     cmd_mod = load_cmd_module()
 
     poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot('tackle', 1)]))
@@ -360,7 +399,7 @@ def test_battleattack_persists_declare_via_queue_move():
     cmd.parse()
     cmd.func()
 
-    restore_modules(orig_evennia, orig_battle, orig_bi)
+    restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_ui, orig_ui_move)
     assert isinstance(player.pending_action, cmd_mod.Action)
     assert inst.queued == [('tackle', 'B1')]
 
