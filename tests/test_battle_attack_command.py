@@ -303,7 +303,7 @@ def test_battleattack_falls_back_to_move_list():
     cmd.func()
     msg = '\n'.join(caller.msgs)
     assert 'tackle' in msg.lower()
-    assert '/----------------[A]' in msg
+    assert '[A ]' in msg
 
     cb = caller.ndb.last_prompt_callback
     assert cb is not None
