@@ -32,7 +32,13 @@ def start(
 ) -> Tuple[str, List[Dict[str, Any]]]:
     """Node 1: choose move by letter or exact name."""
     text = render_move_gui(slots, pp_overrides=pp_overrides)
-    options = [{"key": "_default", "goto": _route_move, "desc": ""}]
+    options = [
+        {
+            "key": "_default",
+            "goto": (_route_move, {"slots": slots}),
+            "desc": "",
+        }
+    ]
     return text, options
 
 
