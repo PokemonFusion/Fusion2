@@ -3,7 +3,36 @@
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 from evennia.utils.evmenu import EvMenu
-from evennia.utils.ansi import strip_ansi
+from evennia.utils.ansi import strip_ansi  # for width calc of ANSI-colored lines
+
+
+# Example usage::
+#
+#     from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+#
+#     menu = EnhancedEvMenu(
+#         caller, menudata, startnode="node_start",
+#         on_abort=None,                     # callback when the user aborts
+#         invalid_message="|rIncorrect input, try again.|n",
+#         auto_repeat_invalid=True,          # redisplay node after invalid choice
+#         brief_invalid=True,                # show brief invalid message
+#         numbered_options=True,             # prefix options with numbers
+#         menu_title="Pokémon Menu",         # title text
+#         use_pokemon_style=True,            # enable Pokémon-style formatting
+#         show_border=True,                  # draw border around node text
+#         show_title=True,                   # show title in border/top line
+#         show_options=True,                 # render option list
+#         show_footer=True,                  # render footer prompt and hints
+#         footer_prompt="Number",            # prompt text inside footer
+#         border_color="|y",                 # border color (pipe-ANSI)
+#         title_text_color="|w",             # title text color
+#         option_number_color="|c",          # option number color
+#         option_desc_color="|w",            # option description color
+#         prompt_color="|g",                 # color of [Enter Number]
+#         hint_color="|w",                   # color of 'q'/'h' hints
+#         start_kwargs=None,                 # kwargs forwarded to start node
+#         **menu_kwargs,                     # additional EvMenu kwargs
+#     )
 
 
 NodeReturn = Tuple[str, Union[None, Dict[str, Any], List[Dict[str, Any]]]]
@@ -41,6 +70,8 @@ class EnhancedEvMenu(EvMenu):
       - automatic re-display of the same node on invalid choices
       - support for a `_repeat` goto to re-show the current node after exec
       - hooks for custom logging or UI enhancements
+      - optional Pokémon-style borders, title, options and footer
+      - per-menu color customization
     """
 
     # keys that always abort
@@ -59,8 +90,17 @@ class EnhancedEvMenu(EvMenu):
         numbered_options=True,
         menu_title="Pokémon Menu",
         use_pokemon_style=True,
+        show_border=True,
+        show_title=True,
+        show_options=True,
         show_footer=True,
         footer_prompt="Number",
+        border_color="|y",
+        title_text_color="|w",
+        option_number_color="|c",
+        option_desc_color="|w",
+        prompt_color="|g",
+        hint_color="|w",
         start_kwargs=None,
         **menu_kwargs,
     ):
@@ -71,8 +111,17 @@ class EnhancedEvMenu(EvMenu):
         self.numbered_options = numbered_options
         self.menu_title = menu_title
         self.use_pokemon_style = use_pokemon_style
-        self.show_footer = show_footer
+        self.show_border = bool(show_border)
+        self.show_title = bool(show_title)
+        self.show_options = bool(show_options)
+        self.show_footer = bool(show_footer)
         self.footer_prompt = footer_prompt
+        self.border_color = border_color
+        self.title_text_color = title_text_color
+        self.option_number_color = option_number_color
+        self.option_desc_color = option_desc_color
+        self.prompt_color = prompt_color
+        self.hint_color = hint_color
 
         startnode_input = menu_kwargs.pop("startnode_input", "")
         if start_kwargs:
@@ -118,17 +167,18 @@ class EnhancedEvMenu(EvMenu):
 
     def _show_footer_hint(self):
         """Show a compact footer hint without repainting the whole node."""
-        if not self.show_footer:
+        if not getattr(self, "show_footer", True):
             return
         prompt = self.footer_prompt
         if self.use_pokemon_style:
             tail = []
             if self.auto_quit:
-                tail.append("|w'q' to quit|n")
+                tail.append(f"{self.hint_color}'q' to quit|n")
             if self.auto_help:
-                tail.append("'h' for help")
+                tail.append(f"{self.hint_color}'h' for help|n")
             extra = f" | {' | '.join(tail)}" if tail else ""
-            self.msg(f"|y==|n [Enter {prompt}]{extra}")
+            bc, pc = self.border_color, self.prompt_color
+            self.msg(f"{bc}==|n {pc}[Enter {prompt}]|n{extra}")
         else:
             tail = []
             if self.auto_quit:
@@ -176,6 +226,13 @@ class EnhancedEvMenu(EvMenu):
         if not self.use_pokemon_style:
             return text
 
+        if not self.show_border:
+            if self.show_title and self.menu_title:
+                bc, tc = self.border_color, self.title_text_color
+                title = f"{bc}==[ {tc}{self.menu_title}{bc} ]==|n"
+                return f"{title}\n{text}"
+            return text
+
         def vlen(s: str) -> int:
             return len(strip_ansi(s or ""))
 
@@ -185,18 +242,22 @@ class EnhancedEvMenu(EvMenu):
 
         lines = (text or "").splitlines() or [""]
         inner_w = max(1, max(vlen(ln) for ln in lines))
-        title_seg = f"[ |w{self.menu_title}|n ]" if getattr(self, "menu_title", "") else ""
-        title_w = vlen(title_seg)
+        title_seg = ""
+        if self.show_title and self.menu_title:
+            title_seg = f"[ {self.title_text_color}{self.menu_title}{self.border_color} ]"
+        title_w = vlen(title_seg) if title_seg else 0
         inner_w = max(inner_w, title_w)
 
         left_fill = (inner_w - title_w) // 2 if title_seg else 0
         right_fill = (inner_w - title_w - left_fill) if title_seg else 0
-        if title_seg:
-            top = f"|y╔{'═'*left_fill}{title_seg}{'═'*right_fill}╗|n"
-        else:
-            top = f"|y╔{'═'*inner_w}╗|n"
-        middle = [f"|y║|n{pad_visible(ln, inner_w)}|y║|n" for ln in lines]
-        bottom = f"|y╚{'═'*inner_w}╝|n"
+        bc = self.border_color
+        top = (
+            f"{bc}╔{'═'*left_fill}{title_seg}{'═'*right_fill}╗|n"
+            if title_seg
+            else f"{bc}╔{'═'*inner_w}╗|n"
+        )
+        middle = [f"{bc}║|n{pad_visible(ln, inner_w)}{bc}║|n" for ln in lines]
+        bottom = f"{bc}╚{'═'*inner_w}╝|n"
         return "\n".join([top] + middle + [bottom])
 
     def options_formatter(self, optionlist):
@@ -217,8 +278,8 @@ class EnhancedEvMenu(EvMenu):
         # Pokémon style: colored number + description
         lines = []
         for idx, (_key, desc) in enumerate(optionlist, 1):
-            prefix = f"|c{idx}.|n"
-            lines.append(f"{prefix} |w{desc}|n" if desc else prefix)
+            prefix = f"{self.option_number_color}{idx}.|n"
+            lines.append(f"{prefix} {self.option_desc_color}{desc}|n" if desc else prefix)
         return "\n".join(lines)
 
     def node_formatter(self, nodetext, optionstext):
@@ -228,20 +289,20 @@ class EnhancedEvMenu(EvMenu):
         outer gray border; we render only our Pokémon box + options + footer.
         """
         parts = [nodetext]
-        if optionstext:
+        if optionstext and self.show_options:
             parts.append(optionstext)
         result = "\n\n".join(p for p in parts if p)
 
-        if self.show_footer:
+        if getattr(self, "show_footer", True):
             prompt = self.footer_prompt
             if self.use_pokemon_style:
                 tail = []
                 if self.auto_quit:
-                    tail.append("|w'q' to quit|n")
+                    tail.append(f"{self.hint_color}'q' to quit|n")
                 if self.auto_help:
-                    tail.append("'h' for help")
+                    tail.append(f"{self.hint_color}'h' for help|n")
                 hints = (" | " + " | ".join(tail)) if tail else ""
-                result += f"\n\n|y== |g[Enter {prompt}]|n{hints}|y ==|n"
+                result += f"\n\n{self.border_color}== {self.prompt_color}[Enter {prompt}]|n{hints}{self.border_color} ==|n"
             else:
                 tail = []
                 if self.auto_quit:
