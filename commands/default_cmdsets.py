@@ -18,102 +18,23 @@ from evennia import default_cmds
 from commands.cmd_help import CmdHelp
 from commands.cmd_debugpy import CmdDebugPy
 from commands.cmd_examine import CmdExamine
-from bboard.commands import (
-    CmdBBList,
-    CmdBBRead,
-    CmdBBPost,
-    CmdBBDelete,
-    CmdBBSet,
-    CmdBBNew,
-    CmdBBEdit,
-    CmdBBMove,
-    CmdBBPurge,
-    CmdBBLock,
-)
-from commands.pokedex import (
-    CmdPokedexSearch,
-    CmdPokedexAll,
-    CmdMovedexSearch,
-    CmdMovesetSearch,
-    CmdPokedexNumber,
-    CmdStarterList,
-)
+from commands.cmd_roleplay import CmdGOIC, CmdGOOOC
+from commands.cmd_account import CmdCharCreate, CmdAlts
 
-from commands.command import (
-    CmdShowPokemonOnUser,
-    CmdShowPokemonInStorage,
-    CmdAddPokemonToUser,
-    CmdAddPokemonToStorage,
-    CmdGetPokemonDetails,
-    CmdUseMove,
-    CmdInventory,
-    CmdAddItem,
-    CmdGiveItem,
-    CmdUseItem,
-    CmdEvolvePokemon,
-    CmdExpShare,
-    CmdHeal,
-    CmdTeachMove,
-    CmdLearn,
-    CmdChooseMoveset,
-    CmdAdminHeal,
-    CmdChooseStarter,
-    CmdDepositPokemon,
-    CmdWithdrawPokemon,
-    CmdShowBox,
-    CmdSetHoldItem,
-    CmdChargenInfo,
-    CmdSpoof,
-)
-from commands.cmd_hunt import CmdHunt, CmdLeaveHunt, CmdCustomHunt
-from commands.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
-from commands.cmd_watch import CmdWatch, CmdUnwatch
-from commands.cmd_adminbattle import (
-    CmdAbortBattle,
-    CmdRestoreBattle,
-    CmdBattleInfo,
-    CmdRetryTurn,
-    CmdUiPreview,
-)
-from commands.cmd_battle import (
-    CmdBattleAttack,
-    CmdBattleSwitch,
-    CmdBattleItem,
-    CmdBattleFlee,
-)
-from commands.cmd_store import CmdStore
-from commands.cmd_pokestore import CmdPokestore
-from commands.cmd_movesets import CmdMovesets
-from commands.cmd_pvp import (
-    CmdPvpHelp,
-    CmdPvpList,
-    CmdPvpCreate,
-    CmdPvpJoin,
-    CmdPvpAbort,
-    CmdPvpStart,
-)
-from commands.cmd_spawns import CmdSpawns
-from commands.cmd_chargen import CmdChargen
-from commands.cmd_roomwizard import CmdRoomWizard
-from commands.cmd_editroom import CmdEditRoom
-from commands.cmd_validate import CmdValidate
-from commands.cmd_givepokemon import CmdGivePokemon
-from commands.cmd_adminpokemon import (
-    CmdListPokemon,
-    CmdRemovePokemon,
-    CmdPokemonInfo,
-)
-from commands.cmd_gitpull import CmdGitPull
-from commands.cmd_logusage import CmdLogUsage, CmdMarkVerified
-from commands.cmd_account import CmdCharCreate, CmdAlts, CmdTradePokemon
-from commands.cmd_glance import CmdGlance
-from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
-from commands.cmdmapmove import CmdMapMove
-from commands.cmdstartmap import CmdStartMap
-from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
-from commands.cmd_debugbattle import CmdDebugBattle
-from commands.cmd_uimode import CmdUiMode
-from commands.cmd_uitheme import CmdUiTheme
+# grouped cmdsets
+from commands.cmdsets.bboard import BulletinBoardCmdSet
+from commands.cmdsets.roleplay import RoleplayCmdSet
+from commands.cmdsets.ui import UiCmdSet
+from commands.cmdsets.pokemon_core import PokemonCoreCmdSet
+from commands.cmdsets.battle import BattleCmdSet
+from commands.cmdsets.battle_admin import BattleAdminCmdSet
+from commands.cmdsets.pokedex import PokedexCmdSet
+from commands.cmdsets.pvp import PvpCmdSet
+from commands.cmdsets.world_build import WorldBuildCmdSet
+from commands.cmdsets.economy_map import EconomyMapCmdSet
+from commands.cmdsets.admin_misc import AdminMiscCmdSet
+
+from commands.cmd_toggle_test import CmdToggleTest
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -125,111 +46,29 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
     key = "DefaultCharacter"
 
     def at_cmdset_creation(self):
-        """
-        Populates the cmdset
-        """
+        """Populate the cmdset."""
         super().at_cmdset_creation()
         self.remove("help")
         self.remove("@examine")
         self.add(CmdHelp())
-        self.add(CmdDebugPy)
         self.add(CmdExamine())
-        #
-        # any commands you add below will overload the default ones.
-        #
-        # Bulletin board commands
-        self.add(CmdBBList())
-        self.add(CmdBBRead())
-        self.add(CmdBBPost())
-        self.add(CmdBBDelete())
-        self.add(CmdBBSet())
-        self.add(CmdBBNew())
-        self.add(CmdBBEdit())
-        self.add(CmdBBMove())
-        self.add(CmdBBPurge())
-        self.add(CmdBBLock())
+        self.add(CmdDebugPy)
 
-        # Basic roleplay command
-        self.add(CmdSpoof())
-        self.add(CmdGlance())
-        self.add(CmdOOC())
-        self.add(CmdUiMode())
-        self.add(CmdUiTheme())
+        # Attach grouped command sets
+        self.add(BulletinBoardCmdSet())
+        self.add(RoleplayCmdSet())
+        self.add(UiCmdSet())
+        self.add(PokemonCoreCmdSet())
+        self.add(BattleCmdSet())
+        self.add(BattleAdminCmdSet())
+        self.add(PokedexCmdSet())
+        self.add(PvpCmdSet())
+        self.add(WorldBuildCmdSet())
+        self.add(EconomyMapCmdSet())
+        self.add(AdminMiscCmdSet())
 
-        # Add Pokémon commands
-        self.add(CmdShowPokemonOnUser())
-        self.add(CmdShowPokemonInStorage())
-        self.add(CmdAddPokemonToUser())
-        self.add(CmdAddPokemonToStorage())
-        self.add(CmdGetPokemonDetails())
-        self.add(CmdUseMove())
-        self.add(CmdChooseStarter())
-        self.add(CmdDepositPokemon())
-        self.add(CmdWithdrawPokemon())
-        self.add(CmdShowBox())
-        self.add(CmdSetHoldItem())
-        self.add(CmdSheet())
-        self.add(CmdSheetPokemon())
-        self.add(CmdChargenInfo())
-        self.add(CmdInventory())
-        self.add(CmdAddItem())
-        self.add(CmdGiveItem())
-        self.add(CmdUseItem())
-        self.add(CmdStore())
-        self.add(CmdPokestore())
-        self.add(CmdEvolvePokemon())
-        self.add(CmdExpShare())
-        self.add(CmdHeal())
-        self.add(CmdTeachMove())
-        self.add(CmdLearn())
-        self.add(CmdChooseMoveset())
-        self.add(CmdMovesets())
-        self.add(CmdAdminHeal())
-        self.add(CmdTradePokemon())
-        self.add(CmdHunt())
-        self.add(CmdCustomHunt())
-        self.add(CmdLeaveHunt())
-        self.add(CmdWatchBattle())
-        self.add(CmdUnwatchBattle())
-        self.add(CmdDebugBattle())
-        self.add(CmdWatch())
-        self.add(CmdUnwatch())
-        self.add(CmdAbortBattle())
-        self.add(CmdRestoreBattle())
-        self.add(CmdBattleInfo())
-        self.add(CmdRetryTurn())
-        self.add(CmdUiPreview())
-        self.add(CmdBattleAttack())
-        self.add(CmdBattleSwitch())
-        self.add(CmdBattleItem())
-        self.add(CmdBattleFlee())
-        self.add(CmdSpawns())
-        self.add(CmdGivePokemon())
-        self.add(CmdListPokemon())
-        self.add(CmdRemovePokemon())
-        self.add(CmdPokemonInfo())
-        self.add(CmdGitPull())
-        # PVP commands
-        self.add(CmdPvpHelp())
-        self.add(CmdPvpList())
-        self.add(CmdPvpCreate())
-        self.add(CmdPvpJoin())
-        self.add(CmdPvpAbort())
-        self.add(CmdPvpStart())
-        self.add(CmdPokedexSearch())
-        self.add(CmdPokedexAll())
-        self.add(CmdMovedexSearch())
-        self.add(CmdMovesetSearch())
-        self.add(CmdPokedexNumber())
-        self.add(CmdStarterList())
-        self.add(CmdChargen())
-        self.add(CmdRoomWizard())
-        self.add(CmdEditRoom())
-        self.add(CmdValidate())
-        self.add(CmdMapMove())
-        self.add(CmdStartMap())
-        self.add(CmdLogUsage())
-        self.add(CmdMarkVerified())
+        # Developer toggle for test cmdset
+        self.add(CmdToggleTest())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
