@@ -8,8 +8,8 @@ sys.path.insert(0, ROOT)
 
 
 def load_cmd_module():
-    path = os.path.join(ROOT, "commands", "command.py")
-    spec = importlib.util.spec_from_file_location("commands.command", path)
+    path = os.path.join(ROOT, "commands", "cmd_learn_evolve.py")
+    spec = importlib.util.spec_from_file_location("commands.cmd_learn_evolve", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
@@ -27,8 +27,8 @@ def setup_modules():
     fake_menu.node_start = object
     sys.modules["menus.learn_new_moves"] = fake_menu
 
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
 
     class FakeMenu:
         called = False
@@ -39,7 +39,7 @@ def setup_modules():
             FakeMenu.start_kwargs = start_kwargs
 
     fake_evmod.EnhancedEvMenu = FakeMenu
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     orig_pokemon = sys.modules.get("pokemon")
     orig_gen = sys.modules.get("pokemon.generation")
@@ -94,12 +94,12 @@ def setup_modules():
     sys.modules["pokemon.middleware"] = mw_mod
 
     utils_mod = types.ModuleType("pokemon.utils")
-    helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
+    helpers_mod = types.ModuleType("helpers.pokemon_helpers")
     helpers_mod.get_max_hp = lambda *a, **k: 35
     helpers_mod.get_stats = lambda *a, **k: {}
     utils_mod.pokemon_helpers = helpers_mod
     sys.modules["pokemon.utils"] = utils_mod
-    sys.modules["pokemon.utils.pokemon_helpers"] = helpers_mod
+    sys.modules["helpers.pokemon_helpers"] = helpers_mod
 
     learn_mod = types.ModuleType("pokemon.utils.move_learning")
     learn_mod.learn_move = lambda *a, **k: None
@@ -158,9 +158,9 @@ def restore_modules(
     else:
         sys.modules.pop("menus.learn_new_moves", None)
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
 
     if orig_pokemon is not None:
         sys.modules["pokemon"] = orig_pokemon
@@ -207,9 +207,9 @@ def restore_modules(
     else:
         sys.modules.pop("pokemon.utils", None)
     if orig_utils is not None and hasattr(orig_utils, "pokemon_helpers"):
-        sys.modules["pokemon.utils.pokemon_helpers"] = orig_utils.pokemon_helpers
+        sys.modules["helpers.pokemon_helpers"] = orig_utils.pokemon_helpers
     else:
-        sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+        sys.modules.pop("helpers.pokemon_helpers", None)
     if orig_learn is not None:
         sys.modules["pokemon.utils.move_learning"] = orig_learn
     else:

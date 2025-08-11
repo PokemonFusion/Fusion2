@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT)
 # stub modules required by menu
 orig_pokedex = sys.modules.get("pokemon.dex")
 orig_generation = sys.modules.get("pokemon.generation")
-orig_helpers = sys.modules.get("pokemon.utils.pokemon_helpers")
+orig_helpers = sys.modules.get("helpers.pokemon_helpers")
 fake_pokedex = types.ModuleType("pokemon.dex")
 fake_pokedex.POKEDEX = {"Pikachu": {}}
 sys.modules["pokemon.dex"] = fake_pokedex
@@ -36,7 +36,7 @@ def generate_pokemon(species, level=1):
 fake_generation.generate_pokemon = generate_pokemon
 sys.modules["pokemon.generation"] = fake_generation
 
-fake_helpers = types.ModuleType("pokemon.utils.pokemon_helpers")
+fake_helpers = types.ModuleType("helpers.pokemon_helpers")
 
 class DummyPokemon:
     def __init__(self, species, level):
@@ -50,7 +50,7 @@ def create_owned_pokemon(species, trainer, level, **kwargs):
 
 
 fake_helpers.create_owned_pokemon = create_owned_pokemon
-sys.modules["pokemon.utils.pokemon_helpers"] = fake_helpers
+sys.modules["helpers.pokemon_helpers"] = fake_helpers
 
 # load menu module with stubs in place
 path = os.path.join(ROOT, "menus", "give_pokemon.py")
@@ -61,9 +61,9 @@ spec.loader.exec_module(menu)
 
 # restore patched modules to avoid affecting other tests
 if orig_helpers is not None:
-    sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+    sys.modules["helpers.pokemon_helpers"] = orig_helpers
 else:
-    sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+    sys.modules.pop("helpers.pokemon_helpers", None)
 
 if orig_generation is not None:
     sys.modules["pokemon.generation"] = orig_generation

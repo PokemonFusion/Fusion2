@@ -13,14 +13,14 @@ def test_movesets_invalid_location():
     fake_evennia.Command = type("Command", (), {})
     sys.modules["evennia"] = fake_evennia
 
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
     class FakeMenu:
         called = False
         def __init__(self, *a, **k):
             FakeMenu.called = True
     fake_evmod.EnhancedEvMenu = FakeMenu
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     orig_mgr = sys.modules.get("menus.moveset_manager")
     fake_mgr = types.ModuleType("menus.moveset_manager")
@@ -37,9 +37,9 @@ def test_movesets_invalid_location():
     else:
         sys.modules.pop("evennia", None)
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
     if orig_mgr is not None:
         sys.modules["menus.moveset_manager"] = orig_mgr
     else:
@@ -71,10 +71,10 @@ def test_number_select_opens_edit():
     fake_evennia.Command = type("Command", (), {})
     sys.modules["evennia"] = fake_evennia
 
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
     fake_evmod.EnhancedEvMenu = object
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     import importlib
     menu = importlib.import_module("menus.moveset_manager")
@@ -84,9 +84,9 @@ def test_number_select_opens_edit():
     else:
         sys.modules.pop("evennia", None)
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
 
     class Slots(list):
         def order_by(self, field):

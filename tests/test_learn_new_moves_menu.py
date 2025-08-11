@@ -8,10 +8,10 @@ sys.path.insert(0, ROOT)
 
 
 def test_learn_all_prompts_sequentially():
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
     fake_evmod.EnhancedEvMenu = object
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     orig_gen = sys.modules.get("pokemon.generation")
     gen_mod = types.ModuleType("pokemon.generation")
@@ -71,9 +71,9 @@ def test_learn_all_prompts_sequentially():
     else:
         sys.modules.pop("pokemon.utils.move_learning", None)
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
     if orig_gen is not None:
         sys.modules["pokemon.generation"] = orig_gen
     else:
@@ -92,10 +92,10 @@ def test_learn_all_prompts_sequentially():
 
 
 def test_order_moves_by_level():
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
     fake_evmod.EnhancedEvMenu = object
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     orig_learn = sys.modules.get("pokemon.utils.move_learning")
     learn_mod = types.ModuleType("pokemon.utils.move_learning")
@@ -142,9 +142,9 @@ def test_order_moves_by_level():
     lines = [ln.strip() for ln in text.splitlines()]
 
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
     if orig_learn is not None:
         sys.modules["pokemon.utils.move_learning"] = orig_learn
     else:

@@ -1,0 +1,80 @@
+"""CmdSet containing the core Pokémon gameplay commands."""
+
+from evennia import CmdSet
+from commands.command import (
+    CmdShowPokemonOnUser,
+    CmdShowPokemonInStorage,
+    CmdAddPokemonToUser,
+    CmdAddPokemonToStorage,
+    CmdGetPokemonDetails,
+    CmdUseMove,
+    CmdExpShare,
+    CmdHeal,
+    CmdAdminHeal,
+    CmdChooseStarter,
+)
+from commands.cmd_inventory import (
+    CmdInventory,
+    CmdAddItem,
+    CmdGiveItem,
+    CmdUseItem,
+)
+from commands.cmd_party import (
+    CmdDepositPokemon,
+    CmdWithdrawPokemon,
+    CmdShowBox,
+    CmdSetHoldItem,
+    CmdChargenInfo,
+)
+from commands.cmd_learn_evolve import (
+    CmdTeachMove,
+    CmdLearn,
+    CmdEvolvePokemon,
+    CmdChooseMoveset,
+)
+from commands.cmd_hunt import CmdHunt, CmdLeaveHunt, CmdCustomHunt
+from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
+from commands.cmd_movesets import CmdMovesets
+from commands.cmd_account import CmdTradePokemon
+
+
+class PokemonCoreCmdSet(CmdSet):
+    """CmdSet bundling core Pokémon related commands."""
+
+    key = "PokemonCoreCmdSet"
+
+    def at_cmdset_creation(self):
+        """Populate the cmdset."""
+        for cmd in (
+            CmdShowPokemonOnUser,
+            CmdShowPokemonInStorage,
+            CmdAddPokemonToUser,
+            CmdAddPokemonToStorage,
+            CmdGetPokemonDetails,
+            CmdUseMove,
+            CmdChooseStarter,
+            CmdDepositPokemon,
+            CmdWithdrawPokemon,
+            CmdShowBox,
+            CmdSetHoldItem,
+            CmdSheet,
+            CmdSheetPokemon,
+            CmdChargenInfo,
+            CmdInventory,
+            CmdAddItem,
+            CmdGiveItem,
+            CmdUseItem,
+            CmdMovesets,
+            CmdEvolvePokemon,
+            CmdExpShare,
+            CmdHeal,
+            CmdTeachMove,
+            CmdLearn,
+            CmdChooseMoveset,
+            CmdAdminHeal,
+            CmdTradePokemon,
+            CmdHunt,
+            CmdLeaveHunt,
+            CmdCustomHunt,
+        ):
+            self.add(cmd())

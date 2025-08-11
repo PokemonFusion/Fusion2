@@ -304,7 +304,7 @@ def test_from_dict_calculates_max_hp():
             self.current_hp = 5
 
         def get_max_hp(self):
-            from pokemon.utils.pokemon_helpers import get_max_hp
+            from helpers.pokemon_helpers import get_max_hp
             return get_max_hp(self)
 
     fake_models_core.OwnedPokemon = FakeOwned
@@ -315,10 +315,10 @@ def test_from_dict_calculates_max_hp():
     sys.modules["pokemon.models"] = fake_models_pkg
     sys.modules["pokemon.models.core"] = fake_models_core
 
-    helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
+    helpers_mod = types.ModuleType("helpers.pokemon_helpers")
     helpers_mod.get_max_hp = lambda mon: 42
-    orig_helpers = sys.modules.get("pokemon.utils.pokemon_helpers")
-    sys.modules["pokemon.utils.pokemon_helpers"] = helpers_mod
+    orig_helpers = sys.modules.get("helpers.pokemon_helpers")
+    sys.modules["helpers.pokemon_helpers"] = helpers_mod
 
     try:
         poke = bd_mod.Pokemon.from_dict({"model_id": "uid"})
@@ -332,9 +332,9 @@ def test_from_dict_calculates_max_hp():
             else:
                 sys.modules.pop("pokemon.models.core", None)
             if orig_helpers is not None:
-                sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+                sys.modules["helpers.pokemon_helpers"] = orig_helpers
             else:
-                sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+                sys.modules.pop("helpers.pokemon_helpers", None)
 
     assert poke.max_hp == 42
 
