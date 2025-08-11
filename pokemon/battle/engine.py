@@ -126,11 +126,16 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
     if battle_move.basePowerCallback:
         raw["basePowerCallback"] = battle_move.basePowerCallback
 
+    # Default to ``Physical`` but allow the move's category to be provided via
+    # ``raw`` so special moves can correctly reference SpA/SpD instead of
+    # Atk/Def.
+    category = raw.get("category") or "Physical"
+
     move = Move(
         name=battle_move.name,
         num=0,
         type=battle_move.type,
-        category="Physical",
+        category=category,
         power=battle_move.power,
         accuracy=battle_move.accuracy,
         pp=None,
@@ -778,9 +783,9 @@ class Battle:
 
                 return wrapped
 
+            # Register the wrapped callback once to avoid duplicate
+            # notifications for the same event.
             self.dispatcher.register(event, handler())
-
-            self.dispatcher.register(event, handler)
 
     def register_handlers(self, pokemon) -> None:
         """Register ability and item callbacks for ``pokemon``."""
