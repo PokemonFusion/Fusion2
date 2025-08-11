@@ -1,6 +1,9 @@
 # fusion2/utils/evmenu_sanity.py
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple
+import re
+
+from evennia.utils.evmenu import EvMenuGotoAbortMessage
 
 # Each node returns (text, options). `options` is a list of dicts. Keys:
 #  - "key": a string, tuple of aliases, or a regex
@@ -28,41 +31,57 @@ def node_start(caller, raw_string: str, **kwargs) -> Tuple[str, List[Dict[str, A
 
 def node_submenu(caller, raw_string: str, **kwargs):
     """
-    Demonstrates tuple keys, regex, and a goto callable.
+    Demonstrates tuple keys and regex-like routing using `_default`.
     """
     text = (
         "|wSubmenu|n\n"
-        "Valid keys: 1/yes, 2/no, or anything matching regex ^[0-9]{3}$.\n"
-        "Type anything else to observe invalid-input handling."
+        "Valid keys: 1/yes, 2/no. You can also type any |cthree digits|n (e.g. 123).\n"
+        "Type anything else to see invalid-input handling."
     )
     options = [
         {"key": ("1", "yes", "y"), "desc": "Say yes", "goto": "node_said_yes"},
         {"key": ("2", "no", "n"), "desc": "Say no", "goto": "node_said_no"},
-        {"key": r"^[0-9]{3}$", "desc": "Any three digits -> callable goto", "goto": _goto_digits},
         {"key": ("b", "back"), "desc": "Back to start", "goto": "node_start"},
+        # Fallback: inspect raw_string and decide where to go.
+        {"key": "_default", "goto": _submenu_router},
+    ]
+    return text, options
+
+def _submenu_router(caller, raw_string: str, **kwargs):
+    """
+    Fallback router for node_submenu: emulate regex handling.
+    """
+    s = (raw_string or "").strip()
+    if re.fullmatch(r"\d{3}", s):
+        return "node_digits", {"digits": s}
+    # Abort the transition but print a single-line message; stay on the same node.
+    raise EvMenuGotoAbortMessage("Enter 1/2, 'back', or any three digits (e.g. 123).")
+
+def node_digits(caller, raw_string: str, digits: str = "", **kwargs):
+    text = (
+        f"|wRegex-like route ok.|n You entered: |c{digits}|n\n"
+        "Try another 3-digit number or 'back'."
+    )
+    options = [
+        {"key": ("back", "b"), "desc": "Back to submenu", "goto": "node_submenu"},
+        # Keep accepting new three-digit inputs on this node via the same router.
+        {"key": "_default", "goto": _submenu_router},
     ]
     return text, options
 
 def node_input(caller, raw_string: str, **kwargs):
     """
-    Free-form input node—any input gets echoed. Blank input is useful to test default errors.
-    EvMenu will keep you on this node after invalid input unless you change goto logic.
+    Free-form input test using `_default` to loop and echo.
     """
-    # If raw_string is non-empty, 'accept' it; else re-prompt.
-    if raw_string and raw_string.strip():
-        text = f"|wYou typed:|n {raw_string.strip()}\n(Enter 'back' to return or anything else to keep echoing.)"
-        options = [
-            {"key": ("back", "b"), "desc": "Return to start", "goto": "node_start"},
-            # Keep a catch-all regex here so *valid* input also 'loops' predictably
-            {"key": r"^.*$", "desc": "Keep echoing", "goto": "node_input"},
-        ]
-        return text, options
-
-    # First entry or blank input: show instructions with clear prompt.
-    text = "|wFree-form input test.|n Type anything (or 'back' to return)."
+    s = (raw_string or "").strip()
+    if s and s.lower() not in ("back", "b"):
+        text = f"|wYou typed:|n {s}\n(Enter 'back' to return or type anything to keep echoing.)"
+    else:
+        text = "|wFree-form input test.|n Type anything (or 'back' to return)."
     options = [
         {"key": ("back", "b"), "desc": "Return to start", "goto": "node_start"},
-        {"key": r"^.*$", "desc": "Echo whatever you type", "goto": "node_input"},
+        # Any other input loops back here and will be echoed.
+        {"key": "_default", "goto": "node_input"},
     ]
     return text, options
 
@@ -93,15 +112,4 @@ def node_said_no(caller, raw_string: str, **kwargs):
 def _count_bump(caller, raw_string: str, **kwargs):
     caller.ndb.evmenu_counter = (getattr(caller.ndb, "evmenu_counter", 0) or 0) + 1
 
-def _goto_digits(caller, raw_string: str, **kwargs):
-    """
-    Example callable goto – respond differently based on what matched the regex.
-    """
-    digits = raw_string.strip()
-    return (
-        f"|wRegex matched:|n {digits}\n"
-        "Try other three-digit numbers, or 'back' to return."
-    ), [
-        {"key": ("back", "b"), "desc": "Back to submenu", "goto": "node_submenu"},
-        {"key": r"^[0-9]{3}$", "desc": "Try another 3-digit number", "goto": _goto_digits},
-    ]
+    
