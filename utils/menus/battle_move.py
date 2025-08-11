@@ -35,7 +35,10 @@ def start(
     options = [
         {
             "key": "_default",
-            "goto": (_route_move, {"slots": slots}),
+            "goto": (
+                _route_move,
+                {"slots": slots, "inst": inst, "participant": participant},
+            ),
             "desc": "",
         }
     ]
@@ -78,7 +81,11 @@ def _route_move(
     if not move_obj:
         raise EvMenuGotoAbortMessage("Invalid move. Use A–D or exact name.")
 
-    return "choose_target", {"move_obj": move_obj}
+    return "choose_target", {
+        "move_obj": move_obj,
+        "inst": inst,
+        "participant": participant,
+    }
 
 
 def choose_target(
@@ -115,7 +122,16 @@ def choose_target(
         "Enter position like A1 / B2, or 'quit' to cancel.",
     ]
     text = "\n".join(lines)
-    options = [{"key": "_default", "goto": _route_target, "desc": ""}]
+    options = [
+        {
+            "key": "_default",
+            "goto": (
+                _route_target,
+                {"move_obj": move_obj, "inst": inst, "participant": participant},
+            ),
+            "desc": "",
+        }
+    ]
     return text, options
 
 
