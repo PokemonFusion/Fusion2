@@ -32,7 +32,16 @@ def start(
 ) -> Tuple[str, List[Dict[str, Any]]]:
     """Node 1: choose move by letter or exact name."""
     text = render_move_gui(slots, pp_overrides=pp_overrides)
-    options = [{"key": "_default", "goto": _route_move, "desc": ""}]
+    options = [
+        {
+            "key": "_default",
+            "goto": (
+                _route_move,
+                {"slots": slots, "inst": inst, "participant": participant},
+            ),
+            "desc": "",
+        }
+    ]
     return text, options
 
 
@@ -72,7 +81,11 @@ def _route_move(
     if not move_obj:
         raise EvMenuGotoAbortMessage("Invalid move. Use A–D or exact name.")
 
-    return "choose_target", {"move_obj": move_obj}
+    return "choose_target", {
+        "move_obj": move_obj,
+        "inst": inst,
+        "participant": participant,
+    }
 
 
 def choose_target(
@@ -102,14 +115,24 @@ def choose_target(
     if len(pos_map) == 1:
         target_pos, target = next(iter(pos_map.items()))
         _queue_move(caller, inst, participant, move_obj, target, target_pos)
-        return f"|gYou prepare to use {move_obj.name}.|n", None
+        # Returning (text, None) marks this as a terminal node. No footer should be shown.
+        return f"|gYou prepare to use {move_obj.name}.|n", None  # terminal: no further input, footer hidden
 
     lines = [
         "Valid targets: " + ", ".join(pos_map.keys()),
         "Enter position like A1 / B2, or 'quit' to cancel.",
     ]
     text = "\n".join(lines)
-    options = [{"key": "_default", "goto": _route_target, "desc": ""}]
+    options = [
+        {
+            "key": "_default",
+            "goto": (
+                _route_target,
+                {"move_obj": move_obj, "inst": inst, "participant": participant},
+            ),
+            "desc": "",
+        }
+    ]
     return text, options
 
 
@@ -149,15 +172,21 @@ def _route_target(
         raise EvMenuGotoAbortMessage("Not a valid target position for you.")
 
     _queue_move(caller, inst, participant, move_obj, target, s)
-    return f"|gYou prepare to use {move_obj.name}.|n", None
+    # Returning (text, None) marks this as a terminal node. No footer should be shown.
+    return f"|gYou prepare to use {move_obj.name}.|n", None  # terminal: no further input, footer hidden
 
 
 def _queue_move(caller, inst, participant, move_obj, target, target_pos: str) -> None:
     """Use the same queue path as the current `+attack` command."""
     try:
-        from pokemon.battle import Action, ActionType
-    except Exception:  # pragma: no cover - fallback if engine isn't loaded
         from pokemon.battle.engine import Action, ActionType
+    except Exception:  # pragma: no cover - engine isn't available
+        try:
+            from pokemon.battle import Action, ActionType
+        except Exception:  # pragma: no cover - nothing to queue against
+            return
+    if not ActionType:
+        return
 
     action = Action(
         participant,
