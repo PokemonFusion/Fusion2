@@ -1,6 +1,6 @@
 from pokemon.dex import POKEDEX
 from pokemon.generation import generate_pokemon
-from pokemon.utils.pokemon_helpers import create_owned_pokemon
+from helpers.pokemon_helpers import create_owned_pokemon
 
 
 def node_start(caller, raw_input=None, **kwargs):

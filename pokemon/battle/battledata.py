@@ -78,7 +78,7 @@ class Pokemon:
             "evasion": 0,
         }
         try:
-            from pokemon.utils.pokemon_helpers import refresh_stats
+            from helpers.pokemon_helpers import refresh_stats
 
             refresh_stats(self)
         except Exception:  # pragma: no cover - helpers may be absent in tests
@@ -219,7 +219,7 @@ class Pokemon:
                     types = getattr(poke, "type_", types)
                     if max_hp is None:
                         try:
-                            from pokemon.utils.pokemon_helpers import get_max_hp
+                            from helpers.pokemon_helpers import get_max_hp
 
                             max_hp = get_max_hp(poke)
                         except Exception:

@@ -125,7 +125,7 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
 
 def damage_phrase(target: Pokemon, damage: int) -> str:
     try:
-        from pokemon.utils.pokemon_helpers import get_max_hp
+        from helpers.pokemon_helpers import get_max_hp
         maxhp = get_max_hp(target)
     except Exception:  # pragma: no cover - fallback when helpers unavailable
         maxhp = getattr(getattr(target, "base_stats", None), "hp", 0)

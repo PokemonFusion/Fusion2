@@ -1,5 +1,5 @@
 from evennia import Command
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+from helpers.enhanced_evmenu import EnhancedEvMenu
 
 import menus.give_pokemon as give_pokemon
 

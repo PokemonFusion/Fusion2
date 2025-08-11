@@ -1,4 +1,4 @@
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
+from helpers.enhanced_evmenu import EnhancedEvMenu as EvMenu
 
 
 def node_start(caller, raw_input=None):

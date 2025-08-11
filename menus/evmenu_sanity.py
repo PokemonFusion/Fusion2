@@ -1,5 +1,7 @@
-# fusion2/utils/evmenu_sanity.py
 from __future__ import annotations
+
+"""Menu nodes used for EvMenu sanity checks."""
+
 from typing import Any, Dict, List, Tuple
 import re
 

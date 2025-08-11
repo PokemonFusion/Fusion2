@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+from helpers.enhanced_evmenu import EnhancedEvMenu
 from pokemon.models.moves import Move
 from pokemon.services.move_management import apply_active_moveset
 

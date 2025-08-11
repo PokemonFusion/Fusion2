@@ -25,7 +25,7 @@ heal_func = ns["heal"]
 
 def setup_modules():
     orig_evennia = sys.modules.get("evennia")
-    orig_helpers = sys.modules.get("pokemon.utils.pokemon_helpers")
+    orig_helpers = sys.modules.get("helpers.pokemon_helpers")
     orig_dex = sys.modules.get("pokemon.dex")
 
     # minimal evennia stub
@@ -49,9 +49,9 @@ def setup_modules():
     sys.modules["evennia.objects"] = obj_mod
     sys.modules["evennia.objects.models"] = obj_models
 
-    helpers_mod = types.ModuleType("pokemon.utils.pokemon_helpers")
+    helpers_mod = types.ModuleType("helpers.pokemon_helpers")
     helpers_mod.get_max_hp = lambda poke: 50
-    sys.modules["pokemon.utils.pokemon_helpers"] = helpers_mod
+    sys.modules["helpers.pokemon_helpers"] = helpers_mod
 
     dex_mod = types.ModuleType("pokemon.dex")
     dex_mod.MOVEDEX = {"tackle": {"pp": 10}, "growl": {"pp": 40}}
@@ -72,9 +72,9 @@ def restore_modules(orig_evennia, orig_helpers, orig_dex):
     sys.modules.pop("evennia.objects.models", None)
 
     if orig_helpers is not None:
-        sys.modules["pokemon.utils.pokemon_helpers"] = orig_helpers
+        sys.modules["helpers.pokemon_helpers"] = orig_helpers
     else:
-        sys.modules.pop("pokemon.utils.pokemon_helpers", None)
+        sys.modules.pop("helpers.pokemon_helpers", None)
 
     if orig_dex is not None:
         sys.modules["pokemon.dex"] = orig_dex
@@ -118,7 +118,7 @@ class FakePokemon:
         self.saved = False
 
     def get_max_hp(self):
-        from pokemon.utils.pokemon_helpers import get_max_hp
+        from helpers.pokemon_helpers import get_max_hp
         return get_max_hp(self)
 
     def save(self):

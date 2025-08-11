@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from evennia import Command
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+from helpers.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdSpawns(Command):

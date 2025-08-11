@@ -246,7 +246,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         self.total_exp = exp_for_level(level)
         self.level = level
         try:
-            from pokemon.utils.pokemon_helpers import refresh_stats
+            from helpers.pokemon_helpers import refresh_stats
 
             refresh_stats(self)
         except Exception:  # pragma: no cover - optional
@@ -254,7 +254,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
     def heal(self) -> None:
         """Fully restore HP, clear status, and reset PP."""
-        from pokemon.utils.pokemon_helpers import get_max_hp
+        from helpers.pokemon_helpers import get_max_hp
 
         max_hp = get_max_hp(self)
         if hasattr(self, "current_hp"):
@@ -334,7 +334,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     def get_max_hp(self) -> int:
         """Return max HP for this Pokémon."""
         try:  # pragma: no cover - optional dependency
-            from pokemon.utils.pokemon_helpers import get_max_hp
+            from helpers.pokemon_helpers import get_max_hp
 
             return get_max_hp(self)
         except Exception:

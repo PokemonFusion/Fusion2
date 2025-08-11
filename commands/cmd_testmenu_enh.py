@@ -1,8 +1,8 @@
 """Command to launch the EnhancedEvMenu sanity-check."""
 
 from evennia import Command
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
-from utils import evmenu_sanity
+from helpers.enhanced_evmenu import EnhancedEvMenu
+from menus import evmenu_sanity
 
 
 class CmdTestMenuEnhanced(Command):

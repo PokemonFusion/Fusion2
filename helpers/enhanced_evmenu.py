@@ -8,7 +8,7 @@ from evennia.utils.ansi import strip_ansi  # for width calc of ANSI-colored line
 
 # Example usage::
 #
-#     from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+#     from helpers.enhanced_evmenu import EnhancedEvMenu
 #
 #     menu = EnhancedEvMenu(
 #         caller, menudata, startnode="node_start",

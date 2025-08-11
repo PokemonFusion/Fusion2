@@ -11,7 +11,7 @@ def test_on_exit_called_when_auto_learn():
     pokemon_pkg = types.ModuleType("pokemon")
     pokemon_pkg.__path__ = []
     utils_pkg = types.ModuleType("pokemon.utils")
-    enhanced_mod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    enhanced_mod = types.ModuleType("helpers.enhanced_evmenu")
     enhanced_mod.EnhancedEvMenu = object
     utils_pkg.enhanced_evmenu = enhanced_mod
     models_mod = types.ModuleType("pokemon.models.moves")
@@ -32,12 +32,12 @@ def test_on_exit_called_when_auto_learn():
 
     orig_pokemon = sys.modules.get("pokemon")
     orig_utils = sys.modules.get("pokemon.utils")
-    orig_enh = sys.modules.get("pokemon.utils.enhanced_evmenu")
+    orig_enh = sys.modules.get("helpers.enhanced_evmenu")
     orig_models = sys.modules.get("pokemon.models")
 
     sys.modules["pokemon"] = pokemon_pkg
     sys.modules["pokemon.utils"] = utils_pkg
-    sys.modules["pokemon.utils.enhanced_evmenu"] = enhanced_mod
+    sys.modules["helpers.enhanced_evmenu"] = enhanced_mod
     sys.modules["pokemon.models.moves"] = models_mod
     sys.modules["pokemon.services"] = services_pkg
     sys.modules["pokemon.services.move_management"] = move_service_mod
@@ -122,9 +122,9 @@ def test_on_exit_called_when_auto_learn():
     else:
         sys.modules.pop("pokemon.utils", None)
     if orig_enh is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_enh
+        sys.modules["helpers.enhanced_evmenu"] = orig_enh
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
     if orig_models is not None:
         sys.modules["pokemon.models"] = orig_models
     else:
