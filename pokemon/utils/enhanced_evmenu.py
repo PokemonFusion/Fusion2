@@ -2,9 +2,8 @@
 
 from typing import Any, Callable, Dict, List, Tuple, Union
 
-from evennia.utils.evmenu import EvMenu, EvMenuError
+from evennia.utils.evmenu import EvMenu
 from evennia.utils.ansi import strip_ansi
-from evennia.utils.utils import make_iter
 
 
 NodeReturn = Tuple[str, Union[None, Dict[str, Any], List[Dict[str, Any]]]]
@@ -89,115 +88,26 @@ class EnhancedEvMenu(EvMenu):
         super().__init__(*args, startnode_input=startnode_input, **menu_kwargs)
 
     def parse_input(self, raw_string):
-        """Custom input parsing supporting the ``_repeat`` target."""
-        cmd = strip_ansi((raw_string or "").strip())
-        low = cmd.lower()
+        """Minimal input parsing that only handles the ``_repeat`` sentinel."""
 
-        if not low:
-            if self.auto_repeat_invalid:
-                if self.brief_invalid:
-                    self.invalid_msg()
-                    self._show_footer_hint()
-                else:
-                    # re-run current node to repaint (legacy behavior)
-                    self.goto(None, "")
-            return
+        low = strip_ansi((raw_string or "").strip()).lower()
 
-        # abort keys always end the menu
-        if low in self.abort_keys:
-            self.msg("|rMenu aborted.|n")
-            self.at_abort()
-            return self.close_menu()
-
-        # allow per-node help by "help <topic>"
-        if low.startswith("help ") and isinstance(self.helptext, dict):
-            topic = low.split(" ", 1)[1]
-            if topic in self.helptext:
-                return self.display_tooltip(topic)
-            self.msg(f"|rNo help for '{topic}'.|n")
-            return
-
-        # collect option definitions for later reference. If not provided
-        # explicitly (used only in tests), fall back to the menu's current
-        # options so normal input works.
-        option_defs = getattr(self, "test_options", None)
-        if option_defs is None:
-            option_defs = [
-                {"key": key, "goto": goto}
-                for key, goto in (self.options or {}).items()
-            ]
-            if self.default:
-                option_defs.append({"key": "_default", "goto": self.default})
-        else:
-            option_defs = (
-                option_defs if isinstance(option_defs, (list, tuple)) else [option_defs]
-            )
-
-        match_opt = None
-        default_opt = None
-        for opt in option_defs:
-            keys = make_iter(opt.get("key"))
-            if "_default" in keys and default_opt is None:
-                default_opt = opt
-            if any(low == str(k).lower() for k in keys):
-                match_opt = opt
-                break
-
-        def _run_exec(opt):
-            exec_fn = opt.get("exec")
-            if callable(exec_fn):
-                exec_fn(self.caller)
-
-        # explicit match
-        if match_opt:
-            _run_exec(match_opt)
-            if match_opt.get("goto") == "_repeat":
-                # re-run same node without carrying over old input
+        if getattr(self, "options", None) and low in self.options:
+            goto_node, _ = self.options[low]
+            if goto_node == "_repeat":
                 self.goto(None, "")
                 return
-            try:
-                super().parse_input(raw_string)
-            except EvMenuError:
-                pass
-            return
 
-        # built-in commands
-        if self.auto_look and low in ("look", "l"):
-            self.display_nodetext()
-            return
-        if self.auto_help and isinstance(self.helptext, dict) and low in self.helptext:
-            self.display_tooltip(low)
-            return
-        if self.auto_help and low in ("help", "h"):
-            self.display_helptext()
-            return
-        if self.auto_quit and low in ("quit", "q", "exit"):
-            self.close_menu()
-            return
-        if self.debug_mode and low.startswith("menudebug"):
-            self.print_debug_info(low[9:].strip())
-            return
-
-        # default option
-        if default_opt:
-            _run_exec(default_opt)
-            goto = default_opt.get("goto")
-            if goto == "_repeat":
-                # repeat current node with cleared input
-                if self.auto_repeat_invalid:
-                    self.goto(None, "")
+        if (
+            (not getattr(self, "options", None) or low not in self.options)
+            and getattr(self, "default", None)
+        ):
+            goto_node, _ = self.default
+            if goto_node == "_repeat":
+                self.goto(None, "")
                 return
-            try:
-                super().parse_input(raw_string)
-            except EvMenuError:
-                pass
-            return
 
-        # completely invalid – keep loop alive without re-spamming full prompt
-        self.invalid_msg()
-        # do not re-display nodetext here; user can still see it in client scrollback
-        # and may type again immediately
-        return
+        return super().parse_input(raw_string)
 
     def invalid_msg(self):
         """

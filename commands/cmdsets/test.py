@@ -2,6 +2,7 @@
 
 from evennia import CmdSet
 from commands.cmd_testmenu import CmdTestMenu
+from commands.cmd_testmenu_enh import CmdTestMenuEnhanced
 
 
 class TestCmdSet(CmdSet):
@@ -13,3 +14,4 @@ class TestCmdSet(CmdSet):
     def at_cmdset_creation(self):
         """Populate the cmdset."""
         self.add(CmdTestMenu())
+        self.add(CmdTestMenuEnhanced())

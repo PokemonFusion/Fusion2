@@ -20,7 +20,6 @@ from commands.cmd_debugpy import CmdDebugPy
 from commands.cmd_examine import CmdExamine
 from commands.cmd_roleplay import CmdGOIC, CmdGOOOC
 from commands.cmd_account import CmdCharCreate, CmdAlts
-from commands.cmd_testmenu import CmdTestMenu
 
 # grouped cmdsets
 from commands.cmdsets.bboard import BulletinBoardCmdSet
@@ -72,8 +71,6 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Developer toggle for test cmdset
         self.add(CmdToggleTest())
         
-        # Test commands
-        self.add(CmdTestMenu())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
