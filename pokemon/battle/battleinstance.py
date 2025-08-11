@@ -142,7 +142,7 @@ def create_battle_pokemon(
     """Return a ``Pokemon`` battle object for the given species/level."""
 
     try:
-        from pokemon.utils.pokemon_helpers import create_owned_pokemon
+        from helpers.pokemon_helpers import create_owned_pokemon
     except Exception:  # pragma: no cover - optional in tests
         create_owned_pokemon = None
 

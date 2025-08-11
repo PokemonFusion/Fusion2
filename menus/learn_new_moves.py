@@ -1,4 +1,4 @@
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
+from helpers.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from pokemon.generation import get_valid_moves
 from pokemon.middleware import get_moveset_by_name
 from pokemon.utils.move_learning import learn_move

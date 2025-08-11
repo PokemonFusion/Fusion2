@@ -3,12 +3,12 @@
 from evennia.utils.evtable import EvTable
 
 from utils.ansi import ansi
-from utils.display_helpers import (
+from helpers.display_helpers import (
     get_status_effects,
     format_move_details,
     get_egg_description,
 )
-from pokemon.utils.pokemon_helpers import get_max_hp, get_stats
+from helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP
 from utils.xp_utils import get_display_xp, get_next_level_xp
 from pokemon.stats import level_for_exp

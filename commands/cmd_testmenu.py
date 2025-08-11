@@ -11,7 +11,7 @@ from evennia.utils.evmenu import EvMenu
 # Import the module containing the menu node functions directly so Evennia does
 # not have to resolve a module path string. Importing the module object avoids
 # issues when the project's package name differs across environments.
-from utils import evmenu_sanity
+from menus import evmenu_sanity
 
 class CmdTestMenu(Command):
     """

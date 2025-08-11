@@ -22,14 +22,14 @@ def test_pokestore_invalid_location():
     fake_evennia.Command = type("Command", (), {})
     sys.modules["evennia"] = fake_evennia
 
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
     class FakeMenu:
         called = False
         def __init__(self, *a, **k):
             FakeMenu.called = True
     fake_evmod.EnhancedEvMenu = FakeMenu
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     orig_menu = sys.modules.get("menus.pokestore")
     fake_menu = types.ModuleType("menus.pokestore")
@@ -42,9 +42,9 @@ def test_pokestore_invalid_location():
     else:
         sys.modules.pop("evennia", None)
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
     if orig_menu is not None:
         sys.modules["menus.pokestore"] = orig_menu
     else:
@@ -76,8 +76,8 @@ def test_pokestore_opens_menu():
     fake_evennia.Command = type("Command", (), {})
     sys.modules["evennia"] = fake_evennia
 
-    orig_evmod = sys.modules.get("pokemon.utils.enhanced_evmenu")
-    fake_evmod = types.ModuleType("pokemon.utils.enhanced_evmenu")
+    orig_evmod = sys.modules.get("helpers.enhanced_evmenu")
+    fake_evmod = types.ModuleType("helpers.enhanced_evmenu")
     class FakeMenu:
         called = False
         start_kwargs = None
@@ -85,7 +85,7 @@ def test_pokestore_opens_menu():
             FakeMenu.called = True
             FakeMenu.start_kwargs = start_kwargs
     fake_evmod.EnhancedEvMenu = FakeMenu
-    sys.modules["pokemon.utils.enhanced_evmenu"] = fake_evmod
+    sys.modules["helpers.enhanced_evmenu"] = fake_evmod
 
     orig_menu = sys.modules.get("menus.pokestore")
     fake_menu = types.ModuleType("menus.pokestore")
@@ -98,9 +98,9 @@ def test_pokestore_opens_menu():
     else:
         sys.modules.pop("evennia", None)
     if orig_evmod is not None:
-        sys.modules["pokemon.utils.enhanced_evmenu"] = orig_evmod
+        sys.modules["helpers.enhanced_evmenu"] = orig_evmod
     else:
-        sys.modules.pop("pokemon.utils.enhanced_evmenu", None)
+        sys.modules.pop("helpers.enhanced_evmenu", None)
     if orig_menu is not None:
         sys.modules["menus.pokestore"] = orig_menu
     else:

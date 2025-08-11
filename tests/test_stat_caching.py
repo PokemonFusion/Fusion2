@@ -2,7 +2,7 @@
 
 import types
 
-import pokemon.utils.pokemon_helpers as helpers
+import helpers.pokemon_helpers as helpers
 from pokemon.stats import add_evs, add_experience, exp_for_level
 
 

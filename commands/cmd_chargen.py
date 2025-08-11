@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from evennia import Command
-from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
-from utils import menus as _menus  # noqa: F401
-from utils.menus import chargen as chargen_menu
+from helpers.enhanced_evmenu import EnhancedEvMenu
+from menus import chargen as chargen_menu
 
 
 class CmdChargen(Command):

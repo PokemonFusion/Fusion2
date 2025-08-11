@@ -3,6 +3,19 @@ from __future__ import annotations
 """Utilities for experience, EV handling and stat calculation."""
 
 from typing import Dict
+import sys
+import importlib
+
+_helpers_mod = None
+
+def _get_helpers_module():
+    global _helpers_mod
+    if _helpers_mod is None:
+        try:
+            _helpers_mod = importlib.import_module("helpers.pokemon_helpers")
+        except Exception:  # pragma: no cover - helpers optional
+            _helpers_mod = None
+    return _helpers_mod
 
 from .dex import POKEDEX
 from .generation import NATURES
@@ -114,12 +127,12 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
             learn_level_up_moves(pokemon)
 
     if prev_level is not None and new_level != prev_level:
-        try:
-            from pokemon.utils.pokemon_helpers import refresh_stats
-
-            refresh_stats(pokemon)
-        except Exception:  # pragma: no cover - safe fallback if helpers missing
-            pass
+        mod = _get_helpers_module()
+        if mod and hasattr(mod, "refresh_stats"):
+            try:
+                mod.refresh_stats(pokemon)
+            except Exception:  # pragma: no cover - safe fallback
+                pass
 
 
 def add_evs(pokemon, gains: Dict[str, int]) -> None:
@@ -152,12 +165,12 @@ def add_evs(pokemon, gains: Dict[str, int]) -> None:
         evs[full] = current + allowed
         total += allowed
     pokemon.evs = evs
-    try:
-        from pokemon.utils.pokemon_helpers import refresh_stats
-
-        refresh_stats(pokemon)
-    except Exception:  # pragma: no cover - safe fallback
-        pass
+    mod = _get_helpers_module()
+    if mod and hasattr(mod, "refresh_stats"):
+        try:
+            mod.refresh_stats(pokemon)
+        except Exception:  # pragma: no cover - safe fallback
+            pass
 
 
 def _nature_mod(nature: str, stat: str) -> float:
