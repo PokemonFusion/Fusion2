@@ -1,7 +1,7 @@
 """CmdSet for player-vs-player battle commands."""
 
 from evennia import CmdSet
-from commands.cmd_pvp import (
+from commands.player.cmd_pvp import (
     CmdPvpHelp,
     CmdPvpList,
     CmdPvpCreate,

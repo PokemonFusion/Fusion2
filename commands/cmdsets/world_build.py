@@ -1,11 +1,11 @@
 """CmdSet for world building and administration commands."""
 
 from evennia import CmdSet
-from commands.cmd_chargen import CmdChargen
-from commands.cmd_roomwizard import CmdRoomWizard
-from commands.cmd_editroom import CmdEditRoom
-from commands.cmd_validate import CmdValidate
-from commands.cmd_spawns import CmdSpawns
+from commands.player.cmd_chargen import CmdChargen
+from commands.admin.cmd_roomwizard import CmdRoomWizard
+from commands.admin.cmd_editroom import CmdEditRoom
+from commands.admin.cmd_validate import CmdValidate
+from commands.admin.cmd_spawns import CmdSpawns
 
 
 class WorldBuildCmdSet(CmdSet):

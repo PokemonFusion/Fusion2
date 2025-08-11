@@ -8,8 +8,8 @@ sys.path.insert(0, ROOT)
 
 
 def load_cmd_module():
-    path = os.path.join(ROOT, "commands", "cmd_pokestore.py")
-    spec = importlib.util.spec_from_file_location("commands.cmd_pokestore", path)
+    path = os.path.join(ROOT, "commands", "player", "cmd_pokestore.py")
+    spec = importlib.util.spec_from_file_location("commands.player.cmd_pokestore", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)

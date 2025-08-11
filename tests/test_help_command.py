@@ -40,8 +40,8 @@ class FakeHelpCategory:
 # utility to load command module with stub
 
 def load_cmd_module():
-    path = os.path.join(ROOT, "commands", "cmd_help.py")
-    spec = importlib.util.spec_from_file_location("commands.cmd_help", path)
+    path = os.path.join(ROOT, "commands", "player", "cmd_help.py")
+    spec = importlib.util.spec_from_file_location("commands.player.cmd_help", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)

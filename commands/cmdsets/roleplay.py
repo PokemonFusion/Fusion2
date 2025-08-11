@@ -1,9 +1,9 @@
 """CmdSet grouping roleplay related commands."""
 
 from evennia import CmdSet
-from commands.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
-from commands.cmd_glance import CmdGlance
-from commands.command import CmdSpoof
+from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC, CmdOOC
+from commands.player.cmd_glance import CmdGlance
+from commands.debug.command import CmdSpoof
 
 
 class RoleplayCmdSet(CmdSet):

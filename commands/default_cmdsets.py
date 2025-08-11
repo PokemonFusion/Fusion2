@@ -6,7 +6,7 @@ can be part of any number of cmdsets and cmdsets can be added/removed
 and merged onto entities at runtime.
 
 To create new commands to populate the cmdset, see
-`commands/command.py`.
+`commands/debug/command.py`.
 
 This module wraps the default command sets of Evennia; overloads them
 to add/remove commands from the default lineup. You can create your
@@ -15,11 +15,11 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from commands.cmd_help import CmdHelp
-from commands.cmd_debugpy import CmdDebugPy
-from commands.cmd_examine import CmdExamine
-from commands.cmd_roleplay import CmdGOIC, CmdGOOOC
-from commands.cmd_account import CmdCharCreate, CmdAlts
+from commands.player.cmd_help import CmdHelp
+from commands.debug.cmd_debugpy import CmdDebugPy
+from commands.player.cmd_examine import CmdExamine
+from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
+from commands.player.cmd_account import CmdCharCreate, CmdAlts
 
 # grouped cmdsets
 from commands.cmdsets.bboard import BulletinBoardCmdSet
@@ -35,7 +35,7 @@ from commands.cmdsets.economy_map import EconomyMapCmdSet
 from commands.cmdsets.admin_misc import AdminMiscCmdSet
 
 
-from commands.cmd_toggle_test import CmdToggleTest
+from commands.debug.cmd_toggle_test import CmdToggleTest
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
