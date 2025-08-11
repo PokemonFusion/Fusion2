@@ -106,9 +106,9 @@ gen_mod.generate_pokemon = generate_pokemon
 gen_mod.NATURES = {}
 sys.modules["pokemon.generation"] = gen_mod
 
-spawn_mod = types.ModuleType("world.pokemon_spawn")
+spawn_mod = types.ModuleType("helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
-sys.modules["world.pokemon_spawn"] = spawn_mod
+sys.modules["helpers.pokemon_spawn"] = spawn_mod
 
 # Load supporting battle modules from real files
 bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")

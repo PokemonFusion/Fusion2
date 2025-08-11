@@ -7,7 +7,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 # Load the berry_system module
-berry_mod = importlib.import_module('world.berry_system')
+berry_mod = importlib.import_module('helpers.berry_system')
 BerryPlant = berry_mod.BerryPlant
 
 
