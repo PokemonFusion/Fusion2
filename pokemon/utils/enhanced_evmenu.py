@@ -223,6 +223,8 @@ class EnhancedEvMenu(EvMenu):
         with a centered title and proper side walls. Otherwise, use the base formatter.
         """
         text = super().nodetext_formatter(nodetext)
+        if not strip_ansi(text or "").strip():
+            return ""
         if not self.use_pokemon_style:
             return text
 
@@ -288,12 +290,15 @@ class EnhancedEvMenu(EvMenu):
         We deliberately do NOT call super().node_formatter to avoid the extra
         outer gray border; we render only our Pokémon box + options + footer.
         """
+        if not strip_ansi(nodetext or "").strip() and not strip_ansi(optionstext or "").strip():
+            return ""
+
         parts = [nodetext]
         if optionstext and self.show_options:
             parts.append(optionstext)
         result = "\n\n".join(p for p in parts if p)
 
-        if getattr(self, "show_footer", True):
+        if result and getattr(self, "show_footer", True):
             prompt = self.footer_prompt
             if self.use_pokemon_style:
                 tail = []
