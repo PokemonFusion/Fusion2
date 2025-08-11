@@ -115,7 +115,8 @@ def choose_target(
     if len(pos_map) == 1:
         target_pos, target = next(iter(pos_map.items()))
         _queue_move(caller, inst, participant, move_obj, target, target_pos)
-        return f"|gYou prepare to use {move_obj.name}.|n", None
+        # Returning (text, None) marks this as a terminal node. No footer should be shown.
+        return f"|gYou prepare to use {move_obj.name}.|n", None  # terminal: no further input, footer hidden
 
     lines = [
         "Valid targets: " + ", ".join(pos_map.keys()),
@@ -171,7 +172,8 @@ def _route_target(
         raise EvMenuGotoAbortMessage("Not a valid target position for you.")
 
     _queue_move(caller, inst, participant, move_obj, target, s)
-    return f"|gYou prepare to use {move_obj.name}.|n", None
+    # Returning (text, None) marks this as a terminal node. No footer should be shown.
+    return f"|gYou prepare to use {move_obj.name}.|n", None  # terminal: no further input, footer hidden
 
 
 def _queue_move(caller, inst, participant, move_obj, target, target_pos: str) -> None:

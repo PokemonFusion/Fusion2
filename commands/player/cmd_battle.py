@@ -235,6 +235,7 @@ class CmdBattleAttack(Command):
                     self.caller,
                     battle_move_menu,
                     startnode="start",
+                    cmd_on_exit=None,              # don't auto-look after menu ends
                     start_kwargs=dict(
                         slots=slots,
                         pp_overrides=pp_overrides,
@@ -243,7 +244,7 @@ class CmdBattleAttack(Command):
                     ),
                     numbered_options=False,
                     show_options=False,
-                    show_footer=True,
+                    show_footer=True,              # shown on input nodes; hidden on terminal nodes by formatter
                     menu_title="Move Select",
                     footer_prompt="A–D or name",
                     invalid_message="Invalid. Type A–D, exact name, or 'quit'.",
