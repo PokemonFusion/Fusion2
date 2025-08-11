@@ -168,33 +168,70 @@ class EnhancedEvMenu(EvMenu):
         return opts
 
     def nodetext_formatter(self, nodetext):
+        """
+        Format the node text. In Pokémon style, draw a single, width-aware box
+        with a centered title and proper side walls. Otherwise, use the base formatter.
+        """
         text = super().nodetext_formatter(nodetext)
         if not self.use_pokemon_style:
             return text
-        return (
-            f"|y╔═══════════[ |w{self.menu_title}|n|y ]═══════════╗|n\n"
-            f"{text}\n"
-            f"|y╚══════════════════════════════════════╝|n"
-        )
+
+        def vlen(s: str) -> int:
+            return len(strip_ansi(s or ""))
+
+        def pad_visible(s: str, width: int) -> str:
+            pad = max(0, width - vlen(s))
+            return s + " " * pad
+
+        lines = (text or "").splitlines() or [""]
+        inner_w = max(1, max(vlen(ln) for ln in lines))
+        title_seg = f"[ |w{self.menu_title}|n ]" if getattr(self, "menu_title", "") else ""
+        title_w = vlen(title_seg)
+        inner_w = max(inner_w, title_w)
+
+        left_fill = (inner_w - title_w) // 2 if title_seg else 0
+        right_fill = (inner_w - title_w - left_fill) if title_seg else 0
+        if title_seg:
+            top = f"|y╔{'═'*left_fill}{title_seg}{'═'*right_fill}╗|n"
+        else:
+            top = f"|y╔{'═'*inner_w}╗|n"
+        middle = [f"|y║|n{pad_visible(ln, inner_w)}|y║|n" for ln in lines]
+        bottom = f"|y╚{'═'*inner_w}╝|n"
+        return "\n".join([top] + middle + [bottom])
 
     def options_formatter(self, optionlist):
+        """
+        When numbered_options is True, show a single number column and the description.
+        Avoid duplicating the selection key (which is usually the same number).
+        """
         if not self.numbered_options:
             return super().options_formatter(optionlist)
 
+        # Non Pokémon style: compact "1. Desc" lines
         if not self.use_pokemon_style:
             return "\n".join(
-                f"{idx}. {key}: {desc}" if desc else f"{idx}. {key}"
-                for idx, (key, desc) in enumerate(optionlist, 1)
+                f"{idx}. {desc}" if desc else f"{idx}."
+                for idx, (_key, desc) in enumerate(optionlist, 1)
             )
 
+        # Pokémon style: colored number + description
         lines = []
-        for idx, (key, desc) in enumerate(optionlist, 1):
-            prefix = f"|c{idx}.|n |g{key}|n"
-            lines.append(f"{prefix}: |w{desc}|n" if desc else prefix)
+        for idx, (_key, desc) in enumerate(optionlist, 1):
+            prefix = f"|c{idx}.|n"
+            lines.append(f"{prefix} |w{desc}|n" if desc else prefix)
         return "\n".join(lines)
 
     def node_formatter(self, nodetext, optionstext):
-        result = super().node_formatter(nodetext, optionstext)
+        """
+        Compose the final node display.
+        We deliberately do NOT call super().node_formatter to avoid the extra
+        outer gray border; we render only our Pokémon box + options + footer.
+        """
+        parts = [nodetext]
+        if optionstext:
+            parts.append(optionstext)
+        result = "\n\n".join(p for p in parts if p)
+
         if self.show_footer:
             prompt = self.footer_prompt
             if self.use_pokemon_style:
