@@ -40,7 +40,7 @@ else:
 orig_models_pkg = sys.modules.get("pokemon.models")
 orig_models_core = sys.modules.get("pokemon.models.core")
 orig_generation = sys.modules.get("pokemon.generation")
-orig_spawn = sys.modules.get("world.pokemon_spawn")
+orig_spawn = sys.modules.get("helpers.pokemon_spawn")
 orig_capture = sys.modules.get("pokemon.battle.capture")
 
 battleroom_mod = types.ModuleType("typeclasses.rooms")
@@ -195,7 +195,7 @@ def generate_pokemon(name, level=5):
 gen_mod.generate_pokemon = generate_pokemon
 gen_mod.NATURES = {}
 
-spawn_mod = types.ModuleType("world.pokemon_spawn")
+spawn_mod = types.ModuleType("helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
 
 # ------------------------------------------------------------
@@ -222,7 +222,7 @@ def setup_module(module):
     sys.modules["pokemon.models"] = models_pkg
     sys.modules["pokemon.models.core"] = models_mod_core
     sys.modules["pokemon.generation"] = gen_mod
-    sys.modules["world.pokemon_spawn"] = spawn_mod
+    sys.modules["helpers.pokemon_spawn"] = spawn_mod
 
     cap_path = os.path.join(ROOT, "pokemon", "battle", "capture.py")
     cap_spec = importlib.util.spec_from_file_location("pokemon.battle.capture", cap_path)
@@ -354,9 +354,9 @@ def teardown_module(module):
     else:
         sys.modules.pop("pokemon.generation", None)
     if orig_spawn is not None:
-        sys.modules["world.pokemon_spawn"] = orig_spawn
+        sys.modules["helpers.pokemon_spawn"] = orig_spawn
     else:
-        sys.modules.pop("world.pokemon_spawn", None)
+        sys.modules.pop("helpers.pokemon_spawn", None)
     if orig_capture is not None:
         sys.modules["pokemon.battle.capture"] = orig_capture
     else:

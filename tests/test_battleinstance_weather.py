@@ -87,9 +87,9 @@ gen_mod.generate_pokemon = generate_pokemon
 sys.modules["pokemon.generation"] = gen_mod
 
 # Stub spawn helper
-spawn_mod = types.ModuleType("world.pokemon_spawn")
+spawn_mod = types.ModuleType("helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
-sys.modules["world.pokemon_spawn"] = spawn_mod
+sys.modules["helpers.pokemon_spawn"] = spawn_mod
 
 # Minimal battle.engine stubs
 engine_mod = types.ModuleType("pokemon.battle.engine")

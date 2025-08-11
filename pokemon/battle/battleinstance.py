@@ -51,7 +51,7 @@ except Exception:  # pragma: no cover - allow partial stubs in tests
 from .handler import battle_handler
 from .storage import BattleDataWrapper
 from ..generation import generate_pokemon
-from world.pokemon_spawn import get_spawn
+from helpers.pokemon_spawn import get_spawn
 from utils.pokemon_utils import build_battle_pokemon_from_model
 
 try:
