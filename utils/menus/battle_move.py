@@ -177,9 +177,14 @@ def _route_target(
 def _queue_move(caller, inst, participant, move_obj, target, target_pos: str) -> None:
     """Use the same queue path as the current `+attack` command."""
     try:
-        from pokemon.battle import Action, ActionType
-    except Exception:  # pragma: no cover - fallback if engine isn't loaded
         from pokemon.battle.engine import Action, ActionType
+    except Exception:  # pragma: no cover - engine isn't available
+        try:
+            from pokemon.battle import Action, ActionType
+        except Exception:  # pragma: no cover - nothing to queue against
+            return
+    if not ActionType:
+        return
 
     action = Action(
         participant,
