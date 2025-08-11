@@ -1,7 +1,7 @@
 """CmdSet containing the core Pokémon gameplay commands."""
 
 from evennia import CmdSet
-from commands.command import (
+from commands.debug.command import (
     CmdShowPokemonOnUser,
     CmdShowPokemonInStorage,
     CmdAddPokemonToUser,
@@ -13,29 +13,29 @@ from commands.command import (
     CmdAdminHeal,
     CmdChooseStarter,
 )
-from commands.cmd_inventory import (
+from commands.player.cmd_inventory import (
     CmdInventory,
     CmdAddItem,
     CmdGiveItem,
     CmdUseItem,
 )
-from commands.cmd_party import (
+from commands.player.cmd_party import (
     CmdDepositPokemon,
     CmdWithdrawPokemon,
     CmdShowBox,
     CmdSetHoldItem,
     CmdChargenInfo,
 )
-from commands.cmd_learn_evolve import (
+from commands.player.cmd_learn_evolve import (
     CmdTeachMove,
     CmdLearn,
     CmdEvolvePokemon,
     CmdChooseMoveset,
 )
-from commands.cmd_hunt import CmdHunt, CmdLeaveHunt, CmdCustomHunt
-from commands.cmd_sheet import CmdSheet, CmdSheetPokemon
-from commands.cmd_movesets import CmdMovesets
-from commands.cmd_account import CmdTradePokemon
+from commands.player.cmd_hunt import CmdHunt, CmdLeaveHunt, CmdCustomHunt
+from commands.player.cmd_sheet import CmdSheet, CmdSheetPokemon
+from commands.player.cmd_movesets import CmdMovesets
+from commands.player.cmd_account import CmdTradePokemon
 
 
 class PokemonCoreCmdSet(CmdSet):

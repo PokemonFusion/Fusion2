@@ -8,8 +8,8 @@ sys.path.insert(0, ROOT)
 
 
 def load_cmd_module():
-    path = os.path.join(ROOT, "commands", "cmd_gitpull.py")
-    spec = importlib.util.spec_from_file_location("commands.cmd_gitpull", path)
+    path = os.path.join(ROOT, "commands", "admin", "cmd_gitpull.py")
+    spec = importlib.util.spec_from_file_location("commands.admin.cmd_gitpull", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)

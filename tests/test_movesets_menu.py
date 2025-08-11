@@ -26,8 +26,8 @@ def test_movesets_invalid_location():
     fake_mgr = types.ModuleType("menus.moveset_manager")
     sys.modules["menus.moveset_manager"] = fake_mgr
 
-    path = os.path.join(ROOT, "commands", "cmd_movesets.py")
-    spec = importlib.util.spec_from_file_location("commands.cmd_movesets", path)
+    path = os.path.join(ROOT, "commands", "player", "cmd_movesets.py")
+    spec = importlib.util.spec_from_file_location("commands.player.cmd_movesets", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)

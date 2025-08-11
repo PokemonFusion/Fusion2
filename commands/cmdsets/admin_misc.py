@@ -1,10 +1,10 @@
 """CmdSet for miscellaneous administrative commands."""
 
 from evennia import CmdSet
-from commands.cmd_givepokemon import CmdGivePokemon
-from commands.cmd_adminpokemon import CmdListPokemon, CmdRemovePokemon, CmdPokemonInfo
-from commands.cmd_gitpull import CmdGitPull
-from commands.cmd_logusage import CmdLogUsage, CmdMarkVerified
+from commands.admin.cmd_givepokemon import CmdGivePokemon
+from commands.admin.cmd_adminpokemon import CmdListPokemon, CmdRemovePokemon, CmdPokemonInfo
+from commands.admin.cmd_gitpull import CmdGitPull
+from commands.debug.cmd_logusage import CmdLogUsage, CmdMarkVerified
 
 
 class AdminMiscCmdSet(CmdSet):

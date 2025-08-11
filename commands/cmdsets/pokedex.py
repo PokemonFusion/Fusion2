@@ -1,7 +1,7 @@
 """CmdSet for Pokédex lookup commands."""
 
 from evennia import CmdSet
-from commands.pokedex import (
+from commands.player.pokedex import (
     CmdPokedexSearch,
     CmdPokedexAll,
     CmdMovedexSearch,

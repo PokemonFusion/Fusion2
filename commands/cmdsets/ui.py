@@ -1,8 +1,8 @@
 """CmdSet for user interface related commands."""
 
 from evennia import CmdSet
-from commands.cmd_uimode import CmdUiMode
-from commands.cmd_uitheme import CmdUiTheme
+from commands.player.cmd_uimode import CmdUiMode
+from commands.player.cmd_uitheme import CmdUiTheme
 
 
 class UiCmdSet(CmdSet):

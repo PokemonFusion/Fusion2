@@ -32,8 +32,8 @@ def test_choose_moveset_command():
     sys.modules["pokemon.dex"] = fake_dex
 
     # Load command module with stubs
-    path = os.path.join(ROOT, "commands", "cmd_learn_evolve.py")
-    spec = importlib.util.spec_from_file_location("commands.cmd_learn_evolve", path)
+    path = os.path.join(ROOT, "commands", "player", "cmd_learn_evolve.py")
+    spec = importlib.util.spec_from_file_location("commands.player.cmd_learn_evolve", path)
     cmd_mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = cmd_mod
     spec.loader.exec_module(cmd_mod)

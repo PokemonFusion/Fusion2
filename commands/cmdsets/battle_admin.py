@@ -1,7 +1,7 @@
 """CmdSet for administrative battle commands."""
 
 from evennia import CmdSet
-from commands.cmd_adminbattle import (
+from commands.admin.cmd_adminbattle import (
     CmdAbortBattle,
     CmdRestoreBattle,
     CmdBattleInfo,

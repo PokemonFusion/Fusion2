@@ -36,8 +36,8 @@ sys.modules["helpers.enhanced_evmenu"] = fake_enhanced
 sys.modules.setdefault("menus.give_pokemon", types.ModuleType("menus.give_pokemon"))
 
 # Load command module with stubs in place
-path = os.path.join(ROOT, "commands", "cmd_givepokemon.py")
-spec = importlib.util.spec_from_file_location("commands.cmd_givepokemon", path)
+path = os.path.join(ROOT, "commands", "admin", "cmd_givepokemon.py")
+spec = importlib.util.spec_from_file_location("commands.admin.cmd_givepokemon", path)
 cmd_mod = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = cmd_mod
 spec.loader.exec_module(cmd_mod)
