@@ -6,6 +6,35 @@ from evennia.utils.evmenu import EvMenu
 from evennia.utils.ansi import strip_ansi  # for width calc of ANSI-colored lines
 
 
+# Example usage::
+#
+#     from pokemon.utils.enhanced_evmenu import EnhancedEvMenu
+#
+#     menu = EnhancedEvMenu(
+#         caller, menudata, startnode="node_start",
+#         on_abort=None,                     # callback when the user aborts
+#         invalid_message="|rIncorrect input, try again.|n",
+#         auto_repeat_invalid=True,          # redisplay node after invalid choice
+#         brief_invalid=True,                # show brief invalid message
+#         numbered_options=True,             # prefix options with numbers
+#         menu_title="Pokémon Menu",         # title text
+#         use_pokemon_style=True,            # enable Pokémon-style formatting
+#         show_border=True,                  # draw border around node text
+#         show_title=True,                   # show title in border/top line
+#         show_options=True,                 # render option list
+#         show_footer=True,                  # render footer prompt and hints
+#         footer_prompt="Number",            # prompt text inside footer
+#         border_color="|y",                 # border color (pipe-ANSI)
+#         title_text_color="|w",             # title text color
+#         option_number_color="|c",          # option number color
+#         option_desc_color="|w",            # option description color
+#         prompt_color="|g",                 # color of [Enter Number]
+#         hint_color="|w",                   # color of 'q'/'h' hints
+#         start_kwargs=None,                 # kwargs forwarded to start node
+#         **menu_kwargs,                     # additional EvMenu kwargs
+#     )
+
+
 NodeReturn = Tuple[str, Union[None, Dict[str, Any], List[Dict[str, Any]]]]
 
 
