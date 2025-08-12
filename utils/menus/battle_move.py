@@ -21,6 +21,11 @@ ABORT_WORDS = {".abort", "abort", "cancel", "quit", "exit"}
 LETTERS = ["A", "B", "C", "D"]
 
 
+def cancel_node(caller, raw_input=None, **kwargs):
+    """Terminal node shown when the action menu is cancelled."""
+    return "Action cancelled.", None
+
+
 def start(
     caller,
     raw_string: str,
@@ -60,8 +65,7 @@ def _route_move(
             "Type a letter (A–D) or a move name. Type 'quit' to cancel."
         )
     if s.lower() in ABORT_WORDS:
-        caller.msg("Action cancelled.")
-        return None, None
+        return "cancel_node", {}
 
     move_obj = None
     letter = s.upper()
@@ -149,8 +153,7 @@ def _route_target(
     if not s:
         raise EvMenuGotoAbortMessage("Enter a target position (e.g., A1/B1).")
     if s.lower() in ABORT_WORDS:
-        caller.msg("Action cancelled.")
-        return None, None
+        return "cancel_node", {}
     if not re.fullmatch(r"[AB]\d+", s):
         raise EvMenuGotoAbortMessage(
             "Position must be like A1/B1 (names change when switching)."
