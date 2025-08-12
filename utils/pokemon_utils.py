@@ -270,8 +270,8 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         _normalize_key = _fallback_normalize_key
 
     entry = None
+    key = _normalize_key(name)
     if dex_mod is not None:
-        key = _normalize_key(name)
         try:
             entry = dex_mod.MOVEDEX.get(key)
         except Exception:
@@ -306,6 +306,7 @@ def make_move_from_dex(name: str, *, battle: bool = False):
 
     return BattleMove(
         name=move_name,
+        key=key,
         power=power,
         accuracy=accuracy,
         priority=priority,

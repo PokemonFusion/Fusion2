@@ -176,6 +176,7 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
                         data[key] = extra.get(key)
 
     name = data.get("name") or "Unknown"
+    key = getattr(move, "key", _normalize_key(name))
     mtype = data.get("type")
     cat = data.get("category") or "Status"
     maxpp = data.get("pp") or 0
@@ -190,6 +191,7 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
     return {
         "label": slot_label,
         "name": f"|w{name}|n",
+        "key": key,
         "type": mtype,
         "type_disp": type_disp,
         "cat": cat.title(),

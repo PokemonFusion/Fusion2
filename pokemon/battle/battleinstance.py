@@ -31,6 +31,13 @@ except Exception:  # pragma: no cover - fallback for tests without Evennia
 
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
+
+try:
+    from .engine import _normalize_key as _battle_norm_key
+except Exception:  # pragma: no cover - engine stubbed in some tests
+    def _battle_norm_key(name: str) -> str:
+        """Fallback normalizer matching the battle engine's behaviour."""
+        return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 from .state import BattleState
 try:
     from .interface import (
@@ -1252,25 +1259,26 @@ class BattleSession:
             return True
         return False
 
-    def queue_move(self, move_name: str, target: str = "B1", caller=None) -> None:
-        """Queue a move and run the turn if ready."""
+    def queue_move(self, move_key: str, target: str = "B1", caller=None) -> None:
+        """Queue a move by its dex key and run the turn if ready."""
         if not self.data or not self.battle:
             return
         pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
         if not pos:
             return
         pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
-        if self._already_queued(pos_name, pos, caller, f"move {move_name}"):
+        norm_key = _battle_norm_key(move_key)
+        if self._already_queued(pos_name, pos, caller, f"move {norm_key}"):
             return
-        pos.declareAttack(target, move_name)
+        pos.declareAttack(target, norm_key)
         log_info(
-            f"Queued move {move_name} targeting {target} from {pokemon_name} at {pos_name}"
+            f"Queued move {norm_key} targeting {target} from {pokemon_name} at {pos_name}"
         )
         if self.state:
             actor_id = str(getattr(caller or self.captainA, "id", ""))
             poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
             self.state.declare[pos_name] = {
-                "move": move_name,
+                "move": norm_key,
                 "target": target,
                 "trainer": actor_id,
                 "pokemon": poke_id,

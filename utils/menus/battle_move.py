@@ -201,7 +201,7 @@ def _queue_move(caller, inst, participant, move_obj, target, target_pos: str) ->
     participant.pending_action = action
     if hasattr(inst, "queue_move"):
         try:
-            inst.queue_move(move_obj.name, target_pos, caller=caller)
+            inst.queue_move(getattr(move_obj, "key", move_obj.name), target_pos, caller=caller)
         except Exception:  # pragma: no cover - engine optional
             pass
     elif hasattr(inst, "maybe_run_turn"):

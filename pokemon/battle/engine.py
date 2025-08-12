@@ -186,6 +186,7 @@ class BattleMove:
     """Representation of a move used in battle."""
 
     name: str
+    key: Optional[str] = None
     power: int = 0
     accuracy: int | float | bool = 100
     priority: int = 0
@@ -197,6 +198,11 @@ class BattleMove:
     type: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
     pp: Optional[int] = None
+
+    def __post_init__(self) -> None:
+        """Ensure a normalized key is always available."""
+        if not self.key:
+            self.key = _normalize_key(self.name)
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect."""
@@ -336,7 +342,8 @@ class BattleParticipant:
         else:
             move_data = moves[0]
 
-        move = make_move_from_dex(move_data.name, battle=True)
+        mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
+        move = make_move_from_dex(mv_key, battle=True)
         opponents = battle.opponents_of(self)
         if not opponents:
             return None
@@ -377,7 +384,8 @@ class BattleParticipant:
         for active_poke in self.active:
             moves = getattr(active_poke, "moves", [])
             move_data = moves[0] if moves else Move(name="Flail")
-            move = make_move_from_dex(move_data.name, battle=True)
+            mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
+            move = make_move_from_dex(mv_key, battle=True)
             opponents = battle.opponents_of(self)
             if not opponents:
                 continue
@@ -858,7 +866,11 @@ class Battle:
                         if opp is part or opp.has_lost:
                             continue
                         act = getattr(opp, "pending_action", None)
-                        if act and act.action_type is ActionType.MOVE and act.move and act.move.name.lower() == "pursuit":
+                        if (
+                            act
+                            and act.action_type is ActionType.MOVE
+                            and getattr(getattr(act, "move", None), "key", "") == "pursuit"
+                        ):
                             target_check = act.target.active[0] if act.target and act.target.active else None
                             if target_check is active or act.target is part:
                                 active.tempvals["switching"] = True
@@ -1007,7 +1019,10 @@ class Battle:
 
         user = action.pokemon or (action.actor.active[0] if action.actor.active else None)
         # Ensure we have full move data loaded from the dex
-        dex_move = MOVEDEX.get(_normalize_key(action.move.name))
+        key = getattr(action.move, "key", None)
+        if not key and getattr(action.move, "name", None):
+            key = _normalize_key(action.move.name)
+        dex_move = MOVEDEX.get(key) if key else None
         if dex_move:
             if not action.move.raw:
                 action.move.raw = dict(dex_move.raw)
@@ -1027,7 +1042,7 @@ class Battle:
             except Exception:  # pragma: no cover - fallback for stubs
                 slot_iter = slots
             for slot in slot_iter:
-                if getattr(getattr(slot, "move", None), "name", "").lower() == action.move.name.lower():
+                if _normalize_key(getattr(getattr(slot, "move", None), "name", "")) == getattr(action.move, "key", ""):
                     current = getattr(slot, "current_pp", None)
                     if current is not None:
                         if current <= 0:
@@ -1448,7 +1463,11 @@ class Battle:
                         else:
                             opp_candidates = [opp_act] if opp_act else []
                         for oa in opp_candidates:
-                            if oa and oa.action_type is ActionType.MOVE and oa.move and oa.move.name.lower() == "pursuit":
+                            if (
+                                oa
+                                and oa.action_type is ActionType.MOVE
+                                and getattr(getattr(oa, "move", None), "key", "") == "pursuit"
+                            ):
                                 switching.tempvals["switching"] = True
                                 self.use_move(oa)
                                 switching.tempvals.pop("switching", None)

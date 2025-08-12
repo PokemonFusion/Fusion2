@@ -192,7 +192,7 @@ class CmdBattleAttack(Command):
             self.caller.msg(f"You prepare to use {move_obj.name}.")
             if hasattr(inst, "queue_move"):
                 try:
-                    inst.queue_move(move_name_sel, target_pos, caller=self.caller)
+                    inst.queue_move(getattr(move_obj, "key", move_name_sel), target_pos, caller=self.caller)
                 except Exception:
                     pass
             elif hasattr(inst, "maybe_run_turn"):

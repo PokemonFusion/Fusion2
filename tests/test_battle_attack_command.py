@@ -58,9 +58,10 @@ def setup_modules():
         move: object = None
         priority: int = 0
     class BattleMove:
-        def __init__(self, name, priority=0, **kwargs):  # pragma: no cover - stub
+        def __init__(self, name, priority=0, key=None, **kwargs):  # pragma: no cover - stub
             self.name = name
             self.priority = priority
+            self.key = key or name
     battle_mod.Action = Action
     battle_mod.ActionType = ActionType
     battle_mod.BattleMove = BattleMove
