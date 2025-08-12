@@ -123,6 +123,14 @@ spawn_mod = types.ModuleType("helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
 sys.modules["helpers.pokemon_spawn"] = spawn_mod
 
+# Create package placeholders for relative imports
+pokemon_pkg = types.ModuleType("pokemon")
+pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
+sys.modules["pokemon"] = pokemon_pkg
+battle_pkg = types.ModuleType("pokemon.battle")
+battle_pkg.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
+sys.modules["pokemon.battle"] = battle_pkg
+
 # Load supporting battle modules from real files
 bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")
 bd_spec = importlib.util.spec_from_file_location("pokemon.battle.battledata", bd_path)
@@ -135,6 +143,14 @@ st_spec = importlib.util.spec_from_file_location("pokemon.battle.state", st_path
 st_mod = importlib.util.module_from_spec(st_spec)
 sys.modules[st_spec.name] = st_mod
 st_spec.loader.exec_module(st_mod)
+
+pf_path = os.path.join(ROOT, "pokemon", "battle", "pokemon_factory.py")
+pf_spec = importlib.util.spec_from_file_location(
+    "pokemon.battle.pokemon_factory", pf_path
+)
+pf_mod = importlib.util.module_from_spec(pf_spec)
+sys.modules[pf_spec.name] = pf_mod
+pf_spec.loader.exec_module(pf_mod)
 
 storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
 storage_spec = importlib.util.spec_from_file_location(
