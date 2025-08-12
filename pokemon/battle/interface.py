@@ -4,9 +4,6 @@ from __future__ import annotations
 
 from utils.battle_display import render_battle_ui
 
-from .watchers import add_watcher, notify_watchers, remove_watcher
-
-
 def format_turn_banner(turn: int) -> str:
     """Return a simple banner for turn notifications."""
     return f"╭─ Turn {turn} ─╮"
@@ -68,3 +65,44 @@ def display_battle_interface(
     viewer = trainer if viewer_team == "A" else opponent if viewer_team == "B" else None
     adapter = _StateAdapter(trainer, opponent, battle_state)
     return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)
+
+
+from .watchers import add_watcher, notify_watchers, remove_watcher
+
+
+def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
+    """Return interface strings for both sides and observers.
+
+    This helper centralises construction of the per-side battle UI.  It wraps
+    :func:`display_battle_interface` for the two trainers and for watchers so
+    the caller can simply broadcast the returned strings to the appropriate
+    audiences.
+
+    Parameters
+    ----------
+    captain_a, captain_b:
+        The trainers heading the A and B sides of the battle.
+    state:
+        The current battle state object.
+    waiting_on:
+        Optional Pokémon instance indicating which combatant has yet to choose
+        an action.  When provided a footer showing the waiting Pokémon will be
+        displayed.
+
+    Returns
+    -------
+    tuple[str, str, str]
+        Interface text for team A members, team B members and observers
+        respectively.
+    """
+
+    iface_a = display_battle_interface(
+        captain_a, captain_b, state, viewer_team="A", waiting_on=waiting_on
+    )
+    iface_b = display_battle_interface(
+        captain_b, captain_a, state, viewer_team="B", waiting_on=waiting_on
+    )
+    iface_w = display_battle_interface(
+        captain_a, captain_b, state, viewer_team=None, waiting_on=waiting_on
+    )
+    return iface_a, iface_b, iface_w
