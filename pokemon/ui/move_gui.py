@@ -132,6 +132,9 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
     elif isinstance(move, dict):
         data = move
     else:
+        # Generic object. Extract common attributes and fall back to lookup
+        # in the movedex when details are missing.  This allows passing Django
+        # ``Move`` models or other light objects that only define ``name``.
         data = {
             "name": getattr(move, "name", "Unknown"),
             "type": getattr(move, "type", None),
@@ -140,6 +143,12 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
             "accuracy": getattr(move, "accuracy", None),
             "power": getattr(move, "power", getattr(move, "base_power", None)),
         }
+        if any(data.get(k) in (None, "") for k in ("type", "category", "pp", "accuracy", "power")):
+            extra = lookup_move(data["name"])
+            if extra:
+                for key in ("type", "category", "pp", "accuracy", "power"):
+                    if data.get(key) in (None, ""):
+                        data[key] = extra.get(key)
 
     name = data.get("name") or "Unknown"
     mtype = data.get("type")

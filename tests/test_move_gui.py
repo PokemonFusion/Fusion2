@@ -34,3 +34,18 @@ def test_move_gui_lookup_and_formatting():
     # Thunder Wave: Electric type, accuracy 90
     assert "|yElectric|n" in out
     assert "Power: —   Accuracy: 90" in out
+
+
+def test_move_gui_object_fallback():
+    """Objects lacking stats should be enriched from the movedex."""
+
+    class Dummy:
+        def __init__(self, name):
+            self.name = name
+
+    slots = [Dummy("tackle"), None, None, None]
+    out = render_move_gui(slots)
+
+    # Lookup should populate type, power and accuracy
+    assert "|wNormal|n" in out
+    assert "Power: 40   Accuracy: 100" in out
