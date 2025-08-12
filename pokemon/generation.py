@@ -63,15 +63,17 @@ __all__ = [
 
 # --- Helper functions -----------------------------------------------------
 
-def roll_ivs() -> Stats:
+def roll_ivs(*, rng: Optional[random.Random] = None) -> Stats:
     """Return random IVs between 0 and 31 for each stat."""
+
+    rng = rng or random
     return Stats(
-        hp=random.randint(0, 31),
-        attack=random.randint(0, 31),
-        defense=random.randint(0, 31),
-        special_attack=random.randint(0, 31),
-        special_defense=random.randint(0, 31),
-        speed=random.randint(0, 31),
+        hp=rng.randint(0, 31),
+        attack=rng.randint(0, 31),
+        defense=rng.randint(0, 31),
+        special_attack=rng.randint(0, 31),
+        special_defense=rng.randint(0, 31),
+        speed=rng.randint(0, 31),
     )
 
 
@@ -85,9 +87,13 @@ def calculate_stat(base: int, iv: int, level: int, *, is_hp: bool = False, modif
 
 
 def get_gender(
-    ratio: Optional[Dict[str, float]] = None, single: Optional[str] = None
+    ratio: Optional[Dict[str, float]] = None,
+    single: Optional[str] = None,
+    *,
+    rng: Optional[random.Random] = None,
 ) -> str:
     """Return a gender based on ratio or a single-gender value."""
+
     if single:
         if single in {"M", "F", "N"}:
             return single
@@ -102,7 +108,8 @@ def get_gender(
         return "M"
     if ratio.get("F") == 1:
         return "F"
-    r = random.random()
+    rng = rng or random
+    r = rng.random()
     female_ratio = ratio.get("F", 0.5)
     return "F" if r < female_ratio else "M"
 
@@ -129,13 +136,21 @@ def get_valid_moves(species_name: str, level: int) -> List[str]:
     return moves
 
 
-def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = False) -> List[str]:
+def choose_wild_moves(
+    species_name: str,
+    level: int,
+    *,
+    allow_special: bool = False,
+    seed: int | None = None,
+) -> List[str]:
     """Return up to four moves for a wild Pokémon.
 
     The moves are chosen from level-up moves learned at or before the given
     level.  STAB and higher-level moves are preferred.  If ``allow_special`` is
     True, there is a small chance an egg or machine move is included.
     """
+
+    rng = random.Random(seed)
 
     key = species_name.lower()
     species = POKEDEX.get(key)
@@ -201,7 +216,7 @@ def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = Fa
             if len(moves) >= 4:
                 break
 
-    if allow_special and random.random() < 0.05:
+    if allow_special and rng.random() < 0.05:
         special_pool: List[str] = []
         learnset = LEARNSETS.get(key, {}).get("learnset", {})
         for move, codes in learnset.items():
@@ -210,7 +225,7 @@ def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = Fa
                     special_pool.append(move)
                     break
         if special_pool:
-            special_move = random.choice(special_pool)
+            special_move = rng.choice(special_pool)
             if special_move not in moves:
                 if len(moves) >= 4:
                     moves[-1] = special_move
@@ -230,11 +245,13 @@ def choose_wild_moves(species_name: str, level: int, *, allow_special: bool = Fa
     return moves[:4]
 
 
-def get_random_ability(abilities: Dict[str, str]) -> str:
+def get_random_ability(abilities: Dict[str, str], *, rng: Optional[random.Random] = None) -> str:
     """Choose a random ability from the abilities dict."""
+
     if not abilities:
         return ""
-    return random.choice(list(abilities.values()))
+    rng = rng or random
+    return rng.choice(list(abilities.values()))
 
 
 NATURES: Dict[str, tuple[Optional[str], Optional[str]]] = {
@@ -268,8 +285,16 @@ NATURES: Dict[str, tuple[Optional[str], Optional[str]]] = {
 
 # --- Main generation function --------------------------------------------
 
-def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
+def generate_pokemon(
+    species_name: str,
+    level: int = 5,
+    *,
+    seed: int | None = None,
+) -> PokemonInstance:
     """Create a Pokémon instance from dex data."""
+
+    rng = random.Random(seed)
+
     species = POKEDEX.get(species_name.lower())
     if not species:
         try:
@@ -279,9 +304,9 @@ def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
     if not species:
         raise ValueError(f"Species '{species_name}' not found in Pokedex")
 
-    ivs = roll_ivs()
+    ivs = roll_ivs(rng=rng)
 
-    nature = random.choice(list(NATURES.keys()))
+    nature = rng.choice(list(NATURES.keys()))
     inc, dec = NATURES[nature]
 
     def mod(stat: str) -> float:
@@ -316,17 +341,20 @@ def generate_pokemon(species_name: str, level: int = 5) -> PokemonInstance:
         ),
     )
 
-    ability = get_random_ability({k: v.name if hasattr(v, "name") else v for k, v in species.abilities.items()})
+    ability = get_random_ability(
+        {k: v.name if hasattr(v, "name") else v for k, v in species.abilities.items()},
+        rng=rng,
+    )
     ratio_dict = None
     if species.gender_ratio:
         ratio_dict = {"M": species.gender_ratio.M, "F": species.gender_ratio.F}
-    gender = get_gender(ratio_dict, getattr(species, "gender", None))
+    gender = get_gender(ratio_dict, getattr(species, "gender", None), rng=rng)
 
-    moves = get_valid_moves(species.name, level)
+    moves = choose_wild_moves(species.name, level, seed=seed)
     if not moves:
         moves = ["Flail"]
     if len(moves) > 4:
-        moves = random.sample(moves, 4)
+        moves = rng.sample(moves, 4)
 
     return PokemonInstance(
         species=species,

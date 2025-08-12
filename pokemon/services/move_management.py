@@ -10,6 +10,14 @@ from __future__ import annotations
 
 from typing import Iterable, Optional
 
+from django.db import transaction
+
+
+def _fallback_normalize_key(val: str) -> str:
+    """Simplified move name normalisation used when engine helpers are missing."""
+
+    return val.replace(" ", "").replace("-", "").replace("'", "").lower()
+
 
 def learn_level_up_moves(pokemon, *, caller=None, prompt: bool = False) -> None:
     """Teach all level-up moves available to ``pokemon``.
@@ -43,13 +51,11 @@ def learn_level_up_moves(pokemon, *, caller=None, prompt: bool = False) -> None:
 
 
 def apply_active_moveset(pokemon) -> None:
-    """Populate active move slots for ``pokemon``'s current moveset.
+    """Populate ``pokemon``'s ``ActiveMoveslot`` records from its moveset.
 
-    This mirrors the Pokémon's active moveset to the ``ActiveMoveslot`` table
-    used during battles.  Existing slots are cleared and recreated so that the
-    database always reflects the active configuration.  ``current_pp`` values
-    are initialised based on the move's base PP along with any stored PP
-    boosts.
+    The operation is transactional to avoid partially-applied data and performs
+    bulk creation for efficiency.  PP values are initialised from ``MOVEDEX``
+    and adjusted for any stored PP bonuses.
     """
 
     active_ms = getattr(pokemon, "active_moveset", None)
@@ -64,64 +70,84 @@ def apply_active_moveset(pokemon) -> None:
     if actives is None:
         return
 
-    # clear existing active slots
     try:
-        actives.all().delete()
-    except Exception:  # pragma: no cover - non-queryset fallbacks
+        from pokemon.battle.engine import _normalize_key
+    except Exception:
+        _normalize_key = _fallback_normalize_key
+
+    import sys
+    dex_mod = sys.modules.get("pokemon.dex")
+    if dex_mod is None:
         try:
-            actives.delete()
+            from pokemon import dex as dex_mod  # type: ignore
+        except Exception:
+            dex_mod = None
+
+    bonuses = getattr(pokemon, "pp_bonuses", {}) or {}
+    if not bonuses:
+        boosts = getattr(pokemon, "pp_boosts", None)
+        if boosts is not None:
+            try:
+                iterable: Iterable = boosts.all()  # type: ignore[assignment]
+            except Exception:
+                iterable = boosts  # type: ignore[assignment]
+            for b in iterable:
+                name = getattr(getattr(b, "move", None), "name", "")
+                if name:
+                    bonuses[_normalize_key(name)] = getattr(b, "bonus_pp", 0)
+    pending = []
+    SlotModel = getattr(actives, "model", None)
+
+    def _apply():
+        try:
+            slot_iter = list(slots_rel.all().order_by("slot"))
         except Exception:
             try:
-                for obj in list(actives):
-                    try:
-                        obj.delete()
-                    except Exception:
-                        pass
-                actives.clear()  # type: ignore[attr-defined]
+                slot_iter = list(slots_rel.order_by("slot"))
             except Exception:
-                pass
+                slot_iter = list(slots_rel)
 
-    # determine PP bonuses from PP Ups / PP Maxes
-    bonuses: dict[str, int] = {}
-    boosts = getattr(pokemon, "pp_boosts", None)
-    if boosts is not None:
+        for slot in slot_iter:
+            move = getattr(slot, "move", None)
+            if not move:
+                continue
+            name = getattr(move, "name", "") or str(move)
+            norm = _normalize_key(name)
+
+            base_pp = None
+            if dex_mod is not None:
+                md = dex_mod.MOVEDEX.get(norm)
+                if md is not None:
+                    base_pp = getattr(md, "pp", None)
+                    if base_pp is None and isinstance(md, dict):
+                        base_pp = md.get("pp")
+            cur_pp = None if base_pp is None else int(base_pp) + int(bonuses.get(norm, 0))
+
+            if SlotModel is not None:
+                pending.append(
+                    SlotModel(move=move, slot=getattr(slot, "slot", 0), current_pp=cur_pp)
+                )
+            else:
+                actives.create(move=move, slot=getattr(slot, "slot", 0), current_pp=cur_pp)
+
+        if SlotModel is not None:
+            actives.all().delete()
+            if pending:
+                try:
+                    actives.bulk_create(pending)
+                except Exception:
+                    for row in pending:
+                        actives.create(move=row.move, slot=row.slot, current_pp=row.current_pp)
         try:
-            iterable: Iterable = boosts.all()
-        except Exception:  # pragma: no cover - manager may be list-like
-            iterable = boosts  # type: ignore[assignment]
-        for b in iterable:
-            name = getattr(getattr(b, "move", None), "name", "").lower()
-            if name:
-                bonuses[name] = getattr(b, "bonus_pp", 0)
-
-    try:
-        slot_iter = slots_rel.order_by("slot")
-    except Exception:  # pragma: no cover - list-like fallback
-        slot_iter = slots_rel
-
-    try:
-        from pokemon.dex import MOVEDEX  # type: ignore
-    except Exception:  # pragma: no cover - optional during some tests
-        MOVEDEX = {}  # type: ignore
-
-    for slot in slot_iter:
-        move = getattr(slot, "move", None)
-        if not move:
-            continue
-        move_name = getattr(move, "name", "").lower()
-        pp: Optional[int] = None
-        base_pp = MOVEDEX.get(move_name, {}).get("pp")
-        if base_pp is not None:
-            pp = base_pp + bonuses.get(move_name, 0)
-        try:
-            actives.create(move=move, slot=getattr(slot, "slot", 0), current_pp=pp)
-        except Exception:  # pragma: no cover - best effort
+            pokemon.save()
+        except Exception:
             pass
 
     try:
-        pokemon.save()
-    except Exception:  # pragma: no cover - optional in tests
-        pass
+        with transaction.atomic():
+            _apply()
+    except Exception:
+        _apply()
 
 
 __all__ = ["learn_level_up_moves", "apply_active_moveset"]

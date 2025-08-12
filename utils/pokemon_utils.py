@@ -12,6 +12,18 @@ except Exception:  # pragma: no cover - allow tests to stub
     Pokemon = Move = None
 
 
+def _fallback_normalize_key(val: str) -> str:
+    """Simplified key normalisation used when engine helpers are unavailable."""
+
+    return val.replace(" ", "").replace("-", "").replace("'", "").lower()
+
+
+try:
+    from pokemon.dex import POKEDEX as _GLOBAL_POKEDEX  # type: ignore
+except Exception:  # pragma: no cover - optional in tests
+    _GLOBAL_POKEDEX = {}
+
+
 def _get_calc_stats_from_model():
     try:
         from pokemon.battle import battleinstance as bi
@@ -233,160 +245,126 @@ def make_pokemon_from_dict(data: dict) -> Pokemon:
     )
 
 
-def make_move_from_dex(name: str, *, battle: bool = False) -> Any:
-    """Instantiate a move from the dex.
+def make_move_from_dex(name: str, *, battle: bool = False):
+    """Instantiate a move definition from dex data.
 
     Parameters
     ----------
     name:
-        Name of the move to create.
+        Name of the move to look up.
     battle:
-        When ``True``, return a :class:`~pokemon.battle.engine.BattleMove`
-        populated with callback hooks.  Otherwise a
-        :class:`~pokemon.battle.battledata.Move` is returned.  Defaults to
-        ``False``.
-
-    Returns
-    -------
-    Move or BattleMove
-        Newly created move instance using data from ``MOVEDEX`` when available.
+        When ``True`` a :class:`~pokemon.battle.engine.BattleMove` is returned
+        with callable hooks attached.  Otherwise a display-only
+        :class:`~pokemon.dex.entities.Move` is produced.  The function degrades
+        gracefully when dex data is unavailable.
     """
 
-    try:  # pragma: no cover - optional in tests
+    # Lazy imports to avoid requiring the full dex or battle engine in tests
+    try:
         from pokemon import dex as dex_mod  # type: ignore
-    except Exception:  # pragma: no cover - optional in tests
+    except Exception:
         dex_mod = None
+    try:
+        from pokemon.battle.engine import _normalize_key
+    except Exception:
+        _normalize_key = _fallback_normalize_key
 
     entry = None
     if dex_mod is not None:
-        key = name.lower()
+        key = _normalize_key(name)
         try:
             entry = dex_mod.MOVEDEX.get(key)
-            if entry is None:
-                import importlib
-                dex_mod = importlib.reload(dex_mod)
-                entry = dex_mod.MOVEDEX.get(key)
-        except Exception:  # pragma: no cover - optional in tests
+        except Exception:
             entry = None
 
     if not battle:
-        if Move is None:
-            raise RuntimeError("Battle modules not available")
+        # ``Move`` is a lightweight dex entity used primarily for display.  If
+        # we have no dex information simply return a move with the provided
+        # name so callers still receive an object with the expected interface.
+        from pokemon.dex.entities import Move as DexMove
+
         if entry is None:
-            return Move(name=name)
-        return Move(name=entry.name, priority=entry.raw.get("priority", 0))
+            return DexMove(name=name, num=0)
+        return DexMove(name=getattr(entry, "name", name), num=getattr(entry, "num", 0))
 
-    # Battle move path
-    try:  # pragma: no cover - import lazily to avoid circulars
-        from pokemon.battle.engine import BattleMove, _normalize_key
-    except Exception:  # pragma: no cover - fallback normalization
-        BattleMove = None
+    # Battle move path --------------------------------------------------
+    from pokemon.battle.engine import BattleMove
 
-        def _normalize_key(val: str) -> str:
-            return val.replace(" ", "").replace("-", "").replace("'", "").lower()
+    move_name = getattr(entry, "name", name)
+    power = getattr(entry, "power", 0)
+    accuracy = getattr(entry, "accuracy", 100)
+    mtype = getattr(entry, "type", None)
+    pp = getattr(entry, "pp", None)
+    raw = dict(getattr(entry, "raw", {}) or {})
 
-    if BattleMove is None:
-        raise RuntimeError("Battle modules not available")
-
-    try:  # pragma: no cover - optional in tests
-        from pokemon.dex.functions import moves_funcs  # type: ignore
-    except Exception:  # pragma: no cover - optional in tests
-        moves_funcs = None
-
-    def _resolve_cb(cb_name: Any):
-        if not isinstance(cb_name, str) or not moves_funcs:
-            return None
-        try:
-            cls_name, func_name = cb_name.split(".", 1)
-            cls = getattr(moves_funcs, cls_name, None)
-            if cls:
-                inst = cls()
-                cand = getattr(inst, func_name, None)
-                if callable(cand):
-                    return cand
-        except Exception:
-            return None
-        return None
-
-    entry = None
-    if dex_mod is not None:
-        try:
-            entry = dex_mod.MOVEDEX.get(_normalize_key(name))
-            if entry is None:
-                import importlib
-                dex_mod = importlib.reload(dex_mod)
-                entry = dex_mod.MOVEDEX.get(_normalize_key(name))
-        except Exception:  # pragma: no cover - optional in tests
-            entry = None
-
-    if entry is None:
-        return BattleMove(name=name)
-
-    on_hit = _resolve_cb(entry.raw.get("onHit"))
-    on_try = _resolve_cb(entry.raw.get("onTry"))
-    on_before = _resolve_cb(entry.raw.get("onBeforeMove"))
-    on_after = _resolve_cb(entry.raw.get("onAfterMove"))
-    base_cb = _resolve_cb(entry.raw.get("basePowerCallback"))
+    # Ensure category information reaches the battle engine so that damage
+    # uses the correct offensive and defensive stats.
+    cat = getattr(entry, "category", None)
+    if cat and "category" not in raw:
+        raw["category"] = cat
+    priority = raw.get("priority", 0)
 
     return BattleMove(
-        name=entry.name,
-        power=getattr(entry, "power", 0),
-        accuracy=getattr(entry, "accuracy", 100),
-        priority=entry.raw.get("priority", 0),
-        onHit=on_hit,
-        onTry=on_try,
-        onBeforeMove=on_before,
-        onAfterMove=on_after,
-        basePowerCallback=base_cb,
-        type=getattr(entry, "type", None),
-        raw=entry.raw,
+        name=move_name,
+        power=power,
+        accuracy=accuracy,
+        priority=priority,
+        onHit=raw.get("onHit"),
+        onTry=raw.get("onTry"),
+        onBeforeMove=raw.get("onBeforeMove"),
+        onAfterMove=raw.get("onAfterMove"),
+        basePowerCallback=raw.get("basePowerCallback"),
+        type=mtype,
+        raw=raw,
+        pp=pp,
     )
 
 
-def make_pokemon_from_dex(
-    species: str, *, level: int = 1, moves: list[str] | None = None
-) -> Pokemon:
-    """Create a :class:`~pokemon.battle.battledata.Pokemon` from dex data.
+def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
+    """Create a :class:`~pokemon.battle.battledata.Pokemon` from dex entries.
 
-    This convenience wrapper pulls species and move information from
-    :mod:`pokemon.dex` and delegates to :func:`make_pokemon_from_dict`.
-
-    Parameters
-    ----------
-    species:
-        Name of the Pokémon species as defined in ``POKEDEX``.
-    level:
-        Desired level for the created Pokémon. Defaults to ``1``.
-    moves:
-        Optional list of move names to teach the Pokémon.  Each name is looked up
-        in ``MOVEDEX``; unknown moves fall back to a simple move with the given
-        name.
-
-    Returns
-    -------
-    Pokemon
-        Battle-ready Pokémon instance built from dex entries.
+    The helper normalises the provided ``species`` key and builds a battle-ready
+    Pokémon using :func:`make_pokemon_from_dict`.  Unknown species raise a
+    :class:`KeyError` to match dictionary semantics.
     """
 
-    if Pokemon is None:
-        raise RuntimeError("Battle modules not available")
-
-    try:  # pragma: no cover - optional in tests
+    try:
         from pokemon import dex as dex_mod  # type: ignore
-        entry = dex_mod.POKEDEX.get(species)
-        if entry is None:
-            import importlib
-            dex_mod = importlib.reload(dex_mod)
-            entry = dex_mod.POKEDEX.get(species)
-    except Exception:  # pragma: no cover - optional in tests
-        entry = None
+    except Exception:
+        dex_mod = None
+    try:
+        from pokemon.battle.engine import _normalize_key
+    except Exception:
+        _normalize_key = _fallback_normalize_key
 
-    if entry is None:
+    if Pokemon is None:
+        raise RuntimeError("Dex not available")
+
+    sp = None
+    if dex_mod is not None and getattr(dex_mod, "POKEDEX", None):
+        sp = dex_mod.POKEDEX.get(_normalize_key(species)) or dex_mod.POKEDEX.get(species)
+    if sp is None:
+        sp = _GLOBAL_POKEDEX.get(_normalize_key(species)) or _GLOBAL_POKEDEX.get(species)
+    if sp is None:
+        try:
+            import importlib.util, sys
+            from pathlib import Path
+
+            spec = importlib.util.spec_from_file_location(
+                "pokemon.dex", Path(__file__).resolve().parents[1] / "pokemon" / "dex" / "__init__.py"
+            )
+            if spec and spec.loader:
+                real_dex = importlib.util.module_from_spec(spec)
+                sys.modules[spec.name] = real_dex
+                spec.loader.exec_module(real_dex)
+                sp = real_dex.POKEDEX.get(_normalize_key(species)) or real_dex.POKEDEX.get(species)
+        except Exception:
+            sp = None
+    if sp is None:
         raise KeyError(f"Unknown species '{species}'")
 
-    stats = {"hp": entry.base_stats.hp}
-    move_objs = [make_move_from_dex(m) for m in (moves or [])]
-
-    data = {"species": species, "level": level, "stats": stats, "moves": move_objs}
+    move_objs = list(moves or [])
+    stats = {"hp": getattr(getattr(sp, "base_stats", {}), "hp", 1)}
+    data = {"species": sp.name, "level": level, "stats": stats, "moves": move_objs}
     return make_pokemon_from_dict(data)
 
