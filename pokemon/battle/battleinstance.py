@@ -31,6 +31,7 @@ except Exception:  # pragma: no cover - fallback for tests without Evennia
 
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
+from .messaging import MessagingMixin
 
 try:
     from .engine import _normalize_key as _battle_norm_key
@@ -160,7 +161,7 @@ class BattleInstance(_ScriptBase, ActionQueue):
 
 
 
-class BattleSession(WatcherManager, ActionQueue):
+class BattleSession(MessagingMixin, WatcherManager, ActionQueue):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
@@ -316,36 +317,6 @@ class BattleSession(WatcherManager, ActionQueue):
             log_info(f"Restored instance {bid} from room data")
             player.ndb.battle_instance = inst
         return inst
-
-    # ------------------------------------------------------------
-    # Messaging helpers
-    # ------------------------------------------------------------
-
-    def msg(self, text: str) -> None:
-        """Send `text` to trainers and observers with a battle prefix."""
-        if not self.trainers:
-            trainers = [t for t in (self.captainA, self.captainB) if t]
-        else:
-            trainers = self.trainers
-        names = [getattr(t, "key", str(t)) for t in trainers]
-        prefix = f"[Battle: {' vs. '.join(names)}]"
-        msg = f"{prefix} {text}"
-        for obj in trainers + list(self.observers):
-            if hasattr(obj, "msg"):
-                obj.msg(msg)
-
-    def _msg_to(self, obj, text: str) -> None:
-        """Send `text` to a single object with battle prefix."""
-        names = [
-            getattr(self.captainA, "key", str(self.captainA)),
-            getattr(self.captainB, "key", str(self.captainB))
-            if self.captainB
-            else None,
-        ]
-        names = [n for n in names if n]
-        prefix = f"[Battle: {' vs. '.join(names)}]"
-        if hasattr(obj, "msg"):
-            obj.msg(f"{prefix} {text}")
 
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":

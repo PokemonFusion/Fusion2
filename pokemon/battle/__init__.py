@@ -20,6 +20,7 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
 from .capture import attempt_capture
 from .storage import BattleDataWrapper
 from .setup import create_participants, build_initial_state, persist_initial_state
+from .messaging import MessagingMixin
 
 __all__ = [
     "DamageResult",
@@ -48,4 +49,5 @@ __all__ = [
     "create_participants",
     "build_initial_state",
     "persist_initial_state",
+    "MessagingMixin",
 ]
