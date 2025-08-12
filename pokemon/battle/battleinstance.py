@@ -41,6 +41,16 @@ except Exception:  # pragma: no cover - engine stubbed in some tests
 from .state import BattleState
 from .watchers import WatcherManager
 try:
+    from .actions import ActionQueue
+except Exception:  # pragma: no cover - fallback for direct execution
+    import importlib.util as _util, pathlib as _pathlib, sys as _sys
+    _actions_path = _pathlib.Path(__file__).with_name('actions.py')
+    _spec_a = _util.spec_from_file_location('pokemon.battle.actions', _actions_path)
+    _mod_a = _util.module_from_spec(_spec_a)
+    _sys.modules[_spec_a.name] = _mod_a
+    _spec_a.loader.exec_module(_mod_a)
+    ActionQueue = _mod_a.ActionQueue
+try:
     from .interface import (
         display_battle_interface,
         format_turn_banner,
@@ -134,7 +144,7 @@ except Exception:  # pragma: no cover - fallback for tests without Evennia
             pass
 
 
-class BattleInstance(_ScriptBase):
+class BattleInstance(_ScriptBase, ActionQueue):
     """Legacy placeholder kept to clean up old script-based battles."""
 
     def at_script_creation(self):
@@ -149,7 +159,7 @@ class BattleInstance(_ScriptBase):
 
 
 
-class BattleSession(WatcherManager):
+class BattleSession(WatcherManager, ActionQueue):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
@@ -1051,115 +1061,52 @@ class BattleSession(WatcherManager):
 
     def queue_move(self, move_key: str, target: str = "B1", caller=None) -> None:
         """Queue a move by its dex key and run the turn if ready."""
-        if not self.data or not self.battle:
-            return
-        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
-        if not pos:
-            return
-        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
         norm_key = _battle_norm_key(move_key)
-        if self._already_queued(pos_name, pos, caller, f"move {norm_key}"):
-            return
-        pos.declareAttack(target, norm_key)
-        log_info(
-            f"Queued move {norm_key} targeting {target} from {pokemon_name} at {pos_name}"
+        self._queue_action(
+            caller,
+            f"move {norm_key}",
+            lambda pos: pos.declareAttack(target, norm_key),
+            {"move": norm_key, "target": target},
+            "Queued move {move} targeting {target} from {pokemon} at {pos}",
+            {"move": norm_key, "target": target},
+            "queued move",
         )
-        if self.state:
-            actor_id = str(getattr(caller or self.captainA, "id", ""))
-            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
-            self.state.declare[pos_name] = {
-                "move": norm_key,
-                "target": target,
-                "trainer": actor_id,
-                "pokemon": poke_id,
-            }
-        # Persist only the (compacted) state on input to avoid duplicating turndata snapshots.
-        self.storage.set(
-            "state", self._compact_state_for_persist(self.logic.state.to_dict())
-        )
-        log_info(f"Saved queued move for {pokemon_name} at {pos_name} to room state")
-        self.maybe_run_turn()
 
     def queue_switch(self, slot: int, caller=None) -> None:
         """Queue a Pokémon switch and run the turn if ready."""
-        if not self.data or not self.battle:
-            return
-        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
-        if not pos:
-            return
-        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
-        if self._already_queued(pos_name, pos, caller, "switch"):
-            return
-        pos.declareSwitch(slot)
-        log_info(f"Queued switch to slot {slot} for {pokemon_name} at {pos_name}")
-        if self.state:
-            actor_id = str(getattr(caller or self.captainA, "id", ""))
-            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
-            self.state.declare[pos_name] = {
-                "switch": slot,
-                "trainer": actor_id,
-                "pokemon": poke_id,
-            }
-        self.storage.set(
-            "state", self._compact_state_for_persist(self.logic.state.to_dict())
+        self._queue_action(
+            caller,
+            "switch",
+            lambda pos: pos.declareSwitch(slot),
+            {"switch": slot},
+            "Queued switch to slot {slot} for {pokemon} at {pos}",
+            {"slot": slot},
+            "queued switch",
         )
-        log_info(f"Saved queued switch for {pokemon_name} at {pos_name} to room state")
-        self.maybe_run_turn()
 
     def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
         """Queue an item use and run the turn if ready."""
-        if not self.data or not self.battle:
-            return
-        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
-        if not pos:
-            return
-        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
-        if self._already_queued(pos_name, pos, caller, f"item {item_name}"):
-            return
-        pos.declareItem(item_name)
-        log_info(
-            f"Queued item {item_name} targeting {target} from {pokemon_name} at {pos_name}"
+        self._queue_action(
+            caller,
+            f"item {item_name}",
+            lambda pos: pos.declareItem(item_name),
+            {"item": item_name, "target": target},
+            "Queued item {item} targeting {target} from {pokemon} at {pos}",
+            {"item": item_name, "target": target},
+            "queued item",
         )
-        if self.state:
-            actor_id = str(getattr(caller or self.captainA, "id", ""))
-            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
-            self.state.declare[pos_name] = {
-                "item": item_name,
-                "target": target,
-                "trainer": actor_id,
-                "pokemon": poke_id,
-            }
-        self.storage.set(
-            "state", self._compact_state_for_persist(self.logic.state.to_dict())
-        )
-        log_info(f"Saved queued item for {pokemon_name} at {pos_name} to room state")
-        self.maybe_run_turn()
 
     def queue_run(self, caller=None) -> None:
         """Queue a flee attempt and run the turn if ready."""
-        if not self.data or not self.battle:
-            return
-        pos_name, pos = self._get_position_for_trainer(caller or self.captainA)
-        if not pos:
-            return
-        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
-        if self._already_queued(pos_name, pos, caller, "flee attempt"):
-            return
-        pos.declareRun()
-        log_info(f"Queued attempt to flee by {pokemon_name} at {pos_name}")
-        if self.state:
-            actor_id = str(getattr(caller or self.captainA, "id", ""))
-            poke_id = str(getattr(getattr(pos, "pokemon", None), "model_id", ""))
-            self.state.declare[pos_name] = {
-                "run": "1",
-                "trainer": actor_id,
-                "pokemon": poke_id,
-            }
-        self.storage.set(
-            "state", self._compact_state_for_persist(self.logic.state.to_dict())
+        self._queue_action(
+            caller,
+            "flee attempt",
+            lambda pos: pos.declareRun(),
+            {"run": "1"},
+            "Queued attempt to flee by {pokemon} at {pos}",
+            {},
+            "flee attempt",
         )
-        log_info(f"Saved flee attempt for {pokemon_name} at {pos_name} to room state")
-        self.maybe_run_turn()
 
     # ---- Persistence helpers ------------------------------------------------
 
