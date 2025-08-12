@@ -74,6 +74,7 @@ except Exception:  # pragma: no cover - fallback for direct execution
     _sys.modules[_spec.name] = _mod
     _spec.loader.exec_module(_mod)
     BattleLogic = _mod.BattleLogic
+from .setup import create_participants, build_initial_state, persist_initial_state
 try:
     from pokemon.battle.pokemon_factory import (
         create_battle_pokemon,
@@ -754,84 +755,26 @@ class BattleSession(WatcherManager, ActionQueue):
         opponent_name: str,
         battle_type: BattleType,
     ) -> None:
-        """Create battle objects and state."""
-        log_info(f"Initializing battle state for {self.captainA.key} vs {opponent_name}")
-        # ``BattleParticipant`` may not accept ``team`` or ``player`` in stub
-        # implementations used by tests. Attempt to pass these keyword
-        # arguments when available and gracefully fall back otherwise.
-        try:
-            opponent_participant = BattleParticipant(
-                opponent_name, [opponent_poke], is_ai=True, team="B"
-            )
-        except TypeError:
-            opponent_participant = BattleParticipant(
-                opponent_name, [opponent_poke], is_ai=True
-            )
-        try:
-            player_participant = BattleParticipant(
-                self.captainA.key,
-                player_pokemon,
-                player=self.captainA,
-                team="A",
-            )
-        except TypeError:
-            try:
-                player_participant = BattleParticipant(
-                    self.captainA.key, player_pokemon, team="A"
-                )
-            except TypeError:
-                player_participant = BattleParticipant(
-                    self.captainA.key, player_pokemon
-                )
-
-        if player_participant.pokemons:
-            player_participant.active = [player_participant.pokemons[0]]
-        if opponent_participant.pokemons:
-            opponent_participant.active = [opponent_participant.pokemons[0]]
-
-        battle = Battle(battle_type, [player_participant, opponent_participant])
-
-        player_team = Team(trainer=self.captainA.key, pokemon_list=player_pokemon)
-        opponent_team = Team(trainer=opponent_name, pokemon_list=[opponent_poke])
-        data = BattleData(player_team, opponent_team)
-
-        state = BattleState.from_battle_data(data, ai_type=battle_type.name)
-        state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
-        state.pokemon_control = {}
-        for poke in player_pokemon:
-            if getattr(poke, "model_id", None):
-                owner_id = getattr(self.captainA, "id", getattr(self.captainA, "key", None))
-                if owner_id is not None:
-                    state.pokemon_control[str(poke.model_id)] = str(owner_id)
-        if getattr(opponent_poke, "model_id", None) and self.captainB:
-            owner_id = getattr(self.captainB, "id", getattr(self.captainB, "key", None))
-            if owner_id is not None:
-                state.pokemon_control[str(opponent_poke.model_id)] = str(owner_id)
-
-        self.logic = BattleLogic(battle, data, state)
-        self.logic.battle.log_action = self.notify
+        """Wrapper coordinating helper functions to set up a battle."""
+        log_info(
+            f"Initializing battle state for {self.captainA.key} vs {opponent_name}"
+        )
+        player_participant, opponent_participant = create_participants(
+            self.captainA, player_pokemon, opponent_poke, opponent_name
+        )
+        self.logic = build_initial_state(
+            origin,
+            battle_type,
+            player_participant,
+            opponent_participant,
+            player_pokemon,
+            opponent_poke,
+            self.captainA,
+            self.notify,
+            self.captainB,
+        )
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
-
-        # expose battle info on trainers for the interface
-        try:
-            self.captainA.team = player_pokemon
-            if player_participant.active:
-                self.captainA.active_pokemon = player_participant.active[0]
-        except Exception:
-            pass
-
-        # store battle info for restoration
-        self.storage.set("data", self.logic.data.to_dict())
-        self.storage.set("state", self.logic.state.to_dict())
-        self.storage.set("temp_pokemon_ids", list(self.temp_pokemon_ids))
-        trainer_ids = {"teamA": []}
-        if hasattr(self.captainA, "id"):
-            trainer_ids["teamA"].append(self.captainA.id)
-        if self.captainB:
-            trainer_ids["teamB"] = []
-            if hasattr(self.captainB, "id"):
-                trainer_ids["teamB"].append(self.captainB.id)
-        self.storage.set("trainers", trainer_ids)
+        persist_initial_state(self, player_participant, player_pokemon)
         log_info(f"Saved battle data for id {self.battle_id}")
 
     def _setup_battle_room(self) -> None:

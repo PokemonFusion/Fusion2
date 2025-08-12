@@ -151,6 +151,22 @@ storage_mod = importlib.util.module_from_spec(storage_spec)
 sys.modules[storage_spec.name] = storage_mod
 storage_spec.loader.exec_module(storage_mod)
 
+# Create package placeholders and load pokemon_factory
+pokemon_pkg = types.ModuleType("pokemon")
+pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
+sys.modules["pokemon"] = pokemon_pkg
+battle_pkg = types.ModuleType("pokemon.battle")
+battle_pkg.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
+sys.modules["pokemon.battle"] = battle_pkg
+
+pf_path = os.path.join(ROOT, "pokemon", "battle", "pokemon_factory.py")
+pf_spec = importlib.util.spec_from_file_location(
+    "pokemon.battle.pokemon_factory", pf_path
+)
+pf_mod = importlib.util.module_from_spec(pf_spec)
+sys.modules[pf_spec.name] = pf_mod
+pf_spec.loader.exec_module(pf_mod)
+
 # Now load battleinstance
 bi_path = os.path.join(ROOT, "pokemon", "battle", "battleinstance.py")
 bi_spec = importlib.util.spec_from_file_location("pokemon.battle.battleinstance", bi_path)
