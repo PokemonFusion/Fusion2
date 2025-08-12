@@ -5,7 +5,6 @@ from __future__ import annotations
 from evennia import Command
 from evennia import search_object
 
-from pokemon.battle.interface import add_watcher, remove_watcher
 
 
 class CmdWatchBattle(Command):
