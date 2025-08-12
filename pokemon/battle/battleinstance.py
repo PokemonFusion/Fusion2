@@ -578,6 +578,8 @@ class BattleSession:
                 "Failed to rehydrate queued declarations during restore", exc_info=True
             )
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
+        # Ensure state turn matches data since we drop it during compaction
+        obj.logic.state.turn = getattr(obj.logic.data.battle, "turn", 1)
         log_info("Restored logic and temp Pokemon ids")
 
         # Watchers: keep a live, non-persistent copy on ndb; normalize any persisted list
