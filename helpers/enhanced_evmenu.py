@@ -290,15 +290,18 @@ class EnhancedEvMenu(EvMenu):
         We deliberately do NOT call super().node_formatter to avoid the extra
         outer gray border; we render only our Pokémon box + options + footer.
         """
-        if not strip_ansi(nodetext or "").strip() and not strip_ansi(optionstext or "").strip():
+        # If both are empty, we are effectively done — print nothing.
+        if not nodetext and not optionstext:
             return ""
 
-        parts = [nodetext]
+        parts = [nodetext] if nodetext else []
         if optionstext and self.show_options:
             parts.append(optionstext)
         result = "\n\n".join(p for p in parts if p)
-
-        if result and getattr(self, "show_footer", True):
+        # Append footer only when we are awaiting input (i.e., when there ARE options).
+        # This hides the footer for terminal/confirmation nodes that return (text, None).
+        awaiting_input = bool(optionstext)
+        if result and awaiting_input and getattr(self, "show_footer", True):
             prompt = self.footer_prompt
             if self.use_pokemon_style:
                 tail = []

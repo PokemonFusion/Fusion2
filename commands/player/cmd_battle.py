@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import re
+
 from evennia import Command
 from evennia.utils.evmenu import get_input
-import re
+
+try:  # pragma: no cover - EvMenu may not be available during tests
+    from helpers.enhanced_evmenu import EnhancedEvMenu
+except Exception:  # pragma: no cover
+    EnhancedEvMenu = None  # type: ignore
 
 from utils.battle_display import render_move_gui
 from utils.pokemon_utils import make_move_from_dex
@@ -34,6 +40,7 @@ class CmdBattleAttack(Command):
 
     Usage:
       +battle/attack <move> [target]
+      +attack /menu  (interactive menu)
     """
 
     key = "+battle/attack"
@@ -42,7 +49,12 @@ class CmdBattleAttack(Command):
     help_category = "Pokemon/Battle"
 
     def parse(self):
-        parts = self.args.split()
+        self.switch_menu = False
+        raw = self.args or ""
+        if raw.startswith("/menu"):
+            self.switch_menu = True
+            raw = raw[len("/menu") :].strip()
+        parts = raw.split()
         self.move_name = parts[0] if parts else ""
         self.target_token = parts[1] if len(parts) > 1 else ""
 
@@ -216,6 +228,28 @@ class CmdBattleAttack(Command):
                 move_name = "Struggle"
 
         if not move_name:
+            if self.switch_menu and EnhancedEvMenu:
+                from utils.menus import battle_move as battle_move_menu
+
+                EnhancedEvMenu(
+                    self.caller,
+                    battle_move_menu,
+                    startnode="start",
+                    cmd_on_exit=None,              # don't auto-look after menu ends
+                    start_kwargs=dict(
+                        slots=slots,
+                        pp_overrides=pp_overrides,
+                        inst=inst,
+                        participant=participant,
+                    ),
+                    numbered_options=False,
+                    show_options=False,
+                    show_footer=True,              # shown on input nodes; hidden on terminal nodes by formatter
+                    menu_title="Move Select",
+                    footer_prompt="A–D or name",
+                    invalid_message="Invalid. Type A–D, exact name, or 'quit'.",
+                )
+                return
             _prompt_move()
             return
 
