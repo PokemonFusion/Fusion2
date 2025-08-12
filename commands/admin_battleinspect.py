@@ -164,14 +164,35 @@ class CmdBattleInspect(Command):
         # Optional deep dump (data/state dicts)
         if "--deep" in self.switches:
             def safe_dump(obj):
-                """Return JSON-serialisable representation of ``obj``."""
+                """Return a JSON-serialisable representation of ``obj``.
+
+                This handles Evennia's Saver* containers (such as ``_SaverDict``)
+                by converting them to their plain Python counterparts and then
+                recursively ensuring all nested values are JSON serialisable. If
+                an object still cannot be dumped, its string representation is
+                returned instead of raising an exception.
+                """
 
                 try:
                     if hasattr(obj, "to_dict"):
-                        return obj.to_dict()
+                        obj = obj.to_dict()
+                    elif hasattr(obj, "items"):
+                        obj = dict(obj)
+                    elif isinstance(obj, (list, tuple, set)):
+                        obj = list(obj)
+
+                    if isinstance(obj, dict):
+                        return {str(k): safe_dump(v) for k, v in obj.items()}
+                    if isinstance(obj, list):
+                        return [safe_dump(v) for v in obj]
+
+                    json.dumps(obj)
                     return obj
                 except Exception:  # pragma: no cover - ignore dump errors
-                    return {}
+                    try:
+                        return str(obj)
+                    except Exception:
+                        return {}
 
             deep = {
                 "data": safe_dump(getattr(bs, "data", None)),
