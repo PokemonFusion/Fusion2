@@ -34,6 +34,9 @@ def test_move_gui_lookup_and_formatting():
     # Thunder Wave: Electric type, accuracy 90
     assert "|yElectric|n" in out
     assert "Power: —   Accuracy: 90" in out
+    # Short descriptions should be shown
+    assert "No additional effect." in out
+    assert "10% chance to burn the target." in out
 
 
 def test_move_gui_object_fallback():
@@ -49,3 +52,4 @@ def test_move_gui_object_fallback():
     # Lookup should populate type, power and accuracy
     assert "|wNormal|n" in out
     assert "Power: 40   Accuracy: 100" in out
+    assert "No additional effect." in out

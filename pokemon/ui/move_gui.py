@@ -6,8 +6,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from evennia.utils.ansi import strip_ansi
+from pokemon.data.text import MOVES_TEXT
 
 _MOVEDEX: Optional[Dict[str, Any]] = None
+
+
+def _normalize_key(name: str) -> str:
+    """Normalize names for case-insensitive lookups."""
+    return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 
 
 def _ensure_movedex() -> Dict[str, Any]:
@@ -100,6 +106,8 @@ def lookup_move(name: str) -> Optional[Dict[str, Any]]:
     mv = md.get(name.lower()) if md else None
     if not mv:
         return None
+    entry = MOVES_TEXT.get(_normalize_key(name))
+    short_desc = entry.get("shortDesc") if entry else None
     return {
         "name": mv.name,
         "type": mv.type,
@@ -107,6 +115,7 @@ def lookup_move(name: str) -> Optional[Dict[str, Any]]:
         "pp": mv.pp,
         "accuracy": mv.accuracy,
         "power": mv.power,
+        "shortDesc": short_desc,
     }
 
 
@@ -125,6 +134,7 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
             "acc": "—",
             "power": "—",
             "color": "|w",
+            "desc": "—",
         }
 
     if isinstance(move, str):
@@ -142,11 +152,22 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
             "pp": getattr(move, "pp", None),
             "accuracy": getattr(move, "accuracy", None),
             "power": getattr(move, "power", getattr(move, "base_power", None)),
+            "shortDesc": getattr(move, "shortDesc", None),
         }
-        if any(data.get(k) in (None, "") for k in ("type", "category", "pp", "accuracy", "power")):
+        if any(
+            data.get(k) in (None, "")
+            for k in ("type", "category", "pp", "accuracy", "power", "shortDesc")
+        ):
             extra = lookup_move(data["name"])
             if extra:
-                for key in ("type", "category", "pp", "accuracy", "power"):
+                for key in (
+                    "type",
+                    "category",
+                    "pp",
+                    "accuracy",
+                    "power",
+                    "shortDesc",
+                ):
                     if data.get(key) in (None, ""):
                         data[key] = extra.get(key)
 
@@ -160,6 +181,7 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
 
     color = tcolor(mtype)
     type_disp = (color + (mtype or "None").title() + "|n") if mtype else "None"
+    desc = data.get("shortDesc") or data.get("desc") or "—"
 
     return {
         "label": slot_label,
@@ -171,6 +193,7 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
         "acc": "—" if acc in (None, True) else str(int(acc)),
         "power": "—" if powr in (None, 0, "0") and cat.lower() == "status" else str(powr or 0),
         "color": color,
+        "desc": desc,
     }
 
 
@@ -184,11 +207,12 @@ def _render_card(card: Dict[str, Any], box_w: int) -> List[str]:
     name_line = rpad(f"|  {card['name']}", box_w)
     type_cat = f"|  {card['color']}{(card['type'] or 'None').title()}|n   {card['cat']}"
     type_line = rpad(type_cat, box_w)
+    desc_line = rpad(f"|  {card['desc'][: box_w - 4]}", box_w)
     cur, mx = card["pp"]
     pp_line = rpad(f"|  PP: {cur}/{mx}", box_w)
     pa_line = rpad(f"|  Power: {card['power']}   Accuracy: {card['acc']}", box_w)
     bottom = "\\" + "-" * (box_w - 2) + "/"
-    return [top, name_line, type_line, pp_line, pa_line, bottom]
+    return [top, name_line, type_line, desc_line, pp_line, pa_line, bottom]
 
 
 # ---------- Public API ----------

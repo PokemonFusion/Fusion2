@@ -172,9 +172,12 @@ def get_move_description(details):
     name = _get(details, "name", "")
     key = _normalize_key(name)
     entry = MOVES_TEXT.get(key)
-    if entry and "desc" in entry:
-        return entry["desc"]
-    return _get(details, "desc", "No description available.")
+    if entry:
+        if "desc" in entry:
+            return entry["desc"]
+        if "shortDesc" in entry:
+            return entry["shortDesc"]
+    return _get(details, "desc", _get(details, "shortDesc", "No description available."))
 
 
 def format_move_details(name, details):
