@@ -57,9 +57,34 @@ except Exception:  # pragma: no cover - allow partial stubs in tests
         return f"Turn {turn}"
 from .handler import battle_handler
 from .storage import BattleDataWrapper
-from ..generation import generate_pokemon
-from helpers.pokemon_spawn import get_spawn
 from utils.pokemon_utils import build_battle_pokemon_from_model
+try:
+    from pokemon.battle.logic import BattleLogic
+except Exception:  # pragma: no cover - fallback for direct execution
+    import importlib.util as _util, pathlib as _pathlib, sys as _sys
+    _logic_path = _pathlib.Path(__file__).with_name('logic.py')
+    _spec = _util.spec_from_file_location('pokemon.battle.logic', _logic_path)
+    _mod = _util.module_from_spec(_spec)
+    _sys.modules[_spec.name] = _mod
+    _spec.loader.exec_module(_mod)
+    BattleLogic = _mod.BattleLogic
+try:
+    from pokemon.battle.pokemon_factory import (
+        create_battle_pokemon,
+        generate_trainer_pokemon,
+        generate_wild_pokemon,
+        _calc_stats_from_model,
+    )
+except Exception:  # pragma: no cover - fallback for direct execution
+    _factory_path = _pathlib.Path(__file__).with_name('pokemon_factory.py')
+    _spec_f = _util.spec_from_file_location('pokemon.battle.pokemon_factory', _factory_path)
+    _mod_f = _util.module_from_spec(_spec_f)
+    _sys.modules[_spec_f.name] = _mod_f
+    _spec_f.loader.exec_module(_mod_f)
+    create_battle_pokemon = _mod_f.create_battle_pokemon
+    generate_trainer_pokemon = _mod_f.generate_trainer_pokemon
+    generate_wild_pokemon = _mod_f.generate_wild_pokemon
+    _calc_stats_from_model = _mod_f._calc_stats_from_model
 
 LOG_NAME = "battle"
 
@@ -126,210 +151,6 @@ class BattleInstance(_ScriptBase):
             pass
 
 
-def _calc_stats_from_model(poke):
-    """Return calculated stats for a stored Pokemon model."""
-    try:
-        from ..stats import calculate_stats
-    except Exception:  # pragma: no cover
-        calculate_stats = None
-    ivs = getattr(poke, "ivs", [0, 0, 0, 0, 0, 0])
-    evs = getattr(poke, "evs", [0, 0, 0, 0, 0, 0])
-    nature = getattr(poke, "nature", "Hardy")
-    name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
-    level = getattr(poke, "level", 1)
-    if isinstance(ivs, list):
-        ivs = {
-            "hp": ivs[0],
-            "atk": ivs[1],
-            "def": ivs[2],
-            "spa": ivs[3],
-            "spd": ivs[4],
-            "spe": ivs[5],
-        }
-    if isinstance(evs, list):
-        evs = {
-            "hp": evs[0],
-            "atk": evs[1],
-            "def": evs[2],
-            "spa": evs[3],
-            "spd": evs[4],
-            "spe": evs[5],
-        }
-    try:
-        if calculate_stats:
-            return calculate_stats(name, level, ivs, evs, nature)
-        raise Exception
-    except Exception:
-        inst = generate_pokemon(name, level=level)
-        st = getattr(inst, "stats", inst)
-        return {
-            "hp": getattr(st, "hp", 100),
-            "atk": getattr(st, "atk", 0),
-            "def": getattr(st, "def_", 0),
-            "spa": getattr(st, "spa", 0),
-            "spd": getattr(st, "spd", 0),
-            "spe": getattr(st, "spe", 0),
-        }
-
-
-def create_battle_pokemon(
-    species: str,
-    level: int,
-    *,
-    trainer: object | None = None,
-    is_wild: bool = False,
-) -> Pokemon:
-    """Return a ``Pokemon`` battle object for the given species/level."""
-
-    try:
-        from helpers.pokemon_helpers import create_owned_pokemon
-    except Exception:  # pragma: no cover - optional in tests
-        create_owned_pokemon = None
-
-    inst = generate_pokemon(species, level=level)
-    move_names = getattr(inst, "moves", [])
-    if not move_names:
-        move_names = ["Flail"]
-    moves = [Move(name=m) for m in move_names]
-
-    ivs_list = [
-        getattr(getattr(inst, "ivs", None), "hp", 0),
-        getattr(getattr(inst, "ivs", None), "atk", 0),
-        getattr(getattr(inst, "ivs", None), "def_", 0),
-        getattr(getattr(inst, "ivs", None), "spa", 0),
-        getattr(getattr(inst, "ivs", None), "spd", 0),
-        getattr(getattr(inst, "ivs", None), "spe", 0),
-    ]
-    evs_list = [0, 0, 0, 0, 0, 0]
-    nature = getattr(inst, "nature", "Hardy")
-
-    db_obj = None
-    if create_owned_pokemon:
-        try:
-            db_obj = create_owned_pokemon(
-                inst.species.name,
-                None,
-                inst.level,
-                gender=getattr(inst, "gender", "N"),
-                nature=getattr(inst, "nature", ""),
-                ability=getattr(inst, "ability", ""),
-                ivs=[
-                    getattr(getattr(inst, "ivs", None), "hp", 0),
-                    getattr(getattr(inst, "ivs", None), "atk", 0),
-                    getattr(getattr(inst, "ivs", None), "def_", 0),
-                    getattr(getattr(inst, "ivs", None), "spa", 0),
-                    getattr(getattr(inst, "ivs", None), "spd", 0),
-                    getattr(getattr(inst, "ivs", None), "spe", 0),
-                ],
-                evs=[0, 0, 0, 0, 0, 0],
-                ai_trainer=trainer,
-                is_wild=is_wild,
-            )
-        except Exception:
-            db_obj = None
-
-    return Pokemon(
-        name=inst.species.name,
-        level=inst.level,
-        hp=getattr(db_obj, "current_hp", getattr(inst.stats, "hp", level)),
-        max_hp=getattr(inst.stats, "hp", level),
-        moves=moves,
-        ability=getattr(inst, "ability", None),
-        ivs=ivs_list,
-        evs=evs_list,
-        nature=nature,
-        model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
-    )
-
-
-def generate_wild_pokemon(location=None) -> Pokemon:
-    """Generate a wild Pokémon based on the supplied location."""
-
-    if location:
-        inst = get_spawn(location)
-    else:
-        inst = None
-
-    if not inst:
-        species = "Pikachu"
-        level = 5
-    else:
-        species = inst.species.name
-        level = inst.level
-
-    return create_battle_pokemon(species, level, is_wild=True)
-
-
-def generate_trainer_pokemon(trainer=None) -> Pokemon:
-    """Return a simple trainer-owned Charmander."""
-    return create_battle_pokemon("Charmander", 5, trainer=trainer, is_wild=False)
-
-
-class BattleLogic:
-    """Live battle logic stored only in ``ndb``."""
-
-    def __init__(self, battle, data, state):
-        self.battle = battle
-        self.data = data
-        self.state = state
-        battle.debug = getattr(state, "debug", False)
-
-    def to_dict(self):
-        return {
-            "data": self.data.to_dict(),
-            "state": self.state.to_dict(),
-        }
-
-    @classmethod
-    def from_dict(cls, info):
-        from .battledata import BattleData
-        from .state import BattleState
-        from .engine import Battle, BattleParticipant, BattleType
-
-        data = BattleData.from_dict(info.get("data", {}))
-        state = BattleState.from_dict(info.get("state", {}))
-
-        teamA = data.teams.get("A")
-        teamB = data.teams.get("B")
-        try:
-            part_a = BattleParticipant(
-                teamA.trainer,
-                [p for p in teamA.returnlist() if p],
-                is_ai=False,
-                team="A",
-            )
-        except TypeError:
-            part_a = BattleParticipant(
-                teamA.trainer,
-                [p for p in teamA.returnlist() if p],
-                is_ai=False,
-            )
-        try:
-            part_b = BattleParticipant(
-                teamB.trainer,
-                [p for p in teamB.returnlist() if p],
-                team="B",
-            )
-        except TypeError:
-            part_b = BattleParticipant(
-                teamB.trainer,
-                [p for p in teamB.returnlist() if p],
-            )
-        part_b.is_ai = state.ai_type != "Player"
-        pos_a = data.turndata.teamPositions("A").get("A1")
-        if pos_a and pos_a.pokemon:
-            part_a.active = [pos_a.pokemon]
-        pos_b = data.turndata.teamPositions("B").get("B1")
-        if pos_b and pos_b.pokemon:
-            part_b.active = [pos_b.pokemon]
-        try:
-            btype = BattleType[state.ai_type.upper()]
-        except KeyError:
-            btype = BattleType.WILD
-        battle = Battle(btype, [part_a, part_b])
-        battle.turn_count = data.battle.turn
-        battle.debug = getattr(state, "debug", False)
-        return cls(battle, data, state)
 
 
 class BattleSession:
@@ -677,9 +498,7 @@ class BattleSession:
                     log_info(f"Could not find watcher {wid}")
                     continue
                 watcher = targets[0]
-            watcher.ndb.battle_instance = obj
-            if hasattr(watcher, "db"):
-                watcher.db.battle_id = battle_id
+            obj.add_watcher(watcher)
             if wid in teamA:
                 if obj.captainA is None:
                     obj.captainA = watcher
@@ -855,17 +674,8 @@ class BattleSession:
         self.storage.set("trainers", trainer_ids)
         log_info("Saved PvP battle data to room")
 
-        add_watcher(self.state, self.captainA)
-        add_watcher(self.state, self.captainB)
-        ids = {self.captainA.id, self.captainB.id}
-        self.watchers.update(ids)
-        self.ndb.watchers_live.update(ids)
-        self.captainA.ndb.battle_instance = self
-        self.captainB.ndb.battle_instance = self
-        if hasattr(self.captainA, "db"):
-            self.captainA.db.battle_id = self.battle_id
-        if hasattr(self.captainB, "db"):
-            self.captainB.db.battle_id = self.battle_id
+        self.add_watcher(self.captainA)
+        self.add_watcher(self.captainB)
         self.msg("PVP battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         log_info(f"PvP battle {self.battle_id} started")
@@ -1023,13 +833,7 @@ class BattleSession:
     def _setup_battle_room(self) -> None:
         """Move players to the battle room and notify watchers."""
         log_info(f"Setting up battle room for {self.battle_id}")
-        add_watcher(self.state, self.captainA)
-        if hasattr(self.captainA, "id"):
-            self.watchers.add(self.captainA.id)
-            self.ndb.watchers_live.add(self.captainA.id)
-        self.captainA.ndb.battle_instance = self
-        if hasattr(self.captainA, "db"):
-            self.captainA.db.battle_id = self.battle_id
+        self.add_watcher(self.captainA)
         self.msg("Battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         notify_watchers(
@@ -1480,6 +1284,9 @@ class BattleSession:
         if wid is not None:
             self.watchers.add(wid)
             self.ndb.watchers_live.add(wid)
+        watcher.ndb.battle_instance = self
+        if hasattr(watcher, "db"):
+            watcher.db.battle_id = self.battle_id
         log_info(f"Watcher {getattr(watcher, 'key', watcher)} added")
 
     def remove_watcher(self, watcher) -> None:
@@ -1506,26 +1313,17 @@ class BattleSession:
         """Register an observer to receive battle messages."""
         if watcher not in self.observers:
             self.observers.add(watcher)
-            watcher.ndb.battle_instance = self
-            if self.state:
-                add_watcher(self.state, watcher)
-                wid = getattr(watcher, "id", 0)
-                self.watchers.add(wid)
-                self.ndb.watchers_live.add(wid)
+            self.add_watcher(watcher)
             self.msg(f"{watcher.key} is now watching the battle.")
             log_info(f"Observer {getattr(watcher, 'key', watcher)} added")
 
     def remove_observer(self, watcher) -> None:
         if watcher in self.observers:
             self.observers.discard(watcher)
+            self.remove_watcher(watcher)
             if getattr(watcher.ndb, "battle_instance", None) == self:
                 del watcher.ndb.battle_instance
-            if self.state:
-                remove_watcher(self.state, watcher)
-        wid = getattr(watcher, "id", 0)
-        self.watchers.discard(wid)
-        self.ndb.watchers_live.discard(wid)
-        log_info(f"Observer {getattr(watcher, 'key', watcher)} removed")
+            log_info(f"Observer {getattr(watcher, 'key', watcher)} removed")
 
 
 __all__ = ["BattleSession", "BattleInstance"]
