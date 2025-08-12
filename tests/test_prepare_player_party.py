@@ -11,6 +11,8 @@ def load_module():
     path = os.path.join(ROOT, "pokemon", "battle", "battleinstance.py")
     iface = types.ModuleType("pokemon.battle.interface")
     iface.display_battle_interface = lambda *a, **k: None
+    iface.format_turn_banner = lambda turn: ""
+    iface.render_interfaces = lambda *a, **k: ("", "", "")
     sys.modules["pokemon.battle.interface"] = iface
     watchers = types.ModuleType("pokemon.battle.watchers")
     watchers.add_watcher = lambda *a, **k: None

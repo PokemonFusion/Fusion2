@@ -18,7 +18,6 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
 
 
 import random
-import traceback
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
@@ -51,17 +50,12 @@ except Exception:  # pragma: no cover - fallback for direct execution
     _sys.modules[_spec_a.name] = _mod_a
     _spec_a.loader.exec_module(_mod_a)
     ActionQueue = _mod_a.ActionQueue
+from .turn import TurnManager
 try:
-    from .interface import (
-        display_battle_interface,
-        format_turn_banner,
-    )
+    from .interface import render_interfaces
 except Exception:  # pragma: no cover - allow partial stubs in tests
-    def display_battle_interface(*_a, **_k):
-        return ""
-
-    def format_turn_banner(turn: int) -> str:
-        return f"Turn {turn}"
+    def render_interfaces(*_a, **_k):  # type: ignore[assignment]
+        return "", "", ""
 from .handler import battle_handler
 from .storage import BattleDataWrapper
 from utils.pokemon_utils import build_battle_pokemon_from_model
@@ -161,7 +155,7 @@ class BattleInstance(_ScriptBase, ActionQueue):
 
 
 
-class BattleSession(MessagingMixin, WatcherManager, ActionQueue):
+class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
@@ -819,92 +813,6 @@ class BattleSession(MessagingMixin, WatcherManager, ActionQueue):
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")
 
-    # ------------------------------------------------------------------
-    # Battle helpers
-    # ------------------------------------------------------------------
-    def prompt_next_turn(self) -> None:
-        """Prompt the player to issue a command for the next turn."""
-        self._set_player_control(True)
-        if self.state and self.battle:
-            self.notify(
-                format_turn_banner(getattr(self.battle, "turn_count", 1))
-            )
-        if self.captainA and self.state and self.captainB is not None:
-            try:
-                iface_a = display_battle_interface(
-                    self.captainA,
-                    self.captainB,
-                    self.state,
-                    viewer_team="A",
-                )
-                iface_b = display_battle_interface(
-                    self.captainB,
-                    self.captainA,
-                    self.state,
-                    viewer_team="B",
-                )
-                iface_w = display_battle_interface(
-                    self.captainA,
-                    self.captainB,
-                    self.state,
-                    viewer_team=None,
-                )
-                for t in self.teamA:
-                    self._msg_to(t, iface_a)
-                for t in self.teamB:
-                    self._msg_to(t, iface_b)
-                for w in self.observers:
-                    self._msg_to(w, iface_w)
-            except Exception:
-                log_warn("Failed to display battle interface", exc_info=True)
-        self.msg("The battle awaits your move.")
-        if self.battle and getattr(self.battle, "turn_count", 0) == 1:
-            log_info(f"Prompted first turn for battle {self.battle_id}")
-
-    def run_turn(self) -> None:
-        """Advance the battle by one turn."""
-        if not self.battle:
-            return
-        if self.state:
-            self.notify(
-                format_turn_banner(getattr(self.battle, "turn_count", 1))
-            )
-        log_info(f"Running turn for battle {self.battle_id}")
-        self._set_player_control(False)
-        try:
-            self.battle.run_turn()
-        except Exception:
-            err_txt = traceback.format_exc()
-            self.turn_state["error"] = err_txt
-            log_err(
-                f"Error while running turn for battle {self.battle_id}:\n{err_txt}",
-                exc_info=False,
-            )
-            self.notify(f"Battle error:\n{err_txt}")
-        else:
-            log_info(
-                f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
-            )
-            if self.state:
-                self.notify(
-                    format_turn_banner(getattr(self.battle, "turn_count", 1))
-                )
-        if self.state:
-            self.state.declare.clear()
-        if self.data:
-            for pos in self.data.turndata.positions.values():
-                pos.removeDeclare()
-        if getattr(self, "storage", None):
-            try:
-                self.storage.set("data", self.logic.data.to_dict())
-                self.storage.set(
-                    "state",
-                    self._compact_state_for_persist(self.logic.state.to_dict()),
-                )
-            except Exception:
-                log_warn("Failed to persist battle state", exc_info=True)
-        self.prompt_next_turn()
-
     def _get_position_for_trainer(self, trainer):
         """Return the battle position and key associated with ``trainer``.
 
@@ -1090,26 +998,8 @@ class BattleSession(MessagingMixin, WatcherManager, ActionQueue):
             if waiting_poke:
                 self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
                 try:
-                    iface_a = display_battle_interface(
-                        self.captainA,
-                        self.captainB,
-                        self.state,
-                        viewer_team="A",
-                        waiting_on=waiting_poke,
-                    )
-                    iface_b = display_battle_interface(
-                        self.captainB,
-                        self.captainA,
-                        self.state,
-                        viewer_team="B",
-                        waiting_on=waiting_poke,
-                    )
-                    iface_w = display_battle_interface(
-                        self.captainA,
-                        self.captainB,
-                        self.state,
-                        viewer_team=None,
-                        waiting_on=waiting_poke,
+                    iface_a, iface_b, iface_w = render_interfaces(
+                        self.captainA, self.captainB, self.state, waiting_on=waiting_poke
                     )
                     for t in self.teamA:
                         self._msg_to(t, iface_a)

@@ -83,6 +83,9 @@ except Exception:
 
 # Stub battle interface and watcher helpers
 iface = types.ModuleType("pokemon.battle.interface")
+iface.format_turn_banner = lambda turn: f"Turn {turn}"
+iface.render_interfaces = lambda *a, **k: ("", "", "")
+iface.display_battle_interface = lambda *a, **k: ""
 sys.modules["pokemon.battle.interface"] = iface
 watchers = types.ModuleType("pokemon.battle.watchers")
 watchers.add_watcher = lambda *a, **k: None
