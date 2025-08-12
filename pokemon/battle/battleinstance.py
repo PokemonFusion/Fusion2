@@ -627,6 +627,21 @@ class BattleSession:
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
 
+        # Reattach participant -> player references based on team membership
+        try:
+            parts = getattr(obj.logic.battle, "participants", [])
+            team_map = {"A": obj.teamA, "B": obj.teamB}
+            team_idx = {"A": 0, "B": 0}
+            for part in parts:
+                t = getattr(part, "team", None)
+                if t in team_map:
+                    idx = team_idx.get(t, 0)
+                    if idx < len(team_map[t]):
+                        part.player = team_map[t][idx]
+                    team_idx[t] = idx + 1
+        except Exception:
+            pass
+
         # expose battle info on trainers for the interface
         try:
             if obj.captainA:

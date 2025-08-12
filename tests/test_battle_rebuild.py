@@ -182,6 +182,10 @@ def test_rebuild_ndb_restores_instance():
     inst = BattleSession(p1, p2)
     inst.start_pvp()
 
+    # simulate loss of participant.player references
+    inst.battle.participants[0].player = None
+    inst.battle.participants[1].player = None
+
     # clear ndb references as if after reload
     p1.ndb.battle_instance = None
     p2.ndb.battle_instance = None
@@ -194,6 +198,8 @@ def test_rebuild_ndb_restores_instance():
     assert p1.ndb.battle_instance is inst
     assert p2.ndb.battle_instance is inst
     assert room.ndb.battle_instances[inst.battle_id] is inst
+    assert inst.battle.participants[0].player is p1
+    assert inst.battle.participants[1].player is p2
 
 
 def test_restore_registers_instance():
@@ -239,6 +245,8 @@ def test_trainer_ids_saved_and_restored():
 
     assert restored.captainA is p1
     assert restored.captainB is p2
+    assert restored.battle.participants[0].player is p1
+    assert restored.battle.participants[1].player is p2
     storage_after = BattleDataWrapper(room, inst.battle_id)
     assert storage_after.get("trainers") == {"teamA": [1], "teamB": [2]}
 

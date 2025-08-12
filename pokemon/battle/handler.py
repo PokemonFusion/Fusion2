@@ -141,6 +141,18 @@ class BattleHandler:
                         part_b = inst.logic.battle.participants[1]
                         if part_b.active:
                             inst.captainB.active_pokemon = part_b.active[0]
+
+                # Reattach participant -> player references
+                parts = getattr(inst.logic.battle, "participants", [])
+                team_map = {"A": inst.teamA, "B": inst.teamB}
+                team_idx = {"A": 0, "B": 0}
+                for part in parts:
+                    t = getattr(part, "team", None)
+                    if t in team_map:
+                        idx = team_idx.get(t, 0)
+                        if idx < len(team_map[t]):
+                            part.player = team_map[t][idx]
+                        team_idx[t] = idx + 1
             except Exception:
                 # Logic may be incomplete; fail silently
                 pass
