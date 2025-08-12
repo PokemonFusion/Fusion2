@@ -81,12 +81,25 @@ except Exception:
     sys.modules["evennia.server"] = evennia.server
     sys.modules["evennia.server.models"] = evennia.server.models
 
-# Stub battle interface and helpers
+# Stub battle interface and watcher helpers
 iface = types.ModuleType("pokemon.battle.interface")
-iface.add_watcher = lambda *a, **k: None
-iface.remove_watcher = lambda *a, **k: None
-iface.notify_watchers = lambda *a, **k: None
 sys.modules["pokemon.battle.interface"] = iface
+watchers = types.ModuleType("pokemon.battle.watchers")
+watchers.add_watcher = lambda *a, **k: None
+watchers.remove_watcher = lambda *a, **k: None
+watchers.notify_watchers = lambda *a, **k: None
+watchers.WatcherManager = type(
+    "WatcherManager",
+    (),
+    {
+        "add_watcher": lambda self, w: None,
+        "remove_watcher": lambda self, w: None,
+        "notify": lambda self, m: None,
+        "add_observer": lambda self, w: None,
+        "remove_observer": lambda self, w: None,
+    },
+)
+sys.modules["pokemon.battle.watchers"] = watchers
 
 # Stub generation and spawn modules
 gen_mod = types.ModuleType("pokemon.generation")

@@ -39,17 +39,13 @@ except Exception:  # pragma: no cover - engine stubbed in some tests
         """Fallback normalizer matching the battle engine's behaviour."""
         return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 from .state import BattleState
+from .watchers import WatcherManager
 try:
     from .interface import (
-        add_watcher,
-        notify_watchers,
-        remove_watcher,
         display_battle_interface,
         format_turn_banner,
     )
 except Exception:  # pragma: no cover - allow partial stubs in tests
-    from .interface import add_watcher, notify_watchers, remove_watcher
-
     def display_battle_interface(*_a, **_k):
         return ""
 
@@ -153,7 +149,7 @@ class BattleInstance(_ScriptBase):
 
 
 
-class BattleSession:
+class BattleSession(WatcherManager):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
@@ -679,10 +675,8 @@ class BattleSession:
         self.msg("PVP battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         log_info(f"PvP battle {self.battle_id} started")
-        notify_watchers(
-            self.state,
-            f"{self.captainA.key} and {self.captainB.key} begin a battle!",
-            room=self.room,
+        self.notify(
+            f"{self.captainA.key} and {self.captainB.key} begin a battle!"
         )
 
         if self.battle and hasattr(self.battle, "start_turn"):
@@ -836,10 +830,8 @@ class BattleSession:
         self.add_watcher(self.captainA)
         self.msg("Battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
-        notify_watchers(
-            self.state,
-            f"{getattr(self.captainA, 'key', 'Player')} has entered battle!",
-            room=self.room,
+        self.notify(
+            f"{getattr(self.captainA, 'key', 'Player')} has entered battle!"
         )
 
         if self.battle and hasattr(self.battle, "start_turn"):
@@ -892,7 +884,7 @@ class BattleSession:
                 del trainer.db.battle_id
         self.logic = None
         if self.state:
-            notify_watchers(self.state, "The battle has ended.", room=self.room)
+            self.notify("The battle has ended.")
         self.watchers.clear()
         if hasattr(self.ndb, "watchers_live"):
             self.ndb.watchers_live.clear()
@@ -910,10 +902,8 @@ class BattleSession:
         """Prompt the player to issue a command for the next turn."""
         self._set_player_control(True)
         if self.state and self.battle:
-            notify_watchers(
-                self.state,
-                format_turn_banner(getattr(self.battle, "turn_count", 1)),
-                room=self.room,
+            self.notify(
+                format_turn_banner(getattr(self.battle, "turn_count", 1))
             )
         if self.captainA and self.state and self.captainB is not None:
             try:
@@ -952,10 +942,8 @@ class BattleSession:
         if not self.battle:
             return
         if self.state:
-            notify_watchers(
-                self.state,
-                format_turn_banner(getattr(self.battle, "turn_count", 1)),
-                room=self.room,
+            self.notify(
+                format_turn_banner(getattr(self.battle, "turn_count", 1))
             )
         log_info(f"Running turn for battle {self.battle_id}")
         self._set_player_control(False)
@@ -974,10 +962,8 @@ class BattleSession:
                 f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
             )
             if self.state:
-                notify_watchers(
-                    self.state,
-                    format_turn_banner(getattr(self.battle, "turn_count", 1)),
-                    room=self.room,
+                self.notify(
+                    format_turn_banner(getattr(self.battle, "turn_count", 1))
                 )
         if self.state:
             self.state.declare.clear()
@@ -1272,58 +1258,5 @@ class BattleSession:
                         self._msg_to(w, iface_w)
                 except Exception:
                     log_warn("Failed to display waiting interface", exc_info=True)
-
-    # ------------------------------------------------------------------
-    # Watcher helpers
-    # ------------------------------------------------------------------
-    def add_watcher(self, watcher) -> None:
-        if not self.state:
-            return
-        add_watcher(self.state, watcher)
-        wid = getattr(watcher, "id", None)
-        if wid is not None:
-            self.watchers.add(wid)
-            self.ndb.watchers_live.add(wid)
-        watcher.ndb.battle_instance = self
-        if hasattr(watcher, "db"):
-            watcher.db.battle_id = self.battle_id
-        log_info(f"Watcher {getattr(watcher, 'key', watcher)} added")
-
-    def remove_watcher(self, watcher) -> None:
-        if not self.state:
-            return
-        remove_watcher(self.state, watcher)
-        wid = getattr(watcher, "id", None)
-        if wid is not None:
-            self.watchers.discard(wid)
-            self.ndb.watchers_live.discard(wid)
-        log_info(f"Watcher {getattr(watcher, 'key', watcher)} removed")
-
-    def notify(self, message: str) -> None:
-        if not self.state:
-            return
-        notify_watchers(self.state, message, room=self.room)
-        log_info(f"Notified watchers: {message}")
-
-    # ------------------------------------------------------------
-    # Observer helpers
-    # ------------------------------------------------------------
-
-    def add_observer(self, watcher) -> None:
-        """Register an observer to receive battle messages."""
-        if watcher not in self.observers:
-            self.observers.add(watcher)
-            self.add_watcher(watcher)
-            self.msg(f"{watcher.key} is now watching the battle.")
-            log_info(f"Observer {getattr(watcher, 'key', watcher)} added")
-
-    def remove_observer(self, watcher) -> None:
-        if watcher in self.observers:
-            self.observers.discard(watcher)
-            self.remove_watcher(watcher)
-            if getattr(watcher.ndb, "battle_instance", None) == self:
-                del watcher.ndb.battle_instance
-            log_info(f"Observer {getattr(watcher, 'key', watcher)} removed")
-
 
 __all__ = ["BattleSession", "BattleInstance"]

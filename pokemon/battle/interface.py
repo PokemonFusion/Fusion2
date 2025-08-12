@@ -2,43 +2,9 @@
 
 from __future__ import annotations
 
-from evennia import search_object
 from utils.battle_display import render_battle_ui
 
-from .state import BattleState
-
-
-# ---------------------------------------------------------------------------
-# Watcher management
-# ---------------------------------------------------------------------------
-
-def add_watcher(state: BattleState, watcher) -> None:
-    """Register a watcher for battle notifications."""
-    if state.watchers is None:
-        state.watchers = set()
-    state.watchers.add(getattr(watcher, "id", 0))
-
-
-def remove_watcher(state: BattleState, watcher) -> None:
-    """Remove a watcher from the battle."""
-    if state.watchers:
-        state.watchers.discard(getattr(watcher, "id", 0))
-
-
-def notify_watchers(state: BattleState, message: str, room=None) -> None:
-    """Send `message` to all watchers currently present."""
-    if not state.watchers:
-        return
-    for wid in list(state.watchers):
-        objs = search_object(f"#{wid}")
-        if not objs:
-            continue
-        watcher = objs[0]
-        if room and watcher.location != room:
-            continue
-        if watcher.attributes.get("battle_ignore_notify"):
-            continue
-        watcher.msg(message)
+from .watchers import add_watcher, notify_watchers, remove_watcher
 
 
 def format_turn_banner(turn: int) -> str:
