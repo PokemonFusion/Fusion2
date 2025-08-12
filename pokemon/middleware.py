@@ -1,12 +1,32 @@
 # fusion2/pokemon/middleware.py
 
 import re
+from pathlib import Path
 from pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
 from pokemon.data.learnsets.learnsets import LEARNSETS
 from pokemon.data.text import MOVES_TEXT
 
 # Cache for built movesets keyed by normalized Pokémon name
 MOVESET_CACHE = {}
+
+
+def _ensure_movedex():
+    """Load the movedex lazily if it failed during initial import."""
+    global movedex
+    if movedex:
+        return movedex
+    try:
+        from pokemon.dex import MOVEDEX_PATH
+        from pokemon.dex.entities import load_movedex
+        movedex = load_movedex(MOVEDEX_PATH)
+    except Exception:
+        try:  # pragma: no cover - secondary path resolution
+            from pokemon.dex.entities import load_movedex  # type: ignore
+            path = Path(__file__).resolve().parent / "dex" / "combatdex.py"
+            movedex = load_movedex(path)
+        except Exception:  # pragma: no cover - final fallback
+            movedex = {}
+    return movedex
 
 
 def _normalize_key(name: str) -> str:
@@ -131,11 +151,11 @@ def format_pokemon_details(name, details):
 
 def get_move_by_name(name):
     """Return move data from the movedex by name."""
-
+    md = _ensure_movedex()
     key = _normalize_key(name)
-    if key in movedex:
-        return key, movedex[key]
-    for move_name, details in movedex.items():
+    if key in md:
+        return key, md[key]
+    for move_name, details in md.items():
         alt = _normalize_key(_get(details, "name", move_name))
         if alt == key:
             return move_name, details
