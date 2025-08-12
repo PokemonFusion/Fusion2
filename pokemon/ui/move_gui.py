@@ -10,8 +10,9 @@ from evennia.utils.ansi import strip_ansi
 from pokemon.data.text import MOVES_TEXT
 
 _MOVEDEX: Optional[Dict[str, Any]] = None
-# Maximum number of lines allotted for the description on each move card
-_DESC_LINES = 4
+# Maximum number of lines allowed for a description; actual rows are
+# determined per move-pair so we don't pad with excessive whitespace.
+_MAX_DESC_LINES = 4
 
 
 def _normalize_key(name: str) -> str:
@@ -200,8 +201,24 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
     }
 
 
-def _render_card(card: Dict[str, Any], box_w: int) -> List[str]:
-    """Render a single move card as a list of lines."""
+def _wrap_desc(desc: str, box_w: int) -> List[str]:
+    """Wrap a description to the card width."""
+    lines = textwrap.wrap(desc, width=box_w - 4) or [""]
+    return lines[:_MAX_DESC_LINES]
+
+
+def _render_card(card: Dict[str, Any], box_w: int, rows: int) -> List[str]:
+    """Render a single move card as a list of lines.
+
+    Parameters
+    ----------
+    card: Dict[str, Any]
+        Normalized move data.
+    box_w: int
+        Width of the card in characters.
+    rows: int
+        Number of description lines to render (max 4).
+    """
     top = "/" + "-" * (box_w - 2) + "\\"
     lbl = f"[{card['label']} ]" if len(card['label']) == 1 else f"[{card['label']}]"
     mid = 1 + (box_w - 2 - ansi_len(lbl)) // 2
@@ -210,10 +227,9 @@ def _render_card(card: Dict[str, Any], box_w: int) -> List[str]:
     name_line = rpad(f"|  {card['name']}", box_w)
     type_cat = f"|  {card['color']}{(card['type'] or 'None').title()}|n   {card['cat']}"
     type_line = rpad(type_cat, box_w)
-    raw_lines = textwrap.wrap(card["desc"], width=box_w - 4) or [""]
-    raw_lines = raw_lines[:_DESC_LINES]
-    desc_lines = [rpad(f"|  {ln}", box_w) for ln in raw_lines]
-    while len(desc_lines) < _DESC_LINES:
+    raw_lines = _wrap_desc(card["desc"], box_w)
+    desc_lines = [rpad(f"|  {ln}", box_w) for ln in raw_lines[:rows]]
+    while len(desc_lines) < rows:
         desc_lines.append(rpad("|  ", box_w))
     cur, mx = card["pp"]
     pp_line = rpad(f"|  PP: {cur}/{mx}", box_w)
@@ -242,15 +258,22 @@ def render_move_gui(slots: List[Any], pp_overrides: Optional[Dict[int, int]] = N
     col_w = (inner - gutter) // 2
     box_w = max(30, col_w)
 
-    cards: List[List[str]] = []
     labels = ["A", "B", "C", "D"]
+    models: List[Dict[str, Any]] = []
+    line_counts: List[int] = []
     for i, m in enumerate(slots + [None] * (4 - len(slots))):
         curpp = pp_overrides.get(i)
         model = _move_to_model(labels[i], m, current_pp=curpp)
-        cards.append(_render_card(model, box_w))
+        models.append(model)
+        line_counts.append(len(_wrap_desc(model["desc"], box_w)))
 
-    row1_left, row1_right = cards[0], cards[1]
-    row2_left, row2_right = cards[2], cards[3]
+    row1_rows = min(_MAX_DESC_LINES, max(line_counts[0], line_counts[1]))
+    row2_rows = min(_MAX_DESC_LINES, max(line_counts[2], line_counts[3]))
+
+    row1_left = _render_card(models[0], box_w, row1_rows)
+    row1_right = _render_card(models[1], box_w, row1_rows)
+    row2_left = _render_card(models[2], box_w, row2_rows)
+    row2_right = _render_card(models[3], box_w, row2_rows)
 
     lines: List[str] = []
     for L, R in zip(row1_left, row1_right):
