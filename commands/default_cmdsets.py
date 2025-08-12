@@ -35,7 +35,7 @@ from commands.cmdsets.economy_map import EconomyMapCmdSet
 from commands.cmdsets.admin_misc import AdminMiscCmdSet
 
 
-from commands.debug.cmd_toggle_test import CmdToggleTest
+from commands.cmdsets.devinspect import CmdToggleDevInspect
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -68,8 +68,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(EconomyMapCmdSet())
         self.add(AdminMiscCmdSet())
 
-        # Developer toggle for test cmdset
-        self.add(CmdToggleTest())
+        # Developer toggle for inspection commands
+        self.add(CmdToggleDevInspect())
         
 
 
