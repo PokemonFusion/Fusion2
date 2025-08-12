@@ -19,7 +19,7 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
 
 import random
 import traceback
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
     from evennia import search_object
@@ -53,6 +53,39 @@ from .storage import BattleDataWrapper
 from ..generation import generate_pokemon
 from helpers.pokemon_spawn import get_spawn
 from utils.pokemon_utils import build_battle_pokemon_from_model
+
+LOG_NAME = "battle"
+
+# Defaults used for compacting persisted state (omit if same as default)
+DEFAULT_FLAGS: Dict[str, int | bool] = {
+    "xp": True,
+    "txp": True,
+    "tier": 1,
+    "four_moves": False,
+}
+
+
+def _normalize_watchers(val: Any) -> List[int]:
+    """Normalize a stored watcher representation to a list of ints."""
+    if isinstance(val, list):
+        return [int(x) for x in val if isinstance(x, (int, str))]
+    if isinstance(val, set):
+        return [int(x) for x in val]
+    if isinstance(val, str):
+        s = val.strip()
+        if s.startswith("{") and s.endswith("}"):
+            s = s[1:-1]
+        out: List[int] = []
+        for part in s.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            try:
+                out.append(int(part))
+            except Exception:
+                continue
+        return out
+    return []
 
 try:
     from typeclasses.rooms import FusionRoom
@@ -345,6 +378,9 @@ class BattleSession:
 
         self.logic: BattleLogic | None = None
         self.watchers: set[int] = set()
+        # keep a non-persistent watcher set on ndb
+        self.ndb = type("NDB", (), {})()
+        self.ndb.watchers_live = set()
         self.temp_pokemon_ids: List[int] = []
 
         log_info(
@@ -508,24 +544,67 @@ class BattleSession:
         obj.trainers = []
         obj.observers = set()
         obj.turn_state = {}
+        obj.ndb = type("NDB", (), {})()
         logic = BattleLogic.from_dict({"data": data, "state": state})
         obj.logic = logic
         obj.logic.battle.log_action = obj.notify
+        # Rehydrate any queued-but-unresolved declarations from state -> positions.
+        # This avoids needing to persist turndata.turninit snapshots on input.
+        try:
+            decls: Dict[str, Any] = getattr(obj.logic.state, "declare", {}) or {}
+            positions: Dict[str, Any] = getattr(
+                obj.logic.data.turndata, "positions", {}
+            ) or {}
+            for pos_name, d in decls.items():
+                pos = positions.get(pos_name)
+                if not pos or not isinstance(d, dict):
+                    continue
+                # d may contain one of: {"move","target"}, {"switch"}, {"item"}, {"run"}
+                if "move" in d:
+                    # default target if missing
+                    tgt = d.get("target", "B1")
+                    pos.declareAttack(tgt, d["move"])
+                elif "switch" in d:
+                    try:
+                        pos.declareSwitch(int(d["switch"]))
+                    except Exception:
+                        pos.declareSwitch(d["switch"])
+                elif "item" in d:
+                    pos.declareItem(d["item"])
+                elif "run" in d:
+                    pos.declareRun()
+        except Exception:
+            log_warn(
+                "Failed to rehydrate queued declarations during restore", exc_info=True
+            )
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
         log_info("Restored logic and temp Pokemon ids")
+
+        # Watchers: keep a live, non-persistent copy on ndb; normalize any persisted list
+        try:
+            raw_watchers: Any = (
+                storage.get("state", {}).get("watchers")
+                or storage.get("watchers")
+                or []
+            )
+            watchers_live: Set[int] = set(_normalize_watchers(raw_watchers))
+            obj.ndb.watchers_live = watchers_live
+        except Exception:
+            obj.ndb.watchers_live = set()
+        # Keep existing 'watchers' attribute aligned to live set for code using obj.watchers
+        obj.watchers = set(getattr(obj.ndb, "watchers_live", set()))
 
         trainer_info = storage.get("trainers", {}) or {}
         teamA = trainer_info.get("teamA", [])
         teamB = trainer_info.get("teamB", [])
-        player_id = teamA[0] if teamA else None
-        opponent_id = teamB[0] if teamB else None
 
-        watcher_data = getattr(obj.state, "watchers", None) or set()
-        if player_id:
-            watcher_data.add(player_id)
-        if opponent_id:
-            watcher_data.add(opponent_id)
-        obj.state.watchers = watcher_data
+        watcher_ids = set(getattr(obj.ndb, "watchers_live", set()))
+        watcher_ids.update(teamA)
+        watcher_ids.update(teamB)
+        obj.ndb.watchers_live = set(watcher_ids)
+        obj.watchers = set(watcher_ids)
+        if getattr(obj.state, "watchers", None) is not None:
+            obj.state.watchers = set(watcher_ids)
 
         team_a_objs = []
         for tid in teamA:
@@ -562,10 +641,6 @@ class BattleSession:
         except Exception:
             pass
 
-        watcher_data = getattr(obj.state, "watchers", None) or set()
-        obj.watchers = set(watcher_data)
-        obj.watchers.update(teamA)
-        obj.watchers.update(teamB)
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
             if wid in teamA and team_a_objs:
@@ -595,6 +670,7 @@ class BattleSession:
                 obj.trainers.append(watcher)
             else:
                 obj.observers.add(watcher)
+        obj.ndb.watchers_live = set(obj.watchers)
         if obj.captainA or obj.captainB:
             obj.trainers = team_a_objs + team_b_objs
         else:
@@ -757,7 +833,9 @@ class BattleSession:
 
         add_watcher(self.state, self.captainA)
         add_watcher(self.state, self.captainB)
-        self.watchers.update({self.captainA.id, self.captainB.id})
+        ids = {self.captainA.id, self.captainB.id}
+        self.watchers.update(ids)
+        self.ndb.watchers_live.update(ids)
         self.captainA.ndb.battle_instance = self
         self.captainB.ndb.battle_instance = self
         if hasattr(self.captainA, "db"):
@@ -924,6 +1002,7 @@ class BattleSession:
         add_watcher(self.state, self.captainA)
         if hasattr(self.captainA, "id"):
             self.watchers.add(self.captainA.id)
+            self.ndb.watchers_live.add(self.captainA.id)
         self.captainA.ndb.battle_instance = self
         if hasattr(self.captainA, "db"):
             self.captainA.db.battle_id = self.battle_id
@@ -987,6 +1066,8 @@ class BattleSession:
         if self.state:
             notify_watchers(self.state, "The battle has ended.", room=self.room)
         self.watchers.clear()
+        if hasattr(self.ndb, "watchers_live"):
+            self.ndb.watchers_live.clear()
         battle_handler.unregister(self)
         for seg in ("data", "state", "meta", "field", "active"):
             self.storage.delete(seg)
@@ -1078,7 +1159,10 @@ class BattleSession:
         if getattr(self, "storage", None):
             try:
                 self.storage.set("data", self.logic.data.to_dict())
-                self.storage.set("state", self.logic.state.to_dict())
+                self.storage.set(
+                    "state",
+                    self._compact_state_for_persist(self.logic.state.to_dict()),
+                )
             except Exception:
                 log_warn("Failed to persist battle state", exc_info=True)
         self.prompt_next_turn()
@@ -1174,11 +1258,11 @@ class BattleSession:
                 "trainer": actor_id,
                 "pokemon": poke_id,
             }
-        self.storage.set("data", self.logic.data.to_dict())
-        self.storage.set("state", self.logic.state.to_dict())
-        log_info(
-            f"Saved queued move for {pokemon_name} at {pos_name} to room data"
+        # Persist only the (compacted) state on input to avoid duplicating turndata snapshots.
+        self.storage.set(
+            "state", self._compact_state_for_persist(self.logic.state.to_dict())
         )
+        log_info(f"Saved queued move for {pokemon_name} at {pos_name} to room state")
         self.maybe_run_turn()
 
     def queue_switch(self, slot: int, caller=None) -> None:
@@ -1201,11 +1285,10 @@ class BattleSession:
                 "trainer": actor_id,
                 "pokemon": poke_id,
             }
-        self.storage.set("data", self.logic.data.to_dict())
-        self.storage.set("state", self.logic.state.to_dict())
-        log_info(
-            f"Saved queued switch for {pokemon_name} at {pos_name} to room data"
+        self.storage.set(
+            "state", self._compact_state_for_persist(self.logic.state.to_dict())
         )
+        log_info(f"Saved queued switch for {pokemon_name} at {pos_name} to room state")
         self.maybe_run_turn()
 
     def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
@@ -1231,11 +1314,10 @@ class BattleSession:
                 "trainer": actor_id,
                 "pokemon": poke_id,
             }
-        self.storage.set("data", self.logic.data.to_dict())
-        self.storage.set("state", self.logic.state.to_dict())
-        log_info(
-            f"Saved queued item for {pokemon_name} at {pos_name} to room data"
+        self.storage.set(
+            "state", self._compact_state_for_persist(self.logic.state.to_dict())
         )
+        log_info(f"Saved queued item for {pokemon_name} at {pos_name} to room state")
         self.maybe_run_turn()
 
     def queue_run(self, caller=None) -> None:
@@ -1258,12 +1340,29 @@ class BattleSession:
                 "trainer": actor_id,
                 "pokemon": poke_id,
             }
-        self.storage.set("data", self.logic.data.to_dict())
-        self.storage.set("state", self.logic.state.to_dict())
-        log_info(
-            f"Saved flee attempt for {pokemon_name} at {pos_name} to room data"
+        self.storage.set(
+            "state", self._compact_state_for_persist(self.logic.state.to_dict())
         )
+        log_info(f"Saved flee attempt for {pokemon_name} at {pos_name} to room state")
         self.maybe_run_turn()
+
+    # ---- Persistence helpers ------------------------------------------------
+
+    def _compact_state_for_persist(self, st: Dict[str, Any]) -> Dict[str, Any]:
+        """Return a compacted copy of ``st`` suitable for storage."""
+        state: Dict[str, Any] = dict(st) if st else {}
+        # Remove duplicated/derivable fields
+        state.pop("turn", None)
+        state.pop("teams", None)
+        state.pop("movesets", None)
+        # Normalize watchers (persist as list; keep live set on ndb)
+        live_watch: List[int] = list(getattr(self.ndb, "watchers_live", []))
+        state["watchers"] = live_watch or _normalize_watchers(state.get("watchers", []))
+        # Drop default flags
+        for k, default in DEFAULT_FLAGS.items():
+            if state.get(k, default) == default:
+                state.pop(k, None)
+        return state
 
     def is_turn_ready(self) -> bool:
         if self.data:
@@ -1352,14 +1451,20 @@ class BattleSession:
         if not self.state:
             return
         add_watcher(self.state, watcher)
-        self.watchers.add(watcher.id)
+        wid = getattr(watcher, "id", None)
+        if wid is not None:
+            self.watchers.add(wid)
+            self.ndb.watchers_live.add(wid)
         log_info(f"Watcher {getattr(watcher, 'key', watcher)} added")
 
     def remove_watcher(self, watcher) -> None:
         if not self.state:
             return
         remove_watcher(self.state, watcher)
-        self.watchers.discard(watcher.id)
+        wid = getattr(watcher, "id", None)
+        if wid is not None:
+            self.watchers.discard(wid)
+            self.ndb.watchers_live.discard(wid)
         log_info(f"Watcher {getattr(watcher, 'key', watcher)} removed")
 
     def notify(self, message: str) -> None:
@@ -1379,7 +1484,9 @@ class BattleSession:
             watcher.ndb.battle_instance = self
             if self.state:
                 add_watcher(self.state, watcher)
-                self.watchers.add(getattr(watcher, "id", 0))
+                wid = getattr(watcher, "id", 0)
+                self.watchers.add(wid)
+                self.ndb.watchers_live.add(wid)
             self.msg(f"{watcher.key} is now watching the battle.")
             log_info(f"Observer {getattr(watcher, 'key', watcher)} added")
 
@@ -1390,7 +1497,9 @@ class BattleSession:
                 del watcher.ndb.battle_instance
             if self.state:
                 remove_watcher(self.state, watcher)
-        self.watchers.discard(getattr(watcher, "id", 0))
+        wid = getattr(watcher, "id", 0)
+        self.watchers.discard(wid)
+        self.ndb.watchers_live.discard(wid)
         log_info(f"Observer {getattr(watcher, 'key', watcher)} removed")
 
 
