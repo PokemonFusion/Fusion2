@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -9,6 +10,8 @@ from evennia.utils.ansi import strip_ansi
 from pokemon.data.text import MOVES_TEXT
 
 _MOVEDEX: Optional[Dict[str, Any]] = None
+# Maximum number of lines allotted for the description on each move card
+_DESC_LINES = 4
 
 
 def _normalize_key(name: str) -> str:
@@ -207,12 +210,16 @@ def _render_card(card: Dict[str, Any], box_w: int) -> List[str]:
     name_line = rpad(f"|  {card['name']}", box_w)
     type_cat = f"|  {card['color']}{(card['type'] or 'None').title()}|n   {card['cat']}"
     type_line = rpad(type_cat, box_w)
-    desc_line = rpad(f"|  {card['desc'][: box_w - 4]}", box_w)
+    raw_lines = textwrap.wrap(card["desc"], width=box_w - 4) or [""]
+    raw_lines = raw_lines[:_DESC_LINES]
+    desc_lines = [rpad(f"|  {ln}", box_w) for ln in raw_lines]
+    while len(desc_lines) < _DESC_LINES:
+        desc_lines.append(rpad("|  ", box_w))
     cur, mx = card["pp"]
     pp_line = rpad(f"|  PP: {cur}/{mx}", box_w)
     pa_line = rpad(f"|  Power: {card['power']}   Accuracy: {card['acc']}", box_w)
     bottom = "\\" + "-" * (box_w - 2) + "/"
-    return [top, name_line, type_line, desc_line, pp_line, pa_line, bottom]
+    return [top, name_line, type_line, *desc_lines, pp_line, pa_line, bottom]
 
 
 # ---------- Public API ----------

@@ -53,3 +53,13 @@ def test_move_gui_object_fallback():
     assert "|wNormal|n" in out
     assert "Power: 40   Accuracy: 100" in out
     assert "No additional effect." in out
+
+
+def test_move_gui_wraps_long_descriptions():
+    """Long short descriptions should wrap across multiple lines."""
+
+    slots = ["coreenforcer", None, None, None]
+    out = render_move_gui(slots)
+
+    assert "Nullifies the foe(s) Ability if" in out
+    assert "the foe(s) move first." in out
