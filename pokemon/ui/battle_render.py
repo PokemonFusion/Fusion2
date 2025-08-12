@@ -182,7 +182,7 @@ def render_battle_ui(state, viewer, total_width: int = 100, waiting_on=None) -> 
 
     footer_info = (
         f" Weather: {getattr(state, 'weather', getattr(state, 'roomweather', '-')) or '-'}"
-        f"   Field: {getattr(state, 'field', '-')}   Round: {getattr(state, 'round_no', getattr(state, 'round', getattr(state, 'turn', 0)))}"
+        f"   Field: {getattr(state, 'field', '-')}"
     )
     bottom = corner_bl + (border_h * max(0, inner - 2)) + corner_br
 
