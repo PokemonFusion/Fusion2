@@ -1,146 +1,74 @@
 from __future__ import annotations
 
-try:
-    from evennia.utils.logger import log_info, log_warn, log_err
-except Exception:  # pragma: no cover - fallback if Evennia not available
-    import logging
-
-    _log = logging.getLogger(__name__)
-
-    def log_info(*args, **kwargs):
-        _log.info(*args, **kwargs)
-
-    def log_warn(*args, **kwargs):
-        _log.warning(*args, **kwargs)
-
-    def log_err(*args, **kwargs):
-        _log.error(*args, **kwargs)
-
-
 import random
 from typing import Any, Dict, List, Optional, Set, Tuple
-
-try:
-    from evennia import search_object
-except Exception:  # pragma: no cover - fallback for tests without Evennia
-
-    def search_object(dbref):
-        return []
-
 
 from .battledata import BattleData, Team, Pokemon, Move
 from .engine import Battle, BattleParticipant, BattleType
 from .messaging import MessagingMixin
-
-try:
-    from .engine import _normalize_key as _battle_norm_key
-except Exception:  # pragma: no cover - engine stubbed in some tests
-    def _battle_norm_key(name: str) -> str:
-        """Fallback normalizer matching the battle engine's behaviour."""
-        return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 from .state import BattleState
 from .watchers import WatcherManager
-try:
-    from .actions import ActionQueue
-except Exception:  # pragma: no cover - fallback for direct execution
-    import importlib.util as _util, pathlib as _pathlib, sys as _sys
-    _actions_path = _pathlib.Path(__file__).with_name('actions.py')
-    _spec_a = _util.spec_from_file_location('pokemon.battle.actions', _actions_path)
-    _mod_a = _util.module_from_spec(_spec_a)
-    _sys.modules[_spec_a.name] = _mod_a
-    _spec_a.loader.exec_module(_mod_a)
-    ActionQueue = _mod_a.ActionQueue
+try:  # pragma: no cover - tests may stub watchers without helper
+    from .watchers import normalize_watchers
+except Exception:  # pragma: no cover - fallback when helper unavailable
+    def normalize_watchers(val: Any) -> List[int]:  # type: ignore[misc]
+        """Normalize a stored watcher representation to a list of ints."""
+
+        if isinstance(val, list):
+            return [int(x) for x in val if isinstance(x, (int, str))]
+        if isinstance(val, set):
+            return [int(x) for x in val]
+        if isinstance(val, str):
+            s = val.strip()
+            if s.startswith("{") and s.endswith("}"):
+                s = s[1:-1]
+            out: List[int] = []
+            for part in s.split(","):
+                part = part.strip()
+                if not part:
+                    continue
+                try:
+                    out.append(int(part))
+                except Exception:
+                    continue
+            return out
+        return []
+from .actions import ActionQueue
 from .turn import TurnManager
-try:
-    from .interface import render_interfaces
-except Exception:  # pragma: no cover - allow partial stubs in tests
-    def render_interfaces(*_a, **_k):  # type: ignore[assignment]
-        return "", "", ""
+from .interface import render_interfaces
+try:  # pragma: no cover - interface may be stubbed in tests
+    from .interface import broadcast_interfaces
+except Exception:  # pragma: no cover - fallback implementation
+    def broadcast_interfaces(session, *, waiting_on=None):  # type: ignore[misc]
+        iface_a, iface_b, iface_w = render_interfaces(
+            session.captainA, session.captainB, session.state, waiting_on=waiting_on
+        )
+        for t in getattr(session, "teamA", []):
+            session._msg_to(t, iface_a)
+        for t in getattr(session, "teamB", []):
+            session._msg_to(t, iface_b)
+        for w in getattr(session, "observers", []):
+            session._msg_to(w, iface_w)
 from .handler import battle_handler
 from .storage import BattleDataWrapper
 from utils.pokemon_utils import build_battle_pokemon_from_model
-try:
-    from pokemon.battle.logic import BattleLogic
-except Exception:  # pragma: no cover - fallback for direct execution
-    import importlib.util as _util, pathlib as _pathlib, sys as _sys
-    _logic_path = _pathlib.Path(__file__).with_name('logic.py')
-    _spec = _util.spec_from_file_location('pokemon.battle.logic', _logic_path)
-    _mod = _util.module_from_spec(_spec)
-    _sys.modules[_spec.name] = _mod
-    _spec.loader.exec_module(_mod)
-    BattleLogic = _mod.BattleLogic
 from .setup import create_participants, build_initial_state, persist_initial_state
-try:
-    from pokemon.battle.pokemon_factory import (
-        create_battle_pokemon,
-        generate_trainer_pokemon,
-        generate_wild_pokemon,
-        _calc_stats_from_model,
-    )
-except Exception:  # pragma: no cover - fallback for direct execution
-    _factory_path = _pathlib.Path(__file__).with_name('pokemon_factory.py')
-    _spec_f = _util.spec_from_file_location('pokemon.battle.pokemon_factory', _factory_path)
-    _mod_f = _util.module_from_spec(_spec_f)
-    _sys.modules[_spec_f.name] = _mod_f
-    _spec_f.loader.exec_module(_mod_f)
-    create_battle_pokemon = _mod_f.create_battle_pokemon
-    generate_trainer_pokemon = _mod_f.generate_trainer_pokemon
-    generate_wild_pokemon = _mod_f.generate_wild_pokemon
-    _calc_stats_from_model = _mod_f._calc_stats_from_model
-
-LOG_NAME = "battle"
-
-# Defaults used for compacting persisted state (omit if same as default)
-DEFAULT_FLAGS: Dict[str, int | bool] = {
-    "xp": True,
-    "txp": True,
-    "tier": 1,
-    "four_moves": False,
-}
+from .persistence import StatePersistenceMixin
+from .compat import (
+    log_info,
+    log_warn,
+    log_err,
+    search_object,
+    BattleLogic,
+    generate_trainer_pokemon,
+    generate_wild_pokemon,
+    create_battle_pokemon,
+    FusionRoom,
+    ScriptBase as _ScriptBase,
+)
 
 
-def _normalize_watchers(val: Any) -> List[int]:
-    """Normalize a stored watcher representation to a list of ints."""
-    if isinstance(val, list):
-        return [int(x) for x in val if isinstance(x, (int, str))]
-    if isinstance(val, set):
-        return [int(x) for x in val]
-    if isinstance(val, str):
-        s = val.strip()
-        if s.startswith("{") and s.endswith("}"):
-            s = s[1:-1]
-        out: List[int] = []
-        for part in s.split(","):
-            part = part.strip()
-            if not part:
-                continue
-            try:
-                out.append(int(part))
-            except Exception:
-                continue
-        return out
-    return []
-
-try:
-    from typeclasses.rooms import FusionRoom
-except Exception:  # pragma: no cover - allow restore in tests without module
-    FusionRoom = None
-
-try:
-    from evennia import DefaultScript as _ScriptBase  # type: ignore
-
-    if _ScriptBase is None:  # handle stubs defining this as None
-        raise Exception
-except Exception:  # pragma: no cover - fallback for tests without Evennia
-
-    class _ScriptBase:
-        """Minimal stand-in for Evennia's DefaultScript used in tests."""
-
-        def stop(self):
-            pass
-
-
-class BattleInstance(_ScriptBase, ActionQueue):
+class BattleInstance(_ScriptBase):
     """Legacy placeholder kept to clean up old script-based battles."""
 
     def at_script_creation(self):
@@ -155,7 +83,9 @@ class BattleInstance(_ScriptBase, ActionQueue):
 
 
 
-class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue):
+class BattleSession(
+    TurnManager, MessagingMixin, WatcherManager, ActionQueue, StatePersistenceMixin
+):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
@@ -389,7 +319,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue):
                 or storage.get("watchers")
                 or []
             )
-            watchers_live: Set[int] = set(_normalize_watchers(raw_watchers))
+            watchers_live: Set[int] = set(normalize_watchers(raw_watchers))
             obj.ndb.watchers_live = watchers_live
         except Exception:
             obj.ndb.watchers_live = set()
@@ -813,140 +743,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue):
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")
 
-    def _get_position_for_trainer(self, trainer):
-        """Return the battle position and key associated with ``trainer``.
-
-        Parameters
-        ----------
-        trainer : object
-            Trainer for which to locate the position.
-
-        Returns
-        -------
-        tuple[str | None, PositionData | None]
-            A tuple of the position name (e.g. ``"A1"``) and the
-            :class:`~pokemon.battle.battledata.PositionData` for that
-            trainer.  If no position can be found, ``(None, None)`` is
-            returned.
-        """
-
-        if not self.data:
-            return None, None
-        team = None
-        if trainer in self.teamA:
-            team = "A"
-        elif trainer in self.teamB:
-            team = "B"
-        else:
-            for idx, part in enumerate(getattr(self.battle, "participants", [])):
-                if getattr(part, "player", None) is trainer:
-                    team = "A" if idx == 0 else "B"
-                    break
-        if not team:
-            return None, None
-        pos_name = f"{team}1"
-        return pos_name, self.data.turndata.positions.get(pos_name)
-
-    def _already_queued(self, pos_name, pos, caller, action_desc: str) -> bool:
-        """Check if a position already has an action queued.
-
-        Parameters
-        ----------
-        pos_name : str
-            Name of the position (e.g. ``"A1"``).
-        pos : PositionData
-            Position data object for the active Pokémon.
-        caller : object | None
-            Trainer attempting the action. Used for notifications.
-        action_desc : str
-            Description of the attempted action for logging.
-
-        Returns
-        -------
-        bool
-            ``True`` if an action was already queued and the new request should
-            be ignored, otherwise ``False``.
-        """
-
-        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
-        if pos.getAction() or (self.state and pos_name in self.state.declare):
-            self._msg_to(
-                caller or self.captainA,
-                f"{pokemon_name} already has an action queued this turn.",
-            )
-            log_info(
-                f"Ignored {action_desc} for {pokemon_name} at {pos_name}: action already queued"
-            )
-            self.maybe_run_turn()
-            return True
-        return False
-
-    def queue_move(self, move_key: str, target: str = "B1", caller=None) -> None:
-        """Queue a move by its dex key and run the turn if ready."""
-        norm_key = _battle_norm_key(move_key)
-        self._queue_action(
-            caller,
-            f"move {norm_key}",
-            lambda pos: pos.declareAttack(target, norm_key),
-            {"move": norm_key, "target": target},
-            "Queued move {move} targeting {target} from {pokemon} at {pos}",
-            {"move": norm_key, "target": target},
-            "queued move",
-        )
-
-    def queue_switch(self, slot: int, caller=None) -> None:
-        """Queue a Pokémon switch and run the turn if ready."""
-        self._queue_action(
-            caller,
-            "switch",
-            lambda pos: pos.declareSwitch(slot),
-            {"switch": slot},
-            "Queued switch to slot {slot} for {pokemon} at {pos}",
-            {"slot": slot},
-            "queued switch",
-        )
-
-    def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
-        """Queue an item use and run the turn if ready."""
-        self._queue_action(
-            caller,
-            f"item {item_name}",
-            lambda pos: pos.declareItem(item_name),
-            {"item": item_name, "target": target},
-            "Queued item {item} targeting {target} from {pokemon} at {pos}",
-            {"item": item_name, "target": target},
-            "queued item",
-        )
-
-    def queue_run(self, caller=None) -> None:
-        """Queue a flee attempt and run the turn if ready."""
-        self._queue_action(
-            caller,
-            "flee attempt",
-            lambda pos: pos.declareRun(),
-            {"run": "1"},
-            "Queued attempt to flee by {pokemon} at {pos}",
-            {},
-            "flee attempt",
-        )
 
     # ---- Persistence helpers ------------------------------------------------
-
-    def _compact_state_for_persist(self, st: Dict[str, Any]) -> Dict[str, Any]:
-        """Return a compacted copy of ``st`` suitable for storage."""
-        state: Dict[str, Any] = dict(st) if st else {}
-        # Remove duplicated/derivable fields
-        state.pop("turn", None)
-        state.pop("teams", None)
-        state.pop("movesets", None)
-        # Normalize watchers (persist as list; keep live set on ndb)
-        live_watch: List[int] = list(getattr(self.ndb, "watchers_live", []))
-        state["watchers"] = live_watch or _normalize_watchers(state.get("watchers", []))
-        # Drop default flags
-        for k, default in DEFAULT_FLAGS.items():
-            if state.get(k, default) == default:
-                state.pop(k, None)
-        return state
 
     def is_turn_ready(self) -> bool:
         if self.data:
@@ -998,16 +796,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue):
             if waiting_poke:
                 self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
                 try:
-                    iface_a, iface_b, iface_w = render_interfaces(
-                        self.captainA, self.captainB, self.state, waiting_on=waiting_poke
-                    )
-                    for t in self.teamA:
-                        self._msg_to(t, iface_a)
-                    for t in self.teamB:
-                        self._msg_to(t, iface_b)
-                    for w in self.observers:
-                        self._msg_to(w, iface_w)
+                    broadcast_interfaces(self, waiting_on=waiting_poke)
                 except Exception:
                     log_warn("Failed to display waiting interface", exc_info=True)
 
-__all__ = ["BattleSession", "BattleInstance"]
+__all__ = ["BattleSession", "BattleInstance", "create_battle_pokemon"]

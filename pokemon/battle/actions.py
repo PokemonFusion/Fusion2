@@ -8,21 +8,57 @@ persisting state and triggering turn advancement.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Tuple
 
-try:  # pragma: no cover - Evennia may not be installed during tests
-    from evennia.utils.logger import log_info
-except Exception:  # pragma: no cover - fallback logger
-    import logging
-
-    _log = logging.getLogger(__name__)
-
-    def log_info(*args, **kwargs):  # type: ignore[misc]
-        _log.info(*args, **kwargs)
+from .compat import log_info, _battle_norm_key
 
 
 class ActionQueue:
     """Mixin implementing generic action queuing for battles."""
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _get_position_for_trainer(self, trainer) -> Tuple[str | None, Any]:
+        """Return the active position for ``trainer``."""
+
+        if not self.data:
+            return None, None
+        team = None
+        if trainer in getattr(self, "teamA", []):
+            team = "A"
+        elif trainer in getattr(self, "teamB", []):
+            team = "B"
+        else:
+            for idx, part in enumerate(getattr(self.battle, "participants", [])):
+                if getattr(part, "player", None) is trainer:
+                    team = "A" if idx == 0 else "B"
+                    break
+        if not team:
+            return None, None
+        pos_name = f"{team}1"
+        return pos_name, self.data.turndata.positions.get(pos_name)
+
+    def _already_queued(self, pos_name, pos, caller, action_desc: str) -> bool:
+        """Return ``True`` if ``pos`` already has an action queued."""
+
+        pokemon_name = getattr(getattr(pos, "pokemon", None), "name", "Unknown")
+        if pos.getAction() or (self.state and pos_name in self.state.declare):
+            self._msg_to(
+                caller or self.captainA,
+                f"{pokemon_name} already has an action queued this turn.",
+            )
+            log_info(
+                f"Ignored {action_desc} for {pokemon_name} at {pos_name}: action already queued"
+            )
+            self.maybe_run_turn()
+            return True
+        return False
+
+    # ------------------------------------------------------------------
+    # Generic queuing implementation
+    # ------------------------------------------------------------------
 
     def _queue_action(
         self,
@@ -84,3 +120,60 @@ class ActionQueue:
         )
         log_info(f"Saved {save_desc} for {pokemon_name} at {pos_name} to room state")
         self.maybe_run_turn()
+
+    # ------------------------------------------------------------------
+    # Public queueing API
+    # ------------------------------------------------------------------
+
+    def queue_move(self, move_key: str, target: str = "B1", caller=None) -> None:
+        """Queue a move by its dex key and run the turn if ready."""
+
+        norm_key = _battle_norm_key(move_key)
+        self._queue_action(
+            caller,
+            f"move {norm_key}",
+            lambda pos: pos.declareAttack(target, norm_key),
+            {"move": norm_key, "target": target},
+            "Queued move {move} targeting {target} from {pokemon} at {pos}",
+            {"move": norm_key, "target": target},
+            "queued move",
+        )
+
+    def queue_switch(self, slot: int, caller=None) -> None:
+        """Queue a Pokémon switch and run the turn if ready."""
+
+        self._queue_action(
+            caller,
+            "switch",
+            lambda pos: pos.declareSwitch(slot),
+            {"switch": slot},
+            "Queued switch to slot {slot} for {pokemon} at {pos}",
+            {"slot": slot},
+            "queued switch",
+        )
+
+    def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
+        """Queue an item use and run the turn if ready."""
+
+        self._queue_action(
+            caller,
+            f"item {item_name}",
+            lambda pos: pos.declareItem(item_name),
+            {"item": item_name, "target": target},
+            "Queued item {item} targeting {target} from {pokemon} at {pos}",
+            {"item": item_name, "target": target},
+            "queued item",
+        )
+
+    def queue_run(self, caller=None) -> None:
+        """Queue a flee attempt and run the turn if ready."""
+
+        self._queue_action(
+            caller,
+            "flee attempt",
+            lambda pos: pos.declareRun(),
+            {"run": "1"},
+            "Queued attempt to flee by {pokemon} at {pos}",
+            {},
+            "flee attempt",
+        )

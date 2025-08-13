@@ -11,23 +11,21 @@ from __future__ import annotations
 
 import traceback
 
-try:  # pragma: no cover - Evennia only available in deployment
-    from evennia.utils.logger import log_err, log_info, log_warn
-except Exception:  # pragma: no cover - fallback for tests without Evennia
-    import logging
-
-    _log = logging.getLogger(__name__)
-
-    def log_info(*args, **kwargs):
-        _log.info(*args, **kwargs)
-
-    def log_warn(*args, **kwargs):
-        _log.warning(*args, **kwargs)
-
-    def log_err(*args, **kwargs):
-        _log.error(*args, **kwargs)
-
+from .compat import log_err, log_info, log_warn
 from .interface import format_turn_banner, render_interfaces
+try:  # pragma: no cover - interface may be stubbed in tests
+    from .interface import broadcast_interfaces
+except Exception:  # pragma: no cover - fallback implementation
+    def broadcast_interfaces(session, *, waiting_on=None):  # type: ignore[misc]
+        iface_a, iface_b, iface_w = render_interfaces(
+            session.captainA, session.captainB, session.state, waiting_on=waiting_on
+        )
+        for t in getattr(session, "teamA", []):
+            session._msg_to(t, iface_a)
+        for t in getattr(session, "teamB", []):
+            session._msg_to(t, iface_b)
+        for w in getattr(session, "observers", []):
+            session._msg_to(w, iface_w)
 
 
 class TurnManager:
@@ -47,15 +45,7 @@ class TurnManager:
 
         if self.captainA and self.state and self.captainB is not None:
             try:
-                iface_a, iface_b, iface_w = render_interfaces(
-                    self.captainA, self.captainB, self.state
-                )
-                for t in self.teamA:
-                    self._msg_to(t, iface_a)
-                for t in self.teamB:
-                    self._msg_to(t, iface_b)
-                for w in self.observers:
-                    self._msg_to(w, iface_w)
+                broadcast_interfaces(self)
             except Exception:
                 log_warn("Failed to display battle interface", exc_info=True)
 

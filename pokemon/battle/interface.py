@@ -106,3 +106,17 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
         captain_a, captain_b, state, viewer_team=None, waiting_on=waiting_on
     )
     return iface_a, iface_b, iface_w
+
+
+def broadcast_interfaces(session, *, waiting_on=None) -> None:
+    """Render and send interfaces for ``session`` to all participants."""
+
+    iface_a, iface_b, iface_w = render_interfaces(
+        session.captainA, session.captainB, session.state, waiting_on=waiting_on
+    )
+    for t in getattr(session, "teamA", []):
+        session._msg_to(t, iface_a)
+    for t in getattr(session, "teamB", []):
+        session._msg_to(t, iface_b)
+    for w in getattr(session, "observers", []):
+        session._msg_to(w, iface_w)
