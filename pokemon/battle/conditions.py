@@ -271,23 +271,29 @@ class ConditionHelpers:
             context={"battle": self},
         )
 
-    def handle_weather(self) -> None:
-        """Apply residual effects of the current weather."""
-        weather_handler = getattr(self.field, "weather_handler", None)
-        if weather_handler and hasattr(weather_handler, "onFieldResidual"):
+    def _handle_field_residual(self, effect_attr: str) -> None:
+        """Trigger the :py:meth:`onFieldResidual` callback for a field effect.
+
+        Parameters
+        ----------
+        effect_attr:
+            Name of the attribute on ``self.field`` that stores the handler
+            instance.
+        """
+        handler = getattr(self.field, effect_attr, None)
+        if handler and hasattr(handler, "onFieldResidual"):
             try:
-                weather_handler.onFieldResidual(self.field)
+                handler.onFieldResidual(self.field)
             except Exception:
                 pass
 
+    def handle_weather(self) -> None:
+        """Apply residual effects of the current weather."""
+        self._handle_field_residual("weather_handler")
+
     def handle_terrain(self) -> None:
         """Apply residual effects of the active terrain."""
-        terrain_handler = getattr(self.field, "terrain_handler", None)
-        if terrain_handler and hasattr(terrain_handler, "onFieldResidual"):
-            try:
-                terrain_handler.onFieldResidual(self.field)
-            except Exception:
-                pass
+        self._handle_field_residual("terrain_handler")
 
     def update_hazards(self) -> None:
         """Update hazard effects on the field."""
