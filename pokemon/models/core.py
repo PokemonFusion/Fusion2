@@ -266,6 +266,12 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         except Exception:  # pragma: no cover - optional
             MOVEDEX = {}
 
+        try:
+            from pokemon.battle.engine import _normalize_key
+        except Exception:  # pragma: no cover - fallback normaliser
+            def _normalize_key(val: str) -> str:
+                return val.replace(" ", "").replace("-", "").replace("'", "").lower()
+
         bonuses: dict[str, int] = {}
         manager = getattr(self, "pp_boosts", None)
         if manager is not None:
@@ -274,9 +280,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
             except Exception:  # pragma: no cover
                 iterable = manager
             for b in iterable:
-                bonuses[getattr(b.move, "name", "").lower()] = getattr(
-                    b, "bonus_pp", 0
-                )
+                name = _normalize_key(getattr(getattr(b, "move", None), "name", ""))
+                bonuses[name] = getattr(b, "bonus_pp", 0)
 
         slots = getattr(self, "activemoveslot_set", None)
         if slots is not None:
@@ -289,10 +294,17 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
         updated = []
         for slot in slot_iter:
-            base = MOVEDEX.get(slot.move.name.lower(), {}).get("pp")
-            bonus = bonuses.get(slot.move.name.lower(), 0)
+            move_name = getattr(getattr(slot, "move", None), "name", "")
+            norm = _normalize_key(move_name)
+            md = MOVEDEX.get(norm)
+            base = None
+            if md is not None:
+                base = getattr(md, "pp", None)
+                if base is None and isinstance(md, dict):
+                    base = md.get("pp")
+            bonus = bonuses.get(norm, 0)
             if base is not None:
-                slot.current_pp = base + bonus
+                slot.current_pp = int(base) + int(bonus)
                 updated.append(slot)
 
         if updated:
@@ -322,7 +334,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         move_management.learn_level_up_moves(self, caller=caller, prompt=prompt)
 
     def apply_active_moveset(self) -> None:
-        """Sync the active moveset to the active move slots.
+        """Sync the active moveset to the active move slots and heal the Pokémon.
 
         The heavy lifting is performed in :mod:`pokemon.services.move_management`.
         """
@@ -330,6 +342,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         from pokemon.services import move_management
 
         move_management.apply_active_moveset(self)
+        self.heal()
 
     def get_max_hp(self) -> int:
         """Return max HP for this Pokémon."""
