@@ -8,10 +8,24 @@ class Move(models.Model):
     """A normalized move entry."""
 
     name = models.CharField(max_length=50, unique=True)
-    verified = models.BooleanField(default=False)
 
     def __str__(self):  # pragma: no cover - simple repr
         return self.name
+
+
+class VerifiedMove(models.Model):
+    """Verification status for a move.
+
+    This table tracks which moves have been explicitly marked as verified
+    during testing. The ``key`` field stores the move name and the
+    ``verified`` boolean indicates whether the move has been validated.
+    """
+
+    key = models.CharField(max_length=50, unique=True)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):  # pragma: no cover - simple repr
+        return f"{self.key} ({'verified' if self.verified else 'unverified'})"
 
 
 class PokemonLearnedMove(models.Model):
