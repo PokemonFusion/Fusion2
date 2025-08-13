@@ -8,12 +8,19 @@ from pokemon.testfactory import make_test_pokemon, make_punching_bag
 def _get_unverified_moves() -> List[str]:
     """Return moves not yet verified.
 
-    Attempts to fetch from the Move model's ``verified`` field. Falls back to the
-    static placeholder list when the database is unavailable.
+    Verification status is stored in the ``VerifiedMove`` table. If the
+    database is unavailable the function falls back to a static placeholder
+    list.
     """
-    try:  # pragma: no cover
-        from pokemon.models import Move
-        return list(Move.objects.filter(verified=False).values_list("name", flat=True))
+    try:  # pragma: no cover - DB access not available in some tests
+        from pokemon.models import Move, VerifiedMove
+
+        status = {vm.key.lower(): vm.verified for vm in VerifiedMove.objects.all()}
+        return [
+            name
+            for name in Move.objects.values_list("name", flat=True)
+            if not status.get(name.lower(), False)
+        ]
     except Exception:
         from utils.constants.unverified_moves import UNVERIFIED_MOVES
         return list(UNVERIFIED_MOVES)

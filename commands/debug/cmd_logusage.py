@@ -65,13 +65,13 @@ class CmdMarkVerified(Command):
 
         if self.kind == "move":
             try:  # pragma: no cover - DB may be unavailable in tests
-                from pokemon.models import Move
+                from pokemon.models import VerifiedMove
 
-                move, _ = Move.objects.get_or_create(
-                    name__iexact=self.name, defaults={"name": self.name}
+                entry, _ = VerifiedMove.objects.get_or_create(
+                    key__iexact=self.name, defaults={"key": self.name}
                 )
-                move.verified = True
-                move.save()
+                entry.verified = True
+                entry.save()
                 self.caller.msg(f"{self.name} marked as verified move.")
                 return
             except Exception:
