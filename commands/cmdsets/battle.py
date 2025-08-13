@@ -5,6 +5,7 @@ from commands.player.cmd_battle import CmdBattleAttack, CmdBattleSwitch, CmdBatt
 from commands.player.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
 from commands.player.cmd_watch import CmdWatch, CmdUnwatch
 from commands.debug.cmd_debugbattle import CmdDebugBattle
+from commands.debug.cmd_movedata import CmdDebugMoveData
 
 
 class BattleCmdSet(CmdSet):
@@ -24,5 +25,6 @@ class BattleCmdSet(CmdSet):
             CmdWatch,
             CmdUnwatch,
             CmdDebugBattle,
+            CmdDebugMoveData,
         ):
             self.add(cmd())

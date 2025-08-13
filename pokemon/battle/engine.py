@@ -1035,30 +1035,39 @@ class Battle:
             return
 
         user = action.pokemon or (action.actor.active[0] if action.actor.active else None)
-        # Ensure we have full move data loaded from the dex.
-        # Always normalize the key before lookup (some callers already have
-        # a .key, but we still normalize to be safe/consistent).
-        raw_key = getattr(action.move, "key", None) or getattr(action.move, "name", None)
-        key = _normalize_key(raw_key) if raw_key else None
+        # Ensure we have full move data loaded from the dex
+        key = getattr(action.move, "key", None)
+        if not key and getattr(action.move, "name", None):
+            key = _normalize_key(action.move.name)
         dex_move = MOVEDEX.get(key) if key else None
         if dex_move:
+            # Merge raw dex data first so downstream code can read category/callbacks.
             if not action.move.raw:
-                action.move.raw = dict(dex_move.raw)
-            # Prefer explicit .power if present on the dex object, else fall back
-            # to 'basePower' in the raw dict (Showdown data).
+                action.move.raw = dict(getattr(dex_move, "raw", {}) or {})
+
+            raw = getattr(dex_move, "raw", {}) or {}
+
+            # POWER: prefer Showdown's `basePower` when present; otherwise fall back to dex_move.power.
             if action.move.power in (None, 0):
-                dex_power = getattr(dex_move, "power", None)
-                if dex_power in (None, 0):
-                    dex_power = dex_move.raw.get("basePower")
-                if dex_power not in (None, 0):
-                    action.move.power = dex_power
-            # Accuracy should always be sourced from the dex rather than the
-            # action object to prevent callers from injecting incorrect values.
-            action.move.accuracy = dex_move.accuracy
+                bp = raw.get("basePower")
+                if isinstance(bp, (int, float)) and bp > 0:
+                    action.move.power = int(bp)
+                else:
+                    dm_pow = getattr(dex_move, "power", None)
+                    if isinstance(dm_pow, (int, float)) and dm_pow not in (None, 0):
+                        action.move.power = int(dm_pow)
+
+            # ACCURACY: always source from dex raw (handles int/bool/float) with property fallback.
+            acc = raw.get("accuracy", getattr(dex_move, "accuracy", None))
+            if acc is not None:
+                action.move.accuracy = acc
+
+            # TYPE/CATEGORY/PRIORITY: ensure type present; category is kept in raw for _apply_move_damage.
             if action.move.type is None:
-                action.move.type = dex_move.type
+                action.move.type = getattr(dex_move, "type", raw.get("type"))
             if action.move.priority == 0:
-                action.move.priority = dex_move.raw.get("priority", 0)
+                action.move.priority = int(raw.get("priority", 0))
+
             for attr in ("onHit", "onTry", "onBeforeMove", "onAfterMove", "basePowerCallback"):
                 if getattr(action.move, attr, None) is None:
                     cb_name = dex_move.raw.get(attr)
@@ -1071,7 +1080,7 @@ class Battle:
                             cb = None
                     else:
                         cb = cb_name
-                    if cb:
+                    if callable(cb):
                         setattr(action.move, attr, cb)
 
         if action.move.pp is None:
