@@ -22,7 +22,7 @@ def _ensure_movedex() -> Dict[str, Any]:
     except Exception:  # pragma: no cover - fall back to direct path
         try:
             from pokemon.dex.entities import load_movedex  # type: ignore
-            path = Path(__file__).resolve().parents[1] / "dex" / "combatdex.py"
+            path = Path(__file__).resolve().parents[1] / "dex" / "movedex.py"
             _MOVEDEX = load_movedex(path)
         except Exception:  # pragma: no cover
             _MOVEDEX = {}
