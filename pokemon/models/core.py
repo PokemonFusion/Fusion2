@@ -262,7 +262,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         if hasattr(self, "status"):
             self.status = ""
         try:
-            from pokemon.dex import MOVEDEX  # type: ignore
+            from pokemon.dex.movedex import py_dict as MOVEDEX  # type: ignore
         except Exception:  # pragma: no cover - optional
             MOVEDEX = {}
 
