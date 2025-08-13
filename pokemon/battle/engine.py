@@ -41,6 +41,7 @@ from enum import Enum, auto
 from typing import Callable, List, Optional, Dict, Any
 
 import random
+from .battledata import Move
 
 try:
     from .events import EventDispatcher
@@ -197,6 +198,60 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
             move.basePowerCallback = None
 
     return apply_damage(user, target, move, battle=battle, spread=spread)
+
+
+def _select_ai_action(
+    participant: "BattleParticipant", active_pokemon, battle: "Battle"
+) -> Optional[Action]:
+    """Select an AI action for ``active_pokemon``.
+
+    This helper consolidates the move and target selection logic used by
+    :meth:`BattleParticipant.choose_action` and
+    :meth:`BattleParticipant.choose_actions`.
+
+    Parameters
+    ----------
+    participant:
+        The :class:`BattleParticipant` controlling ``active_pokemon``.
+    active_pokemon:
+        The Pokémon for which an action should be chosen.
+    battle:
+        The active :class:`Battle` instance providing context.
+
+    Returns
+    -------
+    Optional[Action]
+        The selected action, or ``None`` if no valid move/target exists.
+    """
+
+    moves = getattr(active_pokemon, "moves", [])
+    move_data = moves[0] if moves else Move(name="Flail")
+
+    mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
+    move_pp = getattr(move_data, "pp", None)
+
+    move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
+    dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
+    priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
+    move.priority = priority
+
+    opponents = battle.opponents_of(participant)
+    if not opponents:
+        return None
+
+    opponent = random.choice(opponents)
+    if not opponent.active:
+        return None
+
+    battle_logger.info("%s chooses %s", participant.name, move.name)
+    return Action(
+        participant,
+        ActionType.MOVE,
+        opponent,
+        move,
+        priority,
+        pokemon=active_pokemon,
+    )
 
 
 @dataclass

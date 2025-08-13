@@ -6,7 +6,6 @@ battle. It was extracted from ``engine.py`` to improve modularity.
 
 from __future__ import annotations
 
-import random
 from typing import List, Optional, TYPE_CHECKING
 from .battledata import Move
 
@@ -67,8 +66,6 @@ class BattleParticipant:
     def choose_action(self, battle: "Battle") -> Optional[Action]:
         """Return an :class:`Action` object for this turn."""
 
-        from pokemon.battle.actions import Action, ActionType
-
         if self.pending_action:
             action = self.pending_action
             self.pending_action = None
@@ -85,31 +82,12 @@ class BattleParticipant:
             return None
 
         active_poke = self.active[0]
-        moves = getattr(active_poke, "moves", [])
-        move_data = moves[0] if moves else Move(name="Flail")
+        from .engine import _select_ai_action  # runtime import
 
-        mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-        move_pp = getattr(move_data, "pp", None)
-        from .engine import BattleMove, _normalize_key  # runtime import
-        from pokemon.dex import MOVEDEX
-
-        move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-        dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
-        priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
-        move.priority = priority
-        opponents = battle.opponents_of(self)
-        if not opponents:
-            return None
-        opponent = random.choice(opponents)
-        if not opponent.active:
-            return None
-        from pokemon.battle.engine import battle_logger as eng_logger
-        eng_logger.info("%s chooses %s", self.name, move.name)
-        return Action(self, ActionType.MOVE, opponent, move, priority, pokemon=active_poke)
+        return _select_ai_action(self, active_poke, battle)
 
     def choose_actions(self, battle: "Battle") -> List[Action]:
         """Return a list of actions for all active Pokémon."""
-        from pokemon.battle.actions import Action, ActionType
 
         if self.pending_action:
             action = self.pending_action
@@ -135,29 +113,12 @@ class BattleParticipant:
             return []
 
         actions: List[Action] = []
-        from .engine import BattleMove, _normalize_key  # runtime import
-        from pokemon.dex import MOVEDEX
+        from .engine import _select_ai_action  # runtime import
 
         for active_poke in self.active:
-            moves = getattr(active_poke, "moves", [])
-            move_data = moves[0] if moves else Move(name="Flail")
-            mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-            move_pp = getattr(move_data, "pp", None)
-            move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-            dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
-            priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
-            move.priority = priority
-            opponents = battle.opponents_of(self)
-            if not opponents:
-                continue
-            opponent = random.choice(opponents)
-            if not opponent.active:
-                continue
-            from pokemon.battle.engine import battle_logger as eng_logger
-            eng_logger.info("%s chooses %s", self.name, move.name)
-            actions.append(
-                Action(self, ActionType.MOVE, opponent, move, priority, pokemon=active_poke)
-            )
+            action = _select_ai_action(self, active_poke, battle)
+            if action:
+                actions.append(action)
         return actions
 
 
