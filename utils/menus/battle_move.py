@@ -15,7 +15,15 @@ import re
 from evennia.utils.evmenu import EvMenuGotoAbortMessage
 
 from utils.battle_display import render_move_gui
-from utils.pokemon_utils import make_move_from_dex
+
+try:  # pragma: no cover - optional during tests
+    from pokemon.battle import BattleMove
+    if BattleMove is None:
+        raise ImportError
+except Exception:  # pragma: no cover - fallback if engine isn't loaded
+    from pokemon.battle.engine import BattleMove
+
+from pokemon.dex import MOVEDEX
 
 ABORT_WORDS = {".abort", "abort", "cancel", "quit", "exit"}
 LETTERS = ["A", "B", "C", "D"]
@@ -42,7 +50,12 @@ def start(
             "key": "_default",
             "goto": (
                 _route_move,
-                {"slots": slots, "inst": inst, "participant": participant},
+                {
+                    "slots": slots,
+                    "pp_overrides": pp_overrides,
+                    "inst": inst,
+                    "participant": participant,
+                },
             ),
             "desc": "",
         }
@@ -54,6 +67,7 @@ def _route_move(
     caller,
     raw_string: str,
     slots: List[Any],
+    pp_overrides: Dict[int, int] | None = None,
     inst=None,
     participant=None,
     **kwargs,
@@ -68,19 +82,27 @@ def _route_move(
         return "cancel_node", {}
 
     move_obj = None
+    sel_index = None
+    pp_overrides = pp_overrides or {}
     letter = s.upper()
     if letter in LETTERS:
         idx = LETTERS.index(letter)
         if idx < len(slots):
             move = slots[idx]
             name = move if isinstance(move, str) else getattr(move, "name", "")
-            move_obj = make_move_from_dex(name, battle=True)
+            sel_index = idx
+            move_obj = BattleMove(name, pp=pp_overrides.get(idx))
     else:
-        for mv in slots:
+        for idx, mv in enumerate(slots):
             name = mv if isinstance(mv, str) else getattr(mv, "name", "")
             if name.lower() == s.lower():
-                move_obj = make_move_from_dex(name, battle=True)
+                sel_index = idx
+                move_obj = BattleMove(name, pp=pp_overrides.get(idx))
                 break
+
+    if move_obj:
+        dex_entry = MOVEDEX.get(getattr(move_obj, "key", move_obj.name).lower())
+        move_obj.priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
 
     if not move_obj:
         raise EvMenuGotoAbortMessage("Invalid move. Use A–D or exact name.")

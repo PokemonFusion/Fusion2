@@ -11,7 +11,6 @@ except Exception:  # pragma: no cover
     EnhancedEvMenu = None  # type: ignore
 
 from utils.battle_display import render_move_gui
-from utils.pokemon_utils import make_move_from_dex
 
 NOT_IN_BATTLE_MSG = "You are not currently in battle."
 
@@ -128,18 +127,19 @@ class CmdBattleAttack(Command):
 
             # handle selection by letter or name
             selected_move = None
+            sel_index = None
             letter = selected.upper()
             if letter in letters:
                 idx = letters.index(letter)
                 if idx < len(slots):
                     selected_move = slots[idx]
+                    sel_index = idx
             else:
-                for mv in slots:
-                    name = (
-                        mv if isinstance(mv, str) else getattr(mv, "name", "")
-                    )
+                for idx, mv in enumerate(slots):
+                    name = mv if isinstance(mv, str) else getattr(mv, "name", "")
                     if name.lower() == selected.lower():
                         selected_move = mv
+                        sel_index = idx
                         break
             if selected_move is None:
                 _prompt_move()
@@ -180,13 +180,17 @@ class CmdBattleAttack(Command):
                 return
 
             move_name_sel = selected_move if isinstance(selected_move, str) else getattr(selected_move, "name", "")
-            move_obj = make_move_from_dex(move_name_sel, battle=True)
+            move_pp = pp_overrides.get(sel_index) if sel_index is not None else None
+            move_obj = BattleMove(move_name_sel, pp=move_pp)
+            dex_entry = MOVEDEX.get(getattr(move_obj, "key", move_name_sel).lower())
+            priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
+            move_obj.priority = priority
             action = Action(
                 participant,
                 ActionType.MOVE,
                 target,
                 move_obj,
-                getattr(move_obj, "priority", 0),
+                priority,
             )
             participant.pending_action = action
             self.caller.msg(f"You prepare to use {move_obj.name}.")

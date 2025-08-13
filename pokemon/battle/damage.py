@@ -170,7 +170,12 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
 
-        from pokemon.battle.utils import get_modified_stat
+        try:  # pragma: no cover - allows testing with minimal stubs
+            from pokemon.battle.utils import get_modified_stat
+        except Exception:
+            def get_modified_stat(pokemon, stat: str) -> int:  # type: ignore
+                base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
+                return base
 
         atk_key = "attack" if move.category == "Physical" else "special_attack"
         def_key = "defense" if move.category == "Physical" else "special_defense"

@@ -304,6 +304,11 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         raw["category"] = cat
     priority = raw.get("priority", 0)
 
+    # In battle contexts we defer to the calling code to supply the current PP
+    # for a move so that deductions affect the Pokémon rather than this
+    # instance.  As such the ``pp`` value is omitted from the returned
+    # :class:`BattleMove` and any remaining power points must be provided
+    # separately when an action is declared.
     return BattleMove(
         name=move_name,
         key=key,
@@ -317,7 +322,7 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         basePowerCallback=raw.get("basePowerCallback"),
         type=mtype,
         raw=raw,
-        pp=pp,
+        pp=None,
     )
 
 
