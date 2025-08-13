@@ -8,6 +8,7 @@ class Move(models.Model):
     """A normalized move entry."""
 
     name = models.CharField(max_length=50, unique=True)
+    verified = models.BooleanField(default=False)
 
     def __str__(self):  # pragma: no cover - simple repr
         return self.name
