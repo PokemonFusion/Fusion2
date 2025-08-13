@@ -41,8 +41,6 @@ from enum import Enum, auto
 from typing import Callable, List, Optional, Dict, Any
 
 import random
-from .battledata import Move
-
 try:
     from .events import EventDispatcher
 except Exception:  # pragma: no cover - fallback for tests with stubs
@@ -71,9 +69,34 @@ except Exception:  # pragma: no cover - fallback for tests with stubs
                     except Exception:
                         pass
 
-from pokemon.dex import MOVEDEX
-from pokemon.dex.entities import Move
 import logging
+
+try:  # pragma: no cover - dex data may be absent during tests
+    from pokemon.dex import MOVEDEX  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    MOVEDEX = {}
+
+try:  # pragma: no cover - dex package may be absent during tests
+    from pokemon.dex.entities import Move  # type: ignore
+except Exception:  # pragma: no cover - provide lightweight stub
+    @dataclass
+    class Move:
+        """Fallback move representation used when the Pokédex package is unavailable.
+
+        The real project exposes :class:`pokemon.dex.entities.Move` with
+        additional attributes loaded from the Pokédex.  Tests may install a
+        minimal stub instead, so this dataclass mirrors the attributes accessed
+        by the engine and damage calculator to keep imports optional.
+        """
+
+        name: str
+        num: int = 0
+        type: Optional[str] = None
+        category: Optional[str] = None
+        power: Any = None
+        accuracy: Any = None
+        pp: Any = None
+        raw: Dict[str, Any] = field(default_factory=dict)
 
 import sys, os, importlib.util, importlib.machinery
 
@@ -161,7 +184,6 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
     """
 
     from .damage import apply_damage
-    from pokemon.dex.entities import Move
 
     raw = dict(battle_move.raw)
     if battle_move.basePowerCallback:
@@ -843,8 +865,6 @@ class Battle(ConditionHelpers, BattleActions):
         sub = getattr(target, "volatiles", {}).get("substitute")
         if sub and not action.move.raw.get("bypassSub"):
             from .damage import apply_damage
-            from pokemon.dex.entities import Move
-
             raw = dict(action.move.raw)
             if action.move.basePowerCallback:
                 raw["basePowerCallback"] = action.move.basePowerCallback
