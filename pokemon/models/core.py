@@ -262,9 +262,12 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
         if hasattr(self, "status"):
             self.status = ""
         try:
-            from pokemon.dex.movedex import py_dict as MOVEDEX  # type: ignore
-        except Exception:  # pragma: no cover - optional
-            MOVEDEX = {}
+            from pokemon.dex import MOVEDEX  # type: ignore
+        except Exception:
+            try:
+                from pokemon.dex.movedex import py_dict as MOVEDEX  # type: ignore
+            except Exception:  # pragma: no cover - optional
+                MOVEDEX = {}
 
         try:
             from pokemon.battle.engine import _normalize_key
