@@ -2,24 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, List, Optional
 
-try:  # pragma: no cover - Evennia logger not available in tests
-    from evennia.utils.logger import log_info
-except Exception:  # pragma: no cover - fallback to standard logging
-    import logging
-
-    _log = logging.getLogger(__name__)
-
-    def log_info(*args, **kwargs):  # type: ignore[misc]
-        _log.info(*args, **kwargs)
-
-try:  # pragma: no cover - search requires Evennia in runtime
-    from evennia import search_object
-except Exception:  # pragma: no cover - used in tests without Evennia
-    def search_object(dbref):  # type: ignore[no-redef]
-        return []
-
+from .compat import log_info, search_object
 from .state import BattleState
 
 
@@ -77,6 +62,30 @@ def notify_watchers(state: BattleState, message: str, room=None) -> None:
         if watcher.attributes.get("battle_ignore_notify"):
             continue
         watcher.msg(message)
+
+
+def normalize_watchers(val: Any) -> List[int]:
+    """Return a list of watcher ids from ``val``."""
+
+    if isinstance(val, list):
+        return [int(x) for x in val if isinstance(x, (int, str))]
+    if isinstance(val, set):
+        return [int(x) for x in val]
+    if isinstance(val, str):
+        s = val.strip()
+        if s.startswith("{") and s.endswith("}"):
+            s = s[1:-1]
+        out: List[int] = []
+        for part in s.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            try:
+                out.append(int(part))
+            except Exception:
+                continue
+        return out
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -148,5 +157,6 @@ __all__ = [
     "add_watcher",
     "remove_watcher",
     "notify_watchers",
+    "normalize_watchers",
     "WatcherManager",
 ]
