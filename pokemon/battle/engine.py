@@ -74,6 +74,36 @@ from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Move
 import logging
 
+import sys, os, importlib.util, importlib.machinery
+
+_BASE_PATH = os.path.dirname(__file__)
+
+if "pokemon" not in sys.modules:
+    pkg = importlib.util.module_from_spec(importlib.machinery.ModuleSpec("pokemon", loader=None))
+    pkg.__path__ = [os.path.dirname(_BASE_PATH)]
+    sys.modules["pokemon"] = pkg
+if "pokemon.battle" not in sys.modules:
+    sub = importlib.util.module_from_spec(importlib.machinery.ModuleSpec("pokemon.battle", loader=None))
+    sub.__path__ = [_BASE_PATH]
+    sys.modules["pokemon.battle"] = sub
+
+def _load_module(name: str, filename: str):
+    spec = importlib.util.spec_from_file_location(name, os.path.join(_BASE_PATH, filename))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+participants_mod = _load_module("pokemon.battle.participants", "participants.py")
+actions_mod = _load_module("pokemon.battle.actions", "actions.py")
+conditions_mod = _load_module("pokemon.battle.conditions", "conditions.py")
+
+BattleParticipant = participants_mod.BattleParticipant
+Action = actions_mod.Action
+ActionType = actions_mod.ActionType
+BattleActions = actions_mod.BattleActions
+ConditionHelpers = conditions_mod.ConditionHelpers
+
 battle_logger = logging.getLogger("battle")
 try:
     from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
@@ -138,16 +168,25 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
     # Atk/Def.
     category = raw.get("category") or "Physical"
 
-    move = Move(
-        name=battle_move.name,
-        num=0,
-        type=battle_move.type,
-        category=category,
-        power=battle_move.power,
-        accuracy=battle_move.accuracy,
-        pp=None,
-        raw=raw,
-    )
+    try:
+        move = Move(
+            name=battle_move.name,
+            num=0,
+            type=battle_move.type,
+            category=category,
+            power=battle_move.power,
+            accuracy=battle_move.accuracy,
+            pp=None,
+            raw=raw,
+        )
+    except TypeError:  # pragma: no cover - fallback for simple stubs
+        move = Move(battle_move.name)
+        setattr(move, "type", battle_move.type)
+        setattr(move, "category", category)
+        setattr(move, "power", battle_move.power)
+        setattr(move, "accuracy", battle_move.accuracy)
+        setattr(move, "pp", None)
+        setattr(move, "raw", raw)
 
     if battle_move.basePowerCallback:
         try:
@@ -177,15 +216,6 @@ class BattleType(Enum):
     PVP = 1
     TRAINER = 2
     SCRIPTED = 3
-
-
-class ActionType(Enum):
-    """Possible actions a participant may take in a turn."""
-
-    MOVE = auto()
-    SWITCH = auto()
-    ITEM = auto()
-    RUN = auto()
 
 
 @dataclass
@@ -257,164 +287,7 @@ class BattleMove:
 
 
 
-@dataclass
-class Action:
-    """Container describing a chosen action for the turn."""
-
-    actor: "BattleParticipant"
-    action_type: ActionType
-    target: Optional["BattleParticipant"] = None
-    move: Optional[BattleMove] = None
-    item: Optional[str] = None
-    priority: int = 0
-    priority_mod: float = 0.0
-    speed: int = 0
-    pokemon: Optional[Any] = None
-
-
-class BattleParticipant:
-    """Represents one side of a battle.
-
-    Parameters
-    ----------
-    name:
-        Display name for this participant.
-    pokemons:
-        List of Pokémon available to this participant.
-    is_ai:
-        If ``True`` this participant is controlled by the AI.
-    player:
-        Optional Evennia object representing the controlling player.
-    max_active:
-        Maximum number of simultaneously active Pokémon.
-    team:
-        Optional team identifier.  Participants with the same team are treated
-        as allies and should not be targeted by automatic opponent selection.
-    """
-
-    def __init__(
-        self,
-        name: str,
-        pokemons: List,
-        is_ai: bool = False,
-        player=None,
-        max_active: int = 1,
-        team: str | None = None,
-    ):
-        self.name = name
-        self.pokemons = pokemons
-        self.active: List = []
-        self.is_ai = is_ai
-        self.has_lost = False
-        self.pending_action: Optional[Action] = None
-        self.side = BattleSide()
-        self.player = player
-        self.max_active = max_active
-        # Team is optional; if ``None`` participants are assumed to be enemies
-        # of everyone else.  When provided, participants sharing the same team
-        # value are considered allies.
-        self.team = team
-        for poke in self.pokemons:
-            if poke is not None:
-                setattr(poke, "side", self.side)
-
-    def choose_action(self, battle: "Battle") -> Optional[Action]:
-        """Return an Action object for this turn.
-
-        For AI-controlled participants the action is chosen automatically.  For
-        non-AI participants this method returns the ``pending_action`` that was
-        queued externally.
-        """
-        if self.pending_action:
-            action = self.pending_action
-            self.pending_action = None
-            # Validate the target against remaining opponents
-            if action.target and action.target not in battle.participants:
-                action.target = None
-            if not action.target:
-                opponents = battle.opponents_of(self)
-                if opponents:
-                    action.target = opponents[0]
-            return action
-
-        if not self.is_ai:
-            return None
-
-        if not self.active:
-            return None
-        active_poke = self.active[0]
-        moves = getattr(active_poke, "moves", [])
-        if not moves:
-            move_data = Move(name="Flail")
-        else:
-            move_data = moves[0]
-
-        mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-        move_pp = getattr(move_data, "pp", None)
-        move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-        from .engine import _normalize_key  # safe self-import (same module)
-        dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
-        priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
-        move.priority = priority
-        opponents = battle.opponents_of(self)
-        if not opponents:
-            return None
-        opponent = random.choice(opponents)
-        if not opponent.active:
-            return None
-        target = opponent
-        battle_logger.info("%s chooses %s", self.name, move.name)
-        return Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke)
-
-    def choose_actions(self, battle: "Battle") -> List[Action]:
-        """Return a list of actions for all active Pokémon."""
-        if self.pending_action:
-            action = self.pending_action
-            self.pending_action = None
-            if isinstance(action, list):
-                for act in action:
-                    if act.target and act.target not in battle.participants:
-                        act.target = None
-                    if not act.target:
-                        opps = battle.opponents_of(self)
-                        if opps:
-                            act.target = opps[0]
-                return action
-            if action.target and action.target not in battle.participants:
-                action.target = None
-            if not action.target:
-                opps = battle.opponents_of(self)
-                if opps:
-                    action.target = opps[0]
-            return [action]
-
-        if not self.is_ai:
-            return []
-
-        actions: List[Action] = []
-        for active_poke in self.active:
-            moves = getattr(active_poke, "moves", [])
-            move_data = moves[0] if moves else Move(name="Flail")
-            mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-            move_pp = getattr(move_data, "pp", None)
-            move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-            from .engine import _normalize_key  # safe self-import (same module)
-            dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
-            priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
-            move.priority = priority
-            opponents = battle.opponents_of(self)
-            if not opponents:
-                continue
-            opponent = random.choice(opponents)
-            if not opponent.active:
-                continue
-            target = opponent
-            battle_logger.info("%s chooses %s", self.name, move.name)
-            actions.append(Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke))
-        return actions
-
-
-class Battle:
+class Battle(ConditionHelpers, BattleActions):
     """Main battle controller for one or more sides."""
 
     def __init__(self, battle_type: BattleType, participants: List[BattleParticipant]):
@@ -482,45 +355,6 @@ class Battle:
                 return part
         return None
 
-    def add_side_condition(
-        self,
-        participant: BattleParticipant,
-        name: str,
-        effect: Dict,
-        source=None,
-        *,
-        moves_funcs=None,
-    ) -> None:
-        """Apply a side condition to ``participant``."""
-
-        moves_funcs = moves_funcs or {}
-        side = participant.side
-        current = side.conditions.get(name)
-        if current is None:
-            side.conditions[name] = effect.copy()
-            cb = effect.get("onSideStart")
-        else:
-            cb = effect.get("onSideRestart")
-        if isinstance(cb, str) and moves_funcs:
-            try:
-                cls_name, func_name = cb.split(".", 1)
-                cls = getattr(moves_funcs, cls_name, None)
-                if cls:
-                    cb = getattr(cls(), func_name, None)
-            except Exception:
-                cb = None
-        if callable(cb):
-            try:
-                cb(side, source)
-            except Exception:
-                try:
-                    cb(side)
-                except Exception:
-                    cb()
-
-    # ------------------------------------------------------------------
-    # Helper methods
-    # ------------------------------------------------------------------
     def opponent_of(self, participant: BattleParticipant) -> Optional[BattleParticipant]:
         """Return the first available opponent of ``participant``.
 
@@ -560,206 +394,6 @@ class Battle:
                     poke.tempvals.pop("transform_backup", None)
                     if hasattr(poke, "transformed"):
                         poke.transformed = False
-
-    def check_victory(self) -> Optional[BattleParticipant]:
-        remaining = [p for p in self.participants if not p.has_lost]
-        if len(remaining) <= 1:
-            self.battle_over = True
-            self.restore_transforms()
-            return remaining[0] if remaining else None
-        return None
-
-    # ------------------------------
-    # Field condition helpers
-    # ------------------------------
-    def _lookup_effect(self, name: str):
-        if not moves_funcs and not conditions_funcs:
-            return None
-
-        key = name.replace(" ", "").replace("-", "").lower()
-        cls_name = key.capitalize()
-        handler = getattr(conditions_funcs, cls_name, None)
-        if handler is None:
-            handler = getattr(moves_funcs, cls_name, None)
-        if handler:
-            try:
-                return handler()
-            except Exception:
-                return handler
-        return None
-
-    def setWeather(self, name: str, source=None) -> bool:
-        """Start a weather effect on the field."""
-        handler = self._lookup_effect(name)
-        if not handler:
-            return False
-        effect = {}
-        dur_cb = getattr(handler, "durationCallback", None)
-        if callable(dur_cb):
-            try:
-                effect["duration"] = dur_cb(source=source)
-            except Exception:
-                try:
-                    effect["duration"] = dur_cb(source)
-                except Exception:
-                    effect["duration"] = dur_cb()
-        self.field.add_pseudo_weather(name, effect)
-        if hasattr(handler, "onFieldStart"):
-            try:
-                handler.onFieldStart(self.field, source=source)
-            except Exception:
-                handler.onFieldStart(self.field)
-        self.field.weather = name
-        self.field.weather_handler = handler
-        return True
-
-    def clearWeather(self) -> None:
-        name = getattr(self.field, "weather", None)
-        handler = getattr(self.field, "weather_handler", None)
-        if name and handler and hasattr(handler, "onFieldEnd"):
-            try:
-                handler.onFieldEnd(self.field)
-            except Exception:
-                pass
-        if name:
-            self.field.pseudo_weather.pop(name, None)
-        self.field.weather = None
-        self.field.weather_state = {}
-        self.field.weather_handler = None
-
-    def setTerrain(self, name: str, source=None) -> bool:
-        """Start a terrain effect on the field."""
-        handler = self._lookup_effect(name)
-        if not handler:
-            return False
-        effect = {}
-        dur_cb = getattr(handler, "durationCallback", None)
-        if callable(dur_cb):
-            try:
-                effect["duration"] = dur_cb(source=source)
-            except Exception:
-                try:
-                    effect["duration"] = dur_cb(source)
-                except Exception:
-                    effect["duration"] = dur_cb()
-        self.field.add_pseudo_weather(name, effect)
-        if hasattr(handler, "onFieldStart"):
-            try:
-                handler.onFieldStart(self.field, source=source)
-            except Exception:
-                handler.onFieldStart(self.field)
-        self.field.terrain = name
-        self.field.terrain_handler = handler
-        return True
-
-    def clearTerrain(self) -> None:
-        name = getattr(self.field, "terrain", None)
-        handler = getattr(self.field, "terrain_handler", None)
-        if name and handler and hasattr(handler, "onFieldEnd"):
-            try:
-                handler.onFieldEnd(self.field)
-            except Exception:
-                pass
-        if name:
-            self.field.pseudo_weather.pop(name, None)
-        self.field.terrain = None
-        self.field.terrain_state = {}
-        self.field.terrain_handler = None
-
-    def apply_entry_hazards(self, pokemon) -> None:
-        """Apply entry hazard effects to ``pokemon`` if present."""
-        side = getattr(pokemon, "side", None)
-        if not side:
-            return
-
-        name_map = {
-            "rocks": "stealthrock",
-            "spikes": "spikes",
-            "toxicspikes": "toxicspikes",
-            "stickyweb": "stickyweb",
-            "steelsurge": "gmaxsteelsurge",
-        }
-
-        for name, active in list(side.hazards.items()):
-            if not active:
-                continue
-            effect = name_map.get(name, name)
-            handler = None
-            if moves_funcs:
-                handler = getattr(moves_funcs, effect.capitalize(), None)
-                if handler:
-                    try:
-                        handler = handler()
-                    except Exception:
-                        pass
-            if not handler:
-                continue
-            cb = getattr(handler, "onEntryHazard", None)
-            if callable(cb):
-                try:
-                    cb(pokemon=pokemon)
-                except Exception:
-                    try:
-                        cb(pokemon)
-                    except Exception:
-                        pass
-
-    # ------------------------------------------------------------------
-    # Generic battle condition helpers
-    # ------------------------------------------------------------------
-    def apply_status_condition(self, pokemon, condition: str) -> None:
-        """Inflict a major status condition on ``pokemon``."""
-        pokemon.status = condition
-        try:
-            from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
-        except Exception:
-            CONDITION_HANDLERS = {}
-        handler = CONDITION_HANDLERS.get(condition)
-        if handler and hasattr(handler, "onStart"):
-            try:
-                handler.onStart(pokemon, battle=self)
-            except Exception:
-                handler.onStart(pokemon)
-
-    def apply_volatile_status(self, pokemon, condition: str) -> None:
-        """Apply a volatile status to ``pokemon``."""
-        if not hasattr(pokemon, "volatiles"):
-            pokemon.volatiles = {}
-        pokemon.volatiles[condition] = True
-        try:
-            from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
-        except Exception:
-            VOLATILE_HANDLERS = {}
-        handler = VOLATILE_HANDLERS.get(condition)
-        if handler and hasattr(handler, "onStart"):
-            try:
-                handler.onStart(pokemon, battle=self)
-            except Exception:
-                handler.onStart(pokemon)
-
-    def handle_weather(self) -> None:
-        """Apply residual effects of the current weather."""
-        weather_handler = getattr(self.field, "weather_handler", None)
-        if weather_handler and hasattr(weather_handler, "onFieldResidual"):
-            try:
-                weather_handler.onFieldResidual(self.field)
-            except Exception:
-                pass
-
-    def handle_terrain(self) -> None:
-        """Apply residual effects of the active terrain."""
-        terrain_handler = getattr(self.field, "terrain_handler", None)
-        if terrain_handler and hasattr(terrain_handler, "onFieldResidual"):
-            try:
-                terrain_handler.onFieldResidual(self.field)
-            except Exception:
-                pass
-
-    def update_hazards(self) -> None:
-        """Update hazard effects on the field."""
-        for part in self.participants:
-            for poke in part.active:
-                self.apply_entry_hazards(poke)
 
     # ------------------------------------------------------------------
     # Battle event hooks
@@ -2007,10 +1641,6 @@ class Battle:
         """Execute a move action."""
         self.use_move(action)
 
-    def perform_switch_action(self, participant: BattleParticipant, new_pokemon) -> None:
-        """Switch ``participant``'s active Pokémon."""
-        self.switch_pokemon(participant, new_pokemon)
-
     def perform_item_action(self, action: Action) -> None:
         """Use an item during battle."""
         self.execute_item(action)
@@ -2082,10 +1712,6 @@ class Battle:
     def check_fainted(self, pokemon) -> bool:
         """Return ``True`` if ``pokemon`` has fainted."""
         return getattr(pokemon, "hp", 0) <= 0
-
-    def check_win_conditions(self) -> Optional[BattleParticipant]:
-        """Return the winning participant if the battle has ended."""
-        return self.check_victory()
 
     # ------------------------------------------------------------------
     # Miscellaneous advanced helpers

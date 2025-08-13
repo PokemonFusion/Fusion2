@@ -33,7 +33,7 @@ except Exception:  # pragma: no cover - fallback when helper unavailable
                     continue
             return out
         return []
-from .actions import ActionQueue
+from .actionqueue import ActionQueue
 from .turn import TurnManager
 from .interface import render_interfaces
 try:  # pragma: no cover - interface may be stubbed in tests
