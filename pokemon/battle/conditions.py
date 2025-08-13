@@ -7,7 +7,7 @@ improve readability.
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Optional, Any
 
 try:  # pragma: no cover - optional dependency during tests
     from pokemon.dex.functions import moves_funcs, conditions_funcs
@@ -196,35 +196,80 @@ class ConditionHelpers:
     # ------------------------------------------------------------------
     # Generic battle condition helpers
     # ------------------------------------------------------------------
+    def apply_condition(
+        self,
+        pokemon,
+        condition: str,
+        *,
+        dest_attr: str,
+        handler_registry: Dict[str, Any],
+        context: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Generic helper to apply a battle condition to ``pokemon``.
+
+        Parameters
+        ----------
+        pokemon:
+            The target combatant receiving the condition.
+        condition:
+            Name of the condition being applied.
+        dest_attr:
+            Attribute on ``pokemon`` used to store the condition (``status`` or
+            ``volatiles``).
+        handler_registry:
+            Mapping of condition names to handler instances.
+        context:
+            Additional keyword arguments passed to the handler's ``onStart``
+            method, if available.
+        """
+
+        if dest_attr == "volatiles":
+            volatiles = getattr(pokemon, "volatiles", None)
+            if volatiles is None:
+                volatiles = {}
+                pokemon.volatiles = volatiles
+            volatiles[condition] = True
+        else:
+            setattr(pokemon, dest_attr, condition)
+
+        handler = (handler_registry or {}).get(condition)
+        if handler and hasattr(handler, "onStart"):
+            ctx = context or {}
+            try:
+                handler.onStart(pokemon, **ctx)
+            except Exception:
+                try:
+                    handler.onStart(pokemon)
+                except Exception:
+                    handler.onStart()
+
     def apply_status_condition(self, pokemon, condition: str) -> None:
         """Inflict a major status condition on ``pokemon``."""
-        pokemon.status = condition
         try:
             from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
         except Exception:  # pragma: no cover - handler lookup optional
             CONDITION_HANDLERS = {}
-        handler = CONDITION_HANDLERS.get(condition)
-        if handler and hasattr(handler, "onStart"):
-            try:
-                handler.onStart(pokemon, battle=self)
-            except Exception:
-                handler.onStart(pokemon)
+        self.apply_condition(
+            pokemon,
+            condition,
+            dest_attr="status",
+            handler_registry=CONDITION_HANDLERS,
+            context={"battle": self},
+        )
 
     def apply_volatile_status(self, pokemon, condition: str) -> None:
         """Apply a volatile status to ``pokemon``."""
-        if not hasattr(pokemon, "volatiles"):
-            pokemon.volatiles = {}
-        pokemon.volatiles[condition] = True
         try:
             from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
         except Exception:  # pragma: no cover - handler lookup optional
             VOLATILE_HANDLERS = {}
-        handler = VOLATILE_HANDLERS.get(condition)
-        if handler and hasattr(handler, "onStart"):
-            try:
-                handler.onStart(pokemon, battle=self)
-            except Exception:
-                handler.onStart(pokemon)
+        self.apply_condition(
+            pokemon,
+            condition,
+            dest_attr="volatiles",
+            handler_registry=VOLATILE_HANDLERS,
+            context={"battle": self},
+        )
 
     def handle_weather(self) -> None:
         """Apply residual effects of the current weather."""
