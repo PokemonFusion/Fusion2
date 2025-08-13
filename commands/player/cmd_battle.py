@@ -20,6 +20,13 @@ try:
         raise ImportError
 except Exception:  # pragma: no cover - fallback if engine isn't loaded
     from pokemon.battle.engine import Action, ActionType, BattleMove
+# Always use the same key normalization as the engine
+try:
+    from pokemon.battle.engine import _normalize_key
+except Exception:
+    def _normalize_key(s):  # pragma: no cover - tests
+        import re
+        return re.sub(r"[^a-z0-9]", "", str(s).lower())
 
 
 def _get_participant(inst, caller):
@@ -182,7 +189,9 @@ class CmdBattleAttack(Command):
             move_name_sel = selected_move if isinstance(selected_move, str) else getattr(selected_move, "name", "")
             move_pp = pp_overrides.get(sel_index) if sel_index is not None else None
             move_obj = BattleMove(move_name_sel, pp=move_pp)
-            dex_entry = MOVEDEX.get(getattr(move_obj, "key", move_name_sel).lower())
+            # Normalize exactly like the engine to ensure consistent lookup.
+            dex_key = _normalize_key(getattr(move_obj, "key", move_name_sel))
+            dex_entry = MOVEDEX.get(dex_key)
             priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
             move_obj.priority = priority
             action = Action(

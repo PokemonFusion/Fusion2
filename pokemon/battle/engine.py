@@ -88,9 +88,17 @@ except Exception:
 
 
 def _normalize_key(name: str) -> str:
-    """Normalize move names for lookup in ``MOVEDEX``."""
+    """Normalize move names for lookup in ``MOVEDEX``.
 
-    return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+    We strip *all* non-alphanumeric characters and lowercase, so that
+    '10,000,000 Volt Thunderbolt' -> '10000000voltthunderbolt', etc.
+    """
+
+    import re
+
+    if not name:
+        return ""
+    return re.sub(r"[^a-z0-9]", "", str(name).lower())
 
 
 def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, spread: bool = False):
@@ -344,7 +352,8 @@ class BattleParticipant:
         mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
         move_pp = getattr(move_data, "pp", None)
         move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-        dex_entry = MOVEDEX.get(getattr(move, "key", mv_key))
+        from .engine import _normalize_key  # safe self-import (same module)
+        dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
         priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
         move.priority = priority
         opponents = battle.opponents_of(self)
@@ -389,7 +398,8 @@ class BattleParticipant:
             mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
             move_pp = getattr(move_data, "pp", None)
             move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-            dex_entry = MOVEDEX.get(getattr(move, "key", mv_key))
+            from .engine import _normalize_key  # safe self-import (same module)
+            dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
             priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
             move.priority = priority
             opponents = battle.opponents_of(self)
@@ -1025,16 +1035,23 @@ class Battle:
             return
 
         user = action.pokemon or (action.actor.active[0] if action.actor.active else None)
-        # Ensure we have full move data loaded from the dex
-        key = getattr(action.move, "key", None)
-        if not key and getattr(action.move, "name", None):
-            key = _normalize_key(action.move.name)
+        # Ensure we have full move data loaded from the dex.
+        # Always normalize the key before lookup (some callers already have
+        # a .key, but we still normalize to be safe/consistent).
+        raw_key = getattr(action.move, "key", None) or getattr(action.move, "name", None)
+        key = _normalize_key(raw_key) if raw_key else None
         dex_move = MOVEDEX.get(key) if key else None
         if dex_move:
             if not action.move.raw:
                 action.move.raw = dict(dex_move.raw)
-            if action.move.power in (None, 0) and dex_move.power not in (None, 0):
-                action.move.power = dex_move.power
+            # Prefer explicit .power if present on the dex object, else fall back
+            # to 'basePower' in the raw dict (Showdown data).
+            if action.move.power in (None, 0):
+                dex_power = getattr(dex_move, "power", None)
+                if dex_power in (None, 0):
+                    dex_power = dex_move.raw.get("basePower")
+                if dex_power not in (None, 0):
+                    action.move.power = dex_power
             # Accuracy should always be sourced from the dex rather than the
             # action object to prevent callers from injecting incorrect values.
             action.move.accuracy = dex_move.accuracy
