@@ -15,6 +15,8 @@ except Exception:  # pragma: no cover - fall back when modules unavailable
     moves_funcs = None
     conditions_funcs = None
 
+from .callbacks import _resolve_callback
+
 
 class ConditionHelpers:
     """Mixin providing battle condition utilities."""
@@ -33,22 +35,14 @@ class ConditionHelpers:
     ) -> None:
         """Apply a side condition to ``participant``."""
 
-        moves_funcs = moves_funcs or {}
         side = participant.side
         current = side.conditions.get(name)
         if current is None:
             side.conditions[name] = effect.copy()
-            cb = effect.get("onSideStart")
+            cb_name = effect.get("onSideStart")
         else:
-            cb = effect.get("onSideRestart")
-        if isinstance(cb, str) and moves_funcs:
-            try:
-                cls_name, func_name = cb.split(".", 1)
-                cls = getattr(moves_funcs, cls_name, None)
-                if cls:
-                    cb = getattr(cls(), func_name, None)
-            except Exception:
-                cb = None
+            cb_name = effect.get("onSideRestart")
+        cb = _resolve_callback(cb_name, moves_funcs)
         if callable(cb):
             try:
                 cb(side, source)
