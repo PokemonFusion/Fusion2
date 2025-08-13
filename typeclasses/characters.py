@@ -12,6 +12,7 @@ from evennia.objects.objects import DefaultCharacter
 
 from .objects import ObjectParent
 from utils.pokedex import DexTrackerMixin
+from django.utils.translation import gettext as _
 
 
 class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
@@ -45,3 +46,41 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
             self.msg("|rYou can't leave while waiting for a PVP battle.|n")
             return False
         return super().at_pre_move(destination, **kwargs)
+
+    def at_say(
+        self,
+        message,
+        msg_self=None,
+        msg_location=None,
+        receivers=None,
+        msg_receivers=None,
+        **kwargs,
+    ):
+        """Echo speech using the character's name to themselves.
+
+        By default Evennia shows "You say" to the speaker while others see
+        "<name> says".  This override aligns the speaker's view with everyone
+        else's so that the player's name is shown in their own say messages as
+        well.
+
+        Args:
+            message (str): The text to say.
+            msg_self (str or bool, optional): Custom self message or a truthy
+                value to use the default name-based format.
+            msg_location (str, optional): Message for the location.
+            receivers (DefaultObject or iterable, optional): Whom to whisper to.
+            msg_receivers (str, optional): Message for specific receivers.
+            **kwargs: Passed on to the parent implementation.
+        """
+
+        if (msg_self is None or msg_self is True) and not kwargs.get("whisper", False):
+            msg_self = _('{object} says, "|n{speech}|n"')
+
+        return super().at_say(
+            message,
+            msg_self=msg_self,
+            msg_location=msg_location,
+            receivers=receivers,
+            msg_receivers=msg_receivers,
+            **kwargs,
+        )

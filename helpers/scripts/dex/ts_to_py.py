@@ -19,7 +19,8 @@ PY_NAMES = {
     'pokedex': 'pokedex',
     'items': 'itemsdex',
     'abilities': 'abilitiesdex',
-    'moves': 'combatdex',
+    # move data was previously stored in combatdex.py
+    'moves': 'movedex',
 }
 FUNC_DIR = PY_DIR / 'functions'
 
