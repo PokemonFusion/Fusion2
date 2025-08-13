@@ -97,6 +97,7 @@ def _load_module(name: str, filename: str):
 
 participants_mod = _load_module("pokemon.battle.participants", "participants.py")
 actions_mod = _load_module("pokemon.battle.actions", "actions.py")
+callbacks_mod = _load_module("pokemon.battle.callbacks", "callbacks.py")
 conditions_mod = _load_module("pokemon.battle.conditions", "conditions.py")
 
 BattleParticipant = participants_mod.BattleParticipant
@@ -104,6 +105,8 @@ Action = actions_mod.Action
 ActionType = actions_mod.ActionType
 BattleActions = actions_mod.BattleActions
 ConditionHelpers = conditions_mod.ConditionHelpers
+
+from .callbacks import _resolve_callback
 
 battle_logger = logging.getLogger("battle")
 try:
@@ -322,15 +325,8 @@ class BattleMove:
         volatile = self.raw.get("volatileStatus") if self.raw else None
         if volatile:
             effect = self.raw.get("condition", {})
-            cb = effect.get("onStart")
-            if isinstance(cb, str) and moves_funcs:
-                try:
-                    cls_name, func_name = cb.split(".", 1)
-                    cls = getattr(moves_funcs, cls_name, None)
-                    if cls:
-                        cb = getattr(cls(), func_name, None)
-                except Exception:
-                    cb = None
+            cb_name = effect.get("onStart")
+            cb = _resolve_callback(cb_name, moves_funcs)
             if callable(cb):
                 try:
                     cb(user, target)
@@ -694,23 +690,17 @@ class Battle(ConditionHelpers, BattleActions):
         """Execute ``move`` handling two-turn charge phases."""
 
         cb_name = move.raw.get("onTryMove") if move.raw else None
-        if cb_name:
-            if isinstance(cb_name, str) and moves_funcs:
-                cls_name, func_name = cb_name.split(".", 1)
-                cls = getattr(moves_funcs, cls_name, None)
-                cb = getattr(cls(), func_name, None) if cls else None
-            else:
-                cb = cb_name
-            if callable(cb):
-                try:
-                    result = cb(user, target, move)
-                except Exception:
-                    result = cb(user, target)
-                if result is False:
-                    self.dispatcher.dispatch(
-                        "charge_move", user=user, target=target, move=move, battle=self
-                    )
-                    return False
+        cb = _resolve_callback(cb_name, moves_funcs)
+        if callable(cb):
+            try:
+                result = cb(user, target, move)
+            except Exception:
+                result = cb(user, target)
+            if result is False:
+                self.dispatcher.dispatch(
+                    "charge_move", user=user, target=target, move=move, battle=self
+                )
+                return False
 
         self.dispatcher.dispatch(
             "execute_move", user=user, target=target, move=move, battle=self
@@ -760,15 +750,7 @@ class Battle(ConditionHelpers, BattleActions):
             for attr in ("onHit", "onTry", "onBeforeMove", "onAfterMove", "basePowerCallback"):
                 if getattr(action.move, attr, None) is None:
                     cb_name = dex_move.raw.get(attr)
-                    if isinstance(cb_name, str) and moves_funcs:
-                        try:
-                            cls_name, func_name = cb_name.split(".", 1)
-                            cls = getattr(moves_funcs, cls_name, None)
-                            cb = getattr(cls(), func_name, None) if cls else None
-                        except Exception:
-                            cb = None
-                    else:
-                        cb = cb_name
+                    cb = _resolve_callback(cb_name, moves_funcs)
                     if callable(cb):
                         setattr(action.move, attr, cb)
 
