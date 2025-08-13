@@ -72,7 +72,6 @@ except Exception:  # pragma: no cover - fallback for tests with stubs
 
 from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Move
-from utils.pokemon_utils import make_move_from_dex
 import logging
 
 battle_logger = logging.getLogger("battle")
@@ -343,7 +342,11 @@ class BattleParticipant:
             move_data = moves[0]
 
         mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-        move = make_move_from_dex(mv_key, battle=True)
+        move_pp = getattr(move_data, "pp", None)
+        move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
+        dex_entry = MOVEDEX.get(getattr(move, "key", mv_key))
+        priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
+        move.priority = priority
         opponents = battle.opponents_of(self)
         if not opponents:
             return None
@@ -351,7 +354,6 @@ class BattleParticipant:
         if not opponent.active:
             return None
         target = opponent
-        priority = getattr(move, "priority", 0)
         battle_logger.info("%s chooses %s", self.name, move.name)
         return Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke)
 
@@ -385,7 +387,11 @@ class BattleParticipant:
             moves = getattr(active_poke, "moves", [])
             move_data = moves[0] if moves else Move(name="Flail")
             mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-            move = make_move_from_dex(mv_key, battle=True)
+            move_pp = getattr(move_data, "pp", None)
+            move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
+            dex_entry = MOVEDEX.get(getattr(move, "key", mv_key))
+            priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
+            move.priority = priority
             opponents = battle.opponents_of(self)
             if not opponents:
                 continue
@@ -393,7 +399,6 @@ class BattleParticipant:
             if not opponent.active:
                 continue
             target = opponent
-            priority = getattr(move, "priority", 0)
             battle_logger.info("%s chooses %s", self.name, move.name)
             actions.append(Action(self, ActionType.MOVE, target, move, priority, pokemon=active_poke))
         return actions
@@ -950,10 +955,6 @@ class Battle:
 
     def deduct_pp(self, pokemon, move: BattleMove) -> None:
         """Decrease the PP of ``move`` on ``pokemon`` if possible."""
-        if move.pp is not None:
-            if move.pp > 0:
-                move.pp -= 1
-            return
 
         slots = getattr(pokemon, "activemoveslot_set", None)
         if slots is not None:
@@ -963,8 +964,10 @@ class Battle:
                 slot_iter = slots
             for slot in slot_iter:
                 if getattr(getattr(slot, "move", None), "name", None) == move.name:
-                    if getattr(slot, "current_pp", None) and slot.current_pp > 0:
-                        slot.current_pp -= 1
+                    current = getattr(slot, "current_pp", None)
+                    if current is not None and current > 0:
+                        slot.current_pp = current - 1
+                        move.pp = current - 1
                         if hasattr(slot, "save"):
                             try:
                                 slot.save()
@@ -977,7 +980,11 @@ class Battle:
             if getattr(m, "name", None) == move.name and hasattr(m, "pp"):
                 if m.pp is not None and m.pp > 0:
                     m.pp -= 1
-                break
+                    move.pp = m.pp
+                return
+
+        if move.pp is not None and move.pp > 0:
+            move.pp -= 1
 
     def _deal_damage(self, user, target, move: BattleMove, *, spread: bool = False) -> int:
         """Apply simplified damage calculation to ``target``."""
@@ -1028,28 +1035,44 @@ class Battle:
                 action.move.raw = dict(dex_move.raw)
             if action.move.power in (None, 0) and dex_move.power not in (None, 0):
                 action.move.power = dex_move.power
-            if action.move.accuracy is None:
-                action.move.accuracy = dex_move.accuracy
+            # Accuracy should always be sourced from the dex rather than the
+            # action object to prevent callers from injecting incorrect values.
+            action.move.accuracy = dex_move.accuracy
             if action.move.type is None:
                 action.move.type = dex_move.type
             if action.move.priority == 0:
                 action.move.priority = dex_move.raw.get("priority", 0)
+            for attr in ("onHit", "onTry", "onBeforeMove", "onAfterMove", "basePowerCallback"):
+                if getattr(action.move, attr, None) is None:
+                    cb_name = dex_move.raw.get(attr)
+                    if isinstance(cb_name, str) and moves_funcs:
+                        try:
+                            cls_name, func_name = cb_name.split(".", 1)
+                            cls = getattr(moves_funcs, cls_name, None)
+                            cb = getattr(cls(), func_name, None) if cls else None
+                        except Exception:
+                            cb = None
+                    else:
+                        cb = cb_name
+                    if cb:
+                        setattr(action.move, attr, cb)
 
-        slots = getattr(user, "activemoveslot_set", None)
-        if slots is not None:
-            try:
-                slot_iter = slots.all()
-            except Exception:  # pragma: no cover - fallback for stubs
-                slot_iter = slots
-            for slot in slot_iter:
-                if _normalize_key(getattr(getattr(slot, "move", None), "name", "")) == getattr(action.move, "key", ""):
-                    current = getattr(slot, "current_pp", None)
-                    if current is not None:
-                        if current <= 0:
-                            return
-                        if action.move.pp is None:
+        if action.move.pp is None:
+            slots = getattr(user, "activemoveslot_set", None)
+            if slots is not None:
+                try:
+                    slot_iter = slots.all()
+                except Exception:  # pragma: no cover - fallback for stubs
+                    slot_iter = slots
+                for slot in slot_iter:
+                    if _normalize_key(getattr(getattr(slot, "move", None), "name", "")) == getattr(action.move, "key", ""):
+                        current = getattr(slot, "current_pp", None)
+                        if current is not None:
                             action.move.pp = current
-                    break
+                        break
+
+        if action.move.pp is not None and action.move.pp <= 0:
+            return
         if self.status_prevents_move(user):
             self.log_action(
                 f"{getattr(user, 'name', 'Pokemon')} is unable to move!"
