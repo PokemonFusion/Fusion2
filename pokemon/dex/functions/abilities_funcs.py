@@ -1,5 +1,5 @@
 from random import random, choice
-from pokemon.battle.utils import apply_boost
+from pokemon.utils.boosts import apply_boost
 from pokemon.dex.functions.moves_funcs import type_effectiveness
 
 

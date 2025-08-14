@@ -27,7 +27,13 @@ def _resolve_callback(cb_name, registry: Any):
     if callable(cb_name):
         return cb_name
     if isinstance(cb_name, str):
-        if registry is None:
+        cls_name, func_name = cb_name.split(".", 1)
+
+        # Allow an explicitly provided registry, but fall back to the default
+        # moves module if the expected class is missing.  This makes the
+        # callback resolution resilient to test environments that stub modules
+        # in ``sys.modules``.
+        if registry is None or not hasattr(registry, cls_name):
             registry = sys.modules.get("pokemon.dex.functions.moves_funcs")
             if registry is None:
                 try:  # pragma: no cover - optional lazy import
@@ -35,7 +41,6 @@ def _resolve_callback(cb_name, registry: Any):
                 except Exception:
                     return cb_name
         try:
-            cls_name, func_name = cb_name.split(".", 1)
             cls = getattr(registry, cls_name, None)
             if cls:
                 try:
