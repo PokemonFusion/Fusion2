@@ -160,7 +160,7 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
         The result of :func:`apply_damage`.
     """
 
-    from .damage import apply_damage
+    from .damage import apply_damage, DamageResult
     from pokemon.dex.entities import Move
 
     raw = dict(battle_move.raw)
@@ -171,6 +171,8 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
     # ``raw`` so special moves can correctly reference SpA/SpD instead of
     # Atk/Def.
     category = raw.get("category") or "Physical"
+    if str(category).lower() == "status":
+        return DamageResult()
 
     try:
         move = Move(
@@ -308,7 +310,17 @@ class BattleMove:
             return
 
         # Default behaviour for moves without custom handlers
-        _apply_move_damage(user, target, self, battle)
+        category = (self.raw.get("category") or "").lower() if self.raw else ""
+        if category != "status":
+            _apply_move_damage(user, target, self, battle)
+        else:
+            boosts = self.raw.get("boosts") if self.raw else None
+            if boosts:
+                from pokemon.battle.utils import apply_boost
+
+                affected = user if self.raw.get("target") == "self" else target
+                if affected is not None:
+                    apply_boost(affected, boosts)
 
         # Handle side conditions set by this move
         side_cond = self.raw.get("sideCondition") if self.raw else None
@@ -683,6 +695,8 @@ class Battle(ConditionHelpers, BattleActions):
 
     def _deal_damage(self, user, target, move: BattleMove, *, spread: bool = False) -> int:
         """Apply simplified damage calculation to ``target``."""
+        if (move.raw.get("category") or "").lower() == "status":
+            return 0
         result = _apply_move_damage(user, target, move, self, spread=spread)
         return sum(result.debug.get("damage", []))
 
