@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING
 from .battledata import Move
+from utils.safe_import import safe_import
 
 if TYPE_CHECKING:  # pragma: no cover - circular imports for typing only
     from pokemon.battle.actions import Action, ActionType
@@ -49,9 +50,8 @@ class BattleParticipant:
         self.is_ai = is_ai
         self.has_lost = False
         self.pending_action: Optional[Action] = None
-        from importlib import import_module
 
-        battle_side_cls = getattr(import_module("pokemon.battle.engine"), "BattleSide")
+        battle_side_cls = getattr(safe_import("pokemon.battle.engine"), "BattleSide")
         self.side = battle_side_cls()
         self.player = player
         self.max_active = max_active
@@ -82,7 +82,7 @@ class BattleParticipant:
             return None
 
         active_poke = self.active[0]
-        from .engine import _select_ai_action  # runtime import
+        _select_ai_action = safe_import("pokemon.battle.engine")._select_ai_action  # type: ignore[attr-defined]
 
         return _select_ai_action(self, active_poke, battle)
 
@@ -113,7 +113,7 @@ class BattleParticipant:
             return []
 
         actions: List[Action] = []
-        from .engine import _select_ai_action  # runtime import
+        _select_ai_action = safe_import("pokemon.battle.engine")._select_ai_action  # type: ignore[attr-defined]
 
         for active_poke in self.active:
             action = _select_ai_action(self, active_poke, battle)

@@ -1,8 +1,8 @@
 """Callback resolution helpers for battle modules."""
 
 from typing import Any
-import importlib
 import sys
+from utils.safe_import import safe_import
 
 
 def _resolve_callback(cb_name, registry: Any):
@@ -37,8 +37,8 @@ def _resolve_callback(cb_name, registry: Any):
             registry = sys.modules.get("pokemon.dex.functions.moves_funcs")
             if registry is None:
                 try:  # pragma: no cover - optional lazy import
-                    registry = importlib.import_module("pokemon.dex.functions.moves_funcs")
-                except Exception:
+                    registry = safe_import("pokemon.dex.functions.moves_funcs")
+                except ModuleNotFoundError:
                     return cb_name
         try:
             cls = getattr(registry, cls_name, None)
