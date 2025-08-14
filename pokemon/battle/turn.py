@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import traceback
 
+from utils.safe_import import safe_import
 from .compat import log_err, log_info, log_warn
 from .interface import format_turn_banner, render_interfaces
 try:  # pragma: no cover - interface may be stubbed in tests
-    from .interface import broadcast_interfaces
-except Exception:  # pragma: no cover - fallback implementation
+    broadcast_interfaces = safe_import("pokemon.battle.interface").broadcast_interfaces  # type: ignore[attr-defined]
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback implementation
     def broadcast_interfaces(session, *, waiting_on=None):  # type: ignore[misc]
         iface_a, iface_b, iface_w = render_interfaces(
             session.captainA, session.captainB, session.state, waiting_on=waiting_on

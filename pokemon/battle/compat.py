@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 # Logger fallbacks ---------------------------------------------------------
+from utils.safe_import import safe_import
+
 try:  # pragma: no cover - Evennia logger not available in tests
-    from evennia.utils.logger import log_info, log_warn, log_err
-except Exception:  # pragma: no cover - fallback to standard logging
+    _logger = safe_import("evennia.utils.logger")
+    log_info = _logger.log_info  # type: ignore[attr-defined]
+    log_warn = _logger.log_warn  # type: ignore[attr-defined]
+    log_err = _logger.log_err  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - fallback to standard logging
     import logging
 
     _log = logging.getLogger(__name__)
@@ -21,10 +26,12 @@ except Exception:  # pragma: no cover - fallback to standard logging
 
 # Evennia search -----------------------------------------------------------
 try:  # pragma: no cover - search requires Evennia in runtime
-    from evennia import search_object, DefaultScript as ScriptBase  # type: ignore
-    if ScriptBase is None:  # Some stubs define DefaultScript as None
-        raise Exception
-except Exception:  # pragma: no cover - used in tests without Evennia
+    _evennia = safe_import("evennia")
+    search_object = _evennia.search_object  # type: ignore[attr-defined]
+    ScriptBase = getattr(_evennia, "DefaultScript", None)  # type: ignore[assignment]
+    if ScriptBase is None:
+        raise ModuleNotFoundError
+except ModuleNotFoundError:  # pragma: no cover - used in tests without Evennia
     def search_object(dbref):  # type: ignore[no-redef]
         return []
 
@@ -36,15 +43,15 @@ except Exception:  # pragma: no cover - used in tests without Evennia
 
 # Battle engine helpers ----------------------------------------------------
 try:  # pragma: no cover - engine may be stubbed
-    from .engine import _normalize_key as _battle_norm_key
-except Exception:  # pragma: no cover - fallback normalizer
+    _battle_norm_key = safe_import("pokemon.battle.engine")._normalize_key  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - fallback normalizer
     def _battle_norm_key(name: str) -> str:  # type: ignore[no-redef]
         return name.replace(" ", "").replace("-", "").replace("'", "").lower()
 
 # Optional modules ---------------------------------------------------------
 try:  # pragma: no cover - logic may be absent during some tests
-    from pokemon.battle.logic import BattleLogic
-except Exception:  # pragma: no cover - dynamic import fallback
+    BattleLogic = safe_import("pokemon.battle.logic").BattleLogic  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - dynamic import fallback
     import importlib.util as _util, pathlib as _pathlib, sys as _sys
 
     _logic_path = _pathlib.Path(__file__).with_name("logic.py")
@@ -55,13 +62,12 @@ except Exception:  # pragma: no cover - dynamic import fallback
     BattleLogic = _mod.BattleLogic  # type: ignore[attr-defined]
 
 try:  # pragma: no cover - factory may be absent
-    from pokemon.battle.pokemon_factory import (
-        create_battle_pokemon,
-        generate_trainer_pokemon,
-        generate_wild_pokemon,
-        _calc_stats_from_model,
-    )
-except Exception:  # pragma: no cover - dynamic import fallback
+    _factory = safe_import("pokemon.battle.pokemon_factory")
+    create_battle_pokemon = _factory.create_battle_pokemon  # type: ignore[attr-defined]
+    generate_trainer_pokemon = _factory.generate_trainer_pokemon  # type: ignore[attr-defined]
+    generate_wild_pokemon = _factory.generate_wild_pokemon  # type: ignore[attr-defined]
+    _calc_stats_from_model = _factory._calc_stats_from_model  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - dynamic import fallback
     import importlib.util as _util, pathlib as _pathlib, sys as _sys
 
     _factory_path = _pathlib.Path(__file__).with_name("pokemon_factory.py")
@@ -75,8 +81,8 @@ except Exception:  # pragma: no cover - dynamic import fallback
     _calc_stats_from_model = _mod_f._calc_stats_from_model  # type: ignore[attr-defined]
 
 try:  # pragma: no cover - optional room class
-    from typeclasses.rooms import FusionRoom
-except Exception:  # pragma: no cover - room type not required for tests
+    FusionRoom = safe_import("typeclasses.rooms").FusionRoom  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - room type not required for tests
     FusionRoom = None  # type: ignore[assignment]
 
 __all__ = [

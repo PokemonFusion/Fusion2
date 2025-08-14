@@ -8,9 +8,11 @@ from .engine import Battle, BattleParticipant, BattleType
 from .messaging import MessagingMixin
 from .state import BattleState
 from .watchers import WatcherManager
+from utils.safe_import import safe_import
+
 try:  # pragma: no cover - tests may stub watchers without helper
-    from .watchers import normalize_watchers
-except Exception:  # pragma: no cover - fallback when helper unavailable
+    normalize_watchers = safe_import("pokemon.battle.watchers").normalize_watchers  # type: ignore[attr-defined]
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback when helper unavailable
     def normalize_watchers(val: Any) -> List[int]:  # type: ignore[misc]
         """Normalize a stored watcher representation to a list of ints."""
 
@@ -37,8 +39,8 @@ from .actionqueue import ActionQueue
 from .turn import TurnManager
 from .interface import render_interfaces
 try:  # pragma: no cover - interface may be stubbed in tests
-    from .interface import broadcast_interfaces
-except Exception:  # pragma: no cover - fallback implementation
+    broadcast_interfaces = safe_import("pokemon.battle.interface").broadcast_interfaces  # type: ignore[attr-defined]
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback implementation
     def broadcast_interfaces(session, *, waiting_on=None):  # type: ignore[misc]
         iface_a, iface_b, iface_w = render_interfaces(
             session.captainA, session.captainB, session.state, waiting_on=waiting_on

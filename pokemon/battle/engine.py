@@ -42,10 +42,11 @@ from typing import Callable, List, Optional, Dict, Any
 
 import random
 from .battledata import Move
+from utils.safe_import import safe_import
 
 try:
-    from .events import EventDispatcher
-except Exception:  # pragma: no cover - fallback for tests with stubs
+    EventDispatcher = safe_import("pokemon.battle.events").EventDispatcher  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - fallback for tests with stubs
     from collections import defaultdict
     import inspect
 
@@ -110,15 +111,15 @@ from .callbacks import _resolve_callback
 
 battle_logger = logging.getLogger("battle")
 try:
-    from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
-except Exception:
+    BALL_MODIFIERS = safe_import("pokemon.dex.items.ball_modifiers").BALL_MODIFIERS  # type: ignore[attr-defined]
+except ModuleNotFoundError:
     BALL_MODIFIERS = {}
 
 # Import dex helper modules lazily to avoid heavy dependencies during tests.
 # ``moves_funcs`` is resolved on demand via :func:`pokemon.battle.callbacks._resolve_callback`.
 try:  # pragma: no cover - optional at runtime
-    from pokemon.dex.functions import conditions_funcs  # type: ignore
-except Exception:  # pragma: no cover - used in lightweight test stubs
+    conditions_funcs = safe_import("pokemon.dex.functions.conditions_funcs")  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover - used in lightweight test stubs
     conditions_funcs = None
 moves_funcs = None
 
@@ -484,12 +485,10 @@ class Battle(ConditionHelpers, BattleActions):
             if isinstance(cb, str):
                 try:
                     mod_name, func_name = cb.split(".", 1)
-                    module = __import__(
-                        f"pokemon.dex.functions.{mod_name.lower()}", fromlist=[mod_name]
-                    )
+                    module = safe_import(f"pokemon.dex.functions.{mod_name.lower()}")
                     cls = getattr(module, mod_name, None)
                     cb = getattr(cls(), func_name) if cls else None
-                except Exception:
+                except ModuleNotFoundError:
                     cb = None
             if not callable(cb):
                 continue
@@ -650,7 +649,9 @@ class Battle(ConditionHelpers, BattleActions):
             for poke in part.pokemons:
                 if poke not in part.active and getattr(poke, "status", None) == "tox":
                     try:
-                        from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+                        CONDITION_HANDLERS = safe_import(
+                            "pokemon.dex.functions.conditions_funcs"
+                        ).CONDITION_HANDLERS  # type: ignore[attr-defined]
                         handler = CONDITION_HANDLERS.get("tox")
                         if handler and hasattr(handler, "onSwitchIn"):
                             handler.onSwitchIn(poke, battle=self)

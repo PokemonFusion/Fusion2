@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from typing import Dict, TYPE_CHECKING
+from utils.safe_import import safe_import
 
 try:
-    from evennia.utils.logger import log_info
-except Exception:  # pragma: no cover - fallback if Evennia not available
+    _logger = safe_import("evennia.utils.logger")
+    log_info = _logger.log_info  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - fallback if Evennia not available
     import logging
     _log = logging.getLogger(__name__)
 
