@@ -10,7 +10,7 @@ try:  # pragma: no cover - Evennia logger not available in tests
     log_info = _logger.log_info  # type: ignore[attr-defined]
     log_warn = _logger.log_warn  # type: ignore[attr-defined]
     log_err = _logger.log_err  # type: ignore[attr-defined]
-except ModuleNotFoundError:  # pragma: no cover - fallback to standard logging
+except Exception:  # pragma: no cover - fallback to standard logging
     import logging
 
     _log = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ try:  # pragma: no cover - search requires Evennia in runtime
     ScriptBase = getattr(_evennia, "DefaultScript", None)  # type: ignore[assignment]
     if ScriptBase is None:
         raise ModuleNotFoundError
-except ModuleNotFoundError:  # pragma: no cover - used in tests without Evennia
+except Exception:  # pragma: no cover - used in tests without Evennia
     def search_object(dbref):  # type: ignore[no-redef]
         return []
 
@@ -80,11 +80,6 @@ except ModuleNotFoundError:  # pragma: no cover - dynamic import fallback
     generate_wild_pokemon = _mod_f.generate_wild_pokemon  # type: ignore[attr-defined]
     _calc_stats_from_model = _mod_f._calc_stats_from_model  # type: ignore[attr-defined]
 
-try:  # pragma: no cover - optional room class
-    FusionRoom = safe_import("typeclasses.rooms").FusionRoom  # type: ignore[attr-defined]
-except ModuleNotFoundError:  # pragma: no cover - room type not required for tests
-    FusionRoom = None  # type: ignore[assignment]
-
 __all__ = [
     "log_info",
     "log_warn",
@@ -97,5 +92,4 @@ __all__ = [
     "generate_trainer_pokemon",
     "generate_wild_pokemon",
     "_calc_stats_from_model",
-    "FusionRoom",
 ]

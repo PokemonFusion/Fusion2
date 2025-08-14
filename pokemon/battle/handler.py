@@ -3,18 +3,31 @@ from __future__ import annotations
 from typing import Dict, TYPE_CHECKING
 from utils.safe_import import safe_import
 
-try:
+try:  # pragma: no cover - Evennia logger may be unavailable in tests
     _logger = safe_import("evennia.utils.logger")
     log_info = _logger.log_info  # type: ignore[attr-defined]
-except ModuleNotFoundError:  # pragma: no cover - fallback if Evennia not available
+except Exception:  # pragma: no cover - fallback if Evennia not available
     import logging
+
     _log = logging.getLogger(__name__)
 
     def log_info(*args, **kwargs):
         _log.info(*args, **kwargs)
 
-from evennia import search_object
-from evennia.server.models import ServerConfig
+try:  # pragma: no cover - search requires Evennia runtime
+    _evennia = safe_import("evennia")
+    search_object = _evennia.search_object  # type: ignore[attr-defined]
+    ServerConfig = safe_import("evennia.server.models").ServerConfig  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - fallback stubs when Evennia missing
+    def search_object(*args, **kwargs):  # type: ignore[misc]
+        return []
+
+    class ServerConfig:  # type: ignore[no-redef]
+        class objects:  # pragma: no cover - minimal stub
+            @staticmethod
+            def conf(key, default=None, value=None, delete=False):
+                return default
+
 from .storage import BattleDataWrapper
 
 if TYPE_CHECKING:

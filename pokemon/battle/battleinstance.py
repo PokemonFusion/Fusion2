@@ -65,7 +65,6 @@ from .compat import (
     generate_trainer_pokemon,
     generate_wild_pokemon,
     create_battle_pokemon,
-    FusionRoom,
     ScriptBase as _ScriptBase,
 )
 
@@ -250,6 +249,14 @@ class BattleSession(
         log_info(
             f"Attempting restore of battle {battle_id} in room #{getattr(room, 'id', '?')}"
         )
+        # Import FusionRoom lazily to avoid circular dependency during module load.
+        try:  # pragma: no cover - FusionRoom is optional at runtime
+            FusionRoom = safe_import("typeclasses.rooms").FusionRoom  # type: ignore[attr-defined]
+        except ModuleNotFoundError:
+            FusionRoom = None  # type: ignore[assignment]
+        except Exception as err:
+            log_err(f"Room type import failed: {err}")
+            FusionRoom = None  # type: ignore[assignment]
         try:
             if FusionRoom and not isinstance(room, FusionRoom):
                 log_info("Room is not a FusionRoom; skipping restore")
