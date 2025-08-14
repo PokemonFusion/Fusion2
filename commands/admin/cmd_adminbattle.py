@@ -187,10 +187,10 @@ class CmdUiPreview(Command):
 
     def parse(self):
         super().parse()
-        self.switches = {s.lower() for s in self.switches}
+        self.switches = {s.lower() for s in getattr(self, "switches", [])}
         self.viewer_team = None
         self.waiting_on = None
-        args = self.args.strip()
+        args = getattr(self, "args", "").strip()
         if "/team " in args:
             part = args.split("/team ", 1)[1]
             val = (part.split(None, 1)[0] or "").upper()
