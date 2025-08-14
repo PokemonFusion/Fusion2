@@ -55,4 +55,9 @@ def test_pvp_turn_debug_logging(monkeypatch):
     _apply_move_damage(user, target, move, inst.battle)
 
     debug_lines = [msg for msg in logs if "[DEBUG]" in msg]
+    assert debug_lines, "No debug lines collected"
+
+    for line in debug_lines:
+        print(line)
+
     assert any("atk=" in line and "dmg=" in line for line in debug_lines)
