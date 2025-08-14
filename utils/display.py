@@ -1,6 +1,8 @@
 """Rendering functions for trainer and Pokémon sheets."""
 
 from evennia.utils.evtable import EvTable
+import re
+from types import SimpleNamespace
 
 from utils.ansi import ansi
 from helpers.display_helpers import (
@@ -13,7 +15,7 @@ from pokemon.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP
 from utils.xp_utils import get_display_xp, get_next_level_xp
 from pokemon.stats import level_for_exp
 from utils.faction_utils import get_faction_and_rank
-from pokemon.dex import POKEDEX
+from pokemon.dex import POKEDEX, MOVEDEX
 from pokemon.utils.pokemon_like import PokemonLike
 
 __all__ = ["display_pokemon_sheet", "display_trainer_sheet"]
@@ -171,9 +173,40 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
     )
     lines.append(str(table))
 
-    moves = getattr(pokemon, "moves", []) or []
+    # display moves, prioritising active move slots if available
+    moves_display: list = []
+    slots_qs = getattr(pokemon, "activemoveslot_set", None)
+    if slots_qs:
+        try:
+            qs = list(slots_qs.all().order_by("slot"))
+        except Exception:
+            try:
+                qs = list(slots_qs.order_by("slot"))
+            except Exception:
+                qs = list(slots_qs)
+        bonuses = getattr(pokemon, "pp_bonuses", {}) or {}
+        for slot_obj in qs[:4]:
+            move_obj = getattr(slot_obj, "move", None)
+            if not move_obj:
+                continue
+            name = getattr(move_obj, "name", str(move_obj))
+            cur_pp = getattr(slot_obj, "current_pp", None)
+            norm = re.sub(r"[\s'\-]", "", name.lower())
+            dex_entry = MOVEDEX.get(norm)
+            base_pp = getattr(dex_entry, "pp", None)
+            if base_pp is None and isinstance(dex_entry, dict):
+                base_pp = dex_entry.get("pp")
+            max_pp = None
+            if base_pp is not None:
+                max_pp = int(base_pp) + int(bonuses.get(norm, 0))
+            if cur_pp is None:
+                cur_pp = max_pp
+            moves_display.append(SimpleNamespace(name=name, current_pp=cur_pp, max_pp=max_pp))
+    else:
+        moves_display.extend(getattr(pokemon, "moves", []) or [])
+
     lines.append("Moves:")
-    for mv in moves:
+    for mv in moves_display:
         lines.append("  " + format_move_details(mv))
 
     # placeholder features
