@@ -114,11 +114,13 @@ try:
 except Exception:
     BALL_MODIFIERS = {}
 
-try:
-    from pokemon.dex.functions import moves_funcs, conditions_funcs
-except Exception:
-    moves_funcs = None
+# Import dex helper modules lazily to avoid heavy dependencies during tests.
+# ``moves_funcs`` is resolved on demand via :func:`pokemon.battle.callbacks._resolve_callback`.
+try:  # pragma: no cover - optional at runtime
+    from pokemon.dex.functions import conditions_funcs  # type: ignore
+except Exception:  # pragma: no cover - used in lightweight test stubs
     conditions_funcs = None
+moves_funcs = None
 
 
 def _normalize_key(name: str) -> str:

@@ -1,6 +1,6 @@
 from random import choice, random
 from pokemon.data import TYPE_CHART
-from pokemon.battle.utils import apply_boost
+from pokemon.utils.boosts import apply_boost
 
 
 def type_effectiveness(target, move):
