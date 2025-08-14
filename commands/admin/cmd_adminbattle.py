@@ -186,6 +186,7 @@ class CmdUiPreview(Command):
     help_category = "Admin"
 
     def parse(self):
+        super().parse()
         self.switches = {s.lower() for s in self.switches}
         self.viewer_team = None
         self.waiting_on = None

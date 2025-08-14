@@ -62,6 +62,9 @@ def display_battle_interface(
         def round_no(self):
             return getattr(self._state, "round", getattr(self._state, "turn", 0))
 
+        # Optional battle flavor if the engine exposes it
+        encounter_kind = property(lambda self: getattr(self._state, "encounter_kind", ""))
+
     viewer = trainer if viewer_team == "A" else opponent if viewer_team == "B" else None
     adapter = _StateAdapter(trainer, opponent, battle_state)
     return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)

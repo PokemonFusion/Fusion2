@@ -52,6 +52,7 @@ def test_battle_ui_omits_round() -> None:
     state = DummyState()
     viewer = state.A
     out = render_battle_ui(state, viewer)
-    assert "Round" not in out
-    assert "Field: Neutral" in out
-    assert "Weather: Clear" in out
+    clean = battle_render.strip_ansi(out)
+    assert "Round" not in clean
+    assert "Field: Neutral" in clean
+    assert "Weather: Clear" in clean
