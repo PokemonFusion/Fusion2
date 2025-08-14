@@ -198,3 +198,61 @@ def test_pvpjoin_prompts_for_password():
 
     assert req.opponent_id == caller.id
     assert caller.msgs and "join" in caller.msgs[-1].lower()
+
+
+def test_pvpjoin_cannot_join_self():
+    orig_evennia = sys.modules.get("evennia")
+    fake_evennia = types.ModuleType("evennia")
+    fake_evennia.Command = type("Command", (), {})
+    utils_mod = types.ModuleType("evennia.utils")
+    utils_utils = types.ModuleType("evennia.utils.utils")
+    utils_utils.inherits_from = lambda obj, parent: isinstance(obj, parent)
+    utils_mod.utils = utils_utils
+    fake_evennia.utils = utils_mod
+    sys.modules["evennia"] = fake_evennia
+    sys.modules["evennia.utils"] = utils_mod
+    sys.modules["evennia.utils.utils"] = utils_utils
+
+    cmd_mod = load_cmd_module()
+
+    class DummyCaller:
+        def __init__(self):
+            self.msgs = []
+            self.location = object()
+            self.id = 1
+            self.key = "Alice"
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    req = types.SimpleNamespace(
+        host_key="Alice",
+        host_id=1,
+        password=None,
+        opponent_id=None,
+        is_joinable=lambda: True,
+        get_host=lambda: None,
+    )
+
+    def fake_find_request(location, host_name):
+        return req
+
+    orig_find = cmd_mod.find_request
+    cmd_mod.find_request = fake_find_request
+
+    cmd = cmd_mod.CmdPvpJoin()
+    caller = DummyCaller()
+    cmd.caller = caller
+    cmd.args = "Alice"
+    cmd.func()
+
+    if orig_evennia is not None:
+        sys.modules["evennia"] = orig_evennia
+    else:
+        sys.modules.pop("evennia", None)
+    sys.modules.pop("evennia.utils", None)
+    sys.modules.pop("evennia.utils.utils", None)
+    cmd_mod.find_request = orig_find
+
+    assert caller.msgs and "own" in caller.msgs[-1].lower()
+    assert req.opponent_id is None

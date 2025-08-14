@@ -97,6 +97,9 @@ class CmdPvpJoin(Command):
         if not req:
             self.caller.msg("No joinable request found.")
             return
+        if getattr(req, "host_id", None) == self.caller.id:
+            self.caller.msg("You cannot join your own PVP request.")
+            return
 
         def _finish_join(passwd: str) -> None:
             if req.password and req.password != passwd:
