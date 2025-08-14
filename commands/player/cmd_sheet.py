@@ -31,10 +31,17 @@ class CmdSheet(Command):
 
 
 class CmdSheetPokemon(Command):
-    """Show detailed information about one Pokémon in your party.
+    """Show info about Pokémon in your party.
 
     Usage:
-      +sheet/pokemon [<slot>|all]
+      +sheet/pokemon [<slot>|all] [/brief|/moves|/full]
+
+    Examples:
+      +sheet/pokemon                (list party w/ one-liners)
+      +sheet/pokemon 1              (full sheet for slot 1)
+      +sheet/pokemon/brief 2        (brief view for slot 2)
+      +sheet/pokemon/moves 3        (moves-focused view for slot 3)
+      +sheet/pokemon/all            (full sheets for all occupied slots)
     """
 
     key = "+sheet/pokemon"
@@ -43,8 +50,17 @@ class CmdSheetPokemon(Command):
     help_category = "Pokemon"
 
     def parse(self):
+        """Parse arguments and switches."""
         self.slot = None
         self.show_all = False
+        self.mode = "full"
+        switches = getattr(self, "switches", [])
+        if "brief" in switches:
+            self.mode = "brief"
+        if "moves" in switches:
+            self.mode = "moves"
+        if "full" in switches:
+            self.mode = "full"
         arg = self.args.strip().lower()
         if arg == "all":
             self.show_all = True
@@ -62,7 +78,9 @@ class CmdSheetPokemon(Command):
             for idx, mon in enumerate(party, 1):
                 if not mon:
                     continue
-                sheets.append(display_pokemon_sheet(caller, mon, slot=idx))
+                sheets.append(
+                    display_pokemon_sheet(caller, mon, slot=idx, mode=self.mode)
+                )
             caller.msg("\n-------\n".join(sheets))
             return
 
@@ -96,5 +114,5 @@ class CmdSheetPokemon(Command):
             caller.msg("That slot is empty.")
             return
 
-        sheet = display_pokemon_sheet(caller, mon, slot=self.slot)
+        sheet = display_pokemon_sheet(caller, mon, slot=self.slot, mode=self.mode)
         caller.msg(sheet)
