@@ -294,6 +294,13 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
             result.debug.setdefault("critical", []).append(False)
         if spread:
             dmg = int(dmg * 0.75)
+        if (
+            dmg < 1
+            and getattr(move, "category", None) != "Status"
+            and isinstance(power, (int, float))
+            and power > 0
+        ):
+            dmg = 1
         result.debug.setdefault("damage", []).append(dmg)
 
         # apply simple status effects like burns
