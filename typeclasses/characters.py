@@ -59,6 +59,12 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
                 inst = bmap.get(bid)
                 if inst:
                     self.ndb.battle_instance = inst
+        inst = getattr(self.ndb, "battle_instance", None)
+        if inst:
+            try:
+                self.execute_cmd("+showbattle")
+            except Exception:
+                pass
 
     def at_pre_move(self, destination, **kwargs):
         """Prevent leaving while hosting a PVP request."""

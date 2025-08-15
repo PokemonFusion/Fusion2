@@ -1,198 +1,248 @@
-"""Utilities for rendering battle information for trainers.
-
-This module provides helpers for building a two-column battle view that
-aligns strings containing ANSI color codes. The left column represents the
-viewer and the right column shows the opponent. It also exposes a main
-function, :func:`render_battle_ui`, which produces a formatted battle
-interface string ready to be sent to a client.
-"""
+"""Battle UI renderer: ANSI-safe, width-aware two-column layout with captains/wild title,
+HP bars, status badges, party pips, and a clean footer."""
 
 from utils.battle_display import strip_ansi
 
+# ---------------- Theme ----------------
+# Pipe-ANSI color tokens only; callers can later expose a runtime theme toggle.
+THEME = {
+	"title": "|W",
+	"vs": "|Wvs|n",
+	"name": "|w",
+	"label": "|W",
+	"ok": "|g",
+	"warn": "|y",
+	"bad": "|r",
+	"dim": "|n",
+}
 
-# ---------- ANSI-safe helpers ----------
+# ---------------- ANSI-safe helpers ----------------
+
 def ansi_len(s: str) -> int:
-    """Return the length of ``s`` without ANSI color codes."""
-
-    return len(strip_ansi(s or ""))
+	return len(strip_ansi(s or ""))
 
 
 def rpad(s: str, width: int, fill: str = " ") -> str:
-    """Pad ``s`` on the right to ``width`` using ``fill`` characters."""
-
-    pad = max(0, width - ansi_len(s))
-    return s + (fill * pad)
+	pad = max(0, width - ansi_len(s))
+	return s + (fill * pad)
 
 
 def lpad(s: str, width: int, fill: str = " ") -> str:
-    """Pad ``s`` on the left to ``width`` using ``fill`` characters."""
-
-    pad = max(0, width - ansi_len(s))
-    return (fill * pad) + s
+	pad = max(0, width - ansi_len(s))
+	return (fill * pad) + s
 
 
 def center_ansi(s: str, width: int) -> str:
-    """Center ``s`` within ``width`` characters respecting ANSI codes."""
-
-    missing = max(0, width - ansi_len(s))
-    left = missing // 2
-    right = missing - left
-    return (" " * left) + s + (" " * right)
+	missing = max(0, width - ansi_len(s))
+	left = missing // 2
+	right = missing - left
+	return (" " * left) + s + (" " * right)
 
 
-def hp_bar(cur: int, maxhp: int, width: int = 30) -> str:
-    """Return a simple HP bar string.
+# ---------------- Badges / chips ----------------
 
-    Parameters
-    ----------
-    cur:
-        Current HP value.
-    maxhp:
-        Maximum HP value.
-    width:
-        Total width of the bar in characters.
-    """
-
-    cur = max(0, min(cur, maxhp))
-    filled = 0 if maxhp == 0 else int(width * (cur / maxhp))
-    return "█" * filled + " " * (width - filled)
+def status_badge(mon) -> str:
+	"""Return a short status badge like |yPAR|n or |rBRN|n, or empty."""
+	code = getattr(mon, "status", 0)
+	# Accept either enum-ish or string-ish statuses
+	text = getattr(mon, "status_name", None) or (code if isinstance(code, str) else "")
+	text = (text or "").upper()
+	if text in ("PAR", "BRN", "PSN", "SLP", "FRZ", "TOX"):
+		color = {"PAR": "|y", "BRN": "|r", "PSN": "|m", "SLP": "|c", "FRZ": "|C", "TOX": "|m"}.get(text, "|y")
+		return f"{color}{text}|n"
+	return ""
 
 
-def fmt_hp_line(mon, width_bar: int = 30, show_abs: bool = True) -> str:
-    """Format a text line showing HP bar and numbers for ``mon``.
+def party_pips(trainer, max_team: int = 6) -> str:
+	"""Return party summary: filled ● for healthy/alive, ◐ for low HP, × for fainted, up to 6."""
+	team = list(getattr(trainer, "team", []))[:max_team]
+	out = []
+	for mon in team:
+		if not mon:
+			out.append("·")
+			continue
+		hp, mx = getattr(mon, "hp", 0), getattr(mon, "max_hp", 0)
+		if mx <= 0 or hp <= 0:
+			out.append("|r×|n")
+		else:
+			p = 100 * hp // mx if mx else 0
+			if p <= 25:
+				out.append("|y◐|n")
+			else:
+				out.append("|g●|n")
+	# pad to max_team with faint dots
+	while len(out) < max_team:
+		out.append("·")
+	return " ".join(out)
 
-    Parameters
-    ----------
-    mon:
-        Pokémon instance with ``hp`` and ``max_hp`` attributes.
-    width_bar:
-        Width of the HP bar portion.
-    show_abs:
-        Whether to display absolute HP values in addition to the
-        percentage.
-    """
 
-    bar = hp_bar(mon.hp, mon.max_hp, width_bar)
-    pct = 0 if mon.max_hp == 0 else int(100 * mon.hp / mon.max_hp)
-    if show_abs:
-        right = f"{mon.hp}/{mon.max_hp} ({pct}%)"
-    else:
-        right = f"{pct}%"
-    return f"|g{bar}|n  {right}"
+# ---------------- Bars / numbers ----------------
+
+def hp_bar(cur: int, maxhp: int, width: int = 28) -> str:
+	cur = max(0, min(cur, maxhp))
+	ratio = 0.0 if maxhp <= 0 else cur / maxhp
+	filled = int(width * ratio)
+	empty = width - filled
+	color = THEME["ok"] if ratio > 0.5 else THEME["warn"] if ratio > 0.2 else THEME["bad"]
+	return f"{color}{'█'*filled}{' ' * empty}|n"
+
+def fmt_hp_line(mon, colw: int, show_abs: bool = True) -> str:
+	"""Return a width-safe HP line that fits inside `colw`.
+	Tries right-side text in this order (as space allows):
+	- "hp/max (pct%)"  -> requires larger space
+	- "hp/max"
+	- "pct%"
+	If none fit beside a minimally readable bar, shows the bar only."""
+	hp = int(getattr(mon, "hp", 0) or 0)
+	mx = int(getattr(mon, "max_hp", 0) or 0)
+	pct = 0 if mx <= 0 else int(round(100 * hp / mx))
+
+	prefix = f"{THEME['label']}HP|n: "
+	sep_two = "  "
+	sep_one = " "
+
+	# Build candidate right-hand texts from most to least verbose
+	candidates: list[str] = []
+	if show_abs:
+		candidates.append(f"{hp}/{mx} ({pct}%)")
+		candidates.append(f"{hp}/{mx}")
+	candidates.append(f"{pct}%")
+
+	def try_fit(sep: str, right: str, min_bar: int) -> str | None:
+		avail = colw - ansi_len(prefix) - ansi_len(sep) - ansi_len(right)
+		if avail >= min_bar:
+			return f"{prefix}{hp_bar(hp, mx, avail)}{sep}{right}"
+		return None
+
+	# Prefer a decent-sized bar with two-space separator
+	for right in candidates:
+		line = try_fit(sep_two, right, min_bar=10)
+		if line:
+			return line
+	# Try again with a single space separator, allow a smaller bar
+	for right in candidates:
+		line = try_fit(sep_one, right, min_bar=6)
+		if line:
+			return line
+	# Last resort: bar only; ensure at least 3 cells of bar
+	bar_only = max(3, colw - ansi_len(prefix))
+	return f"{prefix}{hp_bar(hp, mx, bar_only)}"
+
+# ---------------- Title helpers ----------------
+
+def _is_wild_battle(me, foe, state) -> bool:
+	if getattr(state, "encounter_kind", "").lower() == "wild":
+		return True
+	if getattr(foe, "is_wild", False):
+		return True
+	# Heuristic: foe is an NPC shell with a single active Pokémon and no name for a player group
+	party = getattr(foe, "team", None)
+	is_npc = getattr(foe, "is_npc", False)
+	return bool(is_npc and isinstance(party, (list, tuple)) and len(party) <= 1)
 
 
-# ---------- Column renderer ----------
+def _wild_species(foe) -> str:
+	mon = getattr(foe, "active_pokemon", None)
+	return getattr(mon, "name", "Wild Pokémon")
+
+
+def make_title(me, foe, state) -> str:
+	player_name = getattr(me, "name", "?")
+	if _is_wild_battle(me, foe, state):
+		return f"{THEME['title']}{player_name}|n {THEME['vs']} {THEME['title']}Wild {_wild_species(foe)}|n"
+	else:
+		return f"{THEME['title']}{player_name}|n {THEME['vs']} {THEME['title']}{getattr(foe,'name','?')}|n"
+
+
+# ---------------- Column blocks ----------------
+
 def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[str]:
-    """Return lines for a trainer column without borders.
+	lines: list[str] = []
+	mon = getattr(trainer, "active_pokemon", None)
+	if mon:
+		name = f"{THEME['name']}{getattr(mon,'name','?')}|n Lv{getattr(mon,'level','?')}"
+		stat = status_badge(mon)
+		if stat:
+			name = f"{name}  {stat}"
+		lines.append(rpad(name, colw))
+		# fmt_hp_line handles label + bar + right text to fit within colw
+		hp_line = fmt_hp_line(mon, colw, show_abs=show_abs)
+		lines.append(rpad(hp_line, colw))
+	else:
+		lines.append(rpad("(No active Pokémon)", colw))
+	# party pips
+	lines.append(rpad(f"{THEME['label']}Team|n: {party_pips(trainer)}", colw))
+	return [rpad(line, colw) for line in lines]
 
-    Parameters
-    ----------
-    trainer:
-        Trainer object with optional ``active_pokemon`` attribute.
-    colw:
-        Width of the column in characters.
-    show_abs:
-        If ``True`` include absolute HP numbers, otherwise show only
-        percentages.
-    """
+# ---------------- Main render ----------------
 
-    lines: list[str] = []
-    mon = getattr(trainer, "active_pokemon", None)
-    if mon:
-        name_line = f"|w{mon.name}|n Lv{mon.level}"
-        lines.append(rpad(name_line, colw))
-        hp_line = fmt_hp_line(
-            mon, width_bar=max(10, colw - 10), show_abs=show_abs
-        )
-        lines.append(rpad("HP:", 4) + " " + hp_line)
-    else:
-        lines.append(rpad("(No active Pokémon)", colw))
-    return [rpad(line, colw) for line in lines]
+def render_battle_ui(state, viewer, total_width: int = 78, waiting_on=None) -> str:
+	"""
+	Render the battle UI for `viewer`.
+	- Two balanced columns (viewer left).
+	- Title shows captains or 'vs Wild <Species>'.
+	- Footer: Weather • Field • Turn, plus optional "Waiting on …".
+	"""
+	# layout constants
+	gutter = 3
+	border_v = "│"
+	border_h = "─"
+	corner_l = "┌"
+	corner_r = "┐"
+	corner_bl = "└"
+	corner_br = "┘"
 
+	inner = max(40, total_width - 2)  # inside the outer box
+	left_w = (inner - gutter) // 2
+	right_w = inner - gutter - left_w
 
-# ---------- Main render ----------
-def render_battle_ui(state, viewer, total_width: int = 100, waiting_on=None) -> str:
-    """Return a rendered battle UI string for ``viewer``.
+	# sides
+	my_side = state.get_side(viewer)
+	if my_side == "B":
+		left_side, right_side = "B", "A"
+	else:
+		left_side, right_side = "A", "B"
+	me = state.get_trainer(left_side)
+	foe = state.get_trainer(right_side)
+	show_left = my_side == left_side
+	show_right = my_side == right_side
 
-    Parameters
-    ----------
-    state:
-        Battle state object providing side and trainer accessors as well as
-        weather, field and round information.
-    viewer:
-        The trainer or player viewing the interface.
-    total_width:
-        Total desired width of the UI box.
-    waiting_on:
-        Optional Pokémon instance to indicate a pending action for.
-        When supplied, a footer line ``"Waiting on <Pokémon>..."`` is
-        appended to the interface.
-    """
+	# ----- Title -----
+	title = make_title(me, foe, state)
+	# top border with centered title (spaces on both sides)
+	left_pad = (inner - ansi_len(title) - 2) // 2
+	right_pad = inner - ansi_len(title) - 2 - left_pad
+	top = corner_l + (border_h * left_pad) + " " + title + " " + (border_h * right_pad) + corner_r
 
-    # layout constants
-    gutter = 3
-    border_v = "│"
-    border_h = "─"
-    corner_l = "┌"
-    corner_r = "┐"
-    corner_bl = "└"
-    corner_br = "┘"
-    # columns
-    inner = max(40, total_width - 2)  # inside the outer box
-    left_w = (inner - gutter) // 2
-    right_w = inner - gutter - left_w
+	# ----- Content -----
+	left_lines = render_trainer_block(me, left_w, show_abs=show_left)
+	right_lines = render_trainer_block(foe, right_w, show_abs=show_right)
 
-    # sides
-    my_side = state.get_side(viewer)
-    if my_side == "B":
-        left_side, right_side = "B", "A"
-    else:  # default: viewer on A or spectator
-        left_side, right_side = "A", "B"
-    me = state.get_trainer(left_side)
-    foe = state.get_trainer(right_side)
-    show_left = my_side == left_side
-    show_right = my_side == right_side
+	# equalize height
+	max_rows = max(len(left_lines), len(right_lines))
+	while len(left_lines) < max_rows:
+		left_lines.append(" " * left_w)
+	while len(right_lines) < max_rows:
+		right_lines.append(" " * right_w)
 
-    # BUILD
-    title = f"{getattr(me, 'name', '?')} VS {getattr(foe, 'name', '?')}"
-    top = (
-        corner_l
-        + (border_h * ((inner - ansi_len(title)) // 2))
-        + " "
-        + title
-        + " "
-        + (border_h * (inner - ((inner - ansi_len(title)) // 2) - ansi_len(title) - 2))
-        + corner_r
-    )
+	rows = []
+	for L, R in zip(left_lines, right_lines):
+		rows.append(border_v + L + (" " * gutter) + R + border_v)
 
-    # content lines
-    left_lines = render_trainer_block(me, left_w, show_abs=show_left)
-    right_lines = render_trainer_block(foe, right_w, show_abs=show_right)
+	# ----- Footer -----
+	weather = getattr(state, "weather", getattr(state, "roomweather", "-")) or "-"
+	field = getattr(state, "field", "-")
+	turn = getattr(state, "round_no", getattr(state, "turn", getattr(state, "round", 0)))
+	footer_info = f" {THEME['label']}Weather|n: {weather}   {THEME['label']}Field|n: {field}   {THEME['label']}Turn|n: {turn}"
+	footer = border_v + rpad(footer_info, inner) + border_v
 
-    # equalize height
-    max_rows = max(len(left_lines), len(right_lines))
-    while len(left_lines) < max_rows:
-        left_lines.append(" " * left_w)
-    while len(right_lines) < max_rows:
-        right_lines.append(" " * right_w)
+	box = [top] + rows + [footer]
 
-    rows = []
-    for L, R in zip(left_lines, right_lines):
-        rows.append(border_v + L + (" " * gutter) + R + border_v)
+	if waiting_on:
+		name = getattr(waiting_on, "name", str(waiting_on))
+		box.append(border_v + rpad(f" Waiting on {name}...", inner) + border_v)
 
-    footer_info = (
-        f" Weather: {getattr(state, 'weather', getattr(state, 'roomweather', '-')) or '-'}"
-        f"   Field: {getattr(state, 'field', '-')}"
-    )
-    bottom = corner_bl + (border_h * max(0, inner - 2)) + corner_br
-
-    # Box with outer vertical borders
-    box = [top] + rows + [border_v + rpad(footer_info, inner) + border_v]
-
-    if waiting_on:
-        name = getattr(waiting_on, "name", str(waiting_on))
-        box.append(border_v + rpad(f" Waiting on {name}...", inner) + border_v)
-
-    box.append(bottom)
-    return "\n".join(box)
+	bottom = corner_bl + (border_h * inner) + corner_br
+	box.append(bottom)
+	return "\n".join(box)
 

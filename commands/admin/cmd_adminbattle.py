@@ -186,10 +186,13 @@ class CmdUiPreview(Command):
     help_category = "Admin"
 
     def parse(self):
-        self.switches = {s.lower() for s in self.switches}
+        """Normalize switches and extract optional /team and /waiting markers."""
+        super().parse()
+        switches = getattr(self, "switches", None) or []
+        self.switches = {s.lower() for s in switches}
         self.viewer_team = None
         self.waiting_on = None
-        args = self.args.strip()
+        args = (getattr(self, "args", "") or "").strip()
         if "/team " in args:
             part = args.split("/team ", 1)[1]
             val = (part.split(None, 1)[0] or "").upper()
