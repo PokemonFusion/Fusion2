@@ -55,6 +55,7 @@ class Pokemon:
         evs: Optional[List[int]] = None,
         nature: str = "Hardy",
         model_id: Optional[int] = None,
+        gender: str = "N",
     ):
         self.name = name
         self.level = level
@@ -68,6 +69,7 @@ class Pokemon:
         self.ivs = ivs or [0, 0, 0, 0, 0, 0]
         self.evs = evs or [0, 0, 0, 0, 0, 0]
         self.nature = nature
+        self.gender = gender
         self.tempvals: Dict[str, int] = {}
         self.boosts: Dict[str, int] = {
             "atk": 0,
@@ -161,6 +163,7 @@ class Pokemon:
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
             "tempvals": self.tempvals,
+            "gender": self.gender,
         }
 
         if self.model_id:
@@ -197,6 +200,7 @@ class Pokemon:
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
         types = data.get("types")
+        gender = data.get("gender", "N")
 
         slots = None
         if model_id:
@@ -214,6 +218,7 @@ class Pokemon:
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
+                    gender = getattr(poke, "gender", gender)
                     types = getattr(poke, "type_", types)
                     if max_hp is None:
                         try:
@@ -255,6 +260,7 @@ class Pokemon:
             evs=evs,
             nature=nature,
             model_id=model_id,
+            gender=gender,
         )
         if types:
             obj.types = (

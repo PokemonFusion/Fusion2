@@ -2,6 +2,7 @@
 HP bars, status badges, party pips, adaptive name/meta row, and a clean footer."""
 
 from utils.battle_display import strip_ansi
+from pokemon.ui.box_utils import render_box
 
 # ---------------- Theme ----------------
 # Pipe-ANSI color tokens only; callers can later expose a runtime theme toggle.
@@ -228,72 +229,60 @@ def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[s
 # ---------------- Main render ----------------
 
 def render_battle_ui(state, viewer, total_width: int = 78, waiting_on=None) -> str:
-	"""
-	Render the battle UI for `viewer`.
-	- Two balanced columns (viewer left).
-	- Title shows captains or 'vs Wild <Species>'.
-	- Footer: Weather • Field • Turn, plus optional "Waiting on …".
-	"""
-	# layout constants
-	gutter = 3
-	border_v = "│"
-	border_h = "─"
-	corner_l = "┌"
-	corner_r = "┐"
-	corner_bl = "└"
-	corner_br = "┘"
+    """
+    Render the battle UI for `viewer`.
+    - Two balanced columns (viewer left).
+    - Title shows captains or 'vs Wild <Species>'.
+    - Footer: Weather • Field • Turn, plus optional "Waiting on …".
+    """
+    # layout constants
+    gutter = 3
 
-	inner = max(40, total_width - 2)  # inside the outer box
-	left_w = (inner - gutter) // 2
-	right_w = inner - gutter - left_w
+    inner = max(40, total_width - 2)  # inside the outer box
+    left_w = (inner - gutter) // 2
+    right_w = inner - gutter - left_w
 
-	# sides
-	my_side = state.get_side(viewer)
-	if my_side == "B":
-		left_side, right_side = "B", "A"
-	else:
-		left_side, right_side = "A", "B"
-	me = state.get_trainer(left_side)
-	foe = state.get_trainer(right_side)
-	show_left = my_side == left_side
-	show_right = my_side == right_side
+    # sides
+    my_side = state.get_side(viewer)
+    if my_side == "B":
+        left_side, right_side = "B", "A"
+    else:
+        left_side, right_side = "A", "B"
+    me = state.get_trainer(left_side)
+    foe = state.get_trainer(right_side)
+    show_left = my_side == left_side
+    show_right = my_side == right_side
 
-	# ----- Title -----
-	title = make_title(me, foe, state)
-	# top border with centered title (spaces on both sides)
-	left_pad = (inner - ansi_len(title) - 2) // 2
-	right_pad = inner - ansi_len(title) - 2 - left_pad
-	top = corner_l + (border_h * left_pad) + " " + title + " " + (border_h * right_pad) + corner_r
+    # ----- Title -----
+    title = make_title(me, foe, state)
 
-	# ----- Content -----
-	left_lines = render_trainer_block(me, left_w, show_abs=show_left)
-	right_lines = render_trainer_block(foe, right_w, show_abs=show_right)
+    # ----- Content -----
+    left_lines = render_trainer_block(me, left_w, show_abs=show_left)
+    right_lines = render_trainer_block(foe, right_w, show_abs=show_right)
 
-	# equalize height
-	max_rows = max(len(left_lines), len(right_lines))
-	while len(left_lines) < max_rows:
-		left_lines.append(" " * left_w)
-	while len(right_lines) < max_rows:
-		right_lines.append(" " * right_w)
+    # equalize height
+    max_rows = max(len(left_lines), len(right_lines))
+    while len(left_lines) < max_rows:
+        left_lines.append(" " * left_w)
+    while len(right_lines) < max_rows:
+        right_lines.append(" " * right_w)
 
-	rows = []
-	for L, R in zip(left_lines, right_lines):
-		rows.append(border_v + L + (" " * gutter) + R + border_v)
+    rows = []
+    for L, R in zip(left_lines, right_lines):
+        combined = L + (" " * gutter) + R
+        rows.append(rpad(combined, inner))
 
-	# ----- Footer -----
-	weather = getattr(state, "weather", getattr(state, "roomweather", "-")) or "-"
-	field = getattr(state, "field", "-")
-	turn = getattr(state, "round_no", getattr(state, "turn", getattr(state, "round", 0)))
-	footer_info = f" {THEME['label']}Weather|n: {weather}   {THEME['label']}Field|n: {field}   {THEME['label']}Turn|n: {turn}"
-	footer = border_v + rpad(footer_info, inner) + border_v
+    # ----- Footer -----
+    weather = getattr(state, "weather", getattr(state, "roomweather", "-")) or "-"
+    field = getattr(state, "field", "-")
+    turn = getattr(state, "round_no", getattr(state, "turn", getattr(state, "round", 0)))
+    footer_info = f" {THEME['label']}Weather|n: {weather}   {THEME['label']}Field|n: {field}   {THEME['label']}Turn|n: {turn}"
+    footer = rpad(footer_info, inner)
 
-	box = [top] + rows + [footer]
+    wait_line = None
+    if waiting_on:
+        name = getattr(waiting_on, "name", str(waiting_on))
+        wait_line = rpad(f" Waiting on {name}...", inner)
 
-	if waiting_on:
-		name = getattr(waiting_on, "name", str(waiting_on))
-		box.append(border_v + rpad(f" Waiting on {name}...", inner) + border_v)
-
-	bottom = corner_bl + (border_h * inner) + corner_br
-	box.append(bottom)
-	return "\n".join(box)
+    return render_box(title, inner, rows, footer=footer, waiting=wait_line)
 

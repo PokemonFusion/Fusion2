@@ -132,6 +132,7 @@ def create_battle_pokemon(
         evs=evs_list,
         nature=nature,
         model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
+        gender=getattr(inst, "gender", "N"),
     )
 
 
