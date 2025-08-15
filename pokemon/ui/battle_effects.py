@@ -17,12 +17,12 @@ from pokemon.ui.battle_render import (
     THEME,
     ansi_len,
     rpad,
-    center_ansi,
     fmt_hp_line,
     status_badge,
     gender_chip,
     display_name,
 )
+from pokemon.ui.box_utils import render_box
 
 
 # ---------------------------------------------------------------------------
@@ -242,57 +242,38 @@ def render_effects_panel(
     """Render the full effects panel. `focus` can be "me" or "opp" to limit Pokémon section."""
     ad = EffectsAdapter(session, viewer)
 
-    # borders & layout
-    gutter = 1
-    border_v = "│"
-    border_h = "─"
-    corner_l = "┌"
-    corner_r = "┐"
-    corner_bl = "└"
-    corner_br = "┘"
     inner = max(40, total_width - 2)
 
-    title = f"Active Battle States & Effects"
-    top_title = center_ansi(title, inner)
-    top = corner_l + top_title.replace(" ", border_h, 0)
-    top = (
-        corner_l
-        + (border_h * ((inner - ansi_len(title)) // 2))
-        + title
-        + (border_h * (inner - ansi_len(title) - ((inner - ansi_len(title)) // 2)))
-        + corner_r
-    )
+    title = "Active Battle States & Effects"
 
     header = f" {ad.title()}".ljust(inner - 14) + f" Turn: {ad.turn()}".rjust(14)
-    rows: List[str] = [border_v + rpad(header, inner) + border_v]
+    rows: List[str] = [rpad(header, inner)]
 
     # --- Field ---
-    rows.append(border_v + rpad("─ Field " + ("─" * max(0, inner - 8)), inner) + border_v)
+    rows.append(rpad("─ Field " + ("─" * max(0, inner - 8)), inner))
     field_tokens = [_timer_chip(*t) for t in ad.field_timers() if _timer_chip(*t)]
     if field_tokens:
         for line in _wrap_tokens(field_tokens, inner):
-            rows.append(border_v + rpad(line, inner) + border_v)
+            rows.append(rpad(line, inner))
     else:
-        rows.append(border_v + rpad("None", inner) + border_v)
+        rows.append(rpad("None", inner))
 
     # --- Sides ---
     for side_label, side_key in (("Side A", "A"), ("Side B", "B")):
-        rows.append(
-            border_v + rpad(f"─ {side_label} " + ("─" * max(0, inner - len(side_label) - 3)), inner) + border_v
-        )
+        rows.append(rpad(f"─ {side_label} " + ("─" * max(0, inner - len(side_label) - 3)), inner))
         timers, hazards = ad.side_data(side_key)
         side_tokens = [_timer_chip(*t) for t in timers if _timer_chip(*t)]
         haz_line = f"Hazards: {_hazards_line(hazards)}"
         if side_tokens:
             for line in _wrap_tokens(side_tokens, inner):
-                rows.append(border_v + rpad(line, inner) + border_v)
+                rows.append(rpad(line, inner))
         else:
-            rows.append(border_v + rpad("—", inner) + border_v)
-        rows.append(border_v + rpad(haz_line, inner) + border_v)
+            rows.append(rpad("—", inner))
+        rows.append(rpad(haz_line, inner))
 
     # --- Pokémon ---
     if not brief:
-        rows.append(border_v + rpad("─ On-Field Pokémon " + ("─" * max(0, inner - 20)), inner) + border_v)
+        rows.append(rpad("─ On-Field Pokémon " + ("─" * max(0, inner - 20)), inner))
         role = ad.viewer_role()
         for mon, self_side in (
             (ad.monA(), role in ("A", "W") and focus != "opp" or focus == "me" and role == "A"),
@@ -307,25 +288,18 @@ def render_effects_panel(
                 [p for p in (gender_chip(mon), f"Lv{getattr(mon,'level','?')}", status_badge(mon)) if p]
             )
             line1 = name_color if ansi_len(f"{name_color}  {chips}") > inner else f"{name_color}  {chips}"
-            rows.append(border_v + rpad(line1, inner) + border_v)
+            rows.append(rpad(line1, inner))
             # HP
-            rows.append(
-                border_v
-                + rpad(
-                    fmt_hp_line(mon, inner, show_abs=self_side if role != "W" else self_side),
-                    inner,
-                )
-                + border_v
-            )
+            rows.append(rpad(fmt_hp_line(mon, inner, show_abs=self_side if role != "W" else self_side), inner))
             # Item/Ability with reveal
             is_self = (role == "A" and mon is ad.monA()) or (role == "B" and mon is ad.monB())
             item = _reveal(getattr(mon, "item_name", None), bool(getattr(mon, "item_revealed", False)), is_self)
             abil = _reveal(
                 getattr(mon, "ability_name", None), bool(getattr(mon, "ability_revealed", False)), is_self
             )
-            rows.append(border_v + rpad(f"Item: {item}   Ability: {abil}", inner) + border_v)
+            rows.append(rpad(f"Item: {item}   Ability: {abil}", inner))
             # Stages
-            rows.append(border_v + rpad(f"Stages: {_stages_line(getattr(mon,'boosts',{}))}", inner) + border_v)
+            rows.append(rpad(f"Stages: {_stages_line(getattr(mon,'boosts',{}))}", inner))
             # Effects (volatiles with optional timers)
             effects = []
             for eff in getattr(mon, "effects", []) or []:
@@ -341,9 +315,7 @@ def render_effects_panel(
                 effects.append(_timer_chip(label, left, total))
             if effects:
                 for line in _wrap_tokens(effects, inner):
-                    rows.append(border_v + rpad(f"Effects: {line}", inner) + border_v)
+                    rows.append(rpad(f"Effects: {line}", inner))
             else:
-                rows.append(border_v + rpad("Effects: —", inner) + border_v)
-
-    bottom = corner_bl + (border_h * inner) + corner_br
-    return "\n".join([top] + rows + [bottom])
+                rows.append(rpad("Effects: —", inner))
+    return render_box(title, inner, rows)
