@@ -84,14 +84,49 @@ def hp_bar(cur: int, maxhp: int, width: int = 28) -> str:
 	filled = int(width * ratio)
 	empty = width - filled
 	color = THEME["ok"] if ratio > 0.5 else THEME["warn"] if ratio > 0.2 else THEME["bad"]
-	return f"{color}{'█' * filled}{' ' * empty}|n"
+	return f"{color}{'█'*filled}{' ' * empty}|n"
 
+def fmt_hp_line(mon, colw: int, show_abs: bool = True) -> str:
+	"""Return a width-safe HP line that fits inside `colw`.
+	Tries right-side text in this order (as space allows):
+	- "hp/max (pct%)"  -> requires larger space
+	- "hp/max"
+	- "pct%"
+	If none fit beside a minimally readable bar, shows the bar only."""
+	hp = int(getattr(mon, "hp", 0) or 0)
+	mx = int(getattr(mon, "max_hp", 0) or 0)
+	pct = 0 if mx <= 0 else int(round(100 * hp / mx))
 
-def fmt_hp_line(mon, width_bar: int = 28, show_abs: bool = True) -> str:
-	pct = 0 if getattr(mon, "max_hp", 0) <= 0 else int(100 * getattr(mon, "hp", 0) / getattr(mon, "max_hp", 1))
-	right = f"{getattr(mon,'hp',0)}/{getattr(mon,'max_hp',0)} ({pct}%)" if show_abs else f"{pct}%"
-	return f"{hp_bar(getattr(mon,'hp',0), getattr(mon,'max_hp',0), width_bar)}  {right}"
+	prefix = f"{THEME['label']}HP|n: "
+	sep_two = "  "
+	sep_one = " "
 
+	# Build candidate right-hand texts from most to least verbose
+	candidates: list[str] = []
+	if show_abs:
+		candidates.append(f"{hp}/{mx} ({pct}%)")
+		candidates.append(f"{hp}/{mx}")
+	candidates.append(f"{pct}%")
+
+	def try_fit(sep: str, right: str, min_bar: int) -> str | None:
+		avail = colw - ansi_len(prefix) - ansi_len(sep) - ansi_len(right)
+		if avail >= min_bar:
+			return f"{prefix}{hp_bar(hp, mx, avail)}{sep}{right}"
+		return None
+
+	# Prefer a decent-sized bar with two-space separator
+	for right in candidates:
+		line = try_fit(sep_two, right, min_bar=10)
+		if line:
+			return line
+	# Try again with a single space separator, allow a smaller bar
+	for right in candidates:
+		line = try_fit(sep_one, right, min_bar=6)
+		if line:
+			return line
+	# Last resort: bar only; ensure at least 3 cells of bar
+	bar_only = max(3, colw - ansi_len(prefix))
+	return f"{prefix}{hp_bar(hp, mx, bar_only)}"
 
 # ---------------- Title helpers ----------------
 
@@ -130,14 +165,14 @@ def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[s
 		if stat:
 			name = f"{name}  {stat}"
 		lines.append(rpad(name, colw))
-		hp_line = fmt_hp_line(mon, width_bar=max(10, colw - 12), show_abs=show_abs)
-		lines.append(rpad(f"{THEME['label']}HP|n: {hp_line}", colw))
+		# fmt_hp_line handles label + bar + right text to fit within colw
+		hp_line = fmt_hp_line(mon, colw, show_abs=show_abs)
+		lines.append(rpad(hp_line, colw))
 	else:
 		lines.append(rpad("(No active Pokémon)", colw))
 	# party pips
 	lines.append(rpad(f"{THEME['label']}Team|n: {party_pips(trainer)}", colw))
 	return [rpad(line, colw) for line in lines]
-
 
 # ---------------- Main render ----------------
 
