@@ -99,6 +99,14 @@ class TurnManager:
             log_info(
                 f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}"
             )
+            if self.state:
+                # Keep the battle state in sync with the engine's turn counter so
+                # interfaces relying on ``state.turn`` reflect the current turn.
+                self.state.turn = getattr(self.battle, "turn_count", self.state.turn)
+            if self.data and getattr(self.data, "battle", None):
+                self.data.battle.turn = getattr(
+                    self.battle, "turn_count", self.data.battle.turn
+                )
             self._notify_turn_banner()
 
         if self.state:
