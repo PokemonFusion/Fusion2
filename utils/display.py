@@ -168,9 +168,31 @@ def _maybe_stat_breakdown(pokemon: PokemonLike) -> str | None:
         return None
 
     def _row(src, label):
+        """Return a formatted row for either dict, sequence or object data."""
         if not src:
             return None
-        mapping = {STAT_KEY_MAP.get(k, k): v for k, v in src.items()}
+        if hasattr(src, "items"):
+            mapping = {STAT_KEY_MAP.get(k, k): v for k, v in src.items()}
+        else:
+            try:
+                seq = list(src)
+            except TypeError:
+                seq = [
+                    getattr(src, "hp", 0),
+                    getattr(src, "attack", 0),
+                    getattr(src, "defense", 0),
+                    getattr(src, "special_attack", 0),
+                    getattr(src, "special_defense", 0),
+                    getattr(src, "speed", 0),
+                ]
+            mapping = {
+                "hp": seq[0] if len(seq) > 0 else 0,
+                "attack": seq[1] if len(seq) > 1 else 0,
+                "defense": seq[2] if len(seq) > 2 else 0,
+                "special_attack": seq[3] if len(seq) > 3 else 0,
+                "special_defense": seq[4] if len(seq) > 4 else 0,
+                "speed": seq[5] if len(seq) > 5 else 0,
+            }
         return [
             label,
             str(mapping.get("hp", 0)),
