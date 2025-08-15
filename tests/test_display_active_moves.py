@@ -14,14 +14,16 @@ _real_evennia_evtable = sys.modules.get("evennia.utils.evtable")
 evennia_evtable = types.ModuleType("evennia.utils.evtable")
 
 class _EvTable:
+    """Minimal stand-in for Evennia's EvTable used in tests."""
+
     def __init__(self, *_, **__):
-        pass
+        self._rows = []
 
-    def add_row(self, *_, **__):  # pragma: no cover - trivial
-        pass
+    def add_row(self, *cols, **__):  # pragma: no cover - simple storage
+        self._rows.append(cols)
 
-    def __str__(self):  # pragma: no cover - trivial
-        return ""
+    def __str__(self):  # pragma: no cover - simple representation
+        return "\n".join(" ".join(str(c) for c in row) for row in self._rows)
 
 evennia_evtable.EvTable = _EvTable
 evennia_utils = types.ModuleType("evennia.utils")
@@ -138,3 +140,13 @@ def test_sheet_displays_active_moves_with_pp():
     sheet = display.display_pokemon_sheet(None, mon, slot=1)
     assert "Tackle (20/35 PP)" in sheet
     assert "Ember (10/25 PP)" in sheet
+
+
+def test_iv_ev_breakdown_handles_lists():
+    """_maybe_stat_breakdown should accept IV/EV data as lists."""
+    mon = DummyPokemon()
+    mon.ivs = [1, 2, 3, 4, 5, 6]
+    mon.evs = [6, 5, 4, 3, 2, 1]
+    table = display._maybe_stat_breakdown(mon)
+    assert "IV" in table and "EV" in table
+    assert "1" in table and "6" in table
