@@ -67,9 +67,13 @@ class DummyBattleData(types.SimpleNamespace):
 
 # stub battledata
 battledata = types.ModuleType("pokemon.battle.battledata")
+
+
 class Move:
     def __init__(self, name):
         self.name = name
+
+
 class Pokemon:
     def __init__(
         self,
@@ -84,6 +88,7 @@ class Pokemon:
         nature="Hardy",
         model_id=None,
         species=None,
+        gender="N",
     ):
         self.name = name
         self.species = species or name
@@ -96,6 +101,7 @@ class Pokemon:
         self.evs = evs or [0, 0, 0, 0, 0, 0]
         self.nature = nature
         self.model_id = model_id
+        self.gender = gender
 battledata.Move = Move
 battledata.Pokemon = Pokemon
 

@@ -138,6 +138,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         model_id=str(
             getattr(model, "unique_id", getattr(model, "model_id", "")) or None
         ),
+        gender=getattr(model, "gender", "N"),
     )
     if slots is not None:
         battle_poke.activemoveslot_set = slots
@@ -230,6 +231,7 @@ def make_pokemon_from_dict(data: dict) -> Pokemon:
     evs = data.get("evs")
     nature = data.get("nature", "Hardy")
     model_id = data.get("model_id")
+    gender = data.get("gender", "N")
 
     return Pokemon(
         name=name,
@@ -242,6 +244,7 @@ def make_pokemon_from_dict(data: dict) -> Pokemon:
         evs=evs,
         nature=nature,
         model_id=model_id,
+        gender=gender,
     )
 
 
