@@ -1,5 +1,5 @@
 """Battle UI renderer: ANSI-safe, width-aware two-column layout with captains/wild title,
-HP bars, status badges, party pips, and a clean footer."""
+HP bars, status badges, party pips, adaptive name/meta row, and a clean footer."""
 
 from utils.battle_display import strip_ansi
 
@@ -14,6 +14,9 @@ THEME = {
 	"warn": "|y",
 	"bad": "|r",
 	"dim": "|n",
+	"gender_m": "|C",   # bright cyan
+	"gender_f": "|m",   # magenta
+	"gender_n": "|x",   # dim/grey
 }
 
 # ---------------- ANSI-safe helpers ----------------
@@ -39,6 +42,19 @@ def center_ansi(s: str, width: int) -> str:
 	return (" " * left) + s + (" " * right)
 
 
+def ellipsize(text: str, width: int) -> str:
+	"""Safely shorten raw (non-ANSI) text to ``width`` visible chars with an ellipsis."""
+	if width <= 0:
+	        return ""
+	vis = text or ""
+	if len(vis) <= width:
+	        return vis
+	if width == 1:
+	        return "…"
+	# reserve one char for ellipsis
+	return vis[: width - 1].rstrip() + "…"
+
+
 # ---------------- Badges / chips ----------------
 
 def status_badge(mon) -> str:
@@ -48,9 +64,30 @@ def status_badge(mon) -> str:
 	text = getattr(mon, "status_name", None) or (code if isinstance(code, str) else "")
 	text = (text or "").upper()
 	if text in ("PAR", "BRN", "PSN", "SLP", "FRZ", "TOX"):
-		color = {"PAR": "|y", "BRN": "|r", "PSN": "|m", "SLP": "|c", "FRZ": "|C", "TOX": "|m"}.get(text, "|y")
-		return f"{color}{text}|n"
+	        color = {"PAR": "|y", "BRN": "|r", "PSN": "|m", "SLP": "|c", "FRZ": "|C", "TOX": "|m"}.get(text, "|y")
+	        return f"{color}{text}|n"
 	return ""
+
+
+def gender_chip(mon) -> str:
+	"""Return colored gender symbol: ♂, ♀, or – for genderless/unknown."""
+	g = getattr(mon, "gender", None)
+	if isinstance(g, str):
+	        g = g.strip().upper()
+	if g in ("M", "MALE", "♂"):
+	        return f"{THEME['gender_m']}♂|n"
+	if g in ("F", "FEMALE", "♀"):
+	        return f"{THEME['gender_f']}♀|n"
+	return f"{THEME['gender_n']}–|n"
+
+
+def display_name(mon) -> str:
+	"""Return nickname/species composite or fallback name (no ANSI)."""
+	nick = (getattr(mon, "nickname", None) or "").strip()
+	species = (getattr(mon, "species", None) or getattr(mon, "name", "") or "?").strip()
+	if nick and nick.lower() != species.lower():
+	        return f"{nick} ({species})"
+	return species or nick or "?"
 
 
 def party_pips(trainer, max_team: int = 6) -> str:
@@ -128,6 +165,27 @@ def fmt_hp_line(mon, colw: int, show_abs: bool = True) -> str:
 	bar_only = max(3, colw - ansi_len(prefix))
 	return f"{prefix}{hp_bar(hp, mx, bar_only)}"
 
+
+def _name_and_chips_lines(mon, colw: int) -> list[str]:
+	"""Adaptive name/meta row(s) with gender, level and status chips."""
+	raw_name = display_name(mon)
+	name_colored = f"{THEME['name']}{raw_name}|n"
+	gchip = gender_chip(mon)
+	level = getattr(mon, "level", None)
+	lv_chip = f"Lv{level}" if level is not None else ""
+	sb = status_badge(mon)
+	chips = "  ".join([p for p in (gchip, lv_chip, sb) if p])
+	one_line = f"{name_colored}  {chips}" if chips else name_colored
+	if ansi_len(one_line) <= colw:
+	        return [rpad(one_line, colw)]
+	# two-line variant
+	trunc = raw_name
+	if ansi_len(name_colored) > colw:
+	        trunc = ellipsize(raw_name, colw)
+	name_line = rpad(f"{THEME['name']}{trunc}|n", colw)
+	chips_line = rpad(chips, colw) if chips else ""
+	return [name_line] + ([chips_line] if chips_line else [])
+
 # ---------------- Title helpers ----------------
 
 def _is_wild_battle(me, foe, state) -> bool:
@@ -160,17 +218,10 @@ def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[s
 	lines: list[str] = []
 	mon = getattr(trainer, "active_pokemon", None)
 	if mon:
-		name = f"{THEME['name']}{getattr(mon,'name','?')}|n Lv{getattr(mon,'level','?')}"
-		stat = status_badge(mon)
-		if stat:
-			name = f"{name}  {stat}"
-		lines.append(rpad(name, colw))
-		# fmt_hp_line handles label + bar + right text to fit within colw
-		hp_line = fmt_hp_line(mon, colw, show_abs=show_abs)
-		lines.append(rpad(hp_line, colw))
+	        lines.extend(_name_and_chips_lines(mon, colw))
+	        lines.append(rpad(fmt_hp_line(mon, colw, show_abs=show_abs), colw))
 	else:
-		lines.append(rpad("(No active Pokémon)", colw))
-	# party pips
+	        lines.append(rpad("(No active Pokémon)", colw))
 	lines.append(rpad(f"{THEME['label']}Team|n: {party_pips(trainer)}", colw))
 	return [rpad(line, colw) for line in lines]
 
