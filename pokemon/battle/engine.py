@@ -143,9 +143,18 @@ def is_self_target(target: str | None) -> bool:
 
     Moves that nominally affect an adjacent ally are treated as targeting the
     user when no ally is present, allowing these moves to be exercised in
-    single-Pokémon simulations.
+    single-Pokémon simulations.  The function tries to delegate to
+    :mod:`pokemon.battle.utils` so there is a single source of truth for this
+    logic, but falls back to a local check if that import is unavailable.
     """
 
+    try:
+        from .utils import is_self_target as util_is_self_target  # type: ignore
+    except Exception:  # pragma: no cover - best effort during import issues
+        util_is_self_target = None
+
+    if util_is_self_target:
+        return util_is_self_target(target)
     return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
 
 
