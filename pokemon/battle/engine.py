@@ -431,9 +431,12 @@ class BattleMove:
                     cb = _resolve_callback(sec.get("onHit"), moves_funcs)
                     if callable(cb):
                         try:
-                            cb(user, target)
-                        except Exception:
-                            cb(target)
+                            cb(user, target, battle)
+                        except TypeError:
+                            try:
+                                cb(user, target)
+                            except Exception:
+                                cb(target)
 
                 if sec.get("boosts") and target:
                     apply_boost(target, sec["boosts"])
