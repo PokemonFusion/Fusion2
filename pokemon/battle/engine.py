@@ -442,14 +442,14 @@ class BattleMove:
                     apply_boost(target, sec["boosts"])
                 if sec.get("status") and target:
                     setattr(target, "status", sec["status"])
-                    self.announce_status_change(target, sec["status"])
+                    battle.announce_status_change(target, sec["status"])
                 if (
                     sec.get("volatileStatus")
                     and target
                     and hasattr(target, "volatiles")
                 ):
                     target.volatiles.setdefault(sec["volatileStatus"], True)
-                    self.announce_status_change(target, sec["volatileStatus"])
+                    battle.announce_status_change(target, sec["volatileStatus"])
 
                 if sec.get("drain") and result is not None and user:
                     dmg = 0
@@ -486,7 +486,7 @@ class BattleMove:
                         apply_boost(user, self_sec["boosts"])
                     if self_sec.get("status"):
                         setattr(user, "status", self_sec["status"])
-                        self.announce_status_change(user, self_sec["status"])
+                        battle.announce_status_change(user, self_sec["status"])
                     if (
                         self_sec.get("volatileStatus")
                         and hasattr(user, "volatiles")
@@ -494,7 +494,7 @@ class BattleMove:
                         user.volatiles.setdefault(
                             self_sec["volatileStatus"], True
                         )
-                        self.announce_status_change(
+                        battle.announce_status_change(
                             user, self_sec["volatileStatus"]
                         )
                     if self_sec.get("heal"):
