@@ -138,6 +138,17 @@ def _normalize_key(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(name).lower())
 
 
+def is_self_target(target: str | None) -> bool:
+    """Return ``True`` if ``target`` refers to the user or an ally.
+
+    Moves that nominally affect an adjacent ally are treated as targeting the
+    user when no ally is present, allowing these moves to be exercised in
+    single-Pokémon simulations.
+    """
+
+    return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+
+
 def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, spread: bool = False):
     """Construct a temporary :class:`pokemon.dex.entities.Move` from ``battle_move``.
 
@@ -322,7 +333,7 @@ class BattleMove:
             if boosts:
                 from pokemon.battle.utils import apply_boost
 
-                affected = user if self.raw.get("target") == "self" else target
+                affected = user if is_self_target(self.raw.get("target")) else target
                 if affected is not None:
                     apply_boost(affected, boosts)
 
@@ -344,7 +355,7 @@ class BattleMove:
         heal = self.raw.get("heal") if self.raw else None
         if heal:
             frac = heal[0] / heal[1] if isinstance(heal, (list, tuple)) else 0
-            heal_target = user if self.raw.get("target") == "self" else target
+            heal_target = user if is_self_target(self.raw.get("target")) else target
             if heal_target is not None:
                 max_hp = getattr(heal_target, "max_hp", getattr(heal_target, "hp", 1))
                 amount = max(1, int(max_hp * frac)) if frac else max_hp
@@ -369,7 +380,7 @@ class BattleMove:
         if boosts and category != "status":
             from pokemon.battle.utils import apply_boost
 
-            affected = user if self.raw.get("target") == "self" else target
+            affected = user if is_self_target(self.raw.get("target")) else target
             if affected:
                 apply_boost(affected, boosts)
 
@@ -384,7 +395,7 @@ class BattleMove:
                     cb(user, target)
                 except Exception:
                     cb(target)
-            affected = user if self.raw.get("target") == "self" else target
+            affected = user if is_self_target(self.raw.get("target")) else target
             if affected and hasattr(affected, "volatiles"):
                 affected.volatiles.setdefault(volatile, True)
 
@@ -993,7 +1004,7 @@ class Battle(ConditionHelpers, BattleActions):
                 )
                 snatcher.volatiles.pop("snatch", None)
                 # Determine the target of the stolen move
-                snatch_target = snatcher if action.move.raw.get("target") == "self" else target
+                snatch_target = snatcher if is_self_target(action.move.raw.get("target")) else target
                 action.move.execute(snatcher, snatch_target, self)
                 try:
                     snatcher.tempvals["moved"] = True
@@ -1145,7 +1156,7 @@ class Battle(ConditionHelpers, BattleActions):
             start_user_boosts != end_user_boosts
             or start_target_boosts != end_target_boosts
         )
-        target_self = action.move.raw.get("target") == "self"
+        target_self = is_self_target(action.move.raw.get("target"))
         user_name = getattr(user, "name", "Pokemon")
         target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
         if dmg > 0:
