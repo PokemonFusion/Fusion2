@@ -13,14 +13,27 @@ from pokemon.battle.engine import (
     BattleType,
     BattleMove,
 )
+from pokemon.dex.entities import Stats
 from pokemon.data.text import DEFAULT_TEXT
 
 
-def _run_move(move_raw, user_boosts=None):
+def _run_move(move_raw, user_boosts=None, target_boosts=None, power: int = 0):
     user = Pokemon("User", level=1, hp=100, max_hp=100)
     target = Pokemon("Target", level=1, hp=100, max_hp=100)
+    base = Stats(
+        hp=100,
+        attack=50,
+        defense=50,
+        special_attack=50,
+        special_defense=50,
+        speed=50,
+    )
+    user.base_stats = base
+    target.base_stats = base
     if user_boosts:
         user.boosts = user_boosts
+    if target_boosts:
+        target.boosts = target_boosts
     part1 = BattleParticipant("P1", [user])
     part2 = BattleParticipant("P2", [target])
     part1.active = [user]
@@ -30,11 +43,11 @@ def _run_move(move_raw, user_boosts=None):
     battle.log_action = logs.append
     move = BattleMove(
         "TestMove",
-        power=0,
+        power=power,
         accuracy=True,
         raw=move_raw,
     )
-    action = Action(part1, ActionType.MOVE, part1, move, priority=0, pokemon=user)
+    action = Action(part1, ActionType.MOVE, part2, move, priority=0, pokemon=user)
     battle.use_move(action)
     return logs
 
@@ -60,3 +73,39 @@ def test_boost_message_at_cap():
         .replace("[STAT]", DEFAULT_TEXT["atk"]["statName"])
     )
     assert expected in logs
+
+
+def test_secondary_debuff_message_on_hit():
+    move_raw = {
+        "category": "Physical",
+        "target": "normal",
+        "secondary": {"chance": 100, "boosts": {"def": -1}},
+    }
+    logs = _run_move(move_raw, power=50)
+    expected = (
+        DEFAULT_TEXT["default"]["unboost"]
+        .replace("[POKEMON]", "Target")
+        .replace("[STAT]", DEFAULT_TEXT["def"]["statName"])
+    )
+    assert expected in logs
+
+
+def test_no_message_when_secondary_fails_with_damage():
+    move_raw = {
+        "category": "Physical",
+        "target": "normal",
+        "secondary": {"chance": 100, "boosts": {"def": -1}},
+    }
+    logs = _run_move(move_raw, target_boosts={"defense": -6}, power=50)
+    expected = (
+        DEFAULT_TEXT["default"]["unboost"]
+        .replace("[POKEMON]", "Target")
+        .replace("[STAT]", DEFAULT_TEXT["def"]["statName"])
+    )
+    fail_expected = (
+        DEFAULT_TEXT["default"]["unboost0"]
+        .replace("[POKEMON]", "Target")
+        .replace("[STAT]", DEFAULT_TEXT["def"]["statName"])
+    )
+    assert expected not in logs
+    assert fail_expected not in logs
