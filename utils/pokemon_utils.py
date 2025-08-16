@@ -138,6 +138,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         model_id=str(
             getattr(model, "unique_id", getattr(model, "model_id", "")) or None
         ),
+        gender=getattr(model, "gender", "N"),
     )
     if slots is not None:
         battle_poke.activemoveslot_set = slots
@@ -230,6 +231,7 @@ def make_pokemon_from_dict(data: dict) -> Pokemon:
     evs = data.get("evs")
     nature = data.get("nature", "Hardy")
     model_id = data.get("model_id")
+    gender = data.get("gender", "N")
 
     return Pokemon(
         name=name,
@@ -242,6 +244,7 @@ def make_pokemon_from_dict(data: dict) -> Pokemon:
         evs=evs,
         nature=nature,
         model_id=model_id,
+        gender=gender,
     )
 
 
@@ -270,8 +273,8 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         _normalize_key = _fallback_normalize_key
 
     entry = None
+    key = _normalize_key(name)
     if dex_mod is not None:
-        key = _normalize_key(name)
         try:
             entry = dex_mod.MOVEDEX.get(key)
         except Exception:
@@ -304,8 +307,14 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         raw["category"] = cat
     priority = raw.get("priority", 0)
 
+    # In battle contexts we defer to the calling code to supply the current PP
+    # for a move so that deductions affect the Pokémon rather than this
+    # instance.  As such the ``pp`` value is omitted from the returned
+    # :class:`BattleMove` and any remaining power points must be provided
+    # separately when an action is declared.
     return BattleMove(
         name=move_name,
+        key=key,
         power=power,
         accuracy=accuracy,
         priority=priority,
@@ -316,7 +325,7 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         basePowerCallback=raw.get("basePowerCallback"),
         type=mtype,
         raw=raw,
-        pp=pp,
+        pp=None,
     )
 
 

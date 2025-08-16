@@ -78,3 +78,9 @@ def test_get_move_description_fallback():
     fake_move = {"name": "FakeMove", "desc": "Some description."}
     assert get_move_description(fake_move) == "Some description."
 
+
+def test_get_move_description_shortdesc_fallback():
+    _, move = get_move_by_name("Vine Whip")
+    desc = get_move_description(move)
+    assert "no additional effect" in desc.lower()
+

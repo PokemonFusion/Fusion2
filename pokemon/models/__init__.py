@@ -12,6 +12,7 @@ from .core import (
 )
 from .moves import (
     Move,
+    VerifiedMove,
     PokemonLearnedMove,
     Moveset,
     MovesetSlot,
@@ -34,6 +35,7 @@ __all__ = [
     "OwnedPokemon",
     "BattleSlot",
     "Move",
+    "VerifiedMove",
     "PokemonLearnedMove",
     "Moveset",
     "MovesetSlot",

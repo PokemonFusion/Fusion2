@@ -54,12 +54,28 @@ rooms_mod.MapRoom = type("MapRoom", (), {})
 rooms_mod.Room = type("Room", (), {})
 sys.modules["typeclasses.rooms"] = rooms_mod
 
-# Stub interface functions
+# Stub interface functions and watchers
 iface = types.ModuleType("pokemon.battle.interface")
-iface.add_watcher = lambda *a, **k: None
-iface.remove_watcher = lambda *a, **k: None
-iface.notify_watchers = lambda *a, **k: None
+iface.display_battle_interface = lambda *a, **k: ""
+iface.format_turn_banner = lambda turn: ""
+iface.render_interfaces = lambda *a, **k: ("", "", "")
 sys.modules["pokemon.battle.interface"] = iface
+watchers = types.ModuleType("pokemon.battle.watchers")
+watchers.add_watcher = lambda *a, **k: None
+watchers.remove_watcher = lambda *a, **k: None
+watchers.notify_watchers = lambda *a, **k: None
+watchers.WatcherManager = type(
+    "WatcherManager",
+    (),
+    {
+        "add_watcher": lambda self, w: None,
+        "remove_watcher": lambda self, w: None,
+        "notify": lambda self, m: None,
+        "add_observer": lambda self, w: None,
+        "remove_observer": lambda self, w: None,
+    },
+)
+sys.modules["pokemon.battle.watchers"] = watchers
 
 # Stub battle handler
 handler_mod = types.ModuleType("pokemon.battle.handler")
@@ -137,6 +153,22 @@ storage_spec = importlib.util.spec_from_file_location(
 storage_mod = importlib.util.module_from_spec(storage_spec)
 sys.modules[storage_spec.name] = storage_mod
 storage_spec.loader.exec_module(storage_mod)
+
+# Create package placeholders and load pokemon_factory
+pokemon_pkg = types.ModuleType("pokemon")
+pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
+sys.modules["pokemon"] = pokemon_pkg
+battle_pkg = types.ModuleType("pokemon.battle")
+battle_pkg.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
+sys.modules["pokemon.battle"] = battle_pkg
+
+pf_path = os.path.join(ROOT, "pokemon", "battle", "pokemon_factory.py")
+pf_spec = importlib.util.spec_from_file_location(
+    "pokemon.battle.pokemon_factory", pf_path
+)
+pf_mod = importlib.util.module_from_spec(pf_spec)
+sys.modules[pf_spec.name] = pf_mod
+pf_spec.loader.exec_module(pf_mod)
 
 # Now load battleinstance
 bi_path = os.path.join(ROOT, "pokemon", "battle", "battleinstance.py")

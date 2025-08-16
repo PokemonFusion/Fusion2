@@ -20,18 +20,7 @@ def _get_helpers_module():
 from .dex import POKEDEX
 from .generation import NATURES
 from pokemon.services.move_management import learn_level_up_moves
-
-STAT_KEY_MAP = {
-    "hp": "hp",
-    "atk": "attack",
-    "def": "defense",
-    "spa": "special_attack",
-    "spd": "special_defense",
-    "spe": "speed",
-}
-
-REVERSE_STAT_KEY_MAP = {v: k for k, v in STAT_KEY_MAP.items()}
-ALL_STATS = list(STAT_KEY_MAP.values())
+from pokemon.utils.boosts import STAT_KEY_MAP, REVERSE_STAT_KEY_MAP, ALL_STATS
 
 DISPLAY_STAT_MAP = {
     "hp": "HP",

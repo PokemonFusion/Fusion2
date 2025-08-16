@@ -170,7 +170,12 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
 
-        from pokemon.battle.utils import get_modified_stat
+        try:  # pragma: no cover - allows testing with minimal stubs
+            from pokemon.battle.utils import get_modified_stat
+        except Exception:
+            def get_modified_stat(pokemon, stat: str) -> int:  # type: ignore
+                base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
+                return base
 
         atk_key = "attack" if move.category == "Physical" else "special_attack"
         def_key = "defense" if move.category == "Physical" else "special_defense"
@@ -289,6 +294,13 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
             result.debug.setdefault("critical", []).append(False)
         if spread:
             dmg = int(dmg * 0.75)
+        if (
+            dmg < 1
+            and getattr(move, "category", None) != "Status"
+            and isinstance(power, (int, float))
+            and power > 0
+        ):
+            dmg = 1
         result.debug.setdefault("damage", []).append(dmg)
 
         # apply simple status effects like burns

@@ -19,6 +19,8 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
     BattleType = BattleParticipant = Battle = BattleMove = Action = ActionType = None
 from .capture import attempt_capture
 from .storage import BattleDataWrapper
+from .setup import create_participants, build_initial_state, persist_initial_state
+from .messaging import MessagingMixin
 
 __all__ = [
     "DamageResult",
@@ -44,4 +46,8 @@ __all__ = [
     "BattleState",
     "attempt_capture",
     "BattleDataWrapper",
+    "create_participants",
+    "build_initial_state",
+    "persist_initial_state",
+    "MessagingMixin",
 ]

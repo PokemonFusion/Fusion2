@@ -9,8 +9,28 @@ creation commands.
 """
 
 from evennia.objects.objects import DefaultCharacter
+import sys, os, importlib.util, importlib.machinery
 
-from .objects import ObjectParent
+_BASE_PATH = os.path.dirname(__file__)
+if "typeclasses" not in sys.modules:
+    spec_pkg = importlib.machinery.ModuleSpec(
+        "typeclasses", loader=None, is_package=True
+    )
+    pkg = importlib.util.module_from_spec(spec_pkg)
+    pkg.__path__ = [_BASE_PATH]
+    sys.modules["typeclasses"] = pkg
+
+try:
+    from .objects import ObjectParent
+except Exception:  # pragma: no cover - fallback when package missing
+    spec_obj = importlib.util.spec_from_file_location(
+        "typeclasses.objects", os.path.join(_BASE_PATH, "objects.py")
+    )
+    mod_obj = importlib.util.module_from_spec(spec_obj)
+    sys.modules[spec_obj.name] = mod_obj
+    spec_obj.loader.exec_module(mod_obj)
+    ObjectParent = mod_obj.ObjectParent  # type: ignore[attr-defined]
+
 from utils.pokedex import DexTrackerMixin
 from django.utils.translation import gettext as _
 
@@ -39,6 +59,12 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
                 inst = bmap.get(bid)
                 if inst:
                     self.ndb.battle_instance = inst
+        inst = getattr(self.ndb, "battle_instance", None)
+        if inst:
+            try:
+                self.execute_cmd("+showbattle")
+            except Exception:
+                pass
 
     def at_pre_move(self, destination, **kwargs):
         """Prevent leaving while hosting a PVP request."""

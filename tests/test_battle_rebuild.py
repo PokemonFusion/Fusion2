@@ -81,12 +81,28 @@ except Exception:
     sys.modules["evennia.server"] = evennia.server
     sys.modules["evennia.server.models"] = evennia.server.models
 
-# Stub battle interface and helpers
+# Stub battle interface and watcher helpers
 iface = types.ModuleType("pokemon.battle.interface")
-iface.add_watcher = lambda *a, **k: None
-iface.remove_watcher = lambda *a, **k: None
-iface.notify_watchers = lambda *a, **k: None
+iface.format_turn_banner = lambda turn: f"Turn {turn}"
+iface.render_interfaces = lambda *a, **k: ("", "", "")
+iface.display_battle_interface = lambda *a, **k: ""
 sys.modules["pokemon.battle.interface"] = iface
+watchers = types.ModuleType("pokemon.battle.watchers")
+watchers.add_watcher = lambda *a, **k: None
+watchers.remove_watcher = lambda *a, **k: None
+watchers.notify_watchers = lambda *a, **k: None
+watchers.WatcherManager = type(
+    "WatcherManager",
+    (),
+    {
+        "add_watcher": lambda self, w: None,
+        "remove_watcher": lambda self, w: None,
+        "notify": lambda self, m: None,
+        "add_observer": lambda self, w: None,
+        "remove_observer": lambda self, w: None,
+    },
+)
+sys.modules["pokemon.battle.watchers"] = watchers
 
 # Stub generation and spawn modules
 gen_mod = types.ModuleType("pokemon.generation")
@@ -110,6 +126,14 @@ spawn_mod = types.ModuleType("helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
 sys.modules["helpers.pokemon_spawn"] = spawn_mod
 
+# Create package placeholders for relative imports
+pokemon_pkg = types.ModuleType("pokemon")
+pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
+sys.modules["pokemon"] = pokemon_pkg
+battle_pkg = types.ModuleType("pokemon.battle")
+battle_pkg.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
+sys.modules["pokemon.battle"] = battle_pkg
+
 # Load supporting battle modules from real files
 bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")
 bd_spec = importlib.util.spec_from_file_location("pokemon.battle.battledata", bd_path)
@@ -122,6 +146,14 @@ st_spec = importlib.util.spec_from_file_location("pokemon.battle.state", st_path
 st_mod = importlib.util.module_from_spec(st_spec)
 sys.modules[st_spec.name] = st_mod
 st_spec.loader.exec_module(st_mod)
+
+pf_path = os.path.join(ROOT, "pokemon", "battle", "pokemon_factory.py")
+pf_spec = importlib.util.spec_from_file_location(
+    "pokemon.battle.pokemon_factory", pf_path
+)
+pf_mod = importlib.util.module_from_spec(pf_spec)
+sys.modules[pf_spec.name] = pf_mod
+pf_spec.loader.exec_module(pf_mod)
 
 storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
 storage_spec = importlib.util.spec_from_file_location(
@@ -182,6 +214,10 @@ def test_rebuild_ndb_restores_instance():
     inst = BattleSession(p1, p2)
     inst.start_pvp()
 
+    # simulate loss of participant.player references
+    inst.battle.participants[0].player = None
+    inst.battle.participants[1].player = None
+
     # clear ndb references as if after reload
     p1.ndb.battle_instance = None
     p2.ndb.battle_instance = None
@@ -194,6 +230,8 @@ def test_rebuild_ndb_restores_instance():
     assert p1.ndb.battle_instance is inst
     assert p2.ndb.battle_instance is inst
     assert room.ndb.battle_instances[inst.battle_id] is inst
+    assert inst.battle.participants[0].player is p1
+    assert inst.battle.participants[1].player is p2
 
 
 def test_restore_registers_instance():
@@ -239,6 +277,8 @@ def test_trainer_ids_saved_and_restored():
 
     assert restored.captainA is p1
     assert restored.captainB is p2
+    assert restored.battle.participants[0].player is p1
+    assert restored.battle.participants[1].player is p2
     storage_after = BattleDataWrapper(room, inst.battle_id)
     assert storage_after.get("trainers") == {"teamA": [1], "teamB": [2]}
 

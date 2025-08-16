@@ -2,22 +2,7 @@
 
 from typing import Dict
 
-from pokemon.stats import STAT_KEY_MAP
-
-
-
-def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
-    """Modify a Pokémon's stat stages, clamped between -6 and 6."""
-    current_boosts = getattr(pokemon, "boosts", {})
-    if not isinstance(current_boosts, dict):
-        current_boosts = {}
-
-    pokemon.boosts = {STAT_KEY_MAP.get(k, k): v for k, v in current_boosts.items()}
-
-    for stat, amount in boosts.items():
-        full = STAT_KEY_MAP.get(stat, stat)
-        current = pokemon.boosts.get(full, 0)
-        pokemon.boosts[full] = max(-6, min(6, current + amount))
+from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost
 
 
 def _safe_get_stats(pokemon) -> Dict[str, int]:

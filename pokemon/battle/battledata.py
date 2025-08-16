@@ -15,10 +15,11 @@ import sys
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 from pathlib import Path
+from utils.safe_import import safe_import
 
 try:
-    from pokemon.dex import POKEDEX  # type: ignore
-except Exception:  # pragma: no cover - optional in tests
+    POKEDEX = safe_import("pokemon.dex").POKEDEX  # type: ignore[attr-defined]
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover - optional in tests
     POKEDEX = {}
 
 
@@ -54,6 +55,7 @@ class Pokemon:
         evs: Optional[List[int]] = None,
         nature: str = "Hardy",
         model_id: Optional[int] = None,
+        gender: str = "N",
     ):
         self.name = name
         self.level = level
@@ -67,6 +69,7 @@ class Pokemon:
         self.ivs = ivs or [0, 0, 0, 0, 0, 0]
         self.evs = evs or [0, 0, 0, 0, 0, 0]
         self.nature = nature
+        self.gender = gender
         self.tempvals: Dict[str, int] = {}
         self.boosts: Dict[str, int] = {
             "atk": 0,
@@ -78,10 +81,9 @@ class Pokemon:
             "evasion": 0,
         }
         try:
-            from helpers.pokemon_helpers import refresh_stats
-
+            refresh_stats = safe_import("helpers.pokemon_helpers").refresh_stats
             refresh_stats(self)
-        except Exception:  # pragma: no cover - helpers may be absent in tests
+        except Exception:  # pragma: no cover - helpers may be absent or fail in tests
             pass
 
         # Ensure a ``types`` attribute is always available.  Some parts of the
@@ -101,16 +103,14 @@ class Pokemon:
         species_name = self.name
         pdex: Dict[str, Any] = {}
         try:  # pragma: no cover - data lookup is optional in tests
-            from pokemon.dex import (
-                POKEDEX as module_dex,
-                load_pokedex,
-                ABILITYDEX,
-                POKEDEX_PATH,
-            )
+            dex_mod = safe_import("pokemon.dex")
+            module_dex = getattr(dex_mod, "POKEDEX", {})
+            load_pokedex = getattr(dex_mod, "load_pokedex", None)
+            abilitydex = getattr(dex_mod, "ABILITYDEX", None)
+            pokedex_path = getattr(dex_mod, "POKEDEX_PATH", None)
             pdex = module_dex or {}
-            if not pdex and load_pokedex and POKEDEX_PATH:
-                # ``module_dex`` may be an empty stub; attempt to load data
-                pdex = load_pokedex(POKEDEX_PATH, ABILITYDEX)
+            if not pdex and load_pokedex and pokedex_path:
+                pdex = load_pokedex(pokedex_path, abilitydex)  # type: ignore[misc]
         except Exception:
             pdex = POKEDEX
 
@@ -163,6 +163,7 @@ class Pokemon:
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
             "tempvals": self.tempvals,
+            "gender": self.gender,
         }
 
         if self.model_id:
@@ -199,11 +200,12 @@ class Pokemon:
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
         types = data.get("types")
+        gender = data.get("gender", "N")
 
         slots = None
         if model_id:
             try:
-                from ..models import OwnedPokemon
+                OwnedPokemon = safe_import("pokemon.models").OwnedPokemon  # type: ignore[attr-defined]
             except Exception:  # pragma: no cover - DB not available in tests
                 OwnedPokemon = None
 
@@ -216,11 +218,11 @@ class Pokemon:
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
+                    gender = getattr(poke, "gender", gender)
                     types = getattr(poke, "type_", types)
                     if max_hp is None:
                         try:
-                            from helpers.pokemon_helpers import get_max_hp
-
+                            get_max_hp = safe_import("helpers.pokemon_helpers").get_max_hp
                             max_hp = get_max_hp(poke)
                         except Exception:
                             max_hp = getattr(poke, "current_hp", None)
@@ -258,6 +260,7 @@ class Pokemon:
             evs=evs,
             nature=nature,
             model_id=model_id,
+            gender=gender,
         )
         if types:
             obj.types = (

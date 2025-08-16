@@ -1,18 +1,33 @@
 from __future__ import annotations
 
 from typing import Dict, TYPE_CHECKING
+from utils.safe_import import safe_import
 
-try:
-    from evennia.utils.logger import log_info
+try:  # pragma: no cover - Evennia logger may be unavailable in tests
+    _logger = safe_import("evennia.utils.logger")
+    log_info = _logger.log_info  # type: ignore[attr-defined]
 except Exception:  # pragma: no cover - fallback if Evennia not available
     import logging
+
     _log = logging.getLogger(__name__)
 
     def log_info(*args, **kwargs):
         _log.info(*args, **kwargs)
 
-from evennia import search_object
-from evennia.server.models import ServerConfig
+try:  # pragma: no cover - search requires Evennia runtime
+    _evennia = safe_import("evennia")
+    search_object = _evennia.search_object  # type: ignore[attr-defined]
+    ServerConfig = safe_import("evennia.server.models").ServerConfig  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - fallback stubs when Evennia missing
+    def search_object(*args, **kwargs):  # type: ignore[misc]
+        return []
+
+    class ServerConfig:  # type: ignore[no-redef]
+        class objects:  # pragma: no cover - minimal stub
+            @staticmethod
+            def conf(key, default=None, value=None, delete=False):
+                return default
+
 from .storage import BattleDataWrapper
 
 if TYPE_CHECKING:
@@ -141,6 +156,18 @@ class BattleHandler:
                         part_b = inst.logic.battle.participants[1]
                         if part_b.active:
                             inst.captainB.active_pokemon = part_b.active[0]
+
+                # Reattach participant -> player references
+                parts = getattr(inst.logic.battle, "participants", [])
+                team_map = {"A": inst.teamA, "B": inst.teamB}
+                team_idx = {"A": 0, "B": 0}
+                for part in parts:
+                    t = getattr(part, "team", None)
+                    if t in team_map:
+                        idx = team_idx.get(t, 0)
+                        if idx < len(team_map[t]):
+                            part.player = team_map[t][idx]
+                        team_idx[t] = idx + 1
             except Exception:
                 # Logic may be incomplete; fail silently
                 pass

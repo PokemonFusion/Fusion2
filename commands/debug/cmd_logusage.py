@@ -63,6 +63,20 @@ class CmdMarkVerified(Command):
             self.caller.msg("Usage: @markverified (move|ability) <name>")
             return
 
+        if self.kind == "move":
+            try:  # pragma: no cover - DB may be unavailable in tests
+                from pokemon.models import VerifiedMove
+
+                entry, _ = VerifiedMove.objects.get_or_create(
+                    key__iexact=self.name, defaults={"key": self.name}
+                )
+                entry.verified = True
+                entry.save()
+                self.caller.msg(f"{self.name} marked as verified move.")
+                return
+            except Exception:
+                pass
+
         file = LOG_DIR / "verified_usage.json"
         data = {"moves": [], "abilities": []}
         if file.exists():

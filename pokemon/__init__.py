@@ -27,6 +27,11 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
     add_evs = calculate_stats = distribute_experience = None
     award_experience_to_party = None
 
+try:
+	from .testfactory import make_test_pokemon, make_punching_bag
+except Exception:  # pragma: no cover - optional for lightweight test stubs
+	make_test_pokemon = make_punching_bag = None
+
 __all__ = [
     "generate_pokemon",
     "choose_wild_moves",
@@ -42,4 +47,6 @@ __all__ = [
     "get_evolution",
     "attempt_evolution",
     "determine_egg_species",
+	"make_test_pokemon",
+	"make_punching_bag",
 ]
