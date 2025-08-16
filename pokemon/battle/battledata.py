@@ -61,9 +61,10 @@ class Move:
 class Pokemon:
     """Very small Pokémon container used for battles.
 
-    The constructor accepts explicit typing via the ``types`` argument.  When
-    omitted, typing is inferred from the Pokédex using the Pokémon's species
-    name.
+    The constructor accepts optional item and stat data. IVs, EVs and nature
+    are used to calculate the base stats for the battle instance.  Explicit
+    typing can be supplied via the ``types`` argument; when omitted, typing is
+    inferred from the Pokédex using the Pokémon's species name.
     """
 
     def __init__(
@@ -76,6 +77,7 @@ class Pokemon:
         moves: Optional[List[Move]] = None,
         toxic_counter: int = 0,
         ability=None,
+        item=None,
         ivs: Optional[List[int]] = None,
         evs: Optional[List[int]] = None,
         nature: str = "Hardy",
@@ -91,6 +93,7 @@ class Pokemon:
         self.toxic_counter = toxic_counter
         self.moves = moves or []
         self.ability = ability
+        self.item = item
         self.model_id = model_id
         self.ivs = ivs or [0, 0, 0, 0, 0, 0]
         self.evs = evs or [0, 0, 0, 0, 0, 0]
@@ -108,9 +111,33 @@ class Pokemon:
         }
         try:
             refresh_stats = safe_import("helpers.pokemon_helpers").refresh_stats
+            get_stats = safe_import("helpers.pokemon_helpers").get_stats
             refresh_stats(self)
+            stats_dict = get_stats(self)
+            try:
+                StatsCls = safe_import("pokemon.dex.entities").Stats
+            except Exception:  # pragma: no cover - Stats class optional
+                from types import SimpleNamespace as StatsCls  # type: ignore
+            self.base_stats = StatsCls(**stats_dict)
         except Exception:  # pragma: no cover - helpers may be absent or fail in tests
             pass
+
+        # Convert item name strings to Item objects when possible so that
+        # item callbacks can fire during battle simulations.
+        if isinstance(self.item, str):
+            try:  # pragma: no cover - optional import paths
+                dex_mod = safe_import("pokemon.dex")
+                itemdex = getattr(dex_mod, "ITEMDEX", {})
+                ItemCls = getattr(dex_mod, "Item", None)
+                entry = (
+                    itemdex.get(self.item)
+                    or itemdex.get(str(self.item).lower())
+                    or itemdex.get(str(self.item).title())
+                )
+                if entry and ItemCls:
+                    self.item = ItemCls.from_dict(str(self.item), entry)
+            except Exception:
+                pass
 
         # Ensure a ``types`` attribute is always available. Some parts of the
         # battle engine (such as damage calculation) expect this attribute to
@@ -198,6 +225,8 @@ class Pokemon:
 
         if self.ability is not None:
             info["ability"] = getattr(self.ability, "name", self.ability)
+        if self.item is not None:
+            info["item"] = getattr(self.item, "name", self.item)
         info.update(
             {
                 "name": self.name,
@@ -223,6 +252,7 @@ class Pokemon:
         max_hp = data.get("max_hp")
         model_id = data.get("model_id")
         ability = data.get("ability")
+        item = data.get("item")
         ivs = data.get("ivs")
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
@@ -242,6 +272,7 @@ class Pokemon:
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
+                    item = getattr(poke, "item", getattr(poke, "held_item", item))
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
@@ -283,6 +314,7 @@ class Pokemon:
             moves=moves,
             toxic_counter=data.get("toxic_counter", 0),
             ability=ability,
+            item=item,
             ivs=ivs,
             evs=evs,
             nature=nature,
