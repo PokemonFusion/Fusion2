@@ -361,9 +361,12 @@ class BattleMove:
             if part:
                 battle.add_side_condition(part, side_cond, condition, source=user, moves_funcs=moves_funcs)
 
-        # Apply stat stage changes caused by this move
+        # Apply stat stage changes caused by this move. For damaging moves
+        # this happens here so the boost is applied after damage is dealt.
+        # Status moves already handled their boosts above, so we skip them
+        # here to avoid applying the same boost twice (e.g. Acid Armor).
         boosts = self.raw.get("boosts") if self.raw else None
-        if boosts:
+        if boosts and category != "status":
             from pokemon.battle.utils import apply_boost
 
             affected = user if self.raw.get("target") == "self" else target
