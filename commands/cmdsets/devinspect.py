@@ -8,9 +8,11 @@ from ..admin_battleinspect import CmdBattleInspect
 
 
 class CmdToggleDevInspect(Command):
-    """Toggle developer inspection and test cmdsets on the caller."""
+    """@toggleinspect
+    Toggle developer inspection and test cmdsets on the caller."""
 
-    key = "toggletest"
+    key = "@toggleinspect"
+    aliases = ["toggleinspect"]
     locks = "cmd:perm(Developers) or perm(Admin) or perm(Builder)"
     help_category = "Admin"
 
