@@ -150,6 +150,30 @@ def build_move(entry):
     return move
 
 
+def build_ability(entry):
+    """Prepare an :class:`Ability` with wrapped callbacks."""
+
+    from importlib import import_module
+
+    ability_funcs = import_module("pokemon.dex.functions.abilities_funcs")
+
+    for key, val in list(entry.raw.items()):
+        if not key.startswith("on") or not isinstance(val, str):
+            continue
+        try:
+            cls_name, func_name = val.split(".", 1)
+            cls = getattr(ability_funcs, cls_name, None)
+            if cls:
+                inst = cls()
+                cand = getattr(inst, func_name, None)
+                if callable(cand):
+                    entry.raw[key] = CallbackWrapper(cand)
+        except Exception:
+            continue
+
+    return entry
+
+
 def setup_battle(move: BattleMove, ability=None):
     """Return a simple battle with ``move`` queued."""
 
@@ -308,9 +332,34 @@ def test_move_execution(move_name, move_entry):
 
 @pytest.mark.parametrize("ability_name, ability_entry", list(get_dex_data()[1].items()))
 def test_ability_behaviour(ability_name, ability_entry):
-    ability = ability_entry
-    move = BattleMove("Tackle", power=40, accuracy=100)
-    battle, user, target = setup_battle(move, ability=ability)
+    ability = build_ability(ability_entry)
+
+    # Use a simple contact move to trigger defensive abilities by default
+    move = BattleMove(
+        "Tackle",
+        power=40,
+        accuracy=100,
+        type="Normal",
+        raw={"flags": {"contact": 1}, "category": "Physical"},
+    )
+
+    defensive_keys = {"onDamagingHit", "onTryHit", "onHit", "onDamage"}
+    ability_on_target = any(k in ability.raw for k in defensive_keys)
+
+    battle, user, target = setup_battle(move)
+    if ability_on_target:
+        target.ability = ability
+        actor, foe = target, user
+    else:
+        user.ability = ability
+        actor, foe = user, target
+
+    actor_start = actor.hp
+    foe_start = foe.hp
+    actor_boosts = actor.boosts.copy()
+    foe_boosts = foe.boosts.copy()
+    weather_before = getattr(battle, "weather", None)
+
     try:
         battle.start_turn()
         battle.run_switch()
@@ -319,6 +368,35 @@ def test_ability_behaviour(ability_name, ability_entry):
         battle.run_faint()
         battle.residual()
         battle.end_turn()
+
+        # ensure any wrapped callbacks were invoked
+        for key, cb in ability.raw.items():
+            if key.startswith("on") and isinstance(cb, CallbackWrapper):
+                assert cb.called > 0, f"{key} callback not invoked"
+
+        # Basic effect checks for common hooks
+        if "onStart" in ability.raw:
+            changed = (
+                getattr(battle, "weather", None) != weather_before
+                or actor.boosts != actor_boosts
+                or foe.boosts != foe_boosts
+            )
+            assert changed, "onStart produced no observable effect"
+        if ability_on_target and "onDamagingHit" in ability.raw:
+            changed = (
+                foe.hp != foe_start or foe.status or foe.boosts != foe_boosts
+            )
+            assert changed, "onDamagingHit produced no observable effect"
+        if ability_on_target and "onTryHit" in ability.raw:
+            changed = (
+                foe.hp != foe_start
+                or actor.hp != actor_start
+                or getattr(actor, "immune", None)
+            )
+            assert changed, "onTryHit produced no observable effect"
+    except AssertionError as e:
+        ABILITY_FAILS.append((ability_name, str(e)))
+        pytest.xfail(f"Ability {ability_name}: {e}")
     except Exception as e:
         ABILITY_FAILS.append((ability_name, str(e)))
         pytest.xfail(f"Ability {ability_name} raised {e}")
