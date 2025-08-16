@@ -257,8 +257,15 @@ class Auroraveil:
 
 class Autotomize:
     def onHit(self, user, target, battle):
-        """Boost Speed by two stages and reduce weight."""
-        apply_boost(user, {"spe": 2})
+        """Reduce the user's weight and mark Autotomize as active.
+
+        The actual Speed boost for Autotomize is handled by the move's raw
+        data in :mod:`pokemon.battle.engine`.  If we were to apply the boost
+        here as well it would be doubled, resulting in a +4 Speed increase
+        instead of the expected +2.  We therefore only track the move's
+        weight-reduction side effect in this handler and allow the default
+        engine logic to apply the stat boosts once.
+        """
         if hasattr(user, "tempvals"):
             user.tempvals["autotomize"] = True
         return True
