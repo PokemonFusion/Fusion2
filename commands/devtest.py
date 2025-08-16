@@ -83,10 +83,11 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
 class CmdToggleTest(Command):
     """
     @toggletest
-    Attach/remove the DevTestCmdSet to yourself.
+    Attach or remove the ``DevTestCmdSet`` to yourself.
     """
 
     key = "@toggletest"
+    aliases = ["toggletest"]
     locks = "cmd:perm(Builder)"
     help_category = "Dev/Test"
 
