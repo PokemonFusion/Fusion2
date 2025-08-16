@@ -534,10 +534,18 @@ class Battle(ConditionHelpers, BattleActions):
     def on_faint(self, pokemon) -> None:
         """Mark ``pokemon`` as fainted and trigger callbacks."""
         pokemon.is_fainted = True
+
         ability = getattr(pokemon, "ability", None)
         if ability and hasattr(ability, "call"):
             try:
                 ability.call("onFaint", pokemon, self)
+            except Exception:
+                pass
+
+        item = getattr(pokemon, "item", None)
+        if item and hasattr(item, "call"):
+            try:
+                item.call("onFaint", pokemon=pokemon, battle=self)
             except Exception:
                 pass
 
@@ -1021,10 +1029,10 @@ class Battle(ConditionHelpers, BattleActions):
                         evs = info.get("evs", {})
                         if exp or evs:
                             award_experience_to_party(opponent.player, exp, evs)
-                        poke.is_fainted = True
+                        self.on_faint(poke)
                 else:
                     for poke in fainted:
-                        poke.is_fainted = True
+                        self.on_faint(poke)
 
             # Remove fainted Pokémon from the active list
             part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]
