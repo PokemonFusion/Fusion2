@@ -36,6 +36,7 @@ from pokemon.battle.engine import (
     ActionType,
     BattleType,
 )
+from pokemon.utils.boosts import STAT_KEY_MAP
 
 # Global lists to collect failures
 MOVE_FAILS = []
@@ -208,10 +209,13 @@ def _verify_boosts(move_name, actor, initial, boosts):
     """Assert that ``actor``'s stat boosts changed by ``boosts``."""
 
     for stat, amount in boosts.items():
-        before = initial.get(stat, 0)
-        after = actor.boosts.get(stat, 0)
+        canonical = STAT_KEY_MAP.get(stat, stat)
+        before = initial.get(canonical, 0)
+        after = actor.boosts.get(canonical, 0)
         if after != before + amount:
-            raise AssertionError(f"expected {stat} boost {amount}, got {after - before}")
+            raise AssertionError(
+                f"expected {canonical} boost {amount}, got {after - before}"
+            )
 
 
 def _verify_status(move_name, actor, expected):
