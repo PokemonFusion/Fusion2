@@ -52,6 +52,10 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
             max_hp=atk_pkmn.max_hp,
             moves=atk_moves,
             ability=atk_pkmn.ability,
+            item=atk_pkmn.item,
+            ivs=atk_pkmn.ivs,
+            evs=atk_pkmn.evs,
+            nature=atk_pkmn.nature,
             types=atk_pkmn.types,
         )
         defender = BPokemon(
@@ -61,6 +65,10 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
             max_hp=def_pkmn.max_hp,
             moves=def_moves,
             ability=def_pkmn.ability,
+            item=def_pkmn.item,
+            ivs=def_pkmn.ivs,
+            evs=def_pkmn.evs,
+            nature=def_pkmn.nature,
             types=def_pkmn.types,
         )
         battle._init_battle_state(
