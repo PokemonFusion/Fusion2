@@ -408,6 +408,14 @@ class BattleMove:
             if affected and hasattr(affected, "volatiles"):
                 affected.volatiles.setdefault(volatile, True)
 
+        # Apply major status conditions inflicted by this move
+        status = self.raw.get("status") if self.raw else None
+        if status:
+            affected = user if is_self_target(self.raw.get("target")) else target
+            if affected is not None:
+                battle.apply_status_condition(affected, status)
+                battle.announce_status_change(affected, status)
+
         # Apply secondary effects such as additional boosts or status changes
         secondaries: List[Dict[str, Any]] = []
         sec = self.raw.get("secondary") if self.raw else None
