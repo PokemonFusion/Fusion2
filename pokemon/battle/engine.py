@@ -314,8 +314,9 @@ class BattleMove:
 
         # Default behaviour for moves without custom handlers
         category = (self.raw.get("category") or "").lower() if self.raw else ""
+        result = None
         if category != "status":
-            _apply_move_damage(user, target, self, battle)
+            result = _apply_move_damage(user, target, self, battle)
         else:
             boosts = self.raw.get("boosts") if self.raw else None
             if boosts:
@@ -324,6 +325,30 @@ class BattleMove:
                 affected = user if self.raw.get("target") == "self" else target
                 if affected is not None:
                     apply_boost(affected, boosts)
+
+        # Apply draining effects (e.g. Absorb)
+        drain = self.raw.get("drain") if self.raw else None
+        if drain and result is not None:
+            damage = 0
+            if hasattr(result, "debug"):
+                dmg_list = result.debug.get("damage", [])
+                if isinstance(dmg_list, list):
+                    damage = sum(dmg_list)
+            if damage > 0:
+                frac = drain[0] / drain[1]
+                max_hp = getattr(user, "max_hp", getattr(user, "hp", 1))
+                heal_amt = max(1, int(damage * frac))
+                user.hp = min(max_hp, user.hp + heal_amt)
+
+        # Apply flat healing (e.g. Recover)
+        heal = self.raw.get("heal") if self.raw else None
+        if heal:
+            frac = heal[0] / heal[1] if isinstance(heal, (list, tuple)) else 0
+            heal_target = user if self.raw.get("target") == "self" else target
+            if heal_target is not None:
+                max_hp = getattr(heal_target, "max_hp", getattr(heal_target, "hp", 1))
+                amount = max(1, int(max_hp * frac)) if frac else max_hp
+                heal_target.hp = min(max_hp, heal_target.hp + amount)
 
         # Handle side conditions set by this move
         side_cond = self.raw.get("sideCondition") if self.raw else None
@@ -833,6 +858,29 @@ class Battle(ConditionHelpers, BattleActions):
                 f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
             )
             return
+
+        # Allow opponents with an active Snatch volatile to intercept
+        for part in self.participants:
+            if part is action.actor:
+                continue
+            if not part.active:
+                continue
+            snatcher = part.active[0]
+            if getattr(snatcher, "volatiles", {}).get("snatch") and action.move.raw.get("flags", {}).get("snatch"):
+                # Deduct PP from the original user
+                self.deduct_pp(user, action.move)
+                self.log_action(
+                    f"{getattr(snatcher, 'name', 'Pokemon')} snatched {getattr(user, 'name', 'Pokemon')}'s move!"
+                )
+                snatcher.volatiles.pop("snatch", None)
+                # Determine the target of the stolen move
+                snatch_target = snatcher if action.move.raw.get("target") == "self" else target
+                action.move.execute(snatcher, snatch_target, self)
+                try:
+                    snatcher.tempvals["moved"] = True
+                except Exception:
+                    pass
+                return
 
         self.deduct_pp(user, action.move)
         self.dispatcher.dispatch("before_move", user=user, target=target, move=action.move, battle=self)
