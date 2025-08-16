@@ -25,21 +25,46 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - optional in 
 
 @dataclass
 class Move:
-    """Minimal representation of a Pokemon move."""
+    """Minimal representation of a Pokémon move.
+
+    Parameters
+    ----------
+    name
+        Name of the move.
+    priority
+        Execution priority of the move.
+    pokemon_types
+        Optional typing of the Pokémon using the move.  This is primarily
+        carried so ephemeral test battles can perform damage calculations with
+        the correct Same Type Attack Bonus.
+    """
 
     name: str
     priority: int = 0
+    pokemon_types: Optional[List[str]] = None
 
     def to_dict(self) -> Dict:
-        return {"name": self.name, "priority": self.priority}
+        data = {"name": self.name, "priority": self.priority}
+        if self.pokemon_types:
+            data["pokemon_types"] = list(self.pokemon_types)
+        return data
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Move":
-        return cls(name=data["name"], priority=data.get("priority", 0))
+        return cls(
+            name=data["name"],
+            priority=data.get("priority", 0),
+            pokemon_types=data.get("pokemon_types"),
+        )
 
 
 class Pokemon:
-    """Very small Pokemon container used for battles."""
+    """Very small Pokémon container used for battles.
+
+    The constructor accepts explicit typing via the ``types`` argument.  When
+    omitted, typing is inferred from the Pokédex using the Pokémon's species
+    name.
+    """
 
     def __init__(
         self,
@@ -56,6 +81,7 @@ class Pokemon:
         nature: str = "Hardy",
         model_id: Optional[int] = None,
         gender: str = "N",
+        types: Optional[List[str]] = None,
     ):
         self.name = name
         self.level = level
@@ -86,11 +112,11 @@ class Pokemon:
         except Exception:  # pragma: no cover - helpers may be absent or fail in tests
             pass
 
-        # Ensure a ``types`` attribute is always available.  Some parts of the
+        # Ensure a ``types`` attribute is always available. Some parts of the
         # battle engine (such as damage calculation) expect this attribute to
-        # exist.  When explicit type information isn't supplied we look it up
-        # from the Pokédex based on the Pokémon's species name.
-        self.types = self._lookup_species_types()
+        # exist.  Use the explicitly supplied types if provided; otherwise fall
+        # back to a Pokédex lookup based on the Pokémon's species name.
+        self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
 
     def _lookup_species_types(self) -> List[str]:
         """Return this Pokémon's types inferred from the Pokédex.
@@ -181,6 +207,7 @@ class Pokemon:
                 "ivs": self.ivs,
                 "evs": self.evs,
                 "nature": self.nature,
+                "types": list(self.types),
             }
         )
 
@@ -261,11 +288,10 @@ class Pokemon:
             nature=nature,
             model_id=model_id,
             gender=gender,
+            types=(
+                [t.strip() for t in types.split(",")] if isinstance(types, str) else types
+            ),
         )
-        if types:
-            obj.types = (
-                [t.strip() for t in types.split(",")] if isinstance(types, str) else list(types)
-            )
         if slots is not None:
             obj.activemoveslot_set = slots
         obj.tempvals = data.get("tempvals", {})
