@@ -336,6 +336,15 @@ class BattleMove:
             if part:
                 battle.add_side_condition(part, side_cond, condition, source=user, moves_funcs=moves_funcs)
 
+        # Apply stat stage changes caused by this move
+        boosts = self.raw.get("boosts") if self.raw else None
+        if boosts:
+            from pokemon.battle.utils import apply_boost
+
+            affected = user if self.raw.get("target") == "self" else target
+            if affected:
+                apply_boost(affected, boosts)
+
         # Apply volatile status effects set by this move
         volatile = self.raw.get("volatileStatus") if self.raw else None
         if volatile:
