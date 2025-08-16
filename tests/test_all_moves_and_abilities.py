@@ -8,6 +8,7 @@ import random
 import sys
 from pathlib import Path
 import importlib
+from typing import Callable
 
 import pytest
 
@@ -41,6 +42,20 @@ MOVE_FAILS = []
 ABILITY_FAILS = []
 # Moves where secondary effects could not be verified
 MOVE_UNVERIFIED = []
+# Missing callback invocations
+CALLBACK_FAILS = []
+
+
+class CallbackWrapper:
+    """Lightweight wrapper recording callback invocations."""
+
+    def __init__(self, func: Callable):
+        self.func = func
+        self.called = 0
+
+    def __call__(self, *args, **kwargs):
+        self.called += 1
+        return self.func(*args, **kwargs)
 
 @pytest.fixture(scope="session", autouse=True)
 def _report_results(request):
@@ -50,7 +65,7 @@ def _report_results(request):
     report_path = Path(__file__).resolve().parents[1] / "move_ability_report.txt"
     with open(report_path, "w") as fh:
         if MOVE_FAILS:
-            fh.write("Failed Moves:\n")
+            fh.write("Failed Moves or Callbacks:\n")
             for name, err in MOVE_FAILS:
                 fh.write(f"{name}: {err}\n")
         else:
@@ -60,6 +75,11 @@ def _report_results(request):
             fh.write("Moves with unverified effects:\n")
             for name, reason in MOVE_UNVERIFIED:
                 fh.write(f"{name}: {reason}\n")
+            fh.write("\n")
+        if CALLBACK_FAILS:
+            fh.write("Missing Callback Invocations:\n")
+            for name, err in CALLBACK_FAILS:
+                fh.write(f"{name}: {err}\n")
             fh.write("\n")
         if ABILITY_FAILS:
             fh.write("Failed Abilities:\n")
@@ -76,9 +96,9 @@ def build_move(entry):
 
     moves_funcs = import_module("pokemon.dex.functions.moves_funcs")
 
-    on_hit_func = None
-    on_try_func = None
-    base_power_cb = None
+    on_hit_func: CallbackWrapper | None = None
+    on_try_func: CallbackWrapper | None = None
+    base_power_cb: CallbackWrapper | None = None
     on_hit = entry.raw.get("onHit")
     if isinstance(on_hit, str):
         try:
@@ -88,7 +108,7 @@ def build_move(entry):
                 inst = cls()
                 cand = getattr(inst, func_name, None)
                 if callable(cand):
-                    on_hit_func = cand
+                    on_hit_func = CallbackWrapper(cand)
         except Exception:
             on_hit_func = None
     on_try = entry.raw.get("onTry")
@@ -100,7 +120,7 @@ def build_move(entry):
                 inst = cls()
                 cand = getattr(inst, func_name, None)
                 if callable(cand):
-                    on_try_func = cand
+                    on_try_func = CallbackWrapper(cand)
         except Exception:
             on_try_func = None
     base_cb = entry.raw.get("basePowerCallback")
@@ -112,7 +132,7 @@ def build_move(entry):
                 inst = cls()
                 cand = getattr(inst, func_name, None)
                 if callable(cand):
-                    base_power_cb = cand
+                    base_power_cb = CallbackWrapper(cand)
         except Exception:
             base_power_cb = None
     move = BattleMove(
@@ -214,9 +234,17 @@ def test_move_execution(move_name, move_entry):
         battle.run_switch()
         battle.run_after_switch()
         battle.run_move()
+        for attr in ("onHit", "onTry", "basePowerCallback"):
+            cb = getattr(move, attr, None)
+            if isinstance(cb, CallbackWrapper):
+                assert cb.called > 0, f"{attr} callback not invoked"
         battle.run_faint()
         battle.residual()
         battle.end_turn()
+    except AssertionError as e:
+        MOVE_FAILS.append((move_name, str(e)))
+        CALLBACK_FAILS.append((move_name, str(e)))
+        pytest.xfail(f"Move {move_name}: {e}")
     except Exception as e:
         MOVE_FAILS.append((move_name, str(e)))
         pytest.xfail(f"Move {move_name} raised {e}")
