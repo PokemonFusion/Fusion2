@@ -100,6 +100,8 @@ class Pokemon:
         self.nature = nature
         self.gender = gender
         self.tempvals: Dict[str, int] = {}
+        # Track volatile status effects such as confusion or curses
+        self.volatiles: Dict[str, Any] = {}
         self.boosts: Dict[str, int] = {
             "atk": 0,
             "def": 0,
