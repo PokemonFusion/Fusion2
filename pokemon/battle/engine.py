@@ -329,8 +329,9 @@ class BattleMove:
         if self.onTry:
             self.onTry(user, target, self, battle)
         if self.onHit:
-            self.onHit(user, target, battle)
-            return
+            handled = self.onHit(user, target, battle)
+            if handled is not True:
+                return
 
         # Default behaviour for moves without custom handlers
         category = (self.raw.get("category") or "").lower() if self.raw else ""
