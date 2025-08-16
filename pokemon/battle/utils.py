@@ -1,6 +1,6 @@
 """Utility helpers for the battle engine."""
 
-from typing import Dict
+from typing import Dict, Optional
 
 from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost
 
@@ -48,4 +48,17 @@ def get_modified_stat(pokemon, stat: str) -> int:
         else:
             modifier = 2 / (2 - stage)
     return int(base * modifier)
+
+
+def is_self_target(target: Optional[str]) -> bool:
+    """Return ``True`` if ``target`` refers to the user or its allies.
+
+    The battle engine simplifies targeting by treating moves that would
+    normally affect an ally (such as ``"adjacentAlly"``) as if they target
+    the user when no ally is present.  This helper centralises that logic so
+    callers can easily determine whether a move's effects should apply to the
+    user or to their opponent.
+    """
+
+    return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
 
