@@ -1003,6 +1003,8 @@ class Battle(ConditionHelpers, BattleActions):
             return
 
         start_hp = getattr(target, "hp", 0)
+        start_user_boosts = dict(getattr(user, "boosts", {}))
+        start_target_boosts = dict(getattr(target, "boosts", {}))
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
@@ -1010,6 +1012,8 @@ class Battle(ConditionHelpers, BattleActions):
                 action.move.onBeforeMove(user, target)
         executed = self._do_move(user, target, action.move)
         end_hp = getattr(target, "hp", 0)
+        end_user_boosts = getattr(user, "boosts", {})
+        end_target_boosts = getattr(target, "boosts", {})
         if not executed:
             try:
                 user.tempvals["moved"] = True
@@ -1021,14 +1025,32 @@ class Battle(ConditionHelpers, BattleActions):
             return
 
         dmg = start_hp - end_hp
+        boosts_changed = (
+            start_user_boosts != end_user_boosts
+            or start_target_boosts != end_target_boosts
+        )
+        target_self = action.move.raw.get("target") == "self"
+        user_name = getattr(user, "name", "Pokemon")
+        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
         if dmg > 0:
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')} used {action.move.name} on {getattr(target, 'name', 'Pokemon')} and dealt {dmg} damage!"
+                f"{user_name} used {action.move.name} on {target_name} and dealt {dmg} damage!"
             )
+        elif boosts_changed:
+            if target_self:
+                self.log_action(f"{user_name} used {action.move.name}!")
+            else:
+                self.log_action(f"{user_name} used {action.move.name} on {target_name}!")
         else:
-            self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')} used {action.move.name} on {getattr(target, 'name', 'Pokemon')} but it had no effect!"
-            )
+            if action.move.raw.get("boosts"):
+                fail_target = "its own" if target_self else f"{target_name}'s"
+                self.log_action(
+                    f"{user_name}'s {action.move.name} failed to affect {fail_target} stats!"
+                )
+            else:
+                self.log_action(
+                    f"{user_name} used {action.move.name} on {target_name} but it had no effect!"
+                )
 
         if action.move.onAfterMove:
             try:
