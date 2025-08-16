@@ -1012,8 +1012,8 @@ class Battle(ConditionHelpers, BattleActions):
                 action.move.onBeforeMove(user, target)
         executed = self._do_move(user, target, action.move)
         end_hp = getattr(target, "hp", 0)
-        end_user_boosts = getattr(user, "boosts", {})
-        end_target_boosts = getattr(target, "boosts", {})
+        end_user_boosts = dict(getattr(user, "boosts", {}))
+        end_target_boosts = dict(getattr(target, "boosts", {}))
         if not executed:
             try:
                 user.tempvals["moved"] = True
@@ -1041,11 +1041,29 @@ class Battle(ConditionHelpers, BattleActions):
                 self.log_action(f"{user_name} used {action.move.name}!")
             else:
                 self.log_action(f"{user_name} used {action.move.name} on {target_name}!")
+            self.announce_stat_changes(
+                user,
+                start_user_boosts,
+                end_user_boosts,
+                action.move.raw.get("boosts") if target_self else None,
+            )
+            self.announce_stat_changes(
+                target,
+                start_target_boosts,
+                end_target_boosts,
+                action.move.raw.get("boosts") if not target_self else None,
+            )
         else:
             if action.move.raw.get("boosts"):
                 fail_target = "its own" if target_self else f"{target_name}'s"
                 self.log_action(
                     f"{user_name}'s {action.move.name} failed to affect {fail_target} stats!"
+                )
+                affected = user if target_self else target
+                start = start_user_boosts if target_self else start_target_boosts
+                end = end_user_boosts if target_self else end_target_boosts
+                self.announce_stat_changes(
+                    affected, start, end, action.move.raw.get("boosts")
                 )
             else:
                 self.log_action(
@@ -1852,6 +1870,62 @@ class Battle(ConditionHelpers, BattleActions):
         """Output current stat stages for debugging."""
         boosts = getattr(pokemon, "boosts", {})
         self.log_action(f"Boosts: {boosts}")
+
+
+    def announce_stat_changes(
+        self,
+        pokemon,
+        start: dict,
+        end: dict,
+        attempted: dict | None = None,
+    ) -> None:
+        """Announce stat stage changes between ``start`` and ``end``.
+
+        Parameters
+        ----------
+        pokemon: Any
+            The Pokémon whose stat changes will be announced.
+        start: dict
+            Mapping of stat names to their starting stage values.
+        end: dict
+            Mapping of stat names to their ending stage values.
+        attempted: dict, optional
+            Mapping of stat names to attempted changes. This is used to
+            report messages when a stat change fails due to reaching the
+            stage cap.
+        """
+
+        from pokemon.data.text import DEFAULT_TEXT
+        from pokemon.utils.boosts import REVERSE_STAT_KEY_MAP, STAT_KEY_MAP
+
+        start = start or {}
+        end = end or {}
+        attempted = attempted or {}
+        attempted = {STAT_KEY_MAP.get(k, k): v for k, v in attempted.items()}
+
+        stats = set(start) | set(end) | set(attempted)
+        name = getattr(pokemon, "name", "Pokemon")
+
+        for stat in stats:
+            before = start.get(stat, 0)
+            after = end.get(stat, 0)
+            delta = after - before
+            template_key = None
+            if delta > 0:
+                template_key = {1: "boost", 2: "boost2"}.get(delta, "boost3")
+            elif delta < 0:
+                template_key = {-1: "unboost", -2: "unboost2"}.get(delta, "unboost3")
+            else:
+                attempt = attempted.get(stat)
+                if attempt:
+                    template_key = "boost0" if attempt > 0 else "unboost0"
+            if not template_key:
+                continue
+            short = REVERSE_STAT_KEY_MAP.get(stat, stat)
+            stat_name = DEFAULT_TEXT.get(short, {}).get("statName", stat)
+            message = DEFAULT_TEXT["default"][template_key]
+            message = message.replace("[POKEMON]", name).replace("[STAT]", stat_name)
+            self.log_action(message)
 
     def check_fainted(self, pokemon) -> bool:
         """Return ``True`` if ``pokemon`` has fainted."""
