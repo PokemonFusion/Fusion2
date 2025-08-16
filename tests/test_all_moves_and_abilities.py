@@ -39,6 +39,8 @@ from pokemon.battle.engine import (
 # Global lists to collect failures
 MOVE_FAILS = []
 ABILITY_FAILS = []
+# Moves where secondary effects could not be verified
+MOVE_UNVERIFIED = []
 
 @pytest.fixture(scope="session", autouse=True)
 def _report_results(request):
@@ -54,6 +56,11 @@ def _report_results(request):
         else:
             fh.write("All moves executed without exception.\n")
         fh.write("\n")
+        if MOVE_UNVERIFIED:
+            fh.write("Moves with unverified effects:\n")
+            for name, reason in MOVE_UNVERIFIED:
+                fh.write(f"{name}: {reason}\n")
+            fh.write("\n")
         if ABILITY_FAILS:
             fh.write("Failed Abilities:\n")
             for name, err in ABILITY_FAILS:
@@ -147,10 +154,61 @@ def setup_battle(move: BattleMove, ability=None):
     return battle, user, target
 
 
+def _is_self_target(target_str: str | None) -> bool:
+    """Return ``True`` if ``target_str`` refers to the user."""
+
+    return target_str in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+
+
+def _verify_boosts(move_name, actor, initial, boosts):
+    """Assert that ``actor``'s stat boosts changed by ``boosts``."""
+
+    for stat, amount in boosts.items():
+        before = initial.get(stat, 0)
+        after = actor.boosts.get(stat, 0)
+        if after != before + amount:
+            raise AssertionError(f"expected {stat} boost {amount}, got {after - before}")
+
+
+def _verify_status(move_name, actor, expected):
+    """Assert ``actor`` gained ``expected`` major status."""
+
+    if actor.status != expected:
+        raise AssertionError(f"status {expected} not applied")
+
+
+def _verify_volatile(move_name, actor, expected):
+    """Assert ``actor`` gained ``expected`` volatile status."""
+
+    if expected not in getattr(actor, "volatiles", {}):
+        raise AssertionError(f"volatile {expected} not applied")
+
+
+def _verify_hp(move_name, actor, before, direction):
+    """Assert ``actor`` HP changed in ``direction`` (``1`` heal, ``-1`` damage)."""
+
+    if direction > 0 and actor.hp <= before:
+        raise AssertionError("HP did not increase")
+    if direction < 0 and actor.hp >= before:
+        raise AssertionError("HP did not decrease")
+
+
 @pytest.mark.parametrize("move_name, move_entry", list(get_dex_data()[0].items()))
 def test_move_execution(move_name, move_entry):
     move = build_move(move_entry)
     battle, user, target = setup_battle(move)
+    raw = move.raw
+    # Adjust HP so heal/drain effects can be detected
+    if any(k in raw for k in ("drain", "heal")):
+        user.hp = 50
+    if raw.get("heal") and not _is_self_target(raw.get("target")):
+        target.hp = 50
+
+    user_start = user.hp
+    target_start = target.hp
+    user_boosts = user.boosts.copy()
+    target_boosts = target.boosts.copy()
+
     try:
         battle.start_turn()
         battle.run_switch()
@@ -162,6 +220,62 @@ def test_move_execution(move_name, move_entry):
     except Exception as e:
         MOVE_FAILS.append((move_name, str(e)))
         pytest.xfail(f"Move {move_name} raised {e}")
+
+    try:
+        if raw.get("boosts"):
+            actor = user if _is_self_target(raw.get("target")) else target
+            initial = user_boosts if actor is user else target_boosts
+            _verify_boosts(move_name, actor, initial, raw["boosts"])
+        if raw.get("status"):
+            actor = user if _is_self_target(raw.get("target")) else target
+            _verify_status(move_name, actor, raw["status"])
+        if raw.get("volatileStatus"):
+            actor = user if _is_self_target(raw.get("target")) else target
+            _verify_volatile(move_name, actor, raw["volatileStatus"])
+        if raw.get("drain"):
+            _verify_hp(move_name, user, user_start, 1)
+        if raw.get("recoil"):
+            _verify_hp(move_name, user, user_start, -1)
+        if raw.get("heal"):
+            actor = user if _is_self_target(raw.get("target")) else target
+            start = user_start if actor is user else target_start
+            _verify_hp(move_name, actor, start, 1)
+
+        secondaries = []
+        sec = raw.get("secondary")
+        if sec:
+            secondaries.append(sec)
+        secondaries.extend(raw.get("secondaries", []))
+        for sec in secondaries:
+            chance = sec.get("chance", 100)
+            if chance != 100:
+                MOVE_UNVERIFIED.append((move_name, "secondary chance < 100"))
+                continue
+            if sec.get("boosts"):
+                _verify_boosts(move_name, target, target_boosts, sec["boosts"])
+            if sec.get("status"):
+                _verify_status(move_name, target, sec["status"])
+            if sec.get("volatileStatus"):
+                _verify_volatile(move_name, target, sec["volatileStatus"])
+            if sec.get("drain"):
+                _verify_hp(move_name, user, user_start, 1)
+            if sec.get("recoil"):
+                _verify_hp(move_name, user, user_start, -1)
+            if sec.get("heal"):
+                _verify_hp(move_name, target, target_start, 1)
+            self_sec = sec.get("self")
+            if self_sec:
+                if self_sec.get("boosts"):
+                    _verify_boosts(move_name, user, user_boosts, self_sec["boosts"])
+                if self_sec.get("status"):
+                    _verify_status(move_name, user, self_sec["status"])
+                if self_sec.get("volatileStatus"):
+                    _verify_volatile(move_name, user, self_sec["volatileStatus"])
+                if self_sec.get("heal"):
+                    _verify_hp(move_name, user, user_start, 1)
+    except AssertionError as e:
+        MOVE_FAILS.append((move_name, str(e)))
+        pytest.xfail(f"Move {move_name}: {e}")
 
 
 @pytest.mark.parametrize("ability_name, ability_entry", list(get_dex_data()[1].items()))
