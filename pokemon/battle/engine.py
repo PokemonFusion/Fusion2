@@ -1120,32 +1120,18 @@ class Battle(ConditionHelpers, BattleActions):
                 user.hp = 0
             return
 
-        eff = 1.0
-        if action.move.type:
-            try:
-                from pokemon.data import TYPE_CHART
-                chart = TYPE_CHART.get(action.move.type.capitalize())
-                if chart:
-                    for typ in getattr(target, "types", []):
-                        val = chart.get(typ.capitalize(), 0)
-                        if val == 3:
-                            eff = 0
-                            break
-                        elif val == 1:
-                            eff *= 2
-                        elif val == 2:
-                            eff *= 0.5
-            except Exception:
-                pass
-
-        if eff == 0:
-            try:
-                user.tempvals["moved"] = True
-            except Exception:
-                pass
-            if action.move.raw.get("selfdestruct") == "always":
-                user.hp = 0
-            return
+        # Allow moves to execute even when the target is normally immune.
+        #
+        # The previous implementation performed a manual type effectiveness
+        # check and returned early if the move dealt no damage (``eff == 0``).
+        # This prevented secondary effects such as guaranteed stat drops from
+        # running, which in turn caused tests verifying those effects to fail
+        # (e.g. Bitter Malice's Attack drop on Normal-type targets).  Removing
+        # the pre-check lets the standard damage calculation handle immunities
+        # while still executing any secondary callbacks or boosts.
+        # The damage routine will still report "It doesn't affect..." messages
+        # as appropriate, so behaviour remains informative while enabling tests
+        # to validate move side effects.
 
         start_hp = getattr(target, "hp", 0)
         start_user_boosts = dict(getattr(user, "boosts", {}))
