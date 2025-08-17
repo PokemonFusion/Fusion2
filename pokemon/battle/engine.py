@@ -361,6 +361,18 @@ class BattleMove:
                 heal_amt = max(1, int(damage * frac))
                 user.hp = min(max_hp, user.hp + heal_amt)
 
+        # Apply recoil damage (e.g. Brave Bird)
+        recoil = self.raw.get("recoil") if self.raw else None
+        if recoil and result is not None:
+            damage = 0
+            if hasattr(result, "debug"):
+                dmg_list = result.debug.get("damage", [])
+                if isinstance(dmg_list, list):
+                    damage = sum(dmg_list)
+            if damage > 0:
+                frac = recoil[0] / recoil[1]
+                user.hp = max(0, user.hp - int(damage * frac))
+
         # Apply flat healing (e.g. Recover)
         heal = self.raw.get("heal") if self.raw else None
         if heal:
