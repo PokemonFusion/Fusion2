@@ -326,6 +326,8 @@ class BattleMove:
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect."""
+        from pokemon.data.text import DEFAULT_TEXT
+
         if self.onTry:
             self.onTry(user, target, self, battle)
         if self.onHit:
@@ -360,6 +362,18 @@ class BattleMove:
                 max_hp = getattr(user, "max_hp", getattr(user, "hp", 1))
                 heal_amt = max(1, int(damage * frac))
                 user.hp = min(max_hp, user.hp + heal_amt)
+                if battle:
+                    if target:
+                        battle.log_action(
+                            DEFAULT_TEXT["drain"]["heal"].replace(
+                                "[SOURCE]", getattr(target, "name", "Pokemon")
+                            )
+                        )
+                    battle.log_action(
+                        DEFAULT_TEXT["default"]["heal"].replace(
+                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                        )
+                    )
 
         # Apply recoil damage (e.g. Brave Bird)
         recoil = self.raw.get("recoil") if self.raw else None
@@ -372,6 +386,12 @@ class BattleMove:
             if damage > 0:
                 frac = recoil[0] / recoil[1]
                 user.hp = max(0, user.hp - int(damage * frac))
+                if battle:
+                    battle.log_action(
+                        DEFAULT_TEXT["recoil"]["damage"].replace(
+                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                        )
+                    )
 
         # Apply flat healing (e.g. Recover)
         heal = self.raw.get("heal") if self.raw else None
@@ -382,6 +402,12 @@ class BattleMove:
                 max_hp = getattr(heal_target, "max_hp", getattr(heal_target, "hp", 1))
                 amount = max(1, int(max_hp * frac)) if frac else max_hp
                 heal_target.hp = min(max_hp, heal_target.hp + amount)
+                if battle:
+                    battle.log_action(
+                        DEFAULT_TEXT["default"]["heal"].replace(
+                            "[POKEMON]", getattr(heal_target, "name", "Pokemon")
+                        )
+                    )
 
         # Handle side conditions set by this move
         side_cond = self.raw.get("sideCondition") if self.raw else None
@@ -503,6 +529,18 @@ class BattleMove:
                         max_hp = getattr(user, "max_hp", getattr(user, "hp", 1))
                         heal_amt = max(1, int(dmg * frac))
                         user.hp = min(max_hp, user.hp + heal_amt)
+                        if battle:
+                            if target:
+                                battle.log_action(
+                                    DEFAULT_TEXT["drain"]["heal"].replace(
+                                        "[SOURCE]", getattr(target, "name", "Pokemon")
+                                    )
+                                )
+                            battle.log_action(
+                                DEFAULT_TEXT["default"]["heal"].replace(
+                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                )
+                            )
 
                 if sec.get("recoil") and result is not None and user:
                     dmg = 0
@@ -513,6 +551,12 @@ class BattleMove:
                     if dmg > 0:
                         frac = sec["recoil"][0] / sec["recoil"][1]
                         user.hp = max(0, user.hp - int(dmg * frac))
+                        if battle:
+                            battle.log_action(
+                                DEFAULT_TEXT["recoil"]["damage"].replace(
+                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                )
+                            )
 
                 if sec.get("heal") and target:
                     heal = sec["heal"]
@@ -520,6 +564,12 @@ class BattleMove:
                     max_hp = getattr(target, "max_hp", getattr(target, "hp", 1))
                     amount = max(1, int(max_hp * frac)) if frac else max_hp
                     target.hp = min(max_hp, target.hp + amount)
+                    if battle:
+                        battle.log_action(
+                            DEFAULT_TEXT["default"]["heal"].replace(
+                                "[POKEMON]", getattr(target, "name", "Pokemon")
+                            )
+                        )
 
                 self_sec = sec.get("self")
                 if self_sec and user:
@@ -544,6 +594,12 @@ class BattleMove:
                         max_hp = getattr(user, "max_hp", getattr(user, "hp", 1))
                         amount = max(1, int(max_hp * frac)) if frac else max_hp
                         user.hp = min(max_hp, user.hp + amount)
+                        if battle:
+                            battle.log_action(
+                                DEFAULT_TEXT["default"]["heal"].replace(
+                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                )
+                            )
 
 
 
