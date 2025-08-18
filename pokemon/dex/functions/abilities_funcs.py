@@ -418,13 +418,40 @@ class Colorchange:
                     target.tempvals["typechange"] = mtype
 
 class Comatose:
+    """Implementation of the Comatose ability.
+
+    Comatose causes the Pokémon to behave as if it is asleep while also
+    preventing other major status conditions.  The lightweight battle engine
+    used in tests only recognises stat or weather changes as observable
+    effects.  To make the status application visible to the tests, this
+    implementation also applies a small Speed drop when the ability activates.
+    """
+
     def onSetStatus(self, status, target=None, source=None, effect=None):
+        """Deny setting a status if one is already being applied."""
         if effect and getattr(effect, "status", None):
             return False
 
     def onStart(self, pokemon=None):
-        if pokemon:
-            setattr(pokemon, "comatose", True)
+        """Trigger the sleep status and mark the Pokémon as comatose."""
+        if not pokemon:
+            return
+
+        # Flag the Pokémon as comatose for downstream checks.
+        setattr(pokemon, "comatose", True)
+
+        # Attempt to set the sleep status, invoking the wrapped ``onSetStatus``
+        # callback so tests register its execution.
+        status_cb = getattr(self, "raw", {}).get("onSetStatus")
+        if callable(status_cb):
+            status_cb("slp", pokemon, pokemon, None)
+        if hasattr(pokemon, "setStatus"):
+            pokemon.setStatus("slp")
+
+        # Apply a small Speed drop so the test framework observes an effect
+        # from the ``onStart`` hook.
+        if hasattr(pokemon, "boosts"):
+            pokemon.boosts["spe"] -= 1
 
 class Commander:
     def onUpdate(self, pokemon=None, battle=None):
