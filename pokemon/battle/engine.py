@@ -1252,6 +1252,35 @@ class Battle(ConditionHelpers, BattleActions):
             )
             return
 
+        # Abilities with an ``onAnyTryMove`` hook should run for all active
+        # Pokémon whenever any combatant attempts to use a move.  If any
+        # callback returns ``False`` the move is prevented from executing.
+        for part in self.participants:
+            for poke in getattr(part, "active", []):
+                ability = getattr(poke, "ability", None)
+                if ability and hasattr(ability, "call"):
+                    try:
+                        result = ability.call(
+                            "onAnyTryMove", pokemon=user, target=target, move=action.move
+                        )
+                    except Exception:
+                        try:
+                            result = ability.call("onAnyTryMove", action.move)
+                        except Exception:
+                            result = None
+                    if result is False:
+                        self.deduct_pp(user, action.move)
+                        try:
+                            user.tempvals["moved"] = True
+                        except Exception:
+                            pass
+                        if action.move.raw.get("selfdestruct") == "always":
+                            user.hp = 0
+                        self.log_action(
+                            f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                        )
+                        return
+
         # Trigger abilities that react to an opposing Pokémon attempting to move
         for poke, foe in ((user, target), (target, user)):
             ability = getattr(poke, "ability", None)
