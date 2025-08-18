@@ -388,6 +388,15 @@ def test_ability_behaviour(ability_name, ability_entry):
         battle.residual()
         battle.end_turn()
 
+        # Simulate berry consumption for abilities with an ``onEatItem`` hook.
+        eat_cb = ability.raw.get("onEatItem")
+        if isinstance(eat_cb, CallbackWrapper):
+            berry = type("DummyBerry", (), {"id": "sitrusberry", "isBerry": True})()
+            try_cb = ability.raw.get("onTryEatItem")
+            if isinstance(try_cb, CallbackWrapper):
+                try_cb(berry, actor)
+            eat_cb(berry, actor)
+
         # ensure any wrapped callbacks were invoked
         for key, cb in ability.raw.items():
             if key.startswith("on") and isinstance(cb, CallbackWrapper):
