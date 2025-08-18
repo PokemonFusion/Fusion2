@@ -186,6 +186,92 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
                     move.power = int(new_power)
             except Exception:
                 pass
+        # ------------------------------------------------------------------
+        # Accuracy modification hooks
+        # ------------------------------------------------------------------
+        accuracy = move.accuracy
+
+        # User ability: onSourceModifyAccuracy
+        user_ability = getattr(attacker, "ability", None)
+        if user_ability and hasattr(user_ability, "call"):
+            try:
+                new_acc = user_ability.call(
+                    "onSourceModifyAccuracy",
+                    accuracy,
+                    source=attacker,
+                    target=target,
+                    move=move,
+                )
+            except Exception:
+                new_acc = user_ability.call("onSourceModifyAccuracy", accuracy)
+            if new_acc is not None:
+                accuracy = new_acc
+
+        # Target ability: onModifyAccuracy
+        target_ability = getattr(target, "ability", None)
+        if target_ability and hasattr(target_ability, "call"):
+            try:
+                new_acc = target_ability.call(
+                    "onModifyAccuracy",
+                    accuracy,
+                    attacker=attacker,
+                    defender=target,
+                    move=move,
+                )
+            except Exception:
+                new_acc = target_ability.call("onModifyAccuracy", accuracy)
+            if new_acc is not None:
+                accuracy = new_acc
+
+        # Abilities that modify accuracy of any move
+        for owner in (attacker, target):
+            ability = getattr(owner, "ability", None)
+            if ability and hasattr(ability, "call"):
+                try:
+                    new_acc = ability.call(
+                        "onAnyModifyAccuracy",
+                        accuracy,
+                        source=attacker,
+                        target=target,
+                        move=move,
+                    )
+                except Exception:
+                    new_acc = ability.call("onAnyModifyAccuracy", accuracy)
+                if new_acc is not None:
+                    accuracy = new_acc
+
+        # Item hooks for the user and target
+        user_item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
+        if user_item and hasattr(user_item, "call"):
+            try:
+                new_acc = user_item.call(
+                    "onSourceModifyAccuracy",
+                    accuracy,
+                    source=attacker,
+                    target=target,
+                    move=move,
+                )
+            except Exception:
+                new_acc = user_item.call("onSourceModifyAccuracy", accuracy)
+            if new_acc is not None:
+                accuracy = new_acc
+
+        target_item = getattr(target, "item", None) or getattr(target, "held_item", None)
+        if target_item and hasattr(target_item, "call"):
+            try:
+                new_acc = target_item.call(
+                    "onModifyAccuracy",
+                    accuracy,
+                    user=attacker,
+                    target=target,
+                    move=move,
+                )
+            except Exception:
+                new_acc = target_item.call("onModifyAccuracy", accuracy)
+            if new_acc is not None:
+                accuracy = new_acc
+
+        move.accuracy = accuracy
 
         if not accuracy_check(move):
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
