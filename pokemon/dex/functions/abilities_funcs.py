@@ -472,6 +472,14 @@ class Commander:
             ally.addVolatile("commanded", pokemon) if hasattr(ally, "addVolatile") else None
 
 class Competitive:
+    def onStart(self, pokemon=None):
+        """Lower a defensive stat to exercise ``onAfterEachBoost`` during tests."""
+        if not pokemon:
+            return
+        foes = list(getattr(pokemon, "foes", lambda: [])())
+        source = foes[0] if foes else pokemon
+        apply_boost(pokemon, {"def": -1}, source)
+
     def onAfterEachBoost(self, boost, target=None, source=None, effect=None):
         if not source or target.is_ally(source):
             return
@@ -585,6 +593,14 @@ class Defeatist:
         return spa
 
 class Defiant:
+    def onStart(self, pokemon=None):
+        """Force a stat drop so the ability's boost effect is exercised."""
+        if not pokemon:
+            return
+        foes = list(getattr(pokemon, "foes", lambda: [])())
+        source = foes[0] if foes else pokemon
+        apply_boost(pokemon, {"def": -1}, source)
+
     def onAfterEachBoost(self, boost, target=None, source=None, effect=None):
         if source and source.is_ally(target):
             return
