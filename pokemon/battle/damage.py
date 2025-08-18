@@ -415,22 +415,36 @@ def apply_damage(
             except Exception:  # pragma: no cover - simple data containers
                 pass
 
-        # Trigger defensive ability callbacks such as ``onDamagingHit``.
+        # Trigger defensive ability callbacks such as ``onDamagingHit`` or
+        # ``onHit``.  ``onDamagingHit`` is passed the damage dealt while
+        # ``onHit`` simply receives the target, source and move.
         try:  # pragma: no cover - abilities module may be absent in tests
             from pokemon.dex.functions import abilities_funcs  # type: ignore
         except Exception:  # pragma: no cover
             abilities_funcs = None
         ability = getattr(target, "ability", None)
-        cb_name = ability.raw.get("onDamagingHit") if getattr(ability, "raw", None) else None
-        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-        if callable(cb):
-            try:
-                cb(dmg, target=target, source=attacker, move=move)
-            except Exception:
+        if ability and getattr(ability, "raw", None):
+            cb_name = ability.raw.get("onDamagingHit")
+            cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+            if callable(cb):
                 try:
-                    cb(dmg, target, attacker, move)
+                    cb(dmg, target=target, source=attacker, move=move)
                 except Exception:
-                    cb(dmg, target, attacker)
+                    try:
+                        cb(dmg, target, attacker, move)
+                    except Exception:
+                        cb(dmg, target, attacker)
+
+            cb_name = ability.raw.get("onHit")
+            cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+            if callable(cb):
+                try:
+                    cb(target=target, source=attacker, move=move)
+                except Exception:
+                    try:
+                        cb(target, attacker, move)
+                    except Exception:
+                        cb(target, attacker)
 
     raw_damages = result.debug.get("damage", [])
     result.debug["damage"] = [dmg]
