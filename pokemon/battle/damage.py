@@ -543,6 +543,60 @@ def apply_damage(
                     if isinstance(new_dmg, (int, float)):
                         dmg = int(new_dmg)
 
+    abilities_funcs = items_funcs = None
+    try:  # pragma: no cover - callback modules may be absent in tests
+        from pokemon.dex.functions import abilities_funcs, items_funcs  # type: ignore
+    except Exception:  # pragma: no cover
+        abilities_funcs = items_funcs = None
+
+    # ------------------------------------------------------------------
+    # Ability, item, and move ``onSourceModifyDamage`` hooks
+    # ------------------------------------------------------------------
+    callbacks = []
+
+    ability = getattr(target, "ability", None)
+    if ability and getattr(ability, "raw", None):
+        cb_name = ability.raw.get("onSourceModifyDamage")
+        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+        if callable(cb):
+            prio = ability.raw.get("onSourceModifyDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    item = getattr(target, "item", None) or getattr(target, "held_item", None)
+    if item and getattr(item, "raw", None):
+        cb_name = item.raw.get("onSourceModifyDamage")
+        cb = _resolve_callback(cb_name, items_funcs) if items_funcs else None
+        if callable(cb):
+            prio = item.raw.get("onSourceModifyDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    if move.raw:
+        cb_name = move.raw.get("onSourceModifyDamage")
+        cb = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
+        if callable(cb):
+            prio = move.raw.get("onSourceModifyDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    callbacks.sort(key=lambda x: x[0], reverse=True)
+    for _, cb in callbacks:
+        new_dmg = None
+        try:
+            new_dmg = cb(dmg, target=target, source=attacker, move=move)
+        except Exception:
+            for attempt in (
+                lambda: cb(dmg, target, attacker, move),
+                lambda: cb(dmg, target, attacker),
+                lambda: cb(dmg, target),
+                lambda: cb(dmg),
+            ):
+                try:
+                    new_dmg = attempt()
+                    break
+                except Exception:
+                    continue
+        if isinstance(new_dmg, (int, float)):
+            dmg = int(new_dmg)
+
     # ------------------------------------------------------------------
     # onAnyDamage ability hooks
     # ------------------------------------------------------------------
@@ -550,11 +604,6 @@ def apply_damage(
     # defender.  Iterate over all active Pokémon in the battle and invoke
     # their ``onAnyDamage`` callbacks, allowing them to adjust the pending
     # damage value.  The last non-``None`` return value is used.
-    abilities_funcs = None
-    try:  # pragma: no cover - callback modules may be absent in tests
-        from pokemon.dex.functions import abilities_funcs  # type: ignore
-    except Exception:  # pragma: no cover
-        abilities_funcs = None
 
     if battle is not None:
         for part in getattr(battle, "participants", []):
