@@ -200,8 +200,58 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 
         atk_key = "attack" if move.category == "Physical" else "special_attack"
         def_key = "defense" if move.category == "Physical" else "special_defense"
-        atk_stat = get_modified_stat(attacker, atk_key)
+        # Retrieve both offensive stats so that ability callbacks which modify
+        # an unused stat (e.g. ``onModifySpA`` during a physical move) are still
+        # invoked.  This mirrors the behaviour of the comprehensive battle
+        # engine where such hooks may fire regardless of move category.
+        atk_stat = get_modified_stat(attacker, "attack")
+        spa_stat = get_modified_stat(attacker, "special_attack")
+        atk_stat = atk_stat if atk_key == "attack" else spa_stat
         def_stat = get_modified_stat(target, def_key)
+
+        def _run_cb(holder, name, stat):
+            """Safely invoke a stat-modifying callback."""
+
+            if not holder or not hasattr(holder, "call"):
+                return stat
+            try:
+                new_val = holder.call(
+                    name,
+                    stat,
+                    attacker=attacker,
+                    defender=target,
+                    move=move,
+                    pokemon=attacker,
+                    source=attacker,
+                    target=target,
+                )
+            except TypeError:
+                try:
+                    new_val = holder.call(name, stat, move=move)
+                except Exception:
+                    return stat
+            except Exception:
+                return stat
+            return int(new_val) if isinstance(new_val, (int, float)) else stat
+
+        # Attacker ability/item hooks
+        atk_stat = _run_cb(getattr(attacker, "ability", None), "onModifyAtk", atk_stat)
+        spa_stat = _run_cb(getattr(attacker, "ability", None), "onModifySpA", spa_stat)
+        atk_stat = _run_cb(getattr(attacker, "ability", None), "onAnyModifyAtk", atk_stat)
+        atk_stat = _run_cb(getattr(attacker, "ability", None), "onAllyModifyAtk", atk_stat)
+        item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
+        atk_stat = _run_cb(item, "onModifyAtk", atk_stat)
+        spa_stat = _run_cb(item, "onModifySpA", spa_stat)
+
+        # Target ability hooks that modify the attacker's stats
+        opp_ability = getattr(target, "ability", None)
+        atk_stat = _run_cb(opp_ability, "onSourceModifyAtk", atk_stat)
+        spa_stat = _run_cb(opp_ability, "onSourceModifySpA", spa_stat)
+        atk_stat = _run_cb(opp_ability, "onAnyModifyAtk", atk_stat)
+        atk_stat = _run_cb(opp_ability, "onAllyModifyAtk", atk_stat)
+
+        # Determine the stat actually used for damage after all modifications
+        atk_stat = atk_stat if atk_key == "attack" else spa_stat
 
         power = move.power or 0
         if battle is not None:
