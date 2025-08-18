@@ -241,6 +241,27 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
         if isinstance(new_power, (int, float)):
             battle_move.power = int(new_power)
 
+    # Defensive abilities may further adjust the power of incoming moves via
+    # ``onSourceBasePower``.  This hook is separate from ``onBasePower`` above,
+    # which applies when the ability's owner uses a move.
+    target_ability = getattr(target, "ability", None)
+    if target_ability:
+        try:
+            new_power = target_ability.call(
+                "onSourceBasePower",
+                battle_move.power,
+                attacker=user,
+                defender=target,
+                move=battle_move,
+            )
+        except Exception:
+            try:
+                new_power = target_ability.call("onSourceBasePower", battle_move.power)
+            except Exception:
+                new_power = None
+        if isinstance(new_power, (int, float)):
+            battle_move.power = int(new_power)
+
     raw = dict(battle_move.raw)
     if battle_move.basePowerCallback:
         raw["basePowerCallback"] = battle_move.basePowerCallback
@@ -1652,17 +1673,27 @@ class Battle(ConditionHelpers, BattleActions):
                 weather_handler.onFieldResidual(self.field)
             except Exception:
                 pass
-            for part in self.participants:
-                if part.has_lost:
-                    continue
-                for poke in part.active:
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for poke in part.active:
+                if weather_handler:
                     try:
                         weather_handler.onWeather(poke)
                     except Exception:
                         pass
-            if weather not in self.field.pseudo_weather:
-                self.field.weather = None
-                self.field.weather_handler = None
+                ability = getattr(poke, "ability", None)
+                if ability and hasattr(ability, "call"):
+                    try:
+                        ability.call("onWeather", pokemon=poke)
+                    except Exception:
+                        try:
+                            ability.call("onWeather", poke)
+                        except Exception:
+                            pass
+        if weather_handler and weather not in self.field.pseudo_weather:
+            self.field.weather = None
+            self.field.weather_handler = None
 
         # Handle terrain effects
         terrain = getattr(self.field, "terrain", None)
