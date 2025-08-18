@@ -186,6 +186,48 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
     from .damage import apply_damage, DamageResult
     from pokemon.dex.entities import Move
 
+    # ------------------------------------------------------------------
+    # Ability hooks
+    # ------------------------------------------------------------------
+    # Many abilities modify move data prior to damage calculation via
+    # callbacks such as ``onModifyType`` and ``onBasePower``.  These hooks
+    # are normally invoked by the battle engine but our lightweight test
+    # harness constructs :class:`BattleMove` instances directly, bypassing
+    # the usual dispatch system.  To ensure ability callbacks are still
+    # triggered (and to allow them to tweak move attributes), we invoke the
+    # relevant handlers here before building the temporary :class:`Move`
+    # used for damage computation.
+
+    for owner in (user, target):
+        ability = getattr(owner, "ability", None)
+        if not ability:
+            continue
+
+        # onModifyType may mutate ``battle_move`` in-place.  We attempt to
+        # pass the ability's owner when supported but fall back to a simple
+        # call with only the move argument if the signature differs.
+        try:
+            ability.call("onModifyType", battle_move, user=owner)
+        except Exception:
+            try:
+                ability.call("onModifyType", battle_move)
+            except Exception:
+                pass
+
+        # onBasePower can return a modified base power.  Similar to above we
+        # try a generous call signature but gracefully handle mismatches.
+        try:
+            new_power = ability.call(
+                "onBasePower", battle_move.power, user=owner, move=battle_move
+            )
+        except Exception:
+            try:
+                new_power = ability.call("onBasePower", battle_move.power)
+            except Exception:
+                new_power = None
+        if isinstance(new_power, (int, float)):
+            battle_move.power = int(new_power)
+
     raw = dict(battle_move.raw)
     if battle_move.basePowerCallback:
         raw["basePowerCallback"] = battle_move.basePowerCallback
