@@ -543,6 +543,45 @@ def apply_damage(
                     if isinstance(new_dmg, (int, float)):
                         dmg = int(new_dmg)
 
+    # ------------------------------------------------------------------
+    # onAnyDamage ability hooks
+    # ------------------------------------------------------------------
+    # Abilities such as Damp modify damage globally regardless of the
+    # defender.  Iterate over all active Pokémon in the battle and invoke
+    # their ``onAnyDamage`` callbacks, allowing them to adjust the pending
+    # damage value.  The last non-``None`` return value is used.
+    abilities_funcs = None
+    try:  # pragma: no cover - callback modules may be absent in tests
+        from pokemon.dex.functions import abilities_funcs  # type: ignore
+    except Exception:  # pragma: no cover
+        abilities_funcs = None
+
+    if battle is not None:
+        for part in getattr(battle, "participants", []):
+            for poke in getattr(part, "active", []):
+                ability = getattr(poke, "ability", None)
+                if ability and getattr(ability, "raw", None):
+                    cb_name = ability.raw.get("onAnyDamage")
+                    cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+                    if callable(cb):
+                        new_dmg = None
+                        try:
+                            new_dmg = cb(dmg, target=target, source=attacker, effect=move)
+                        except Exception:
+                            for attempt in (
+                                lambda: cb(dmg, target, attacker, move),
+                                lambda: cb(dmg, target, attacker),
+                                lambda: cb(dmg, target),
+                                lambda: cb(dmg),
+                            ):
+                                try:
+                                    new_dmg = attempt()
+                                    break
+                                except Exception:
+                                    continue
+                        if isinstance(new_dmg, (int, float)):
+                            dmg = int(new_dmg)
+
     # Run "onDamage" callbacks from abilities, items, and the move itself
     # before applying the final damage.  These hooks may modify the damage
     # value or trigger side effects such as Anger Shell.

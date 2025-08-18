@@ -1252,6 +1252,32 @@ class Battle(ConditionHelpers, BattleActions):
             )
             return
 
+        # ------------------------------------------------------------------
+        # onAnyTryMove ability hooks
+        # ------------------------------------------------------------------
+        # Abilities like Damp can prevent certain moves from being executed
+        # before any other effects occur.  Iterate over all active Pokémon and
+        # invoke their ``onAnyTryMove`` callbacks.  If any ability returns
+        # ``False`` the move is cancelled immediately.
+        for part in self.participants:
+            for poke in getattr(part, "active", []):
+                ability = getattr(poke, "ability", None)
+                if ability and hasattr(ability, "call"):
+                    try:
+                        blocked = ability.call(
+                            "onAnyTryMove", pokemon=user, target=target, move=action.move
+                        )
+                    except Exception:
+                        blocked = None
+                    if blocked is False:
+                        try:
+                            user.tempvals["moved"] = True
+                        except Exception:
+                            pass
+                        if action.move.raw.get("selfdestruct") == "always":
+                            user.hp = 0
+                        return
+
         # Trigger abilities that react to an opposing Pokémon attempting to move
         for poke, foe in ((user, target), (target, user)):
             ability = getattr(poke, "ability", None)
