@@ -36,7 +36,8 @@ def apply_boost(
         The Pokémon receiving the boost.
     boosts: dict | None
         Mapping of stat keys to stage changes.  ``None`` or an empty mapping
-        results in no change but still triggers ``onTryBoost`` callbacks.
+        results in no change but still triggers ``onTryBoost`` and
+        ``onChangeBoost`` callbacks.
     source, effect: Any, optional
         Additional context forwarded to ability callbacks.
 
@@ -51,6 +52,13 @@ def apply_boost(
     if ability and hasattr(ability, "call"):
         try:
             ability.call("onTryBoost", boosts, target=pokemon, source=source, effect=effect)
+            ability.call(
+                "onChangeBoost",
+                boosts,
+                target=pokemon,
+                source=source,
+                effect=effect,
+            )
         except Exception:  # pragma: no cover - ability callbacks are optional
             pass
 
