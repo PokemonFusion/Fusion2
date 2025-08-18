@@ -158,20 +158,9 @@ def build_ability(entry):
 
     ability_funcs = import_module("pokemon.dex.functions.abilities_funcs")
 
-    # Hooks that are not currently triggered by the simplified battle engine.
-    #
-    # The full Pokémon Showdown data contains a wide variety of ability
-    # callbacks such as ``onAnyTryPrimaryHit`` or ``onAllyBasePower``.  These
-    # require battle events that are not implemented in the lightweight engine
-    # used for testing.  Wrapping them would result in callbacks that are never
-    # invoked, causing the ``test_ability_behaviour`` check to fail.  We keep
-    # the raw strings for these hooks instead so the test can safely ignore
-    # them.
-    unsupported = {"onAnyTryPrimaryHit", "onAllyBasePower"}
-
     instances = {}
     for key, val in list(entry.raw.items()):
-        if key in unsupported or not key.startswith("on") or not isinstance(val, str):
+        if not key.startswith("on") or not isinstance(val, str):
             continue
         try:
             cls_name, func_name = val.split(".", 1)

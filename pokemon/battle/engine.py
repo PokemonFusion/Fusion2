@@ -241,6 +241,56 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
         if isinstance(new_power, (int, float)):
             battle_move.power = int(new_power)
 
+    # Abilities on the user's allies can also influence the move's base power
+    # through ``onAllyBasePower`` hooks.
+    attacker_part = battle.participant_for(user)
+    if attacker_part:
+        my_team = getattr(attacker_part, "team", None)
+        for part in battle.participants:
+            if part is attacker_part or part.has_lost:
+                continue
+            other_team = getattr(part, "team", None)
+            if my_team is not None and other_team == my_team:
+                for ally in getattr(part, "active", []):
+                    ability = getattr(ally, "ability", None)
+                    if not ability:
+                        continue
+                    try:
+                        new_power = ability.call(
+                            "onAllyBasePower",
+                            battle_move.power,
+                            attacker=user,
+                            defender=target,
+                            move=battle_move,
+                        )
+                    except Exception:
+                        try:
+                            new_power = ability.call(
+                                "onAllyBasePower",
+                                battle_move.power,
+                                pokemon=user,
+                                target=target,
+                                move=battle_move,
+                            )
+                        except Exception:
+                            try:
+                                new_power = ability.call(
+                                    "onAllyBasePower",
+                                    battle_move.power,
+                                    user=user,
+                                    target=target,
+                                    move=battle_move,
+                                )
+                            except Exception:
+                                try:
+                                    new_power = ability.call(
+                                        "onAllyBasePower", battle_move.power
+                                    )
+                                except Exception:
+                                    new_power = None
+                    if isinstance(new_power, (int, float)):
+                        battle_move.power = int(new_power)
+
     # Defensive abilities may further adjust the power of incoming moves via
     # ``onSourceBasePower``.  This hook is separate from ``onBasePower`` above,
     # which applies when the ability's owner uses a move.
@@ -412,9 +462,40 @@ class BattleMove:
                 return
 
         # Default behaviour for moves without custom handlers
-        category = (self.raw.get("category") or "").lower() if self.raw else ""
+        move_category = self.raw.get("category") if self.raw else ""
+        category = str(move_category).lower()
         result = None
         if category != "status":
+            # Expose the canonical category for ability hooks that expect it as
+            # an attribute on the move instance.
+            setattr(self, "category", move_category)
+            # Trigger global ability hooks prior to applying damage.  The
+            # ``onAnyTryPrimaryHit`` event allows abilities on any active
+            # Pokémon to inspect and potentially mutate the move before other
+            # resolution steps occur.
+
+            try:
+                active_pokes = [
+                    p
+                    for part in getattr(battle, "participants", [])
+                    for p in getattr(part, "active", [])
+                ]
+            except Exception:  # pragma: no cover - fallback if battle misbehaves
+                active_pokes = [user, target]
+
+            for poke in active_pokes:
+                ability = getattr(poke, "ability", None)
+                if ability:
+                    try:
+                        ability.call(
+                            "onAnyTryPrimaryHit", target=target, source=user, move=self
+                        )
+                    except Exception:
+                        try:
+                            ability.call("onAnyTryPrimaryHit", target, user, self)
+                        except Exception:
+                            ability.call("onAnyTryPrimaryHit")
+
             # Trigger defensive ability hooks prior to applying damage.  This
             # allows abilities with ``onTryHit`` callbacks (e.g. Bulletproof,
             # Overcoat) to react to incoming moves even when the simplified
