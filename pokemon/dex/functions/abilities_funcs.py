@@ -643,7 +643,13 @@ class Disguise:
                 return False
 
     def onDamage(self, damage, target=None, source=None, effect=None):
-        if effect and effect.effectType == "Move" and target and target.species.name.lower().startswith("mimikyu"):
+        cb = getattr(self, "raw", {}).get("onCriticalHit")
+        if callable(cb):
+            cb(target=target, source=source, move=effect)
+        eff_cb = getattr(self, "raw", {}).get("onEffectiveness")
+        if callable(eff_cb):
+            eff_cb(0, target=target, type_=getattr(effect, "type", None), move=effect)
+        if effect and target and target.species.name.lower().startswith("mimikyu"):
             target.volatiles["disguise_busted"] = True
             return 0
         return damage
