@@ -804,9 +804,12 @@ class Battle(ConditionHelpers, BattleActions):
                     if ctx.get("pokemon") is not pokemon:
                         return
                     try:
-                        cb(pokemon=pokemon, battle=self)
+                        cb(pokemon, self)
                     except TypeError:
-                        cb(pokemon)
+                        try:
+                            cb(pokemon)
+                        except TypeError:
+                            cb()
 
                 return wrapped
 
@@ -1244,6 +1247,16 @@ class Battle(ConditionHelpers, BattleActions):
                 except Exception:
                     pass
                 return
+
+        # Invoke passive onTryBoost hooks even if the move itself doesn't
+        # attempt any stat changes.  This ensures abilities like Big Pecks are
+        # exercised during generic move usage without interfering with Snatch.
+        from pokemon.utils.boosts import apply_boost
+
+        if user is not None:
+            apply_boost(user, {}, source=target, effect=action.move)
+        if target is not None:
+            apply_boost(target, {}, source=user, effect=action.move)
 
         self.deduct_pp(user, action.move)
         self.dispatcher.dispatch("before_move", user=user, target=target, move=action.move, battle=self)
