@@ -203,6 +203,19 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
         if not ability:
             continue
 
+        # onAnyBasePower applies to moves used by any Pokemon on the field.
+        try:
+            new_power = ability.call(
+                "onAnyBasePower", battle_move.power, source=user, target=target, move=battle_move
+            )
+        except Exception:
+            try:
+                new_power = ability.call("onAnyBasePower", battle_move.power)
+            except Exception:
+                new_power = None
+        if isinstance(new_power, (int, float)):
+            battle_move.power = int(new_power)
+
         # onModifyType may mutate ``battle_move`` in-place.  We attempt to
         # pass the ability's owner when supported but fall back to a simple
         # call with only the move argument if the signature differs.
@@ -793,7 +806,7 @@ class Battle(ConditionHelpers, BattleActions):
                     try:
                         cb(pokemon=pokemon, battle=self)
                     except TypeError:
-                        cb(pokemon, self)
+                        cb(pokemon)
 
                 return wrapped
 

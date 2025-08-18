@@ -494,7 +494,10 @@ class Damp:
 
 class Darkaura:
     def onAnyBasePower(self, base_power, source=None, target=None, move=None):
+        """Modify Dark-type move power, reversing with Aura Break."""
         if move and move.type == "Dark" and source is not target:
+            if getattr(move, "hasAuraBreak", False) or getattr(target, "aura_break", False):
+                return int(base_power * 0.75)
             return int(base_power * 1.33)
         return base_power
 
@@ -717,8 +720,9 @@ class Emergencyexit:
 
 class Fairyaura:
     def onAnyBasePower(self, base_power, source=None, target=None, move=None):
+        """Modify Fairy-type move power, reversing with Aura Break."""
         if move and move.type == "Fairy" and source is not target:
-            if getattr(move, "hasAuraBreak", False):
+            if getattr(move, "hasAuraBreak", False) or getattr(target, "aura_break", False):
                 return int(base_power * 0.75)
             return int(base_power * 1.33)
         return base_power
