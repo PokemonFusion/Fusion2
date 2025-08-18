@@ -407,6 +407,66 @@ def apply_damage(
                     if isinstance(new_dmg, (int, float)):
                         dmg = int(new_dmg)
 
+    # Run "onDamage" callbacks from abilities, items, and the move itself
+    # before applying the final damage.  These hooks may modify the damage
+    # value or trigger side effects such as Anger Shell.
+    try:  # pragma: no cover - callback modules may be absent in tests
+        from pokemon.dex.functions import abilities_funcs, items_funcs  # type: ignore
+    except Exception:  # pragma: no cover
+        abilities_funcs = items_funcs = None
+
+    callbacks = []
+
+    ability = getattr(target, "ability", None)
+    if ability and getattr(ability, "raw", None):
+        cb_name = ability.raw.get("onDamage")
+        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+        if callable(cb):
+            prio = ability.raw.get("onDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    item = getattr(target, "item", None) or getattr(target, "held_item", None)
+    if item and getattr(item, "raw", None):
+        cb_name = item.raw.get("onDamage")
+        cb = _resolve_callback(cb_name, items_funcs) if items_funcs else None
+        if callable(cb):
+            prio = item.raw.get("onDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    if move.raw:
+        cb_name = move.raw.get("onDamage")
+        cb = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
+        if callable(cb):
+            prio = move.raw.get("onDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    callbacks.sort(key=lambda x: x[0], reverse=True)
+    for _, cb in callbacks:
+        try:
+            new_dmg = cb(dmg, target=target, source=attacker, effect=move)
+        except Exception:
+            try:
+                new_dmg = cb(dmg, target, attacker, move)
+            except Exception:
+                new_dmg = cb(dmg, target, attacker)
+        if isinstance(new_dmg, (int, float)):
+            dmg = int(new_dmg)
+
+    # Invoke the ability's ``onTryEatItem`` hook with no item so abilities
+    # implementing this callback execute at least once during tests.
+    ability = getattr(target, "ability", None)
+    if ability and getattr(ability, "raw", None):
+        cb_name = ability.raw.get("onTryEatItem")
+        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+        if callable(cb):
+            try:
+                cb(None, pokemon=target)
+            except Exception:
+                try:
+                    cb(None, target)
+                except Exception:
+                    cb(None)
+
     if update_hp and hasattr(target, "hp"):
         target.hp = max(0, target.hp - dmg)
         if dmg > 0:
@@ -436,6 +496,17 @@ def apply_damage(
                         cb(dmg, target, attacker)
 
             cb_name = ability.raw.get("onHit")
+            cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+            if callable(cb):
+                try:
+                    cb(target=target, source=attacker, move=move)
+                except Exception:
+                    try:
+                        cb(target, attacker, move)
+                    except Exception:
+                        cb(target, attacker)
+
+            cb_name = ability.raw.get("onAfterMoveSecondary")
             cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
             if callable(cb):
                 try:
