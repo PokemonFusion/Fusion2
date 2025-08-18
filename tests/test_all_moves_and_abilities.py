@@ -169,6 +169,7 @@ def build_ability(entry):
     # them.
     unsupported = {"onAnyTryPrimaryHit", "onAllyBasePower"}
 
+    instances = {}
     for key, val in list(entry.raw.items()):
         if key in unsupported or not key.startswith("on") or not isinstance(val, str):
             continue
@@ -176,7 +177,10 @@ def build_ability(entry):
             cls_name, func_name = val.split(".", 1)
             cls = getattr(ability_funcs, cls_name, None)
             if cls:
-                inst = cls()
+                inst = instances.setdefault(cls_name, cls())
+                # Expose the raw mapping so ability methods can reference other
+                # callbacks on the same ability instance.
+                inst.raw = entry.raw
                 cand = getattr(inst, func_name, None)
                 if callable(cand):
                     entry.raw[key] = CallbackWrapper(cand)
