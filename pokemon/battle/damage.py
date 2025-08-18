@@ -3,8 +3,29 @@ from typing import Dict, List, Any
 import random
 from math import floor
 
+"""Damage calculation helpers and convenience wrappers.
+
+This module contains the core damage application logic used by the battle
+engine.  It has been updated to invoke ability callbacks when a Pokémon is hit
+by a damaging move so that defensive abilities such as Aftermath can respond
+to the attack.
+"""
+
 from ..dex import Move, Pokemon
 from ..data import TYPE_CHART
+try:  # pragma: no cover - allow running as a standalone module in tests
+    from pokemon.battle.callbacks import _resolve_callback
+except Exception:  # pragma: no cover
+    def _resolve_callback(cb_name, registry):
+        """Fallback callback resolver used when the battle package is not fully
+        available.
+
+        This lightweight version only handles already callable hooks and is
+        sufficient for the simplified test harness that loads this module
+        directly via :func:`importlib`.
+        """
+
+        return cb_name if callable(cb_name) else None
 
 try:  # pragma: no cover - default text may not be available in tests
     from ..data.text import DEFAULT_TEXT
@@ -393,6 +414,23 @@ def apply_damage(
                 target.tempvals["took_damage"] = True
             except Exception:  # pragma: no cover - simple data containers
                 pass
+
+        # Trigger defensive ability callbacks such as ``onDamagingHit``.
+        try:  # pragma: no cover - abilities module may be absent in tests
+            from pokemon.dex.functions import abilities_funcs  # type: ignore
+        except Exception:  # pragma: no cover
+            abilities_funcs = None
+        ability = getattr(target, "ability", None)
+        cb_name = ability.raw.get("onDamagingHit") if getattr(ability, "raw", None) else None
+        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
+        if callable(cb):
+            try:
+                cb(dmg, target=target, source=attacker, move=move)
+            except Exception:
+                try:
+                    cb(dmg, target, attacker, move)
+                except Exception:
+                    cb(dmg, target, attacker)
 
     raw_damages = result.debug.get("damage", [])
     result.debug["damage"] = [dmg]
