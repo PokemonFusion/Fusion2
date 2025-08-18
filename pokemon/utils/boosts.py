@@ -68,5 +68,19 @@ def apply_boost(
 
     pokemon.boosts = current
 
+    # Trigger post-boost ability hooks so abilities can react to the final
+    # stage values.  Errors are ignored as ability callbacks are optional.
+    if ability and hasattr(ability, "call"):
+        try:
+            ability.call(
+                "onAfterEachBoost",
+                boosts,
+                target=pokemon,
+                source=source,
+                effect=effect,
+            )
+        except Exception:  # pragma: no cover - ability callbacks are optional
+            pass
+
 
 __all__ = ["STAT_KEY_MAP", "REVERSE_STAT_KEY_MAP", "ALL_STATS", "apply_boost"]
