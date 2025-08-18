@@ -362,7 +362,7 @@ def test_ability_behaviour(ability_name, ability_entry):
         raw={"flags": {"contact": 1}, "category": "Physical"},
     )
 
-    defensive_keys = {"onDamagingHit", "onTryHit", "onHit", "onDamage"}
+    defensive_keys = {"onDamagingHit", "onTryHit", "onHit", "onDamage", "onAfterMoveSecondary"}
     ability_on_target = any(k in ability.raw for k in defensive_keys)
 
     battle, user, target = setup_battle(move)
