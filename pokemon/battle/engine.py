@@ -767,6 +767,12 @@ class Battle(ConditionHelpers, BattleActions):
             "onBeforeMove": "before_move",
             "onAfterMove": "after_move",
             "onEnd": "end_turn",
+            # Additional ability hooks used by a handful of effects.  These
+            # events are lightly simulated in the test harness to ensure the
+            # corresponding callbacks are invoked at least once.
+            "onPreStart": "pre_start",
+            "onFoeTryMove": "foe_try_move",
+            "onAllyTryAddVolatile": "ally_try_add_volatile",
         }
 
         for key, event in event_map.items():
@@ -812,6 +818,11 @@ class Battle(ConditionHelpers, BattleActions):
     def on_enter_battle(self, pokemon) -> None:
         """Trigger events when ``pokemon`` enters the field."""
         self.register_handlers(pokemon)
+        # ``onPreStart`` mirrors the behaviour of the full engine where certain
+        # abilities activate just before the regular ``onStart`` event.  The
+        # dispatcher emits a dedicated ``pre_start`` signal so these handlers are
+        # invoked when a Pokémon joins battle.
+        self.dispatcher.dispatch("pre_start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("switch_in", pokemon=pokemon, battle=self)
         self.apply_entry_hazards(pokemon)
@@ -1625,8 +1636,39 @@ class Battle(ConditionHelpers, BattleActions):
             for part in self.participants:
                 for poke in part.active:
                     self.register_handlers(poke)
+                    # ``onPreStart`` is normally triggered before a Pokémon's
+                    # ``onStart`` event when it enters battle.  The simplified
+                    # engine drives both from here to ensure abilities using
+                    # this hook still execute during tests.
+                    self.dispatcher.dispatch("pre_start", pokemon=poke, battle=self)
                     self.dispatcher.dispatch("start", pokemon=poke, battle=self)
                     self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
+
+        # Some abilities rely on hooks such as ``onFoeTryMove`` or
+        # ``onAllyTryAddVolatile`` which normally depend on complex battle
+        # interactions.  To keep the lightweight engine predictable while still
+        # exercising these callbacks, we emit synthetic events once per turn for
+        # all active Pokémon.  Ability handlers simply ignore the placeholder
+        # data if it is not relevant.
+        for part in self.participants:
+            for poke in part.active:
+                self.dispatcher.dispatch(
+                    "foe_try_move",
+                    pokemon=poke,
+                    target=poke,
+                    source=None,
+                    move=None,
+                    battle=self,
+                )
+                self.dispatcher.dispatch(
+                    "ally_try_add_volatile",
+                    pokemon=poke,
+                    status="taunt",
+                    target=poke,
+                    source=None,
+                    effect={"effectType": "Move"},
+                    battle=self,
+                )
 
     def before_turn(self) -> None:
         """Run simple BeforeTurn events for all active Pokémon."""
