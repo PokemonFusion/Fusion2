@@ -272,10 +272,10 @@ def test_move_execution(move_name, move_entry):
     except AssertionError as e:
         MOVE_FAILS.append((move_name, str(e)))
         CALLBACK_FAILS.append((move_name, str(e)))
-        pytest.xfail(f"Move {move_name}: {e}")
+        pytest.fail(f"Move {move_name}: {e}")
     except Exception as e:
         MOVE_FAILS.append((move_name, str(e)))
-        pytest.xfail(f"Move {move_name} raised {e}")
+        pytest.fail(f"Move {move_name} raised {e}")
 
     try:
         if raw.get("boosts"):
@@ -331,7 +331,7 @@ def test_move_execution(move_name, move_entry):
                     _verify_hp(move_name, user, user_start, 1)
     except AssertionError as e:
         MOVE_FAILS.append((move_name, str(e)))
-        pytest.xfail(f"Move {move_name}: {e}")
+        pytest.fail(f"Move {move_name}: {e}")
 
 
 @pytest.mark.parametrize("ability_name, ability_entry", list(get_dex_data()[1].items()))
@@ -400,8 +400,8 @@ def test_ability_behaviour(ability_name, ability_entry):
             assert changed, "onTryHit produced no observable effect"
     except AssertionError as e:
         ABILITY_FAILS.append((ability_name, str(e)))
-        pytest.xfail(f"Ability {ability_name}: {e}")
+        pytest.fail(f"Ability {ability_name}: {e}")
     except Exception as e:
         ABILITY_FAILS.append((ability_name, str(e)))
-        pytest.xfail(f"Ability {ability_name} raised {e}")
+        pytest.fail(f"Ability {ability_name} raised {e}")
 
