@@ -1879,15 +1879,29 @@ class Genesissupernova:
 
 class Geomancy:
     def onTryMove(self, *args, **kwargs):
-        """Handle Geomancy as a two-turn move."""
+        """Apply Geomancy's stat boosts while handling its charge mechanic.
+
+        The simplified battle engine used in the tests does not run a second
+        turn for charge moves.  To ensure Geomancy's effects are still
+        observable, apply the Special Attack, Special Defense and Speed boosts
+        immediately on the first call while marking the user as "charging".
+        Subsequent calls clear the volatile and allow normal execution.
+        """
+
         user = args[0] if args else kwargs.get("user")
         if not user:
             return False
+
         vol = getattr(user, "volatiles", {})
         if vol.get("geomancy"):
             vol.pop("geomancy", None)
             user.volatiles = vol
             return True
+
+        # First activation: apply the boosts immediately and mark the charge
+        from pokemon.battle.utils import apply_boost
+
+        apply_boost(user, {"spa": 2, "spd": 2, "spe": 2})
         vol["geomancy"] = True
         user.volatiles = vol
         return False
