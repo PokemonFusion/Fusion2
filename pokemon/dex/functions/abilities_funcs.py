@@ -234,7 +234,7 @@ class Aurabreak:
             setattr(pokemon, "aura_break", True)
 
 class Baddreams:
-    def onResidual(self, pokemon=None):
+    def onResidual(self, pokemon=None, battle=None):
         if not pokemon or getattr(pokemon, "hp", 0) <= 0:
             return
         for foe in getattr(pokemon, "foes", lambda: [])():
