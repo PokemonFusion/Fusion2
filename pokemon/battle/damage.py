@@ -442,13 +442,24 @@ def apply_damage(
 
     callbacks.sort(key=lambda x: x[0], reverse=True)
     for _, cb in callbacks:
+        new_dmg = None
         try:
             new_dmg = cb(dmg, target=target, source=attacker, effect=move)
         except Exception:
-            try:
-                new_dmg = cb(dmg, target, attacker, move)
-            except Exception:
-                new_dmg = cb(dmg, target, attacker)
+            for attempt in (
+                lambda: cb(dmg, target, attacker, move),
+                lambda: cb(dmg, target, attacker),
+                lambda: cb(target, dmg, attacker, move),
+                lambda: cb(target, dmg, attacker),
+                lambda: cb(target, dmg),
+                lambda: cb(dmg, target),
+                lambda: cb(dmg),
+            ):
+                try:
+                    new_dmg = attempt()
+                    break
+                except Exception:
+                    continue
         if isinstance(new_dmg, (int, float)):
             dmg = int(new_dmg)
 
