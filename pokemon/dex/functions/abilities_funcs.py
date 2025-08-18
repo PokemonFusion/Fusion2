@@ -243,6 +243,11 @@ class Baddreams:
                 foe.hp = max(0, foe.hp - dmg)
 
 class Battery:
+    def onStart(self, pokemon=None):
+        """Store the ability holder for later ally checks."""
+        if pokemon:
+            self.effect_state = {"target": pokemon}
+
     def onAllyBasePower(self, base_power, attacker=None, defender=None, move=None):
         if attacker and move and attacker is not getattr(self, "effect_state", {}).get("target"):
             if getattr(move, "category", "") == "Special":
@@ -1895,6 +1900,11 @@ class Powerofalchemy:
             holder.ability = target.ability
 
 class Powerspot:
+    def onStart(self, pokemon=None):
+        """Track the Pokémon holding the ability."""
+        if pokemon:
+            self.effect_state = {"target": pokemon}
+
     def onAllyBasePower(self, base_power, pokemon=None, target=None, move=None):
         holder = getattr(self, "effect_state", {}).get("target")
         if pokemon is not holder:
@@ -2571,8 +2581,14 @@ class Steelworker:
         return spa
 
 class Steelyspirit:
+    def onStart(self, pokemon=None):
+        """Remember the holder so self-buffs can be avoided."""
+        if pokemon:
+            self.effect_state = {"target": pokemon}
+
     def onAllyBasePower(self, base_power, user=None, target=None, move=None):
-        if move and move.type == "Steel":
+        holder = getattr(self, "effect_state", {}).get("target")
+        if user is not holder and move and move.type == "Steel":
             return int(base_power * 1.5)
         return base_power
 

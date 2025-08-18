@@ -241,16 +241,19 @@ def _apply_move_damage(user, target, battle_move: "BattleMove", battle, *, sprea
         if isinstance(new_power, (int, float)):
             battle_move.power = int(new_power)
 
-    # Abilities on the user's allies can also influence the move's base power
-    # through ``onAllyBasePower`` hooks.
+    # Abilities on the user's side, including the user, can influence the
+    # move's base power through ``onAllyBasePower`` hooks.
     attacker_part = battle.participant_for(user)
     if attacker_part:
         my_team = getattr(attacker_part, "team", None)
         for part in battle.participants:
-            if part is attacker_part or part.has_lost:
+            if part.has_lost:
                 continue
             other_team = getattr(part, "team", None)
-            if my_team is not None and other_team == my_team:
+            same_team = part is attacker_part or (
+                my_team is not None and other_team == my_team
+            )
+            if same_team:
                 for ally in getattr(part, "active", []):
                     ability = getattr(ally, "ability", None)
                     if not ability:
