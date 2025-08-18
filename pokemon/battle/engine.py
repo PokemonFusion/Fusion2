@@ -813,6 +813,7 @@ class Battle(ConditionHelpers, BattleActions):
             "onBeforeMove": "before_move",
             "onAfterMove": "after_move",
             "onEnd": "end_turn",
+            "onUpdate": "update",
         }
 
         for key, event in event_map.items():
@@ -865,6 +866,7 @@ class Battle(ConditionHelpers, BattleActions):
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("switch_in", pokemon=pokemon, battle=self)
         self.apply_entry_hazards(pokemon)
+        self.dispatcher.dispatch("update", pokemon=pokemon, battle=self)
 
     def on_switch_out(self, pokemon) -> None:
         """Handle effects when ``pokemon`` leaves the field."""
@@ -999,6 +1001,7 @@ class Battle(ConditionHelpers, BattleActions):
                         self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
                         self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
                         self.apply_entry_hazards(replacement)
+                        self.dispatcher.dispatch("update", pokemon=replacement, battle=self)
                     continue
 
                 active = part.active[slot]
@@ -1034,7 +1037,6 @@ class Battle(ConditionHelpers, BattleActions):
                         self.dispatcher.dispatch("pre_start", pokemon=replacement, battle=self)
                         self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
                         self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
-
                         if active.tempvals.get("baton_pass"):
                             if hasattr(active, "boosts") and hasattr(replacement, "boosts"):
                                 replacement.boosts = dict(active.boosts)
@@ -1046,6 +1048,7 @@ class Battle(ConditionHelpers, BattleActions):
                             active.tempvals.pop("baton_pass", None)
                         active.tempvals.pop("switch_out", None)
                         self.apply_entry_hazards(replacement)
+                        self.dispatcher.dispatch("update", pokemon=replacement, battle=self)
                     continue
 
                 if getattr(active, "hp", 0) <= 0:
@@ -1064,6 +1067,7 @@ class Battle(ConditionHelpers, BattleActions):
                         self.dispatcher.dispatch("start", pokemon=replacement, battle=self)
                         self.dispatcher.dispatch("switch_in", pokemon=replacement, battle=self)
                         self.apply_entry_hazards(replacement)
+                        self.dispatcher.dispatch("update", pokemon=replacement, battle=self)
 
 
 
@@ -1745,6 +1749,11 @@ class Battle(ConditionHelpers, BattleActions):
                     self.dispatcher.dispatch("start", pokemon=poke, battle=self)
                     self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
             self._apply_misc_callbacks()
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for poke in part.active:
+                self.dispatcher.dispatch("update", pokemon=poke, battle=self)
 
     def before_turn(self) -> None:
         """Run simple BeforeTurn events for all active Pokémon."""
