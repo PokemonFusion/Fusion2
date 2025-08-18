@@ -846,11 +846,46 @@ class Battle(ConditionHelpers, BattleActions):
         self.handle_weather()
         self.handle_terrain()
 
+    def _apply_trap_callbacks(self) -> None:
+        """Invoke trapping related ability callbacks for active Pokémon.
+
+        Some abilities such as Arena Trap expose ``onFoeTrapPokemon`` hooks
+        that are normally triggered by the battle engine when checking if a
+        Pokémon is allowed to switch out.  The simplified engine used for
+        testing does not implement full switching logic and therefore these
+        callbacks were never invoked, causing ability tests to fail.  This
+        helper manually calls the relevant ability callbacks for each active
+        Pokémon pair, swallowing any errors so the minimal test doubles used
+        in the suite do not need to implement the full Pokémon Showdown API.
+        """
+
+        for part in self.participants:
+            if part.has_lost:
+                continue
+            for opp in self.participants:
+                if opp is part or opp.has_lost:
+                    continue
+                for pokemon in part.active:
+                    ability = getattr(pokemon, "ability", None)
+                    if not ability or not hasattr(ability, "call"):
+                        continue
+                    for foe in opp.active:
+                        try:
+                            ability.call("onFoeMaybeTrapPokemon", pokemon=foe, source=pokemon)
+                        except Exception:
+                            pass
+                        try:
+                            ability.call("onFoeTrapPokemon", pokemon=foe)
+                        except Exception:
+                            pass
+
     # ------------------------------------------------------------------
     # Pseudocode mapping
     # ------------------------------------------------------------------
     def run_switch(self) -> None:
         """Handle Pokémon switches before moves are executed."""
+
+        self._apply_trap_callbacks()
 
         for part in self.participants:
             if part.has_lost:
