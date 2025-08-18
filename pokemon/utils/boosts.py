@@ -6,7 +6,7 @@ higher-level modules decoupled and avoids circular imports between the battle
 and dex packages.
 """
 
-from typing import Dict
+from typing import Dict, Optional
 
 # Mapping of shorthand stat names to their canonical attribute names.
 STAT_KEY_MAP = {
@@ -22,13 +22,37 @@ REVERSE_STAT_KEY_MAP = {v: k for k, v in STAT_KEY_MAP.items()}
 ALL_STATS = list(STAT_KEY_MAP.values())
 
 
-def apply_boost(pokemon, boosts: Dict[str, int]) -> None:
+def apply_boost(
+    pokemon,
+    boosts: Optional[Dict[str, int]],
+    source=None,
+    effect=None,
+) -> None:
     """Apply stat stage changes to ``pokemon``.
+
+    Parameters
+    ----------
+    pokemon: Any
+        The Pokémon receiving the boost.
+    boosts: dict | None
+        Mapping of stat keys to stage changes.  ``None`` or an empty mapping
+        results in no change but still triggers ``onTryBoost`` callbacks.
+    source, effect: Any, optional
+        Additional context forwarded to ability callbacks.
 
     The provided ``boosts`` mapping uses short stat identifiers (e.g.
     ``"atk"``, ``"spe"``).  Existing boosts are normalised using
     :data:`STAT_KEY_MAP` and each stage change is clamped between -6 and 6.
     """
+
+    boosts = dict(boosts or {})
+
+    ability = getattr(pokemon, "ability", None)
+    if ability and hasattr(ability, "call"):
+        try:
+            ability.call("onTryBoost", boosts, target=pokemon, source=source, effect=effect)
+        except Exception:  # pragma: no cover - ability callbacks are optional
+            pass
 
     current = getattr(pokemon, "boosts", {}) or {}
     if not isinstance(current, dict):  # pragma: no cover - defensive
