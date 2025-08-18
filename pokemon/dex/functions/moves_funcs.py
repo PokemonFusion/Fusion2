@@ -663,13 +663,15 @@ class Charge:
 
 class Clangoroussoul:
     def onHit(self, user, target, battle):
-        """Lose 1/3 max HP and raise all stats by one stage."""
+        """Lose 1/3 of the user's maximum HP.
+
+        Stat boosts are handled in :py:meth:`onTryHit`; this method only
+        applies the HP deduction after those boosts have been applied.
+        """
         max_hp = getattr(user, "max_hp", 0)
         if getattr(user, "hp", 0) <= max_hp // 3:
             return False
         user.hp -= max_hp // 3
-        boosts = {stat: 1 for stat in ["atk", "def", "spa", "spd", "spe"]}
-        apply_boost(user, boosts)
         return True
 
     def onTry(self, *args, **kwargs):
@@ -682,7 +684,12 @@ class Clangoroussoul:
         return True
 
     def onTryHit(self, user, *args, **kwargs):
-        """Apply the stat boosts before HP reduction."""
+        """Apply the stat boosts before HP reduction.
+
+        This ensures the move mirrors the in-game behaviour where the
+        user is boosted prior to losing HP.  The HP loss itself is handled
+        in :py:meth:`onHit`.
+        """
         boosts = {stat: 1 for stat in ["atk", "def", "spa", "spd", "spe"]}
         apply_boost(user, boosts)
         return True
