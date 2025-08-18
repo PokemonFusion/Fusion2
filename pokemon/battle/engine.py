@@ -394,6 +394,38 @@ class BattleMove:
         category = (self.raw.get("category") or "").lower() if self.raw else ""
         result = None
         if category != "status":
+            # Trigger defensive ability hooks prior to applying damage.  This
+            # allows abilities with ``onTryHit`` callbacks (e.g. Bulletproof,
+            # Overcoat) to react to incoming moves even when the simplified
+            # battle engine does not model full immunity logic.  The callbacks
+            # are invoked for both the target and the attacker to cover
+            # abilities on either side.  Return values are intentionally
+            # ignored; abilities can still communicate effects through state
+            # changes such as setting ``pokemon.immune``.
+
+            try:  # pragma: no cover - optional in light-weight test stubs
+                from pokemon.dex.functions import abilities_funcs  # type: ignore
+            except Exception:  # pragma: no cover
+                abilities_funcs = None
+
+            for poke, other in ((target, user), (user, target)):
+                ability = getattr(poke, "ability", None)
+                if ability and getattr(ability, "raw", None):
+                    cb_name = ability.raw.get("onTryHit")
+                    cb = (
+                        _resolve_callback(cb_name, abilities_funcs)
+                        if abilities_funcs
+                        else None
+                    )
+                    if callable(cb):
+                        try:
+                            cb(pokemon=poke, source=other, move=self)
+                        except Exception:
+                            try:
+                                cb(poke, other, self)
+                            except Exception:
+                                cb(poke, other)
+
             result = _apply_move_damage(user, target, self, battle)
         else:
             boosts = self.raw.get("boosts") if self.raw else None
