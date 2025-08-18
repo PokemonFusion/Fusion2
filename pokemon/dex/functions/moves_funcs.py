@@ -1482,24 +1482,25 @@ class Ficklebeam:
 
 class Filletaway:
     def onHit(self, user, target, battle):
-        """Halve the user's HP to sharply boost offensive stats."""
+        """Halve the user's HP; boosts are handled by the engine."""
         max_hp = getattr(user, "max_hp", 0)
         if getattr(user, "hp", 0) <= max_hp // 2:
             return False
         user.hp -= max_hp // 2
-        apply_boost(user, {"atk": 2, "spa": 2, "spe": 2})
         return True
+
     def onTry(self, *args, **kwargs):
+        """Ensure the user has enough HP to perform the move."""
         user = args[0] if args else None
         if not user:
             return False
-        max_hp = getattr(user, 'max_hp', 0)
-        if getattr(user, 'hp', 0) <= max_hp // 2 or max_hp == 1:
+        max_hp = getattr(user, "max_hp", 0)
+        if getattr(user, "hp", 0) <= max_hp // 2 or max_hp == 1:
             return False
         return True
-    def onTryHit(self, user, *args, **kwargs):
-        """Apply the boosts before HP is halved."""
-        apply_boost(user, {"atk": 2, "spa": 2, "spe": 2})
+
+    def onTryHit(self, *args, **kwargs):
+        """No-op so the engine applies the standard boosts once."""
         return True
 
 class Finalgambit:
