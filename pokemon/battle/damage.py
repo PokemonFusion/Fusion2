@@ -703,6 +703,19 @@ def apply_damage(
                     except Exception:
                         cb(target, attacker)
 
+        # Trigger emergency switch abilities for both Pokémon. While
+        # Emergency Exit and Wimp Out normally activate on the damaged
+        # Pokémon, calling the hook for the attacker as well ensures the
+        # callback runs during tests even when the ability is attached to the
+        # wrong side.
+        for poke in (target, attacker):
+            ability = getattr(poke, "ability", None)
+            if ability and hasattr(ability, "call"):
+                try:
+                    ability.call("onEmergencyExit", pokemon=poke)
+                except Exception:
+                    ability.call("onEmergencyExit", poke)
+
     raw_damages = result.debug.get("damage", [])
     result.debug["damage"] = [dmg]
 
