@@ -370,6 +370,15 @@ def load_abilitydex(path: Path) -> Dict[str, Ability]:
         data = getattr(mod, "py_dict")
     else:
         data = _load_json(path)
+    defensive_keys = {"onDamagingHit", "onTryHit", "onHit", "onDamage", "onAfterMoveSecondary"}
+    for details in data.values():
+        if (
+            "onSourceModifyDamage" in details
+            and not any(key in details for key in defensive_keys)
+        ):
+            # Ensure abilities that only modify incoming damage are treated as
+            # defensive by giving them a harmless ``onDamage`` entry.
+            details.setdefault("onDamage", None)
     return {name: Ability.from_dict(name, details) for name, details in data.items()}
 
 
