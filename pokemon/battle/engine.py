@@ -531,6 +531,7 @@ class BattleMove:
                             except Exception:
                                 cb(poke, other)
 
+            pre_hp = getattr(target, "hp", None)
             result = _apply_move_damage(user, target, self, battle)
         else:
             boosts = self.raw.get("boosts") if self.raw else None
@@ -549,6 +550,8 @@ class BattleMove:
                 dmg_list = result.debug.get("damage", [])
                 if isinstance(dmg_list, list):
                     damage = sum(dmg_list)
+            if damage <= 0 and pre_hp is not None:
+                damage = max(0, pre_hp - getattr(target, "hp", pre_hp))
             if damage > 0:
                 frac = drain[0] / drain[1]
                 max_hp = getattr(user, "max_hp", getattr(user, "hp", 1))
@@ -1276,12 +1279,28 @@ class Battle(ConditionHelpers, BattleActions):
         if not key and getattr(action.move, "name", None):
             key = _normalize_key(action.move.name)
         dex_move = MOVEDEX.get(key) if key else None
+        if not dex_move or not getattr(dex_move, "raw", None):
+            try:
+                from pokemon import dex as _dex_mod
+                source = getattr(_dex_mod, "MOVEDEX", {})
+                if not source:
+                    from pokemon.dex.entities import load_movedex
+                    source = load_movedex(_dex_mod.MOVEDEX_PATH)
+                    _dex_mod.MOVEDEX = source
+                if MOVEDEX is not source:
+                    MOVEDEX.clear()
+                    MOVEDEX.update(source)
+                dex_move = MOVEDEX.get(key) if key else None
+            except Exception:
+                dex_move = None
         if dex_move:
             # Merge raw dex data first so downstream code can read category/callbacks.
-            if not action.move.raw:
-                action.move.raw = dict(getattr(dex_move, "raw", {}) or {})
+            dex_raw = dict(getattr(dex_move, "raw", {}) or {})
+            if action.move.raw:
+                dex_raw.update(action.move.raw)
+            action.move.raw = dex_raw
 
-            raw = getattr(dex_move, "raw", {}) or {}
+            raw = action.move.raw
 
             # POWER: prefer Showdown's `basePower` when present; otherwise fall back to dex_move.power.
             if action.move.power in (None, 0):
