@@ -1270,7 +1270,15 @@ class Illusion:
             pokemon.abilityState["illusion"] = bench[-1]
 
     def onDamagingHit(self, damage, target=None, source=None, move=None):
-        if target and target.abilityState.get("illusion"):
+        """Remove the stored illusion state on damage.
+
+        In some battle scenarios the ``abilityState`` attribute may not yet
+        exist on the target Pokémon (such as when Illusion is triggered in
+        isolation during tests).  Using ``getattr`` ensures this hook behaves
+        gracefully instead of raising an :class:`AttributeError`.
+        """
+
+        if target and getattr(target, "abilityState", {}).get("illusion"):
             target.abilityState.pop("illusion", None)
         return damage
 
