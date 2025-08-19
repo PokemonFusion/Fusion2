@@ -1279,23 +1279,28 @@ class Battle(ConditionHelpers, BattleActions):
         if not key and getattr(action.move, "name", None):
             key = _normalize_key(action.move.name)
         dex_move = MOVEDEX.get(key) if key else None
-        if not dex_move:
+        if not dex_move or not getattr(dex_move, "raw", None):
             try:
                 from pokemon import dex as _dex_mod
-                if not MOVEDEX:
-                    if not getattr(_dex_mod, "MOVEDEX", {}):
-                        from pokemon.dex.entities import load_movedex
-                        _dex_mod.MOVEDEX = load_movedex(_dex_mod.MOVEDEX_PATH)
-                    MOVEDEX.update(getattr(_dex_mod, "MOVEDEX", {}))
+                source = getattr(_dex_mod, "MOVEDEX", {})
+                if not source:
+                    from pokemon.dex.entities import load_movedex
+                    source = load_movedex(_dex_mod.MOVEDEX_PATH)
+                    _dex_mod.MOVEDEX = source
+                if MOVEDEX is not source:
+                    MOVEDEX.clear()
+                    MOVEDEX.update(source)
                 dex_move = MOVEDEX.get(key) if key else None
             except Exception:
                 dex_move = None
         if dex_move:
             # Merge raw dex data first so downstream code can read category/callbacks.
-            if not action.move.raw:
-                action.move.raw = dict(getattr(dex_move, "raw", {}) or {})
+            dex_raw = dict(getattr(dex_move, "raw", {}) or {})
+            if action.move.raw:
+                dex_raw.update(action.move.raw)
+            action.move.raw = dex_raw
 
-            raw = getattr(dex_move, "raw", {}) or {}
+            raw = action.move.raw
 
             # POWER: prefer Showdown's `basePower` when present; otherwise fall back to dex_move.power.
             if action.move.power in (None, 0):
