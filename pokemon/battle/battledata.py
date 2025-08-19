@@ -25,21 +25,47 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - optional in 
 
 @dataclass
 class Move:
-    """Minimal representation of a Pokemon move."""
+    """Minimal representation of a Pokémon move.
+
+    Parameters
+    ----------
+    name
+        Name of the move.
+    priority
+        Execution priority of the move.
+    pokemon_types
+        Optional typing of the Pokémon using the move.  This is primarily
+        carried so ephemeral test battles can perform damage calculations with
+        the correct Same Type Attack Bonus.
+    """
 
     name: str
     priority: int = 0
+    pokemon_types: Optional[List[str]] = None
 
     def to_dict(self) -> Dict:
-        return {"name": self.name, "priority": self.priority}
+        data = {"name": self.name, "priority": self.priority}
+        if self.pokemon_types:
+            data["pokemon_types"] = list(self.pokemon_types)
+        return data
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Move":
-        return cls(name=data["name"], priority=data.get("priority", 0))
+        return cls(
+            name=data["name"],
+            priority=data.get("priority", 0),
+            pokemon_types=data.get("pokemon_types"),
+        )
 
 
 class Pokemon:
-    """Very small Pokemon container used for battles."""
+    """Very small Pokémon container used for battles.
+
+    The constructor accepts optional item and stat data. IVs, EVs and nature
+    are used to calculate the base stats for the battle instance.  Explicit
+    typing can be supplied via the ``types`` argument; when omitted, typing is
+    inferred from the Pokédex using the Pokémon's species name.
+    """
 
     def __init__(
         self,
@@ -51,11 +77,13 @@ class Pokemon:
         moves: Optional[List[Move]] = None,
         toxic_counter: int = 0,
         ability=None,
+        item=None,
         ivs: Optional[List[int]] = None,
         evs: Optional[List[int]] = None,
         nature: str = "Hardy",
         model_id: Optional[int] = None,
         gender: str = "N",
+        types: Optional[List[str]] = None,
     ):
         self.name = name
         self.level = level
@@ -65,12 +93,15 @@ class Pokemon:
         self.toxic_counter = toxic_counter
         self.moves = moves or []
         self.ability = ability
+        self.item = item
         self.model_id = model_id
         self.ivs = ivs or [0, 0, 0, 0, 0, 0]
         self.evs = evs or [0, 0, 0, 0, 0, 0]
         self.nature = nature
         self.gender = gender
         self.tempvals: Dict[str, int] = {}
+        # Track volatile status effects such as confusion or curses
+        self.volatiles: Dict[str, Any] = {}
         self.boosts: Dict[str, int] = {
             "atk": 0,
             "def": 0,
@@ -82,15 +113,39 @@ class Pokemon:
         }
         try:
             refresh_stats = safe_import("helpers.pokemon_helpers").refresh_stats
+            get_stats = safe_import("helpers.pokemon_helpers").get_stats
             refresh_stats(self)
+            stats_dict = get_stats(self)
+            try:
+                StatsCls = safe_import("pokemon.dex.entities").Stats
+            except Exception:  # pragma: no cover - Stats class optional
+                from types import SimpleNamespace as StatsCls  # type: ignore
+            self.base_stats = StatsCls(**stats_dict)
         except Exception:  # pragma: no cover - helpers may be absent or fail in tests
             pass
 
-        # Ensure a ``types`` attribute is always available.  Some parts of the
+        # Convert item name strings to Item objects when possible so that
+        # item callbacks can fire during battle simulations.
+        if isinstance(self.item, str):
+            try:  # pragma: no cover - optional import paths
+                dex_mod = safe_import("pokemon.dex")
+                itemdex = getattr(dex_mod, "ITEMDEX", {})
+                ItemCls = getattr(dex_mod, "Item", None)
+                entry = (
+                    itemdex.get(self.item)
+                    or itemdex.get(str(self.item).lower())
+                    or itemdex.get(str(self.item).title())
+                )
+                if entry and ItemCls:
+                    self.item = ItemCls.from_dict(str(self.item), entry)
+            except Exception:
+                pass
+
+        # Ensure a ``types`` attribute is always available. Some parts of the
         # battle engine (such as damage calculation) expect this attribute to
-        # exist.  When explicit type information isn't supplied we look it up
-        # from the Pokédex based on the Pokémon's species name.
-        self.types = self._lookup_species_types()
+        # exist.  Use the explicitly supplied types if provided; otherwise fall
+        # back to a Pokédex lookup based on the Pokémon's species name.
+        self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
 
     def _lookup_species_types(self) -> List[str]:
         """Return this Pokémon's types inferred from the Pokédex.
@@ -172,6 +227,8 @@ class Pokemon:
 
         if self.ability is not None:
             info["ability"] = getattr(self.ability, "name", self.ability)
+        if self.item is not None:
+            info["item"] = getattr(self.item, "name", self.item)
         info.update(
             {
                 "name": self.name,
@@ -181,6 +238,7 @@ class Pokemon:
                 "ivs": self.ivs,
                 "evs": self.evs,
                 "nature": self.nature,
+                "types": list(self.types),
             }
         )
 
@@ -196,6 +254,7 @@ class Pokemon:
         max_hp = data.get("max_hp")
         model_id = data.get("model_id")
         ability = data.get("ability")
+        item = data.get("item")
         ivs = data.get("ivs")
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
@@ -215,6 +274,7 @@ class Pokemon:
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
+                    item = getattr(poke, "item", getattr(poke, "held_item", item))
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
@@ -256,16 +316,16 @@ class Pokemon:
             moves=moves,
             toxic_counter=data.get("toxic_counter", 0),
             ability=ability,
+            item=item,
             ivs=ivs,
             evs=evs,
             nature=nature,
             model_id=model_id,
             gender=gender,
+            types=(
+                [t.strip() for t in types.split(",")] if isinstance(types, str) else types
+            ),
         )
-        if types:
-            obj.types = (
-                [t.strip() for t in types.split(",")] if isinstance(types, str) else list(types)
-            )
         if slots is not None:
             obj.activemoveslot_set = slots
         obj.tempvals = data.get("tempvals", {})

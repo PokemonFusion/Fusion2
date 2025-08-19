@@ -105,6 +105,30 @@ class ConditionHelpers:
         handler = self._lookup_effect(name)
         if not handler:
             return False
+
+        # Allow abilities to veto the weather change or react to it.
+        weather_obj = type("Weather", (), {"id": name})()
+        for participant in getattr(self, "participants", []):
+            for pokemon in getattr(participant, "active", []):
+                ability = getattr(pokemon, "ability", None)
+                cb = getattr(getattr(ability, "raw", {}), "get", lambda *_: None)(
+                    "onAnySetWeather"
+                )
+                if callable(cb):
+                    if hasattr(cb, "func") and hasattr(cb.func, "__self__"):
+                        setattr(
+                            cb.func.__self__, "field_weather", getattr(self.field, "weather", None)
+                        )
+                    try:
+                        res = cb(target=pokemon, source=source, weather=weather_obj)
+                    except TypeError:
+                        try:
+                            res = cb(pokemon, source, weather_obj)
+                        except TypeError:
+                            res = cb(pokemon)
+                    if res is False:
+                        return False
+
         effect = {}
         dur_cb = getattr(handler, "durationCallback", None)
         if callable(dur_cb):
@@ -123,6 +147,18 @@ class ConditionHelpers:
                 handler.onFieldStart(self.field)
         self.field.weather = name
         self.field.weather_handler = handler
+        self.field.weather_state = {"source": source}
+        # Mirror weather state on the battle for callbacks expecting it.
+        self.weather_state = self.field.weather_state
+
+        for participant in getattr(self, "participants", []):
+            for pokemon in getattr(participant, "active", []):
+                ability = getattr(pokemon, "ability", None)
+                cb = getattr(getattr(ability, "raw", {}), "get", lambda *_: None)(
+                    "onAnySetWeather"
+                )
+                if callable(cb) and hasattr(cb, "func") and hasattr(cb.func, "__self__"):
+                    setattr(cb.func.__self__, "field_weather", name)
         return True
 
     def clearWeather(self) -> None:
@@ -138,6 +174,8 @@ class ConditionHelpers:
         self.field.weather = None
         self.field.weather_state = {}
         self.field.weather_handler = None
+        # Keep battle.weather_state in sync for ability callbacks
+        self.weather_state = self.field.weather_state
 
     def setTerrain(self, name: str, source=None) -> bool:
         """Start a terrain effect on the field."""

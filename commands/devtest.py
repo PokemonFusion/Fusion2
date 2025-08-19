@@ -43,8 +43,8 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
 
         opponent = DummyTrainer("PunchBag", caller.location)
         battle = BattleSession(caller, opponent)
-        atk_moves = [BMove(name=m) for m in atk_pkmn.moves]
-        def_moves = [BMove(name=m) for m in def_pkmn.moves]
+        atk_moves = [BMove(name=m, pokemon_types=atk_pkmn.types) for m in atk_pkmn.moves]
+        def_moves = [BMove(name=m, pokemon_types=def_pkmn.types) for m in def_pkmn.moves]
         atk = BPokemon(
             atk_pkmn.name,
             level=atk_pkmn.level,
@@ -52,6 +52,11 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
             max_hp=atk_pkmn.max_hp,
             moves=atk_moves,
             ability=atk_pkmn.ability,
+            item=atk_pkmn.item,
+            ivs=atk_pkmn.ivs,
+            evs=atk_pkmn.evs,
+            nature=atk_pkmn.nature,
+            types=atk_pkmn.types,
         )
         defender = BPokemon(
             def_pkmn.name,
@@ -60,6 +65,11 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
             max_hp=def_pkmn.max_hp,
             moves=def_moves,
             ability=def_pkmn.ability,
+            item=def_pkmn.item,
+            ivs=def_pkmn.ivs,
+            evs=def_pkmn.evs,
+            nature=def_pkmn.nature,
+            types=def_pkmn.types,
         )
         battle._init_battle_state(
             caller.location, [atk], defender, opponent.key, BattleType.TRAINER
@@ -73,10 +83,11 @@ def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
 class CmdToggleTest(Command):
     """
     @toggletest
-    Attach/remove the DevTestCmdSet to yourself.
+    Attach or remove the ``DevTestCmdSet`` to yourself.
     """
 
     key = "@toggletest"
+    aliases = ["toggletest"]
     locks = "cmd:perm(Builder)"
     help_category = "Dev/Test"
 

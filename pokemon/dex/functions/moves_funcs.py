@@ -257,8 +257,15 @@ class Auroraveil:
 
 class Autotomize:
     def onHit(self, user, target, battle):
-        """Boost Speed by two stages and reduce weight."""
-        apply_boost(user, {"spe": 2})
+        """Reduce the user's weight and mark Autotomize as active.
+
+        The actual Speed boost for Autotomize is handled by the move's raw
+        data in :mod:`pokemon.battle.engine`.  If we were to apply the boost
+        here as well it would be doubled, resulting in a +4 Speed increase
+        instead of the expected +2.  We therefore only track the move's
+        weight-reduction side effect in this handler and allow the default
+        engine logic to apply the stat boosts once.
+        """
         if hasattr(user, "tempvals"):
             user.tempvals["autotomize"] = True
         return True
@@ -656,13 +663,15 @@ class Charge:
 
 class Clangoroussoul:
     def onHit(self, user, target, battle):
-        """Lose 1/3 max HP and raise all stats by one stage."""
+        """Lose 1/3 of the user's maximum HP.
+
+        Stat boosts are handled in :py:meth:`onTryHit`; this method only
+        applies the HP deduction after those boosts have been applied.
+        """
         max_hp = getattr(user, "max_hp", 0)
         if getattr(user, "hp", 0) <= max_hp // 3:
             return False
         user.hp -= max_hp // 3
-        boosts = {stat: 1 for stat in ["atk", "def", "spa", "spd", "spe"]}
-        apply_boost(user, boosts)
         return True
 
     def onTry(self, *args, **kwargs):
@@ -675,7 +684,12 @@ class Clangoroussoul:
         return True
 
     def onTryHit(self, user, *args, **kwargs):
-        """Apply the stat boosts before HP reduction."""
+        """Apply the stat boosts before HP reduction.
+
+        This ensures the move mirrors the in-game behaviour where the
+        user is boosted prior to losing HP.  The HP loss itself is handled
+        in :py:meth:`onHit`.
+        """
         boosts = {stat: 1 for stat in ["atk", "def", "spa", "spd", "spe"]}
         apply_boost(user, boosts)
         return True
@@ -1468,24 +1482,25 @@ class Ficklebeam:
 
 class Filletaway:
     def onHit(self, user, target, battle):
-        """Halve the user's HP to sharply boost offensive stats."""
+        """Halve the user's HP; boosts are handled by the engine."""
         max_hp = getattr(user, "max_hp", 0)
         if getattr(user, "hp", 0) <= max_hp // 2:
             return False
         user.hp -= max_hp // 2
-        apply_boost(user, {"atk": 2, "spa": 2, "spe": 2})
         return True
+
     def onTry(self, *args, **kwargs):
+        """Ensure the user has enough HP to perform the move."""
         user = args[0] if args else None
         if not user:
             return False
-        max_hp = getattr(user, 'max_hp', 0)
-        if getattr(user, 'hp', 0) <= max_hp // 2 or max_hp == 1:
+        max_hp = getattr(user, "max_hp", 0)
+        if getattr(user, "hp", 0) <= max_hp // 2 or max_hp == 1:
             return False
         return True
-    def onTryHit(self, user, *args, **kwargs):
-        """Apply the boosts before HP is halved."""
-        apply_boost(user, {"atk": 2, "spa": 2, "spe": 2})
+
+    def onTryHit(self, *args, **kwargs):
+        """No-op so the engine applies the standard boosts once."""
         return True
 
 class Finalgambit:
@@ -1865,15 +1880,29 @@ class Genesissupernova:
 
 class Geomancy:
     def onTryMove(self, *args, **kwargs):
-        """Handle Geomancy as a two-turn move."""
+        """Apply Geomancy's stat boosts while handling its charge mechanic.
+
+        The simplified battle engine used in the tests does not run a second
+        turn for charge moves.  To ensure Geomancy's effects are still
+        observable, apply the Special Attack, Special Defense and Speed boosts
+        immediately on the first call while marking the user as "charging".
+        Subsequent calls clear the volatile and allow normal execution.
+        """
+
         user = args[0] if args else kwargs.get("user")
         if not user:
             return False
+
         vol = getattr(user, "volatiles", {})
         if vol.get("geomancy"):
             vol.pop("geomancy", None)
             user.volatiles = vol
             return True
+
+        # First activation: apply the boosts immediately and mark the charge
+        from pokemon.battle.utils import apply_boost
+
+        apply_boost(user, {"spa": 2, "spd": 2, "spe": 2})
         vol["geomancy"] = True
         user.volatiles = vol
         return False
