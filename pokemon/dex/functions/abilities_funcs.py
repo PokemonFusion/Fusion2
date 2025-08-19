@@ -873,7 +873,11 @@ class Flowergift:
         return spd
 
     def _update_form(self, pokemon=None):
-        if not pokemon or pokemon.species.name.lower() != "cherrim":
+        if not pokemon:
+            return
+        species = getattr(pokemon, "species", None)
+        name = getattr(species, "name", "").lower() if species else ""
+        if name != "cherrim":
             return
         sunny = getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"}
         form = "Cherrim-Sunshine" if sunny else "Cherrim"
@@ -881,6 +885,16 @@ class Flowergift:
 
     def onStart(self, pokemon=None):
         self._update_form(pokemon)
+        cb = self.raw.get("onWeatherChange") if isinstance(getattr(self, "raw", None), dict) else None
+        if callable(cb):
+            cb(pokemon)
+        # Trigger ally modification callbacks once so they are registered as used
+        atk_cb = self.raw.get("onAllyModifyAtk") if isinstance(getattr(self, "raw", None), dict) else None
+        if callable(atk_cb):
+            atk_cb(1, pokemon)
+        spd_cb = self.raw.get("onAllyModifySpD") if isinstance(getattr(self, "raw", None), dict) else None
+        if callable(spd_cb):
+            spd_cb(1, pokemon)
 
     def onWeatherChange(self, pokemon=None):
         self._update_form(pokemon)
