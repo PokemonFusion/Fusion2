@@ -73,3 +73,7 @@ PERMISSION_HIERARCHY = [
 
 # Use the custom character typeclass with Pokémon helpers
 BASE_CHARACTER_TYPECLASS = "pokemon.pokemon.User"
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+WEBSOCKET_CLIENT_URL = "/ws"  # relative path works behind HTTPS proxy
