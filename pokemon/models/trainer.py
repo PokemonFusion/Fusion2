@@ -1,7 +1,6 @@
 """Trainer related models such as ``Trainer`` and inventory."""
 
 from django.db import models
-from evennia.objects.models import ObjectDB
 
 from .core import SpeciesEntry
 
@@ -21,7 +20,7 @@ class Trainer(models.Model):
     """Model storing trainer specific stats for a Character."""
 
     user = models.OneToOneField(
-        ObjectDB, on_delete=models.CASCADE, related_name="trainer", db_index=True
+        "objects.ObjectDB", on_delete=models.CASCADE, related_name="trainer", db_index=True
     )
     trainer_number = models.PositiveIntegerField(unique=True)
     money = models.PositiveIntegerField(default=0)
