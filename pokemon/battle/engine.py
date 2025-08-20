@@ -2311,7 +2311,8 @@ class Battle(ConditionHelpers, BattleActions):
         if not target or not target.active:
             return
 
-        if item_name.endswith("ball") and self.type is BattleType.WILD:
+        item_key = _normalize_key(item_name)
+        if item_key.endswith("ball") and self.type is BattleType.WILD:
             target_poke = target.active[0]
             try:
                 from pokemon.dex.functions.pokedex_funcs import get_catch_rate
@@ -2321,7 +2322,7 @@ class Battle(ConditionHelpers, BattleActions):
             status = getattr(target_poke, "status", None)
             max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
             from .capture import attempt_capture
-            ball_mod = BALL_MODIFIERS.get(item_name, 1.0)
+            ball_mod = BALL_MODIFIERS.get(item_key, 1.0)
             caught = attempt_capture(
                 max_hp,
                 target_poke.hp,
