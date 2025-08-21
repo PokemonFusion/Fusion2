@@ -1,7 +1,7 @@
 """Simple PVP battle request system.
 
 This module implements a very small subset of the MUF-based PVP logic
-found in ``reference_material/battletypes.txt``. It allows players to
+found in ``docs/reference/battletypes.txt``. It allows players to
 create PVP requests, join them and start a battle using the existing
 ``BattleSession`` helper.
 """

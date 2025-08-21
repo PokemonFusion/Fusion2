@@ -6,6 +6,14 @@ Please note that the server is under heavy development. You can follow progress 
 
 For setup instructions and other notes migrated from the original Evennia README, see [README.instructions.md](README.instructions.md).
 
+## Documentation
+
+Project documentation lives in the [docs](docs/) folder:
+
+- [Quickstart and Overview](docs/index.md)
+- [Code Map](docs/code-map.md)
+- [Reference Materials](docs/reference)
+
 To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
 
 ```bash
