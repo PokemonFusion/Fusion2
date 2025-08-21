@@ -2,6 +2,7 @@ import os
 import sys
 import types
 import importlib.util
+import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -57,6 +58,13 @@ mv_mod = importlib.util.module_from_spec(mv_spec)
 sys.modules[mv_spec.name] = mv_mod
 mv_spec.loader.exec_module(mv_mod)
 Acupressure = mv_mod.Acupressure
+
+
+@pytest.fixture(autouse=True)
+def _cleanup_modules():
+    yield
+    for mod in ("pokemon.dex", "pokemon.battle", "pokemon.battle.utils"):
+        sys.modules.pop(mod, None)
 
 
 class DummyMove:
