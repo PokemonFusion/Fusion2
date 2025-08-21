@@ -9,7 +9,7 @@ try:
 except Exception:  # pragma: no cover - optional dependency
 	MOVEDEX = {}
 
-from helpers.pokemon_helpers import get_max_hp
+from pokemon.helpers.pokemon_helpers import get_max_hp
 
 @dataclass
 class EphemeralPokemon:

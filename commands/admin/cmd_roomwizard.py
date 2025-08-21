@@ -1,5 +1,5 @@
 from evennia import Command
-from helpers.enhanced_evmenu import EnhancedEvMenu
+from utils.enhanced_evmenu import EnhancedEvMenu
 import menus.room_wizard as room_wizard
 
 class CmdRoomWizard(Command):

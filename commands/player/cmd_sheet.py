@@ -1,8 +1,8 @@
 from evennia import Command
 from django.db.utils import OperationalError
 from utils.display import display_pokemon_sheet, display_trainer_sheet
-from helpers.display_helpers import get_status_effects
-from helpers.pokemon_helpers import get_max_hp
+from pokemon.helpers.display_helpers import get_status_effects
+from pokemon.helpers.pokemon_helpers import get_max_hp
 from utils.xp_utils import get_display_xp
 from pokemon.stats import level_for_exp
 

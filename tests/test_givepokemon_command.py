@@ -10,7 +10,7 @@ sys.path.insert(0, ROOT)
 # Temporarily replace evennia modules while importing the command
 menu_calls = []
 orig_evennia = sys.modules.get("evennia")
-orig_enhanced = sys.modules.get("helpers.enhanced_evmenu")
+orig_enhanced = sys.modules.get("utils.enhanced_evmenu")
 
 fake_evennia = types.ModuleType("evennia")
 fake_evennia.Command = type("Command", (), {})
@@ -24,13 +24,13 @@ fake_search_object.return_value = []
 fake_evennia.search_object = fake_search_object
 sys.modules["evennia"] = fake_evennia
 
-fake_enhanced = types.ModuleType("helpers.enhanced_evmenu")
+fake_enhanced = types.ModuleType("utils.enhanced_evmenu")
 
 def FakeEnhancedEvMenu(*args, **kwargs):
     menu_calls.append((args, kwargs))
 
 fake_enhanced.EnhancedEvMenu = FakeEnhancedEvMenu
-sys.modules["helpers.enhanced_evmenu"] = fake_enhanced
+sys.modules["utils.enhanced_evmenu"] = fake_enhanced
 
 # Provide empty menu module
 sys.modules.setdefault("menus.give_pokemon", types.ModuleType("menus.give_pokemon"))
@@ -48,9 +48,9 @@ if orig_evennia is not None:
 else:
     sys.modules.pop("evennia", None)
 if orig_enhanced is not None:
-    sys.modules["helpers.enhanced_evmenu"] = orig_enhanced
+    sys.modules["utils.enhanced_evmenu"] = orig_enhanced
 else:
-    sys.modules.pop("helpers.enhanced_evmenu", None)
+    sys.modules.pop("utils.enhanced_evmenu", None)
 
 class DummyStorage:
     def __init__(self, count=0):

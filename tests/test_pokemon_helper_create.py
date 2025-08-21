@@ -57,8 +57,8 @@ def test_create_owned_pokemon_initializes_model(monkeypatch):
     monkeypatch.setattr(pkg, "models", sys.modules["pokemon.models"], raising=False)
     monkeypatch.setattr(pkg, "services", services_pkg, raising=False)
 
-    monkeypatch.delitem(sys.modules, "helpers.pokemon_helpers", raising=False)
-    from helpers.pokemon_helpers import create_owned_pokemon
+    monkeypatch.delitem(sys.modules, "pokemon.helpers.pokemon_helpers", raising=False)
+    from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 
     mon = create_owned_pokemon("Pikachu", trainer="Ash", level=5, gender="M")
     assert OwnedPokemon.objects.kwargs["trainer"] == "Ash"

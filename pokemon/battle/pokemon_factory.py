@@ -10,7 +10,7 @@ focused on session management.
 from typing import List
 
 from ..generation import generate_pokemon
-from helpers.pokemon_spawn import get_spawn
+from pokemon.helpers.pokemon_spawn import get_spawn
 from .battledata import Pokemon, Move
 
 
@@ -91,7 +91,7 @@ def create_battle_pokemon(
     """Return a ``Pokemon`` battle object for the given species/level."""
 
     try:
-        from helpers.pokemon_helpers import create_owned_pokemon
+        from pokemon.helpers.pokemon_helpers import create_owned_pokemon
     except Exception:  # pragma: no cover - optional in tests
         create_owned_pokemon = None
 

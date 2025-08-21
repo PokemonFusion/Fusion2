@@ -122,9 +122,9 @@ gen_mod.generate_pokemon = generate_pokemon
 gen_mod.NATURES = {}
 sys.modules["pokemon.generation"] = gen_mod
 
-spawn_mod = types.ModuleType("helpers.pokemon_spawn")
+spawn_mod = types.ModuleType("pokemon.helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
-sys.modules["helpers.pokemon_spawn"] = spawn_mod
+sys.modules["pokemon.helpers.pokemon_spawn"] = spawn_mod
 
 # Create package placeholders for relative imports
 pokemon_pkg = types.ModuleType("pokemon")
@@ -344,7 +344,7 @@ def test_from_dict_calculates_max_hp():
             self.current_hp = 5
 
         def get_max_hp(self):
-            from helpers.pokemon_helpers import get_max_hp
+            from pokemon.helpers.pokemon_helpers import get_max_hp
             return get_max_hp(self)
 
     fake_models_core.OwnedPokemon = FakeOwned
@@ -355,10 +355,10 @@ def test_from_dict_calculates_max_hp():
     sys.modules["pokemon.models"] = fake_models_pkg
     sys.modules["pokemon.models.core"] = fake_models_core
 
-    helpers_mod = types.ModuleType("helpers.pokemon_helpers")
+    helpers_mod = types.ModuleType("pokemon.helpers.pokemon_helpers")
     helpers_mod.get_max_hp = lambda mon: 42
-    orig_helpers = sys.modules.get("helpers.pokemon_helpers")
-    sys.modules["helpers.pokemon_helpers"] = helpers_mod
+    orig_helpers = sys.modules.get("pokemon.helpers.pokemon_helpers")
+    sys.modules["pokemon.helpers.pokemon_helpers"] = helpers_mod
 
     try:
         poke = bd_mod.Pokemon.from_dict({"model_id": "uid"})
@@ -372,9 +372,9 @@ def test_from_dict_calculates_max_hp():
             else:
                 sys.modules.pop("pokemon.models.core", None)
             if orig_helpers is not None:
-                sys.modules["helpers.pokemon_helpers"] = orig_helpers
+                sys.modules["pokemon.helpers.pokemon_helpers"] = orig_helpers
             else:
-                sys.modules.pop("helpers.pokemon_helpers", None)
+                sys.modules.pop("pokemon.helpers.pokemon_helpers", None)
 
     assert poke.max_hp == 42
 

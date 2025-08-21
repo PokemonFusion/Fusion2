@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Menu nodes for bulletin board interactions."""
 
-from helpers.enhanced_evmenu import EnhancedEvMenu as EvMenu
+from utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from evennia.utils.eveditor import EvEditor
 
 

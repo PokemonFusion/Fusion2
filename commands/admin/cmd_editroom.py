@@ -1,5 +1,5 @@
 from evennia import Command
-from helpers.enhanced_evmenu import EnhancedEvMenu
+from utils.enhanced_evmenu import EnhancedEvMenu
 import menus.edit_room as edit_room
 
 class CmdEditRoom(Command):
