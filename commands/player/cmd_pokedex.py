@@ -1,4 +1,4 @@
-# mygame/commands/pokedex.py
+# mygame/commands/cmd_pokedex.py
 
 from evennia import Command
 from pokemon.middleware import (
