@@ -1,6 +1,8 @@
 import importlib
 import os
 import sys
+from unittest.mock import patch
+
 import pytest
 
 from tests.test_move_effects import setup_env as base_setup_env, setup_battle
@@ -54,11 +56,15 @@ def test_triple_kick_hits_three_times(env, monkeypatch):
         hits["count"] = len(result.debug.get("damage", []))
         return result
 
-    monkeypatch.setattr(dmg_mod, "damage_calc", wrapped_calc)
-    move = env["BattleMove"](
-        "Triple Kick", power=10, accuracy=True, raw={"multihit": 3}
-    )
-    action = env["Action"](p1, env["ActionType"].MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle.run_turn()
+    # Ensure random elements resolve deterministically during the test
+    with patch("pokemon.battle.engine.random.random", return_value=0.0), patch(
+        "pokemon.battle.damage.random.randint", return_value=100
+    ):
+        monkeypatch.setattr(dmg_mod, "damage_calc", wrapped_calc)
+        move = env["BattleMove"](
+            "Triple Kick", power=10, accuracy=True, raw={"multihit": 3}
+        )
+        action = env["Action"](p1, env["ActionType"].MOVE, p2, move, move.priority)
+        p1.pending_action = action
+        battle.run_turn()
     assert hits.get("count") == 3
