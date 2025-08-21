@@ -74,6 +74,11 @@ Action = eng_mod.Action
 ActionType = eng_mod.ActionType
 BattleType = eng_mod.BattleType
 
+# Preload minimal move data so the battle engine doesn't attempt to load the full dex
+_tackle = Move("Tackle")
+_tackle.raw = {"accuracy": 100, "basePower": 40, "type": "Normal", "category": "Physical"}
+eng_mod.MOVEDEX["tackle"] = _tackle
+
 
 def setup_battle(status=None):
     p1 = Pokemon("P1", level=1, hp=100, max_hp=100, moves=[Move("Tackle")])
@@ -95,23 +100,26 @@ def setup_battle(status=None):
 
 
 def test_paralysis_can_prevent_move():
+    """Paralysis should occasionally stop a Pokémon from acting."""
     battle, p1, p2 = setup_battle("par")
-    with patch.object(eng_mod.random, "random", return_value=0.1):
+    with patch("pokemon.battle.engine.random.random", return_value=0.1):
         battle.run_turn()
     assert p2.hp == 100
 
 
 def test_frozen_blocks_move():
+    """Frozen status should prevent action unless the Pokémon thaws."""
     battle, p1, p2 = setup_battle("frz")
-    with patch.object(eng_mod.random, "random", return_value=0.5):
+    with patch("pokemon.battle.engine.random.random", return_value=0.5):
         battle.run_turn()
     assert p2.hp == 100
     assert p1.status == "frz"
 
 
 def test_frozen_can_thaw_and_move():
+    """Frozen Pokémon may thaw out and attack."""
     battle, p1, p2 = setup_battle("frz")
-    with patch.object(eng_mod.random, "random", return_value=0.1):
+    with patch("pokemon.battle.engine.random.random", return_value=0.1):
         battle.run_turn()
     assert p2.hp < 100
     assert p1.status == 0

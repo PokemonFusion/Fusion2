@@ -1,5 +1,6 @@
 """CmdSet containing the core Pokémon gameplay commands."""
 
+from django.conf import settings
 from evennia import CmdSet
 from commands.debug.command import (
     CmdShowPokemonOnUser,
@@ -45,7 +46,7 @@ class PokemonCoreCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         """Populate the cmdset."""
-        for cmd in (
+        cmds = [
             CmdShowPokemonOnUser,
             CmdShowPokemonInStorage,
             CmdAddPokemonToUser,
@@ -75,6 +76,8 @@ class PokemonCoreCmdSet(CmdSet):
             CmdTradePokemon,
             CmdHunt,
             CmdLeaveHunt,
-            CmdCustomHunt,
-        ):
+        ]
+        if settings.DEV_MODE:
+            cmds.append(CmdCustomHunt)
+        for cmd in cmds:
             self.add(cmd())

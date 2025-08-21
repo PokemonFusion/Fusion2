@@ -1,6 +1,7 @@
 """Command for attempting to hunt wild Pokémon."""
 from __future__ import annotations
 
+from django.conf import settings
 from evennia import Command
 
 from world.hunt_system import HuntSystem
@@ -54,7 +55,7 @@ class CmdCustomHunt(Command):
 
     key = "+customhunt"
     aliases = ["+huntcustom"]
-    locks = "cmd:perm(Builders)"
+    locks = "cmd:all()" if settings.DEV_MODE else "cmd:perm(Builders)"
     help_category = "Admin"
 
     def func(self):
