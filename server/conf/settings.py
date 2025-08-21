@@ -41,6 +41,12 @@ MAX_NR_CHARACTERS = 10
 MAX_NR_SIMULTANEOUS_PUPPETS = 4
 AUTO_PUPPET_ON_LOGIN = False
 
+# Flag indicating if the server is running in development mode.
+# When enabled, additional debug commands are exposed to all players and
+# certain administrative features become available. Set to ``False`` in
+# production environments.
+DEV_MODE = False
+
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
 ######################################################################
