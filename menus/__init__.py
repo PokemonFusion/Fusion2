@@ -9,7 +9,12 @@ them so that other menus remain available.
 
 try:  # Optional - depends on Evennia
     from . import battle_move
-except ModuleNotFoundError:  # pragma: no cover - optional dependency
+except Exception:  # pragma: no cover - optional dependency
+    # Importing the battle move menu will reach into Evennia and
+    # Django settings.  In the lightweight test environment neither of
+    # these are configured, which can raise a variety of exceptions
+    # (e.g. ImproperlyConfigured).  Swallow any error so the remaining
+    # menus continue to load.
     battle_move = None  # type: ignore[assignment]
 
 # Always import menus that do not rely on Evennia
