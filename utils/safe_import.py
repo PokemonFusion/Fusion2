@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import sys
 from contextlib import contextmanager
 from typing import Any
 
@@ -28,7 +29,14 @@ def safe_import(dotted: str) -> Any:
     """
     try:
         return importlib.import_module(dotted)
-    except ModuleNotFoundError:  # pragma: no cover - logging path
+    except ModuleNotFoundError:
+        parts = dotted.split(".")
+        if len(parts) > 1:
+            parent_name = ".".join(parts[:-1])
+            parent = sys.modules.get(parent_name)
+            if parent is not None and getattr(parent, "__path__", None) == []:
+                sys.modules.pop(parent_name, None)
+                return importlib.import_module(dotted)
         log.exception("Import failed: %s", dotted)
         raise
 
