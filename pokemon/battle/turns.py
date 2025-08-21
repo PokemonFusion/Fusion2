@@ -146,10 +146,32 @@ class TurnProcessor:
                     actions.extend(part_actions)
                 elif part_actions:
                     actions.append(part_actions)
-            else:
+            elif hasattr(part, "choose_action"):
                 action = part.choose_action(self)
                 if action:
                     actions.append(action)
+            else:
+                pending = getattr(part, "pending_action", None)
+                if not pending:
+                    continue
+                if isinstance(pending, list):
+                    for act in pending:
+                        if act and act.target and act.target not in self.participants:
+                            act.target = None
+                        if act and not getattr(act, "target", None):
+                            opps = self.opponents_of(part)
+                            if opps:
+                                act.target = opps[0]
+                    actions.extend(pending)
+                else:
+                    if pending.target and pending.target not in self.participants:
+                        pending.target = None
+                    if not pending.target:
+                        opps = self.opponents_of(part)
+                        if opps:
+                            pending.target = opps[0]
+                    actions.append(pending)
+                part.pending_action = None
         return actions
 
     def collect_actions(self) -> List[Action]:
