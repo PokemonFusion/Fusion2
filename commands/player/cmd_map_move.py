@@ -1,3 +1,5 @@
+"""Command allowing movement within the current map."""
+
 from evennia import Command
 
 

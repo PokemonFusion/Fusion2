@@ -1,5 +1,5 @@
 from evennia import CmdSet
-from .cmdmapmove import CmdMapMove
+from .cmd_map_move import CmdMapMove
 from .cmdstartmap import CmdStartMap
 
 
