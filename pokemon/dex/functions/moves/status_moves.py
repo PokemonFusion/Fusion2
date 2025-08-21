@@ -1,8 +1,24 @@
 """Implementations for status-oriented move callbacks."""
 
-from random import choice, random
+import importlib
+from random import choice, random as _random
 
 from pokemon.utils.boosts import apply_boost
+
+
+def _rand() -> float:
+	"""Return a random float, preferring a patched RNG when available."""
+
+	# The test suite monkeypatches the moves_funcs module's `random` to
+	# produce deterministic outcomes. Use it if present.
+	try:  # pragma: no cover - depends on optional module availability
+		mv_mod = importlib.import_module("pokemon.dex.functions.moves_funcs")
+		rand = getattr(mv_mod, "random", None)
+		if callable(rand):
+			return rand()
+	except Exception:
+		pass
+	return _random()
 
 
 class Acupressure:
@@ -117,7 +133,7 @@ class Attract:
 	def onBeforeMove(self, *args, **kwargs):
 		"""50% chance the infatuated Pokémon can't move."""
 		user = args[0] if args else kwargs.get("user")
-		if user and random() < 0.5:
+		if user and _rand() < 0.5:
 			if hasattr(user, "tempvals"):
 				user.tempvals["cant_move"] = "attract"
 			return False
@@ -157,7 +173,6 @@ class Attract:
 		if not src or getattr(src, "hp", 0) <= 0:
 			target.volatiles.pop("attract", None)
 		return True
-
 
 __all__ = [
 	"Acupressure",
