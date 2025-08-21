@@ -12,8 +12,10 @@ pkg_battle = types.ModuleType("pokemon.battle")
 pkg_battle.__path__ = []
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def get_modified_stat(pokemon, stat):
-    return getattr(pokemon.base_stats, stat, 0)
+	return getattr(pokemon.base_stats, stat, 0)
+
 
 utils_stub.get_modified_stat = get_modified_stat
 utils_stub.apply_boost = lambda *args, **kwargs: None
@@ -39,9 +41,7 @@ sys.modules["pokemon.dex"] = pokemon_dex
 # Minimal TYPE_CHART for Normal vs Ghost immunity
 data_stub = types.ModuleType("pokemon.data")
 data_stub.__path__ = []
-data_stub.TYPE_CHART = {
-    "Normal": {"Ghost": 3}
-}
+data_stub.TYPE_CHART = {"Normal": {"Ghost": 3}}
 sys.modules["pokemon.data"] = data_stub
 
 # Load damage module
@@ -76,69 +76,68 @@ BattleType = engine.BattleType
 
 
 def setup_battle(target_volatiles=None, target_types=None):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    if target_types:
-        target.types = target_types
-    if target_volatiles:
-        target.volatiles = dict(target_volatiles)
-    move = BattleMove("Tackle", power=40, accuracy=100, type="Normal", pp=5)
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    return battle, user, target, move
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	if target_types:
+		target.types = target_types
+	if target_volatiles:
+		target.volatiles = dict(target_volatiles)
+	move = BattleMove("Tackle", power=40, accuracy=100, type="Normal", pp=5)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	return battle, user, target, move
 
 
 def test_protect_blocks_damage_and_consumes_pp():
-    battle, user, target, move = setup_battle(target_volatiles={"protect": True})
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    battle.run_move()
-    assert target.hp == 100
-    assert move.pp == 4
-    assert user.tempvals.get("moved") is True
+	battle, user, target, move = setup_battle(target_volatiles={"protect": True})
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	battle.run_move()
+	assert target.hp == 100
+	assert move.pp == 4
+	assert user.tempvals.get("moved") is True
 
 
 def test_substitute_blocks_damage():
-    battle, user, target, move = setup_battle(target_volatiles={"substitute": True})
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    battle.run_move()
-    assert target.hp == 100
-    assert move.pp == 4
+	battle, user, target, move = setup_battle(target_volatiles={"substitute": True})
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	battle.run_move()
+	assert target.hp == 100
+	assert move.pp == 4
 
 
 def test_substitute_takes_damage():
-    battle, user, target, move = setup_battle(target_volatiles={"substitute": {"hp": 25}})
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    battle.run_move()
-    assert target.hp == 100
-    assert target.volatiles["substitute"]["hp"] == 21
+	battle, user, target, move = setup_battle(target_volatiles={"substitute": {"hp": 25}})
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	battle.run_move()
+	assert target.hp == 100
+	assert target.volatiles["substitute"]["hp"] == 21
 
 
 def test_immunity_blocks_damage():
-    battle, user, target, move = setup_battle(target_types=["Ghost"])
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    battle.run_move()
-    assert target.hp == 100
-    assert move.pp == 4
-
+	battle, user, target, move = setup_battle(target_types=["Ghost"])
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	battle.run_move()
+	assert target.hp == 100
+	assert move.pp == 4
 
 
 # Cleanup modules

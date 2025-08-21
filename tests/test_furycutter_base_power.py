@@ -72,36 +72,37 @@ BattleType = engine.BattleType
 
 
 def run_furycutter(chain=0):
-    user = Pokemon("User")
-    user.fury_cutter_chain = chain
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    move = BattleMove(
-        "Fury Cutter",
-        power=40,
-        accuracy=95,
-        basePowerCallback=Furycutter().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
-    return target.hp
+	user = Pokemon("User")
+	user.fury_cutter_chain = chain
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	move = BattleMove(
+		"Fury Cutter",
+		power=40,
+		accuracy=95,
+		basePowerCallback=Furycutter().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
+	return target.hp
 
 
 def test_furycutter_damage_increases_with_chain():
-    hp_first = run_furycutter(chain=0)
-    hp_second = run_furycutter(chain=1)
-    assert hp_second < hp_first
+	hp_first = run_furycutter(chain=0)
+	hp_second = run_furycutter(chain=1)
+	assert hp_second < hp_first
+
 
 # Cleanup
 

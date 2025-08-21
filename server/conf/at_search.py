@@ -27,28 +27,28 @@ line to your settings file:
 
 
 def at_search_result(matches, caller, query="", quiet=False, **kwargs):
-    """
-    This is a generic hook for handling all processing of a search
-    result, including error reporting.
+	"""
+	This is a generic hook for handling all processing of a search
+	result, including error reporting.
 
-    Args:
-        matches (list): This is a list of 0, 1 or more typeclass instances,
-            the matched result of the search. If 0, a nomatch error should
-            be echoed, and if >1, multimatch errors should be given. Only
-            if a single match should the result pass through.
-        caller (Object): The object performing the search and/or which should
-        receive error messages.
-    query (str, optional): The search query used to produce `matches`.
-        quiet (bool, optional): If `True`, no messages will be echoed to caller
-            on errors.
+	Args:
+	    matches (list): This is a list of 0, 1 or more typeclass instances,
+	        the matched result of the search. If 0, a nomatch error should
+	        be echoed, and if >1, multimatch errors should be given. Only
+	        if a single match should the result pass through.
+	    caller (Object): The object performing the search and/or which should
+	    receive error messages.
+	query (str, optional): The search query used to produce `matches`.
+	    quiet (bool, optional): If `True`, no messages will be echoed to caller
+	        on errors.
 
-    Keyword Args:
-        nofound_string (str): Replacement string to echo on a notfound error.
-        multimatch_string (str): Replacement string to echo on a multimatch error.
+	Keyword Args:
+	    nofound_string (str): Replacement string to echo on a notfound error.
+	    multimatch_string (str): Replacement string to echo on a multimatch error.
 
-    Returns:
-        processed_result (Object or None): This is always a single result
-            or `None`. If `None`, any error reporting/handling should
-            already have happened.
+	Returns:
+	    processed_result (Object or None): This is always a single result
+	        or `None`. If `None`, any error reporting/handling should
+	        already have happened.
 
-    """
+	"""

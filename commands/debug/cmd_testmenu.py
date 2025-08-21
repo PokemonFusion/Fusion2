@@ -15,24 +15,24 @@ from menus import evmenu_sanity
 
 
 class CmdTestMenu(Command):
-    """
-    Launch a stock EvMenu sanity-check.
+	"""
+	Launch a stock EvMenu sanity-check.
 
-    Usage:
-        testmenu
-        testmenu persistent
-    """
+	Usage:
+	    testmenu
+	    testmenu persistent
+	"""
 
-    key = "testmenu"
-    locks = "cmd:all()"
+	key = "testmenu"
+	locks = "cmd:all()"
 
-    def func(self):
-        persistent = "persistent" in self.args.lower()
-        EvMenu(
-            self.caller,
-            evmenu_sanity,                   # module containing the menu nodes
-            startnode="node_start",
-            auto_quit=True,                  # default 'q' to quit
-            persistent=persistent,           # try toggling this to compare behaviors
-            cmd_on_exit="look",              # useful to see where you land after quit
-        )
+	def func(self):
+		persistent = "persistent" in self.args.lower()
+		EvMenu(
+			self.caller,
+			evmenu_sanity,  # module containing the menu nodes
+			startnode="node_start",
+			auto_quit=True,  # default 'q' to quit
+			persistent=persistent,  # try toggling this to compare behaviors
+			cmd_on_exit="look",  # useful to see where you land after quit
+		)

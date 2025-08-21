@@ -1,14 +1,20 @@
 """Command to show ongoing battle interfaces."""
+
 from __future__ import annotations
 
 try:
 	from evennia import Command, search_object
+
 	if Command is None:
 		raise ImportError
 except Exception:
-	class Command: pass
+
+	class Command:
+		pass
+
 	def search_object(*args, **kwargs):
 		return []
+
 
 from pokemon.battle.interface import display_battle_interface
 

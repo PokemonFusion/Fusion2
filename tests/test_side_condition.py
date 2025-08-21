@@ -13,8 +13,12 @@ sys.modules["pokemon.battle"] = pkg_battle
 
 # Minimal pokemon.battle.utils stub required by damage module
 utils_stub = types.ModuleType("pokemon.battle.utils")
+
+
 def get_modified_stat(pokemon, stat):
-    return getattr(pokemon.base_stats, stat, 0)
+	return getattr(pokemon.base_stats, stat, 0)
+
+
 utils_stub.get_modified_stat = get_modified_stat
 sys.modules["pokemon.battle.utils"] = utils_stub
 
@@ -59,9 +63,13 @@ Pokemon = bd_mod.Pokemon
 
 # Stub moves_funcs with a dummy onSideStart
 moves_mod = types.ModuleType("pokemon.dex.functions.moves_funcs")
+
+
 class Dummy:
-    def onSideStart(self, side, source=None):
-        side.started = side.started + 1 if hasattr(side, "started") else 1
+	def onSideStart(self, side, source=None):
+		side.started = side.started + 1 if hasattr(side, "started") else 1
+
+
 moves_mod.Dummy = Dummy
 sys.modules["pokemon.dex.functions.moves_funcs"] = moves_mod
 
@@ -81,36 +89,37 @@ BattleType = engine.BattleType
 
 
 def test_on_side_start_triggers_and_stores_condition():
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke in (user, target):
-        poke.base_stats = base
-        poke.num = 1
-        poke.types = ["Normal"]
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke in (user, target):
+		poke.base_stats = base
+		poke.num = 1
+		poke.types = ["Normal"]
 
-    move = BattleMove(
-        "Dummy",
-        power=0,
-        accuracy=True,
-        raw={
-            "sideCondition": "dummycond",
-            "target": "allySide",
-            "condition": {"onSideStart": "Dummy.onSideStart"},
-        },
-    )
+	move = BattleMove(
+		"Dummy",
+		power=0,
+		accuracy=True,
+		raw={
+			"sideCondition": "dummycond",
+			"target": "allySide",
+			"condition": {"onSideStart": "Dummy.onSideStart"},
+		},
+	)
 
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    battle.run_turn()
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	battle.run_turn()
 
-    assert "dummycond" in p1.side.conditions
-    assert getattr(p1.side, "started", 0) == 1
+	assert "dummycond" in p1.side.conditions
+	assert getattr(p1.side, "started", 0) == 1
+
 
 # Cleanup
 

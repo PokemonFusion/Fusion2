@@ -8,10 +8,10 @@ sys.path.insert(0, ROOT)
 
 # Provide a minimal evennia stub if the real module isn't available
 if "evennia" not in sys.modules:
-    evennia = types.ModuleType("evennia")
-    evennia.DefaultRoom = type("DefaultRoom", (), {})
-    evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
-    sys.modules["evennia"] = evennia
+	evennia = types.ModuleType("evennia")
+	evennia.DefaultRoom = type("DefaultRoom", (), {})
+	evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
+	sys.modules["evennia"] = evennia
 
 # ensure battle storage module can be imported
 storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
@@ -24,16 +24,18 @@ from world.hunt_system import HuntSystem
 
 
 class DummyDB(types.SimpleNamespace):
-    def get(self, key, default=None):
-        return getattr(self, key, default)
+	def get(self, key, default=None):
+		return getattr(self, key, default)
+
 
 class DummyRoom:
-    def __init__(self, weather="clear"):
-        self.db = DummyDB(weather=weather, allow_hunting=True)
+	def __init__(self, weather="clear"):
+		self.db = DummyDB(weather=weather, allow_hunting=True)
+
 
 def test_hunt_system_uses_room_weather():
-    room = DummyRoom(weather="rain")
-    hs = HuntSystem(room)
-    assert hs.get_current_weather() == "rain"
-    room.db.weather = "sunny"
-    assert hs.get_current_weather() == "sunny"
+	room = DummyRoom(weather="rain")
+	hs = HuntSystem(room)
+	assert hs.get_current_weather() == "rain"
+	room.db.weather = "sunny"
+	assert hs.get_current_weather() == "sunny"

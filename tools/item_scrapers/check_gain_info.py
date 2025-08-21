@@ -10,8 +10,8 @@ from pokemon.dex.pokedex import pokedex
 missing = [name for name in pokedex if name not in GAIN_INFO]
 
 if missing:
-    print("Missing gain data for", len(missing), "pokemon:")
-    for m in missing:
-        print(m)
+	print("Missing gain data for", len(missing), "pokemon:")
+	for m in missing:
+		print(m)
 else:
-    print("All pokemon have gain data.")
+	print("All pokemon have gain data.")

@@ -21,11 +21,19 @@ exclude = [
 	"**/__pycache__",
 ]
 
+[tool.ruff.format]
+indent-style = "tab"
+
+
 [tool.ruff.lint]
 # Global "don't care" list, per your request.
 ignore = [
 	"F841",  # allow unused local variables
 	"F402",  # allow import shadowed by loop variable
+	"E101",  # allow indention to contain mixed spaces and tabs
+	"E402",  # allow module level import not at top of file
+	"F821",  # allow undefined name
+	"E731",  # allow lamba expression for assigning.
 ]
 
 # Rule sets to enforce (pycodestyle, pyflakes, import sorting).

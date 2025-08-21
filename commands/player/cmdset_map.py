@@ -5,8 +5,8 @@ from .cmdstartmap import CmdStartMap
 
 
 class MapCmdSet(CmdSet):
-    key = "MapCmdSet"
+	key = "MapCmdSet"
 
-    def at_cmdset_creation(self):
-        self.add(CmdMapMove())
-        self.add(CmdStartMap())
+	def at_cmdset_creation(self):
+		self.add(CmdMapMove())
+		self.add(CmdStartMap())

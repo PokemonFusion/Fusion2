@@ -9,11 +9,11 @@ from commands.player.cmdstartmap import CmdStartMap
 
 
 class EconomyMapCmdSet(CmdSet):
-    """CmdSet combining economy and world map commands."""
+	"""CmdSet combining economy and world map commands."""
 
-    key = "EconomyMapCmdSet"
+	key = "EconomyMapCmdSet"
 
-    def at_cmdset_creation(self):
-        """Populate the cmdset."""
-        for cmd in (CmdStore, CmdPokestore, CmdMapMove, CmdStartMap):
-            self.add(cmd())
+	def at_cmdset_creation(self):
+		"""Populate the cmdset."""
+		for cmd in (CmdStore, CmdPokestore, CmdMapMove, CmdStartMap):
+			self.add(cmd())

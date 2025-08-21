@@ -10,11 +10,11 @@ from commands.player.cmd_chargen import CmdChargen
 
 
 class WorldBuildCmdSet(CmdSet):
-    """CmdSet containing commands used for building the world."""
+	"""CmdSet containing commands used for building the world."""
 
-    key = "WorldBuildCmdSet"
+	key = "WorldBuildCmdSet"
 
-    def at_cmdset_creation(self):
-        """Populate the cmdset."""
-        for cmd in (CmdChargen, CmdRoomWizard, CmdEditRoom, CmdValidate, CmdSpawns):
-            self.add(cmd())
+	def at_cmdset_creation(self):
+		"""Populate the cmdset."""
+		for cmd in (CmdChargen, CmdRoomWizard, CmdEditRoom, CmdValidate, CmdSpawns):
+			self.add(cmd())

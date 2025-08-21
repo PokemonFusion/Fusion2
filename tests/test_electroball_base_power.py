@@ -71,36 +71,37 @@ BattleType = engine.BattleType
 
 
 def run_electroball(user_spe, target_spe):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=user_spe)
-    target.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=target_spe)
-    user.num = 1
-    target.num = 2
-    user.types = ["Normal"]
-    target.types = ["Normal"]
-    move = BattleMove(
-        "Electro Ball",
-        power=150,
-        accuracy=100,
-        basePowerCallback=Electroball().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
-    return target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=user_spe)
+	target.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=target_spe)
+	user.num = 1
+	target.num = 2
+	user.types = ["Normal"]
+	target.types = ["Normal"]
+	move = BattleMove(
+		"Electro Ball",
+		power=150,
+		accuracy=100,
+		basePowerCallback=Electroball().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
+	return target.hp
 
 
 def test_electroball_damage_scales_with_speed():
-    hp_fast = run_electroball(100, 20)
-    hp_slow = run_electroball(100, 100)
-    assert hp_fast < hp_slow
+	hp_fast = run_electroball(100, 20)
+	hp_slow = run_electroball(100, 100)
+	assert hp_fast < hp_slow
+
 
 # Cleanup
 

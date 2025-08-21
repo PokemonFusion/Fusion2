@@ -13,11 +13,11 @@ utils_stub = types.ModuleType("pokemon.battle.utils")
 
 
 def apply_boost(pokemon, boosts):
-    if not hasattr(pokemon, "boosts"):
-        return
-    for stat, amount in boosts.items():
-        cur = pokemon.boosts.get(stat, 0)
-        pokemon.boosts[stat] = max(-6, min(6, cur + amount))
+	if not hasattr(pokemon, "boosts"):
+		return
+	for stat, amount in boosts.items():
+		cur = pokemon.boosts.get(stat, 0)
+		pokemon.boosts[stat] = max(-6, min(6, cur + amount))
 
 
 utils_stub.apply_boost = apply_boost
@@ -39,9 +39,9 @@ pokemon_dex = types.ModuleType("pokemon.dex")
 pokemon_dex.__path__ = []
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {
-    "tackle": types.SimpleNamespace(
-        name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0}
-    )
+	"tackle": types.SimpleNamespace(
+		name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0}
+	)
 }
 pokemon_dex.POKEDEX = {"Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])}
 sys.modules["pokemon.dex"] = pokemon_dex
@@ -65,29 +65,29 @@ Acupressure = mv_mod.Acupressure
 
 @pytest.fixture(autouse=True)
 def _cleanup_modules():
-    yield
-    for mod in ("pokemon.dex", "pokemon.battle", "pokemon.battle.utils"):
-        sys.modules.pop(mod, None)
+	yield
+	for mod in ("pokemon.dex", "pokemon.battle", "pokemon.battle.utils"):
+		sys.modules.pop(mod, None)
 
 
 class DummyMove:
-    def __init__(self, onHit=None):
-        self.onHit = onHit
+	def __init__(self, onHit=None):
+		self.onHit = onHit
 
 
 def test_acupressure_boosts_one_stat():
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    move = DummyMove(Acupressure().onHit)
-    move.onHit(user, target, None)
-    assert sum(1 for v in target.boosts.values() if v == 2) == 1
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	move = DummyMove(Acupressure().onHit)
+	move.onHit(user, target, None)
+	assert sum(1 for v in target.boosts.values() if v == 2) == 1
 
 
 def test_acupressure_fails_when_maxed():
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    target.boosts = {stat: 6 for stat in target.boosts}
-    move = DummyMove(Acupressure().onHit)
-    result = move.onHit(user, target, None)
-    assert result is False
-    assert all(v == 6 for v in target.boosts.values())
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	target.boosts = {stat: 6 for stat in target.boosts}
+	move = DummyMove(Acupressure().onHit)
+	result = move.onHit(user, target, None)
+	assert result is False
+	assert all(v == 6 for v in target.boosts.values())

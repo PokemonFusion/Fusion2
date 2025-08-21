@@ -10,8 +10,10 @@ sys.path.insert(0, ROOT)
 # Minimal pokemon.battle package stub with utils
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def apply_boost(*args, **kwargs):
-    pass
+	pass
+
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
@@ -83,43 +85,44 @@ BattleType = engine.BattleType
 
 
 def run_boltbeak(target_moved=False):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    move = BattleMove(
-        "Bolt Beak",
-        power=85,
-        accuracy=100,
-        basePowerCallback=Boltbeak().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    if target_moved:
-        target.tempvals["moved"] = True
-    battle.run_move()
-    battle.run_faint()
-    battle.residual()
-    battle.end_turn()
-    return target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	move = BattleMove(
+		"Bolt Beak",
+		power=85,
+		accuracy=100,
+		basePowerCallback=Boltbeak().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	if target_moved:
+		target.tempvals["moved"] = True
+	battle.run_move()
+	battle.run_faint()
+	battle.residual()
+	battle.end_turn()
+	return target.hp
 
 
 def test_boltbeak_doubles_if_target_has_not_moved():
-    hp_fresh = run_boltbeak(target_moved=False)
-    hp_moved = run_boltbeak(target_moved=True)
-    assert hp_fresh < hp_moved
+	hp_fresh = run_boltbeak(target_moved=False)
+	hp_moved = run_boltbeak(target_moved=True)
+	assert hp_fresh < hp_moved
+
 
 # Cleanup
 

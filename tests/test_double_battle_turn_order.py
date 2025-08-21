@@ -11,8 +11,12 @@ sys.path.insert(0, ROOT)
 pkg_battle = types.ModuleType("pokemon.battle")
 pkg_battle.__path__ = []
 utils_stub = types.ModuleType("pokemon.battle.utils")
+
+
 def get_modified_stat(pokemon, stat):
-    return getattr(pokemon.base_stats, stat, 0)
+	return getattr(pokemon.base_stats, stat, 0)
+
+
 utils_stub.get_modified_stat = get_modified_stat
 pkg_battle.utils = utils_stub
 sys.modules["pokemon.battle"] = pkg_battle
@@ -73,41 +77,41 @@ BattleType = engine.BattleType
 
 
 def test_double_turn_order_and_spread_damage():
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
 
-    # Player side
-    a1 = Pokemon("A1")
-    a2 = Pokemon("A2")
-    for idx, poke in enumerate((a1, a2), start=1):
-        poke.base_stats = base
-        poke.num = idx
-        poke.types = ["Normal"]
+	# Player side
+	a1 = Pokemon("A1")
+	a2 = Pokemon("A2")
+	for idx, poke in enumerate((a1, a2), start=1):
+		poke.base_stats = base
+		poke.num = idx
+		poke.types = ["Normal"]
 
-    # Opponent side
-    b1 = Pokemon("B1")
-    b2 = Pokemon("B2")
-    for idx, poke in enumerate((b1, b2), start=3):
-        poke.base_stats = base
-        poke.num = idx
-        poke.types = ["Normal"]
+	# Opponent side
+	b1 = Pokemon("B1")
+	b2 = Pokemon("B2")
+	for idx, poke in enumerate((b1, b2), start=3):
+		poke.base_stats = base
+		poke.num = idx
+		poke.types = ["Normal"]
 
-    spread_move = BattleMove("Surf", power=40, accuracy=100, raw={"target": "allAdjacentFoes"})
+	spread_move = BattleMove("Surf", power=40, accuracy=100, raw={"target": "allAdjacentFoes"})
 
-    p1 = BattleParticipant("P1", [a1, a2], is_ai=False, max_active=2)
-    p2 = BattleParticipant("P2", [b1, b2], is_ai=False, max_active=2)
-    p1.active = [a1, a2]
-    p2.active = [b1, b2]
+	p1 = BattleParticipant("P1", [a1, a2], is_ai=False, max_active=2)
+	p2 = BattleParticipant("P2", [b1, b2], is_ai=False, max_active=2)
+	p1.active = [a1, a2]
+	p2.active = [b1, b2]
 
-    act1 = Action(p1, ActionType.MOVE, p2, spread_move, spread_move.priority, pokemon=a1)
-    p1.pending_action = [act1]
+	act1 = Action(p1, ActionType.MOVE, p2, spread_move, spread_move.priority, pokemon=a1)
+	p1.pending_action = [act1]
 
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
 
-    damage_first = 100 - b1.hp
-    damage_second = 100 - b2.hp
-    assert damage_second == int(damage_first * 0.75)
+	damage_first = 100 - b1.hp
+	damage_second = 100 - b2.hp
+	assert damage_second == int(damage_first * 0.75)
 
-    del sys.modules["pokemon.dex"]
-    del sys.modules["pokemon.data"]
+	del sys.modules["pokemon.dex"]
+	del sys.modules["pokemon.data"]

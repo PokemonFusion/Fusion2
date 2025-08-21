@@ -3,4 +3,3 @@
 from . import battle_move
 
 __all__ = ["battle_move"]
-

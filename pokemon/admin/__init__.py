@@ -1,15 +1,15 @@
 from django.contrib import admin
 
 from ..models import (
-    ActiveMoveslot,
-    BattleSlot,
-    GymBadge,
-    Move,
-    OwnedPokemon,
-    Pokemon,
-    StorageBox,
-    Trainer,
-    UserStorage,
+	ActiveMoveslot,
+	BattleSlot,
+	GymBadge,
+	Move,
+	OwnedPokemon,
+	Pokemon,
+	StorageBox,
+	Trainer,
+	UserStorage,
 )
 from .owned_pokemon import OwnedPokemonAdmin
 

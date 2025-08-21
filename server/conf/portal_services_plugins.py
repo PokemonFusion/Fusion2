@@ -16,9 +16,9 @@ process.
 
 
 def start_plugin_services(portal):
-    """
-    This hook is called by Evennia, last in the Portal startup process.
+	"""
+	This hook is called by Evennia, last in the Portal startup process.
 
-    portal - a reference to the main portal application.
-    """
-    pass
+	portal - a reference to the main portal application.
+	"""
+	pass

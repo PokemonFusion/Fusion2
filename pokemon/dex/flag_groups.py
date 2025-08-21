@@ -15,29 +15,28 @@ from . import MOVEDEX, Move
 
 
 def get_move_flag_groups(movedex: Optional[Dict[str, Move]] = None) -> Dict[str, List[str]]:
-    """Group move names by the flags they expose.
+	"""Group move names by the flags they expose.
 
-    Parameters
-    ----------
-    movedex:
-        Optional mapping of move identifiers to :class:`~pokemon.dex.entities.Move`
-        instances.  When omitted the project's global ``MOVEDEX`` is used.
+	Parameters
+	----------
+	movedex:
+	    Optional mapping of move identifiers to :class:`~pokemon.dex.entities.Move`
+	    instances.  When omitted the project's global ``MOVEDEX`` is used.
 
-    Returns
-    -------
-    dict
-        A dictionary mapping each flag name to the list of move names declaring
-        that flag.
-    """
+	Returns
+	-------
+	dict
+	    A dictionary mapping each flag name to the list of move names declaring
+	    that flag.
+	"""
 
-    dex = movedex or MOVEDEX
-    groups: Dict[str, List[str]] = {}
-    for move in dex.values():
-        flags = move.raw.get("flags", {}) or {}
-        for flag in flags:
-            groups.setdefault(flag, []).append(move.name)
-    return groups
+	dex = movedex or MOVEDEX
+	groups: Dict[str, List[str]] = {}
+	for move in dex.values():
+		flags = move.raw.get("flags", {}) or {}
+		for flag in flags:
+			groups.setdefault(flag, []).append(move.name)
+	return groups
 
 
 __all__ = ["get_move_flag_groups"]
-

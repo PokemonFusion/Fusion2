@@ -7,48 +7,48 @@ from utils.safe_import import safe_import
 
 
 def _resolve_callback(cb_name, registry: Any):
-    """Return a callable referenced by ``cb_name`` from ``registry``.
+	"""Return a callable referenced by ``cb_name`` from ``registry``.
 
-    Parameters
-    ----------
-    cb_name:
-        Either a callable or a string of the form ``"Class.method"``.
-    registry:
-        Module providing callback classes.
+	Parameters
+	----------
+	cb_name:
+	    Either a callable or a string of the form ``"Class.method"``.
+	registry:
+	    Module providing callback classes.
 
-    Returns
-    -------
-    Callable | Any | None
-        Resolved callable, the original ``cb_name`` if already callable,
-        or ``None`` if resolution fails.
-    """
+	Returns
+	-------
+	Callable | Any | None
+	    Resolved callable, the original ``cb_name`` if already callable,
+	    or ``None`` if resolution fails.
+	"""
 
-    if not cb_name:
-        return None
-    if callable(cb_name):
-        return cb_name
-    if isinstance(cb_name, str):
-        cls_name, func_name = cb_name.split(".", 1)
+	if not cb_name:
+		return None
+	if callable(cb_name):
+		return cb_name
+	if isinstance(cb_name, str):
+		cls_name, func_name = cb_name.split(".", 1)
 
-        # Allow an explicitly provided registry, but fall back to the default
-        # moves module if the expected class is missing.  This makes the
-        # callback resolution resilient to test environments that stub modules
-        # in ``sys.modules``.
-        if registry is None or not hasattr(registry, cls_name):
-            registry = sys.modules.get("pokemon.dex.functions.moves_funcs")
-            if registry is None:
-                try:  # pragma: no cover - optional lazy import
-                    registry = safe_import("pokemon.dex.functions.moves_funcs")
-                except ModuleNotFoundError:
-                    return cb_name
-        try:
-            cls = getattr(registry, cls_name, None)
-            if cls:
-                try:
-                    obj = cls()
-                except Exception:
-                    obj = cls
-                return getattr(obj, func_name, None)
-        except Exception:
-            return None
-    return cb_name
+		# Allow an explicitly provided registry, but fall back to the default
+		# moves module if the expected class is missing.  This makes the
+		# callback resolution resilient to test environments that stub modules
+		# in ``sys.modules``.
+		if registry is None or not hasattr(registry, cls_name):
+			registry = sys.modules.get("pokemon.dex.functions.moves_funcs")
+			if registry is None:
+				try:  # pragma: no cover - optional lazy import
+					registry = safe_import("pokemon.dex.functions.moves_funcs")
+				except ModuleNotFoundError:
+					return cb_name
+		try:
+			cls = getattr(registry, cls_name, None)
+			if cls:
+				try:
+					obj = cls()
+				except Exception:
+					obj = cls
+				return getattr(obj, func_name, None)
+		except Exception:
+			return None
+	return cb_name

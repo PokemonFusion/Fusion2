@@ -61,37 +61,39 @@ Action = engine.Action
 ActionType = engine.ActionType
 BattleType = engine.BattleType
 
+
 def test_move_sets_tempvals():
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
 
-    move = BattleMove("Tackle", power=40, accuracy=100)
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
+	move = BattleMove("Tackle", power=40, accuracy=100)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
 
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
 
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    battle.run_move()
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	battle.run_move()
 
-    assert user.tempvals.get("moved") is True
-    assert target.tempvals.get("took_damage") is True
+	assert user.tempvals.get("moved") is True
+	assert target.tempvals.get("took_damage") is True
 
-    battle.run_faint()
-    battle.residual()
-    battle.end_turn()
+	battle.run_faint()
+	battle.residual()
+	battle.end_turn()
+
 
 # cleanup
 

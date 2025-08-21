@@ -55,49 +55,50 @@ BattleType = eng_mod.BattleType
 
 
 class DummyMon:
-    def __init__(self):
-        self.experience = 0
-        self.level = 1
-        self.growth_rate = "medium_fast"
-        self.evs = {}
-    def save(self):
-        pass
+	def __init__(self):
+		self.experience = 0
+		self.level = 1
+		self.growth_rate = "medium_fast"
+		self.evs = {}
+
+	def save(self):
+		pass
 
 
 class DummyManager:
-    def __init__(self, mons):
-        self._mons = mons
-    def all(self):
-        return list(self._mons)
+	def __init__(self, mons):
+		self._mons = mons
+
+	def all(self):
+		return list(self._mons)
 
 
 class DummyStorage:
-    def __init__(self, mons):
-        self.active_pokemon = DummyManager(mons)
+	def __init__(self, mons):
+		self.active_pokemon = DummyManager(mons)
 
 
 class DummyPlayer:
-    def __init__(self, mons):
-        self.db = types.SimpleNamespace(exp_share=False)
-        self.storage = DummyStorage(mons)
+	def __init__(self, mons):
+		self.db = types.SimpleNamespace(exp_share=False)
+		self.storage = DummyStorage(mons)
 
 
 def test_award_experience_on_faint():
-    player_mon = DummyMon()
-    player = DummyPlayer([player_mon])
+	player_mon = DummyMon()
+	player = DummyPlayer([player_mon])
 
-    user = Pokemon("Bulbasaur", level=5, hp=50, max_hp=50)
-    target = Pokemon("Pikachu", level=5, hp=0, max_hp=50)
+	user = Pokemon("Bulbasaur", level=5, hp=50, max_hp=50)
+	target = Pokemon("Pikachu", level=5, hp=0, max_hp=50)
 
-    p1 = BattleParticipant("Player", [user], player=player)
-    p2 = BattleParticipant("Wild", [target], is_ai=True)
-    p1.active = [user]
-    p2.active = [target]
+	p1 = BattleParticipant("Player", [user], player=player)
+	p2 = BattleParticipant("Wild", [target], is_ai=True)
+	p1.active = [user]
+	p2.active = [target]
 
-    battle = Battle(BattleType.WILD, [p1, p2])
-    battle.run_faint()
+	battle = Battle(BattleType.WILD, [p1, p2])
+	battle.run_faint()
 
-    gain = GAIN_INFO["Pikachu"]
-    assert player_mon.experience == gain["exp"]
-    assert player_mon.evs.get("speed") == gain["evs"]["spe"]
-
+	gain = GAIN_INFO["Pikachu"]
+	assert player_mon.experience == gain["exp"]
+	assert player_mon.evs.get("speed") == gain["evs"]["spe"]

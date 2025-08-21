@@ -15,9 +15,9 @@ from .views.mysheet import MySheetView
 
 # add patterns here
 urlpatterns = [
-    path("mysheet/", MySheetView.as_view(), name="my-sheet"),
-    path("ansi/", AnsiReferenceView.as_view(), name="ansi-reference"),
-    path("character-sheet/", character_sheet, name="character_sheet"),
+	path("mysheet/", MySheetView.as_view(), name="my-sheet"),
+	path("ansi/", AnsiReferenceView.as_view(), name="ansi-reference"),
+	path("character-sheet/", character_sheet, name="character_sheet"),
 ]
 
 # read by Django

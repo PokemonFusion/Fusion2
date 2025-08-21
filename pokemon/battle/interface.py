@@ -9,12 +9,14 @@ def format_turn_banner(turn: int) -> str:
 	"""Return a simple banner for turn notifications."""
 	return f"╭─ Turn {turn} ─╮"
 
+
 # -----------------------------------------------------------------------------
 # Optional compact prefix for non-UI battle notes
 # -----------------------------------------------------------------------------
 # Set this to True to globally prefix non-UI one-liners. You can also override
 # per call by passing use_prefix=... to send_battle_note/broadcast_note.
 PREF_BATTLE_PREFIX: bool = False
+
 
 def _battle_tag(session) -> str:
 	"""
@@ -39,6 +41,7 @@ def _battle_tag(session) -> str:
 		title = f"{name_a}–{name_b}"
 	return f"Btl {short}: {title}"
 
+
 def send_battle_note(session, to, text: str, *, use_prefix: bool | None = None) -> None:
 	"""
 	Send a one-line message related to the battle. Optionally prefix with a compact tag.
@@ -48,6 +51,7 @@ def send_battle_note(session, to, text: str, *, use_prefix: bool | None = None) 
 		use_prefix = PREF_BATTLE_PREFIX
 	prefix = f"|W[{_battle_tag(session)}]|n " if use_prefix else ""
 	session._msg_to(to, f"{prefix}{text}")
+
 
 def broadcast_note(session, text: str, *, use_prefix: bool | None = None) -> None:
 	"""Broadcast a one-line note to both teams and observers, with optional prefix."""
@@ -120,8 +124,6 @@ def display_battle_interface(
 	return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)
 
 
-
-
 def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 	"""Return interface strings for both sides and observers.
 
@@ -148,15 +150,9 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 		respectively.
 	"""
 
-	iface_a = display_battle_interface(
-		captain_a, captain_b, state, viewer_team="A", waiting_on=waiting_on
-	)
-	iface_b = display_battle_interface(
-		captain_b, captain_a, state, viewer_team="B", waiting_on=waiting_on
-	)
-	iface_w = display_battle_interface(
-		captain_a, captain_b, state, viewer_team=None, waiting_on=waiting_on
-	)
+	iface_a = display_battle_interface(captain_a, captain_b, state, viewer_team="A", waiting_on=waiting_on)
+	iface_b = display_battle_interface(captain_b, captain_a, state, viewer_team="B", waiting_on=waiting_on)
+	iface_w = display_battle_interface(captain_a, captain_b, state, viewer_team=None, waiting_on=waiting_on)
 	return iface_a, iface_b, iface_w
 
 

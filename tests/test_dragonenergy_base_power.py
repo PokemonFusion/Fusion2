@@ -71,37 +71,38 @@ BattleType = engine.BattleType
 
 
 def run_dragonenergy(user_hp):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    user.hp = user_hp
-    user.max_hp = 100
-    move = BattleMove(
-        "Dragon Energy",
-        power=150,
-        accuracy=100,
-        basePowerCallback=Dragonenergy().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
-    return target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	user.hp = user_hp
+	user.max_hp = 100
+	move = BattleMove(
+		"Dragon Energy",
+		power=150,
+		accuracy=100,
+		basePowerCallback=Dragonenergy().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
+	return target.hp
 
 
 def test_dragonenergy_damage_scales_with_user_hp():
-    hp_full = run_dragonenergy(100)
-    hp_half = run_dragonenergy(50)
-    assert hp_full < hp_half
+	hp_full = run_dragonenergy(100)
+	hp_half = run_dragonenergy(50)
+	assert hp_full < hp_half
+
 
 # Cleanup
 

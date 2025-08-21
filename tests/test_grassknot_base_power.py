@@ -71,37 +71,38 @@ BattleType = engine.BattleType
 
 
 def run_grassknot(weight):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    target.weightkg = weight
-    move = BattleMove(
-        "Grass Knot",
-        power=20,
-        accuracy=100,
-        basePowerCallback=Grassknot().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    start = target.hp
-    battle.run_turn()
-    return start - target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	target.weightkg = weight
+	move = BattleMove(
+		"Grass Knot",
+		power=20,
+		accuracy=100,
+		basePowerCallback=Grassknot().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	start = target.hp
+	battle.run_turn()
+	return start - target.hp
 
 
 def test_grassknot_damage_scales_with_weight():
-    dmg_heavy = run_grassknot(200)
-    dmg_light = run_grassknot(20)
-    assert dmg_heavy > dmg_light
+	dmg_heavy = run_grassknot(200)
+	dmg_light = run_grassknot(20)
+	assert dmg_heavy > dmg_light
+
 
 # Cleanup
 

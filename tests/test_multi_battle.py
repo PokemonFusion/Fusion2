@@ -66,33 +66,33 @@ BattleType = engine.BattleType
 
 
 def setup_participants(count):
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    participants = []
-    for idx in range(1, count + 1):
-        poke = Pokemon(f"P{idx}mon")
-        poke.base_stats = base
-        poke.num = idx
-        poke.types = ["Normal"]
-        part = BattleParticipant(f"P{idx}", [poke], is_ai=False)
-        part.active = [poke]
-        participants.append(part)
-    return participants
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	participants = []
+	for idx in range(1, count + 1):
+		poke = Pokemon(f"P{idx}mon")
+		poke.base_stats = base
+		poke.num = idx
+		poke.types = ["Normal"]
+		part = BattleParticipant(f"P{idx}", [poke], is_ai=False)
+		part.active = [poke]
+		participants.append(part)
+	return participants
 
 
 def test_three_and_four_way_battles():
-    for count in (3, 4):
-        parts = setup_participants(count)
-        move = BattleMove("Tackle", power=40, accuracy=100)
-        for idx, part in enumerate(parts):
-            target = parts[(idx + 1) % count]
-            part.pending_action = Action(part, ActionType.MOVE, target, move, move.priority, pokemon=part.active[0])
+	for count in (3, 4):
+		parts = setup_participants(count)
+		move = BattleMove("Tackle", power=40, accuracy=100)
+		for idx, part in enumerate(parts):
+			target = parts[(idx + 1) % count]
+			part.pending_action = Action(part, ActionType.MOVE, target, move, move.priority, pokemon=part.active[0])
 
-        battle = Battle(BattleType.WILD, parts)
-        random.seed(0)
-        battle.run_turn()
+		battle = Battle(BattleType.WILD, parts)
+		random.seed(0)
+		battle.run_turn()
 
-        for part in parts:
-            assert part.active[0].hp < 100
+		for part in parts:
+			assert part.active[0].hp < 100
 
-    del sys.modules["pokemon.dex"]
-    del sys.modules["pokemon.data"]
+	del sys.modules["pokemon.dex"]
+	del sys.modules["pokemon.data"]

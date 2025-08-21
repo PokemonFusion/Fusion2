@@ -73,47 +73,52 @@ BattleType = eng_mod.BattleType
 
 
 def test_ability_callbacks_run():
-    records = {"start": 0, "switch": 0, "end": 0, "battles": []}
+	records = {"start": 0, "switch": 0, "end": 0, "battles": []}
 
-    def on_start(poke, battle):
-        records["start"] += 1
-        records["battles"].append(battle)
+	def on_start(poke, battle):
+		records["start"] += 1
+		records["battles"].append(battle)
 
-    def on_switch(poke, battle):
-        records["switch"] += 1
+	def on_switch(poke, battle):
+		records["switch"] += 1
 
-    def on_end(poke, battle):
-        records["end"] += 1
+	def on_end(poke, battle):
+		records["end"] += 1
 
-    ability = Ability(name="Dummy", num=0, raw={
-        "onStart": on_start,
-        "onSwitchIn": on_switch,
-        "onEnd": on_end,
-    })
+	ability = Ability(
+		name="Dummy",
+		num=0,
+		raw={
+			"onStart": on_start,
+			"onSwitchIn": on_switch,
+			"onEnd": on_end,
+		},
+	)
 
-    user = Pokemon("User", ability=ability)
-    target = Pokemon("Target", ability=ability)
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
+	user = Pokemon("User", ability=ability)
+	target = Pokemon("Target", ability=ability)
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
 
-    move = BattleMove("Tackle", power=40, accuracy=100)
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
+	move = BattleMove("Tackle", power=40, accuracy=100)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
 
-    assert records["start"] == 2
-    assert records["switch"] == 2
-    assert records["end"] == 2
-    assert records["battles"].count(battle) == 2
+	assert records["start"] == 2
+	assert records["switch"] == 2
+	assert records["end"] == 2
+	assert records["battles"].count(battle) == 2
+
 
 # Cleanup
 

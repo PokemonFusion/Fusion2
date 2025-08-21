@@ -14,23 +14,23 @@ from commands.player.cmd_watchbattle import CmdUnwatchBattle, CmdWatchBattle
 
 
 class BattleCmdSet(CmdSet):
-    """CmdSet grouping commands used during battles."""
+	"""CmdSet grouping commands used during battles."""
 
-    key = "BattleCmdSet"
+	key = "BattleCmdSet"
 
-    def at_cmdset_creation(self):
-        """Populate the cmdset."""
-        for cmd in (
-            CmdBattleAttack,
-            CmdBattleSwitch,
-            CmdBattleItem,
-            CmdBattleFlee,
-            CmdWatchBattle,
-            CmdUnwatchBattle,
-            CmdShowBattle,
-            CmdWatch,
-            CmdUnwatch,
-            CmdDebugBattle,
-            CmdDebugMoveData,
-        ):
-            self.add(cmd())
+	def at_cmdset_creation(self):
+		"""Populate the cmdset."""
+		for cmd in (
+			CmdBattleAttack,
+			CmdBattleSwitch,
+			CmdBattleItem,
+			CmdBattleFlee,
+			CmdWatchBattle,
+			CmdUnwatchBattle,
+			CmdShowBattle,
+			CmdWatch,
+			CmdUnwatch,
+			CmdDebugBattle,
+			CmdDebugMoveData,
+		):
+			self.add(cmd())

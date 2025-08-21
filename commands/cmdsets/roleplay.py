@@ -8,12 +8,12 @@ from commands.player.cmd_roleplay import CmdOOC
 
 
 class RoleplayCmdSet(CmdSet):
-    """CmdSet with commands aiding roleplay."""
+	"""CmdSet with commands aiding roleplay."""
 
-    key = "RoleplayCmdSet"
+	key = "RoleplayCmdSet"
 
-    def at_cmdset_creation(self):
-        """Populate the cmdset."""
-        self.add(CmdSpoof())
-        self.add(CmdGlance())
-        self.add(CmdOOC())
+	def at_cmdset_creation(self):
+		"""Populate the cmdset."""
+		self.add(CmdSpoof())
+		self.add(CmdGlance())
+		self.add(CmdOOC())

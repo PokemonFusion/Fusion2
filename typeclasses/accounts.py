@@ -26,14 +26,13 @@ from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 
 
 class Account(DefaultAccount):
-    """Game account typeclass with customized instructions."""
+	"""Game account typeclass with customized instructions."""
 
-    #: When logging into an account, Evennia displays this template while the
-    #: user is out-of-character.  The default text references the ``ic`` and
-    #: ``ooc`` commands, which this game has renamed to ``goic`` and ``goooc``.
-    #: Override the template here so the login screen remains accurate.
-    ooc_appearance_template = (
-        """
+	#: When logging into an account, Evennia displays this template while the
+	#: user is out-of-character.  The default text references the ``ic`` and
+	#: ``ooc`` commands, which this game has renamed to ``goic`` and ``goooc``.
+	#: Override the template here so the login screen remains accurate.
+	ooc_appearance_template = """
 --------------------------------------------------------------------
 {header}
 
@@ -50,18 +49,17 @@ class Account(DefaultAccount):
 {footer}
 --------------------------------------------------------------------
         """.strip()
-    )
 
-    def at_look(self, target=None, session=None, **kwargs):
-        """Return the account's OOC appearance with custom commands."""
-        text = super().at_look(target=target, session=session, **kwargs)
-        return text.replace("|wic <name>|n", "|wgoic <name>|n")
+	def at_look(self, target=None, session=None, **kwargs):
+		"""Return the account's OOC appearance with custom commands."""
+		text = super().at_look(target=target, session=session, **kwargs)
+		return text.replace("|wic <name>|n", "|wgoic <name>|n")
 
 
 class Guest(DefaultGuest):
-    """
-    This class is used for guest logins. Unlike Accounts, Guests and their
-    characters are deleted after disconnection.
-    """
+	"""
+	This class is used for guest logins. Unlike Accounts, Guests and their
+	characters are deleted after disconnection.
+	"""
 
-    pass
+	pass

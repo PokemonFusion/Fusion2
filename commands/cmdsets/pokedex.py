@@ -3,28 +3,28 @@
 from evennia import CmdSet
 
 from commands.player.cmd_pokedex import (
-    CmdMovedexSearch,
-    CmdMovesetSearch,
-    CmdPokedexAll,
-    CmdPokedexNumber,
-    CmdPokedexSearch,
-    CmdStarterList,
+	CmdMovedexSearch,
+	CmdMovesetSearch,
+	CmdPokedexAll,
+	CmdPokedexNumber,
+	CmdPokedexSearch,
+	CmdStarterList,
 )
 
 
 class PokedexCmdSet(CmdSet):
-    """CmdSet containing commands querying Pokédex data."""
+	"""CmdSet containing commands querying Pokédex data."""
 
-    key = "PokedexCmdSet"
+	key = "PokedexCmdSet"
 
-    def at_cmdset_creation(self):
-        """Populate the cmdset."""
-        for cmd in (
-            CmdPokedexSearch,
-            CmdPokedexAll,
-            CmdMovedexSearch,
-            CmdMovesetSearch,
-            CmdPokedexNumber,
-            CmdStarterList,
-        ):
-            self.add(cmd())
+	def at_cmdset_creation(self):
+		"""Populate the cmdset."""
+		for cmd in (
+			CmdPokedexSearch,
+			CmdPokedexAll,
+			CmdMovedexSearch,
+			CmdMovesetSearch,
+			CmdPokedexNumber,
+			CmdStarterList,
+		):
+			self.add(cmd())

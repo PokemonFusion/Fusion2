@@ -30,12 +30,12 @@ get_gender = gen_mod.get_gender
 
 
 def test_get_gender_single():
-    assert get_gender(single="M") == "M"
-    assert get_gender(single="F") == "F"
-    assert get_gender(single="N") == "N"
+	assert get_gender(single="M") == "M"
+	assert get_gender(single="F") == "F"
+	assert get_gender(single="N") == "N"
 
 
 def test_get_gender_ratio_special_cases():
-    assert get_gender({"M": 0, "F": 0}) == "N"
-    assert get_gender({"M": 1, "F": 0}) == "M"
-    assert get_gender({"M": 0, "F": 1}) == "F"
+	assert get_gender({"M": 0, "F": 0}) == "N"
+	assert get_gender({"M": 1, "F": 0}) == "M"
+	assert get_gender({"M": 0, "F": 1}) == "F"

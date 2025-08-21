@@ -75,77 +75,77 @@ BattleType = eng_mod.BattleType
 
 
 def test_before_turn_callbacks_and_sleep():
-    calls = []
+	calls = []
 
-    def abil_cb(poke, battle):
-        calls.append("ability")
+	def abil_cb(poke, battle):
+		calls.append("ability")
 
-    def item_cb(pokemon=None, battle=None):
-        calls.append("item")
+	def item_cb(pokemon=None, battle=None):
+		calls.append("item")
 
-    ability = Ability(name="A", num=0, raw={"onBeforeTurn": abil_cb})
-    item = Item(name="I", num=0, raw={"onBeforeTurn": item_cb})
+	ability = Ability(name="A", num=0, raw={"onBeforeTurn": abil_cb})
+	item = Item(name="I", num=0, raw={"onBeforeTurn": item_cb})
 
-    user = Pokemon("User")
-    user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    user.ability = ability
-    user.item = item
-    user.status = "slp"
-    user.tempvals = {"slp_turns": 2}
-    user.moves = [BattleMove("Tackle", power=40, accuracy=100)]
+	user = Pokemon("User")
+	user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	user.ability = ability
+	user.item = item
+	user.status = "slp"
+	user.tempvals = {"slp_turns": 2}
+	user.moves = [BattleMove("Tackle", power=40, accuracy=100)]
 
-    opponent = Pokemon("Opp")
-    opponent.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    opponent.moves = [BattleMove("Tackle", power=40, accuracy=100)]
+	opponent = Pokemon("Opp")
+	opponent.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	opponent.moves = [BattleMove("Tackle", power=40, accuracy=100)]
 
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [opponent], is_ai=False)
-    p1.active = [user]
-    p2.active = [opponent]
-    action = Action(p1, ActionType.MOVE, p2, user.moves[0], user.moves[0].priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [opponent], is_ai=False)
+	p1.active = [user]
+	p2.active = [opponent]
+	action = Action(p1, ActionType.MOVE, p2, user.moves[0], user.moves[0].priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
 
-    battle.start_turn()
-    battle.before_turn()
-    assert set(calls) == {"ability", "item"}
-    assert user.tempvals.get("slp_turns") == 1
+	battle.start_turn()
+	battle.before_turn()
+	assert set(calls) == {"ability", "item"}
+	assert user.tempvals.get("slp_turns") == 1
 
 
 def test_flinch_prevents_move_once():
-    user = Pokemon("User")
-    user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    user.moves = [BattleMove("Tackle", power=40, accuracy=100)]
-    user.volatiles = {"flinch": {}}
+	user = Pokemon("User")
+	user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	user.moves = [BattleMove("Tackle", power=40, accuracy=100)]
+	user.volatiles = {"flinch": {}}
 
-    target = Pokemon("Target")
-    target.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    target.moves = [BattleMove("Tackle", power=40, accuracy=100)]
+	target = Pokemon("Target")
+	target.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	target.moves = [BattleMove("Tackle", power=40, accuracy=100)]
 
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, user.moves[0], user.moves[0].priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, user.moves[0], user.moves[0].priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
 
-    battle.start_turn()
-    battle.before_turn()
-    battle.run_move()
-    assert "flinch" not in getattr(user, "volatiles", {})
-    assert target.hp == 100
+	battle.start_turn()
+	battle.before_turn()
+	battle.run_move()
+	assert "flinch" not in getattr(user, "volatiles", {})
+	assert target.hp == 100
 
 
 # Cleanup modules
 for mod in [
-    "pokemon.dex",
-    "pokemon.data",
-    "pokemon.battle.utils",
-    "pokemon.battle",
-    "pokemon.battle.engine",
-    "pokemon.battle.damage",
+	"pokemon.dex",
+	"pokemon.data",
+	"pokemon.battle.utils",
+	"pokemon.battle",
+	"pokemon.battle.engine",
+	"pokemon.battle.damage",
 ]:
-    sys.modules.pop(mod, None)
+	sys.modules.pop(mod, None)
