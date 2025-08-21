@@ -87,7 +87,7 @@ handler_mod.battle_handler = types.SimpleNamespace(register=lambda *a, **k: None
 sys.modules["pokemon.battle.handler"] = handler_mod
 
 # Stub pokemon generation
-gen_mod = types.ModuleType("pokemon.generation")
+gen_mod = types.ModuleType("pokemon.data.generation")
 class DummyInst:
     def __init__(self, name, level):
         self.species = types.SimpleNamespace(name=name)
@@ -100,7 +100,7 @@ def generate_pokemon(name, level=5):
     return DummyInst(name, level)
 
 gen_mod.generate_pokemon = generate_pokemon
-sys.modules["pokemon.generation"] = gen_mod
+sys.modules["pokemon.data.generation"] = gen_mod
 
 # Stub spawn helper
 spawn_mod = types.ModuleType("pokemon.helpers.pokemon_spawn")

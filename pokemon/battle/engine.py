@@ -1678,7 +1678,7 @@ class Battle(ConditionHelpers, BattleActions):
             if fainted:
                 if opponent and opponent.player and self.type in {BattleType.WILD, BattleType.TRAINER, BattleType.SCRIPTED}:
                     from pokemon.dex.exp_ev_yields import GAIN_INFO
-                    from pokemon.stats import award_experience_to_party
+                    from pokemon.models.stats import award_experience_to_party
                     for poke in fainted:
                         info = GAIN_INFO.get(getattr(poke, "name", ""), {})
                         exp = info.get("exp", 0)

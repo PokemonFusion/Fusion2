@@ -35,7 +35,7 @@ y_spec.loader.exec_module(y_mod)
 GAIN_INFO = y_mod.GAIN_INFO
 
 # Load stats module after stubbing dex
-import pokemon.stats as stats_mod
+import pokemon.models.stats as stats_mod
 
 # Load battledata and engine
 bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")

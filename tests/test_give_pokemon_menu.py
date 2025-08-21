@@ -8,13 +8,13 @@ sys.path.insert(0, ROOT)
 
 # stub modules required by menu
 orig_pokedex = sys.modules.get("pokemon.dex")
-orig_generation = sys.modules.get("pokemon.generation")
+orig_generation = sys.modules.get("pokemon.data.generation")
 orig_helpers = sys.modules.get("pokemon.helpers.pokemon_helpers")
 fake_pokedex = types.ModuleType("pokemon.dex")
 fake_pokedex.POKEDEX = {"Pikachu": {}}
 sys.modules["pokemon.dex"] = fake_pokedex
 
-fake_generation = types.ModuleType("pokemon.generation")
+fake_generation = types.ModuleType("pokemon.data.generation")
 class DummyInstance:
     def __init__(self, species, level):
         self.species = types.SimpleNamespace(name=species)
@@ -34,7 +34,7 @@ class DummyInstance:
 def generate_pokemon(species, level=1):
     return DummyInstance(species, level)
 fake_generation.generate_pokemon = generate_pokemon
-sys.modules["pokemon.generation"] = fake_generation
+sys.modules["pokemon.data.generation"] = fake_generation
 
 fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
 
@@ -66,9 +66,9 @@ else:
     sys.modules.pop("pokemon.helpers.pokemon_helpers", None)
 
 if orig_generation is not None:
-    sys.modules["pokemon.generation"] = orig_generation
+    sys.modules["pokemon.data.generation"] = orig_generation
 else:
-    sys.modules.pop("pokemon.generation", None)
+    sys.modules.pop("pokemon.data.generation", None)
 
 class DummyTarget:
     def __init__(self, count=0):

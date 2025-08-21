@@ -17,8 +17,8 @@ def _get_helpers_module():
             _helpers_mod = None
     return _helpers_mod
 
-from .dex import POKEDEX
-from .generation import NATURES
+from ..dex import POKEDEX
+from ..data.generation import NATURES
 from pokemon.services.move_management import learn_level_up_moves
 from pokemon.utils.boosts import STAT_KEY_MAP, REVERSE_STAT_KEY_MAP, ALL_STATS
 

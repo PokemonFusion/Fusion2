@@ -9,7 +9,7 @@ focused on session management.
 
 from typing import List
 
-from ..generation import generate_pokemon
+from ..data.generation import generate_pokemon
 from pokemon.helpers.pokemon_spawn import get_spawn
 from .battledata import Pokemon, Move
 

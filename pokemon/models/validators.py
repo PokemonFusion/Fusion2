@@ -33,7 +33,7 @@ def validate_evs(value):
     """
     if not isinstance(value, (list, tuple)) or len(value) != 6:
         raise ValidationError("EVs must contain six integers.")
-    from pokemon.stats import EV_LIMIT, STAT_EV_LIMIT  # pragma: no cover
+    from pokemon.models.stats import EV_LIMIT, STAT_EV_LIMIT  # pragma: no cover
 
     for v in value:
         if not isinstance(v, int) or not 0 <= v <= STAT_EV_LIMIT:

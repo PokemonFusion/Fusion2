@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from .dex import POKEDEX
+from ..dex import POKEDEX
 
 __all__ = ["get_evolution_items", "get_evolution", "attempt_evolution"]
 

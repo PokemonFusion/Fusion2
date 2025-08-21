@@ -1,6 +1,6 @@
 """XP utility helpers for sheet display."""
 
-from pokemon.stats import level_for_exp, exp_for_level
+from pokemon.models.stats import level_for_exp, exp_for_level
 from pokemon.utils.pokemon_like import PokemonLike
 
 __all__ = ["get_display_xp", "get_next_level_xp"]

@@ -3,8 +3,8 @@
 The example below mirrors the instructions given in ``README.md`` and shows
 how to look up the species that will hatch from two parents::
 
-    from pokemon.generation import generate_pokemon
-    from pokemon.breeding import determine_egg_species
+    from pokemon.data.generation import generate_pokemon
+    from pokemon.data.breeding import determine_egg_species
 
     mom = generate_pokemon("Pikachu", level=10)
     dad = generate_pokemon("Ditto", level=10)
@@ -13,7 +13,7 @@ how to look up the species that will hatch from two parents::
 """
 
 from .generation import PokemonInstance
-from .dex import POKEDEX
+from ..dex import POKEDEX
 
 # Mapping of male-only species to the female species that lays their eggs
 _SPECIAL_MOTHERS = {

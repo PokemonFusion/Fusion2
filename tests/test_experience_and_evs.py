@@ -34,10 +34,10 @@ pokemon_dex.POKEDEX = {
 }
 pokemon_dex.MOVEDEX = {}
 sys.modules["pokemon.dex"] = pokemon_dex
-import pokemon.stats as stats_mod
+import pokemon.models.stats as stats_mod
 stats_mod.POKEDEX = pokemon_dex.POKEDEX
 
-from pokemon.stats import (
+from pokemon.models.stats import (
     exp_for_level,
     level_for_exp,
     add_experience,

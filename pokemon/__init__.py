@@ -1,19 +1,23 @@
 """Convenience imports for the pokemon package."""
 
 try:
-    from .generation import generate_pokemon, choose_wild_moves, PokemonInstance
+    from .data.generation import (
+        generate_pokemon,
+        choose_wild_moves,
+        PokemonInstance,
+    )
 except Exception:  # pragma: no cover - optional for lightweight test stubs
     generate_pokemon = None
     choose_wild_moves = None
     PokemonInstance = None
 
-from .evolution import get_evolution_items, get_evolution, attempt_evolution
+from .data.evolution import get_evolution_items, get_evolution, attempt_evolution
 try:
-    from .breeding import determine_egg_species
+    from .data.breeding import determine_egg_species
 except Exception:  # pragma: no cover - optional for lightweight test stubs
     determine_egg_species = None
 try:
-    from .stats import (
+    from .models.stats import (
         exp_for_level,
         level_for_exp,
         add_experience,

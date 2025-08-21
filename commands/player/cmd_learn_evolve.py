@@ -76,7 +76,7 @@ class CmdTeachMove(Command):
         if not pokemon:
             self.caller.msg("No Pokémon in that slot.")
             return
-        from pokemon.generation import get_valid_moves
+        from pokemon.data.generation import get_valid_moves
         from pokemon.models.moves import Move
 
         valid = [
@@ -182,7 +182,7 @@ class CmdEvolvePokemon(Command):
             self.caller.msg(f"You do not have a {item}.")
             return
 
-        from pokemon.evolution import attempt_evolution
+        from pokemon.data.evolution import attempt_evolution
 
         new_species = attempt_evolution(pokemon, item=item)
         if not new_species:

@@ -1,6 +1,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
-from pokemon.stats import exp_for_level
+from pokemon.models.stats import exp_for_level
 
 def copy_npc_pokemon(apps, schema_editor):
     OwnedPokemon = apps.get_model('pokemon', 'OwnedPokemon')
