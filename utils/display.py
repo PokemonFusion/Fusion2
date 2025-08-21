@@ -5,7 +5,7 @@ import re
 from types import SimpleNamespace
 
 from utils.ansi import ansi
-from pokemon.helpers.display_helpers import (
+from utils.display_helpers import (
     get_status_effects,
     format_move_details,
     get_egg_description,
