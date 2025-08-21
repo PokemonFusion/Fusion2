@@ -1,7 +1,10 @@
 """CmdSet for battle related commands."""
 
 from evennia import CmdSet
-from commands.player.cmd_battle import CmdBattleAttack, CmdBattleSwitch, CmdBattleItem, CmdBattleFlee
+from commands.player.cmd_battle_attack import CmdBattleAttack
+from commands.player.cmd_battle_switch import CmdBattleSwitch
+from commands.player.cmd_battle_item import CmdBattleItem
+from commands.player.cmd_battle_flee import CmdBattleFlee
 from commands.player.cmd_watchbattle import CmdWatchBattle, CmdUnwatchBattle
 from commands.player.cmd_showbattle import CmdShowBattle
 from commands.player.cmd_watch import CmdWatch, CmdUnwatch
