@@ -2,7 +2,7 @@
 
 from evennia import Command
 from typing import List
-from pokemon.testfactory import make_test_pokemon, make_punching_bag
+from tests.utils.testfactory import make_test_pokemon, make_punching_bag
 
 
 def _get_unverified_moves() -> List[str]:
