@@ -13,20 +13,26 @@ try:
     orig_create_object = evennia.create_object
 except Exception:
     evennia = types.ModuleType("evennia")
-    orig_create_object = lambda cls, key=None: cls()
-    evennia.create_object = orig_create_object
+    def _create_object_stub(cls, key=None):
+        return cls()
+
+    orig_create_object = _create_object_stub
+    evennia.create_object = _create_object_stub
     evennia.DefaultRoom = type("DefaultRoom", (), {})
     evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
     evennia.utils = types.ModuleType("evennia.utils")
+    def _identity(s):
+        return s
+
     evennia.utils.ansi = types.SimpleNamespace(
-        parse_ansi=lambda s: s,
-        RED=lambda s: s,
-        GREEN=lambda s: s,
-        YELLOW=lambda s: s,
-        BLUE=lambda s: s,
-        MAGENTA=lambda s: s,
-        CYAN=lambda s: s,
-        strip_ansi=lambda s: s,
+        parse_ansi=_identity,
+        RED=_identity,
+        GREEN=_identity,
+        YELLOW=_identity,
+        BLUE=_identity,
+        MAGENTA=_identity,
+        CYAN=_identity,
+        strip_ansi=_identity,
     )
     sys.modules["evennia.utils"] = evennia.utils
     evennia.server = types.ModuleType("evennia.server")
@@ -36,7 +42,10 @@ except Exception:
     sys.modules["evennia.server.models"] = evennia.server.models
     sys.modules["evennia"] = evennia
 else:
-    evennia.create_object = lambda cls, key=None: cls()
+    def _create_object_stub(cls, key=None):
+        return cls()
+
+    evennia.create_object = _create_object_stub
 orig_models_pkg = sys.modules.get("pokemon.models")
 orig_models_core = sys.modules.get("pokemon.models.core")
 orig_generation = sys.modules.get("pokemon.data.generation")
@@ -58,25 +67,44 @@ battleroom_mod.Room = type("Room", (), {})
 
 # Interface and handler stubs
 iface = types.ModuleType("pokemon.battle.interface")
-iface.display_battle_interface = lambda *a, **k: ""
-iface.format_turn_banner = lambda turn: ""
-iface.render_interfaces = lambda *a, **k: ("", "", "")
+def _display_battle_interface(*args, **kwargs):
+    return ""
+
+def _format_turn_banner(turn):
+    return ""
+
+def _render_interfaces(*args, **kwargs):
+    return ("", "", "")
+
+iface.display_battle_interface = _display_battle_interface
+iface.format_turn_banner = _format_turn_banner
+iface.render_interfaces = _render_interfaces
 sys.modules["pokemon.battle.interface"] = iface
 watchers = types.ModuleType("pokemon.battle.watchers")
-watchers.add_watcher = lambda *a, **k: None
-watchers.remove_watcher = lambda *a, **k: None
-watchers.notify_watchers = lambda *a, **k: None
-watchers.WatcherManager = type(
-    "WatcherManager",
-    (),
-    {
-        "add_watcher": lambda self, w: None,
-        "remove_watcher": lambda self, w: None,
-        "notify": lambda self, m: None,
-        "add_observer": lambda self, w: None,
-        "remove_observer": lambda self, w: None,
-    },
-)
+def _noop(*args, **kwargs):
+    return None
+
+watchers.add_watcher = _noop
+watchers.remove_watcher = _noop
+watchers.notify_watchers = _noop
+
+class WatcherManager:
+    def add_watcher(self, w):
+        return None
+
+    def remove_watcher(self, w):
+        return None
+
+    def notify(self, m):
+        return None
+
+    def add_observer(self, w):
+        return None
+
+    def remove_observer(self, w):
+        return None
+
+watchers.WatcherManager = WatcherManager
 sys.modules["pokemon.battle.watchers"] = watchers
 
 handler_mod = types.ModuleType("pokemon.battle.handler")
@@ -214,14 +242,20 @@ gen_mod.generate_pokemon = generate_pokemon
 gen_mod.NATURES = {}
 
 spawn_mod = types.ModuleType("pokemon.helpers.pokemon_spawn")
-spawn_mod.get_spawn = lambda loc: None
+def _get_spawn_stub(loc):
+    return None
+
+spawn_mod.get_spawn = _get_spawn_stub
 
 # ------------------------------------------------------------
 # Test setup/teardown
 # ------------------------------------------------------------
 
 def setup_module(module):
-    evennia.create_object = lambda cls, key=None: cls()
+    def _create_object_stub(cls, key=None):
+        return cls()
+
+    evennia.create_object = _create_object_stub
     pokemon_pkg = types.ModuleType("pokemon")
     pokemon_pkg.__path__ = []
     pokemon_pkg.generation = gen_mod
@@ -247,7 +281,10 @@ def setup_module(module):
     cap_mod = importlib.util.module_from_spec(cap_spec)
     sys.modules[cap_spec.name] = cap_mod
     cap_spec.loader.exec_module(cap_mod)
-    cap_mod.attempt_capture = lambda *a, **k: True
+    def _attempt_capture_stub(*args, **kwargs):
+        return True
+
+    cap_mod.attempt_capture = _attempt_capture_stub
     sys.modules["pokemon.battle.capture"] = cap_mod
 
     bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")

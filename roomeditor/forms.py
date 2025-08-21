@@ -32,7 +32,10 @@ class RoomForm(forms.Form):
         label="Description",
         widget=forms.Textarea,
         required=False,
-        help_text=mark_safe('Use Evennia color codes. <a href="/ansi/" target="_blank">ANSI reference</a>'),
+        help_text=mark_safe(
+            'Use Evennia color codes. <a href="/ansi/" '
+            'target="_blank">ANSI reference</a>'
+        ),
     )
     is_center = forms.BooleanField(label="Pokémon Center", required=False)
     is_shop = forms.BooleanField(label="Item Shop", required=False)
@@ -49,7 +52,10 @@ class ExitForm(forms.Form):
         max_length=32,
         widget=forms.TextInput(
             attrs={
-                "title": "Use Evennia color tags such as |gnorth|n to style the exit name.",
+                "title": (
+                    "Use Evennia color tags such as |gnorth|n "
+                    "to style the exit name."
+                ),
             }
         ),
     )
@@ -58,7 +64,10 @@ class ExitForm(forms.Form):
         label="Description",
         widget=forms.Textarea,
         required=False,
-        help_text=mark_safe('Use Evennia color codes. <a href="/ansi/" target="_blank">ANSI reference</a>'),
+        help_text=mark_safe(
+            'Use Evennia color codes. <a href="/ansi/" '
+            'target="_blank">ANSI reference</a>'
+        ),
     )
     err_traverse = forms.CharField(
         label="Failure Message",
@@ -81,6 +90,6 @@ class ExitForm(forms.Form):
         if hasattr(queryset, "order_by"):
             queryset = queryset.order_by("id")
         self.fields["dest_id"].choices = [
-            (obj.id, f"{obj.id} - {getattr(obj, 'key', '')}") for obj in queryset
+            (obj.id, f"{obj.id} - {getattr(obj, 'key', '')}")
+            for obj in queryset
         ]
-

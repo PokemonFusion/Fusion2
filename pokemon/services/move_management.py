@@ -8,18 +8,21 @@ wrappers that delegate to these helpers.
 
 from __future__ import annotations
 
-from typing import Iterable, Optional
+from typing import Iterable
 
 from django.db import transaction
 
 
 def _fallback_normalize_key(val: str) -> str:
-    """Simplified move name normalisation used when engine helpers are missing."""
+    """Simplified move name normalisation used when engine helpers are
+    missing."""
 
     return val.replace(" ", "").replace("-", "").replace("'", "").lower()
 
 
-def learn_level_up_moves(pokemon, *, caller=None, prompt: bool = False) -> None:
+def learn_level_up_moves(
+    pokemon, *, caller=None, prompt: bool = False
+) -> None:
     """Teach all level-up moves available to ``pokemon``.
 
     Parameters
@@ -121,14 +124,26 @@ def apply_active_moveset(pokemon) -> None:
                     base_pp = getattr(md, "pp", None)
                     if base_pp is None and isinstance(md, dict):
                         base_pp = md.get("pp")
-            cur_pp = None if base_pp is None else int(base_pp) + int(bonuses.get(norm, 0))
+            cur_pp = (
+                None
+                if base_pp is None
+                else int(base_pp) + int(bonuses.get(norm, 0))
+            )
 
             if SlotModel is not None:
                 pending.append(
-                    SlotModel(move=move, slot=getattr(slot, "slot", 0), current_pp=cur_pp)
+                    SlotModel(
+                        move=move,
+                        slot=getattr(slot, "slot", 0),
+                        current_pp=cur_pp,
+                    )
                 )
             else:
-                actives.create(move=move, slot=getattr(slot, "slot", 0), current_pp=cur_pp)
+                actives.create(
+                    move=move,
+                    slot=getattr(slot, "slot", 0),
+                    current_pp=cur_pp,
+                )
 
         if SlotModel is not None:
             actives.all().delete()
@@ -137,7 +152,11 @@ def apply_active_moveset(pokemon) -> None:
                     actives.bulk_create(pending)
                 except Exception:
                     for row in pending:
-                        actives.create(move=row.move, slot=row.slot, current_pp=row.current_pp)
+                        actives.create(
+                            move=row.move,
+                            slot=row.slot,
+                            current_pp=row.current_pp,
+                        )
         try:
             pokemon.save()
         except Exception:
@@ -151,4 +170,3 @@ def apply_active_moveset(pokemon) -> None:
 
 
 __all__ = ["learn_level_up_moves", "apply_active_moveset"]
-
