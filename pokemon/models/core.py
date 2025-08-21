@@ -217,7 +217,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
     @property
     def computed_level(self) -> int:
         """Return the Pokémon's level derived from its stored experience."""
-        from pokemon.stats import level_for_exp  # pragma: no cover
+        from .stats import level_for_exp  # pragma: no cover
 
         return level_for_exp(self.total_exp)
 
@@ -241,7 +241,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
     def set_level(self, level: int) -> None:
         """Set ``total_exp`` and persist the corresponding level."""
-        from pokemon.stats import exp_for_level  # pragma: no cover
+        from .stats import exp_for_level  # pragma: no cover
 
         self.total_exp = exp_for_level(level)
         self.level = level

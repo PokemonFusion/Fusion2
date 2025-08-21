@@ -8,8 +8,8 @@ event occurs that would change the numbers (level up, EV gain, species
 change, etc.).
 """
 
-from pokemon.generation import generate_pokemon
-from pokemon.stats import calculate_stats, STAT_KEY_MAP
+from pokemon.data.generation import generate_pokemon
+from pokemon.models.stats import calculate_stats, STAT_KEY_MAP
 from pokemon.services.move_management import learn_level_up_moves
 
 

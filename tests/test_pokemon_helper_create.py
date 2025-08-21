@@ -33,7 +33,9 @@ def test_create_owned_pokemon_initializes_model(monkeypatch):
     fake_core = types.ModuleType("pokemon.models.core")
     fake_core.OwnedPokemon = OwnedPokemon
     monkeypatch.setitem(sys.modules, "pokemon.models.core", fake_core)
-    monkeypatch.setitem(sys.modules, "pokemon.models", types.ModuleType("pokemon.models"))
+    fake_models_pkg = types.ModuleType("pokemon.models")
+    fake_models_pkg.__path__ = []
+    monkeypatch.setitem(sys.modules, "pokemon.models", fake_models_pkg)
 
     # patch move management service to confirm it is invoked
     called = []

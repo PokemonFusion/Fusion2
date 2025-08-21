@@ -15,8 +15,8 @@ sys.modules[ent_spec.name] = ent_mod
 ent_spec.loader.exec_module(ent_mod)
 
 # Load generation module for PokemonInstance class
-gen_path = os.path.join(ROOT, "pokemon", "generation.py")
-gen_spec = importlib.util.spec_from_file_location("pokemon.generation", gen_path)
+gen_path = os.path.join(ROOT, "pokemon", "data", "generation.py")
+gen_spec = importlib.util.spec_from_file_location("pokemon.data.generation", gen_path)
 gen_mod = importlib.util.module_from_spec(gen_spec)
 sys.modules[gen_spec.name] = gen_mod
 gen_spec.loader.exec_module(gen_mod)
@@ -54,8 +54,8 @@ pokemon_dex.POKEDEX = {
 sys.modules["pokemon.dex"] = pokemon_dex
 
 # Load breeding module
-breed_path = os.path.join(ROOT, "pokemon", "breeding.py")
-breed_spec = importlib.util.spec_from_file_location("pokemon.breeding", breed_path)
+breed_path = os.path.join(ROOT, "pokemon", "data", "breeding.py")
+breed_spec = importlib.util.spec_from_file_location("pokemon.data.breeding", breed_path)
 breed_mod = importlib.util.module_from_spec(breed_spec)
 sys.modules[breed_spec.name] = breed_mod
 breed_spec.loader.exec_module(breed_mod)

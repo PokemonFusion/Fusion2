@@ -1,5 +1,5 @@
 from pokemon.dex import POKEDEX
-from pokemon.generation import generate_pokemon
+from pokemon.data.generation import generate_pokemon
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 
 

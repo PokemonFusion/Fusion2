@@ -223,7 +223,7 @@ class CmdPokedexNumber(Command):
         self.caller.msg(format_pokemon_details(name, details))
 
 
-from pokemon.starters import get_starter_names
+from pokemon.data.starters import get_starter_names
 
 
 class CmdStarterList(Command):

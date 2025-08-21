@@ -42,8 +42,8 @@ pokemon_dex.POKEDEX = {
 }
 sys.modules["pokemon.dex"] = pokemon_dex
 
-evo_path = os.path.join(ROOT, "pokemon", "evolution.py")
-evo_spec = importlib.util.spec_from_file_location("pokemon.evolution", evo_path)
+evo_path = os.path.join(ROOT, "pokemon", "data", "evolution.py")
+evo_spec = importlib.util.spec_from_file_location("pokemon.data.evolution", evo_path)
 evo_mod = importlib.util.module_from_spec(evo_spec)
 sys.modules[evo_spec.name] = evo_mod
 evo_spec.loader.exec_module(evo_mod)

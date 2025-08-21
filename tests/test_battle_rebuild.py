@@ -105,7 +105,7 @@ watchers.WatcherManager = type(
 sys.modules["pokemon.battle.watchers"] = watchers
 
 # Stub generation and spawn modules
-gen_mod = types.ModuleType("pokemon.generation")
+gen_mod = types.ModuleType("pokemon.data.generation")
 
 class DummyInst:
     def __init__(self, name, level):
@@ -120,7 +120,7 @@ def generate_pokemon(name, level=5):
 
 gen_mod.generate_pokemon = generate_pokemon
 gen_mod.NATURES = {}
-sys.modules["pokemon.generation"] = gen_mod
+sys.modules["pokemon.data.generation"] = gen_mod
 
 spawn_mod = types.ModuleType("pokemon.helpers.pokemon_spawn")
 spawn_mod.get_spawn = lambda loc: None
@@ -306,6 +306,7 @@ def test_pokemon_serialization_minimal():
 
 def test_from_dict_calculates_max_hp():
     fake_models_pkg = types.ModuleType("pokemon.models")
+    fake_models_pkg.__path__ = []
     fake_models_core = types.ModuleType("pokemon.models.core")
 
     class FakeOwned:

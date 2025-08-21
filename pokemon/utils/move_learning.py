@@ -15,7 +15,7 @@ def get_learnable_levelup_moves(pokemon):
     at (if available).
     """
 
-    from pokemon.generation import get_valid_moves
+    from pokemon.data.generation import get_valid_moves
     from pokemon.middleware import get_moveset_by_name
 
     known = {m.name.lower() for m in pokemon.learned_moves.all()}

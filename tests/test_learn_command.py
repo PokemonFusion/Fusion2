@@ -42,22 +42,23 @@ def setup_modules():
     sys.modules["utils.enhanced_evmenu"] = fake_evmod
 
     orig_pokemon = sys.modules.get("pokemon")
-    orig_gen = sys.modules.get("pokemon.generation")
+    orig_gen = sys.modules.get("pokemon.data.generation")
     orig_models_pkg = sys.modules.get("pokemon.models")
     orig_models_moves = sys.modules.get("pokemon.models.moves")
     orig_models_trainer = sys.modules.get("pokemon.models.trainer")
-    orig_stats = sys.modules.get("pokemon.stats")
+    orig_stats = sys.modules.get("pokemon.models.stats")
     orig_dex = sys.modules.get("pokemon.dex")
-    orig_breeding = sys.modules.get("pokemon.breeding")
+    orig_breeding = sys.modules.get("pokemon.data.breeding")
     orig_mw = sys.modules.get("pokemon.middleware")
     orig_utils = sys.modules.get("pokemon.utils")
     orig_learn = sys.modules.get("pokemon.utils.move_learning")
 
     pokemon_pkg = types.ModuleType("pokemon")
-    gen_mod = types.ModuleType("pokemon.generation")
+    gen_mod = types.ModuleType("pokemon.data.generation")
     gen_mod.generate_pokemon = lambda *a, **k: None
     gen_mod.get_valid_moves = lambda species, lvl: []
     models_pkg = types.ModuleType("pokemon.models")
+    models_pkg.__path__ = []
     trainer_mod = types.ModuleType("pokemon.models.trainer")
     trainer_mod.InventoryEntry = type("InventoryEntry", (), {})
     class FakeMove:
@@ -68,11 +69,11 @@ def setup_modules():
             return FakeMove(name), True
     moves_mod = types.ModuleType("pokemon.models.moves")
     moves_mod.Move = type("Move", (), {"objects": Manager()})
-    stats_mod = types.ModuleType("pokemon.stats")
+    stats_mod = types.ModuleType("pokemon.models.stats")
     stats_mod.calculate_stats = lambda *a, **k: {}
     dex_mod = types.ModuleType("pokemon.dex")
     dex_mod.ITEMDEX = {}
-    breeding_mod = types.ModuleType("pokemon.breeding")
+    breeding_mod = types.ModuleType("pokemon.data.breeding")
     mw_mod = types.ModuleType("pokemon.middleware")
     mw_mod.get_moveset_by_name = lambda name: (None, {"level-up": []})
 
@@ -84,13 +85,13 @@ def setup_modules():
     pokemon_pkg.middleware = mw_mod
 
     sys.modules["pokemon"] = pokemon_pkg
-    sys.modules["pokemon.generation"] = gen_mod
+    sys.modules["pokemon.data.generation"] = gen_mod
     sys.modules["pokemon.models"] = models_pkg
     sys.modules["pokemon.models.moves"] = moves_mod
     sys.modules["pokemon.models.trainer"] = trainer_mod
-    sys.modules["pokemon.stats"] = stats_mod
+    sys.modules["pokemon.models.stats"] = stats_mod
     sys.modules["pokemon.dex"] = dex_mod
-    sys.modules["pokemon.breeding"] = breeding_mod
+    sys.modules["pokemon.data.breeding"] = breeding_mod
     sys.modules["pokemon.middleware"] = mw_mod
 
     utils_mod = types.ModuleType("pokemon.utils")
@@ -167,9 +168,9 @@ def restore_modules(
     else:
         sys.modules.pop("pokemon", None)
     if orig_gen is not None:
-        sys.modules["pokemon.generation"] = orig_gen
+        sys.modules["pokemon.data.generation"] = orig_gen
     else:
-        sys.modules.pop("pokemon.generation", None)
+        sys.modules.pop("pokemon.data.generation", None)
     if orig_models_pkg is not None:
         sys.modules["pokemon.models"] = orig_models_pkg
     else:
@@ -183,17 +184,17 @@ def restore_modules(
     else:
         sys.modules.pop("pokemon.models.trainer", None)
     if orig_stats is not None:
-        sys.modules["pokemon.stats"] = orig_stats
+        sys.modules["pokemon.models.stats"] = orig_stats
     else:
-        sys.modules.pop("pokemon.stats", None)
+        sys.modules.pop("pokemon.models.stats", None)
     if orig_dex is not None:
         sys.modules["pokemon.dex"] = orig_dex
     else:
         sys.modules.pop("pokemon.dex", None)
     if orig_breeding is not None:
-        sys.modules["pokemon.breeding"] = orig_breeding
+        sys.modules["pokemon.data.breeding"] = orig_breeding
     else:
-        sys.modules.pop("pokemon.breeding", None)
+        sys.modules.pop("pokemon.data.breeding", None)
     if orig_mw is not None:
         sys.modules["pokemon.middleware"] = orig_mw
     else:

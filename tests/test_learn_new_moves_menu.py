@@ -13,10 +13,10 @@ def test_learn_all_prompts_sequentially():
     fake_evmod.EnhancedEvMenu = object
     sys.modules["utils.enhanced_evmenu"] = fake_evmod
 
-    orig_gen = sys.modules.get("pokemon.generation")
-    gen_mod = types.ModuleType("pokemon.generation")
+    orig_gen = sys.modules.get("pokemon.data.generation")
+    gen_mod = types.ModuleType("pokemon.data.generation")
     gen_mod.get_valid_moves = lambda *a, **k: []
-    sys.modules["pokemon.generation"] = gen_mod
+    sys.modules["pokemon.data.generation"] = gen_mod
 
     orig_mw = sys.modules.get("pokemon.middleware")
     mw_mod = types.ModuleType("pokemon.middleware")
@@ -75,9 +75,9 @@ def test_learn_all_prompts_sequentially():
     else:
         sys.modules.pop("utils.enhanced_evmenu", None)
     if orig_gen is not None:
-        sys.modules["pokemon.generation"] = orig_gen
+        sys.modules["pokemon.data.generation"] = orig_gen
     else:
-        sys.modules.pop("pokemon.generation", None)
+        sys.modules.pop("pokemon.data.generation", None)
     if orig_mw is not None:
         sys.modules["pokemon.middleware"] = orig_mw
     else:
@@ -102,10 +102,10 @@ def test_order_moves_by_level():
     learn_mod.learn_move = lambda *a, **k: None
     sys.modules["pokemon.utils.move_learning"] = learn_mod
 
-    orig_gen = sys.modules.get("pokemon.generation")
-    gen_mod = types.ModuleType("pokemon.generation")
+    orig_gen = sys.modules.get("pokemon.data.generation")
+    gen_mod = types.ModuleType("pokemon.data.generation")
     gen_mod.get_valid_moves = lambda *a, **k: []
-    sys.modules["pokemon.generation"] = gen_mod
+    sys.modules["pokemon.data.generation"] = gen_mod
 
     orig_mw = sys.modules.get("pokemon.middleware")
     mw_mod = types.ModuleType("pokemon.middleware")
@@ -150,9 +150,9 @@ def test_order_moves_by_level():
     else:
         sys.modules.pop("pokemon.utils.move_learning", None)
     if orig_gen is not None:
-        sys.modules["pokemon.generation"] = orig_gen
+        sys.modules["pokemon.data.generation"] = orig_gen
     else:
-        sys.modules.pop("pokemon.generation", None)
+        sys.modules.pop("pokemon.data.generation", None)
     if orig_mw is not None:
         sys.modules["pokemon.middleware"] = orig_mw
     else:

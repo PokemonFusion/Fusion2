@@ -3,7 +3,7 @@
 import types
 
 import pokemon.helpers.pokemon_helpers as helpers
-from pokemon.stats import add_evs, add_experience, exp_for_level
+from pokemon.models.stats import add_evs, add_experience, exp_for_level
 
 
 def test_cached_stats_refresh_on_changes(monkeypatch):

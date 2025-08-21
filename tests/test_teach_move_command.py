@@ -100,20 +100,21 @@ def setup_modules():
     sys.modules["evennia"] = fake_evennia
 
     orig_pokemon = sys.modules.get("pokemon")
-    orig_gen = sys.modules.get("pokemon.generation")
+    orig_gen = sys.modules.get("pokemon.data.generation")
     orig_models_pkg = sys.modules.get("pokemon.models")
     orig_models_moves = sys.modules.get("pokemon.models.moves")
     orig_models_trainer = sys.modules.get("pokemon.models.trainer")
-    orig_stats = sys.modules.get("pokemon.stats")
+    orig_stats = sys.modules.get("pokemon.models.stats")
     orig_dex = sys.modules.get("pokemon.dex")
-    orig_breeding = sys.modules.get("pokemon.breeding")
+    orig_breeding = sys.modules.get("pokemon.data.breeding")
     orig_learn = sys.modules.get("pokemon.utils.move_learning")
 
     pokemon_pkg = types.ModuleType("pokemon")
-    gen_mod = types.ModuleType("pokemon.generation")
+    gen_mod = types.ModuleType("pokemon.data.generation")
     gen_mod.generate_pokemon = lambda *a, **k: None
     gen_mod.get_valid_moves = lambda species, lvl: ["tackle", "growl"]
     models_pkg = types.ModuleType("pokemon.models")
+    models_pkg.__path__ = []
 
     class FakeMove:
         def __init__(self, name):
@@ -127,11 +128,11 @@ def setup_modules():
     moves_mod.Move = type("Move", (), {"objects": Manager()})
     trainer_mod = types.ModuleType("pokemon.models.trainer")
     trainer_mod.InventoryEntry = type("InventoryEntry", (), {})
-    stats_mod = types.ModuleType("pokemon.stats")
+    stats_mod = types.ModuleType("pokemon.models.stats")
     stats_mod.calculate_stats = lambda *a, **k: {}
     dex_mod = types.ModuleType("pokemon.dex")
     dex_mod.ITEMDEX = {}
-    breeding_mod = types.ModuleType("pokemon.breeding")
+    breeding_mod = types.ModuleType("pokemon.data.breeding")
 
     pokemon_pkg.generation = gen_mod
     pokemon_pkg.models = models_pkg
@@ -140,13 +141,13 @@ def setup_modules():
     pokemon_pkg.breeding = breeding_mod
 
     sys.modules["pokemon"] = pokemon_pkg
-    sys.modules["pokemon.generation"] = gen_mod
+    sys.modules["pokemon.data.generation"] = gen_mod
     sys.modules["pokemon.models"] = models_pkg
     sys.modules["pokemon.models.moves"] = moves_mod
     sys.modules["pokemon.models.trainer"] = trainer_mod
-    sys.modules["pokemon.stats"] = stats_mod
+    sys.modules["pokemon.models.stats"] = stats_mod
     sys.modules["pokemon.dex"] = dex_mod
-    sys.modules["pokemon.breeding"] = breeding_mod
+    sys.modules["pokemon.data.breeding"] = breeding_mod
 
     learn_mod = types.ModuleType("pokemon.utils.move_learning")
 
@@ -203,17 +204,17 @@ def restore_modules(
     else:
         sys.modules.pop("evennia", None)
     if orig_gen is not None:
-        sys.modules["pokemon.generation"] = orig_gen
+        sys.modules["pokemon.data.generation"] = orig_gen
     else:
-        sys.modules.pop("pokemon.generation", None)
+        sys.modules.pop("pokemon.data.generation", None)
     if orig_pokemon is not None:
         sys.modules["pokemon"] = orig_pokemon
     else:
         sys.modules.pop("pokemon", None)
     if orig_gen is not None:
-        sys.modules["pokemon.generation"] = orig_gen
+        sys.modules["pokemon.data.generation"] = orig_gen
     else:
-        sys.modules.pop("pokemon.generation", None)
+        sys.modules.pop("pokemon.data.generation", None)
     if orig_models_pkg is not None:
         sys.modules["pokemon.models"] = orig_models_pkg
     else:
@@ -227,17 +228,17 @@ def restore_modules(
     else:
         sys.modules.pop("pokemon.models.trainer", None)
     if orig_stats is not None:
-        sys.modules["pokemon.stats"] = orig_stats
+        sys.modules["pokemon.models.stats"] = orig_stats
     else:
-        sys.modules.pop("pokemon.stats", None)
+        sys.modules.pop("pokemon.models.stats", None)
     if orig_dex is not None:
         sys.modules["pokemon.dex"] = orig_dex
     else:
         sys.modules.pop("pokemon.dex", None)
     if orig_breeding is not None:
-        sys.modules["pokemon.breeding"] = orig_breeding
+        sys.modules["pokemon.data.breeding"] = orig_breeding
     else:
-        sys.modules.pop("pokemon.breeding", None)
+        sys.modules.pop("pokemon.data.breeding", None)
     if orig_inv is not None:
         sys.modules["utils.inventory"] = orig_inv
     else:

@@ -11,9 +11,9 @@ from utils.display_helpers import (
     get_egg_description,
 )
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
-from pokemon.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP
+from pokemon.models.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP
 from utils.xp_utils import get_display_xp, get_next_level_xp
-from pokemon.stats import level_for_exp
+from pokemon.models.stats import level_for_exp
 from utils.faction_utils import get_faction_and_rank
 from pokemon.dex import POKEDEX, MOVEDEX
 from pokemon.utils.pokemon_like import PokemonLike

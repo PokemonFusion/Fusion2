@@ -3,8 +3,8 @@ import os
 import types
 import importlib.util
 
-# Stub minimal pokemon.stats before importing display utilities
-_real_stats = sys.modules.get("pokemon.stats")
+# Stub minimal pokemon.models.stats before importing display utilities
+_real_stats = sys.modules.get("pokemon.models.stats")
 _real_dex = sys.modules.get("pokemon.dex")
 _real_evennia = sys.modules.get("evennia")
 _real_evennia_utils = sys.modules.get("evennia.utils")
@@ -58,9 +58,9 @@ from types import SimpleNamespace
 
 # Restore original modules for other tests
 if _real_stats is not None:
-    sys.modules["pokemon.stats"] = _real_stats
+    sys.modules["pokemon.models.stats"] = _real_stats
 else:
-    del sys.modules["pokemon.stats"]
+    del sys.modules["pokemon.models.stats"]
 if _real_dex is not None:
     sys.modules["pokemon.dex"] = _real_dex
 else:

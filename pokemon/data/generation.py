@@ -4,9 +4,9 @@ from dataclasses import dataclass
 import random
 from typing import Dict, List, Optional
 
-from .dex import POKEDEX, MOVEDEX
-from .data.learnsets.learnsets import LEARNSETS
-from .dex.entities import Stats, Pokemon as SpeciesPokemon
+from ..dex import POKEDEX, MOVEDEX
+from .learnsets.learnsets import LEARNSETS
+from ..dex.entities import Stats, Pokemon as SpeciesPokemon
 
 
 # Mapping for numeric dex-number lookups

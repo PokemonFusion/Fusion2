@@ -4,7 +4,7 @@ from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
 from pokemon.helpers.pokemon_helpers import get_max_hp
 from utils.xp_utils import get_display_xp
-from pokemon.stats import level_for_exp
+from pokemon.models.stats import level_for_exp
 
 class CmdSheet(Command):
     """Display information about your trainer character.

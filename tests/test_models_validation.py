@@ -21,6 +21,7 @@ sys.modules.setdefault("evennia.utils.idmapper", idmapper_mod)
 sys.modules.setdefault("evennia.utils.idmapper.models", models_mod)
 
 pokemon_models = types.ModuleType("pokemon.models")
+pokemon_models.__path__ = []
 validators_mod = types.ModuleType("pokemon.models.validators")
 
 def validate_ivs(value):
@@ -33,7 +34,7 @@ def validate_ivs(value):
 def validate_evs(value):
     if not isinstance(value, (list, tuple)) or len(value) != 6:
         raise ValidationError("EVs must contain six integers.")
-    from pokemon.stats import EV_LIMIT, STAT_EV_LIMIT  # pragma: no cover
+    from pokemon.models.stats import EV_LIMIT, STAT_EV_LIMIT  # pragma: no cover
     for v in value:
         if not isinstance(v, int) or not 0 <= v <= STAT_EV_LIMIT:
             raise ValidationError(
@@ -54,11 +55,11 @@ from pokemon.models.validators import validate_ivs, validate_evs
 
 @pytest.fixture(autouse=True)
 def stub_stats(monkeypatch):
-    """Provide a minimal ``pokemon.stats`` module for validator tests."""
-    stats_mod = types.ModuleType("pokemon.stats")
+    """Provide a minimal ``pokemon.models.stats`` module for validator tests."""
+    stats_mod = types.ModuleType("pokemon.models.stats")
     stats_mod.EV_LIMIT = 510
     stats_mod.STAT_EV_LIMIT = 252
-    monkeypatch.setitem(sys.modules, "pokemon.stats", stats_mod)
+    monkeypatch.setitem(sys.modules, "pokemon.models.stats", stats_mod)
 
 
 def test_invalid_iv_length():

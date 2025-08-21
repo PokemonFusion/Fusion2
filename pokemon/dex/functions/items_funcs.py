@@ -2201,7 +2201,7 @@ class Hpup:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"hp": 10})
@@ -2212,7 +2212,7 @@ class Protein:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"atk": 10})
@@ -2223,7 +2223,7 @@ class Iron:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"def": 10})
@@ -2234,7 +2234,7 @@ class Calcium:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"spa": 10})
@@ -2245,7 +2245,7 @@ class Carbos:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"spe": 10})
@@ -2256,7 +2256,7 @@ class Zinc:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"spd": 10})
@@ -2267,7 +2267,7 @@ class Healthfeather:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"hp": 1})
@@ -2278,7 +2278,7 @@ class Musclefeather:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"atk": 1})
@@ -2289,7 +2289,7 @@ class Resistfeather:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"def": 1})
@@ -2300,7 +2300,7 @@ class Geniusfeather:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"spa": 1})
@@ -2311,7 +2311,7 @@ class Cleverfeather:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"spd": 1})
@@ -2322,7 +2322,7 @@ class Swiftfeather:
         if not pokemon:
             return False
         try:
-            from pokemon.stats import add_evs
+            from pokemon.models.stats import add_evs
         except Exception:
             return False
         add_evs(pokemon, {"spe": 1})

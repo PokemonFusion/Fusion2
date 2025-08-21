@@ -5,7 +5,7 @@ import os
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-from pokemon.stats import award_experience_to_party
+from pokemon.models.stats import award_experience_to_party
 
 class DummyManager:
     def __init__(self, mons):

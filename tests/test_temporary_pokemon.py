@@ -39,7 +39,7 @@ else:
     evennia.create_object = lambda cls, key=None: cls()
 orig_models_pkg = sys.modules.get("pokemon.models")
 orig_models_core = sys.modules.get("pokemon.models.core")
-orig_generation = sys.modules.get("pokemon.generation")
+orig_generation = sys.modules.get("pokemon.data.generation")
 orig_spawn = sys.modules.get("pokemon.helpers.pokemon_spawn")
 orig_capture = sys.modules.get("pokemon.battle.capture")
 
@@ -191,6 +191,7 @@ class FakeOwnedPokemon:
             self.delete()
 
 models_pkg = types.ModuleType("pokemon.models")
+models_pkg.__path__ = []
 models_mod_core = types.ModuleType("pokemon.models.core")
 models_mod_core.OwnedPokemon = FakeOwnedPokemon
 models_pkg.core = models_mod_core
@@ -204,7 +205,7 @@ class DummyInst:
         self.moves = ["tackle"]
         self.ability = None
 
-gen_mod = types.ModuleType("pokemon.generation")
+gen_mod = types.ModuleType("pokemon.data.generation")
 
 def generate_pokemon(name, level=5):
     return DummyInst(name, level)
@@ -225,20 +226,20 @@ def setup_module(module):
     pokemon_pkg.__path__ = []
     pokemon_pkg.generation = gen_mod
     pokemon_pkg.models = models_pkg
-    pokemon_pkg.breeding = types.ModuleType("pokemon.breeding")
+    pokemon_pkg.breeding = types.ModuleType("pokemon.data.breeding")
     dex_mod = types.ModuleType("pokemon.dex")
     dex_mod.MOVEDEX = {"tackle": {"pp": 10}}
     dex_mod.POKEDEX = {}
     pokemon_pkg.dex = dex_mod
     sys.modules["pokemon"] = pokemon_pkg
-    sys.modules["pokemon.breeding"] = pokemon_pkg.breeding
+    sys.modules["pokemon.data.breeding"] = pokemon_pkg.breeding
     sys.modules["pokemon.dex"] = dex_mod
     sys.modules["typeclasses.rooms"] = battleroom_mod
     sys.modules["pokemon.battle.interface"] = iface
     sys.modules["pokemon.battle.handler"] = handler_mod
     sys.modules["pokemon.models"] = models_pkg
     sys.modules["pokemon.models.core"] = models_mod_core
-    sys.modules["pokemon.generation"] = gen_mod
+    sys.modules["pokemon.data.generation"] = gen_mod
     sys.modules["pokemon.helpers.pokemon_spawn"] = spawn_mod
 
     cap_path = os.path.join(ROOT, "pokemon", "battle", "capture.py")
@@ -367,9 +368,9 @@ def teardown_module(module):
     else:
         sys.modules.pop("pokemon.models.core", None)
     if orig_generation is not None:
-        sys.modules["pokemon.generation"] = orig_generation
+        sys.modules["pokemon.data.generation"] = orig_generation
     else:
-        sys.modules.pop("pokemon.generation", None)
+        sys.modules.pop("pokemon.data.generation", None)
     if orig_spawn is not None:
         sys.modules["pokemon.helpers.pokemon_spawn"] = orig_spawn
     else:
