@@ -1,6 +1,7 @@
-"""Convenience re-exports for Pokémon models."""
+"""Convenience re-exports for Pokémon models.
 
-"""Database models and related utilities for the Pokémon game."""
+Database models and related utilities for the Pokémon game.
+"""
 
 from .validators import validate_ivs, validate_evs
 from .enums import Gender, Nature
@@ -27,11 +28,31 @@ try:  # pragma: no cover - optional heavy dependencies
         MovePPBoost,
     )
     from .trainer import Trainer, NPCTrainer, GymBadge, InventoryEntry
-    from .storage import UserStorage, StorageBox, ActivePokemonSlot, ensure_boxes
+    from .storage import (
+        UserStorage,
+        StorageBox,
+        ActivePokemonSlot,
+        ensure_boxes,
+    )
     from .fusion import PokemonFusion
 except Exception:  # pragma: no cover - used when ORM isn't set up
-    MAX_PP_MULTIPLIER = SpeciesEntry = BasePokemon = Pokemon = OwnedPokemon = BattleSlot = None
-    Move = VerifiedMove = PokemonLearnedMove = Moveset = MovesetSlot = ActiveMoveslot = MovePPBoost = None
+    (
+        MAX_PP_MULTIPLIER,
+        SpeciesEntry,
+        BasePokemon,
+        Pokemon,
+        OwnedPokemon,
+        BattleSlot,
+    ) = (None,) * 6
+    (
+        Move,
+        VerifiedMove,
+        PokemonLearnedMove,
+        Moveset,
+        MovesetSlot,
+        ActiveMoveslot,
+        MovePPBoost,
+    ) = (None,) * 7
     Trainer = NPCTrainer = GymBadge = InventoryEntry = None
     UserStorage = StorageBox = ActivePokemonSlot = ensure_boxes = None
     PokemonFusion = None
@@ -64,4 +85,3 @@ __all__ = [
     "ensure_boxes",
     "PokemonFusion",
 ]
-

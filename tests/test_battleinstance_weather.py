@@ -13,21 +13,31 @@ try:
     orig_create_object = evennia.create_object
 except Exception:  # Module doesn't exist in minimal test env
     evennia = types.ModuleType("evennia")
-    orig_create_object = lambda cls, key=None: cls()
-    evennia.create_object = orig_create_object
-    evennia.search_object = lambda *a, **k: []
+    def _create_object_stub(cls, key=None):
+        return cls()
+
+    orig_create_object = _create_object_stub
+    evennia.create_object = _create_object_stub
+
+    def _search_object_stub(*args, **kwargs):
+        return []
+
+    evennia.search_object = _search_object_stub
     evennia.DefaultRoom = type("DefaultRoom", (), {})
     evennia.objects = types.SimpleNamespace(objects=types.SimpleNamespace(DefaultRoom=evennia.DefaultRoom))
     evennia.utils = types.ModuleType("evennia.utils")
+    def _identity(s):
+        return s
+
     evennia.utils.ansi = types.SimpleNamespace(
-        parse_ansi=lambda s: s,
-        RED=lambda s: s,
-        GREEN=lambda s: s,
-        YELLOW=lambda s: s,
-        BLUE=lambda s: s,
-        MAGENTA=lambda s: s,
-        CYAN=lambda s: s,
-        strip_ansi=lambda s: s,
+        parse_ansi=_identity,
+        RED=_identity,
+        GREEN=_identity,
+        YELLOW=_identity,
+        BLUE=_identity,
+        MAGENTA=_identity,
+        CYAN=_identity,
+        strip_ansi=_identity,
     )
     sys.modules["evennia.utils"] = evennia.utils
     evennia.server = types.ModuleType("evennia.server")
@@ -37,7 +47,10 @@ except Exception:  # Module doesn't exist in minimal test env
     sys.modules["evennia.server.models"] = evennia.server.models
     sys.modules["evennia"] = evennia
 else:
-    evennia.create_object = lambda cls, key=None: cls()
+    def _create_object_stub(cls, key=None):
+        return cls()
+
+    evennia.create_object = _create_object_stub
 
 # Stub BattleRoom
 rooms_mod = types.ModuleType("typeclasses.rooms")
@@ -56,25 +69,44 @@ sys.modules["typeclasses.rooms"] = rooms_mod
 
 # Stub interface functions and watchers
 iface = types.ModuleType("pokemon.battle.interface")
-iface.display_battle_interface = lambda *a, **k: ""
-iface.format_turn_banner = lambda turn: ""
-iface.render_interfaces = lambda *a, **k: ("", "", "")
+def _display_battle_interface(*args, **kwargs):
+    return ""
+
+def _format_turn_banner(turn):
+    return ""
+
+def _render_interfaces(*args, **kwargs):
+    return ("", "", "")
+
+iface.display_battle_interface = _display_battle_interface
+iface.format_turn_banner = _format_turn_banner
+iface.render_interfaces = _render_interfaces
 sys.modules["pokemon.battle.interface"] = iface
 watchers = types.ModuleType("pokemon.battle.watchers")
-watchers.add_watcher = lambda *a, **k: None
-watchers.remove_watcher = lambda *a, **k: None
-watchers.notify_watchers = lambda *a, **k: None
-watchers.WatcherManager = type(
-    "WatcherManager",
-    (),
-    {
-        "add_watcher": lambda self, w: None,
-        "remove_watcher": lambda self, w: None,
-        "notify": lambda self, m: None,
-        "add_observer": lambda self, w: None,
-        "remove_observer": lambda self, w: None,
-    },
-)
+def _noop(*args, **kwargs):
+    return None
+
+watchers.add_watcher = _noop
+watchers.remove_watcher = _noop
+watchers.notify_watchers = _noop
+
+class WatcherManager:
+    def add_watcher(self, w):
+        return None
+
+    def remove_watcher(self, w):
+        return None
+
+    def notify(self, m):
+        return None
+
+    def add_observer(self, w):
+        return None
+
+    def remove_observer(self, w):
+        return None
+
+watchers.WatcherManager = WatcherManager
 sys.modules["pokemon.battle.watchers"] = watchers
 
 # Stub battle handler
@@ -104,7 +136,10 @@ sys.modules["pokemon.data.generation"] = gen_mod
 
 # Stub spawn helper
 spawn_mod = types.ModuleType("pokemon.helpers.pokemon_spawn")
-spawn_mod.get_spawn = lambda loc: None
+def _get_spawn_stub(loc):
+    return None
+
+spawn_mod.get_spawn = _get_spawn_stub
 sys.modules["pokemon.helpers.pokemon_spawn"] = spawn_mod
 
 # Minimal battle.engine stubs
