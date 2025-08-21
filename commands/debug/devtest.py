@@ -97,7 +97,7 @@ class CmdToggleTest(Command):
             self.caller.cmdset.delete(cmdset_key)
             self.caller.msg("|gRemoved DevTest cmdset.|n")
         else:
-            from .cmdsets.devtest import DevTestCmdSet
+            from ..cmdsets.devtest import DevTestCmdSet
 
             self.caller.cmdset.add(DevTestCmdSet)
             self.caller.msg("|gAdded DevTest cmdset. Use +testbattle ...|n")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from evennia import CmdSet, Command
 
-from ..admin_battleinspect import CmdBattleInspect
+from ..admin.admin_battleinspect import CmdBattleInspect
 
 
 class CmdToggleDevInspect(Command):
