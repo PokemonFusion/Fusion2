@@ -238,7 +238,7 @@ class CmdBattleAttack(Command):
 
         if not move_name:
             if self.switch_menu and EnhancedEvMenu:
-                from utils.menus import battle_move as battle_move_menu
+                from menus import battle_move as battle_move_menu
 
                 EnhancedEvMenu(
                     self.caller,
