@@ -6,7 +6,7 @@ from evennia import Command
 from evennia.utils.evmenu import get_input
 
 try:  # pragma: no cover - EvMenu may not be available during tests
-    from helpers.enhanced_evmenu import EnhancedEvMenu
+    from utils.enhanced_evmenu import EnhancedEvMenu
 except Exception:  # pragma: no cover
     EnhancedEvMenu = None  # type: ignore
 

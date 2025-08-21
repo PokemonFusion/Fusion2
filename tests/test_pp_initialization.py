@@ -57,15 +57,15 @@ apply_ms_func = _load_apply_ms_func()
 def setup_modules():
     """Provide minimal stubs required for ``heal``."""
     orig_evennia = sys.modules.get("evennia")
-    orig_helpers = sys.modules.get("helpers.pokemon_helpers")
+    orig_helpers = sys.modules.get("pokemon.helpers.pokemon_helpers")
     orig_dex = sys.modules.get("pokemon.dex")
 
     evennia = types.ModuleType("evennia")
     sys.modules["evennia"] = evennia
 
-    helpers_mod = types.ModuleType("helpers.pokemon_helpers")
+    helpers_mod = types.ModuleType("pokemon.helpers.pokemon_helpers")
     helpers_mod.get_max_hp = lambda poke: 50
-    sys.modules["helpers.pokemon_helpers"] = helpers_mod
+    sys.modules["pokemon.helpers.pokemon_helpers"] = helpers_mod
 
     dex_mod = types.ModuleType("pokemon.dex")
     dex_mod.MOVEDEX = {}
@@ -81,9 +81,9 @@ def restore_modules(orig_evennia, orig_helpers, orig_dex):
         sys.modules.pop("evennia", None)
 
     if orig_helpers is not None:
-        sys.modules["helpers.pokemon_helpers"] = orig_helpers
+        sys.modules["pokemon.helpers.pokemon_helpers"] = orig_helpers
     else:
-        sys.modules.pop("helpers.pokemon_helpers", None)
+        sys.modules.pop("pokemon.helpers.pokemon_helpers", None)
 
     if orig_dex is not None:
         sys.modules["pokemon.dex"] = orig_dex

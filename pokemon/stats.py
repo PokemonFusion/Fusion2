@@ -12,7 +12,7 @@ def _get_helpers_module():
     global _helpers_mod
     if _helpers_mod is None:
         try:
-            _helpers_mod = importlib.import_module("helpers.pokemon_helpers")
+            _helpers_mod = importlib.import_module("pokemon.helpers.pokemon_helpers")
         except Exception:  # pragma: no cover - helpers optional
             _helpers_mod = None
     return _helpers_mod

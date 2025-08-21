@@ -3,7 +3,7 @@ from __future__ import annotations
 """EvMenu flow for selecting a battle move and target.
 
 This menu mirrors the existing `+attack` command behavior but uses
-:class:`~helpers.enhanced_evmenu.EnhancedEvMenu` for a more robust
+:class:`~utils.enhanced_evmenu.EnhancedEvMenu` for a more robust
 input loop. It hides the default option list and parses user input via
 `_default` handlers, allowing selection by letter, move name, or target
 position. The menu can be triggered with `+attack /menu`.

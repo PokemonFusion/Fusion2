@@ -141,7 +141,7 @@ class CmdLearn(Command):
             self.caller.msg(f"{pokemon.name} has no moves to learn.")
             return
 
-        from helpers.enhanced_evmenu import EnhancedEvMenu
+        from utils.enhanced_evmenu import EnhancedEvMenu
         from menus import learn_new_moves as learn_menu
 
         EnhancedEvMenu(

@@ -11,7 +11,7 @@ from .models import (
 )
 from .generation import generate_pokemon
 from .dex import POKEDEX
-from helpers.pokemon_helpers import create_owned_pokemon
+from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from utils.inventory import InventoryMixin
 
 

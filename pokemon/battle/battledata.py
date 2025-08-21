@@ -112,8 +112,8 @@ class Pokemon:
             "evasion": 0,
         }
         try:
-            refresh_stats = safe_import("helpers.pokemon_helpers").refresh_stats
-            get_stats = safe_import("helpers.pokemon_helpers").get_stats
+            refresh_stats = safe_import("pokemon.helpers.pokemon_helpers").refresh_stats
+            get_stats = safe_import("pokemon.helpers.pokemon_helpers").get_stats
             refresh_stats(self)
             stats_dict = get_stats(self)
             try:
@@ -282,7 +282,7 @@ class Pokemon:
                     types = getattr(poke, "type_", types)
                     if max_hp is None:
                         try:
-                            get_max_hp = safe_import("helpers.pokemon_helpers").get_max_hp
+                            get_max_hp = safe_import("pokemon.helpers.pokemon_helpers").get_max_hp
                             max_hp = get_max_hp(poke)
                         except Exception:
                             max_hp = getattr(poke, "current_hp", None)

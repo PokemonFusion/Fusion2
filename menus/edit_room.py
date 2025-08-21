@@ -1,4 +1,4 @@
-from helpers.enhanced_evmenu import EnhancedEvMenu as EvMenu, free_input_node
+from utils.enhanced_evmenu import EnhancedEvMenu as EvMenu, free_input_node
 from evennia import create_object
 from typeclasses.rooms import Room
 from typeclasses.exits import Exit

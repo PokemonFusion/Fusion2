@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from evennia import Command
-from helpers.enhanced_evmenu import EnhancedEvMenu
+from utils.enhanced_evmenu import EnhancedEvMenu
 from menus import chargen as chargen_menu
 
 
