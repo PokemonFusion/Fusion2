@@ -1,3 +1,9 @@
-line-length = 88
+line-length = 120
 target-version = "py311"
+exclude = [
+    "pokemon/data",
+    "pokemon/migrations",
+]
+
+[lint]
 select = ["E", "F", "I"]

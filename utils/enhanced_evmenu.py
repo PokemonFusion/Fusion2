@@ -147,10 +147,7 @@ class EnhancedEvMenu(EvMenu):
                 self.goto(None, "")
                 return
 
-        if (
-            (not getattr(self, "options", None) or low not in self.options)
-            and getattr(self, "default", None)
-        ):
+        if (not getattr(self, "options", None) or low not in self.options) and getattr(self, "default", None):
             goto_node, _ = self.default
             if goto_node == "_repeat":
                 self.goto(None, "")
@@ -253,13 +250,9 @@ class EnhancedEvMenu(EvMenu):
         left_fill = (inner_w - title_w) // 2 if title_seg else 0
         right_fill = (inner_w - title_w - left_fill) if title_seg else 0
         bc = self.border_color
-        top = (
-            f"{bc}╔{'═'*left_fill}{title_seg}{'═'*right_fill}╗|n"
-            if title_seg
-            else f"{bc}╔{'═'*inner_w}╗|n"
-        )
+        top = f"{bc}╔{'═' * left_fill}{title_seg}{'═' * right_fill}╗|n" if title_seg else f"{bc}╔{'═' * inner_w}╗|n"
         middle = [f"{bc}║|n{pad_visible(ln, inner_w)}{bc}║|n" for ln in lines]
-        bottom = f"{bc}╚{'═'*inner_w}╝|n"
+        bottom = f"{bc}╚{'═' * inner_w}╝|n"
         return "\n".join([top] + middle + [bottom])
 
     def options_formatter(self, optionlist):
@@ -272,10 +265,7 @@ class EnhancedEvMenu(EvMenu):
 
         # Non Pokémon style: compact "1. Desc" lines
         if not self.use_pokemon_style:
-            return "\n".join(
-                f"{idx}. {desc}" if desc else f"{idx}."
-                for idx, (_key, desc) in enumerate(optionlist, 1)
-            )
+            return "\n".join(f"{idx}. {desc}" if desc else f"{idx}." for idx, (_key, desc) in enumerate(optionlist, 1))
 
         # Pokémon style: colored number + description
         lines = []
@@ -310,7 +300,9 @@ class EnhancedEvMenu(EvMenu):
                 if self.auto_help:
                     tail.append(f"{self.hint_color}'h' for help|n")
                 hints = (" | " + " | ".join(tail)) if tail else ""
-                result += f"\n\n{self.border_color}== {self.prompt_color}[Enter {prompt}]|n{hints}{self.border_color} ==|n"
+                result += (
+                    f"\n\n{self.border_color}== {self.prompt_color}[Enter {prompt}]|n{hints}{self.border_color} ==|n"
+                )
             else:
                 tail = []
                 if self.auto_quit:

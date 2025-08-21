@@ -6,6 +6,7 @@ from pokemon.helpers.pokemon_helpers import get_max_hp
 from utils.xp_utils import get_display_xp
 from pokemon.models.stats import level_for_exp
 
+
 class CmdSheet(Command):
     """Display information about your trainer character.
 
@@ -69,7 +70,11 @@ class CmdSheetPokemon(Command):
 
     def func(self):
         caller = self.caller
-        party = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
+        party = (
+            caller.storage.get_party()
+            if hasattr(caller.storage, "get_party")
+            else list(caller.storage.active_pokemon.all())
+        )
         if self.show_all:
             if not party:
                 caller.msg("You have no Pokémon in your party.")
@@ -78,9 +83,7 @@ class CmdSheetPokemon(Command):
             for idx, mon in enumerate(party, 1):
                 if not mon:
                     continue
-                sheets.append(
-                    display_pokemon_sheet(caller, mon, slot=idx, mode=self.mode)
-                )
+                sheets.append(display_pokemon_sheet(caller, mon, slot=idx, mode=self.mode))
             caller.msg("\n-------\n".join(sheets))
             return
 
@@ -99,9 +102,7 @@ class CmdSheetPokemon(Command):
                 max_hp = get_max_hp(mon)
                 status = get_status_effects(mon)
                 gender = getattr(mon, "gender", "?")
-                lines.append(
-                    f"{idx}: {mon.name} (Lv {level} HP {hp}/{max_hp} {gender} {status})"
-                )
+                lines.append(f"{idx}: {mon.name} (Lv {level} HP {hp}/{max_hp} {gender} {status})")
             caller.msg("\n".join(lines))
             return
 

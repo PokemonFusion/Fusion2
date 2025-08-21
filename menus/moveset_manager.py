@@ -7,7 +7,11 @@ def node_start(caller, raw_input=None):
     if not (caller.location and caller.location.db.is_pokemon_center):
         caller.msg("You must be at a Pokémon Center to manage movesets.")
         return None, None
-    mons = caller.storage.get_party() if hasattr(caller.storage, "get_party") else list(caller.storage.active_pokemon.all())
+    mons = (
+        caller.storage.get_party()
+        if hasattr(caller.storage, "get_party")
+        else list(caller.storage.active_pokemon.all())
+    )
     if not mons:
         caller.msg("You have no active Pokémon.")
         return None, None
@@ -45,7 +49,12 @@ def node_manage(caller, raw_input=None):
             marker = "*" if i - 1 == active_idx else " "
             moves = ", ".join(s) if s else "(empty)"
             lines.append(f"{marker}{i}. {moves}")
-        lines.append("Enter a number to edit that set, or type 'swap <n>' to make it active. Type 'back' or 'b' to exit.")
+        lines.append(
+            (
+                "Enter a number to edit that set, or type 'swap <n>' to make it active. "
+                "Type 'back' or 'b' to exit."
+            )
+        )
         return "\n".join(lines), [{"key": "_default", "goto": "node_manage"}]
     cmd = raw_input.strip().lower()
     if cmd in ("back", "b"):
@@ -94,7 +103,10 @@ def node_edit(caller, raw_input=None):
         move_list = ", ".join(learned) if learned else "(none)"
         lines = [
             f"Available moves: {move_list}",
-            f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}] (type 'back' or 'b' to cancel):",
+            (
+                f"Enter up to 4 moves for set {idx+1} separated by commas [current: {current}] "
+                "(type 'back' or 'b' to cancel):"
+            ),
         ]
         return "\n".join(lines), [{"key": "_default", "goto": "node_edit"}]
     cmd = raw_input.strip().lower()

@@ -28,10 +28,12 @@ def _ensure_movedex() -> Dict[str, Any]:
     try:
         from pokemon.dex import MOVEDEX, MOVEDEX_PATH
         from pokemon.dex.entities import load_movedex
+
         _MOVEDEX = MOVEDEX or load_movedex(MOVEDEX_PATH)
     except Exception:  # pragma: no cover - fall back to direct path
         try:
             from pokemon.dex.entities import load_movedex  # type: ignore
+
             path = Path(__file__).resolve().parents[1] / "dex" / "movedex.py"
             _MOVEDEX = load_movedex(path)
         except Exception:  # pragma: no cover
@@ -40,6 +42,7 @@ def _ensure_movedex() -> Dict[str, Any]:
 
 
 # ---------- ANSI-safe helpers ----------
+
 
 def ansi_len(s: str) -> int:
     """Return the printable length of a string excluding ANSI codes."""
@@ -91,6 +94,7 @@ def tcolor(t: str) -> str:
 
 # ---------- Move lookup adaptor ----------
 
+
 def lookup_move(name: str) -> Optional[Dict[str, Any]]:
     """Fetch move data from the loaded movedex.
 
@@ -125,6 +129,7 @@ def lookup_move(name: str) -> Optional[Dict[str, Any]]:
 
 # ---------- Card builder ----------
 
+
 def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None) -> Dict[str, Any]:
     """Normalize different move inputs into a common dictionary model."""
     if move is None:
@@ -158,10 +163,7 @@ def _move_to_model(slot_label: str, move: Any, current_pp: Optional[int] = None)
             "power": getattr(move, "power", getattr(move, "base_power", None)),
             "shortDesc": getattr(move, "shortDesc", None),
         }
-        if any(
-            data.get(k) in (None, "")
-            for k in ("type", "category", "pp", "accuracy", "power", "shortDesc")
-        ):
+        if any(data.get(k) in (None, "") for k in ("type", "category", "pp", "accuracy", "power", "shortDesc")):
             extra = lookup_move(data["name"])
             if extra:
                 for key in (
@@ -222,9 +224,9 @@ def _render_card(card: Dict[str, Any], box_w: int, rows: int) -> List[str]:
         Number of description lines to render (max 4).
     """
     top = "/" + "-" * (box_w - 2) + "\\"
-    lbl = f"[{card['label']} ]" if len(card['label']) == 1 else f"[{card['label']}]"
+    lbl = f"[{card['label']} ]" if len(card["label"]) == 1 else f"[{card['label']}]"
     mid = 1 + (box_w - 2 - ansi_len(lbl)) // 2
-    top = top[:mid] + lbl + top[mid + ansi_len(lbl):]
+    top = top[:mid] + lbl + top[mid + ansi_len(lbl) :]
 
     name_line = rpad(f"|  {card['name']}", box_w)
     type_cat = f"|  {card['color']}{(card['type'] or 'None').title()}|n   {card['cat']}"
@@ -241,6 +243,7 @@ def _render_card(card: Dict[str, Any], box_w: int, rows: int) -> List[str]:
 
 
 # ---------- Public API ----------
+
 
 def render_move_gui(slots: List[Any], pp_overrides: Optional[Dict[int, int]] = None, total_width: int = 76) -> str:
     """Render a 2x2 grid of move cards.
@@ -283,7 +286,9 @@ def render_move_gui(slots: List[Any], pp_overrides: Optional[Dict[int, int]] = N
     for L, R in zip(row2_left, row2_right):
         lines.append(rpad(L, box_w) + " " * gutter + rpad(R, box_w))
 
-    lines.append("Choose a move: A/B/C/D or type the name. Use position for targets (e.g., B1). Type 'cancel' to abort.")
+    lines.append(
+        "Choose a move: A/B/C/D or type the name. Use position for targets (e.g., B1). Type 'cancel' to abort."
+    )
     return "\n".join(lines)
 
 

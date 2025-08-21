@@ -9,6 +9,7 @@ sys.path.insert(0, ROOT)
 # Minimal Evennia stub
 try:
     import evennia  # type: ignore
+
     evennia.search_object = lambda *a, **k: []
     evennia.create_object = lambda cls, key=None: cls()
     evennia.utils = types.ModuleType("evennia.utils")
@@ -25,6 +26,7 @@ try:
     sys.modules["evennia.utils"] = evennia.utils
     evennia.server = types.ModuleType("evennia.server")
     evennia.server.models = types.ModuleType("evennia.server.models")
+
     class DummySC:
         store = {}
 
@@ -107,6 +109,7 @@ sys.modules["pokemon.battle.watchers"] = watchers
 # Stub generation and spawn modules
 gen_mod = types.ModuleType("pokemon.data.generation")
 
+
 class DummyInst:
     def __init__(self, name, level):
         self.species = types.SimpleNamespace(name=name)
@@ -115,8 +118,10 @@ class DummyInst:
         self.moves = ["tackle"]
         self.ability = None
 
+
 def generate_pokemon(name, level=5):
     return DummyInst(name, level)
+
 
 gen_mod.generate_pokemon = generate_pokemon
 gen_mod.NATURES = {}
@@ -148,17 +153,13 @@ sys.modules[st_spec.name] = st_mod
 st_spec.loader.exec_module(st_mod)
 
 pf_path = os.path.join(ROOT, "pokemon", "battle", "pokemon_factory.py")
-pf_spec = importlib.util.spec_from_file_location(
-    "pokemon.battle.pokemon_factory", pf_path
-)
+pf_spec = importlib.util.spec_from_file_location("pokemon.battle.pokemon_factory", pf_path)
 pf_mod = importlib.util.module_from_spec(pf_spec)
 sys.modules[pf_spec.name] = pf_mod
 pf_spec.loader.exec_module(pf_mod)
 
 storage_path = os.path.join(ROOT, "pokemon", "battle", "storage.py")
-storage_spec = importlib.util.spec_from_file_location(
-    "pokemon.battle.storage", storage_path
-)
+storage_spec = importlib.util.spec_from_file_location("pokemon.battle.storage", storage_path)
 storage_mod = importlib.util.module_from_spec(storage_spec)
 sys.modules[storage_spec.name] = storage_mod
 storage_spec.loader.exec_module(storage_mod)
@@ -184,15 +185,18 @@ sys.modules[bi_spec.name] = bi_mod
 bi_spec.loader.exec_module(bi_mod)
 BattleSession = bi_mod.BattleSession
 
+
 class DummyRoom:
     def __init__(self, rid=1):
         self.id = rid
         self.db = types.SimpleNamespace()
         self.ndb = types.SimpleNamespace()
 
+
 class DummyStorage:
     def get_party(self):
         return []
+
 
 class DummyPlayer:
     def __init__(self, pid, room):
@@ -269,7 +273,9 @@ def test_trainer_ids_saved_and_restored():
     room.ndb.battle_instances = {}
 
     orig_search = bi_mod.search_object
-    bi_mod.search_object = lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    bi_mod.search_object = (
+        lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    )
     try:
         restored = BattleSession.restore(room, inst.battle_id)
     finally:
@@ -313,6 +319,7 @@ def test_from_dict_calculates_max_hp():
         class Manager:
             def get(self, unique_id=None):
                 return FakeOwned()
+
             def filter(self, **kwargs):
                 class QS:
                     def delete(self_inner):
@@ -329,23 +336,23 @@ def test_from_dict_calculates_max_hp():
             self.ivs = [0, 0, 0, 0, 0, 0]
             self.evs = [0, 0, 0, 0, 0, 0]
             self.nature = "Hardy"
+
             class MS(list):
                 def order_by(self, field):
                     return self
+
             class Moveset:
                 def __init__(self):
                     self.index = 0
-                    self.slots = MS([
-                        types.SimpleNamespace(
-                            move=types.SimpleNamespace(name="tackle"), slot=1
-                        )
-                    ])
+                    self.slots = MS([types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)])
+
             self.movesets = [Moveset()]
             self.active_moveset = self.movesets[0]
             self.current_hp = 5
 
         def get_max_hp(self):
             from pokemon.helpers.pokemon_helpers import get_max_hp
+
             return get_max_hp(self)
 
     fake_models_core.OwnedPokemon = FakeOwned
@@ -364,18 +371,18 @@ def test_from_dict_calculates_max_hp():
     try:
         poke = bd_mod.Pokemon.from_dict({"model_id": "uid"})
     finally:
-            if orig_models_pkg is not None:
-                sys.modules["pokemon.models"] = orig_models_pkg
-            else:
-                sys.modules.pop("pokemon.models", None)
-            if orig_models_core is not None:
-                sys.modules["pokemon.models.core"] = orig_models_core
-            else:
-                sys.modules.pop("pokemon.models.core", None)
-            if orig_helpers is not None:
-                sys.modules["pokemon.helpers.pokemon_helpers"] = orig_helpers
-            else:
-                sys.modules.pop("pokemon.helpers.pokemon_helpers", None)
+        if orig_models_pkg is not None:
+            sys.modules["pokemon.models"] = orig_models_pkg
+        else:
+            sys.modules.pop("pokemon.models", None)
+        if orig_models_core is not None:
+            sys.modules["pokemon.models.core"] = orig_models_core
+        else:
+            sys.modules.pop("pokemon.models.core", None)
+        if orig_helpers is not None:
+            sys.modules["pokemon.helpers.pokemon_helpers"] = orig_helpers
+        else:
+            sys.modules.pop("pokemon.helpers.pokemon_helpers", None)
 
     assert poke.max_hp == 42
 
@@ -434,13 +441,16 @@ def test_pokemon_control_restored_after_reload():
     room.ndb.battle_instances = {}
 
     orig_search = bi_mod.search_object
-    bi_mod.search_object = lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    bi_mod.search_object = (
+        lambda oid: [p1] if str(oid).lstrip("#") == "1" else ([p2] if str(oid).lstrip("#") == "2" else [])
+    )
     try:
         restored = BattleSession.restore(room, inst.battle_id)
     finally:
         bi_mod.search_object = orig_search
 
     assert restored.state.pokemon_control == {"uid1": "1", "uid2": "2"}
+
 
 def test_multiple_battles_saved_in_room():
     room = DummyRoom()
@@ -478,6 +488,7 @@ def test_multiple_hunts_saved_in_room():
     assert s1.get("data") is not None
     assert s2.get("data") is not None
     assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
+
 
 def test_battle_segments_removed_on_end():
     room = DummyRoom()
