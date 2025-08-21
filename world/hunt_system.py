@@ -18,7 +18,9 @@ from pokemon.battle.battleinstance import (
 class HuntSystem:
     """Utility for resolving Pokémon hunts in a room."""
 
-    def __init__(self, room: DefaultRoom, spawn_callback: Optional[Callable[[Any, Dict[str, Any]], Any]] = None) -> None:
+    def __init__(
+        self, room: DefaultRoom, spawn_callback: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
+    ) -> None:
         self.room = room
         self.spawn_callback = spawn_callback
         self._spawn_index: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
@@ -59,9 +61,7 @@ class HuntSystem:
         if last and time.time() - last < 3:
             return "You need to wait before hunting again."
         storage = getattr(hunter, "storage", None)
-        party = (
-            storage.get_party() if storage and hasattr(storage, "get_party") else []
-        )
+        party = storage.get_party() if storage and hasattr(storage, "get_party") else []
         if not party:
             return "You don't have any Pokémon able to battle."
         tp_cost = getattr(self.room.db, "tp_cost", 0)
@@ -171,9 +171,7 @@ class HuntSystem:
         if not valid:
             return "No Pokémon are active right now."
 
-        selected_entry = random.choices(
-            valid, weights=[e.get("weight", 1) for e in valid], k=1
-        )[0]
+        selected_entry = random.choices(valid, weights=[e.get("weight", 1) for e in valid], k=1)[0]
         selected_name = selected_entry["name"]
         min_level = selected_entry.get("min_level", 1)
         max_level = selected_entry.get("max_level", min_level)

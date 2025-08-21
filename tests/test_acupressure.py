@@ -10,12 +10,14 @@ sys.path.insert(0, ROOT)
 # Prepare minimal pokemon.battle.utils stub for apply_boost
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def apply_boost(pokemon, boosts):
     if not hasattr(pokemon, "boosts"):
         return
     for stat, amount in boosts.items():
         cur = pokemon.boosts.get(stat, 0)
         pokemon.boosts[stat] = max(-6, min(6, cur + amount))
+
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
@@ -36,11 +38,11 @@ pokemon_dex = types.ModuleType("pokemon.dex")
 pokemon_dex.__path__ = []
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {
-    "tackle": types.SimpleNamespace(name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0})
+    "tackle": types.SimpleNamespace(
+        name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0}
+    )
 }
-pokemon_dex.POKEDEX = {
-    "Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])
-}
+pokemon_dex.POKEDEX = {"Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])}
 sys.modules["pokemon.dex"] = pokemon_dex
 
 # Load battledata

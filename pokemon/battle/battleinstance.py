@@ -13,6 +13,7 @@ from utils.safe_import import safe_import
 try:  # pragma: no cover - tests may stub watchers without helper
     normalize_watchers = safe_import("pokemon.battle.watchers").normalize_watchers  # type: ignore[attr-defined]
 except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback when helper unavailable
+
     def normalize_watchers(val: Any) -> List[int]:  # type: ignore[misc]
         """Normalize a stored watcher representation to a list of ints."""
 
@@ -35,12 +36,16 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback whe
                     continue
             return out
         return []
+
+
 from .actionqueue import ActionQueue
 from .turn import TurnManager
 from .interface import render_interfaces
+
 try:  # pragma: no cover - interface may be stubbed in tests
     broadcast_interfaces = safe_import("pokemon.battle.interface").broadcast_interfaces  # type: ignore[attr-defined]
 except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback implementation
+
     def broadcast_interfaces(session, *, waiting_on=None):  # type: ignore[misc]
         iface_a, iface_b, iface_w = render_interfaces(
             session.captainA, session.captainB, session.state, waiting_on=waiting_on
@@ -51,6 +56,8 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback imp
             session._msg_to(t, iface_b)
         for w in getattr(session, "observers", []):
             session._msg_to(w, iface_w)
+
+
 from .handler import battle_handler
 from .storage import BattleDataWrapper
 from utils.pokemon_utils import build_battle_pokemon_from_model
@@ -82,27 +89,21 @@ class BattleInstance(_ScriptBase):
             pass
 
 
-
-
-class BattleSession(
-    TurnManager, MessagingMixin, WatcherManager, ActionQueue, StatePersistenceMixin
-):
+class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, StatePersistenceMixin):
     """Container representing an active battle in a room."""
 
     def __repr__(self) -> str:
         player = getattr(self.captainA, "key", getattr(self.captainA, "id", "?"))
-        opp = (
-            getattr(self.captainB, "key", getattr(self.captainB, "id", "?"))
-            if self.captainB
-            else None
-        )
-        return (
-            f"<BattleSession id={self.battle_id} captainA={player} captainB={opp}>"
-        )
+        opp = getattr(self.captainB, "key", getattr(self.captainB, "id", "?")) if self.captainB else None
+        return f"<BattleSession id={self.battle_id} captainA={player} captainB={opp}>"
 
     def __init__(self, player, opponent: Optional[object] = None):
         log_info(
-            f"Initializing BattleSession {getattr(player, 'id', '?')} between {getattr(player, 'key', player)} and {getattr(opponent, 'key', opponent) if opponent else '<wild>'}"
+            (
+                f"Initializing BattleSession {getattr(player, 'id', '?')} between "
+                f"{getattr(player, 'key', player)} and "
+                f"{getattr(opponent, 'key', opponent) if opponent else '<wild>'}"
+            )
         )
         self.teamA: List[object] = [player]
         self.teamB: List[object] = [opponent] if opponent else []
@@ -144,9 +145,7 @@ class BattleSession(
         self.ndb.watchers_live = set()
         self.temp_pokemon_ids: List[int] = []
 
-        log_info(
-            f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}"
-        )
+        log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
         self._set_player_control(False)
 
     # ------------------------------------------------------------
@@ -213,9 +212,7 @@ class BattleSession(
 
         inst = getattr(player.ndb, "battle_instance", None)
         if inst:
-            log_info(
-                f"Found existing instance {getattr(inst, 'battle_id', 'N/A')} on ndb"
-            )
+            log_info(f"Found existing instance {getattr(inst, 'battle_id', 'N/A')} on ndb")
             return inst
 
         room = getattr(player, "location", None)
@@ -246,9 +243,7 @@ class BattleSession(
     @classmethod
     def restore(cls, room, battle_id: int) -> "BattleSession | None":
         """Recreate an instance from a stored battle on a room."""
-        log_info(
-            f"Attempting restore of battle {battle_id} in room #{getattr(room, 'id', '?')}"
-        )
+        log_info(f"Attempting restore of battle {battle_id} in room #{getattr(room, 'id', '?')}")
         # Import FusionRoom lazily to avoid circular dependency during module load.
         try:  # pragma: no cover - FusionRoom is optional at runtime
             FusionRoom = safe_import("typeclasses.rooms").FusionRoom  # type: ignore[attr-defined]
@@ -291,9 +286,7 @@ class BattleSession(
         # This avoids needing to persist turndata.turninit snapshots on input.
         try:
             decls: Dict[str, Any] = getattr(obj.logic.state, "declare", {}) or {}
-            positions: Dict[str, Any] = getattr(
-                obj.logic.data.turndata, "positions", {}
-            ) or {}
+            positions: Dict[str, Any] = getattr(obj.logic.data.turndata, "positions", {}) or {}
             for pos_name, d in decls.items():
                 pos = positions.get(pos_name)
                 if not pos or not isinstance(d, dict):
@@ -313,9 +306,7 @@ class BattleSession(
                 elif "run" in d:
                     pos.declareRun()
         except Exception:
-            log_warn(
-                "Failed to rehydrate queued declarations during restore", exc_info=True
-            )
+            log_warn("Failed to rehydrate queued declarations during restore", exc_info=True)
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
         # Ensure state turn matches data since we drop it during compaction
         obj.logic.state.turn = getattr(obj.logic.data.battle, "turn", 1)
@@ -323,11 +314,7 @@ class BattleSession(
 
         # Watchers: keep a live, non-persistent copy on ndb; normalize any persisted list
         try:
-            raw_watchers: Any = (
-                storage.get("state", {}).get("watchers")
-                or storage.get("watchers")
-                or []
-            )
+            raw_watchers: Any = storage.get("state", {}).get("watchers") or storage.get("watchers") or []
             watchers_live: Set[int] = set(normalize_watchers(raw_watchers))
             obj.ndb.watchers_live = watchers_live
         except Exception:
@@ -400,9 +387,9 @@ class BattleSession(
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
             if wid in teamA and team_a_objs:
-                watcher = next((w for w in team_a_objs if getattr(w, 'id', 0) == wid), None)
+                watcher = next((w for w in team_a_objs if getattr(w, "id", 0) == wid), None)
             elif wid in teamB and team_b_objs:
-                watcher = next((w for w in team_b_objs if getattr(w, 'id', 0) == wid), None)
+                watcher = next((w for w in team_b_objs if getattr(w, "id", 0) == wid), None)
             else:
                 targets = search_object(f"#{wid}")
                 if not targets:
@@ -462,9 +449,7 @@ class BattleSession(
 
     def start(self) -> None:
         """Start a battle against a wild Pokémon, trainer or another player."""
-        log_info(
-            f"Starting battle {self.battle_id} in room #{getattr(self.room, 'id', '?')}"
-        )
+        log_info(f"Starting battle {self.battle_id} in room #{getattr(self.room, 'id', '?')}")
         # make sure this battle's ID is tracked on the room
         room = self.captainA.location
         battle_id = self.battle_id
@@ -482,9 +467,7 @@ class BattleSession(
         opponent_poke, opponent_name, battle_type = self._select_opponent()
         player_pokemon = self._prepare_player_party(self.captainA)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
-        self._init_battle_state(
-            origin, player_pokemon, opponent_poke, opponent_name, battle_type
-        )
+        self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
         self._setup_battle_room()
 
     def start_pvp(self) -> None:
@@ -494,9 +477,7 @@ class BattleSession(
 
         origin = getattr(self.captainA, "location", None)
 
-        log_info(
-            f"Initializing PvP battle {self.battle_id} between {self.captainA.key} and {self.captainB.key}"
-        )
+        log_info(f"Initializing PvP battle {self.battle_id} between {self.captainA.key} and {self.captainB.key}")
 
         player_pokemon = self._prepare_player_party(self.captainA, full_heal=True)
 
@@ -511,13 +492,9 @@ class BattleSession(
             )
         except TypeError:
             try:
-                player_participant = BattleParticipant(
-                    self.captainA.key, player_pokemon, team="A"
-                )
+                player_participant = BattleParticipant(self.captainA.key, player_pokemon, team="A")
             except TypeError:
-                player_participant = BattleParticipant(
-                    self.captainA.key, player_pokemon
-                )
+                player_participant = BattleParticipant(self.captainA.key, player_pokemon)
         try:
             opponent_participant = BattleParticipant(
                 self.captainB.key,
@@ -527,13 +504,9 @@ class BattleSession(
             )
         except TypeError:
             try:
-                opponent_participant = BattleParticipant(
-                    self.captainB.key, opp_pokemon, team="B"
-                )
+                opponent_participant = BattleParticipant(self.captainB.key, opp_pokemon, team="B")
             except TypeError:
-                opponent_participant = BattleParticipant(
-                    self.captainB.key, opp_pokemon
-                )
+                opponent_participant = BattleParticipant(self.captainB.key, opp_pokemon)
 
         if player_participant.pokemons:
             player_participant.active = [player_participant.pokemons[0]]
@@ -590,9 +563,7 @@ class BattleSession(
         self.msg("PVP battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         log_info(f"PvP battle {self.battle_id} started")
-        self.notify(
-            f"{self.captainA.key} and {self.captainB.key} begin a battle!"
-        )
+        self.notify(f"{self.captainA.key} and {self.captainB.key} begin a battle!")
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
@@ -633,9 +604,7 @@ class BattleSession(
         of any stored current HP value. This mirrors the behaviour used when
         starting PvP battles where all participant Pokémon begin at full health.
         """
-        log_info(
-            f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})"
-        )
+        log_info(f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})")
         party = (
             trainer.storage.get_party()
             if hasattr(trainer.storage, "get_party")
@@ -646,9 +615,7 @@ class BattleSession(
             battle_poke = build_battle_pokemon_from_model(poke, full_heal=full_heal)
             pokemons.append(battle_poke)
             log_info(f"Prepared {battle_poke.name} lvl {battle_poke.level}")
-        log_info(
-            f"Prepared {len(pokemons)} pokemons for {getattr(trainer, 'key', trainer)}"
-        )
+        log_info(f"Prepared {len(pokemons)} pokemons for {getattr(trainer, 'key', trainer)}")
         return pokemons
 
     def _init_battle_state(
@@ -660,9 +627,7 @@ class BattleSession(
         battle_type: BattleType,
     ) -> None:
         """Wrapper coordinating helper functions to set up a battle."""
-        log_info(
-            f"Initializing battle state for {self.captainA.key} vs {opponent_name}"
-        )
+        log_info(f"Initializing battle state for {self.captainA.key} vs {opponent_name}")
         player_participant, opponent_participant = create_participants(
             self.captainA, player_pokemon, opponent_poke, opponent_name
         )
@@ -687,9 +652,7 @@ class BattleSession(
         self.add_watcher(self.captainA)
         self.msg("Battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
-        self.notify(
-            f"{getattr(self.captainA, 'key', 'Player')} has entered battle!"
-        )
+        self.notify(f"{getattr(self.captainA, 'key', 'Player')} has entered battle!")
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
@@ -752,40 +715,25 @@ class BattleSession(
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")
 
-
     # ---- Persistence helpers ------------------------------------------------
 
     def is_turn_ready(self) -> bool:
         if self.data:
             if self.state:
-                missing = [
-                    name
-                    for name in self.data.turndata.positions
-                    if name not in self.state.declare
-                ]
+                missing = [name for name in self.data.turndata.positions if name not in self.state.declare]
             else:
-                missing = [
-                    name
-                    for name, pos in self.data.turndata.positions.items()
-                    if not pos.getAction()
-                ]
+                missing = [name for name, pos in self.data.turndata.positions.items() if not pos.getAction()]
             if missing:
-                log_info(
-                    f"Waiting for actions from positions {missing} in battle {self.battle_id}"
-                )
+                log_info(f"Waiting for actions from positions {missing} in battle {self.battle_id}")
                 return False
         if self.battle and getattr(self.battle, "participants", None):
             if self.state:
                 return True
             incomplete = [
-                getattr(p, "name", str(p))
-                for p in self.battle.participants
-                if not getattr(p, "pending_action", None)
+                getattr(p, "name", str(p)) for p in self.battle.participants if not getattr(p, "pending_action", None)
             ]
             if incomplete:
-                log_info(
-                    f"Waiting for pending actions from {incomplete} in battle {self.battle_id}"
-                )
+                log_info(f"Waiting for pending actions from {incomplete} in battle {self.battle_id}")
                 return False
             return True
         return False
@@ -808,5 +756,6 @@ class BattleSession(
                     broadcast_interfaces(self, waiting_on=waiting_poke)
                 except Exception:
                     log_warn("Failed to display waiting interface", exc_info=True)
+
 
 __all__ = ["BattleSession", "BattleInstance", "create_battle_pokemon"]

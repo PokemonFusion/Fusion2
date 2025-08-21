@@ -61,15 +61,23 @@ def test_choose_moveset_command():
             class Slots(list):
                 def order_by(self, field):
                     return self
+
             class Moveset:
                 def __init__(self, index):
                     self.index = index
-                    self.slots = Slots([types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)]) if index == 0 else Slots()
+                    self.slots = (
+                        Slots([types.SimpleNamespace(move=types.SimpleNamespace(name="tackle"), slot=1)])
+                        if index == 0
+                        else Slots()
+                    )
+
             class Manager(list):
                 def order_by(self, field):
                     return sorted(self, key=lambda m: m.index)
+
                 def all(self):
                     return self
+
             self.movesets = Manager([Moveset(i) for i in range(4)])
             self.active_moveset = self.movesets[0]
             self.called = None

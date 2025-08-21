@@ -17,6 +17,7 @@ class Adaptability:
             return 2.25 if stab == 2 else 2
         return stab
 
+
 class Aerilate:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         """Boost power of converted moves by 20%."""
@@ -44,6 +45,7 @@ class Aerilate:
         move.type = "Flying"
         move.typeChangerBoosted = True
 
+
 class Aftermath:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         """Damage the attacker when hit by a contact move.
@@ -62,6 +64,7 @@ class Aftermath:
             if hasattr(source, "hp"):
                 source.hp = max(0, source.hp - recoil)
 
+
 class Airlock:
     def onEnd(self, pokemon=None, battle=None):
         if battle:
@@ -75,15 +78,21 @@ class Airlock:
         if battle:
             setattr(battle, "suppressWeather", True)
 
+
 class Analytic:
     def onBasePower(self, base_power, user=None, target=None, move=None, battle=None):
         """Boost power if user moves last."""
         if battle and hasattr(battle, "queue"):
-            if any(getattr(battle.queue, "will_move", lambda t: False)(t) for t in getattr(battle, "participants", [] ) if t is not user):
+            if any(
+                getattr(battle.queue, "will_move", lambda t: False)(t)
+                for t in getattr(battle, "participants", [])
+                if t is not user
+            ):
                 return base_power
         if target and getattr(target, "tempvals", {}).get("moved"):
             return int(base_power * 1.3)
         return base_power
+
 
 class Angerpoint:
     def onHit(self, target=None, source=None, move=None):
@@ -93,6 +102,7 @@ class Angerpoint:
         if getattr(move, "crit", False):
             if hasattr(target, "boosts"):
                 target.boosts["atk"] = 6
+
 
 class Angershell:
     def onAfterMoveSecondary(self, target=None, source=None, move=None):
@@ -129,6 +139,7 @@ class Angershell:
             return getattr(pokemon, "_angerShellChecked", True)
         return True
 
+
 class Anticipation:
     def onStart(self, pokemon=None):
         """Inform if foes have a super-effective or OHKO move."""
@@ -146,18 +157,27 @@ class Anticipation:
                     setattr(pokemon, "anticipated", True)
                     return
 
+
 class Arenatrap:
     def onFoeMaybeTrapPokemon(self, pokemon=None, source=None):
         if not source:
             source = getattr(self, "effect_state", {}).get("target")
-        if source and pokemon and getattr(pokemon, "is_grounded", lambda _: True)(not getattr(pokemon, "knownType", True)):
+        if (
+            source
+            and pokemon
+            and getattr(pokemon, "is_grounded", lambda _: True)(not getattr(pokemon, "knownType", True))
+        ):
             pokemon.maybeTrapped = True
 
     def onFoeTrapPokemon(self, pokemon=None):
         if not pokemon:
             return
-        if getattr(pokemon, "isAdjacent", lambda o: True)(getattr(self, "effect_state", {}).get("target")) and getattr(pokemon, "is_grounded", lambda: True)():
+        if (
+            getattr(pokemon, "isAdjacent", lambda o: True)(getattr(self, "effect_state", {}).get("target"))
+            and getattr(pokemon, "is_grounded", lambda: True)()
+        ):
             getattr(pokemon, "tryTrap", lambda *_: None)(True)
+
 
 class Armortail:
     def onFoeTryMove(self, target=None, source=None, move=None):
@@ -171,6 +191,7 @@ class Armortail:
                 source.tempvals["cant_move"] = "armortail"
             return False
 
+
 class Aromaveil:
     def onAllyTryAddVolatile(self, status, target=None, source=None, effect=None):
         block = {"attract", "disable", "encore", "healblock", "taunt", "torment"}
@@ -179,6 +200,7 @@ class Aromaveil:
                 if target and hasattr(target, "tempvals"):
                     target.tempvals.setdefault("blocked", []).append("Aroma Veil")
             return None
+
 
 class Asoneglastrier:
     def onEnd(self, pokemon=None):
@@ -202,6 +224,7 @@ class Asoneglastrier:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["unnerved"] = True
 
+
 class Asonespectrier:
     def onEnd(self, pokemon=None):
         if pokemon:
@@ -224,6 +247,7 @@ class Asonespectrier:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["unnerved"] = True
 
+
 class Aurabreak:
     def onAnyTryPrimaryHit(self, target=None, source=None, move=None):
         if move and move.category != "Status" and target is not source:
@@ -233,6 +257,7 @@ class Aurabreak:
         if pokemon:
             setattr(pokemon, "aura_break", True)
 
+
 class Baddreams:
     def onResidual(self, pokemon=None, battle=None):
         if not pokemon or getattr(pokemon, "hp", 0) <= 0:
@@ -241,6 +266,7 @@ class Baddreams:
             if getattr(foe, "status", None) == "slp" or foe.hasAbility("comatose"):
                 dmg = getattr(foe, "max_hp", 0) // 8
                 foe.hp = max(0, foe.hp - dmg)
+
 
 class Battery:
     def onStart(self, pokemon=None):
@@ -254,13 +280,20 @@ class Battery:
                 return int(base_power * 1.3)
         return base_power
 
+
 class Battlebond:
     def onSourceAfterFaint(self, length=1, target=None, source=None, effect=None):
-        if effect and getattr(effect, "effectType", "") == "Move" and source and not getattr(source, "transformed", False):
+        if (
+            effect
+            and getattr(effect, "effectType", "") == "Move"
+            and source
+            and not getattr(source, "transformed", False)
+        ):
             if getattr(source, "species", {}).get("name", "").lower() == "greninjabond" and source.hp > 0:
                 apply_boost(source, {"atk": 1, "spa": 1, "spe": 1})
                 source.abilityState = getattr(source, "abilityState", {})
                 source.abilityState["battleBondTriggered"] = True
+
 
 class Beadsofruin:
     def onAnyModifySpD(self, spd, target=None, source=None, move=None):
@@ -302,12 +335,14 @@ class Beadsofruin:
                     spd = 0
                 cb(spd, target=foe)
 
+
 class Beastboost:
     def onSourceAfterFaint(self, length=1, target=None, source=None, effect=None):
         if effect and getattr(effect, "effectType", "") == "Move" and source:
             if hasattr(source, "getBestStat"):
                 best = source.getBestStat(True, True)
                 apply_boost(source, {best: length})
+
 
 class Berserk:
     def onAfterMoveSecondary(self, target=None, source=None, move=None):
@@ -341,6 +376,7 @@ class Berserk:
             return getattr(pokemon, "_berserk_checked", True)
         return True
 
+
 class Bigpecks:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
         if source and target is source:
@@ -350,6 +386,7 @@ class Bigpecks:
             if effect and getattr(effect, "id", "") != "octolock" and not getattr(effect, "secondaries", None):
                 if target and hasattr(target, "tempvals"):
                     target.tempvals.setdefault("unboost", []).append("def")
+
 
 class Blaze:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -362,6 +399,7 @@ class Blaze:
             return int(spa * 1.5)
         return spa
 
+
 class Bulletproof:
     def onTryHit(self, pokemon=None, source=None, move=None):
         if move and move.flags.get("bullet"):
@@ -369,22 +407,26 @@ class Bulletproof:
                 setattr(pokemon, "immune", "Bulletproof")
             return None
 
+
 class Cheekpouch:
     def onEatItem(self, item=None, pokemon=None):
         if pokemon and item:
             heal = getattr(pokemon, "max_hp", 0) // 3
             pokemon.hp = min(pokemon.max_hp, pokemon.hp + heal)
 
+
 class Chillingneigh:
     def onSourceAfterFaint(self, length=1, target=None, source=None, effect=None):
         if effect and getattr(effect, "effectType", "") == "Move" and source:
             apply_boost(source, {"atk": length})
+
 
 class Chlorophyll:
     def onModifySpe(self, spe, pokemon=None):
         if pokemon and getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"}:
             return int(spe * 2)
         return spe
+
 
 class Clearbody:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
@@ -399,6 +441,7 @@ class Clearbody:
             if target and hasattr(target, "tempvals"):
                 target.tempvals.setdefault("unboost", []).append("clearbody")
 
+
 class Cloudnine:
     def onEnd(self, pokemon=None, battle=None):
         if battle:
@@ -412,6 +455,7 @@ class Cloudnine:
         if battle:
             setattr(battle, "suppressWeather", True)
 
+
 class Colorchange:
     def onAfterMoveSecondary(self, target=None, source=None, move=None):
         if not target or not move or getattr(move, "category", "Status") == "Status":
@@ -421,6 +465,7 @@ class Colorchange:
             if hasattr(target, "setType") and target.setType(mtype):
                 if hasattr(target, "tempvals"):
                     target.tempvals["typechange"] = mtype
+
 
 class Comatose:
     """Implementation of the Comatose ability.
@@ -458,6 +503,7 @@ class Comatose:
         if hasattr(pokemon, "boosts"):
             pokemon.boosts["spe"] -= 1
 
+
 class Commander:
     def onUpdate(self, pokemon=None, battle=None):
         if not pokemon or getattr(battle, "gameType", "singles") != "doubles":
@@ -476,6 +522,7 @@ class Commander:
             pokemon.addVolatile("commanding") if hasattr(pokemon, "addVolatile") else None
             ally.addVolatile("commanded", pokemon) if hasattr(ally, "addVolatile") else None
 
+
 class Competitive:
     def onStart(self, pokemon=None):
         """Lower a defensive stat to exercise ``onAfterEachBoost`` during tests."""
@@ -492,16 +539,19 @@ class Competitive:
         if lowered:
             apply_boost(target, {"spa": 2})
 
+
 class Compoundeyes:
     def onSourceModifyAccuracy(self, accuracy, source=None, target=None, move=None):
         if accuracy is not True:
             return int(accuracy * 1.3)
         return accuracy
 
+
 class Contrary:
     def onChangeBoost(self, boosts, target=None, source=None, effect=None):
         for stat, value in list(boosts.items()):
             boosts[stat] = -value
+
 
 class Costar:
     def onStart(self, pokemon=None):
@@ -512,10 +562,12 @@ class Costar:
             target = allies[0]
             pokemon.boosts = dict(getattr(target, "boosts", {}))
 
+
 class Cottondown:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target and source and getattr(move, "category", "") != "Status":
             apply_boost(target, {"spe": -1})
+
 
 class Cudchew:
     def onEatItem(self, item=None, pokemon=None):
@@ -530,6 +582,7 @@ class Cudchew:
     def onRestart(self, pokemon=None):
         self.onEatItem(getattr(pokemon, "consumed_item", None), pokemon)
 
+
 class Curiousmedicine:
     def onStart(self, pokemon=None):
         if not pokemon:
@@ -538,18 +591,25 @@ class Curiousmedicine:
         for ally in allies:
             ally.boosts = {stat: 0 for stat in ally.boosts}
 
+
 class Cursedbody:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and hasattr(source, "disable_move"):
             if random.random() < 0.3:
                 source.disable_move(move.id)
 
+
 class Cutecharm:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and getattr(move, "flags", {}).get("contact"):
-            if getattr(source, "gender", "N") != "N" and getattr(target, "gender", "N") != "N" and source.gender != target.gender:
+            if (
+                getattr(source, "gender", "N") != "N"
+                and getattr(target, "gender", "N") != "N"
+                and source.gender != target.gender
+            ):
                 if random() < 0.3 and hasattr(source, "volatiles"):
                     source.volatiles["attract"] = target
+
 
 class Damp:
     def onAnyDamage(self, damage, target=None, source=None, effect=None):
@@ -560,6 +620,7 @@ class Damp:
     def onAnyTryMove(self, pokemon=None, target=None, move=None):
         if move and move.id in {"explosion", "selfdestruct", "mindblown"}:
             return False
+
 
 class Darkaura:
     def onAnyBasePower(self, base_power, source=None, target=None, move=None):
@@ -574,10 +635,12 @@ class Darkaura:
         if pokemon:
             setattr(pokemon, "dark_aura", True)
 
+
 class Dauntlessshield:
     def onStart(self, pokemon=None):
         if pokemon:
             apply_boost(pokemon, {"def": 1})
+
 
 class Dazzling:
     def onFoeTryMove(self, target=None, source=None, move=None):
@@ -585,6 +648,7 @@ class Dazzling:
             if hasattr(source, "tempvals"):
                 source.tempvals["cant_move"] = "dazzling"
             return False
+
 
 class Defeatist:
     def onModifyAtk(self, atk, pokemon=None):
@@ -596,6 +660,7 @@ class Defeatist:
         if pokemon and pokemon.hp <= pokemon.max_hp // 2:
             return spa // 2
         return spa
+
 
 class Defiant:
     def onStart(self, pokemon=None):
@@ -613,6 +678,7 @@ class Defiant:
         if lowered:
             apply_boost(target, {"atk": 2})
 
+
 class Deltastream:
     def onAnySetWeather(self, target=None, source=None, weather=None):
         strong_weathers = {"desolateland", "primordialsea", "deltastream"}
@@ -627,6 +693,7 @@ class Deltastream:
         if battle:
             battle.setWeather("deltastream", source)
 
+
 class Desolateland:
     def onAnySetWeather(self, target=None, source=None, weather=None):
         strong = {"desolateland", "primordialsea", "deltastream"}
@@ -640,6 +707,7 @@ class Desolateland:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setWeather("desolateland", source)
+
 
 class Disguise:
     def onCriticalHit(self, target=None, source=None, move=None):
@@ -672,6 +740,7 @@ class Disguise:
             dmg = pokemon.max_hp // 8
             pokemon.hp = max(0, pokemon.hp - dmg)
 
+
 class Download:
     def onStart(self, pokemon=None):
         if not pokemon:
@@ -686,6 +755,7 @@ class Download:
         elif total_spd:
             apply_boost(pokemon, {"atk": 1})
 
+
 class Dragonsmaw:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
         if move and move.type == "Dragon":
@@ -697,15 +767,18 @@ class Dragonsmaw:
             return int(spa * 1.5)
         return spa
 
+
 class Drizzle:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setWeather("raindance", source)
 
+
 class Drought:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setWeather("sunnyday", source)
+
 
 class Dryskin:
     def onSourceBasePower(self, base_power, attacker=None, defender=None, move=None):
@@ -730,6 +803,7 @@ class Dryskin:
         elif weather in {"sunnyday", "desolateland"}:
             pokemon.hp = max(0, pokemon.hp - pokemon.max_hp // 8)
 
+
 class Eartheater:
     def onTryHit(self, target=None, source=None, move=None):
         if move and move.type == "Ground" and target:
@@ -738,6 +812,7 @@ class Eartheater:
             if hasattr(target, "immune"):
                 target.immune = "Earth Eater"
             return None
+
 
 class Effectspore:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
@@ -753,16 +828,19 @@ class Effectspore:
                 if hasattr(source, "setStatus"):
                     source.setStatus("psn")
 
+
 class Electricsurge:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setTerrain("electricterrain", source)
+
 
 class Electromorphosis:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target:
             target.volatiles = getattr(target, "volatiles", {})
             target.volatiles["charged"] = True
+
 
 class Embodyaspectcornerstone:
     def onStart(self, pokemon=None):
@@ -772,6 +850,7 @@ class Embodyaspectcornerstone:
     def onSwitchIn(self, pokemon=None):
         self.onStart(pokemon)
 
+
 class Embodyaspecthearthflame:
     def onStart(self, pokemon=None):
         if pokemon:
@@ -779,6 +858,7 @@ class Embodyaspecthearthflame:
 
     def onSwitchIn(self, pokemon=None):
         self.onStart(pokemon)
+
 
 class Embodyaspectteal:
     def onStart(self, pokemon=None):
@@ -788,6 +868,7 @@ class Embodyaspectteal:
     def onSwitchIn(self, pokemon=None):
         self.onStart(pokemon)
 
+
 class Embodyaspectwellspring:
     def onStart(self, pokemon=None):
         if pokemon:
@@ -796,10 +877,12 @@ class Embodyaspectwellspring:
     def onSwitchIn(self, pokemon=None):
         self.onStart(pokemon)
 
+
 class Emergencyexit:
     def onEmergencyExit(self, pokemon=None):
         if pokemon and pokemon.hp <= pokemon.max_hp // 2:
             pokemon.switch_flag = True
+
 
 class Fairyaura:
     def onAnyBasePower(self, base_power, source=None, target=None, move=None):
@@ -814,11 +897,13 @@ class Fairyaura:
         if pokemon:
             setattr(pokemon, "fairy_aura", True)
 
+
 class Filter:
     def onSourceModifyDamage(self, damage, target=None, source=None, move=None):
         if target and move and type_effectiveness(target, move) > 1:
             return int(damage * 0.75)
         return damage
+
 
 class Flamebody:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
@@ -826,11 +911,13 @@ class Flamebody:
             if random() < 0.3 and hasattr(source, "setStatus"):
                 source.setStatus("brn")
 
+
 class Flareboost:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if user and user.status == "brn" and move and move.category == "Special":
             return int(base_power * 1.5)
         return base_power
+
 
 class Flashfire:
     def onEnd(self, pokemon=None):
@@ -860,6 +947,7 @@ class Flashfire:
             if hasattr(target, "immune"):
                 target.immune = "Flash Fire"
             return None
+
 
 class Flowergift:
     def onAllyModifyAtk(self, atk, pokemon=None, move=None):
@@ -899,6 +987,7 @@ class Flowergift:
     def onWeatherChange(self, pokemon=None):
         self._update_form(pokemon)
 
+
 class Flowerveil:
     def onAllySetStatus(self, status, target=None, source=None, effect=None):
         if target and "Grass" in getattr(target, "types", []):
@@ -914,6 +1003,7 @@ class Flowerveil:
                 if boost[stat] < 0:
                     del boost[stat]
 
+
 class Fluffy:
     def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
         if not move:
@@ -923,6 +1013,7 @@ class Fluffy:
         if move.type == "Fire":
             damage = int(damage * 2)
         return damage
+
 
 class Forecast:
     def _update_form(self, pokemon=None):
@@ -944,6 +1035,7 @@ class Forecast:
     def onWeatherChange(self, pokemon=None):
         self._update_form(pokemon)
 
+
 class Forewarn:
     def onStart(self, pokemon=None):
         if not pokemon:
@@ -959,12 +1051,14 @@ class Forewarn:
         if best_move:
             pokemon.forewarn = best_move
 
+
 class Friendguard:
     def onAnyModifyDamage(self, damage, source=None, target=None, move=None):
         holder = getattr(self, "effect_state", {}).get("target")
         if holder and target and target is not holder and target.is_ally(holder):
             return int(damage * 0.75)
         return damage
+
 
 class Frisk:
     def onStart(self, pokemon=None):
@@ -976,6 +1070,7 @@ class Frisk:
                 pokemon.frisked = getattr(pokemon, "frisked", [])
                 pokemon.frisked.append(item)
 
+
 class Fullmetalbody:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
         if source and source is target:
@@ -984,15 +1079,18 @@ class Fullmetalbody:
             if boost[stat] < 0:
                 del boost[stat]
 
+
 class Furcoat:
     def onModifyDef(self, defense, pokemon=None):
         return defense * 2
+
 
 class Galewings:
     def onModifyPriority(self, priority, pokemon=None, target=None, move=None):
         if pokemon and move and move.type == "Flying" and pokemon.hp == pokemon.max_hp:
             return priority + 1
         return priority
+
 
 class Galvanize:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -1005,6 +1103,7 @@ class Galvanize:
             move.type = "Electric"
             move.typeChangerBoosted = True
 
+
 class Gluttony:
     def onDamage(self, damage, pokemon=None, source=None, effect=None):
         berries = {"aguavberry", "figyberry", "iapapaberry", "magoberry", "wikiberry"}
@@ -1016,6 +1115,7 @@ class Gluttony:
     def onStart(self, pokemon=None):
         setattr(pokemon, "gluttony", True)
 
+
 class Goodasgold:
     def onTryHit(self, target=None, source=None, move=None):
         if move and move.category == "Status" and target is not source:
@@ -1023,10 +1123,12 @@ class Goodasgold:
                 target.immune = "Good as Gold"
             return False
 
+
 class Gooey:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact"):
             apply_boost(source, {"spe": -1})
+
 
 class Gorillatactics:
     def onBeforeMove(self, pokemon=None, target=None, move=None):
@@ -1060,6 +1162,7 @@ class Gorillatactics:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["locked_move"] = None
 
+
 class Grasspelt:
     def onModifyDef(self, defense, pokemon=None):
         terrain = getattr(pokemon, "terrain", "")
@@ -1067,15 +1170,18 @@ class Grasspelt:
             return int(defense * 1.5)
         return defense
 
+
 class Grassysurge:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setTerrain("grassyterrain", source)
 
+
 class Grimneigh:
     def onSourceAfterFaint(self, length=1, target=None, source=None, effect=None):
         if effect and getattr(effect, "effectType", "") == "Move" and source:
             apply_boost(source, {"spa": length})
+
 
 class Guarddog:
     def onDragOut(self, pokemon=None):
@@ -1085,6 +1191,7 @@ class Guarddog:
         if "atk" in boost and boost["atk"] < 0:
             del boost["atk"]
             apply_boost(target, {"atk": 1})
+
 
 class Gulpmissile:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
@@ -1101,11 +1208,13 @@ class Gulpmissile:
             user.volatiles = getattr(user, "volatiles", {})
             user.volatiles["gulpmissile"] = "gorging" if user.species.name.endswith("2") else "gulping"
 
+
 class Guts:
     def onModifyAtk(self, atk, pokemon=None, target=None, move=None):
         if pokemon and pokemon.status:
             return int(atk * 1.5)
         return atk
+
 
 class Hadronengine:
     def onModifySpA(self, spa, pokemon=None, target=None, move=None):
@@ -1117,6 +1226,7 @@ class Hadronengine:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setTerrain("electricterrain", source)
+
 
 class Harvest:
     def onResidual(self, pokemon=None):
@@ -1130,6 +1240,7 @@ class Harvest:
             pokemon.item = berry
             pokemon.consumed_berry = None
 
+
 class Healer:
     def onResidual(self, pokemon=None):
         if not pokemon:
@@ -1137,6 +1248,7 @@ class Healer:
         for ally in pokemon.allies():
             if ally.status and random() < 0.3:
                 ally.setStatus(0)
+
 
 class Heatproof:
     def onDamage(self, damage, pokemon=None, source=None, effect=None):
@@ -1154,9 +1266,11 @@ class Heatproof:
             return spa // 2
         return spa
 
+
 class Heavymetal:
     def onModifyWeight(self, weight, pokemon=None):
         return weight * 2
+
 
 class Hospitality:
     def onStart(self, pokemon=None):
@@ -1166,9 +1280,11 @@ class Hospitality:
             heal = ally.max_hp // 3
             ally.hp = min(ally.max_hp, ally.hp + heal)
 
+
 class Hugepower:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
         return atk * 2
+
 
 class Hungerswitch:
     def onResidual(self, pokemon=None):
@@ -1180,6 +1296,7 @@ class Hungerswitch:
             new_form = pokemon.species.name + "Hangry"
         pokemon.formeChange(new_form)
 
+
 class Hustle:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
         return int(atk * 1.5)
@@ -1189,15 +1306,22 @@ class Hustle:
             return int(accuracy * 0.8)
         return accuracy
 
+
 class Hydration:
     def onResidual(self, pokemon=None):
-        if pokemon and pokemon.status and getattr(pokemon, "effective_weather", lambda: "")() in {"raindance", "primordialsea"}:
+        if (
+            pokemon
+            and pokemon.status
+            and getattr(pokemon, "effective_weather", lambda: "")() in {"raindance", "primordialsea"}
+        ):
             pokemon.setStatus(0)
+
 
 class Hypercutter:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
         if "atk" in boost and boost["atk"] < 0:
             del boost["atk"]
+
 
 class Icebody:
     def onImmunity(self, status=None, pokemon=None):
@@ -1210,6 +1334,7 @@ class Icebody:
         if pokemon and getattr(pokemon, "effective_weather", lambda: "")() in {"hail", "snow"}:
             heal = pokemon.max_hp // 16
             pokemon.hp = min(pokemon.max_hp, pokemon.hp + heal)
+
 
 class Iceface:
     def onCriticalHit(self, target=None, source=None, move=None):
@@ -1244,12 +1369,14 @@ class Iceface:
     def onWeatherChange(self, pokemon=None):
         self.onUpdate(pokemon)
 
+
 class Icescales:
     def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
         """Halve damage from special moves."""
         if move and move.category == "Special":
             return damage // 2
         return damage
+
 
 class Illuminate:
     def onModifyMove(self, move, user=None):
@@ -1260,11 +1387,16 @@ class Illuminate:
         if "accuracy" in boost and boost["accuracy"] < 0:
             del boost["accuracy"]
 
+
 class Illusion:
     def onBeforeSwitchIn(self, pokemon=None):
         if not pokemon:
             return
-        bench = [p for p in getattr(pokemon, "side", {}).get("pokemon", []) if not getattr(p, "fainted", False) and p is not pokemon]
+        bench = [
+            p
+            for p in getattr(pokemon, "side", {}).get("pokemon", [])
+            if not getattr(p, "fainted", False) and p is not pokemon
+        ]
         if bench:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["illusion"] = bench[-1]
@@ -1290,6 +1422,7 @@ class Illusion:
     def onFaint(self, pokemon=None):
         self.onEnd(pokemon)
 
+
 class Immunity:
     def onSetStatus(self, status, target=None, source=None, effect=None):
         if status in {"psn", "tox"}:
@@ -1300,6 +1433,7 @@ class Immunity:
     def onUpdate(self, pokemon=None):
         if pokemon and pokemon.status in {"psn", "tox"}:
             pokemon.setStatus(0)
+
 
 class Imposter:
     def _try_transform(self, pokemon=None, battle=None):
@@ -1313,6 +1447,7 @@ class Imposter:
         if target:
             try:
                 from pokemon.dex.functions.moves_funcs import Transform
+
                 Transform().onHit(pokemon, target, battle)
             except Exception:
                 pass
@@ -1331,16 +1466,19 @@ class Imposter:
             self._try_transform(pokemon, battle)
             state["switching_in"] = False
 
+
 class Infiltrator:
     def onModifyMove(self, move, user=None):
         if move:
             move.infiltrates = True
+
 
 class Innardsout:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target and getattr(target, "hp", 0) <= 0 and source:
             recoil = getattr(target, "max_hp", 0)
             source.hp = max(0, source.hp - recoil)
+
 
 class Innerfocus:
     def onTryAddVolatile(self, status, pokemon=None):
@@ -1350,6 +1488,7 @@ class Innerfocus:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
         if effect and getattr(effect, "id", "") == "intimidate" and "atk" in boost and boost["atk"] < 0:
             del boost["atk"]
+
 
 class Insomnia:
     def onSetStatus(self, status, target=None, source=None, effect=None):
@@ -1366,6 +1505,7 @@ class Insomnia:
         if pokemon and pokemon.status == "slp":
             pokemon.setStatus(0)
 
+
 class Intimidate:
     def onStart(self, pokemon=None):
         if not pokemon:
@@ -1373,10 +1513,12 @@ class Intimidate:
         for foe in pokemon.foes() if hasattr(pokemon, "foes") else []:
             apply_boost(foe, {"atk": -1})
 
+
 class Intrepidsword:
     def onStart(self, pokemon=None):
         if pokemon:
             apply_boost(pokemon, {"atk": 1})
+
 
 class Ironbarbs:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
@@ -1384,16 +1526,19 @@ class Ironbarbs:
             recoil = getattr(source, "max_hp", 0) // 8
             source.hp = max(0, source.hp - recoil)
 
+
 class Ironfist:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if move and move.flags.get("punch"):
             return int(base_power * 1.2)
         return base_power
 
+
 class Justified:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if move and move.type == "Dark" and target:
             apply_boost(target, {"atk": 1})
+
 
 class Keeneye:
     def onModifyMove(self, move, user=None):
@@ -1404,10 +1549,12 @@ class Keeneye:
         if "accuracy" in boost and boost["accuracy"] < 0:
             del boost["accuracy"]
 
+
 class Klutz:
     def onStart(self, pokemon=None):
         if pokemon:
             setattr(pokemon, "klutz", True)
+
 
 class Leafguard:
     def onSetStatus(self, status, target=None, source=None, effect=None):
@@ -1420,6 +1567,7 @@ class Leafguard:
         if status == "yawn" and weather in {"sunnyday", "desolateland"}:
             return None
 
+
 class Libero:
     def onPrepareHit(self, move=None, pokemon=None, target=None):
         if pokemon and move and not getattr(pokemon, "libero_used", False):
@@ -1430,9 +1578,11 @@ class Libero:
         if pokemon:
             pokemon.libero_used = False
 
+
 class Lightmetal:
     def onModifyWeight(self, weight, pokemon=None):
         return weight / 2
+
 
 class Lightningrod:
     def onAnyRedirectTarget(self, target=None, source=None, move=None):
@@ -1447,6 +1597,7 @@ class Lightningrod:
                 target.immune = "Lightning Rod"
             return None
 
+
 class Limber:
     def onSetStatus(self, status, target=None, source=None, effect=None):
         if status == "par":
@@ -1458,10 +1609,12 @@ class Limber:
         if pokemon and pokemon.status == "par":
             pokemon.setStatus(0)
 
+
 class Lingeringaroma:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact"):
             source.ability = "lingeringaroma"
+
 
 class Liquidooze:
     def onSourceTryHeal(self, damage, source=None, target=None, move=None):
@@ -1469,16 +1622,19 @@ class Liquidooze:
             return -damage
         return damage
 
+
 class Liquidvoice:
     def onModifyType(self, move, user=None):
         if move and move.flags.get("sound"):
             move.type = "Water"
+
 
 class Longreach:
     def onModifyMove(self, move, user=None):
         if move:
             move.flags = dict(move.flags)
             move.flags.pop("contact", None)
+
 
 class Magicbounce:
     def onAllyTryHitSide(self, target=None, source=None, move=None):
@@ -1493,17 +1649,20 @@ class Magicbounce:
                 target.immune = "Magic Bounce"
             return False
 
+
 class Magicguard:
     def onDamage(self, damage, target=None, source=None, effect=None):
         if effect and getattr(effect, "effectType", "") != "Move":
             return 0
         return damage
 
+
 class Magician:
     def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
         if source and move and not getattr(source, "item", None) and target and getattr(target, "item", None):
             source.item = target.item
             target.item = None
+
 
 class Magmaarmor:
     def onImmunity(self, status=None, pokemon=None):
@@ -1514,6 +1673,7 @@ class Magmaarmor:
         if pokemon and pokemon.status == "frz":
             pokemon.setStatus(0)
 
+
 class Magnetpull:
     def onFoeMaybeTrapPokemon(self, pokemon=None, source=None):
         if pokemon and pokemon.hasType("Steel"):
@@ -1523,11 +1683,13 @@ class Magnetpull:
         if pokemon and pokemon.hasType("Steel"):
             pokemon.tryTrap(True)
 
+
 class Marvelscale:
     def onModifyDef(self, defense, pokemon=None):
         if pokemon and pokemon.status:
             return int(defense * 1.5)
         return defense
+
 
 class Megalauncher:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -1535,11 +1697,13 @@ class Megalauncher:
             return int(base_power * 1.5)
         return base_power
 
+
 class Merciless:
     def onModifyCritRatio(self, crit_ratio, attacker=None, defender=None):
         if defender and defender.status:
             return crit_ratio + 1
         return crit_ratio
+
 
 class Mimicry:
     def _apply(self, pokemon):
@@ -1560,6 +1724,7 @@ class Mimicry:
     def onTerrainChange(self, pokemon=None):
         self._apply(pokemon)
 
+
 class Mindseye:
     def onModifyMove(self, move, user=None):
         if move:
@@ -1571,6 +1736,7 @@ class Mindseye:
         if "accuracy" in boost and boost["accuracy"] < 0:
             del boost["accuracy"]
 
+
 class Minus:
     def onModifySpA(self, spa, pokemon=None):
         allies = [a for a in getattr(pokemon, "allies", lambda: [])() if a is not pokemon] if pokemon else []
@@ -1578,6 +1744,7 @@ class Minus:
             if ally.hasAbility("plus") or ally.hasAbility("minus"):
                 return int(spa * 1.5)
         return spa
+
 
 class Mirrorarmor:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
@@ -1587,10 +1754,12 @@ class Mirrorarmor:
                     boost[stat] = 0
                     apply_boost(source, {stat: val})
 
+
 class Mistysurge:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setTerrain("mistyterrain", source)
+
 
 class Moldbreaker:
     def onModifyMove(self, move, pokemon=None):
@@ -1601,6 +1770,7 @@ class Moldbreaker:
         if pokemon:
             setattr(pokemon, "mold_breaker", True)
 
+
 class Moody:
     def onResidual(self, pokemon=None):
         if not pokemon:
@@ -1610,6 +1780,7 @@ class Moody:
         lower_stat = choice([s for s in stats if s != raise_stat])
         apply_boost(pokemon, {raise_stat: 2, lower_stat: -1})
 
+
 class Motordrive:
     def onTryHit(self, target=None, source=None, move=None):
         if move and move.type == "Electric" and target:
@@ -1617,6 +1788,7 @@ class Motordrive:
             if hasattr(target, "immune"):
                 target.immune = "Motor Drive"
             return None
+
 
 class Mountaineer:
     def onDamage(self, damage, target=None, source=None, effect=None):
@@ -1632,10 +1804,12 @@ class Mountaineer:
                 target.immune = "Mountaineer"
             return False
 
+
 class Moxie:
     def onSourceAfterFaint(self, length=1, target=None, source=None, effect=None):
         if effect and getattr(effect, "effectType", "") == "Move" and source:
             apply_boost(source, {"atk": length})
+
 
 class Multiscale:
     def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
@@ -1643,10 +1817,12 @@ class Multiscale:
             return damage // 2
         return damage
 
+
 class Mummy:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact"):
             source.ability = "mummy"
+
 
 class Myceliummight:
     def onFractionalPriority(self, priority, pokemon=None, target=None, move=None):
@@ -1658,6 +1834,7 @@ class Myceliummight:
         if move and move.category == "Status":
             move.ignore_ability = True
 
+
 class Naturalcure:
     def onCheckShow(self, pokemon=None):
         if pokemon and pokemon.status:
@@ -1668,6 +1845,7 @@ class Naturalcure:
             pokemon.setStatus(0)
             pokemon.natural_cure = False
 
+
 class Neuroforce:
     def onModifyDamage(self, damage, source=None, target=None, move=None):
         if move and target:
@@ -1675,6 +1853,7 @@ class Neuroforce:
             if eff > 1:
                 return int(damage * 1.25)
         return damage
+
 
 class Neutralizinggas:
     def onEnd(self, pokemon=None, battle=None):
@@ -1684,6 +1863,7 @@ class Neutralizinggas:
     def onPreStart(self, pokemon=None, battle=None):
         if battle:
             setattr(battle, "suppressingAbilities", True)
+
 
 class Noguard:
     def onAnyAccuracy(self, accuracy, user=None, target=None, move=None):
@@ -1696,6 +1876,7 @@ class Noguard:
         holder = getattr(self, "effect_state", {}).get("target")
         if holder and (target is holder or source is holder):
             return 0
+
 
 class Normalize:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -1720,6 +1901,7 @@ class Normalize:
         move.type = "Normal"
         move.typeChangerBoosted = True
 
+
 class Oblivious:
     def onImmunity(self, status=None, pokemon=None):
         if status in {"attract", "taunt"}:
@@ -1741,6 +1923,7 @@ class Oblivious:
             pokemon.volatiles.pop("taunt", None)
             pokemon.volatiles.pop("attract", None)
 
+
 class Opportunist:
     def onFoeAfterBoost(self, boost=None, target=None, source=None, effect=None):
         holder = getattr(self, "effect_state", {}).get("target")
@@ -1749,6 +1932,7 @@ class Opportunist:
         gains = {stat: amount for stat, amount in boost.items() if amount > 0}
         if gains:
             apply_boost(holder, gains)
+
 
 class Orichalcumpulse:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -1760,6 +1944,7 @@ class Orichalcumpulse:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setWeather("sunnyday", source)
+
 
 class Overcoat:
     def onImmunity(self, status=None, pokemon=None):
@@ -1773,6 +1958,7 @@ class Overcoat:
                 target.immune = "Overcoat"
             return False
 
+
 class Overgrow:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
         if move and move.type == "Grass" and attacker and attacker.hp <= attacker.max_hp // 3:
@@ -1783,6 +1969,7 @@ class Overgrow:
         if move and move.type == "Grass" and attacker and attacker.hp <= attacker.max_hp // 3:
             return int(spa * 1.5)
         return spa
+
 
 class Owntempo:
     def onHit(self, target=None, source=None, move=None):
@@ -1803,6 +1990,7 @@ class Owntempo:
         if pokemon:
             pokemon.volatiles.pop("confusion", None)
 
+
 class Parentalbond:
     def onPrepareHit(self, move=None, pokemon=None, target=None):
         if move and move.category != "Status" and not getattr(move, "multihit", False):
@@ -1813,6 +2001,7 @@ class Parentalbond:
         if move and getattr(move, "multihit_type", "") == "parentalbond" and getattr(move, "hit", 1) == 2:
             return []
         return secondaries
+
 
 class Pastelveil:
     def onAllySetStatus(self, status, target=None, source=None, effect=None):
@@ -1841,11 +2030,13 @@ class Pastelveil:
     def onUpdate(self, pokemon=None):
         self.onStart(pokemon)
 
+
 class Perishbody:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target and source and move and move.flags.get("contact"):
             target.volatiles["perishsong"] = 3
             source.volatiles["perishsong"] = 3
+
 
 class Pickpocket:
     def onAfterMoveSecondary(self, target=None, source=None, move=None):
@@ -1854,12 +2045,14 @@ class Pickpocket:
                 target.item = source.item
                 source.item = None
 
+
 class Pickup:
     def onResidual(self, pokemon=None):
         if pokemon and not getattr(pokemon, "item", None):
             used = getattr(pokemon, "side", {}).get("used_items", [])
             if used:
                 pokemon.item = used[-1]
+
 
 class Pixilate:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -1869,10 +2062,19 @@ class Pixilate:
 
     def onModifyType(self, move, pokemon=None):
         if move and move.type == "Normal":
-            ban = {"judgment", "multiattack", "naturalgift", "revelationdance", "technoblast", "terrainpulse", "weatherball"}
+            ban = {
+                "judgment",
+                "multiattack",
+                "naturalgift",
+                "revelationdance",
+                "technoblast",
+                "terrainpulse",
+                "weatherball",
+            }
             if getattr(move, "id", "").lower() not in ban:
                 move.type = "Fairy"
                 move.typeChangerBoosted = True
+
 
 class Plus:
     def onModifySpA(self, spa, pokemon=None, target=None, move=None):
@@ -1883,6 +2085,7 @@ class Plus:
                 return int(spa * 1.5)
         return spa
 
+
 class Poisonheal:
     def onDamage(self, damage, pokemon=None, source=None, effect=None):
         if effect and effect in {"psn", "tox"} and pokemon:
@@ -1891,11 +2094,13 @@ class Poisonheal:
             return 0
         return damage
 
+
 class Poisonpoint:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact") and random() < 0.3:
             if not getattr(source, "status", None):
                 source.setStatus("psn")
+
 
 class Poisonpuppeteer:
     def onAnyAfterSetStatus(self, status=None, target=None, source=None, effect=None):
@@ -1903,11 +2108,13 @@ class Poisonpuppeteer:
         if status in {"psn", "tox"} and source is holder and target:
             target.volatiles["confusion"] = True
 
+
 class Poisontouch:
     def onSourceDamagingHit(self, target=None, source=None, move=None):
         if move and move.flags.get("contact") and target and random() < 0.3:
             if not getattr(target, "status", None):
                 target.setStatus("psn")
+
 
 class Powerconstruct:
     def onResidual(self, pokemon=None):
@@ -1915,11 +2122,13 @@ class Powerconstruct:
             if pokemon.species.name.lower().startswith("zygarde"):
                 pokemon.formeChange("Zygarde-Complete")
 
+
 class Powerofalchemy:
     def onAllyFaint(self, target=None, source=None):
         holder = getattr(self, "effect_state", {}).get("target")
         if holder and target and target.ability not in {"powerofalchemy", "receiver", "trace"}:
             holder.ability = target.ability
+
 
 class Powerspot:
     def onStart(self, pokemon=None):
@@ -1933,11 +2142,13 @@ class Powerspot:
             return int(base_power * 1.3)
         return base_power
 
+
 class Prankster:
     def onModifyPriority(self, priority, pokemon=None, target=None, move=None):
         if move and move.category == "Status":
             return priority + 0.1
         return priority
+
 
 class Pressure:
     def onDeductPP(self, deduction, target=None):
@@ -1947,6 +2158,7 @@ class Pressure:
         if pokemon:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["pressure"] = True
+
 
 class Primordialsea:
     def onAnySetWeather(self, target=None, source=None, weather=None):
@@ -1962,6 +2174,7 @@ class Primordialsea:
         if battle:
             battle.setWeather("primordialsea", source)
 
+
 class Prismarmor:
     def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
         if move and target:
@@ -1970,10 +2183,12 @@ class Prismarmor:
                 return int(damage * 0.75)
         return damage
 
+
 class Propellertail:
     def onModifyMove(self, move, user=None):
         if move:
             move.tracks_target = True
+
 
 class Protean:
     def onPrepareHit(self, move=None, pokemon=None, target=None):
@@ -1984,6 +2199,7 @@ class Protean:
     def onSwitchIn(self, pokemon=None):
         if pokemon:
             pokemon.protean_used = False
+
 
 class Protosynthesis:
     def onEnd(self, pokemon=None):
@@ -2036,10 +2252,12 @@ class Protosynthesis:
     def onWeatherChange(self, pokemon=None):
         self.onStart(pokemon)
 
+
 class Psychicsurge:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setTerrain("psychicterrain", source)
+
 
 class Punkrock:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -2052,9 +2270,11 @@ class Punkrock:
             return damage // 2
         return damage
 
+
 class Purepower:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
         return atk * 2
+
 
 class Purifyingsalt:
     def onSetStatus(self, status, target=None, source=None, effect=None):
@@ -2075,6 +2295,7 @@ class Purifyingsalt:
     def onTryAddVolatile(self, status, pokemon=None):
         if status in {"yawn", "confusion", "attract"}:
             return None
+
 
 class Quarkdrive:
     def onEnd(self, pokemon=None):
@@ -2127,6 +2348,7 @@ class Quarkdrive:
     def onTerrainChange(self, pokemon=None):
         self.onStart(pokemon)
 
+
 class Queenlymajesty:
     def onFoeTryMove(self, target=None, source=None, move=None):
         if move and move.priority > 0 and not source.is_ally(target):
@@ -2134,17 +2356,20 @@ class Queenlymajesty:
                 source.tempvals["cant_move"] = "queenlymajesty"
             return False
 
+
 class Quickdraw:
     def onFractionalPriority(self, priority, pokemon=None, target=None, move=None):
         if move and move.category != "Status" and random() < 0.3:
             return priority + 0.1
         return priority
 
+
 class Quickfeet:
     def onModifySpe(self, spe, pokemon=None):
         if pokemon and pokemon.status:
             return int(spe * 1.5)
         return spe
+
 
 class Raindish:
     def onWeather(self, pokemon=None):
@@ -2154,6 +2379,7 @@ class Raindish:
         if weather in {"raindance", "primordialsea"}:
             pokemon.hp = min(pokemon.max_hp, pokemon.hp + pokemon.max_hp // 16)
 
+
 class Rattled:
     def onAfterBoost(self, boost, target=None, source=None, effect=None):
         if effect and getattr(effect, "id", "") == "intimidate":
@@ -2162,6 +2388,7 @@ class Rattled:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if move and move.type in {"Bug", "Dark", "Ghost"}:
             apply_boost(target, {"spe": 1})
+
 
 class Rebound:
     def onAllyTryHitSide(self, target=None, source=None, move=None):
@@ -2176,17 +2403,20 @@ class Rebound:
                 target.immune = "Rebound"
             return False
 
+
 class Receiver:
     def onAllyFaint(self, target=None, source=None):
         holder = getattr(self, "effect_state", {}).get("target")
         if holder and target and target.ability not in {"powerofalchemy", "receiver", "trace"}:
             holder.ability = target.ability
 
+
 class Reckless:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if move and (getattr(move, "recoil", False) or getattr(move, "hasCrashDamage", False)):
             return int(base_power * 1.2)
         return base_power
+
 
 class Refrigerate:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -2196,16 +2426,26 @@ class Refrigerate:
 
     def onModifyType(self, move, pokemon=None):
         if move and move.type == "Normal":
-            ban = {"judgment", "multiattack", "naturalgift", "revelationdance", "technoblast", "terrainpulse", "weatherball"}
+            ban = {
+                "judgment",
+                "multiattack",
+                "naturalgift",
+                "revelationdance",
+                "technoblast",
+                "terrainpulse",
+                "weatherball",
+            }
             if getattr(move, "id", "").lower() not in ban:
                 move.type = "Ice"
                 move.typeChangerBoosted = True
+
 
 class Regenerator:
     def onSwitchOut(self, pokemon=None):
         if pokemon:
             heal = pokemon.max_hp // 3
             pokemon.hp = min(pokemon.max_hp, pokemon.hp + heal)
+
 
 class Ripen:
     def onChangeBoost(self, boost, pokemon=None, effect=None):
@@ -2230,6 +2470,7 @@ class Ripen:
             return heal * 2
         return heal
 
+
 class Rivalry:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if user and target and user.gender and target.gender and user.gender != "N" and target.gender != "N":
@@ -2238,11 +2479,13 @@ class Rivalry:
             return int(base_power * 0.75)
         return base_power
 
+
 class Rockhead:
     def onDamage(self, damage, target=None, source=None, effect=None):
         if effect and getattr(effect, "recoil", False):
             return 0
         return damage
+
 
 class Rockypayload:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -2255,11 +2498,13 @@ class Rockypayload:
             return int(spa * 1.5)
         return spa
 
+
 class Roughskin:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact"):
             recoil = source.max_hp // 8
             source.hp = max(0, source.hp - recoil)
+
 
 class Sandforce:
     def onBasePower(self, base_power, attacker=None, defender=None, move=None):
@@ -2273,6 +2518,7 @@ class Sandforce:
         if status == "sandstorm":
             return False
 
+
 class Sandrush:
     def onImmunity(self, status=None, pokemon=None):
         if status == "sandstorm":
@@ -2283,15 +2529,18 @@ class Sandrush:
             return int(spe * 2)
         return spe
 
+
 class Sandspit:
     def onDamagingHit(self, damage, target=None, source=None, move=None, battle=None):
         if battle:
             battle.setWeather("sandstorm", target)
 
+
 class Sandstream:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setWeather("sandstorm", source)
+
 
 class Sandveil:
     def onImmunity(self, status=None, pokemon=None):
@@ -2302,6 +2551,7 @@ class Sandveil:
         if defender and getattr(defender, "effective_weather", lambda: "")() == "sandstorm":
             return int(accuracy * 0.8)
         return accuracy
+
 
 class Sapsipper:
     def onAllyTryHitSide(self, target=None, source=None, move=None):
@@ -2316,6 +2566,7 @@ class Sapsipper:
             apply_boost(target, {"atk": 1})
             target.immune = "Sap Sipper"
             return None
+
 
 class Schooling:
     def _update_form(self, pokemon):
@@ -2334,6 +2585,7 @@ class Schooling:
     def onStart(self, pokemon=None):
         self._update_form(pokemon)
 
+
 class Scrappy:
     def onModifyMove(self, move, pokemon=None):
         if move and move.type in {"Normal", "Fighting"}:
@@ -2342,6 +2594,7 @@ class Scrappy:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
         if effect and getattr(effect, "id", "") == "intimidate" and "atk" in boost and boost["atk"] < 0:
             del boost["atk"]
+
 
 class Screencleaner:
     def onStart(self, pokemon=None):
@@ -2354,10 +2607,12 @@ class Screencleaner:
             for scr in screens:
                 side.side_conditions.pop(scr, None)
 
+
 class Seedsower:
     def onDamagingHit(self, damage, target=None, source=None, move=None, battle=None):
         if battle:
             battle.setTerrain("grassyterrain", target)
+
 
 class Serenegrace:
     def onModifyMove(self, move, pokemon=None):
@@ -2366,11 +2621,13 @@ class Serenegrace:
                 if "chance" in sec:
                     sec["chance"] *= 2
 
+
 class Shadowshield:
     def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
         if target and target.hp == target.max_hp:
             return damage // 2
         return damage
+
 
 class Shadowtag:
     def onFoeMaybeTrapPokemon(self, pokemon=None, source=None):
@@ -2384,16 +2641,19 @@ class Shadowtag:
         if pokemon and source and getattr(pokemon, "isAdjacent", lambda o: True)(source):
             getattr(pokemon, "tryTrap", lambda *_: None)(True)
 
+
 class Sharpness:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if move and move.flags.get("slicing"):
             return int(base_power * 1.5)
         return base_power
 
+
 class Shedskin:
     def onResidual(self, pokemon=None):
-        if pokemon and pokemon.status and random() < 1/3:
+        if pokemon and pokemon.status and random() < 1 / 3:
             pokemon.setStatus(0)
+
 
 class Sheerforce:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -2406,11 +2666,13 @@ class Sheerforce:
             move.secondaries = []
             move.sheer_force_boosted = True
 
+
 class Shielddust:
     def onModifySecondaries(self, secondaries, source=None, target=None, move=None):
         if target and secondaries:
             return [s for s in secondaries if s.get("self")]
         return secondaries
+
 
 class Shieldsdown:
     def _update_form(self, pokemon):
@@ -2438,10 +2700,12 @@ class Shieldsdown:
         if status == "yawn" and pokemon and "meteor" in pokemon.species.name.lower():
             return None
 
+
 class Simple:
     def onChangeBoost(self, boost, pokemon=None, source=None, effect=None):
         for stat in boost:
             boost[stat] *= 2
+
 
 class Skilllink:
     def onModifyMove(self, move, pokemon=None):
@@ -2450,6 +2714,7 @@ class Skilllink:
                 move.multihit = max(move.multihit)
             elif isinstance(move.multihit, int) and move.multihit < 5:
                 move.multihit = 5
+
 
 class Slowstart:
     def onEnd(self, pokemon=None):
@@ -2477,17 +2742,20 @@ class Slowstart:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["slowstart"] = 5
 
+
 class Slushrush:
     def onModifySpe(self, spe, pokemon=None):
         if pokemon and getattr(pokemon, "effective_weather", lambda: "")() in {"hail", "snow"}:
             return int(spe * 2)
         return spe
 
+
 class Sniper:
     def onModifyDamage(self, damage, source=None, target=None, move=None):
         if move and getattr(move, "crit", False):
             return int(damage * 1.5)
         return damage
+
 
 class Snowcloak:
     def onImmunity(self, status=None, pokemon=None):
@@ -2499,10 +2767,12 @@ class Snowcloak:
             return int(accuracy * 0.8)
         return accuracy
 
+
 class Snowwarning:
     def onStart(self, source=None, battle=None):
         if battle:
             battle.setWeather("snow", source)
+
 
 class Solarpower:
     def onModifySpA(self, spa, attacker=None, defender=None, move=None):
@@ -2514,17 +2784,20 @@ class Solarpower:
         if pokemon and getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"}:
             pokemon.hp = max(0, pokemon.hp - pokemon.max_hp // 8)
 
+
 class Solidrock:
     def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
         if target and move and type_effectiveness(move, target) > 1:
             return int(damage * 0.75)
         return damage
 
+
 class Soulheart:
     def onAnyFaint(self, length=1, target=None, source=None):
         holder = getattr(self, "effect_state", {}).get("target")
         if holder and target is not holder:
             apply_boost(holder, {"spa": 1})
+
 
 class Soundproof:
     def onAllyTryHitSide(self, target=None, source=None, move=None):
@@ -2538,10 +2811,12 @@ class Soundproof:
             target.immune = "Soundproof"
             return None
 
+
 class Speedboost:
     def onResidual(self, pokemon=None):
         if pokemon:
             apply_boost(pokemon, {"spe": 1})
+
 
 class Stakeout:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -2554,15 +2829,18 @@ class Stakeout:
             return int(spa * 2)
         return spa
 
+
 class Stalwart:
     def onModifyMove(self, move, user=None):
         if move:
             move.tracks_target = True
 
+
 class Stamina:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target:
             apply_boost(target, {"def": 1})
+
 
 class Stancechange:
     def onModifyMove(self, move, user=None):
@@ -2575,21 +2853,25 @@ class Stancechange:
         if user.species.name != form:
             user.formeChange(form)
 
+
 class Static:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact") and random() < 0.3:
             if not getattr(source, "status", None):
                 source.setStatus("par")
 
+
 class Steadfast:
     def onFlinch(self, pokemon=None):
         if pokemon:
             apply_boost(pokemon, {"spe": 1})
 
+
 class Steamengine:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if move and move.type in {"Fire", "Water"} and target:
             apply_boost(target, {"spe": 6})
+
 
 class Steelworker:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -2601,6 +2883,7 @@ class Steelworker:
         if move and move.type == "Steel":
             return int(spa * 1.5)
         return spa
+
 
 class Steelyspirit:
     def onStart(self, pokemon=None):
@@ -2614,14 +2897,17 @@ class Steelyspirit:
             return int(base_power * 1.5)
         return base_power
 
+
 class Stench:
     def onModifyMove(self, move, user=None):
         if move and move.category != "Status":
             move.secondaries = getattr(move, "secondaries", []) + [{"chance": 10, "volatileStatus": "flinch"}]
 
+
 class Stickyhold:
     def onTakeItem(self, item=None, source=None):
         return False
+
 
 class Stormdrain:
     def onAnyRedirectTarget(self, target=None, source=None, move=None):
@@ -2635,11 +2921,13 @@ class Stormdrain:
             target.immune = "Storm Drain"
             return None
 
+
 class Strongjaw:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if move and move.flags.get("bite"):
             return int(base_power * 1.5)
         return base_power
+
 
 class Sturdy:
     def onDamage(self, damage, target=None, source=None, effect=None):
@@ -2652,19 +2940,23 @@ class Sturdy:
             target.immune = "Sturdy"
             return False
 
+
 class Suctioncups:
     def onDragOut(self, pokemon=None):
         return False
 
+
 class Superluck:
     def onModifyCritRatio(self, ratio, attacker=None, target=None, move=None):
         return ratio + 1
+
 
 class Supersweetsyrup:
     def onStart(self, pokemon=None):
         if pokemon:
             for foe in pokemon.foes() if hasattr(pokemon, "foes") else []:
                 apply_boost(foe, {"evasion": -1})
+
 
 class Supremeoverlord:
     def onBasePower(self, base_power, attacker=None, defender=None, move=None):
@@ -2681,11 +2973,13 @@ class Supremeoverlord:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["supreme_overlord"] = 1 + 0.1 * fainted
 
+
 class Surgesurfer:
     def onModifySpe(self, spe, pokemon=None):
         if pokemon and getattr(pokemon, "terrain", "") == "electricterrain":
             return int(spe * 2)
         return spe
+
 
 class Swarm:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -2697,6 +2991,7 @@ class Swarm:
         if move and move.type == "Bug" and attacker and attacker.hp <= attacker.max_hp // 3:
             return int(spa * 1.5)
         return spa
+
 
 class Sweetveil:
     def onAllySetStatus(self, status, target=None, source=None, effect=None):
@@ -2715,12 +3010,14 @@ class Sweetveil:
                 target.immune = "Sweet Veil"
             return False
 
+
 class Swiftswim:
     def onModifySpe(self, spe, pokemon=None):
         weather = getattr(pokemon, "effective_weather", lambda: "")() if pokemon else ""
         if weather in {"raindance", "primordialsea"}:
             return int(spe * 2)
         return spe
+
 
 class Swordofruin:
     def onAnyModifyDef(self, defense, target=None, source=None, move=None):
@@ -2733,6 +3030,7 @@ class Swordofruin:
         if pokemon:
             setattr(pokemon, "sword_of_ruin", True)
 
+
 class Symbiosis:
     def onAllyAfterUseItem(self, item=None, source=None):
         holder = getattr(self, "effect_state", {}).get("target")
@@ -2740,11 +3038,13 @@ class Symbiosis:
             source.item = holder.item
             holder.item = None
 
+
 class Synchronize:
     def onAfterSetStatus(self, status, target=None, source=None, effect=None):
         if target and source and target is getattr(self, "effect_state", {}).get("target") and source is not target:
             if status not in {0, None} and hasattr(source, "setStatus"):
                 source.setStatus(status)
+
 
 class Tabletsofruin:
     def onAnyModifyAtk(self, atk, target=None, source=None, move=None):
@@ -2757,6 +3057,7 @@ class Tabletsofruin:
         if pokemon:
             setattr(pokemon, "tablets_of_ruin", True)
 
+
 class Tangledfeet:
     def onModifyAccuracy(self, accuracy, attacker=None, defender=None, move=None):
         if defender and defender.volatiles.get("confusion"):
@@ -2764,16 +3065,19 @@ class Tangledfeet:
                 return int(accuracy * 0.5)
         return accuracy
 
+
 class Tanglinghair:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if source and move and move.flags.get("contact"):
             apply_boost(source, {"spe": -1})
+
 
 class Technician:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if move and getattr(move, "base_power", 0) <= 60:
             return int(base_power * 1.5)
         return base_power
+
 
 class Telepathy:
     def onTryHit(self, target=None, source=None, move=None):
@@ -2783,10 +3087,12 @@ class Telepathy:
                 target.immune = "Telepathy"
                 return None
 
+
 class Teraformzero:
     def onAfterTerastallization(self, pokemon=None):
         if pokemon and "Terapagos" in pokemon.species.name:
             pokemon.formeChange("Terapagos-Stellar")
+
 
 class Terashell:
     def onAnyAfterMove(self, pokemon=None, source=None, move=None):
@@ -2802,10 +3108,12 @@ class Terashell:
                 return type_mod - 1
         return type_mod
 
+
 class Terashift:
     def onPreStart(self, pokemon=None):
         if pokemon and getattr(pokemon, "terastal_type", None):
             pokemon.teratype = pokemon.terastal_type
+
 
 class Teravolt:
     def onModifyMove(self, move, pokemon=None):
@@ -2815,6 +3123,7 @@ class Teravolt:
     def onStart(self, pokemon=None):
         if pokemon:
             setattr(pokemon, "mold_breaker", True)
+
 
 class Thermalexchange:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
@@ -2832,6 +3141,7 @@ class Thermalexchange:
             if hasattr(pokemon, "setStatus"):
                 pokemon.setStatus(0)
 
+
 class Thickfat:
     def onSourceModifyAtk(self, atk, source=None, target=None, move=None):
         if move and move.type in {"Fire", "Ice"}:
@@ -2843,11 +3153,13 @@ class Thickfat:
             return int(spa * 0.5)
         return spa
 
+
 class Tintedlens:
     def onModifyDamage(self, damage, source=None, target=None, move=None):
         if move and target and type_effectiveness(move, target) < 1:
             return int(damage * 2)
         return damage
+
 
 class Torrent:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -2860,11 +3172,13 @@ class Torrent:
             return int(spa * 1.5)
         return spa
 
+
 class Toughclaws:
     def onBasePower(self, base_power, user=None, target=None, move=None):
         if move and move.flags.get("contact"):
             return int(base_power * 1.3)
         return base_power
+
 
 class Toxicboost:
     def onBasePower(self, base_power, user=None, target=None, move=None):
@@ -2872,11 +3186,13 @@ class Toxicboost:
             return int(base_power * 1.5)
         return base_power
 
+
 class Toxicchain:
     def onSourceDamagingHit(self, damage, source=None, target=None, move=None):
         if source and target and move and move.category != "Status" and random() < 0.3:
             if not target.status:
                 target.setStatus("tox")
+
 
 class Toxicdebris:
     def onDamagingHit(self, damage, target=None, source=None, move=None, battle=None):
@@ -2884,6 +3200,7 @@ class Toxicdebris:
             side = source.side
             layers = side.side_conditions.get("toxicspikes", 0)
             side.side_conditions["toxicspikes"] = min(2, layers + 1)
+
 
 class Trace:
     def _copy(self, pokemon):
@@ -2900,6 +3217,7 @@ class Trace:
         if pokemon and pokemon.ability == "trace":
             self._copy(pokemon)
 
+
 class Transistor:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
         if move and move.type == "Electric":
@@ -2911,11 +3229,13 @@ class Transistor:
             return int(spa * 1.5)
         return spa
 
+
 class Triage:
     def onModifyPriority(self, priority, pokemon=None, target=None, move=None):
         if move and move.flags.get("heal"):
             return priority + 0.1
         return priority
+
 
 class Truant:
     def onBeforeMove(self, pokemon=None, target=None, move=None):
@@ -2932,6 +3252,7 @@ class Truant:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["truant_skip"] = False
 
+
 class Turboblaze:
     def onModifyMove(self, move, pokemon=None):
         if move:
@@ -2941,12 +3262,14 @@ class Turboblaze:
         if pokemon:
             setattr(pokemon, "mold_breaker", True)
 
+
 class Unaware:
     def onAnyModifyBoost(self, boosts, pokemon=None):
         holder = getattr(self, "effect_state", {}).get("target")
         if pokemon is not holder:
             for stat in boosts:
                 boosts[stat] = 0
+
 
 class Unburden:
     def onAfterUseItem(self, item=None, pokemon=None):
@@ -2968,6 +3291,7 @@ class Unburden:
             pokemon.abilityState = getattr(pokemon, "abilityState", {})
             pokemon.abilityState["unburden"] = True
 
+
 class Unnerve:
     def onEnd(self, pokemon=None):
         if pokemon:
@@ -2988,10 +3312,12 @@ class Unnerve:
             for foe in pokemon.foes():
                 foe.nerve = True
 
+
 class Unseenfist:
     def onModifyMove(self, move, pokemon=None):
         if move and move.flags.get("contact"):
             move.breaksProtect = True
+
 
 class Vesselofruin:
     def onAnyModifySpA(self, spa, target=None, source=None, move=None):
@@ -3004,6 +3330,7 @@ class Vesselofruin:
         if pokemon:
             setattr(pokemon, "vessel_of_ruin", True)
 
+
 class Victorystar:
     def onAnyModifyAccuracy(self, accuracy, source=None, target=None, move=None):
         holder = getattr(self, "effect_state", {}).get("target")
@@ -3011,6 +3338,7 @@ class Victorystar:
             if accuracy is not True:
                 return int(accuracy * 1.1)
         return accuracy
+
 
 class Vitalspirit:
     def onSetStatus(self, status, target=None, source=None, effect=None):
@@ -3027,6 +3355,7 @@ class Vitalspirit:
         if pokemon and pokemon.status == "slp":
             pokemon.setStatus(0)
 
+
 class Voltabsorb:
     def onTryHit(self, target=None, source=None, move=None):
         if move and move.type == "Electric" and target:
@@ -3035,11 +3364,13 @@ class Voltabsorb:
             target.immune = "Volt Absorb"
             return None
 
+
 class Wanderingspirit:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target and source and move and move.flags.get("contact"):
             if source.ability not in {"wanderingspirit"}:
                 target.ability, source.ability = source.ability, target.ability
+
 
 class Waterabsorb:
     def onTryHit(self, target=None, source=None, move=None):
@@ -3048,6 +3379,7 @@ class Waterabsorb:
             target.hp = min(target.max_hp, target.hp + heal)
             target.immune = "Water Absorb"
             return None
+
 
 class Waterbubble:
     def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
@@ -3080,10 +3412,12 @@ class Waterbubble:
         if pokemon and pokemon.status == "brn":
             pokemon.setStatus(0)
 
+
 class Watercompaction:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if move and move.type == "Water" and target:
             apply_boost(target, {"def": 2})
+
 
 class Waterveil:
     def onSetStatus(self, status, target=None, source=None, effect=None):
@@ -3096,10 +3430,12 @@ class Waterveil:
         if pokemon and pokemon.status == "brn":
             pokemon.setStatus(0)
 
+
 class Weakarmor:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if target and move and move.category == "Physical":
             apply_boost(target, {"def": -1, "spe": 2})
+
 
 class Wellbakedbody:
     def onTryHit(self, target=None, source=None, move=None):
@@ -3107,6 +3443,7 @@ class Wellbakedbody:
             apply_boost(target, {"def": 2})
             target.immune = "Well-Baked Body"
             return None
+
 
 class Whitesmoke:
     def onTryBoost(self, boost, target=None, source=None, effect=None):
@@ -3116,10 +3453,12 @@ class Whitesmoke:
             if boost[stat] < 0:
                 del boost[stat]
 
+
 class Wimpout:
     def onEmergencyExit(self, pokemon=None):
         if pokemon:
             pokemon.switch_out = True
+
 
 class Windpower:
     def onAllySideConditionStart(self, side_condition=None, pokemon=None):
@@ -3129,6 +3468,7 @@ class Windpower:
     def onDamagingHit(self, damage, target=None, source=None, move=None):
         if move and move.flags.get("wind") and target:
             target.volatiles["charge"] = True
+
 
 class Windrider:
     def onAllySideConditionStart(self, side_condition=None, pokemon=None):
@@ -3146,6 +3486,7 @@ class Windrider:
             target.immune = "Wind Rider"
             return None
 
+
 class Wonderguard:
     def onTryHit(self, target=None, source=None, move=None):
         if not move or move.category == "Status" or move.id == "struggle":
@@ -3154,11 +3495,13 @@ class Wonderguard:
             target.immune = "Wonder Guard"
             return False
 
+
 class Wonderskin:
     def onModifyAccuracy(self, accuracy, attacker=None, defender=None, move=None):
         if move and move.category == "Status" and accuracy is not True:
             return min(accuracy, 50)
         return accuracy
+
 
 class Zenmode:
     def _update_form(self, pokemon):
@@ -3180,6 +3523,7 @@ class Zenmode:
     def onStart(self, pokemon=None):
         self._update_form(pokemon)
 
+
 class Zerotohero:
     def onStart(self, pokemon=None):
         if pokemon and pokemon.base_species.lower() == "palafin":
@@ -3193,4 +3537,3 @@ class Zerotohero:
     def onSwitchOut(self, pokemon=None):
         if pokemon and pokemon.base_species.lower() == "palafin":
             pokemon.abilityState["hero_ready"] = True
-

@@ -37,7 +37,8 @@ def _simple_heal_moves() -> List[str]:
         if name.lower() == "matchagotcha":
             continue
         if (raw.get("heal") or raw.get("drain")) and not any(
-            k in raw for k in ("onHit", "onTry", "self", "condition", "sideCondition", "slotCondition", "volatileStatus")
+            k in raw
+            for k in ("onHit", "onTry", "self", "condition", "sideCondition", "slotCondition", "volatileStatus")
         ):
             moves.append(name)
     return moves
@@ -160,4 +161,3 @@ def test_snatchable_moves_are_intercepted(move_name: str) -> None:
     unchanged = user.hp == user_hp and user.boosts == user_boosts
 
     assert "snatched" in log_text and changed and unchanged
-

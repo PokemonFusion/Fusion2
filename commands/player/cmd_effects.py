@@ -10,6 +10,7 @@ from pokemon.ui.battle_effects import render_effects_panel
 
 # Simple helper: get current room's battles by checking sessions that have .room
 
+
 def _battles_in_room(room):
     return [s for s in REGISTRY.all() if getattr(s, "room", None) == room]
 
@@ -20,7 +21,7 @@ def _session_title(s):
     enc = (getattr(getattr(s, "state", s), "encounter_kind", "") or "").lower()
     if enc == "wild":
         bmon = getattr(getattr(s, "captainB", None), "active_pokemon", None)
-        b = f"Wild {getattr(bmon,'name','Pokémon')}"
+        b = f"Wild {getattr(bmon, 'name', 'Pokémon')}"
     turn = getattr(getattr(s, "state", s), "round", getattr(getattr(s, "state", s), "turn", 0))
     sid = getattr(s, "id", None) or getattr(s, "uuid", None) or str(id(s))
     return f"#{str(sid)[-3:]}  {a} – {b} (Turn {turn})"
@@ -78,8 +79,7 @@ class CmdEffects(Command):
 
     def _get_focus_list(self):
         return [
-            getattr(s, "id", None) or getattr(s, "uuid", None) or str(id(s))
-            for s in REGISTRY.sessions_for(self.caller)
+            getattr(s, "id", None) or getattr(s, "uuid", None) or str(id(s)) for s in REGISTRY.sessions_for(self.caller)
         ]
 
     def _get_sticky_focus(self):
@@ -112,7 +112,7 @@ class CmdEffects(Command):
             if not sessions:
                 caller.msg("No battles found for you. Join a battle or watch one.")
                 return
-            lines = [f"{i+1:>2}. {_session_title(s)}" for i, s in enumerate(sessions)]
+            lines = [f"{i + 1:>2}. {_session_title(s)}" for i, s in enumerate(sessions)]
             caller.msg("\n".join(lines))
             return
 
@@ -141,14 +141,10 @@ class CmdEffects(Command):
             if not target:
                 caller.msg("Battle not found. Try +effects list.")
                 return
-            self._set_sticky_focus(
-                getattr(target, "id", None) or getattr(target, "uuid", None) or str(id(target))
-            )
+            self._set_sticky_focus(getattr(target, "id", None) or getattr(target, "uuid", None) or str(id(target)))
         else:
             participant = [
-                s
-                for s in sessions
-                if caller in getattr(s, "teamA", []) or caller in getattr(s, "teamB", [])
+                s for s in sessions if caller in getattr(s, "teamA", []) or caller in getattr(s, "teamB", [])
             ]
             if participant:
                 target = participant[0]
@@ -161,12 +157,13 @@ class CmdEffects(Command):
                 if not target:
                     if not sessions:
                         caller.msg(
-                            "You're not in a battle or watching one. Try: +effects #<id> / +effects @<name> / +effects here"
+                            ("You're not in a battle or watching one. "
+                             "Try: +effects #<id> / +effects @<name> / +effects here")
                         )
                         return
                     lines = [
                         "You're watching multiple battles. Try: +effects #<id> or +effects @Captain",
-                        *[f"{i+1:>2}. {_session_title(s)}" for i, s in enumerate(sessions)],
+                        *[f"{i + 1:>2}. {_session_title(s)}" for i, s in enumerate(sessions)],
                     ]
                     caller.msg("\n".join(lines))
                     return

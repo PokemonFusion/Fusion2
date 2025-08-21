@@ -8,6 +8,7 @@ sys.path.insert(0, ROOT)
 
 # stub evennia help base
 
+
 class FakeBaseHelp:
     index_category_clr = ""
     index_type_separator_clr = ""
@@ -37,7 +38,9 @@ class FakeHelpCategory:
     def __init__(self, key):
         self.key = key
 
+
 # utility to load command module with stub
+
 
 def load_cmd_module():
     path = os.path.join(ROOT, "commands", "player", "cmd_help.py")
@@ -63,7 +66,9 @@ def setup_module():
     evennia_mod = types.ModuleType("evennia")
     utils_pkg = types.ModuleType("evennia.utils")
     utils_mod = types.ModuleType("evennia.utils.utils")
-    utils_mod.format_grid = lambda elements, width=78, sep="  ", line_prefix="", verbatim_elements=None: [" ".join(elements)]
+    utils_mod.format_grid = lambda elements, width=78, sep="  ", line_prefix="", verbatim_elements=None: [
+        " ".join(elements)
+    ]
     utils_mod.pad = lambda text, width=78, fillchar="-": text
     utils_pkg.utils = utils_mod
     evennia_mod.utils = utils_pkg

@@ -52,7 +52,11 @@ move_entry = types.SimpleNamespace(
         "priority": 0,
         "onTry": "Echoedvoice.onTry",
         "basePowerCallback": "Echoedvoice.basePowerCallback",
-        "condition": {"duration": 2, "onFieldStart": "Echoedvoice.onFieldStart", "onFieldRestart": "Echoedvoice.onFieldRestart"},
+        "condition": {
+            "duration": 2,
+            "onFieldStart": "Echoedvoice.onFieldStart",
+            "onFieldRestart": "Echoedvoice.onFieldRestart",
+        },
     },
 )
 

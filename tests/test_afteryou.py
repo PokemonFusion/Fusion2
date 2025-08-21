@@ -10,8 +10,10 @@ sys.path.insert(0, ROOT)
 # Stub utils
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def apply_boost(pokemon, boosts):
     pass
+
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
@@ -32,11 +34,11 @@ pokemon_dex = types.ModuleType("pokemon.dex")
 pokemon_dex.__path__ = []
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {
-    "tackle": types.SimpleNamespace(name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0})
+    "tackle": types.SimpleNamespace(
+        name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0}
+    )
 }
-pokemon_dex.POKEDEX = {
-    "Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])
-}
+pokemon_dex.POKEDEX = {"Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])}
 sys.modules["pokemon.dex"] = pokemon_dex
 
 # Load battledata
@@ -66,8 +68,10 @@ def _cleanup_modules():
 class DummyQueue:
     def __init__(self):
         self.prioritized = None
+
     def will_move(self, target):
         return object()
+
     def prioritize_action(self, action):
         self.prioritized = action
 
