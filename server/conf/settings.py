@@ -78,7 +78,8 @@ PERMISSION_HIERARCHY = [
 ]
 
 # Use the custom character typeclass with Pokémon helpers
-BASE_CHARACTER_TYPECLASS = "pokemon.pokemon.User"
+# defined in ``pokemon.user``
+BASE_CHARACTER_TYPECLASS = "pokemon.user.User"
 
 # Add this to the secret_settings.py
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

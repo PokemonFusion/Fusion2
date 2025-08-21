@@ -1,3 +1,5 @@
+"""Character typeclass for players and their Pokémon interactions."""
+
 from evennia import DefaultCharacter
 from django.utils import timezone
 from .models import (
