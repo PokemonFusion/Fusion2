@@ -1,7 +1,7 @@
 """Command set for dev-only battle testing."""
 
 from evennia import CmdSet
-from ..devtest import CmdToggleTest, CmdTestBattle
+from ..debug.devtest import CmdToggleTest, CmdTestBattle
 
 
 class DevTestCmdSet(CmdSet):
