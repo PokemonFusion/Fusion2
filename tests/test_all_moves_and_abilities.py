@@ -4,10 +4,10 @@ These tests are slow so they are skipped unless ``--run-dex-tests`` is passed
 to ``pytest``.
 """
 
+import importlib
 import random
 import sys
 from pathlib import Path
-import importlib
 from typing import Callable
 
 import pytest
@@ -29,11 +29,11 @@ def get_dex_data():
 
 from pokemon.battle.battledata import Pokemon
 from pokemon.battle.engine import (
-    Battle,
-    BattleParticipant,
-    BattleMove,
     Action,
     ActionType,
+    Battle,
+    BattleMove,
+    BattleParticipant,
     BattleType,
 )
 from pokemon.utils.boosts import STAT_KEY_MAP

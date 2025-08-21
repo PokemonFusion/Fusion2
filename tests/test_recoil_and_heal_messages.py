@@ -1,6 +1,7 @@
 """Tests for recoil, drain and healing announcements."""
 
-import os, sys
+import os
+import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -10,12 +11,12 @@ from pokemon.battle.engine import (
     Action,
     ActionType,
     Battle,
+    BattleMove,
     BattleParticipant,
     BattleType,
-    BattleMove,
 )
-from pokemon.dex.entities import Stats
 from pokemon.data.text import DEFAULT_TEXT
+from pokemon.dex.entities import Stats
 
 
 def _run_move(move_raw, *, power: int = 0, user_hp: int = 100, target_hp: int = 100):

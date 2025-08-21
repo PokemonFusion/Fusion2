@@ -1,5 +1,6 @@
 from evennia import Command
 
+
 def heal_party(char):
     """Heal all active Pokemon for the given character."""
     storage = getattr(char, "storage", None)
@@ -150,9 +151,10 @@ class CmdUseMove(Command):
             inst.queue_move(move_name, caller=self.caller)
             return
 
-        from pokemon.dex import MOVEDEX, POKEDEX, Move
-        from pokemon.battle import damage_calc
         import copy
+
+        from pokemon.battle import damage_calc
+        from pokemon.dex import MOVEDEX, POKEDEX, Move
 
         # MOVEDEX keys are stored in lowercase
         movedata = MOVEDEX.get(move_name.lower())

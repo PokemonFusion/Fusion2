@@ -1,20 +1,21 @@
 """Character typeclass for players and their Pokémon interactions."""
 
-from evennia import DefaultCharacter
 from django.utils import timezone
-from .models import (
-    Pokemon,
-    OwnedPokemon,
-    UserStorage,
-    StorageBox,
-    Trainer,
-    GymBadge,
-    ensure_boxes,
-)
-from .data.generation import generate_pokemon
-from .dex import POKEDEX
+from evennia import DefaultCharacter
+
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from utils.inventory import InventoryMixin
+
+from .data.generation import generate_pokemon
+from .dex import POKEDEX
+from .models import (
+    GymBadge,
+    OwnedPokemon,
+    StorageBox,
+    Trainer,
+    UserStorage,
+    ensure_boxes,
+)
 
 
 class User(DefaultCharacter, InventoryMixin):

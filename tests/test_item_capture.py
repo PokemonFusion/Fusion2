@@ -1,7 +1,9 @@
 import random
+
 import pytest
 
 import pokemon.battle.capture as capture_mod
+from pokemon.battle.battledata import Pokemon
 from pokemon.battle.engine import (
     Action,
     ActionType,
@@ -9,7 +11,6 @@ from pokemon.battle.engine import (
     BattleParticipant,
     BattleType,
 )
-from pokemon.battle.battledata import Pokemon
 from pokemon.dex.functions import pokedex_funcs
 from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
 

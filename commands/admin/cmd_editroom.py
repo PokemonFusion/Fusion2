@@ -1,6 +1,8 @@
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
+
 import menus.edit_room as edit_room
+from utils.enhanced_evmenu import EnhancedEvMenu
+
 
 class CmdEditRoom(Command):
     """Interactive wizard for editing rooms.

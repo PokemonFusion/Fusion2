@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
 from evennia.utils.utils import datetime_format
 
-from .bboard import BBoard, create_board, get_board, list_boards
+from utils.enhanced_evmenu import EnhancedEvMenu
 
+from .bboard import BBoard, create_board, get_board, list_boards
 
 # ---------------------------------------------------------------------------
 # Helper functions

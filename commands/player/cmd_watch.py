@@ -1,5 +1,6 @@
 from evennia import Command, search_object
 
+
 class CmdWatch(Command):
     """Watch another trainer's ongoing battle.
 

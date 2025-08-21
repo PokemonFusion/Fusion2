@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol, Sequence, runtime_checkable, Optional
+from typing import Optional, Protocol, Sequence, runtime_checkable
 
 
 @runtime_checkable

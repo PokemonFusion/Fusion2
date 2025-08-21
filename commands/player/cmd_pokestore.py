@@ -1,6 +1,7 @@
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
+
 import menus.pokestore as pokestore
+from utils.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdPokestore(Command):

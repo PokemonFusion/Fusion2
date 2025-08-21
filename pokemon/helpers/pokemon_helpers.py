@@ -9,7 +9,7 @@ change, etc.).
 """
 
 from pokemon.data.generation import generate_pokemon
-from pokemon.models.stats import calculate_stats, STAT_KEY_MAP
+from pokemon.models.stats import STAT_KEY_MAP, calculate_stats
 from pokemon.services.move_management import learn_level_up_moves
 
 

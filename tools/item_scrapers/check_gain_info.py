@@ -4,8 +4,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-from pokemon.dex.pokedex import pokedex
 from pokemon.dex.exp_ev_yields import GAIN_INFO
+from pokemon.dex.pokedex import pokedex
 
 missing = [name for name in pokedex if name not in GAIN_INFO]
 

@@ -1,9 +1,10 @@
 """CmdSet for economy and map related commands."""
 
 from evennia import CmdSet
-from commands.player.cmd_store import CmdStore
-from commands.player.cmd_pokestore import CmdPokestore
+
 from commands.player.cmd_map_move import CmdMapMove
+from commands.player.cmd_pokestore import CmdPokestore
+from commands.player.cmd_store import CmdStore
 from commands.player.cmdstartmap import CmdStartMap
 
 

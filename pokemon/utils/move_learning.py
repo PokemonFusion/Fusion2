@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional
-
-from utils.enhanced_evmenu import EnhancedEvMenu
 from pokemon.models.moves import Move
 from pokemon.services.move_management import apply_active_moveset
+from utils.enhanced_evmenu import EnhancedEvMenu
 
 
 def get_learnable_levelup_moves(pokemon):

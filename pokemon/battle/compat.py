@@ -52,7 +52,9 @@ except ModuleNotFoundError:  # pragma: no cover - fallback normalizer
 try:  # pragma: no cover - logic may be absent during some tests
     BattleLogic = safe_import("pokemon.battle.logic").BattleLogic  # type: ignore[attr-defined]
 except ModuleNotFoundError:  # pragma: no cover - dynamic import fallback
-    import importlib.util as _util, pathlib as _pathlib, sys as _sys
+    import importlib.util as _util
+    import pathlib as _pathlib
+    import sys as _sys
 
     _logic_path = _pathlib.Path(__file__).with_name("logic.py")
     _spec = _util.spec_from_file_location("pokemon.battle.logic", _logic_path)
@@ -68,7 +70,9 @@ try:  # pragma: no cover - factory may be absent
     generate_wild_pokemon = _factory.generate_wild_pokemon  # type: ignore[attr-defined]
     _calc_stats_from_model = _factory._calc_stats_from_model  # type: ignore[attr-defined]
 except ModuleNotFoundError:  # pragma: no cover - dynamic import fallback
-    import importlib.util as _util, pathlib as _pathlib, sys as _sys
+    import importlib.util as _util
+    import pathlib as _pathlib
+    import sys as _sys
 
     _factory_path = _pathlib.Path(__file__).with_name("pokemon_factory.py")
     _spec_f = _util.spec_from_file_location("pokemon.battle.pokemon_factory", _factory_path)

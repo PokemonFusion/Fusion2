@@ -9,9 +9,9 @@ personality profile.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
 import random
+from dataclasses import dataclass
 from typing import Dict, List, Sequence
 
 from .damage import stab_multiplier, type_effectiveness

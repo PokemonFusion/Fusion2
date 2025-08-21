@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -35,7 +35,6 @@ y_spec.loader.exec_module(y_mod)
 GAIN_INFO = y_mod.GAIN_INFO
 
 # Load stats module after stubbing dex
-import pokemon.models.stats as stats_mod
 
 # Load battledata and engine
 bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")

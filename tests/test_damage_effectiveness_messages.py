@@ -1,11 +1,12 @@
 """Tests for type effectiveness messaging in damage calculations."""
 
-from pokemon.dex.entities import Pokemon, Move, Stats
-from pokemon.battle.damage import damage_calc
-from pokemon.data.text import DEFAULT_TEXT
+import pytest
+
 from pokemon import data as data_stub
 from pokemon.battle import damage as dmg_module
-import pytest
+from pokemon.battle.damage import damage_calc
+from pokemon.data.text import DEFAULT_TEXT
+from pokemon.dex.entities import Move, Pokemon, Stats
 
 
 @pytest.fixture(autouse=True)

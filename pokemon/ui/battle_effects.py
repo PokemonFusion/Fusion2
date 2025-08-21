@@ -10,20 +10,19 @@ This reuses helpers from battle_render.py to keep visuals consistent.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Reuse existing ANSI-safe helpers and theme
 from pokemon.ui.battle_render import (
     THEME,
     ansi_len,
-    rpad,
-    fmt_hp_line,
-    status_badge,
-    gender_chip,
     display_name,
+    fmt_hp_line,
+    gender_chip,
+    rpad,
+    status_badge,
 )
 from pokemon.ui.box_utils import render_box
-
 
 # ---------------------------------------------------------------------------
 # Small helpers

@@ -1,7 +1,9 @@
+import uuid
+
 from evennia import Command
+
 from pokemon.models.core import OwnedPokemon
 from pokemon.models.trainer import Trainer
-import uuid
 
 
 class CmdListPokemon(Command):

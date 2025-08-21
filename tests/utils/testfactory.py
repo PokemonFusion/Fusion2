@@ -1,8 +1,8 @@
 """Helpers for constructing ephemeral test Pokémon."""
 
+import random
 from dataclasses import dataclass, field
 from typing import List, Optional
-import random
 
 try:
     from PKMN_Fusion_Python.movesdex import MOVEDEX

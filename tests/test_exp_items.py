@@ -1,10 +1,11 @@
-import sys
 import os
+import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-from pokemon.models.stats import apply_item_exp_mod, apply_item_ev_mod
+from pokemon.models.stats import apply_item_ev_mod, apply_item_exp_mod
+
 
 class DummyMon:
     def __init__(self, item=None):

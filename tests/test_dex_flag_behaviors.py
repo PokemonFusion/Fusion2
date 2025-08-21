@@ -12,19 +12,18 @@ sys.path.insert(0, ROOT)
 
 pytestmark = pytest.mark.dex
 
+from pokemon.battle.battledata import Pokemon
+from pokemon.battle.engine import (
+    Action,
+    ActionType,
+    Battle,
+    BattleMove,
+    BattleParticipant,
+    BattleType,
+)
 from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Stats
 from pokemon.dex.flag_groups import get_move_flag_groups
-from pokemon.battle.battledata import Pokemon
-from pokemon.battle.engine import (
-    Battle,
-    BattleParticipant,
-    BattleMove,
-    Action,
-    ActionType,
-    BattleType,
-)
-
 
 FLAG_GROUPS = get_move_flag_groups()
 

@@ -1,21 +1,23 @@
 # mygame/commands/cmd_pokedex.py
 
 from evennia import Command
+
+from pokemon.dex.functions.pokedex_funcs import (
+    get_national_entries,
+    get_region_entries,
+)
 from pokemon.middleware import (
-    get_pokemon_by_number,
-    get_pokemon_by_name,
-    format_pokemon_details,
-    get_move_by_name,
-    format_move_details,
-    get_moveset_by_name,
-    format_moveset,
     POKEMON_BY_NAME,
     _normalize_key,
+    format_move_details,
+    format_moveset,
+    format_pokemon_details,
+    get_move_by_name,
+    get_moveset_by_name,
+    get_pokemon_by_name,
+    get_pokemon_by_number,
 )
-from pokemon.dex.functions.pokedex_funcs import (
-    get_region_entries,
-    get_national_entries,
-)
+
 
 class CmdPokedexSearch(Command):
     """Look up Pokédex entries and lists.

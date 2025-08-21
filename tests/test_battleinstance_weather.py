@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 from enum import Enum
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

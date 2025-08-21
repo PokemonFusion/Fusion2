@@ -1,7 +1,7 @@
 """Tests for the Aura Break ability interactions."""
 
-from tests.test_all_moves_and_abilities import build_ability, get_dex_data, setup_battle
 from pokemon.battle.engine import BattleMove
+from tests.test_all_moves_and_abilities import build_ability, get_dex_data, setup_battle
 
 
 def _run_battle(defender_ability=None):

@@ -1,7 +1,7 @@
-import sys
-import os
-import types
 import importlib.util
+import os
+import sys
+import types
 
 # Stub minimal pokemon.models.stats before importing display utilities
 _real_stats = sys.modules.get("pokemon.models.stats")
@@ -52,9 +52,11 @@ spec.loader.exec_module(entities_mod)  # type: ignore
 pokemon_dex.entities = entities_mod
 sys.modules["pokemon.dex"] = pokemon_dex
 
-import pytest
-import utils.display as display
 from types import SimpleNamespace
+
+import pytest
+
+import utils.display as display
 
 # Restore original modules for other tests
 if _real_stats is not None:

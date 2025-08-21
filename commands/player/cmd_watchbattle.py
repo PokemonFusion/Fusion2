@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from evennia import Command
-from evennia import search_object
-
+from evennia import Command, search_object
 
 
 class CmdWatchBattle(Command):

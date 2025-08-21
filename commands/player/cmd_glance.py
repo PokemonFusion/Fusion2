@@ -1,7 +1,8 @@
 from evennia import Command
-from evennia.utils.evtable import EvTable
-from evennia.utils import utils
 from evennia.objects.objects import DefaultCharacter
+from evennia.utils import utils
+from evennia.utils.evtable import EvTable
+
 
 class CmdGlance(Command):
     """Show a brief overview of online characters in the room.

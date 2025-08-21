@@ -1,5 +1,5 @@
+
 from django.db import transaction
-from typing import Any
 
 try:
     from pokemon.models.core import OwnedPokemon
@@ -7,7 +7,7 @@ except Exception:  # pragma: no cover - optional in tests
     OwnedPokemon = None
 
 try:
-    from pokemon.battle.battledata import Pokemon, Move
+    from pokemon.battle.battledata import Move, Pokemon
 except Exception:  # pragma: no cover - allow tests to stub
     Pokemon = Move = None
 
@@ -356,7 +356,8 @@ def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
         sp = _GLOBAL_POKEDEX.get(_normalize_key(species)) or _GLOBAL_POKEDEX.get(species)
     if sp is None:
         try:
-            import importlib.util, sys
+            import importlib.util
+            import sys
             from pathlib import Path
 
             spec = importlib.util.spec_from_file_location(

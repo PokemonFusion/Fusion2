@@ -15,27 +15,27 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from commands.player.cmd_help import CmdHelp
-from commands.debug.cmd_debugpy import CmdDebugPy
-from commands.player.cmd_examine import CmdExamine
-from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
-from commands.player.cmd_account import CmdCharCreate, CmdAlts
+
+from commands.cmdsets.admin_misc import AdminMiscCmdSet
+from commands.cmdsets.battle import BattleCmdSet
+from commands.cmdsets.battle_admin import BattleAdminCmdSet
 
 # grouped cmdsets
 from commands.cmdsets.bboard import BulletinBoardCmdSet
+from commands.cmdsets.devinspect import CmdToggleDevInspect
+from commands.cmdsets.economy_map import EconomyMapCmdSet
+from commands.cmdsets.pokedex import PokedexCmdSet
+from commands.cmdsets.pokemon_core import PokemonCoreCmdSet
+from commands.cmdsets.pvp import PvpCmdSet
 from commands.cmdsets.roleplay import RoleplayCmdSet
 from commands.cmdsets.ui import UiCmdSet
-from commands.cmdsets.pokemon_core import PokemonCoreCmdSet
-from commands.cmdsets.battle import BattleCmdSet
-from commands.cmdsets.battle_admin import BattleAdminCmdSet
-from commands.cmdsets.pokedex import PokedexCmdSet
-from commands.cmdsets.pvp import PvpCmdSet
 from commands.cmdsets.world_build import WorldBuildCmdSet
-from commands.cmdsets.economy_map import EconomyMapCmdSet
-from commands.cmdsets.admin_misc import AdminMiscCmdSet
+from commands.debug.cmd_debugpy import CmdDebugPy
+from commands.player.cmd_account import CmdAlts, CmdCharCreate
+from commands.player.cmd_examine import CmdExamine
+from commands.player.cmd_help import CmdHelp
+from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
 
-
-from commands.cmdsets.devinspect import CmdToggleDevInspect
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """

@@ -1,15 +1,14 @@
 """Core models for Pokémon, including base and owned Pokémon classes."""
 
-from django.db import models
+import math
+import uuid
+
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
 from evennia.utils.idmapper.models import SharedMemoryModel
 
-import uuid
-import math
-
-from .validators import validate_ivs, validate_evs
 from .enums import Gender, Nature
-
+from .validators import validate_evs, validate_ivs
 
 # Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
 MAX_PP_MULTIPLIER = 1.6

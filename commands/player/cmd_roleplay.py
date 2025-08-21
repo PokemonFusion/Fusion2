@@ -1,5 +1,7 @@
-from evennia.commands.default.account import CmdIC as DefaultCmdIC, CmdOOC as DefaultCmdOOC
 from evennia import Command
+from evennia.commands.default.account import CmdIC as DefaultCmdIC
+from evennia.commands.default.account import CmdOOC as DefaultCmdOOC
+
 
 class CmdGOIC(DefaultCmdIC):
     """Go in-character.

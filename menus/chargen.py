@@ -6,12 +6,12 @@ from __future__ import annotations
 
 from typing import Dict
 
+from pokemon.data.generation import NATURES as NATURES_MAP
+from pokemon.data.generation import generate_pokemon
+from pokemon.data.starters import STARTER_LOOKUP, get_starter_names
 from pokemon.dex import POKEDEX
-from pokemon.data.generation import generate_pokemon, NATURES as NATURES_MAP
-from pokemon.models.core import OwnedPokemon
-from pokemon.models.storage import ensure_boxes
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-from pokemon.data.starters import get_starter_names, STARTER_LOOKUP
+from pokemon.models.storage import ensure_boxes
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
 

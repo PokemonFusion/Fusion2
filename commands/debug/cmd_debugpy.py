@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import logging
 
 from django.conf import settings

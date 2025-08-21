@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import random
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from evennia import DefaultRoom
 
+from pokemon.data.generation import PokemonInstance, generate_pokemon
 from utils.pokemon_config import RARITY_WEIGHTS, TIERS
-from pokemon.data.generation import generate_pokemon, PokemonInstance
 
 
 def weighted_choice(choices: List[Dict]) -> Optional[Dict]:

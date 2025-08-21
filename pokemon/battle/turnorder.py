@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 from typing import List
+
 from utils.safe_import import safe_import
 
 try:

@@ -1,9 +1,10 @@
 import os
 import sys
 import types
+
+from django.conf import settings
 from django.http import HttpResponse
 from django.test import RequestFactory
-from django.conf import settings
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -124,6 +125,7 @@ def test_preview_context():
 
 def test_save_redirects_to_list():
     import importlib
+
     from django.urls import reverse
     if not settings.configured:
         settings.configure(
@@ -228,6 +230,7 @@ def test_save_redirects_to_list():
 
 def test_delete_room():
     import importlib
+
     from django.urls import reverse
     if not settings.configured:
         settings.configure(

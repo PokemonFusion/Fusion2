@@ -9,9 +9,10 @@ focused on session management.
 
 from typing import List
 
-from ..data.generation import generate_pokemon
 from pokemon.helpers.pokemon_spawn import get_spawn
-from .battledata import Pokemon, Move
+
+from ..data.generation import generate_pokemon
+from .battledata import Move, Pokemon
 
 
 def _stat_list(source) -> List[int]:

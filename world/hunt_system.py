@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import builtins
 import random
 import time
-import builtins
 from typing import Any, Callable, Dict, List, Optional
 
 from evennia import DefaultRoom

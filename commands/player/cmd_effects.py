@@ -7,7 +7,6 @@ from evennia import Command
 from pokemon.battle.registry import REGISTRY
 from pokemon.ui.battle_effects import render_effects_panel
 
-
 # Simple helper: get current room's battles by checking sessions that have .room
 
 

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from evennia.utils.ansi import strip_ansi
+
 from pokemon.data.text import MOVES_TEXT
 
 _MOVEDEX: Optional[Dict[str, Any]] = None

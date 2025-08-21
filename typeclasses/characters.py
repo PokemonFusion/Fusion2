@@ -8,8 +8,12 @@ creation commands.
 
 """
 
+import importlib.machinery
+import importlib.util
+import os
+import sys
+
 from evennia.objects.objects import DefaultCharacter
-import sys, os, importlib.util, importlib.machinery
 
 _BASE_PATH = os.path.dirname(__file__)
 if "typeclasses" not in sys.modules:
@@ -31,8 +35,9 @@ except Exception:  # pragma: no cover - fallback when package missing
     spec_obj.loader.exec_module(mod_obj)
     ObjectParent = mod_obj.ObjectParent  # type: ignore[attr-defined]
 
-from utils.pokedex import DexTrackerMixin
 from django.utils.translation import gettext as _
+
+from utils.pokedex import DexTrackerMixin
 
 
 class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):

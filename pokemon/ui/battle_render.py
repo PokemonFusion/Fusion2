@@ -1,8 +1,8 @@
 """Battle UI renderer: ANSI-safe, width-aware two-column layout with captains/wild title,
 HP bars, status badges, party pips, adaptive name/meta row, and a clean footer."""
 
-from utils.battle_display import strip_ansi
 from pokemon.ui.box_utils import render_box
+from utils.battle_display import strip_ansi
 
 # ---------------- Theme ----------------
 # Pipe-ANSI color tokens only; callers can later expose a runtime theme toggle.

@@ -6,13 +6,13 @@ battle. It was extracted from ``engine.py`` to improve modularity.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
-from .battledata import Move
+from typing import TYPE_CHECKING, List, Optional
+
 from utils.safe_import import safe_import
 
 if TYPE_CHECKING:  # pragma: no cover - circular imports for typing only
-    from pokemon.battle.actions import Action, ActionType
-    from pokemon.battle.engine import Battle, BattleMove
+    from pokemon.battle.actions import Action
+    from pokemon.battle.engine import Battle
 
 
 class BattleParticipant:

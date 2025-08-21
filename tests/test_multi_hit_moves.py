@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from tests.test_move_effects import setup_env as base_setup_env, setup_battle
+from tests.test_move_effects import setup_battle
+from tests.test_move_effects import setup_env as base_setup_env
 
 """Tests covering multi-hit move behaviour."""
 

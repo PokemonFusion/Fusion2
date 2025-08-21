@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -21,6 +21,7 @@ sys.modules[storage_spec.name] = storage_mod
 storage_spec.loader.exec_module(storage_mod)
 
 from world.hunt_system import HuntSystem
+
 
 class DummyDB(types.SimpleNamespace):
     def get(self, key, default=None):

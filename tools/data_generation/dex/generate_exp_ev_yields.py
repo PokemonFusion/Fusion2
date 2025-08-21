@@ -1,8 +1,8 @@
 import csv
 import json
-from pathlib import Path
-import unicodedata
 import sys
+import unicodedata
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT))

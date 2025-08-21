@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Iterable
 
-from evennia import Command, utils
+from evennia import Command
 from evennia.utils.search import search_object
 
 # Colors (pipe-ANSI); adjust to theme

@@ -1,4 +1,3 @@
-from utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 """Menu for learning a move and potentially replacing an active one."""
 
 from pokemon.models.moves import Move

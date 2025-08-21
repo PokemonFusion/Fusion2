@@ -1,6 +1,8 @@
 import re
+
 import requests
 from bs4 import BeautifulSoup
+
 
 def scrape_pokeballs():
     url = 'https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9_Ball?action=edit'

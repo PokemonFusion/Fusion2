@@ -7,8 +7,8 @@ improve readability.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Any
 import sys
+from typing import Any, Dict, Optional
 
 # Dex helper modules are imported lazily to keep test stubs lightweight.
 moves_funcs = None

@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import random
-
 import os
+import random
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-from pokemon.battle.damage import apply_damage, damage_phrase
 from pokemon.battle.battledata import Pokemon
+from pokemon.battle.damage import apply_damage, damage_phrase
 from pokemon.dex.entities import Move, Stats
 
 

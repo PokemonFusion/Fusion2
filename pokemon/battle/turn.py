@@ -12,8 +12,10 @@ from __future__ import annotations
 import traceback
 
 from utils.safe_import import safe_import
+
 from .compat import log_err, log_info, log_warn
 from .interface import format_turn_banner, render_interfaces
+
 try:  # pragma: no cover - interface may be stubbed in tests
     broadcast_interfaces = safe_import("pokemon.battle.interface").broadcast_interfaces  # type: ignore[attr-defined]
 except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback implementation

@@ -9,8 +9,8 @@ input loop. It hides the default option list and parses user input via
 position. The menu can be triggered with `+attack /menu`.
 """
 
-from typing import Any, Dict, List, Tuple
 import re
+from typing import Any, Dict, List, Tuple
 
 from evennia.utils.evmenu import EvMenuGotoAbortMessage
 

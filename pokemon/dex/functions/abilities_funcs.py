@@ -1,6 +1,7 @@
-from random import random, choice
-from pokemon.utils.boosts import apply_boost
+from random import choice, random
+
 from pokemon.dex.functions.moves_funcs import type_effectiveness
+from pokemon.utils.boosts import apply_boost
 
 
 class Adaptability:

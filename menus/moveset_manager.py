@@ -1,4 +1,3 @@
-from utils.enhanced_evmenu import EnhancedEvMenu as EvMenu
 from pokemon.services.move_management import apply_active_moveset
 
 

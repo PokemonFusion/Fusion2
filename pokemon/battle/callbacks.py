@@ -1,7 +1,8 @@
 """Callback resolution helpers for battle modules."""
 
-from typing import Any
 import sys
+from typing import Any
+
 from utils.safe_import import safe_import
 
 

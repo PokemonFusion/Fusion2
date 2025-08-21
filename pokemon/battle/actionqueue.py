@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, Tuple
 
-from .compat import log_info, _battle_norm_key
+from .compat import _battle_norm_key, log_info
 
 
 class ActionQueue:

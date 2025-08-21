@@ -9,8 +9,8 @@ except Exception:  # pragma: no cover - fallback for ad-hoc loading
         from pokemon.dex.functions.moves import __all__  # noqa: F401
     except Exception:  # pragma: no cover - manual filesystem import
         import importlib.util
-        from pathlib import Path
         import sys
+        from pathlib import Path
 
         path = Path(__file__).with_name("moves") / "__init__.py"
         spec = importlib.util.spec_from_file_location(

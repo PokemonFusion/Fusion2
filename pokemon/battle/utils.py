@@ -2,7 +2,7 @@
 
 from typing import Dict, Optional
 
-from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost
+from pokemon.utils.boosts import STAT_KEY_MAP
 
 
 def _safe_get_stats(pokemon) -> Dict[str, int]:

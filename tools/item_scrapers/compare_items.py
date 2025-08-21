@@ -2,8 +2,7 @@ import ast
 import re
 from pathlib import Path
 
-from item_list_scraper import scrape_items, sanitize_name
-
+from item_list_scraper import sanitize_name, scrape_items
 
 ITEMDEX_PATH = Path(__file__).resolve().parents[1] / "pokemon" / "dex" / "items" / "itemsdex.py"
 

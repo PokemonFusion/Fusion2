@@ -3,9 +3,10 @@
 import importlib
 import os
 import sys
+
 import pytest
 
-from tests.test_move_effects import setup_env, setup_battle
+from tests.test_move_effects import setup_battle, setup_env
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)

@@ -1,6 +1,6 @@
 """Ensure battle state turn counter matches engine turn count."""
 
-from tests.test_battle_rebuild import BattleSession, DummyRoom, DummyPlayer
+from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
 
 
 def test_state_turn_matches_engine_after_running_turn() -> None:

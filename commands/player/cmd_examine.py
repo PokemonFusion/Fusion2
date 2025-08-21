@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from django.conf import settings
 import pprint
 import re
 from types import SimpleNamespace
 
 import evennia.commands.default.building as building
+from django.conf import settings
 from evennia.commands.default.building import CmdExamine as DefaultCmdExamine
 from evennia.utils import funcparser, utils
 from evennia.utils.ansi import raw as ansi_raw
+
 
 class CmdExamine(DefaultCmdExamine):
     """Enhanced examine using prettyprint."""

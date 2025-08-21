@@ -1,6 +1,7 @@
-import types
-import sys
 import importlib
+import sys
+import types
+
 
 # Set up fake models
 class FakeManager:

@@ -1,5 +1,6 @@
 """Command to show ongoing battle interfaces."""
 from __future__ import annotations
+
 try:
 	from evennia import Command, search_object
 	if Command is None:

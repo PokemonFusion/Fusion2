@@ -1,7 +1,7 @@
 """Storage related models for managing a trainer's Pokémon."""
 
-from django.db import models
 from django.core.exceptions import ValidationError
+from django.db import models
 from evennia.objects.models import ObjectDB
 
 

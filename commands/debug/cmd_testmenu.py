@@ -13,6 +13,7 @@ from evennia.utils.evmenu import EvMenu
 # issues when the project's package name differs across environments.
 from menus import evmenu_sanity
 
+
 class CmdTestMenu(Command):
     """
     Launch a stock EvMenu sanity-check.

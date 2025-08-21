@@ -1,5 +1,5 @@
-import types
 import sys
+import types
 
 # Stub evennia evmenu so importing battle_move works without full evennia setup
 sys.modules['evennia.utils.evmenu'] = types.SimpleNamespace(EvMenuGotoAbortMessage=Exception)

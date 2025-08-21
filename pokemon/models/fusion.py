@@ -1,7 +1,8 @@
 """Model representing a fusion between a trainer and a Pokémon."""
 
-from django.db import models
 import uuid
+
+from django.db import models
 
 
 class PokemonFusion(models.Model):

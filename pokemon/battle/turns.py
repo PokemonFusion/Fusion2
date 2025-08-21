@@ -499,8 +499,9 @@ class TurnProcessor:
             catch_rate = get_catch_rate(getattr(target_poke, "name", "")) or 0
             status = getattr(target_poke, "status", None)
             max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
-            from .capture import attempt_capture
             import random as _random
+
+            from .capture import attempt_capture
 
             ball_mod = BALL_MODIFIERS.get(item_key, 1.0)
             rng = _random.Random(_random.random())

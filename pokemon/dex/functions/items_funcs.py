@@ -1,4 +1,5 @@
 from random import random
+
 from pokemon.dex.functions.moves_funcs import type_effectiveness
 
 

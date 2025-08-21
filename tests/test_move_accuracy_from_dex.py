@@ -4,17 +4,17 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-from pokemon.dex import MOVEDEX
-from pokemon.dex.entities import Move
+from pokemon.battle.battledata import Pokemon
 from pokemon.battle.engine import (
-    Battle,
-    BattleParticipant,
-    BattleMove,
     Action,
     ActionType,
+    Battle,
+    BattleMove,
+    BattleParticipant,
     BattleType,
 )
-from pokemon.battle.battledata import Pokemon
+from pokemon.dex import MOVEDEX
+from pokemon.dex.entities import Move
 
 
 def test_accuracy_overridden_from_dex():

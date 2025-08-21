@@ -1,4 +1,3 @@
-import types
 
 class FakePokemon:
     def __init__(self, name, slot):

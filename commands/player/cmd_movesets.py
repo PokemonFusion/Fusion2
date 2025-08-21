@@ -1,6 +1,7 @@
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
+
 import menus.moveset_manager as moveset_manager
+from utils.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdMovesets(Command):

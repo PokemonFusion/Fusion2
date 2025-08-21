@@ -1,9 +1,11 @@
 from __future__ import annotations
-import re
+
 import json
-import json5
-from pathlib import Path
 import pprint
+import re
+from pathlib import Path
+
+import json5
 
 BASE_DIR = Path(__file__).parent
 TS_DIR = BASE_DIR / 'ts'

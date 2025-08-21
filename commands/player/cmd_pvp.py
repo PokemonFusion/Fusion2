@@ -1,11 +1,10 @@
 from evennia import Command
-from evennia.utils.utils import inherits_from
 
 from pokemon.battle.pvp import (
     create_request,
-    remove_request,
     find_request,
     get_requests,
+    remove_request,
     start_pvp_battle,
 )
 

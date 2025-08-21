@@ -1,7 +1,7 @@
 """Tests for battle UI rendering."""
 
-import os
 import importlib.util
+import os
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODULE_PATH = os.path.join(ROOT, "pokemon", "ui", "battle_render.py")

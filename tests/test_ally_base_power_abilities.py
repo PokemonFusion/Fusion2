@@ -1,16 +1,17 @@
 """Tests for abilities modifying ally base power."""
 
-from tests.test_all_moves_and_abilities import build_ability, get_dex_data
+import random
+
+from pokemon.battle.battledata import Pokemon
 from pokemon.battle.engine import (
+    Action,
+    ActionType,
     Battle,
     BattleMove,
     BattleParticipant,
-    Action,
-    ActionType,
     BattleType,
 )
-from pokemon.battle.battledata import Pokemon
-import random
+from tests.test_all_moves_and_abilities import build_ability, get_dex_data
 
 
 def _run_ally_battle(ability_name, move_type, category):

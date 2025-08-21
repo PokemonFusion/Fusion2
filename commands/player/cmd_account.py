@@ -1,6 +1,7 @@
-from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
-from evennia import Command, search_account
 from django.conf import settings
+from evennia import Command, search_account
+from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
+
 
 class CmdCharCreate(DefaultCmdCharCreate):
     """Create a new character with a maximum-per-account limit.

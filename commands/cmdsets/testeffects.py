@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from evennia import CmdSet
-from evennia import Command
+from evennia import CmdSet, Command
 
 from ..player.cmd_effects import CmdEffects
 

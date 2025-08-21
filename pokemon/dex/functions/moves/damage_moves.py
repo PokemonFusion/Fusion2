@@ -1,4 +1,5 @@
 from random import choice, random
+
 from pokemon.utils.boosts import apply_boost
 
 

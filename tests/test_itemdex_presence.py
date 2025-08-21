@@ -1,5 +1,5 @@
-import importlib
 from pokemon.dex import ITEMDEX
+
 
 def test_medicine_items_present():
     expected = [

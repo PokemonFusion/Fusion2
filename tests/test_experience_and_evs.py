@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -35,14 +35,15 @@ pokemon_dex.POKEDEX = {
 pokemon_dex.MOVEDEX = {}
 sys.modules["pokemon.dex"] = pokemon_dex
 import pokemon.models.stats as stats_mod
+
 stats_mod.POKEDEX = pokemon_dex.POKEDEX
 
 from pokemon.models.stats import (
+    add_evs,
+    add_experience,
+    calculate_stats,
     exp_for_level,
     level_for_exp,
-    add_experience,
-    add_evs,
-    calculate_stats,
 )
 
 

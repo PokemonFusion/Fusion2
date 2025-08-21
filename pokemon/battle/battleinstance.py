@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
-from .battledata import BattleData, Team, Pokemon, Move
+from utils.safe_import import safe_import
+
+from .battledata import BattleData, Pokemon, Team
 from .engine import Battle, BattleParticipant, BattleType
 from .messaging import MessagingMixin
 from .state import BattleState
 from .watchers import WatcherManager
-from utils.safe_import import safe_import
 
 try:  # pragma: no cover - tests may stub watchers without helper
     normalize_watchers = safe_import("pokemon.battle.watchers").normalize_watchers  # type: ignore[attr-defined]
@@ -39,8 +40,8 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback whe
 
 
 from .actionqueue import ActionQueue
-from .turn import TurnManager
 from .interface import render_interfaces
+from .turn import TurnManager
 
 try:  # pragma: no cover - interface may be stubbed in tests
     broadcast_interfaces = safe_import("pokemon.battle.interface").broadcast_interfaces  # type: ignore[attr-defined]
@@ -58,22 +59,25 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback imp
             session._msg_to(w, iface_w)
 
 
-from .handler import battle_handler
-from .storage import BattleDataWrapper
 from utils.pokemon_utils import build_battle_pokemon_from_model
-from .setup import create_participants, build_initial_state, persist_initial_state
-from .persistence import StatePersistenceMixin
+
 from .compat import (
-    log_info,
-    log_warn,
-    log_err,
-    search_object,
     BattleLogic,
+    create_battle_pokemon,
     generate_trainer_pokemon,
     generate_wild_pokemon,
-    create_battle_pokemon,
+    log_err,
+    log_info,
+    log_warn,
+    search_object,
+)
+from .compat import (
     ScriptBase as _ScriptBase,
 )
+from .handler import battle_handler
+from .persistence import StatePersistenceMixin
+from .setup import build_initial_state, create_participants, persist_initial_state
+from .storage import BattleDataWrapper
 
 
 class BattleInstance(_ScriptBase):

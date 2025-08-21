@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
+
 from utils.safe_import import safe_import
 
 try:  # pragma: no cover - Evennia logger may be unavailable in tests
@@ -103,7 +104,6 @@ class BattleHandler:
     # -------------------------------------------------------------
     def rebuild_ndb(self) -> None:
         """Repopulate ndb attributes for all tracked battle instances."""
-        from .battleinstance import BattleSession
 
         log_info(f"Rebuilding ndb data for {len(self.instances)} active battles")
         for inst in list(self.instances.values()):

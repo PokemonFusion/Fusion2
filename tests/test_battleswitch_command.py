@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 from dataclasses import dataclass
 from enum import Enum
 

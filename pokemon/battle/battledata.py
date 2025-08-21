@@ -9,12 +9,13 @@ methods used for JSON serialisation.  `BattleData` also provides
 
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from utils.safe_import import safe_import
 
 try:

@@ -7,7 +7,6 @@ from typing import Any, List, Optional
 from .compat import log_info, search_object
 from .state import BattleState
 
-
 # ---------------------------------------------------------------------------
 # Core watcher helpers
 # ---------------------------------------------------------------------------

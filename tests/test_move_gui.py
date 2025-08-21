@@ -1,6 +1,6 @@
+import os
 import sys
 import types
-import os
 from typing import Tuple
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

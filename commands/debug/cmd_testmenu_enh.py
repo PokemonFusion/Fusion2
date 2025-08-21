@@ -1,8 +1,9 @@
 """Command to launch the EnhancedEvMenu sanity-check."""
 
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
+
 from menus import evmenu_sanity
+from utils.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdTestMenuEnhanced(Command):

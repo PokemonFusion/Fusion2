@@ -1,7 +1,7 @@
+import importlib.util
+import os
 import sys
 import types
-import os
-import importlib.util
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -24,6 +24,7 @@ sys.modules["pokemon.battle.interface"] = iface
 spec.loader.exec_module(iface)
 display_battle_interface = iface.display_battle_interface
 from pokemon.battle.state import BattleState
+
 
 class DummyMon:
     def __init__(self, name, hp, max_hp):

@@ -1,8 +1,9 @@
 import os
 import sys
 import types
+
 from django.conf import settings
-from django.template import Engine, Context
+from django.template import Context, Engine
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)

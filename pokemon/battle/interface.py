@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from utils.battle_display import render_battle_ui
 
+
 def format_turn_banner(turn: int) -> str:
 	"""Return a simple banner for turn notifications."""
 	return f"╭─ Turn {turn} ─╮"
@@ -119,7 +120,6 @@ def display_battle_interface(
 	return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)
 
 
-from .watchers import add_watcher, notify_watchers, remove_watcher
 
 
 def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):

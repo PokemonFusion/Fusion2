@@ -1,6 +1,8 @@
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
+
 import menus.room_wizard as room_wizard
+from utils.enhanced_evmenu import EnhancedEvMenu
+
 
 class CmdRoomWizard(Command):
     """

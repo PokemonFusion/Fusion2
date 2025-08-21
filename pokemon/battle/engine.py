@@ -36,19 +36,20 @@ corresponding methods simply ``pass`` for now.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Callable, List, Optional, Dict, Any
-
 import random
-from .battledata import Move
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
+
 from utils.safe_import import safe_import
+
+from .battledata import Move
 
 try:
     EventDispatcher = safe_import("pokemon.battle.events").EventDispatcher  # type: ignore[attr-defined]
 except ModuleNotFoundError:  # pragma: no cover - fallback for tests with stubs
-    from collections import defaultdict
     import inspect
+    from collections import defaultdict
 
     class EventDispatcher:
         """Minimal dispatcher used when :mod:`pokemon.battle.events` is unavailable."""
@@ -75,11 +76,14 @@ except ModuleNotFoundError:  # pragma: no cover - fallback for tests with stubs
                         pass
 
 
+import importlib.machinery
+import importlib.util
+import logging
+import os
+import sys
+
 from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Move
-import logging
-
-import sys, os, importlib.util, importlib.machinery
 
 _BASE_PATH = os.path.dirname(__file__)
 
@@ -642,8 +646,8 @@ class BattleMove:
             secondaries.append(sec)
         secondaries.extend(self.raw.get("secondaries", [])) if self.raw else None
         if secondaries:
-            from pokemon.battle.utils import apply_boost
             from pokemon.battle.damage import percent_check
+            from pokemon.battle.utils import apply_boost
 
             ability_source = getattr(user, "ability", None)
             ability_target = getattr(target, "ability", None)
@@ -1443,8 +1447,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         sub = getattr(target, "volatiles", {}).get("substitute")
         if sub and not action.move.raw.get("bypassSub"):
-            from .damage import apply_damage
             from pokemon.dex.entities import Move
+
+            from .damage import apply_damage
 
             raw = dict(action.move.raw)
             if action.move.basePowerCallback:

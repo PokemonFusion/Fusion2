@@ -1,7 +1,7 @@
 from evennia import Command
-from utils.enhanced_evmenu import EnhancedEvMenu
 
 import menus.give_pokemon as give_pokemon
+from utils.enhanced_evmenu import EnhancedEvMenu
 
 
 class CmdGivePokemon(Command):

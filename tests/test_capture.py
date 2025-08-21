@@ -1,13 +1,13 @@
 import os
-import sys
 import random
+import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 # Prepare package (reuse existing stub if present)
-import types
 import importlib.util
+import types
 
 pkg_battle = sys.modules.get("pokemon.battle")
 if pkg_battle is None:

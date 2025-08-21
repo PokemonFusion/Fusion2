@@ -1,4 +1,4 @@
-from django.urls import include, path, re_path
+from django.urls import include, path
 
 # default evennia patterns
 from evennia.web.urls import urlpatterns as evennia_default_urlpatterns

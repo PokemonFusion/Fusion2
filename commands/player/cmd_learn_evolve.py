@@ -77,7 +77,6 @@ class CmdTeachMove(Command):
             self.caller.msg("No Pokémon in that slot.")
             return
         from pokemon.data.generation import get_valid_moves
-        from pokemon.models.moves import Move
 
         valid = [
             m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)
@@ -141,8 +140,8 @@ class CmdLearn(Command):
             self.caller.msg(f"{pokemon.name} has no moves to learn.")
             return
 
-        from utils.enhanced_evmenu import EnhancedEvMenu
         from menus import learn_new_moves as learn_menu
+        from utils.enhanced_evmenu import EnhancedEvMenu
 
         EnhancedEvMenu(
             self.caller,

@@ -1,10 +1,12 @@
 from __future__ import annotations
+
+import json
+import pprint
 import re
 from collections import defaultdict
 from pathlib import Path
-import json
+
 import json5
-import pprint
 
 # Directories
 BASE_DIR = Path(__file__).parent

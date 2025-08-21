@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from evennia.utils import text2html
 
+
 class AnsiReferenceView(TemplateView):
     """Display ANSI color codes with search and copy support."""
 

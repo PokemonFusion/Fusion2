@@ -3,8 +3,8 @@
 Database models and related utilities for the Pokémon game.
 """
 
-from .validators import validate_ivs, validate_evs
 from .enums import Gender, Nature
+from .validators import validate_evs, validate_ivs
 
 # The remaining model imports depend on Django/Evennia being available.  When
 # running lightweight tests without the full environment configured we allow
@@ -12,29 +12,29 @@ from .enums import Gender, Nature
 try:  # pragma: no cover - optional heavy dependencies
     from .core import (
         MAX_PP_MULTIPLIER,
-        SpeciesEntry,
         BasePokemon,
-        Pokemon,
-        OwnedPokemon,
         BattleSlot,
-    )
-    from .moves import (
-        Move,
-        VerifiedMove,
-        PokemonLearnedMove,
-        Moveset,
-        MovesetSlot,
-        ActiveMoveslot,
-        MovePPBoost,
-    )
-    from .trainer import Trainer, NPCTrainer, GymBadge, InventoryEntry
-    from .storage import (
-        UserStorage,
-        StorageBox,
-        ActivePokemonSlot,
-        ensure_boxes,
+        OwnedPokemon,
+        Pokemon,
+        SpeciesEntry,
     )
     from .fusion import PokemonFusion
+    from .moves import (
+        ActiveMoveslot,
+        Move,
+        MovePPBoost,
+        Moveset,
+        MovesetSlot,
+        PokemonLearnedMove,
+        VerifiedMove,
+    )
+    from .storage import (
+        ActivePokemonSlot,
+        StorageBox,
+        UserStorage,
+        ensure_boxes,
+    )
+    from .trainer import GymBadge, InventoryEntry, NPCTrainer, Trainer
 except Exception:  # pragma: no cover - used when ORM isn't set up
     (
         MAX_PP_MULTIPLIER,

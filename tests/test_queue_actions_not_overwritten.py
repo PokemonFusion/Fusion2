@@ -1,4 +1,4 @@
-from tests.test_battle_rebuild import BattleSession, DummyRoom, DummyPlayer
+from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
 
 
 def _setup_battle():

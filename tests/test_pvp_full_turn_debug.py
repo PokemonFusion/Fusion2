@@ -1,7 +1,7 @@
 """Tests debug logging for a full PvP turn."""
 
-from tests.test_battle_rebuild import BattleSession, DummyRoom, DummyPlayer
-from pokemon.battle.engine import _apply_move_damage, BattleMove
+from pokemon.battle.engine import BattleMove, _apply_move_damage
+from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
 
 
 class StoredPoke:

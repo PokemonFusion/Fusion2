@@ -2,9 +2,11 @@
 
 import re
 from pathlib import Path
-from pokemon.dex import POKEDEX as pokedex, MOVEDEX as movedex
+
 from pokemon.data.learnsets.learnsets import LEARNSETS
 from pokemon.data.text import MOVES_TEXT
+from pokemon.dex import MOVEDEX as movedex
+from pokemon.dex import POKEDEX as pokedex
 
 # Cache for built movesets keyed by normalized Pokémon name
 MOVESET_CACHE = {}

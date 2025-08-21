@@ -1,7 +1,7 @@
-from dataclasses import dataclass, field
-from typing import Dict, List, Any
 import random
+from dataclasses import dataclass, field
 from math import floor
+from typing import Any, Dict, List
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -11,8 +11,9 @@ by a damaging move so that defensive abilities such as Aftermath can respond
 to the attack.
 """
 
-from ..dex import Move, Pokemon
 from ..data import TYPE_CHART
+from ..dex import Move, Pokemon
+
 try:  # pragma: no cover - allow running as a standalone module in tests
     from pokemon.battle.callbacks import _resolve_callback
 except Exception:  # pragma: no cover

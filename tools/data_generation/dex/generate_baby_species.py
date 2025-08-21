@@ -1,8 +1,8 @@
 import csv
 import json
+import sys
 import unicodedata
 from pathlib import Path
-import sys
 
 # Add repository root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[3]))

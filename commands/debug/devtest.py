@@ -1,8 +1,10 @@
 """Developer testing commands for rapid battle prototyping."""
 
-from evennia import Command
 from typing import List
-from tests.utils.testfactory import make_test_pokemon, make_punching_bag
+
+from evennia import Command
+
+from tests.utils.testfactory import make_punching_bag, make_test_pokemon
 
 
 def _get_unverified_moves() -> List[str]:
@@ -29,8 +31,9 @@ def _get_unverified_moves() -> List[str]:
 def _start_ephemeral_battle(caller, atk_pkmn, def_pkmn):
     """Start a ``BattleSession`` with temporary Pokémon."""
     try:
+        from pokemon.battle.battledata import Move as BMove
+        from pokemon.battle.battledata import Pokemon as BPokemon
         from pokemon.battle.battleinstance import BattleSession
-        from pokemon.battle.battledata import Move as BMove, Pokemon as BPokemon
         from pokemon.battle.engine import BattleType
 
         class DummyTrainer:

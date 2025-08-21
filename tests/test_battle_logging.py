@@ -1,7 +1,7 @@
+import importlib
 import logging
 import os
 import sys
-import importlib
 from pathlib import Path
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

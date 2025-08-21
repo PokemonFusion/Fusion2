@@ -1,9 +1,9 @@
 """Tests for minimum damage enforcement in damage calculations."""
 
-from pokemon.dex.entities import Pokemon, Move, Stats
-from pokemon.battle.damage import damage_calc
 from pokemon import data as data_stub
 from pokemon.battle import damage as dmg_module
+from pokemon.battle.damage import damage_calc
+from pokemon.dex.entities import Move, Pokemon, Stats
 
 
 def test_damage_minimum_one(monkeypatch):

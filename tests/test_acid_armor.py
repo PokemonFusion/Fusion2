@@ -11,9 +11,9 @@ from pokemon.battle.engine import (
     Action,
     ActionType,
     Battle,
+    BattleMove,
     BattleParticipant,
     BattleType,
-    BattleMove,
 )
 
 

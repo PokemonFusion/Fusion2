@@ -1,4 +1,3 @@
-import pytest
 
 from pokemon.battle.battleinstance import BattleSession
 from pokemon.battle.interface import send_battle_note

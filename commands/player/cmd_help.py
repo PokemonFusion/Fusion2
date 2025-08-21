@@ -4,8 +4,10 @@ from collections import defaultdict
 from itertools import chain
 
 from evennia.commands.default.help import (
-    CmdHelp as DefaultCmdHelp,
     DEFAULT_HELP_CATEGORY,
+)
+from evennia.commands.default.help import (
+    CmdHelp as DefaultCmdHelp,
 )
 from evennia.utils.utils import format_grid, pad
 

@@ -1,7 +1,7 @@
 """Simple event dispatcher for battle callbacks."""
-from collections import defaultdict
-from typing import Callable, Dict, List, Any
 import inspect
+from collections import defaultdict
+from typing import Any, Callable, Dict, List
 
 
 class EventDispatcher:

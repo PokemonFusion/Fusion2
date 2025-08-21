@@ -1,7 +1,7 @@
 import importlib.util
 import os
-import types
 import sys
+import types
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 

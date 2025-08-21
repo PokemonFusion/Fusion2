@@ -13,6 +13,7 @@ except Exception:  # pragma: no cover
     EnhancedEvMenu = None  # type: ignore
 
 from utils.battle_display import render_move_gui
+
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
 
 try:  # pragma: no cover - battle engine may not be available in tests

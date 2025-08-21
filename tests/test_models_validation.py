@@ -50,7 +50,7 @@ pokemon_models.validators = validators_mod
 sys.modules.setdefault("pokemon.models", pokemon_models)
 sys.modules.setdefault("pokemon.models.validators", validators_mod)
 
-from pokemon.models.validators import validate_ivs, validate_evs
+from pokemon.models.validators import validate_evs, validate_ivs
 
 
 @pytest.fixture(autouse=True)

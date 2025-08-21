@@ -1,11 +1,11 @@
+import csv
+import importlib.util
+import json
+import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-import json
-import importlib.util
-import sys
-import csv
-import re
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 BASE_PATH = Path(__file__).resolve().parents[2]
 

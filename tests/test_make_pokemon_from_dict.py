@@ -4,12 +4,12 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
+from pokemon.dex import POKEDEX
 from utils.pokemon_utils import (
     make_move_from_dex,
-    make_pokemon_from_dict,
     make_pokemon_from_dex,
+    make_pokemon_from_dict,
 )
-from pokemon.dex import POKEDEX
 
 
 def test_create_pokemon_from_dict():

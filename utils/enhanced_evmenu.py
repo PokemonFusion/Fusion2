@@ -2,9 +2,8 @@
 
 from typing import Any, Callable, Dict, List, Tuple, Union
 
-from evennia.utils.evmenu import EvMenu
 from evennia.utils.ansi import strip_ansi  # for width calc of ANSI-colored lines
-
+from evennia.utils.evmenu import EvMenu
 
 # Example usage::
 #

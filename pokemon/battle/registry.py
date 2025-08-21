@@ -6,8 +6,8 @@ Engine code can register/unregister sessions explicitly.
 
 from __future__ import annotations
 
-from typing import Iterable, List, Optional
 import weakref
+from typing import List
 
 
 class _Registry:

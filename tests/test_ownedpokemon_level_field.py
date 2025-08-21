@@ -1,7 +1,6 @@
-import sys
-import types
 
 from pokemon.models.stats import exp_for_level, level_for_exp
+
 
 class DummyManager:
     def __init__(self):

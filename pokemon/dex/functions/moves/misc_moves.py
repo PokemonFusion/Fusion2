@@ -2,8 +2,8 @@
 
 from pokemon.data import TYPE_CHART
 
-from .status_moves import Aquaring, Attract
 from .damage_moves import Leechseed, Substitute
+from .status_moves import Aquaring, Attract
 
 
 def type_effectiveness(target, move):

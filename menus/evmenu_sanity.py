@@ -2,8 +2,8 @@ from __future__ import annotations
 
 """Menu nodes used for EvMenu sanity checks."""
 
-from typing import Any, Dict, List, Tuple
 import re
+from typing import Any, Dict, List, Tuple
 
 from evennia.utils.evmenu import EvMenuGotoAbortMessage
 

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 """Utilities for experience, EV handling and stat calculation."""
 
-from typing import Dict
-import sys
 import importlib
+from typing import Dict
 
 _helpers_mod = None
 
@@ -17,10 +16,11 @@ def _get_helpers_module():
             _helpers_mod = None
     return _helpers_mod
 
-from ..dex import POKEDEX
-from ..data.generation import NATURES
 from pokemon.services.move_management import learn_level_up_moves
-from pokemon.utils.boosts import STAT_KEY_MAP, REVERSE_STAT_KEY_MAP, ALL_STATS
+from pokemon.utils.boosts import ALL_STATS, STAT_KEY_MAP
+
+from ..data.generation import NATURES
+from ..dex import POKEDEX
 
 DISPLAY_STAT_MAP = {
     "hp": "HP",

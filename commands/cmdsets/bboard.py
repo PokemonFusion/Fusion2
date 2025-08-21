@@ -1,17 +1,18 @@
 """CmdSet grouping bulletin board commands."""
 
 from evennia import CmdSet
+
 from bboard.commands import (
-    CmdBBList,
-    CmdBBRead,
-    CmdBBPost,
     CmdBBDelete,
-    CmdBBSet,
-    CmdBBNew,
     CmdBBEdit,
-    CmdBBMove,
-    CmdBBPurge,
+    CmdBBList,
     CmdBBLock,
+    CmdBBMove,
+    CmdBBNew,
+    CmdBBPost,
+    CmdBBPurge,
+    CmdBBRead,
+    CmdBBSet,
 )
 
 

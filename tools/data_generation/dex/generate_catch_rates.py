@@ -1,13 +1,14 @@
 import csv
 import json
+import sys
 import unicodedata
 from pathlib import Path
-import sys
 
 # Add repository root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from pokemon.dex.pokedex import pokedex
+
 
 def to_identifier(name: str) -> str:
     """Convert a Pok\xe9mon name to the identifier style used by the CSV."""
