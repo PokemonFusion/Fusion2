@@ -504,14 +504,15 @@ class TurnProcessor:
 			from .capture import attempt_capture
 
 			ball_mod = BALL_MODIFIERS.get(item_key, 1.0)
-			rng = _random.Random(_random.random())
+			# Use the global RNG so callers can control determinism
+			# with ``random.seed`` during tests.
 			caught = attempt_capture(
 				max_hp,
 				target_poke.hp,
 				catch_rate,
 				ball_modifier=ball_mod,
 				status=status,
-				rng=rng,
+				rng=_random,
 			)
 			if hasattr(action.actor, "remove_item"):
 				try:
