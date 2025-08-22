@@ -8,16 +8,11 @@ from typing import List
 from utils.safe_import import safe_import
 
 try:
-	MOVEDEX = safe_import("pokemon.dex").MOVEDEX  # type: ignore[attr-defined]
+        MOVEDEX = safe_import("pokemon.dex").MOVEDEX  # type: ignore[attr-defined]
 except ModuleNotFoundError:  # pragma: no cover - dex may be unavailable in tests
-	MOVEDEX = {}
+        MOVEDEX = {}
 
-try:  # pragma: no cover - fallback when engine not available
-	_normalize_key = safe_import("pokemon.battle.engine")._normalize_key  # type: ignore[attr-defined]
-except ModuleNotFoundError:  # pragma: no cover
-
-	def _normalize_key(name: str) -> str:
-		return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+from ._shared import _normalize_key
 
 
 from .battledata import TurnInit

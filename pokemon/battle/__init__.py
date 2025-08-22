@@ -1,7 +1,7 @@
 from .ai import AIMoveSelector
 from .battledata import BattleData, Field, Move, Pokemon, Team, TurnData
 from .damage import DamageResult, damage_calc
-from .turnorder import calculateTurnorder
+from .turnorder import calculateTurnorder  # re-export for convenience
 
 try:
 	from .battleinstance import (

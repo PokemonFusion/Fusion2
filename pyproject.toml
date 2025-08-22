@@ -1,3 +1,18 @@
+# Build metadata for packaging
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fusion2"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.setuptools]
+packages = ["commands", "menus", "pokemon", "utils", "world"]
+include-package-data = true
+
 # Ruff configuration
 # Uses modern [tool.ruff] / [tool.ruff.lint] tables (replaces deprecated top-level keys).
 

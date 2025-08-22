@@ -45,34 +45,37 @@ from utils.safe_import import safe_import
 import importlib
 
 try:
-        EventDispatcher = importlib.import_module("pokemon.battle.events").EventDispatcher  # type: ignore[attr-defined]
+        from .events import EventDispatcher  # type: ignore
 except Exception:  # pragma: no cover - fallback for tests with stubs
-	import inspect
-	from collections import defaultdict
+        try:
+                EventDispatcher = safe_import("pokemon.battle.events").EventDispatcher  # type: ignore[attr-defined]
+        except Exception:
+                import inspect
+                from collections import defaultdict
 
-	class EventDispatcher:
-		"""Minimal dispatcher used when :mod:`pokemon.battle.events` is unavailable."""
+                class EventDispatcher:
+                        """Minimal dispatcher used when :mod:`pokemon.battle.events` is unavailable."""
 
-		def __init__(self) -> None:
-			self._handlers = defaultdict(list)
+                        def __init__(self) -> None:
+                                self._handlers = defaultdict(list)
 
-		def register(self, event: str, handler: Callable[..., Any]) -> None:
-			self._handlers[event].append(handler)
+                        def register(self, event: str, handler: Callable[..., Any]) -> None:
+                                self._handlers[event].append(handler)
 
-		def dispatch(self, event: str, **context: Any) -> None:
-			for handler in list(self._handlers.get(event, [])):
-				try:
-					sig = inspect.signature(handler)
-					if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
-						params = context
-					else:
-						params = {k: v for k, v in context.items() if k in sig.parameters}
-					handler(**params)
-				except Exception:
-					try:
-						handler()
-					except Exception:
-						pass
+                        def dispatch(self, event: str, **context: Any) -> None:
+                                for handler in list(self._handlers.get(event, [])):
+                                        try:
+                                                sig = inspect.signature(handler)
+                                                if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+                                                        params = context
+                                                else:
+                                                        params = {k: v for k, v in context.items() if k in sig.parameters}
+                                                handler(**params)
+                                        except Exception:
+                                                try:
+                                                        handler()
+                                                except Exception:
+                                                        pass
 
 
 import importlib.machinery
@@ -83,6 +86,7 @@ import sys
 
 from pokemon.dex import MOVEDEX
 from pokemon.dex.entities import Move
+from ._shared import _normalize_key
 
 _BASE_PATH = os.path.dirname(__file__)
 
@@ -132,20 +136,6 @@ try:  # pragma: no cover - optional at runtime
 except ModuleNotFoundError:  # pragma: no cover - used in lightweight test stubs
 	conditions_funcs = None
 moves_funcs = None
-
-
-def _normalize_key(name: str) -> str:
-	"""Normalize move names for lookup in ``MOVEDEX``.
-
-	We strip *all* non-alphanumeric characters and lowercase, so that
-	'10,000,000 Volt Thunderbolt' -> '10000000voltthunderbolt', etc.
-	"""
-
-	import re
-
-	if not name:
-		return ""
-	return re.sub(r"[^a-z0-9]", "", str(name).lower())
 
 
 def is_self_target(target: str | None) -> bool:
