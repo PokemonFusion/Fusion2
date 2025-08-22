@@ -3,6 +3,7 @@
 from django.apps import apps
 from django.utils import timezone
 from evennia import DefaultCharacter
+from django.conf import settings
 
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from utils.inventory import InventoryMixin
@@ -11,6 +12,28 @@ from .data.generation import generate_pokemon
 from .dex import POKEDEX
 
 from typing import TYPE_CHECKING
+
+# Helper to resolve settings-provided locations into actual ObjectDBs
+try:
+    from pokemon.utils.objresolve import resolve_to_obj
+except Exception:  # pragma: no cover - fallback during import issues
+    from evennia.objects.models import ObjectDB
+    from evennia.utils.search import search_object
+
+    def resolve_to_obj(val):
+        """Fallback object resolver for startup."""
+        if callable(val):  # callable -> call
+            val = val()
+        if isinstance(val, str) and val.startswith("#") and val[1:].isdigit():
+            return ObjectDB.objects.filter(id=int(val[1:])).first()
+        if isinstance(val, int):  # integer id
+            return ObjectDB.objects.filter(id=val).first()
+        if isinstance(val, ObjectDB):  # already an ObjectDB instance
+            return val
+        if isinstance(val, str):  # name lookup as last resort
+            objs = search_object(val)
+            return objs[0] if objs else None
+        return None
 
 if TYPE_CHECKING:  # pragma: no cover - type checking only
     from .models import GymBadge, OwnedPokemon, StorageBox, Trainer, UserStorage
@@ -57,6 +80,22 @@ class User(DefaultCharacter, InventoryMixin):
 
     def at_object_creation(self):
         super().at_object_creation()
+        # Resolve DEFAULT_HOME to an ObjectDB before assignment
+        try:
+            home = resolve_to_obj(getattr(settings, "DEFAULT_HOME", None))
+            if home:
+                self.home = home
+        except Exception:
+            pass
+
+        # Resolve START_LOCATION similarly (optional; only if setting exists)
+        try:
+            start_loc = resolve_to_obj(getattr(settings, "START_LOCATION", None))
+            if start_loc:
+                self.location = start_loc
+        except Exception:
+            pass
+
         # Ensure a storage record and starter boxes exist for this character.
         _ = self.storage
         Trainer = apps.get_model("pokemon", "Trainer")
