@@ -14,13 +14,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+          pip install -r requirements.txt -r requirements-dev.txt
           pip install ruff
+          pip install -e .
       - name: Lint
         run: ruff check .
-      - name: Test
+      - name: Test (no Evennia)
+        env:
+          PF2_NO_EVENNIA: "1"
         run: pytest -q

@@ -1,11 +1,20 @@
 from __future__ import annotations
 
 import builtins
+import os
 import random
 import time
 from typing import Any, Callable, Dict, List, Optional
 
-from evennia import DefaultRoom
+try:
+        if os.getenv("PF2_NO_EVENNIA"):
+                raise Exception("stub")
+        from evennia import DefaultRoom  # type: ignore
+except Exception:  # pragma: no cover - Evennia not installed in CI
+        class DefaultRoom:  # type: ignore
+                """Lightweight stand-in used when Evennia is unavailable."""
+
+                pass
 
 from pokemon.battle.battleinstance import (
 	BattleSession,
