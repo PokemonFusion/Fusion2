@@ -1,5 +1,6 @@
 """Character typeclass for players and their Pokémon interactions."""
 
+from django.apps import apps
 from django.utils import timezone
 from evennia import DefaultCharacter
 
@@ -8,14 +9,12 @@ from utils.inventory import InventoryMixin
 
 from .data.generation import generate_pokemon
 from .dex import POKEDEX
-from .models import (
-	GymBadge,
-	OwnedPokemon,
-	StorageBox,
-	Trainer,
-	UserStorage,
-	ensure_boxes,
-)
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover - type checking only
+        from .models import GymBadge, OwnedPokemon, StorageBox, Trainer, UserStorage
+        from .models.storage import ensure_boxes
 
 
 class User(DefaultCharacter, InventoryMixin):
@@ -55,22 +54,25 @@ class User(DefaultCharacter, InventoryMixin):
 			for pokemon in self.storage.stored_pokemon.all()
 		)
 
-	def at_object_creation(self):
-		super().at_object_creation()
-		# Ensure a storage record and starter boxes exist for this character.
-		_ = self.storage
-		Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
-		if self.db.inventory is None:
-			from utils.inventory import Inventory
+        def at_object_creation(self):
+                super().at_object_creation()
+                # Ensure a storage record and starter boxes exist for this character.
+                _ = self.storage
+                Trainer = apps.get_model("pokemon", "Trainer")
+                Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
+                if self.db.inventory is None:
+                        from utils.inventory import Inventory
 
-			self.db.inventory = Inventory()
+                        self.db.inventory = Inventory()
 
-	@property
-	def storage(self) -> UserStorage:
-		"""Return this character's storage, creating it if needed."""
-		storage, created = UserStorage.objects.get_or_create(user=self)
-		ensure_boxes(storage)
-		return storage
+        @property
+        def storage(self) -> "UserStorage":
+                """Return this character's storage, creating it if needed."""
+                UserStorage = apps.get_model("pokemon", "UserStorage")
+                storage, _ = UserStorage.objects.get_or_create(user=self)
+                from .models.storage import ensure_boxes
+                ensure_boxes(storage)
+                return storage
 
 	# ------------------------------------------------------------------
 	# Starter selection
@@ -108,11 +110,11 @@ class User(DefaultCharacter, InventoryMixin):
 	# Box management
 	# ------------------------------------------------------------------
 
-	def get_box(self, index: int) -> StorageBox:
-		boxes = list(self.storage.boxes.all().order_by("id"))
-		if index < 1 or index > len(boxes):
-			raise ValueError("Invalid box number")
-		return boxes[index - 1]
+        def get_box(self, index: int) -> "StorageBox":
+                boxes = list(self.storage.boxes.all().order_by("id"))
+                if index < 1 or index > len(boxes):
+                        raise ValueError("Invalid box number")
+                return boxes[index - 1]
 
 	def deposit_pokemon(self, pokemon_id: str, box_index: int = 1) -> str:
 		pokemon = self.get_pokemon_by_id(pokemon_id)
@@ -146,25 +148,27 @@ class User(DefaultCharacter, InventoryMixin):
 			return f"{box.name} is empty."
 		return "\n".join(str(p) for p in mons)
 
-	def get_pokemon_by_id(self, pokemon_id):
-		try:
-			return OwnedPokemon.objects.get(unique_id=pokemon_id)
-		except OwnedPokemon.DoesNotExist:
-			return None
+        def get_pokemon_by_id(self, pokemon_id):
+                OwnedPokemon = apps.get_model("pokemon", "OwnedPokemon")
+                try:
+                        return OwnedPokemon.objects.get(unique_id=pokemon_id)
+                except OwnedPokemon.DoesNotExist:
+                        return None
 
 	def get_active_pokemon_by_slot(self, slot: int):
 		"""Return the active Pokémon at the given slot (1-6)."""
 		slot_obj = self.storage.active_slots.select_related("pokemon").filter(slot=slot).first()
 		return slot_obj.pokemon if slot_obj else None
 
-	@property
-	def trainer(self) -> Trainer:
-		trainer, _ = Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
-		return trainer
+        @property
+        def trainer(self) -> "Trainer":
+                Trainer = apps.get_model("pokemon", "Trainer")
+                trainer, _ = Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
+                return trainer
 
 	# Helper proxy methods
-	def add_badge(self, badge: GymBadge) -> None:
-		self.trainer.add_badge(badge)
+        def add_badge(self, badge: "GymBadge") -> None:
+                self.trainer.add_badge(badge)
 
 	def add_money(self, amount: int) -> None:
 		self.trainer.add_money(amount)
