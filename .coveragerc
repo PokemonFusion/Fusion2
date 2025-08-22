@@ -1,0 +1,14 @@
+[run]
+parallel = True
+source =
+    pokemon
+    utils
+    commands
+omit =
+    */tests/*
+    */migrations/*
+    */__init__.py
+
+[report]
+skip_empty = True
+show_missing = True
