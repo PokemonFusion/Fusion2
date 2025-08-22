@@ -35,7 +35,7 @@ def _ensure_movedex() -> Dict[str, Any]:
 		try:
 			from pokemon.dex.entities import load_movedex  # type: ignore
 
-			path = Path(__file__).resolve().parents[1] / "dex" / "movedex.py"
+			path = Path(__file__).resolve().parents[1] / "data" / "moves.py"
 			_MOVEDEX = load_movedex(path)
 		except Exception:  # pragma: no cover
 			_MOVEDEX = {}

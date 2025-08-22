@@ -15,14 +15,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: 'pip'
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -r requirements-dev.txt
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           pip install ruff
           pip install -e .
-      - name: Lint
+      - name: Lint (Ruff)
         run: ruff check .
-      - name: Test (no Evennia)
+      - name: Tests with coverage
         env:
           PF2_NO_EVENNIA: "1"
-        run: pytest -q
+        run: |
+          pip install coverage
+          coverage run -m pytest -q
+          coverage xml
+      - name: Coverage summary
+        if: always()
+        run: |
+          pip install coverage
+          coverage report -m || true

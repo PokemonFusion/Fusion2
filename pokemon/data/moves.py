@@ -1,4 +1,4 @@
-from .functions.moves_funcs import *
+from pokemon.dex.functions.moves_funcs import *
 
 py_dict = {
 	"10000000voltthunderbolt": {
