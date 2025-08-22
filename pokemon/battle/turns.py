@@ -492,7 +492,7 @@ class TurnProcessor:
 			return
 
 		item_key = _normalize_key(item_name)
-		if item_key.endswith("ball") and self.type is BattleType.WILD:
+		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
 			target_poke = target.active[0]
 			try:
 				from pokemon.dex.functions import pokedex_funcs
