@@ -495,15 +495,18 @@ class TurnProcessor:
 		if item_key.endswith("ball") and self.type is BattleType.WILD:
 			target_poke = target.active[0]
 			try:
-				from pokemon.dex.functions.pokedex_funcs import get_catch_rate
+				from pokemon.dex.functions import pokedex_funcs
 			except Exception:
-				get_catch_rate = lambda name: 255
-			catch_rate = get_catch_rate(getattr(target_poke, "name", "")) or 0
+			        class pokedex_funcs:  # type: ignore
+			                @staticmethod
+			                def get_catch_rate(name: str) -> int:
+			                        return 255
+			catch_rate = pokedex_funcs.get_catch_rate(getattr(target_poke, "name", "")) or 0
 			status = getattr(target_poke, "status", None)
 			max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
 			import random as _random
 
-			from .capture import attempt_capture
+			from . import capture as capture_mod
 
 			try:
 			# Resolve ball modifiers at runtime to handle stubbed packages
@@ -515,7 +518,7 @@ class TurnProcessor:
 			ball_mod = ball_mods.get(item_key, 1.0)
 			# Use the global RNG so callers can control determinism
 			# with ``random.seed`` during tests.
-			caught = attempt_capture(
+			caught = capture_mod.attempt_capture(
 				max_hp,
 				target_poke.hp,
 				catch_rate,
