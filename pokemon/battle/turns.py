@@ -481,7 +481,7 @@ class TurnProcessor:
 
 	def execute_item(self, action: Action) -> None:
 		"""Handle item usage during battle."""
-		from .engine import BALL_MODIFIERS, BattleType, _normalize_key
+		from .engine import BattleType, _normalize_key
 
 		item_name = action.item.lower()
 		target = action.target

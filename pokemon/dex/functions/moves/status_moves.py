@@ -1,7 +1,8 @@
 """Implementations for status-oriented move callbacks."""
 
 import importlib
-from random import choice, random as _random
+from random import choice
+from random import random as _random
 
 from pokemon.utils.boosts import apply_boost
 

@@ -10,7 +10,8 @@ dependency on the original module in calling code.
 
 from typing import Dict, Optional
 
-from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost as _apply_boost
+from pokemon.utils.boosts import STAT_KEY_MAP
+from pokemon.utils.boosts import apply_boost as _apply_boost
 
 
 def _safe_get_stats(pokemon) -> Dict[str, int]:

@@ -13,8 +13,6 @@ except ModuleNotFoundError:  # pragma: no cover - dex may be unavailable in test
         MOVEDEX = {}
 
 from ._shared import _normalize_key
-
-
 from .battledata import TurnInit
 
 
