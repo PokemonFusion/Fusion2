@@ -1,17 +1,17 @@
 """Character typeclass for players and their Pokémon interactions."""
 
+from typing import TYPE_CHECKING
+
 from django.apps import apps
+from django.conf import settings
 from django.utils import timezone
 from evennia import DefaultCharacter
-from django.conf import settings
 
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from utils.inventory import InventoryMixin
 
 from .data.generation import generate_pokemon
 from .dex import POKEDEX
-
-from typing import TYPE_CHECKING
 
 # Helper to resolve settings-provided locations into actual ObjectDBs
 try:
@@ -36,8 +36,7 @@ except Exception:  # pragma: no cover - fallback during import issues
         return None
 
 if TYPE_CHECKING:  # pragma: no cover - type checking only
-    from .models import GymBadge, OwnedPokemon, StorageBox, Trainer, UserStorage
-    from .models.storage import ensure_boxes
+    from .models import GymBadge, StorageBox, Trainer, UserStorage
 
 
 class User(DefaultCharacter, InventoryMixin):
