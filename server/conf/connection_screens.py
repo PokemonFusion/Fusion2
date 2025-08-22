@@ -38,8 +38,9 @@ CONNECTION_SCREEN = r"""
 |w        █████╗  ██║   ██║███████╗██║██║   ██║██╔██╗ ██║        
 |w        ██╔══╝  ██║   ██║╚════██║██║██║   ██║██║╚██╗██║        
 |w        ██║     ╚██████╔╝███████║██║╚██████╔╝██║ ╚████║        
-|w        ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝        
-|n                                                               
+|w        ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+|n
+ |yBest Viewed in UTS8 - Unicode|n
  Welcome to |g{}|n, version {}!
 
  If you have an existing account, connect to it by typing:
