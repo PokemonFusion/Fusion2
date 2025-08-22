@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -72,38 +72,39 @@ BattleType = engine.BattleType
 
 
 def run_flail(hp):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    user.hp = hp
-    user.max_hp = 100
-    move = BattleMove(
-        "Flail",
-        power=0,
-        accuracy=100,
-        basePowerCallback=Flail().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    start = target.hp
-    battle.run_turn()
-    return start - target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	user.hp = hp
+	user.max_hp = 100
+	move = BattleMove(
+		"Flail",
+		power=0,
+		accuracy=100,
+		basePowerCallback=Flail().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	start = target.hp
+	battle.run_turn()
+	return start - target.hp
 
 
 def test_flail_damage_increases_when_hp_low():
-    dmg_low = run_flail(10)
-    dmg_high = run_flail(90)
-    assert dmg_low > dmg_high
+	dmg_low = run_flail(10)
+	dmg_high = run_flail(90)
+	assert dmg_low > dmg_high
+
 
 # Cleanup
 

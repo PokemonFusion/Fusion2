@@ -1,8 +1,8 @@
 """Battle UI renderer: ANSI-safe, width-aware two-column layout with captains/wild title,
 HP bars, status badges, party pips, adaptive name/meta row, and a clean footer."""
 
-from utils.battle_display import strip_ansi
 from pokemon.ui.box_utils import render_box
+from utils.battle_display import strip_ansi
 
 # ---------------- Theme ----------------
 # Pipe-ANSI color tokens only; callers can later expose a runtime theme toggle.
@@ -15,12 +15,13 @@ THEME = {
 	"warn": "|y",
 	"bad": "|r",
 	"dim": "|n",
-	"gender_m": "|C",   # bright cyan
-	"gender_f": "|m",   # magenta
-	"gender_n": "|x",   # dim/grey
+	"gender_m": "|C",  # bright cyan
+	"gender_f": "|m",  # magenta
+	"gender_n": "|x",  # dim/grey
 }
 
 # ---------------- ANSI-safe helpers ----------------
+
 
 def ansi_len(s: str) -> int:
 	return len(strip_ansi(s or ""))
@@ -46,17 +47,18 @@ def center_ansi(s: str, width: int) -> str:
 def ellipsize(text: str, width: int) -> str:
 	"""Safely shorten raw (non-ANSI) text to ``width`` visible chars with an ellipsis."""
 	if width <= 0:
-			return ""
+		return ""
 	vis = text or ""
 	if len(vis) <= width:
-			return vis
+		return vis
 	if width == 1:
-			return "…"
+		return "…"
 	# reserve one char for ellipsis
 	return vis[: width - 1].rstrip() + "…"
 
 
 # ---------------- Badges / chips ----------------
+
 
 def status_badge(mon) -> str:
 	"""Return a short status badge like |yPAR|n or |rBRN|n, or empty."""
@@ -65,8 +67,8 @@ def status_badge(mon) -> str:
 	text = getattr(mon, "status_name", None) or (code if isinstance(code, str) else "")
 	text = (text or "").upper()
 	if text in ("PAR", "BRN", "PSN", "SLP", "FRZ", "TOX"):
-			color = {"PAR": "|y", "BRN": "|r", "PSN": "|m", "SLP": "|c", "FRZ": "|C", "TOX": "|m"}.get(text, "|y")
-			return f"{color}{text}|n"
+		color = {"PAR": "|y", "BRN": "|r", "PSN": "|m", "SLP": "|c", "FRZ": "|C", "TOX": "|m"}.get(text, "|y")
+		return f"{color}{text}|n"
 	return ""
 
 
@@ -74,11 +76,11 @@ def gender_chip(mon) -> str:
 	"""Return colored gender symbol: ♂, ♀, or – for genderless/unknown."""
 	g = getattr(mon, "gender", None)
 	if isinstance(g, str):
-			g = g.strip().upper()
+		g = g.strip().upper()
 	if g in ("M", "MALE", "♂"):
-			return f"{THEME['gender_m']}♂|n"
+		return f"{THEME['gender_m']}♂|n"
 	if g in ("F", "FEMALE", "♀"):
-			return f"{THEME['gender_f']}♀|n"
+		return f"{THEME['gender_f']}♀|n"
 	return f"{THEME['gender_n']}–|n"
 
 
@@ -87,7 +89,7 @@ def display_name(mon) -> str:
 	nick = (getattr(mon, "nickname", None) or "").strip()
 	species = (getattr(mon, "species", None) or getattr(mon, "name", "") or "?").strip()
 	if nick and nick.lower() != species.lower():
-			return f"{nick} ({species})"
+		return f"{nick} ({species})"
 	return species or nick or "?"
 
 
@@ -116,13 +118,15 @@ def party_pips(trainer, max_team: int = 6) -> str:
 
 # ---------------- Bars / numbers ----------------
 
+
 def hp_bar(cur: int, maxhp: int, width: int = 28) -> str:
 	cur = max(0, min(cur, maxhp))
 	ratio = 0.0 if maxhp <= 0 else cur / maxhp
 	filled = int(width * ratio)
 	empty = width - filled
 	color = THEME["ok"] if ratio > 0.5 else THEME["warn"] if ratio > 0.2 else THEME["bad"]
-	return f"{color}{'█'*filled}{' ' * empty}|n"
+	return f"{color}{'█' * filled}{' ' * empty}|n"
+
 
 def fmt_hp_line(mon, colw: int, show_abs: bool = True) -> str:
 	"""Return a width-safe HP line that fits inside `colw`.
@@ -178,16 +182,18 @@ def _name_and_chips_lines(mon, colw: int) -> list[str]:
 	chips = "  ".join([p for p in (gchip, lv_chip, sb) if p])
 	one_line = f"{name_colored}  {chips}" if chips else name_colored
 	if ansi_len(one_line) <= colw:
-			return [rpad(one_line, colw)]
+		return [rpad(one_line, colw)]
 	# two-line variant
 	trunc = raw_name
 	if ansi_len(name_colored) > colw:
-			trunc = ellipsize(raw_name, colw)
+		trunc = ellipsize(raw_name, colw)
 	name_line = rpad(f"{THEME['name']}{trunc}|n", colw)
 	chips_line = rpad(chips, colw) if chips else ""
 	return [name_line] + ([chips_line] if chips_line else [])
 
+
 # ---------------- Title helpers ----------------
+
 
 def _is_wild_battle(me, foe, state) -> bool:
 	if getattr(state, "encounter_kind", "").lower() == "wild":
@@ -210,79 +216,83 @@ def make_title(me, foe, state) -> str:
 	if _is_wild_battle(me, foe, state):
 		return f"{THEME['title']}{player_name}|n {THEME['vs']} {THEME['title']}Wild {_wild_species(foe)}|n"
 	else:
-		return f"{THEME['title']}{player_name}|n {THEME['vs']} {THEME['title']}{getattr(foe,'name','?')}|n"
+		return f"{THEME['title']}{player_name}|n {THEME['vs']} {THEME['title']}{getattr(foe, 'name', '?')}|n"
 
 
 # ---------------- Column blocks ----------------
+
 
 def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[str]:
 	lines: list[str] = []
 	mon = getattr(trainer, "active_pokemon", None)
 	if mon:
-			lines.extend(_name_and_chips_lines(mon, colw))
-			lines.append(rpad(fmt_hp_line(mon, colw, show_abs=show_abs), colw))
+		lines.extend(_name_and_chips_lines(mon, colw))
+		lines.append(rpad(fmt_hp_line(mon, colw, show_abs=show_abs), colw))
 	else:
-			lines.append(rpad("(No active Pokémon)", colw))
+		lines.append(rpad("(No active Pokémon)", colw))
 	lines.append(rpad(f"{THEME['label']}Team|n: {party_pips(trainer)}", colw))
 	return [rpad(line, colw) for line in lines]
 
+
 # ---------------- Main render ----------------
 
+
 def render_battle_ui(state, viewer, total_width: int = 78, waiting_on=None) -> str:
-    """
-    Render the battle UI for `viewer`.
-    - Two balanced columns (viewer left).
-    - Title shows captains or 'vs Wild <Species>'.
-    - Footer: Weather • Field • Turn, plus optional "Waiting on …".
-    """
-    # layout constants
-    gutter = 3
+	"""
+	Render the battle UI for `viewer`.
+	- Two balanced columns (viewer left).
+	- Title shows captains or 'vs Wild <Species>'.
+	- Footer: Weather • Field • Turn, plus optional "Waiting on …".
+	"""
+	# layout constants
+	gutter = 3
 
-    inner = max(40, total_width - 2)  # inside the outer box
-    left_w = (inner - gutter) // 2
-    right_w = inner - gutter - left_w
+	inner = max(40, total_width - 2)  # inside the outer box
+	left_w = (inner - gutter) // 2
+	right_w = inner - gutter - left_w
 
-    # sides
-    my_side = state.get_side(viewer)
-    if my_side == "B":
-        left_side, right_side = "B", "A"
-    else:
-        left_side, right_side = "A", "B"
-    me = state.get_trainer(left_side)
-    foe = state.get_trainer(right_side)
-    show_left = my_side == left_side
-    show_right = my_side == right_side
+	# sides
+	my_side = state.get_side(viewer)
+	if my_side == "B":
+		left_side, right_side = "B", "A"
+	else:
+		left_side, right_side = "A", "B"
+	me = state.get_trainer(left_side)
+	foe = state.get_trainer(right_side)
+	show_left = my_side == left_side
+	show_right = my_side == right_side
 
-    # ----- Title -----
-    title = make_title(me, foe, state)
+	# ----- Title -----
+	title = make_title(me, foe, state)
 
-    # ----- Content -----
-    left_lines = render_trainer_block(me, left_w, show_abs=show_left)
-    right_lines = render_trainer_block(foe, right_w, show_abs=show_right)
+	# ----- Content -----
+	left_lines = render_trainer_block(me, left_w, show_abs=show_left)
+	right_lines = render_trainer_block(foe, right_w, show_abs=show_right)
 
-    # equalize height
-    max_rows = max(len(left_lines), len(right_lines))
-    while len(left_lines) < max_rows:
-        left_lines.append(" " * left_w)
-    while len(right_lines) < max_rows:
-        right_lines.append(" " * right_w)
+	# equalize height
+	max_rows = max(len(left_lines), len(right_lines))
+	while len(left_lines) < max_rows:
+		left_lines.append(" " * left_w)
+	while len(right_lines) < max_rows:
+		right_lines.append(" " * right_w)
 
-    rows = []
-    for L, R in zip(left_lines, right_lines):
-        combined = L + (" " * gutter) + R
-        rows.append(rpad(combined, inner))
+	rows = []
+	for L, R in zip(left_lines, right_lines):
+		combined = L + (" " * gutter) + R
+		rows.append(rpad(combined, inner))
 
-    # ----- Footer -----
-    weather = getattr(state, "weather", getattr(state, "roomweather", "-")) or "-"
-    field = getattr(state, "field", "-")
-    turn = getattr(state, "round_no", getattr(state, "turn", getattr(state, "round", 0)))
-    footer_info = f" {THEME['label']}Weather|n: {weather}   {THEME['label']}Field|n: {field}   {THEME['label']}Turn|n: {turn}"
-    footer = rpad(footer_info, inner)
+	# ----- Footer -----
+	weather = getattr(state, "weather", getattr(state, "roomweather", "-")) or "-"
+	field = getattr(state, "field", "-")
+	turn = getattr(state, "round_no", getattr(state, "turn", getattr(state, "round", 0)))
+	footer_info = (
+		f" {THEME['label']}Weather|n: {weather}   {THEME['label']}Field|n: {field}   {THEME['label']}Turn|n: {turn}"
+	)
+	footer = rpad(footer_info, inner)
 
-    wait_line = None
-    if waiting_on:
-        name = getattr(waiting_on, "name", str(waiting_on))
-        wait_line = rpad(f" Waiting on {name}...", inner)
+	wait_line = None
+	if waiting_on:
+		name = getattr(waiting_on, "name", str(waiting_on))
+		wait_line = rpad(f" Waiting on {name}...", inner)
 
-    return render_box(title, inner, rows, footer=footer, waiting=wait_line)
-
+	return render_box(title, inner, rows, footer=footer, waiting=wait_line)

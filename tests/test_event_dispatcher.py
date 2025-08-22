@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -68,46 +68,47 @@ BattleType = eng_mod.BattleType
 
 
 def test_dispatcher_callbacks_fire():
-    events = []
-    battle_move = BattleMove("Tackle", power=40, accuracy=100)
+	events = []
+	battle_move = BattleMove("Tackle", power=40, accuracy=100)
 
-    user = Pokemon("User")
-    user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    user.num = 1
-    user.types = ["Normal"]
-    target = Pokemon("Target")
-    target.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    target.num = 2
-    target.types = ["Normal"]
+	user = Pokemon("User")
+	user.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	user.num = 1
+	user.types = ["Normal"]
+	target = Pokemon("Target")
+	target.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	target.num = 2
+	target.types = ["Normal"]
 
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, battle_move, battle_move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, battle_move, battle_move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
 
-    battle.dispatcher.register("switch_in", lambda **_: events.append("switch_in"))
-    battle.dispatcher.register("before_move", lambda **_: events.append("before_move"))
-    battle.dispatcher.register("after_move", lambda **_: events.append("after_move"))
-    battle.dispatcher.register("end_turn", lambda **_: events.append("end_turn"))
+	battle.dispatcher.register("switch_in", lambda **_: events.append("switch_in"))
+	battle.dispatcher.register("before_move", lambda **_: events.append("before_move"))
+	battle.dispatcher.register("after_move", lambda **_: events.append("after_move"))
+	battle.dispatcher.register("end_turn", lambda **_: events.append("end_turn"))
 
-    random.seed(0)
-    battle.run_turn()
+	random.seed(0)
+	battle.run_turn()
 
-    assert events.count("switch_in") == 2
-    assert "before_move" in events
-    assert "after_move" in events
-    assert "end_turn" in events
+	assert events.count("switch_in") == 2
+	assert "before_move" in events
+	assert "after_move" in events
+	assert "end_turn" in events
+
 
 # Cleanup
 for mod in [
-    "pokemon.dex",
-    "pokemon.data",
-    "pokemon.battle",
-    "pokemon.battle.engine",
-    "pokemon.battle.damage",
-    "pokemon.battle.battledata",
+	"pokemon.dex",
+	"pokemon.data",
+	"pokemon.battle",
+	"pokemon.battle.engine",
+	"pokemon.battle.damage",
+	"pokemon.battle.battledata",
 ]:
-    sys.modules.pop(mod, None)
+	sys.modules.pop(mod, None)

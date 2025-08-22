@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -35,18 +35,18 @@ BattleType = eng_mod.BattleType
 
 
 def test_residual_event_before_end_turn():
-    events = []
-    burned = Pokemon("Burned", level=1, hp=80, max_hp=80)
-    burned.status = "brn"
-    target = Pokemon("Target", level=1, hp=100, max_hp=100)
-    p1 = BattleParticipant("P1", [burned])
-    p2 = BattleParticipant("P2", [target])
-    p1.active = [burned]
-    p2.active = [target]
-    battle = Battle(BattleType.WILD, [p1, p2])
-    battle.dispatcher.register("residual", lambda **_: events.append("residual"))
-    battle.dispatcher.register("end_turn", lambda **_: events.append("end_turn"))
-    random.seed(0)
-    battle.run_turn()
-    assert events.index("residual") < events.index("end_turn")
-    assert burned.hp < 80
+	events = []
+	burned = Pokemon("Burned", level=1, hp=80, max_hp=80)
+	burned.status = "brn"
+	target = Pokemon("Target", level=1, hp=100, max_hp=100)
+	p1 = BattleParticipant("P1", [burned])
+	p2 = BattleParticipant("P2", [target])
+	p1.active = [burned]
+	p2.active = [target]
+	battle = Battle(BattleType.WILD, [p1, p2])
+	battle.dispatcher.register("residual", lambda **_: events.append("residual"))
+	battle.dispatcher.register("end_turn", lambda **_: events.append("end_turn"))
+	random.seed(0)
+	battle.run_turn()
+	assert events.index("residual") < events.index("end_turn")
+	assert burned.hp < 80

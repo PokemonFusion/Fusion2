@@ -8,7 +8,7 @@ dex_stub.POKEDEX = {}
 sys.modules.setdefault("pokemon.dex", dex_stub)
 
 spec = importlib.util.spec_from_file_location(
-    "pokemon.battle.battledata", Path(__file__).resolve().parents[1] / "pokemon" / "battle" / "battledata.py"
+	"pokemon.battle.battledata", Path(__file__).resolve().parents[1] / "pokemon" / "battle" / "battledata.py"
 )
 bd_mod = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
@@ -18,10 +18,8 @@ Pokemon = bd_mod.Pokemon
 
 
 def test_pokemon_to_dict_from_dict_gender():
-    p = Pokemon("Eevee", gender="F")
-    data = p.to_dict()
-    assert data["gender"] == "F"
-    restored = Pokemon.from_dict(data)
-    assert restored.gender == "F"
-
-
+	p = Pokemon("Eevee", gender="F")
+	data = p.to_dict()
+	assert data["gender"] == "F"
+	restored = Pokemon.from_dict(data)
+	assert restored.gender == "F"

@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -75,37 +75,38 @@ BattleType = engine.BattleType
 
 
 def run_damage(item=None):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((user, 1), (target, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    if item is not None:
-        user.item = item
-    move = BattleMove(
-        "Acrobatics",
-        power=55,
-        accuracy=100,
-        basePowerCallback=Acrobatics().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
-    return target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((user, 1), (target, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	if item is not None:
+		user.item = item
+	move = BattleMove(
+		"Acrobatics",
+		power=55,
+		accuracy=100,
+		basePowerCallback=Acrobatics().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
+	return target.hp
 
 
 def test_acrobatics_power_doubles_without_item():
-    hp_no_item = run_damage(item=None)
-    hp_with_item = run_damage(item="Berry")
-    assert hp_no_item < hp_with_item
+	hp_no_item = run_damage(item=None)
+	hp_with_item = run_damage(item="Berry")
+	assert hp_no_item < hp_with_item
+
 
 # Cleanup
 

@@ -1,7 +1,9 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
+
+import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -9,8 +11,10 @@ sys.path.insert(0, ROOT)
 # Stub utils
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def apply_boost(pokemon, boosts):
-    pass
+	pass
+
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
@@ -31,11 +35,11 @@ pokemon_dex = types.ModuleType("pokemon.dex")
 pokemon_dex.__path__ = []
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {
-    "tackle": types.SimpleNamespace(name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0})
+	"tackle": types.SimpleNamespace(
+		name="Tackle", type="Normal", category="Physical", power=40, accuracy=100, raw={"priority": 0}
+	)
 }
-pokemon_dex.POKEDEX = {
-    "Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])
-}
+pokemon_dex.POKEDEX = {"Bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass", "Poison"])}
 sys.modules["pokemon.dex"] = pokemon_dex
 
 # Load battledata
@@ -55,36 +59,45 @@ mv_spec.loader.exec_module(mv_mod)
 Afteryou = mv_mod.Afteryou
 
 
+@pytest.fixture(autouse=True)
+def _cleanup_modules():
+	yield
+	for mod in ("pokemon.dex", "pokemon.battle", "pokemon.battle.utils"):
+		sys.modules.pop(mod, None)
+
+
 class DummyQueue:
-    def __init__(self):
-        self.prioritized = None
-    def will_move(self, target):
-        return object()
-    def prioritize_action(self, action):
-        self.prioritized = action
+	def __init__(self):
+		self.prioritized = None
+
+	def will_move(self, target):
+		return object()
+
+	def prioritize_action(self, action):
+		self.prioritized = action
 
 
 class DummyBattle:
-    def __init__(self, active_per_side, queue=None):
-        part = types.SimpleNamespace(active=[object()] * active_per_side)
-        self.participants = [part, part]
-        self.queue = queue
+	def __init__(self, active_per_side, queue=None):
+		part = types.SimpleNamespace(active=[object()] * active_per_side)
+		self.participants = [part, part]
+		self.queue = queue
 
 
 def test_afteryou_fails_in_singles():
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    battle = DummyBattle(active_per_side=1, queue=DummyQueue())
-    result = Afteryou().onHit(user, target, battle)
-    assert result is False
-    assert battle.queue.prioritized is None
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	battle = DummyBattle(active_per_side=1, queue=DummyQueue())
+	result = Afteryou().onHit(user, target, battle)
+	assert result is False
+	assert battle.queue.prioritized is None
 
 
 def test_afteryou_prioritizes_target_in_doubles():
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    q = DummyQueue()
-    battle = DummyBattle(active_per_side=2, queue=q)
-    result = Afteryou().onHit(user, target, battle)
-    assert result is True
-    assert q.prioritized is not None
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	q = DummyQueue()
+	battle = DummyBattle(active_per_side=2, queue=q)
+	result = Afteryou().onHit(user, target, battle)
+	assert result is True
+	assert q.prioritized is not None

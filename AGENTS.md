@@ -7,9 +7,9 @@ This repository hosts a text-based Pokémon game built on the Evennia MUD framew
 - Use **OOP principles** when implementing new features.  Favor classes and methods over large procedural blocks.
 - Keep code consistent with PEP 8 where practical and mimic the existing style of the project.
 - Include module, class and function docstrings.
-- Avoid modifying generated data files in `helpers/scripts` or `pokemon/data` unless explicitly required.
-- When recreating Pokémon stats such as max HP during tests or data restoration,
-  use the `get_max_hp` function from `helpers.pokemon_helpers` with the
+ - Avoid modifying generated data files in `pokemon/scripts` or `pokemon/data` unless explicitly required.
+ - When recreating Pokémon stats such as max HP during tests or data restoration,
+   use the `get_max_hp` function from `pokemon.helpers.pokemon_helpers` with the
   Pokémon's IVs, EVs, nature and level rather than hardcoded values.
 - The same module also exposes `get_stats` and `_get_stats_from_data` which
   should be used when you need a full stat dictionary or to calculate stats

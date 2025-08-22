@@ -1,0 +1,79 @@
+# Build metadata for packaging
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fusion2"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.setuptools]
+packages = ["commands", "menus", "pokemon", "utils", "world"]
+include-package-data = true
+
+# Ruff configuration
+# Uses modern [tool.ruff] / [tool.ruff.lint] tables (replaces deprecated top-level keys).
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+# Exclusions: keep your original ones and add common noise dirs.
+exclude = [
+	"pokemon/data",
+	"pokemon/migrations",
+	".git",
+	".hg",
+	".mypy_cache",
+	".ruff_cache",
+	".venv",
+	"venv",
+	"env",
+	"build",
+	"dist",
+	"**/__pycache__",
+]
+
+[tool.ruff.format]
+indent-style = "tab"
+
+
+[tool.ruff.lint]
+# Global "don't care" list, per your request.
+ignore = [
+	"F841",  # allow unused local variables
+	"F402",  # allow import shadowed by loop variable
+	"E101",  # allow indention to contain mixed spaces and tabs
+	"E402",  # allow module level import not at top of file
+	"F821",  # allow undefined name
+	"E731",  # allow lamba expression for assigning.
+]
+
+# Rule sets to enforce (pycodestyle, pyflakes, import sorting).
+select = ["E", "F", "I"]
+
+# Per-file/per-path targeted ignores for intentional patterns.
+[tool.ruff.lint.extend-per-file-ignores]
+# Django-style settings: star-imports and names provided via star imports.
+"server/conf/settings.py" = ["F403", "F405"]
+
+# Generated dex/data modules using star-import helpers.
+"pokemon/dex/abilities/abilitiesdex.py" = ["F403"]
+"pokemon/dex/items/itemsdex.py" = ["F403"]
+"pokemon/data/moves.py" = ["F403"]
+"pokemon/dex/conditions.py" = ["F403"]
+"pokemon/dex/pokedex/*.py" = ["F403"]
+
+# Tooling that mirrors the same generation pattern.
+"tools/data_generation/dex/py/abilitiesdex.py" = ["F403"]
+"tools/data_generation/dex/py/itemsdex.py" = ["F403"]
+"tools/data_generation/dex/py/moves.py" = ["F403"]
+"tools/data_generation/dex/py/pokedex.py" = ["F403"]
+
+# Re-export surface: allow unused import here (or curate __all__ instead).
+"pokemon/dex/__init__.py" = ["F401"]
+
+# (Optional) Uncomment if you want to temporarily silence undefined names in placeholder tests.
+# "tests/**" = ["F821"]

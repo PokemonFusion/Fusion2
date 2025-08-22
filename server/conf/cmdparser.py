@@ -33,23 +33,23 @@ your settings file:
 
 
 def cmdparser(raw_string, cmdset, caller, match_index=None):
-    """
-    This function is called by the cmdhandler once it has
-    gathered and merged all valid cmdsets valid for this particular parsing.
+	"""
+	This function is called by the cmdhandler once it has
+	gathered and merged all valid cmdsets valid for this particular parsing.
 
-    raw_string - the unparsed text entered by the caller.
-    cmdset - the merged, currently valid cmdset
-    caller - the caller triggering this parsing
-    match_index - an optional integer index to pick a given match in a
-                  list of same-named command matches.
+	raw_string - the unparsed text entered by the caller.
+	cmdset - the merged, currently valid cmdset
+	caller - the caller triggering this parsing
+	match_index - an optional integer index to pick a given match in a
+	              list of same-named command matches.
 
-    Returns:
-     list of tuples: [(cmdname, args, cmdobj, cmdlen, mratio), ...]
-            where cmdname is the matching command name and args is
-            everything not included in the cmdname. Cmdobj is the actual
-            command instance taken from the cmdset, cmdlen is the length
-            of the command name and the mratio is some quality value to
-            (possibly) separate multiple matches.
+	Returns:
+	 list of tuples: [(cmdname, args, cmdobj, cmdlen, mratio), ...]
+	        where cmdname is the matching command name and args is
+	        everything not included in the cmdname. Cmdobj is the actual
+	        command instance taken from the cmdset, cmdlen is the length
+	        of the command name and the mratio is some quality value to
+	        (possibly) separate multiple matches.
 
-    """
-    # Your implementation here
+	"""
+	# Your implementation here

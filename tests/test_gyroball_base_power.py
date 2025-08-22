@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -71,39 +71,40 @@ BattleType = engine.BattleType
 
 
 def run_gyroball(user_speed, target_speed):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base_user = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=user_speed)
-    base_target = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=target_speed)
-    user.base_stats = base_user
-    target.base_stats = base_target
-    user.num = 1
-    target.num = 2
-    user.types = ["Normal"]
-    target.types = ["Normal"]
-    move = BattleMove(
-        "Gyro Ball",
-        power=0,
-        accuracy=100,
-        basePowerCallback=Gyroball().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", [user], is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    start = target.hp
-    battle.run_turn()
-    return start - target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base_user = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=user_speed)
+	base_target = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=target_speed)
+	user.base_stats = base_user
+	target.base_stats = base_target
+	user.num = 1
+	target.num = 2
+	user.types = ["Normal"]
+	target.types = ["Normal"]
+	move = BattleMove(
+		"Gyro Ball",
+		power=0,
+		accuracy=100,
+		basePowerCallback=Gyroball().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", [user], is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	start = target.hp
+	battle.run_turn()
+	return start - target.hp
 
 
 def test_gyroball_more_power_when_user_slower():
-    dmg_slower = run_gyroball(30, 100)
-    dmg_faster = run_gyroball(100, 30)
-    assert dmg_slower > dmg_faster
+	dmg_slower = run_gyroball(30, 100)
+	dmg_faster = run_gyroball(100, 30)
+	assert dmg_slower > dmg_faster
+
 
 # Cleanup
 

@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -82,63 +82,62 @@ BattleType = engine.BattleType
 
 
 def make_pokemon(name, num):
-    p = Pokemon(name)
-    p.num = num
-    p.types = ["Normal"]
-    p.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    p.hp = 100
-    p.volatiles = {}
-    return p
-
+	p = Pokemon(name)
+	p.num = num
+	p.types = ["Normal"]
+	p.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	p.hp = 100
+	p.volatiles = {}
+	return p
 
 
 def test_pursuit_before_switch():
-    atk = make_pokemon("Atk", 1)
-    def1 = make_pokemon("Def1", 2)
-    def2 = make_pokemon("Def2", 3)
-    pursuit_move = BattleMove("Pursuit", power=40, accuracy=100, raw={"basePowerCallback": "Pursuit.basePowerCallback"})
-    p1 = BattleParticipant("A", [atk], is_ai=False)
-    p2 = BattleParticipant("B", [def1, def2], is_ai=False)
-    p1.active = [atk]
-    p2.active = [def1]
-    act = Action(p1, ActionType.MOVE, p2, pursuit_move, pursuit_move.priority, pokemon=atk)
-    p1.pending_action = act
-    def1.tempvals = {"switch_out": True}
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
-    assert def1.hp < 100
-    assert p2.active[0] is def2
+	atk = make_pokemon("Atk", 1)
+	def1 = make_pokemon("Def1", 2)
+	def2 = make_pokemon("Def2", 3)
+	pursuit_move = BattleMove("Pursuit", power=40, accuracy=100, raw={"basePowerCallback": "Pursuit.basePowerCallback"})
+	p1 = BattleParticipant("A", [atk], is_ai=False)
+	p2 = BattleParticipant("B", [def1, def2], is_ai=False)
+	p1.active = [atk]
+	p2.active = [def1]
+	act = Action(p1, ActionType.MOVE, p2, pursuit_move, pursuit_move.priority, pokemon=atk)
+	p1.pending_action = act
+	def1.tempvals = {"switch_out": True}
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
+	assert def1.hp < 100
+	assert p2.active[0] is def2
 
 
 def test_switch_resolves_before_attack():
-    atk = make_pokemon("Atk", 1)
-    sw1 = make_pokemon("Sw1", 2)
-    sw2 = make_pokemon("Sw2", 3)
-    move = BattleMove("Tackle", power=40, accuracy=100)
-    p1 = BattleParticipant("A", [atk], is_ai=False)
-    p2 = BattleParticipant("B", [sw1, sw2], is_ai=False)
-    p1.active = [atk]
-    p2.active = [sw1]
-    act = Action(p1, ActionType.MOVE, p2, move, move.priority, pokemon=atk)
-    p1.pending_action = act
-    sw1.tempvals = {"switch_out": True}
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.run_turn()
-    assert p2.active[0] is sw2
-    assert sw1.hp == 100
-    assert sw2.hp < 100
+	atk = make_pokemon("Atk", 1)
+	sw1 = make_pokemon("Sw1", 2)
+	sw2 = make_pokemon("Sw2", 3)
+	move = BattleMove("Tackle", power=40, accuracy=100)
+	p1 = BattleParticipant("A", [atk], is_ai=False)
+	p2 = BattleParticipant("B", [sw1, sw2], is_ai=False)
+	p1.active = [atk]
+	p2.active = [sw1]
+	act = Action(p1, ActionType.MOVE, p2, move, move.priority, pokemon=atk)
+	p1.pending_action = act
+	sw1.tempvals = {"switch_out": True}
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.run_turn()
+	assert p2.active[0] is sw2
+	assert sw1.hp == 100
+	assert sw2.hp < 100
 
 
 def test_spread_modifier():
-    a = make_pokemon("A", 1)
-    b = make_pokemon("B", 2)
-    move = Move(name="Surf", num=0, type="Water", category="Special", power=50, accuracy=100, pp=None, raw={})
-    random.seed(0)
-    res1 = pkg_battle.damage_calc(a, b, move)
-    dmg1 = sum(res1.debug["damage"])
-    random.seed(0)
-    res2 = pkg_battle.damage_calc(a, b, move, spread=True)
-    dmg2 = sum(res2.debug["damage"])
-    assert dmg2 == int(dmg1 * 0.75)
+	a = make_pokemon("A", 1)
+	b = make_pokemon("B", 2)
+	move = Move(name="Surf", num=0, type="Water", category="Special", power=50, accuracy=100, pp=None, raw={})
+	random.seed(0)
+	res1 = pkg_battle.damage_calc(a, b, move)
+	dmg1 = sum(res1.debug["damage"])
+	random.seed(0)
+	res2 = pkg_battle.damage_calc(a, b, move, spread=True)
+	dmg2 = sum(res2.debug["damage"])
+	assert dmg2 == int(dmg1 * 0.75)

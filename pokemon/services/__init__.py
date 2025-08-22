@@ -6,4 +6,3 @@ keep the models light-weight while still exposing convenient utilities.
 """
 
 __all__ = ["move_management"]
-

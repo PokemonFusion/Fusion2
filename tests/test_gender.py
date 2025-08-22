@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -21,8 +21,8 @@ pokemon_dex.MOVEDEX = {}
 sys.modules["pokemon.dex"] = pokemon_dex
 
 # Load generation module
-gen_path = os.path.join(ROOT, "pokemon", "generation.py")
-gen_spec = importlib.util.spec_from_file_location("pokemon.generation", gen_path)
+gen_path = os.path.join(ROOT, "pokemon", "data", "generation.py")
+gen_spec = importlib.util.spec_from_file_location("pokemon.data.generation", gen_path)
 gen_mod = importlib.util.module_from_spec(gen_spec)
 sys.modules[gen_spec.name] = gen_mod
 gen_spec.loader.exec_module(gen_mod)
@@ -30,12 +30,12 @@ get_gender = gen_mod.get_gender
 
 
 def test_get_gender_single():
-    assert get_gender(single="M") == "M"
-    assert get_gender(single="F") == "F"
-    assert get_gender(single="N") == "N"
+	assert get_gender(single="M") == "M"
+	assert get_gender(single="F") == "F"
+	assert get_gender(single="N") == "N"
 
 
 def test_get_gender_ratio_special_cases():
-    assert get_gender({"M": 0, "F": 0}) == "N"
-    assert get_gender({"M": 1, "F": 0}) == "M"
-    assert get_gender({"M": 0, "F": 1}) == "F"
+	assert get_gender({"M": 0, "F": 0}) == "N"
+	assert get_gender({"M": 1, "F": 0}) == "M"
+	assert get_gender({"M": 0, "F": 1}) == "F"

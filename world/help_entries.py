@@ -25,12 +25,12 @@ Each dict is on the form
 """
 
 HELP_ENTRY_DICTS = [
-    {
-        "key": "evennia",
-        "aliases": ["ev"],
-        "category": "General",
-        "locks": "read:perm(Developer)",
-        "text": """
+	{
+		"key": "evennia",
+		"aliases": ["ev"],
+		"category": "General",
+		"locks": "read:perm(Developer)",
+		"text": """
             Evennia is a MU-game server and framework written in Python. You can read more
             on https://www.evennia.com.
 
@@ -54,5 +54,5 @@ HELP_ENTRY_DICTS = [
             following link: https://discord.gg/AJJpcRUhtF
 
         """,
-    },
+	},
 ]

@@ -1,8 +1,8 @@
+import importlib.util
 import os
+import random
 import sys
 import types
-import importlib.util
-import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -10,8 +10,10 @@ sys.path.insert(0, ROOT)
 # Minimal pokemon.battle package stub with utils
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def apply_boost(*args, **kwargs):
-    pass
+	pass
+
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
@@ -83,49 +85,50 @@ BattleType = engine.BattleType
 
 
 def run_beatup(allies=1):
-    user = Pokemon("User")
-    target = Pokemon("Target")
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    party = [user]
-    for i in range(allies - 1):
-        ally = Pokemon(f"Ally{i}")
-        ally.base_stats = base
-        ally.num = i + 2
-        ally.types = ["Normal"]
-        party.append(ally)
-    for poke, num in ((user, 1), (target, len(party) + 1)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    user.party = party
-    move = BattleMove(
-        "Beat Up",
-        power=0,
-        accuracy=100,
-        basePowerCallback=Beatup().basePowerCallback,
-    )
-    p1 = BattleParticipant("P1", party, is_ai=False)
-    p2 = BattleParticipant("P2", [target], is_ai=False)
-    p1.active = [user]
-    p2.active = [target]
-    action = Action(p1, ActionType.MOVE, p2, move, move.priority)
-    p1.pending_action = action
-    battle = Battle(BattleType.WILD, [p1, p2])
-    random.seed(0)
-    battle.start_turn()
-    battle.run_switch()
-    battle.run_after_switch()
-    battle.run_move()
-    battle.run_faint()
-    battle.residual()
-    battle.end_turn()
-    return target.hp
+	user = Pokemon("User")
+	target = Pokemon("Target")
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	party = [user]
+	for i in range(allies - 1):
+		ally = Pokemon(f"Ally{i}")
+		ally.base_stats = base
+		ally.num = i + 2
+		ally.types = ["Normal"]
+		party.append(ally)
+	for poke, num in ((user, 1), (target, len(party) + 1)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	user.party = party
+	move = BattleMove(
+		"Beat Up",
+		power=0,
+		accuracy=100,
+		basePowerCallback=Beatup().basePowerCallback,
+	)
+	p1 = BattleParticipant("P1", party, is_ai=False)
+	p2 = BattleParticipant("P2", [target], is_ai=False)
+	p1.active = [user]
+	p2.active = [target]
+	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
+	p1.pending_action = action
+	battle = Battle(BattleType.WILD, [p1, p2])
+	random.seed(0)
+	battle.start_turn()
+	battle.run_switch()
+	battle.run_after_switch()
+	battle.run_move()
+	battle.run_faint()
+	battle.residual()
+	battle.end_turn()
+	return target.hp
 
 
 def test_beatup_damage_scales_with_allies():
-    hp_three = run_beatup(allies=3)
-    hp_one = run_beatup(allies=1)
-    assert hp_three < hp_one
+	hp_three = run_beatup(allies=3)
+	hp_one = run_beatup(allies=1)
+	assert hp_three < hp_one
+
 
 # Cleanup
 

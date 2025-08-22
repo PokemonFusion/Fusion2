@@ -15,135 +15,133 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from commands.player.cmd_help import CmdHelp
-from commands.debug.cmd_debugpy import CmdDebugPy
-from commands.player.cmd_examine import CmdExamine
-from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
-from commands.player.cmd_account import CmdCharCreate, CmdAlts
+
+from commands.cmdsets.admin_misc import AdminMiscCmdSet
+from commands.cmdsets.battle import BattleCmdSet
+from commands.cmdsets.battle_admin import BattleAdminCmdSet
 
 # grouped cmdsets
 from commands.cmdsets.bboard import BulletinBoardCmdSet
+from commands.cmdsets.devinspect import CmdToggleDevInspect
+from commands.cmdsets.economy_map import EconomyMapCmdSet
+from commands.cmdsets.pokedex import PokedexCmdSet
+from commands.cmdsets.pokemon_core import PokemonCoreCmdSet
+from commands.cmdsets.pvp import PvpCmdSet
 from commands.cmdsets.roleplay import RoleplayCmdSet
 from commands.cmdsets.ui import UiCmdSet
-from commands.cmdsets.pokemon_core import PokemonCoreCmdSet
-from commands.cmdsets.battle import BattleCmdSet
-from commands.cmdsets.battle_admin import BattleAdminCmdSet
-from commands.cmdsets.pokedex import PokedexCmdSet
-from commands.cmdsets.pvp import PvpCmdSet
 from commands.cmdsets.world_build import WorldBuildCmdSet
-from commands.cmdsets.economy_map import EconomyMapCmdSet
-from commands.cmdsets.admin_misc import AdminMiscCmdSet
+from commands.debug.cmd_debugpy import CmdDebugPy
+from commands.player.cmd_account import CmdAlts, CmdCharCreate
+from commands.player.cmd_examine import CmdExamine
+from commands.player.cmd_help import CmdHelp
+from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
 
-
-from commands.cmdsets.devinspect import CmdToggleDevInspect
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
-    """
-    The `CharacterCmdSet` contains general in-game commands like `look`,
-    `get`, etc available on in-game Character objects. It is merged with
-    the `AccountCmdSet` when an Account puppets a Character.
-    """
+	"""
+	The `CharacterCmdSet` contains general in-game commands like `look`,
+	`get`, etc available on in-game Character objects. It is merged with
+	the `AccountCmdSet` when an Account puppets a Character.
+	"""
 
-    key = "DefaultCharacter"
+	key = "DefaultCharacter"
 
-    def at_cmdset_creation(self):
-        """Populate the cmdset."""
-        super().at_cmdset_creation()
-        self.remove("help")
-        self.remove("@examine")
-        self.add(CmdHelp())
-        self.add(CmdExamine())
-        self.add(CmdDebugPy)
+	def at_cmdset_creation(self):
+		"""Populate the cmdset."""
+		super().at_cmdset_creation()
+		self.remove("help")
+		self.remove("@examine")
+		self.add(CmdHelp())
+		self.add(CmdExamine())
+		self.add(CmdDebugPy)
 
-        # Attach grouped command sets
-        self.add(BulletinBoardCmdSet())
-        self.add(RoleplayCmdSet())
-        self.add(UiCmdSet())
-        self.add(PokemonCoreCmdSet())
-        self.add(BattleCmdSet())
-        self.add(BattleAdminCmdSet())
-        self.add(PokedexCmdSet())
-        self.add(PvpCmdSet())
-        self.add(WorldBuildCmdSet())
-        self.add(EconomyMapCmdSet())
-        self.add(AdminMiscCmdSet())
+		# Attach grouped command sets
+		self.add(BulletinBoardCmdSet())
+		self.add(RoleplayCmdSet())
+		self.add(UiCmdSet())
+		self.add(PokemonCoreCmdSet())
+		self.add(BattleCmdSet())
+		self.add(BattleAdminCmdSet())
+		self.add(PokedexCmdSet())
+		self.add(PvpCmdSet())
+		self.add(WorldBuildCmdSet())
+		self.add(EconomyMapCmdSet())
+		self.add(AdminMiscCmdSet())
 
-        # Developer toggle for inspection commands
-        self.add(CmdToggleDevInspect())
-        
+		# Developer toggle for inspection commands
+		self.add(CmdToggleDevInspect())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
-    """
-    This is the cmdset available to the Account at all times. It is
-    combined with the `CharacterCmdSet` when the Account puppets a
-    Character. It holds game-account-specific commands, channel
-    commands, etc.
-    """
+	"""
+	This is the cmdset available to the Account at all times. It is
+	combined with the `CharacterCmdSet` when the Account puppets a
+	Character. It holds game-account-specific commands, channel
+	commands, etc.
+	"""
 
-    key = "DefaultAccount"
+	key = "DefaultAccount"
 
-    def at_cmdset_creation(self):
-        """
-        Populates the cmdset
-        """
-        super().at_cmdset_creation()
-        self.remove("help")
-        self.remove("@examine")
-        self.add(CmdHelp())
-        self.add(CmdExamine())
-        #
-        # any commands you add below will overload the default ones.
-        #
-        # replace default ic/ooc commands
-        for cmdname in ("ic", "puppet", "ooc", "unpuppet"):
-            self.remove(cmdname)
-        self.add(CmdGOIC())
-        self.add(CmdGOOOC())
-        self.add(CmdCharCreate())
-        self.add(CmdAlts())
+	def at_cmdset_creation(self):
+		"""
+		Populates the cmdset
+		"""
+		super().at_cmdset_creation()
+		self.remove("help")
+		self.remove("@examine")
+		self.add(CmdHelp())
+		self.add(CmdExamine())
+		#
+		# any commands you add below will overload the default ones.
+		#
+		# replace default ic/ooc commands
+		for cmdname in ("ic", "puppet", "ooc", "unpuppet"):
+			self.remove(cmdname)
+		self.add(CmdGOIC())
+		self.add(CmdGOOOC())
+		self.add(CmdCharCreate())
+		self.add(CmdAlts())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
-    """
-    Command set available to the Session before being logged in.  This
-    holds commands like creating a new account, logging in, etc.
-    """
+	"""
+	Command set available to the Session before being logged in.  This
+	holds commands like creating a new account, logging in, etc.
+	"""
 
-    key = "DefaultUnloggedin"
+	key = "DefaultUnloggedin"
 
-    def at_cmdset_creation(self):
-        """
-        Populates the cmdset
-        """
-        super().at_cmdset_creation()
-        self.remove("help")
-        self.add(CmdHelp())
-        #
-        # any commands you add below will overload the default ones.
-        #
+	def at_cmdset_creation(self):
+		"""
+		Populates the cmdset
+		"""
+		super().at_cmdset_creation()
+		self.remove("help")
+		self.add(CmdHelp())
+		#
+		# any commands you add below will overload the default ones.
+		#
 
 
 class SessionCmdSet(default_cmds.SessionCmdSet):
-    """
-    This cmdset is made available on Session level once logged in. It
-    is empty by default.
-    """
+	"""
+	This cmdset is made available on Session level once logged in. It
+	is empty by default.
+	"""
 
-    key = "DefaultSession"
+	key = "DefaultSession"
 
-    def at_cmdset_creation(self):
-        """
-        This is the only method defined in a cmdset, called during
-        its creation. It should populate the set with command instances.
+	def at_cmdset_creation(self):
+		"""
+		This is the only method defined in a cmdset, called during
+		its creation. It should populate the set with command instances.
 
-        As and example we just add the empty base `Command` object.
-        It prints some info.
-        """
-        super().at_cmdset_creation()
-        self.remove("help")
-        self.add(CmdHelp())
-        #
-        # any commands you add below will overload the default ones.
-        #
-
+		As and example we just add the empty base `Command` object.
+		It prints some info.
+		"""
+		super().at_cmdset_creation()
+		self.remove("help")
+		self.add(CmdHelp())
+		#
+		# any commands you add below will overload the default ones.
+		#

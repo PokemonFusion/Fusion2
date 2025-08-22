@@ -6,6 +6,14 @@ Please note that the server is under heavy development. You can follow progress 
 
 For setup instructions and other notes migrated from the original Evennia README, see [README.instructions.md](README.instructions.md).
 
+## Documentation
+
+Project documentation lives in the [docs](docs/) folder:
+
+- [Quickstart and Overview](docs/index.md)
+- [Code Map](docs/code-map.md)
+- [Reference Materials](docs/reference)
+
 To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
 
 ```bash
@@ -22,6 +30,14 @@ pip install -r requirements-dev.txt  # optional
 ```
 
 You can then run the test suite with `pytest`.  See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+A project-wide [.editorconfig](.editorconfig) enforces tab indentation and LF line endings. Linting is configured through [ruff.toml](ruff.toml), and tests are discovered via [pytest.ini](pytest.ini). Copy [.env.example](.env.example) to `.env` to configure local environment variables. Common development tasks are provided by the [Makefile](Makefile):
+
+```bash
+make setup  # install dependencies
+make lint   # run Ruff
+make test   # run pytest
+```
 
 ## License
 

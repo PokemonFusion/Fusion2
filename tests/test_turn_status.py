@@ -1,7 +1,7 @@
+import importlib.util
 import os
 import sys
 import types
-import importlib.util
 from unittest.mock import patch
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -15,8 +15,10 @@ sys.modules["pokemon.battle"] = pkg_battle
 # Minimal pokemon.battle.utils stub for damage module
 utils_stub = types.ModuleType("pokemon.battle.utils")
 
+
 def get_modified_stat(pokemon, stat):
-    return getattr(pokemon.base_stats, stat, 0)
+	return getattr(pokemon.base_stats, stat, 0)
+
 
 utils_stub.get_modified_stat = get_modified_stat
 sys.modules["pokemon.battle.utils"] = utils_stub
@@ -81,45 +83,45 @@ eng_mod.MOVEDEX["tackle"] = _tackle
 
 
 def setup_battle(status=None):
-    p1 = Pokemon("P1", level=1, hp=100, max_hp=100, moves=[Move("Tackle")])
-    p2 = Pokemon("P2", level=1, hp=100, max_hp=100, moves=[Move("Tackle")])
-    base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-    for poke, num in ((p1, 1), (p2, 2)):
-        poke.base_stats = base
-        poke.num = num
-        poke.types = ["Normal"]
-    if status:
-        p1.status = status
-    part1 = BattleParticipant("P1", [p1], is_ai=False)
-    part2 = BattleParticipant("P2", [p2], is_ai=False)
-    part1.active = [p1]
-    part2.active = [p2]
-    move = BattleMove("Tackle", power=40, accuracy=100)
-    part1.pending_action = Action(part1, ActionType.MOVE, part2, move, move.priority)
-    return Battle(BattleType.WILD, [part1, part2]), p1, p2
+	p1 = Pokemon("P1", level=1, hp=100, max_hp=100, moves=[Move("Tackle")])
+	p2 = Pokemon("P2", level=1, hp=100, max_hp=100, moves=[Move("Tackle")])
+	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	for poke, num in ((p1, 1), (p2, 2)):
+		poke.base_stats = base
+		poke.num = num
+		poke.types = ["Normal"]
+	if status:
+		p1.status = status
+	part1 = BattleParticipant("P1", [p1], is_ai=False)
+	part2 = BattleParticipant("P2", [p2], is_ai=False)
+	part1.active = [p1]
+	part2.active = [p2]
+	move = BattleMove("Tackle", power=40, accuracy=100)
+	part1.pending_action = Action(part1, ActionType.MOVE, part2, move, move.priority)
+	return Battle(BattleType.WILD, [part1, part2]), p1, p2
 
 
 def test_paralysis_can_prevent_move():
-    """Paralysis should occasionally stop a Pokémon from acting."""
-    battle, p1, p2 = setup_battle("par")
-    with patch("pokemon.battle.engine.random.random", return_value=0.1):
-        battle.run_turn()
-    assert p2.hp == 100
+	"""Paralysis should occasionally stop a Pokémon from acting."""
+	battle, p1, p2 = setup_battle("par")
+	with patch("pokemon.battle.engine.random.random", return_value=0.1):
+		battle.run_turn()
+	assert p2.hp == 100
 
 
 def test_frozen_blocks_move():
-    """Frozen status should prevent action unless the Pokémon thaws."""
-    battle, p1, p2 = setup_battle("frz")
-    with patch("pokemon.battle.engine.random.random", return_value=0.5):
-        battle.run_turn()
-    assert p2.hp == 100
-    assert p1.status == "frz"
+	"""Frozen status should prevent action unless the Pokémon thaws."""
+	battle, p1, p2 = setup_battle("frz")
+	with patch("pokemon.battle.engine.random.random", return_value=0.5):
+		battle.run_turn()
+	assert p2.hp == 100
+	assert p1.status == "frz"
 
 
 def test_frozen_can_thaw_and_move():
-    """Frozen Pokémon may thaw out and attack."""
-    battle, p1, p2 = setup_battle("frz")
-    with patch("pokemon.battle.engine.random.random", return_value=0.1):
-        battle.run_turn()
-    assert p2.hp < 100
-    assert p1.status == 0
+	"""Frozen Pokémon may thaw out and attack."""
+	battle, p1, p2 = setup_battle("frz")
+	with patch("pokemon.battle.engine.random.random", return_value=0.1):
+		battle.run_turn()
+	assert p2.hp < 100
+	assert p1.status == 0
