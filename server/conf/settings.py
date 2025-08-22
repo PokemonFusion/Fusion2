@@ -82,11 +82,11 @@ PERMISSION_HIERARCHY = [
 BASE_CHARACTER_TYPECLASS = "pokemon.user.User"
 
 # This location may need to change depending on what starting location is
-# default to limbo, normally #2 but sometimes different.
-START_LOCATION = "#4"
-DEFAULT_HOME  = "#4"
+# default to limbo, normally #2 but sometimes different. Best to put this in secret_settings
+# START_LOCATION = "#2"
+# DEFAULT_HOME  = "#2"
 
-# Add this to the secret_settings.py
+# Add this to the secret_settings.py if needed
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # USE_X_FORWARDED_HOST = True
 # WEBSOCKET_CLIENT_URL = "/ws"  # relative path works behind HTTPS proxy
