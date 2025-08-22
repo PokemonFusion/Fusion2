@@ -42,10 +42,11 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 from utils.safe_import import safe_import
+import importlib
 
 try:
-	EventDispatcher = safe_import("pokemon.battle.events").EventDispatcher  # type: ignore[attr-defined]
-except ModuleNotFoundError:  # pragma: no cover - fallback for tests with stubs
+        EventDispatcher = importlib.import_module("pokemon.battle.events").EventDispatcher  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - fallback for tests with stubs
 	import inspect
 	from collections import defaultdict
 

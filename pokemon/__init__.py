@@ -11,7 +11,10 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
 	choose_wild_moves = None
 	PokemonInstance = None
 
-from .data.evolution import attempt_evolution, get_evolution, get_evolution_items
+try:
+        from .data.evolution import attempt_evolution, get_evolution, get_evolution_items
+except Exception:  # pragma: no cover - optional for lightweight test stubs
+        attempt_evolution = get_evolution = get_evolution_items = None
 
 try:
 	from .data.breeding import determine_egg_species

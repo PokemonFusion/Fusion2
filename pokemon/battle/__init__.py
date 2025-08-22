@@ -19,10 +19,15 @@ try:
 	from .engine import Action, ActionType, Battle, BattleMove, BattleParticipant, BattleType
 except Exception:  # pragma: no cover - optional for lightweight test stubs
 	BattleType = BattleParticipant = Battle = BattleMove = Action = ActionType = None
-from .capture import attempt_capture
+from . import capture as capture_mod
 from .messaging import MessagingMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
 from .storage import BattleDataWrapper
+
+
+def attempt_capture(*args, **kwargs):
+        """Proxy to :func:`pokemon.battle.capture.attempt_capture` for convenience."""
+        return capture_mod.attempt_capture(*args, **kwargs)
 
 __all__ = [
 	"DamageResult",

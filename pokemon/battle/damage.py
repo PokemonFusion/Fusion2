@@ -74,14 +74,23 @@ def critical_hit_check() -> bool:
 
 
 def base_damage(level: int, power: int, atk: int, defense: int, *, return_roll: bool = False):
-	"""Return base damage and optionally the random roll used."""
+        """Return base damage and optionally the random roll used.
 
-	dmg = floor(floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50) + 2
-	rand_mod = random.randint(85, 100) / 100.0
-	result = floor(dmg * rand_mod)
-	if return_roll:
-		return result, rand_mod
-	return result
+        The simplified damage formula can receive zero values for ``atk`` or
+        ``defense`` when stubbed Pokémon instances lack proper stats.  Clamp
+        both to at least ``1`` so we avoid division-by-zero errors and always
+        inflict a minimum of one point of damage after applying the random
+        modifier.
+        """
+
+        defense = max(1, defense)
+        atk = max(1, atk)
+        dmg = floor(floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50) + 2
+        rand_mod = random.randint(85, 100) / 100.0
+        result = max(1, floor(dmg * rand_mod))
+        if return_roll:
+                return result, rand_mod
+        return result
 
 
 def stab_multiplier(attacker: Pokemon, move: Move) -> float:

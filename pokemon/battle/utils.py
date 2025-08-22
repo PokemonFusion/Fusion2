@@ -1,8 +1,16 @@
-"""Utility helpers for the battle engine."""
+"""Utility helpers for the battle engine.
+
+This module provides a small collection of helpers used by the battle
+simulation.  Historically ``apply_boost`` lived in a higher level module
+(``pokemon.utils.boosts``) so tests that only stub out
+``pokemon.battle.utils`` failed with an :class:`ImportError`.  Re-exporting
+``apply_boost`` here keeps the public API stable while avoiding a hard
+dependency on the original module in calling code.
+"""
 
 from typing import Dict, Optional
 
-from pokemon.utils.boosts import STAT_KEY_MAP
+from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost as _apply_boost
 
 
 def _safe_get_stats(pokemon) -> Dict[str, int]:
@@ -62,3 +70,27 @@ def is_self_target(target: Optional[str]) -> bool:
 	"""
 
 	return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+
+
+def apply_boost(pokemon, boosts, source=None, effect=None) -> None:
+	"""Apply stat stage changes to ``pokemon``.
+
+	This thin wrapper forwards to :func:`pokemon.utils.boosts.apply_boost`
+	so that the battle engine can import :mod:`pokemon.battle.utils` for
+	all battle-related helpers without referencing the broader utilities
+	module directly.  The parameters are passed through unchanged.
+
+	Parameters
+	----------
+	pokemon: Any
+	    The Pokémon receiving the boost.
+	boosts: dict | None
+	    Mapping of stat identifiers to stage deltas.
+	source, effect: Any, optional
+	    Additional context forwarded to ability callbacks.
+	"""
+
+	_apply_boost(pokemon, boosts, source=source, effect=effect)
+
+
+__all__ = ["get_modified_stat", "is_self_target", "apply_boost"]
