@@ -36,7 +36,12 @@ jobs:
           pip install -U pip pyyaml
       - name: Run assessor (markdown)
         run: |
-          python tools/ci_assessor.py --markdown > ci_assessment.md || true
+          # If tool is missing (first PR before file lands), don't fail the job.
+          if [ -f tools/ci_assessor.py ]; then
+            python tools/ci_assessor.py --markdown > ci_assessment.md || true
+          else
+            echo "# CI Assessment\n\nThe assessor script isn't in this branch yet." > ci_assessment.md
+          fi
       - name: Comment on PR with assessment
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -68,6 +73,7 @@ jobs:
     env:
       PF2_NO_EVENNIA: "1"
       PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -84,7 +90,7 @@ jobs:
           pip install pytest-xdist
       - name: Run tests (no coverage)
         run: |
-          pytest -q -n auto --dist=loadgroup --durations=25
+          pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
 
   test-with-coverage:
     runs-on: ubuntu-latest
@@ -93,6 +99,7 @@ jobs:
     env:
       PF2_NO_EVENNIA: "1"
       PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -109,7 +116,7 @@ jobs:
           pip install pytest-xdist coverage[toml]
       - name: Run tests with coverage (parallel)
         run: |
-          coverage run -m pytest -q -n auto --dist=loadgroup --durations=25
+          coverage run -m pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
           coverage combine
           coverage xml
       - name: Coverage report
