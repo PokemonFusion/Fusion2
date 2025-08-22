@@ -6,6 +6,8 @@ import logging
 import random
 from typing import List, Optional
 
+from utils.safe_import import safe_import
+
 from .actions import Action, ActionType
 
 logger = logging.getLogger("battle")
@@ -503,7 +505,14 @@ class TurnProcessor:
 
 			from .capture import attempt_capture
 
-			ball_mod = BALL_MODIFIERS.get(item_key, 1.0)
+			try:
+			# Resolve ball modifiers at runtime to handle stubbed packages
+				ball_mods = safe_import(
+					"pokemon.dex.items.ball_modifiers"
+				).BALL_MODIFIERS  # type: ignore[attr-defined]
+			except ModuleNotFoundError:
+				ball_mods = {}
+			ball_mod = ball_mods.get(item_key, 1.0)
 			# Use the global RNG so callers can control determinism
 			# with ``random.seed`` during tests.
 			caught = attempt_capture(
