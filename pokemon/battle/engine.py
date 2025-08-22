@@ -1608,7 +1608,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 		for action in actions:
 			if action.action_type is ActionType.MOVE:
 				self.use_move(action)
-			elif action.action_type is ActionType.ITEM and action.item:
+			elif action.item:
+				# ``ActionType`` enums may be reloaded during tests,
+				# so rely on the presence of ``action.item`` rather
+				# than Enum identity to detect item usage.
 				self.execute_item(action)
 
 	def run_faint(self) -> None:
