@@ -13,13 +13,30 @@ class CmdCharCreate(DefaultCmdCharCreate):
 	help_category = "General"
 
 	def func(self):
+		"""Create the new character and direct players to ``goic``."""
 		account = self.account
 		max_chars = settings.MAX_NR_CHARACTERS
 		if max_chars is not None and len(account.characters) >= max_chars:
-			self.msg(f"You already have the maximum number of characters ({max_chars}).")
+			self.msg(
+				f"You already have the maximum number of characters ({max_chars})."
+			)
 			return
-		super().func()
-
+		if not self.args:
+			self.msg("Usage: charcreate <name>")
+			return
+		key = self.lhs
+		description = self.rhs or "This is a character."
+		new_character, errors = account.create_character(
+			key=key, description=description, ip=self.session.address
+		)
+		if errors:
+			self.msg(errors)
+		if not new_character:
+			return
+		self.msg(
+			f"Created new character {new_character.key}. Use |wgoic {new_character.key}|n to enter"
+			" the game as this character."
+		)
 
 class CmdAlts(Command):
 	"""List all characters for an account.
