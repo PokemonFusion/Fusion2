@@ -22,7 +22,7 @@ PY_NAMES = {
 	"items": "itemsdex",
 	"abilities": "abilitiesdex",
 	# move data was previously stored in combatdex.py
-	"moves": "movedex",
+	"moves": "moves",
 }
 FUNC_DIR = PY_DIR / "functions"
 

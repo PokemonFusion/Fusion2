@@ -1,4 +1,4 @@
-.PHONY: setup lint test
+.PHONY: setup lint test org
 
 setup:
 	pip install -r requirements.txt && pip install -r requirements-dev.txt
@@ -8,3 +8,6 @@ lint:
 
 test:
 	pytest
+
+org:
+	python tools/org_score.py
