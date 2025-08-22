@@ -81,6 +81,10 @@ PERMISSION_HIERARCHY = [
 # defined in ``pokemon.user``
 BASE_CHARACTER_TYPECLASS = "pokemon.user.User"
 
+# This location may need to change depending on what starting location is, default to limbo, normally #2 but sometimes different.
+START_LOCATION = "#4"
+DEFAULT_HOME  = "#4"
+
 # Add this to the secret_settings.py
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # USE_X_FORWARDED_HOST = True
