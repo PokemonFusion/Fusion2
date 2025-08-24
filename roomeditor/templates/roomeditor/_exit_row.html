@@ -1,0 +1,13 @@
+<div class="card mb-2" data-exit-id="{{ ex.id }}">
+    <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+            <strong>{{ ex.key }}</strong>
+            → {{ ex.destination.db_key }} (#{{ ex.destination_id }})
+            {% if ex.db.desc %}<div class="text-muted small">{{ ex.db.desc|truncatechars:120 }}</div>{% endif %}
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-sm btn-outline-primary" data-action="modal-edit-exit" data-exit="{{ ex.id }}">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" data-action="delete-exit" data-exit="{{ ex.id }}">Delete</button>
+        </div>
+    </div>
+</div>
