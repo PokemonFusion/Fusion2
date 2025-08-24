@@ -63,6 +63,7 @@ jobs:
       - name: Install dev deps
         run: |
           pip install -U pip
+          pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Ruff
         run: ruff check .
@@ -86,8 +87,8 @@ jobs:
       - name: Install dev deps
         run: |
           pip install -U pip
+          pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          pip install pytest-xdist
       - name: Run tests (no coverage)
         run: |
           pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
@@ -112,8 +113,8 @@ jobs:
       - name: Install deps
         run: |
           pip install -U pip
+          pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          pip install pytest-xdist coverage[toml]
       - name: Run tests with coverage (parallel)
         run: |
           coverage run -m pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
