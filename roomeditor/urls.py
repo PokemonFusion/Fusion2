@@ -1,22 +1,12 @@
+# Tabs are intentional.
 from django.urls import path
-
 from . import views
-
 app_name = "roomeditor"
-
 urlpatterns = [
-	path("", views.room_list, name="room-list"),
-	path("new/", views.room_edit, name="room-create"),
-	path("<int:room_id>/", views.room_edit, name="room-edit"),
-	path("<int:room_id>/delete/", views.delete_room, name="delete-room"),
-	path(
-		"<int:room_id>/delete_exit/<int:exit_id>/",
-		views.delete_exit,
-		name="delete-exit",
-	),
-	path(
-		"<int:room_id>/edit_exit/<int:exit_id>/",
-		views.edit_exit,
-		name="edit-exit",
-	),
+	path("room/<int:pk>/", views.room_edit, name="room_edit"),
+	path("exit/new/<int:room_pk>/", views.exit_new, name="exit_new"),
+	path("exit/<int:pk>/edit/", views.exit_edit, name="exit_edit"),
+	path("exit/<int:pk>/delete/", views.exit_delete, name="exit_delete"),
+	path("ansi/preview/", views.ansi_preview, name="ansi_preview"),
+	path("api/rooms/", views.room_search_api, name="room_search_api"),
 ]
