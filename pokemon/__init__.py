@@ -1,5 +1,9 @@
 """Convenience imports for the pokemon package."""
 
+# Ensure Django uses the custom app configuration which registers models
+# safely even if this package is imported before settings are configured.
+default_app_config = "pokemon.apps.PokemonConfig"
+
 try:
 	from .data.generation import (
 		PokemonInstance,
@@ -12,9 +16,9 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
 	PokemonInstance = None
 
 try:
-        from .data.evolution import attempt_evolution, get_evolution, get_evolution_items
+	from .data.evolution import attempt_evolution, get_evolution, get_evolution_items
 except Exception:  # pragma: no cover - optional for lightweight test stubs
-        attempt_evolution = get_evolution = get_evolution_items = None
+	attempt_evolution = get_evolution = get_evolution_items = None
 
 try:
 	from .data.breeding import determine_egg_species
