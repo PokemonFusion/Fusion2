@@ -27,7 +27,7 @@ try:  # pragma: no cover - optional heavy dependencies
                 Pokemon,
                 SpeciesEntry,
         )
-except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
+except (ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         (
                 MAX_PP_MULTIPLIER,
                 SpeciesEntry,
@@ -40,7 +40,7 @@ except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no c
 # Fusion -------------------------------------------------------------------
 try:  # pragma: no cover - optional heavy dependencies
         from .fusion import PokemonFusion
-except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
+except (ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         PokemonFusion = None
 
 # Moves and related models --------------------------------------------------
@@ -54,7 +54,7 @@ try:  # pragma: no cover - optional heavy dependencies
                 PokemonLearnedMove,
                 VerifiedMove,
         )
-except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
+except (ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         (
                 Move,
                 VerifiedMove,
@@ -73,13 +73,13 @@ try:  # pragma: no cover - optional heavy dependencies
                 UserStorage,
                 ensure_boxes,
         )
-except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
+except (ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         UserStorage = StorageBox = ActivePokemonSlot = ensure_boxes = None
 
 # Trainer ------------------------------------------------------------------
 try:  # pragma: no cover - optional heavy dependencies
         from .trainer import GymBadge, InventoryEntry, NPCTrainer, Trainer
-except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
+except (ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         Trainer = NPCTrainer = GymBadge = InventoryEntry = None
 
 __all__ = [
