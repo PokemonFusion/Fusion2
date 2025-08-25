@@ -90,9 +90,6 @@ import os
 import sys
 
 from pokemon.dex import MOVEDEX
-from pokemon.dex.entities import Move
-
-from ._shared import _normalize_key
 
 _BASE_PATH = os.path.dirname(__file__)
 
@@ -108,6 +105,47 @@ if "pokemon.battle" not in sys.modules:
     )
     sub.__path__ = [_BASE_PATH]
     sys.modules["pokemon.battle"] = sub
+
+from ._shared import _normalize_key
+
+
+def _get_move_class():
+    """Return the canonical Move class, or a lightweight fallback.
+
+    Tests sometimes stub ``pokemon.dex`` as a simple module without the
+    ``entities`` subpackage.  Importing :class:`Move` at module import time
+    would therefore fail.  This helper tries to import the real class and, if
+    unavailable, returns a minimal stand-in exposing the attributes the battle
+    engine relies upon.
+    """
+
+    try:  # normal path when the full dex package is available
+        from pokemon.dex.entities import Move as _Move  # type: ignore
+        return _Move
+    except Exception:
+        class _FallbackMove:
+            def __init__(
+                self,
+                name,
+                num=0,
+                type=None,
+                category=None,
+                power=None,
+                accuracy=None,
+                pp=None,
+                raw=None,
+            ):
+                self.name = name
+                self.num = num
+                self.type = type
+                self.category = category
+                self.power = power
+                self.accuracy = accuracy
+                self.pp = pp
+                self.raw = raw or {}
+                self.basePowerCallback = None
+
+        return _FallbackMove
 
 
 def _load_module(name: str, filename: str):
@@ -204,7 +242,7 @@ def _apply_move_damage(
         damage_mod = _load_module("pokemon.battle.damage", "damage.py")
     apply_damage = getattr(damage_mod, "apply_damage")
     DamageResult = getattr(damage_mod, "DamageResult")
-    from pokemon.dex.entities import Move
+    Move = _get_move_class()
 
     # ------------------------------------------------------------------
     # Ability hooks
@@ -406,6 +444,7 @@ def _select_ai_action(
     """
 
     moves = getattr(active_pokemon, "moves", [])
+    Move = _get_move_class()
     move_data = moves[0] if moves else Move(name="Flail")
 
     mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
@@ -1586,7 +1625,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         sub = getattr(target, "volatiles", {}).get("substitute")
         if sub and not action.move.raw.get("bypassSub"):
-            from pokemon.dex.entities import Move
+            Move = _get_move_class()
 
             from .damage import apply_damage
 
