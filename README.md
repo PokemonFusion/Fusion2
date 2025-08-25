@@ -29,17 +29,16 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt  # optional
 ```
 
-You can then run the test suite with `pytest`.  See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+You can then run the test suite with `make test`, which mirrors the CI configuration.  See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 A project-wide [.editorconfig](.editorconfig) enforces tab indentation and LF line endings. Linting is configured through [ruff.toml](ruff.toml), and tests are discovered via [pytest.ini](pytest.ini). Copy [.env.example](.env.example) to `.env` to configure local environment variables. Common development tasks are provided by the [Makefile](Makefile):
 
 ```bash
 make setup  # install dependencies
 make lint   # run Ruff
-make test   # run pytest
+make test   # run tests
 ```
 
 ## License
 
 This project is distributed under the terms of the [MIT License](LICENSE).
-
