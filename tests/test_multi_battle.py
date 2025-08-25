@@ -102,6 +102,6 @@ def test_three_and_four_way_battles():
 		for part in parts:
 			assert part.active[0].hp < 100
 
-	del sys.modules["pokemon.dex"]
-	del sys.modules["pokemon.data"]
-	del sys.modules["pokemon.data.text"]
+	sys.modules.pop("pokemon.dex", None)
+	sys.modules.pop("pokemon.data", None)
+	sys.modules.pop("pokemon.data.text", None)
