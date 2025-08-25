@@ -2,7 +2,7 @@
 
 from importlib import import_module, reload
 
-from django.apps import AppConfig
+from django.apps import AppConfig, apps
 
 
 class PokemonConfig(AppConfig):
@@ -15,6 +15,13 @@ class PokemonConfig(AppConfig):
 		"""Load model submodules to guarantee Django registers them."""
 
 		from . import models
+
+		# If models have already been registered normally, skip the heavy
+		# reload logic to avoid duplicate registrations that trigger
+		# warnings during server reloads.
+		registry = apps.all_models.get(self.label, {})
+		if "moveset" in registry:
+			return
 
 		module_names = ("core", "fusion", "moves", "storage", "trainer")
 		loaded = {}
