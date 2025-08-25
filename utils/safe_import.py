@@ -16,43 +16,38 @@ log = logging.getLogger("fusion2.import")
 
 
 def safe_import(dotted: str) -> Any:
-	"""Import ``dotted`` module, logging ``ModuleNotFoundError`` then re-raising.
+    """Import ``dotted`` module, logging ``ModuleNotFoundError`` then re-raising."""
 
-	Parameters
-	----------
-	dotted : str
-		Dotted path of the module to import.
-
-	Returns
-	-------
-	Any
-		The imported module.
-	"""
-	try:
-		return importlib.import_module(dotted)
-	except ModuleNotFoundError:
-		parts = dotted.split(".")
-		if len(parts) > 1:
-			parent_name = ".".join(parts[:-1])
-			parent = sys.modules.get(parent_name)
-			if parent is not None and getattr(parent, "__path__", None) == []:
-				sys.modules.pop(parent_name, None)
-				return importlib.import_module(dotted)
-		log.exception("Import failed: %s", dotted)
-		raise
+    try:
+        return importlib.import_module(dotted)
+    except ModuleNotFoundError:
+        parts = dotted.split(".")
+        if len(parts) > 1:
+            parent_name = ".".join(parts[:-1])
+            parent = sys.modules.get(parent_name)
+            if parent is not None and getattr(parent, "__path__", None) == []:
+                # ``parent`` may be a deliberately injected stub with an
+                # empty ``__path__``. Temporarily remove it so Python can
+                # attempt to import the real package, but restore the stub
+                # if that still fails so callers (and test clean-up) see a
+                # consistent module state.
+                sys.modules.pop(parent_name, None)
+                try:
+                    return importlib.import_module(dotted)
+                except ModuleNotFoundError:
+                    sys.modules[parent_name] = parent
+                    raise
+        log.exception("Import failed: %s", dotted)
+        raise
 
 
 @contextmanager
 def log_import_block(label: str):
-	"""Log ``ModuleNotFoundError`` occurring within the managed block.
+    """Log ``ModuleNotFoundError`` occurring within the managed block."""
 
-	Parameters
-	----------
-	label : str
-		Description for the import block, included in the log message.
-	"""
-	try:
-		yield
-	except ModuleNotFoundError:  # pragma: no cover - logging path
-		log.exception("Import failed in block: %s", label)
-		raise
+    try:
+        yield
+    except ModuleNotFoundError:  # pragma: no cover - logging path
+        log.exception("Import failed in block: %s", label)
+        raise
+
