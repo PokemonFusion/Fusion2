@@ -1,5 +1,7 @@
 """App configuration for the Pokémon Django application."""
 
+from importlib import import_module, reload
+
 from django.apps import AppConfig
 
 
@@ -10,11 +12,25 @@ class PokemonConfig(AppConfig):
 	name = "pokemon"
 
 	def ready(self) -> None:  # pragma: no cover - import side effects
-		# Import models submodules to ensure all models register with Django's
-		# app registry even if this package was imported before settings were
-		# configured. This avoids missing model errors at runtime.
-		from . import models  # pylint: disable=unused-import
-		from .models import core, fusion, moves, storage, trainer  # noqa: F401
+		"""Load model submodules to guarantee Django registers them."""
+
+		from . import models
+
+		module_names = ("core", "fusion", "moves", "storage", "trainer")
+		loaded = {}
+		for name in module_names:
+			# Reload modules to re-execute model declarations if this
+			# package was imported before Django finished setting up.
+			# Without this, early imports could leave the registry
+			# without these models.
+			module = reload(import_module(f"pokemon.models.{name}"))
+			loaded[name] = module
+
+		core = loaded["core"]
+		fusion = loaded["fusion"]
+		moves = loaded["moves"]
+		storage = loaded["storage"]
+		trainer = loaded["trainer"]
 
 		# Re-export key models for convenience.
 		models.MAX_PP_MULTIPLIER = getattr(core, "MAX_PP_MULTIPLIER", None)
