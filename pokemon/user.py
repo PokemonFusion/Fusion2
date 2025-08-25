@@ -8,6 +8,7 @@ from django.utils import timezone
 from evennia import DefaultCharacter
 
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+from utils.fusion import get_fusion_parents
 from utils.inventory import InventoryMixin
 
 from .data.generation import generate_pokemon
@@ -162,6 +163,10 @@ class User(DefaultCharacter, InventoryMixin):
         pokemon = self.get_pokemon_by_id(pokemon_id)
         if not pokemon:
             return "No such Pokémon."
+        trainer, _ = get_fusion_parents(pokemon)
+        if trainer == self.trainer:
+            display = pokemon.nickname or pokemon.species
+            return f"{display} is fused with you and cannot be deposited."
         if pokemon in self.storage.active_pokemon.all():
             self.storage.remove_active_pokemon(pokemon)
         self.storage.stored_pokemon.add(pokemon)
