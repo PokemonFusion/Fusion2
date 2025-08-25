@@ -6,56 +6,68 @@ Database models and related utilities for the Pokémon game.
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
 
-# The remaining model imports depend on Django/Evennia being available.  When
-# running lightweight tests without the full environment configured we allow
-# these imports to fail gracefully and expose ``None`` placeholders instead.
+# Import models individually so a missing optional dependency only affects
+# that specific subset.  This prevents unrelated models from becoming ``None``
+# and breaking ORM relations when running in reduced environments.
 try:  # pragma: no cover - optional heavy dependencies
-	from .core import (
-		MAX_PP_MULTIPLIER,
-		BasePokemon,
-		BattleSlot,
-		OwnedPokemon,
-		Pokemon,
-		SpeciesEntry,
-	)
-	from .fusion import PokemonFusion
-	from .moves import (
-		ActiveMoveslot,
-		Move,
-		MovePPBoost,
-		Moveset,
-		MovesetSlot,
-		PokemonLearnedMove,
-		VerifiedMove,
-	)
-	from .storage import (
-		ActivePokemonSlot,
-		StorageBox,
-		UserStorage,
-		ensure_boxes,
-	)
-	from .trainer import GymBadge, InventoryEntry, NPCTrainer, Trainer
+        from .core import (
+                MAX_PP_MULTIPLIER,
+                BasePokemon,
+                BattleSlot,
+                OwnedPokemon,
+                Pokemon,
+                SpeciesEntry,
+        )
 except Exception:  # pragma: no cover - used when ORM isn't set up
-	(
-		MAX_PP_MULTIPLIER,
-		SpeciesEntry,
-		BasePokemon,
-		Pokemon,
-		OwnedPokemon,
-		BattleSlot,
-	) = (None,) * 6
-	(
-		Move,
-		VerifiedMove,
-		PokemonLearnedMove,
-		Moveset,
-		MovesetSlot,
-		ActiveMoveslot,
-		MovePPBoost,
-	) = (None,) * 7
-	Trainer = NPCTrainer = GymBadge = InventoryEntry = None
-	UserStorage = StorageBox = ActivePokemonSlot = ensure_boxes = None
-	PokemonFusion = None
+        (
+                MAX_PP_MULTIPLIER,
+                SpeciesEntry,
+                BasePokemon,
+                Pokemon,
+                OwnedPokemon,
+                BattleSlot,
+        ) = (None,) * 6
+
+try:  # pragma: no cover - optional heavy dependencies
+        from .moves import (
+                ActiveMoveslot,
+                Move,
+                MovePPBoost,
+                Moveset,
+                MovesetSlot,
+                PokemonLearnedMove,
+                VerifiedMove,
+        )
+except Exception:  # pragma: no cover - used when ORM isn't set up
+        (
+                Move,
+                VerifiedMove,
+                PokemonLearnedMove,
+                Moveset,
+                MovesetSlot,
+                ActiveMoveslot,
+                MovePPBoost,
+        ) = (None,) * 7
+
+try:  # pragma: no cover - optional heavy dependencies
+        from .fusion import PokemonFusion
+except Exception:  # pragma: no cover - used when ORM isn't set up
+        PokemonFusion = None
+
+try:  # pragma: no cover - optional heavy dependencies
+        from .storage import (
+                ActivePokemonSlot,
+                StorageBox,
+                UserStorage,
+                ensure_boxes,
+        )
+except Exception:  # pragma: no cover - used when ORM isn't set up
+        UserStorage = StorageBox = ActivePokemonSlot = ensure_boxes = None
+
+try:  # pragma: no cover - optional heavy dependencies
+        from .trainer import GymBadge, InventoryEntry, NPCTrainer, Trainer
+except Exception:  # pragma: no cover - used when ORM isn't set up
+        Trainer = NPCTrainer = GymBadge = InventoryEntry = None
 
 __all__ = [
 	"MAX_PP_MULTIPLIER",

@@ -32,7 +32,7 @@ class PokemonLearnedMove(models.Model):
 	"""Through table linking a Pokémon to a learned move."""
 
 	pokemon = models.ForeignKey(
-		"OwnedPokemon",
+		"pokemon.OwnedPokemon",
 		on_delete=models.CASCADE,
 		db_index=True,
 	)
@@ -52,7 +52,7 @@ class PokemonLearnedMove(models.Model):
 class Moveset(models.Model):
 	"""A set of up to four moves belonging to a Pokémon."""
 
-	pokemon = models.ForeignKey("OwnedPokemon", on_delete=models.CASCADE, related_name="movesets")
+	pokemon = models.ForeignKey("pokemon.OwnedPokemon", on_delete=models.CASCADE, related_name="movesets")
 	index = models.PositiveSmallIntegerField()
 
 	class Meta:
@@ -80,7 +80,7 @@ class Moveset(models.Model):
 class MovesetSlot(models.Model):
 	"""A single move within a moveset."""
 
-	moveset = models.ForeignKey("Moveset", on_delete=models.CASCADE, related_name="slots")
+	moveset = models.ForeignKey("pokemon.Moveset", on_delete=models.CASCADE, related_name="slots")
 	move = models.ForeignKey("Move", on_delete=models.CASCADE)
 	slot = models.PositiveSmallIntegerField()
 
@@ -103,7 +103,7 @@ class MovesetSlot(models.Model):
 class ActiveMoveslot(models.Model):
 	"""Mapping of active move slots for a Pokémon."""
 
-	pokemon = models.ForeignKey("OwnedPokemon", on_delete=models.CASCADE, db_index=True)
+	pokemon = models.ForeignKey("pokemon.OwnedPokemon", on_delete=models.CASCADE, db_index=True)
 	move = models.ForeignKey("Move", on_delete=models.CASCADE, db_index=True)
 	slot = models.PositiveSmallIntegerField(db_index=True)
 	current_pp = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -118,7 +118,7 @@ class ActiveMoveslot(models.Model):
 class MovePPBoost(models.Model):
 	"""Store extra PP added to a move for a specific Pokémon."""
 
-	pokemon = models.ForeignKey("OwnedPokemon", on_delete=models.CASCADE, related_name="pp_boosts")
+	pokemon = models.ForeignKey("pokemon.OwnedPokemon", on_delete=models.CASCADE, related_name="pp_boosts")
 	move = models.ForeignKey("Move", on_delete=models.CASCADE)
 	bonus_pp = models.PositiveSmallIntegerField(default=0)
 
