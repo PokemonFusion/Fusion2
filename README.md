@@ -29,7 +29,14 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt  # optional
 ```
 
-You can then run the test suite with `make test`, which mirrors the CI configuration.  See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+Continuous integration stubs out the Evennia dependency by setting `PF2_NO_EVENNIA=1` before running tests.  Export this variable locally to mimic the CI environment and avoid requiring Evennia:
+
+```bash
+export PF2_NO_EVENNIA=1
+make test
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 A project-wide [.editorconfig](.editorconfig) enforces tab indentation and LF line endings. Linting is configured through [ruff.toml](ruff.toml), and tests are discovered via [pytest.ini](pytest.ini). Copy [.env.example](.env.example) to `.env` to configure local environment variables. Common development tasks are provided by the [Makefile](Makefile):
 
