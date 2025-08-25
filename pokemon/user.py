@@ -8,8 +8,8 @@ from django.utils import timezone
 from evennia import DefaultCharacter
 
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-from utils.inventory import InventoryMixin
 from utils.fusion import get_fusion_parents
+from utils.inventory import InventoryMixin
 
 from .data.generation import generate_pokemon
 from .dex import POKEDEX
