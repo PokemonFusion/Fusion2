@@ -4,7 +4,12 @@ Thank you for your interest in contributing to **Pokemon Fusion 2**. This projec
 
 ## Setting up the development environment
 
-1. Create and activate a virtual environment for Python 3.
+1. Create and activate a virtual environment for **Python 3.12**:
+
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate
+   ```
 2. Install the server requirements (this will install Evennia and other packages):
 
    ```bash
