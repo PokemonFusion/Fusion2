@@ -19,10 +19,10 @@ Thank you for your interest in contributing to **Pokemon Fusion 2**. This projec
 
 ## Running the tests
 
-Run the test suite from the repository root with `pytest`:
+Run the test suite from the repository root using the Makefile target that mirrors the CI configuration:
 
 ```bash
-pytest
+make test
 ```
 
 All tests should run without a running Evennia server as they stub the framework where needed.
