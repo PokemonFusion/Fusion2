@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass, field
 from math import floor
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -12,7 +12,12 @@ to the attack.
 """
 
 from ..data import TYPE_CHART
-from ..dex import Move, Pokemon
+
+if TYPE_CHECKING:  # pragma: no cover
+        from ..dex import Move, Pokemon
+else:  # pragma: no cover - runtime type placeholders
+        Move = Any  # type: ignore[assignment]
+        Pokemon = Any  # type: ignore[assignment]
 
 try:  # pragma: no cover - allow running as a standalone module in tests
 	from pokemon.battle.callbacks import _resolve_callback

@@ -13,6 +13,25 @@ from pokemon.services.move_management import learn_level_up_moves
 from pokemon.utils.boosts import STAT_KEY_MAP
 
 
+def calculate_stats(species, level, ivs, evs, nature):
+        """Return calculated stats, falling back to generated data if needed."""
+
+        try:  # pragma: no cover - heavy Django dependency
+                from pokemon.models.stats import calculate_stats as _calc
+
+                return _calc(species, level, ivs, evs, nature)
+        except Exception:
+                inst = generate_pokemon(species, level=level)
+                return {
+                        "hp": inst.stats.hp,
+                        "attack": inst.stats.attack,
+                        "defense": inst.stats.defense,
+                        "special_attack": inst.stats.special_attack,
+                        "special_defense": inst.stats.special_defense,
+                        "speed": inst.stats.speed,
+                }
+
+
 def _calculate_from_data(pokemon):
         """Return freshly calculated stats based on stored attributes."""
 
@@ -45,20 +64,7 @@ def _calculate_from_data(pokemon):
         nature = getattr(pokemon, "nature", "Hardy")
         species = getattr(pokemon, "species", getattr(pokemon, "name", ""))
         level = getattr(pokemon, "level", 1)
-        try:
-                from pokemon.models.stats import calculate_stats  # local import
-
-                return calculate_stats(species, level, ivs, evs, nature)
-        except Exception:
-                inst = generate_pokemon(species, level=level)
-                return {
-                        "hp": inst.stats.hp,
-                        "attack": inst.stats.attack,
-                        "defense": inst.stats.defense,
-                        "special_attack": inst.stats.special_attack,
-                        "special_defense": inst.stats.special_defense,
-                        "speed": inst.stats.speed,
-                }
+        return calculate_stats(species, level, ivs, evs, nature)
 
 
 def _get_stats_from_data(pokemon):
