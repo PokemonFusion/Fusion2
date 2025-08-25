@@ -25,6 +25,7 @@ pokemon_dex = types.ModuleType("pokemon.dex")
 pokemon_dex.__path__ = []
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {}
+pokemon_dex.POKEDEX = {}
 pokemon_dex.Move = ent_mod.Move
 pokemon_dex.Pokemon = ent_mod.Pokemon
 sys.modules["pokemon.dex"] = pokemon_dex
@@ -34,6 +35,13 @@ data_stub = types.ModuleType("pokemon.data")
 data_stub.__path__ = []
 data_stub.TYPE_CHART = {}
 sys.modules["pokemon.data"] = data_stub
+text_init = os.path.join(ROOT, "pokemon", "data", "text", "__init__.py")
+text_spec = importlib.util.spec_from_file_location(
+    "pokemon.data.text", text_init, submodule_search_locations=[os.path.dirname(text_init)]
+)
+text_mod = importlib.util.module_from_spec(text_spec)
+sys.modules["pokemon.data.text"] = text_mod
+text_spec.loader.exec_module(text_mod)
 
 # Load damage module
 damage_path = os.path.join(ROOT, "pokemon", "battle", "damage.py")
@@ -96,3 +104,4 @@ def test_three_and_four_way_battles():
 
 	del sys.modules["pokemon.dex"]
 	del sys.modules["pokemon.data"]
+	del sys.modules["pokemon.data.text"]
