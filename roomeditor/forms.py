@@ -1,82 +1,60 @@
+# Tabs are intentional.
+from __future__ import annotations
+
 from django import forms
-from django.utils.safestring import mark_safe
 from evennia.objects.models import ObjectDB
-
-
-class RoomForm(forms.Form):
-	ROOM_CLASS_CHOICES = [
-		("typeclasses.rooms.Room", "Room"),
-		("typeclasses.rooms.FusionRoom", "Fusion Room"),
-		("typeclasses.rooms.BattleRoom", "Battle Room"),
-		("typeclasses.rooms.MapRoom", "Map Room"),
-	]
-
-	ROOM_CLASS_HELP = (
-		"Room - standard room. "
-		"Fusion Room - supports Pokémon centers, item shops and hunting. "
-		"Battle Room - temporary space for battles. "
-		"Map Room - displays a simple 2D map."
-	)
-
-	room_class = forms.ChoiceField(
-		label="Room Class",
-		choices=ROOM_CLASS_CHOICES,
-		widget=forms.Select(attrs={"title": ROOM_CLASS_HELP}),
-	)
-	name = forms.CharField(
-		label="Name",
-		max_length=80,
-		widget=forms.TextInput(attrs={"size": 60}),
-	)
-	desc = forms.CharField(
-		label="Description",
-		widget=forms.Textarea,
-		required=False,
-		help_text=mark_safe('Use Evennia color codes. <a href="/ansi/" target="_blank">ANSI reference</a>'),
-	)
-	is_center = forms.BooleanField(label="Pokémon Center", required=False)
-	is_shop = forms.BooleanField(label="Item Shop", required=False)
-	allow_hunting = forms.BooleanField(label="Allow Hunting", required=False)
-	hunt_chart = forms.CharField(
-		label="Hunt Table",
-		required=False,
-		help_text="Format: name:rate, name:rate",
-	)
+from utils.build_utils import normalize_aliases
 
 
 class ExitForm(forms.Form):
-	direction = forms.CharField(
-		label="Direction",
-		max_length=32,
-		widget=forms.TextInput(
-			attrs={
-				"title": ("Use Evennia color tags such as |gnorth|n to style the exit name."),
-			}
-		),
+	"""Form for creating or editing exits."""
+
+	key = forms.CharField(label="Exit name (direction)", max_length=64)
+	try:
+		empty_qs = ObjectDB.objects.none()
+	except AttributeError:
+		class _EmptyQS(list):
+			def all(self):
+				return self
+		empty_qs = _EmptyQS()
+	destination = forms.ModelChoiceField(
+		queryset=empty_qs,
+		widget=forms.Select(attrs={"data-role": "destination-select"}),
 	)
-	dest_id = forms.ChoiceField(label="Destination Room", choices=())
-	desc = forms.CharField(
-		label="Description",
-		widget=forms.Textarea,
-		required=False,
-		help_text=mark_safe('Use Evennia color codes. <a href="/ansi/" target="_blank">ANSI reference</a>'),
-	)
-	err_traverse = forms.CharField(
-		label="Failure Message",
-		required=False,
-		help_text="Message shown when traversal fails.",
-	)
-	locks = forms.CharField(label="Lockstring", required=False)
-	aliases = forms.CharField(
-		label="Aliases",
-		required=False,
-		help_text="Separate aliases with commas or semicolons.",
-	)
-	exit_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		queryset = ObjectDB.objects.filter(db_location__isnull=True, db_typeclass_path__contains="rooms")
-		if hasattr(queryset, "order_by"):
-			queryset = queryset.order_by("id")
-		self.fields["dest_id"].choices = [(obj.id, f"{obj.id} - {getattr(obj, 'key', '')}") for obj in queryset]
+		qs = ObjectDB.objects.filter(db_typeclass_path__icontains=".rooms.")
+		if hasattr(qs, "order_by"):
+			qs = qs.order_by("db_key")
+		self.fields["destination"].queryset = qs
+	description = forms.CharField(label="Description", widget=forms.Textarea, required=False)
+	lockstring = forms.CharField(
+		label="Lockstring",
+		required=False,
+		help_text="Evennia lockstring, e.g. 'traverse:perm(Builder)'",
+	)
+	err_msg = forms.CharField(label="Failure message", required=False)
+	aliases = forms.CharField(label="Aliases (comma-separated)", required=False)
+	auto_reverse = forms.BooleanField(label="Auto-create reverse exit", required=False, initial=True)
+
+	def cleaned_alias_list(self) -> list[str]:
+		"""Return aliases as a cleaned list."""
+		return normalize_aliases(self.cleaned_data.get("aliases", ""))
+
+
+if hasattr(ObjectDB, '_meta'):
+	class RoomForm(forms.ModelForm):
+		"""Minimal form for editing room attributes."""
+
+		class Meta:
+			model = ObjectDB
+			fields = ['db_key', 'db_desc']
+			widgets = {
+				'db_desc': forms.Textarea(attrs={'data-role': 'ansi-preview-source'})
+			}
+else:
+	class RoomForm(forms.Form):
+		# Fallback form used during tests when ObjectDB is a dummy.
+		db_key = forms.CharField(label='Key')
+		db_desc = forms.CharField(widget=forms.Textarea(attrs={'data-role': 'ansi-preview-source'}), required=False)

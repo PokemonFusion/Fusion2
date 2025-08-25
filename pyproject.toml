@@ -36,6 +36,9 @@ exclude = [
 	"**/__pycache__",
 ]
 
+[tool.black]
+line-length = 100
+
 [tool.ruff.format]
 indent-style = "tab"
 
@@ -49,6 +52,7 @@ ignore = [
 	"E402",  # allow module level import not at top of file
 	"F821",  # allow undefined name
 	"E731",  # allow lamba expression for assigning.
+	"E501",  # allow lengths
 ]
 
 # Rule sets to enforce (pycodestyle, pyflakes, import sorting).

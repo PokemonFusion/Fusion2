@@ -1,340 +1,328 @@
-import os
+"""Tests for room editor views and AJAX behavior."""
 import sys
 import types
 
+import django
+import pytest
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import RequestFactory
+import json
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Configure minimal Django settings.
+if not settings.configured:
+    settings.configure(
+        SECRET_KEY="test",
+        DEFAULT_CHARSET="utf-8",
+        INSTALLED_APPS=[],
+        USE_I18N=False,
+        ROOT_URLCONF="roomeditor.urls",
+        TEMPLATES=[
+            {
+                "BACKEND": "django.template.backends.django.DjangoTemplates",
+                "DIRS": [],
+                "APP_DIRS": True,
+                "OPTIONS": {},
+            }
+        ],
+        CHANNEL_LOG_NUM_TAIL_LINES=100,
+    )
+    django.setup()
 
+# Stub evennia modules before importing views.
+fake_evennia = types.ModuleType("evennia")
+fake_evennia.DefaultExit = types.SimpleNamespace(path="evennia.default_exit")
+fake_models = types.ModuleType("evennia.objects.models")
+fake_models.ObjectDB = type("ObjectDB", (), {})
+fake_objects = types.ModuleType("evennia.objects")
+sys.modules.setdefault("evennia", fake_evennia)
+sys.modules.setdefault("evennia.objects", fake_objects)
+sys.modules.setdefault("evennia.objects.models", fake_models)
 
-def test_preview_context():
-	import importlib
-
-	if not settings.configured:
-		settings.configure(
-			SECRET_KEY="test",
-			DEFAULT_CHARSET="utf-8",
-			INSTALLED_APPS=[],
-			USE_I18N=False,
-			ROOT_URLCONF="tests.urls",
-			CHANNEL_LOG_NUM_TAIL_LINES=100,
-		)
-		import django
-
-		django.setup()
-	else:
-		if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
-			settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
-		if not hasattr(settings, "USE_I18N"):
-			settings.USE_I18N = False
-	prev_evennia = sys.modules.get("evennia")
-	prev_objects = sys.modules.get("evennia.objects")
-	prev_models = sys.modules.get("evennia.objects.models")
-	prev_rooms = sys.modules.get("typeclasses.rooms")
-	prev_exits = sys.modules.get("typeclasses.exits")
-
-	fake_evennia = types.ModuleType("evennia")
-
-	def fake_create_object(*a, **k):
-		obj = types.SimpleNamespace(id=1, key=k.get("key"))
-		obj.db = types.SimpleNamespace()
-		obj.typeclass_path = a[0]
-		obj.swap_typeclass = lambda *args, **kw: None
-		obj.save = lambda: None
-		return obj
-
-	fake_evennia.create_object = fake_create_object
-	fake_objects = types.ModuleType("evennia.objects")
-	fake_models = types.ModuleType("evennia.objects.models")
-
-	class DummyQuery:
-		def filter(self, *a, **k):
-			return []
-
-		def exists(self):
-			return False
-
-	fake_models.ObjectDB = type("ObjectDB", (), {"objects": DummyQuery()})
-	fake_evennia.objects = fake_objects
-	sys.modules["evennia"] = fake_evennia
-	sys.modules["evennia.objects"] = fake_objects
-	sys.modules["evennia.objects.models"] = fake_models
-	fake_web = types.ModuleType("evennia.web")
-	fake_web.urls = types.ModuleType("evennia.web.urls")
-	fake_web.urls.urlpatterns = []
-	sys.modules["evennia.web"] = fake_web
-	sys.modules["evennia.web.urls"] = fake_web.urls
-	sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
-	sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
-	sys.modules["typeclasses.rooms"].Room = type("Room", (), {})
-	sys.modules["typeclasses.exits"].Exit = type("Exit", (), {})
-
-	views = importlib.import_module("roomeditor.views")
-	rf = RequestFactory()
-	data = {
-		"room_class": "typeclasses.rooms.Room",
-		"name": "Test Room",
-		"desc": "A sample room",
-		"is_center": True,
-		"is_shop": False,
-		"allow_hunting": True,
-		"hunt_chart": "Pikachu:5",
-		"preview_room": "1",
-	}
-	request = rf.post("/roomeditor/new/", data)
-	request.user = types.SimpleNamespace(is_authenticated=True, is_superuser=True)
-
-	captured = {}
-
-	def fake_render(req, tpl, ctx):
-		captured["template"] = tpl
-		captured["context"] = ctx
-		return HttpResponse()
-
-	orig_render = views.render
-	views.render = fake_render
-	try:
-		views.room_edit.__wrapped__(request)
-	finally:
-		views.render = orig_render
-		if prev_evennia is not None:
-			sys.modules["evennia"] = prev_evennia
-		else:
-			sys.modules.pop("evennia", None)
-		if prev_objects is not None:
-			sys.modules["evennia.objects"] = prev_objects
-		else:
-			sys.modules.pop("evennia.objects", None)
-		if prev_models is not None:
-			sys.modules["evennia.objects.models"] = prev_models
-		else:
-			sys.modules.pop("evennia.objects.models", None)
-		if prev_rooms is not None:
-			sys.modules["typeclasses.rooms"] = prev_rooms
-		else:
-			sys.modules.pop("typeclasses.rooms", None)
-		if prev_exits is not None:
-			sys.modules["typeclasses.exits"] = prev_exits
-		else:
-			sys.modules.pop("typeclasses.exits", None)
-
-	assert captured.get("template") == "roomeditor/room_preview.html"
-	assert "preview" in captured.get("context", {})
-	assert captured["context"]["preview"]["name"] == "Test Room"
+from roomeditor import views
 
 
-def test_save_redirects_to_list():
-	import importlib
+class DummyAliases:
+    """Simple alias container."""
 
-	from django.urls import reverse
+    def __init__(self):
+        self.aliases = []
 
-	if not settings.configured:
-		settings.configure(
-			SECRET_KEY="test",
-			DEFAULT_CHARSET="utf-8",
-			INSTALLED_APPS=[],
-			USE_I18N=False,
-			ROOT_URLCONF="tests.urls",
-			CHANNEL_LOG_NUM_TAIL_LINES=100,
-		)
-		import django
+    def add(self, *vals):
+        self.aliases.extend(vals)
 
-		django.setup()
-	else:
-		if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
-			settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
-		if not hasattr(settings, "USE_I18N"):
-			settings.USE_I18N = False
-	prev_evennia = sys.modules.get("evennia")
-	prev_objects = sys.modules.get("evennia.objects")
-	prev_models = sys.modules.get("evennia.objects.models")
-	prev_rooms = sys.modules.get("typeclasses.rooms")
-	prev_exits = sys.modules.get("typeclasses.exits")
+    def clear(self):
+        self.aliases.clear()
 
-	fake_evennia = types.ModuleType("evennia")
-
-	def fake_create_object(*a, **k):
-		obj = types.SimpleNamespace(id=1, key=k.get("key"))
-		obj.db = types.SimpleNamespace()
-		obj.typeclass_path = a[0]
-		obj.swap_typeclass = lambda *args, **kw: None
-		obj.save = lambda: None
-		return obj
-
-	fake_evennia.create_object = fake_create_object
-	fake_objects = types.ModuleType("evennia.objects")
-	fake_models = types.ModuleType("evennia.objects.models")
-
-	class DummyQuery:
-		def filter(self, *a, **k):
-			return []
-
-		def exists(self):
-			return False
-
-	fake_models.ObjectDB = type("ObjectDB", (), {"objects": DummyQuery()})
-	fake_evennia.objects = fake_objects
-	sys.modules["evennia"] = fake_evennia
-	sys.modules["evennia.objects"] = fake_objects
-	sys.modules["evennia.objects.models"] = fake_models
-	fake_web = types.ModuleType("evennia.web")
-	fake_web.urls = types.ModuleType("evennia.web.urls")
-	fake_web.urls.urlpatterns = []
-	sys.modules["evennia.web"] = fake_web
-	sys.modules["evennia.web.urls"] = fake_web.urls
-	sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
-	sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
-	sys.modules["typeclasses.rooms"].Room = type("Room", (), {})
-	sys.modules["typeclasses.exits"].Exit = type("Exit", (), {})
-
-	views = importlib.import_module("roomeditor.views")
-	rf = RequestFactory()
-	data = {
-		"room_class": "typeclasses.rooms.Room",
-		"name": "Test Room",
-		"desc": "A sample room",
-		"is_center": False,
-		"is_shop": False,
-		"allow_hunting": False,
-		"hunt_chart": "",
-		"save_room": "1",
-	}
-	request = rf.post("/roomeditor/new/", data)
-	request.user = types.SimpleNamespace(is_authenticated=True, is_superuser=True)
-
-	try:
-		resp = views.room_edit.__wrapped__(request)
-	finally:
-		if prev_evennia is not None:
-			sys.modules["evennia"] = prev_evennia
-		else:
-			sys.modules.pop("evennia", None)
-		if prev_objects is not None:
-			sys.modules["evennia.objects"] = prev_objects
-		else:
-			sys.modules.pop("evennia.objects", None)
-		if prev_models is not None:
-			sys.modules["evennia.objects.models"] = prev_models
-		else:
-			sys.modules.pop("evennia.objects.models", None)
-		if prev_rooms is not None:
-			sys.modules["typeclasses.rooms"] = prev_rooms
-		else:
-			sys.modules.pop("typeclasses.rooms", None)
-		if prev_exits is not None:
-			sys.modules["typeclasses.exits"] = prev_exits
-		else:
-			sys.modules.pop("typeclasses.exits", None)
-
-	assert resp.status_code == 302
-	assert resp.url == reverse("roomeditor:room-list")
+    def all(self):
+        return list(self.aliases)
 
 
-def test_delete_room():
-	import importlib
+class DummyLock:
+    def __init__(self, lockstring):
+        self.lockstring = lockstring
 
-	from django.urls import reverse
 
-	if not settings.configured:
-		settings.configure(
-			SECRET_KEY="test",
-			DEFAULT_CHARSET="utf-8",
-			INSTALLED_APPS=[],
-			USE_I18N=False,
-			ROOT_URLCONF="tests.urls",
-			CHANNEL_LOG_NUM_TAIL_LINES=100,
-		)
-		import django
+class DummyLocks:
+    """Minimal lock handler."""
 
-		django.setup()
-	else:
-		if not hasattr(settings, "CHANNEL_LOG_NUM_TAIL_LINES"):
-			settings.CHANNEL_LOG_NUM_TAIL_LINES = 100
-		if not hasattr(settings, "USE_I18N"):
-			settings.USE_I18N = False
+    def __init__(self):
+        self.locks = []
 
-	prev_evennia = sys.modules.get("evennia")
-	prev_objects = sys.modules.get("evennia.objects")
-	prev_models = sys.modules.get("evennia.objects.models")
-	prev_rooms = sys.modules.get("typeclasses.rooms")
-	prev_exits = sys.modules.get("typeclasses.exits")
+    def add(self, lockstring):
+        self.locks.append(DummyLock(lockstring))
 
-	fake_evennia = types.ModuleType("evennia")
+    def clear(self):
+        self.locks.clear()
 
-	def fake_create_object(*a, **k):
-		obj = types.SimpleNamespace(id=1, key=k.get("key"))
-		obj.db = types.SimpleNamespace()
-		obj.typeclass_path = a[0]
-		obj.swap_typeclass = lambda *args, **kw: None
-		obj.save = lambda: None
-		return obj
+    def first(self):
+        return self.locks[0] if self.locks else None
 
-	fake_evennia.create_object = fake_create_object
-	fake_objects = types.ModuleType("evennia.objects")
-	fake_models = types.ModuleType("evennia.objects.models")
 
-	class DummyQuery:
-		def filter(self, *a, **k):
-			return []
+class DummyExit:
+    """Stand-in for Evennia exits."""
 
-		def exists(self):
-			return False
+    _counter = 1
 
-	fake_models.ObjectDB = type("ObjectDB", (), {"objects": DummyQuery()})
-	fake_evennia.objects = fake_objects
-	sys.modules["evennia"] = fake_evennia
-	sys.modules["evennia.objects"] = fake_objects
-	sys.modules["evennia.objects.models"] = fake_models
-	fake_web = types.ModuleType("evennia.web")
-	fake_web.urls = types.ModuleType("evennia.web.urls")
-	fake_web.urls.urlpatterns = []
-	sys.modules["evennia.web"] = fake_web
-	sys.modules["evennia.web.urls"] = fake_web.urls
-	sys.modules.setdefault("typeclasses.rooms", types.ModuleType("typeclasses.rooms"))
-	sys.modules.setdefault("typeclasses.exits", types.ModuleType("typeclasses.exits"))
-	sys.modules["typeclasses.rooms"].Room = type("Room", (), {})
-	sys.modules["typeclasses.exits"].Exit = type("Exit", (), {})
+    def __init__(self, db_key, db_location, db_destination, typeclass_path=""):
+        self.id = DummyExit._counter
+        DummyExit._counter += 1
+        self.key = db_key
+        self.db_key = db_key
+        self.location_id = getattr(db_location, "id", db_location)
+        self.destination_id = getattr(db_destination, "id", db_destination)
+        self.aliases = DummyAliases()
+        self.locks = DummyLocks()
+        self.db = types.SimpleNamespace(desc="", err_traverse="")
 
-	views = importlib.import_module("roomeditor.views")
-	rf = RequestFactory()
-	request = rf.get("/roomeditor/1/delete/")
-	request.user = types.SimpleNamespace(is_authenticated=True, is_superuser=True)
+    def save(self):
+        pass
 
-	deleted = {"flag": False}
+    def delete(self):
+        pass
 
-	class DummyRoom:
-		def delete(self):
-			deleted["flag"] = True
 
-	orig_get = views.get_object_or_404
-	views.get_object_or_404 = lambda *a, **k: DummyRoom()
-	try:
-		resp = views.delete_room.__wrapped__(request, room_id=1)
-	finally:
-		views.get_object_or_404 = orig_get
-		if prev_evennia is not None:
-			sys.modules["evennia"] = prev_evennia
-		else:
-			sys.modules.pop("evennia", None)
-		if prev_objects is not None:
-			sys.modules["evennia.objects"] = prev_objects
-		else:
-			sys.modules.pop("evennia.objects", None)
-		if prev_models is not None:
-			sys.modules["evennia.objects.models"] = prev_models
-		else:
-			sys.modules.pop("evennia.objects.models", None)
-		if prev_rooms is not None:
-			sys.modules["typeclasses.rooms"] = prev_rooms
-		else:
-			sys.modules.pop("typeclasses.rooms", None)
-		if prev_exits is not None:
-			sys.modules["typeclasses.exits"] = prev_exits
-		else:
-			sys.modules.pop("typeclasses.exits", None)
+class DummyRoom:
+    def __init__(self, pk, key="Room"):
+        self.id = pk
+        self.key = key
+        self.db = types.SimpleNamespace(desc="")
 
-	assert deleted["flag"] is True
-	assert resp.status_code == 302
-	assert resp.url == reverse("roomeditor:room-list")
+
+class ExitQuery(list):
+    def exists(self):
+        return bool(self)
+
+    def order_by(self, attr):
+        return sorted(self, key=lambda x: getattr(x, attr))
+
+
+class ExitManager:
+    def __init__(self, store):
+        self.store = store
+
+    def filter(self, **kwargs):
+        results = []
+        for ex in self.store.values():
+            match = True
+            for k, v in kwargs.items():
+                attr = k.replace("db_", "")
+                if getattr(ex, attr) != v:
+                    match = False
+                    break
+            if match:
+                results.append(ex)
+        return ExitQuery(results)
+
+
+@pytest.fixture
+def rf():
+    return RequestFactory()
+
+
+@pytest.fixture
+def dummy_env(monkeypatch):
+    """Set up a fake environment with in-memory objects."""
+
+    room_store = {1: DummyRoom(1, "R1"), 2: DummyRoom(2, "R2")}
+    exit_store = {}
+    DummyExit._counter = 1
+
+    def create_exit(**kwargs):
+        ex = DummyExit(**kwargs)
+        def _del():
+            del exit_store[ex.id]
+        ex.delete = _del
+        exit_store[ex.id] = ex
+        return ex
+
+    class DummyObjectDB:
+        class Manager:
+            def create(self, **kwargs):
+                return create_exit(**kwargs)
+
+        objects = Manager()
+
+    room_manager = object()
+    exit_manager = ExitManager(exit_store)
+
+    def fake_get_object_or_404(qs, pk):
+        if qs is room_manager:
+            return room_store[pk]
+        if qs is exit_manager:
+            return exit_store[pk]
+        raise KeyError
+
+    class DummyExitForm:
+        def __init__(self, data=None):
+            data = data or {}
+            self.cleaned_data = {
+                "key": data.get("key"),
+                "destination": room_store[int(data.get("destination", 2))],
+                "description": data.get("description", ""),
+                "lockstring": data.get("lockstring", ""),
+                "err_msg": data.get("err_msg", ""),
+                "aliases": data.get("aliases", ""),
+                "auto_reverse": data.get("auto_reverse") in ("on", "true", "1", True),
+            }
+
+        def is_valid(self):
+            return True
+
+        def cleaned_alias_list(self):
+            return [a.strip() for a in self.cleaned_data["aliases"].split(",") if a.strip()]
+
+    class DummyRoomForm:
+        def __init__(self, data=None, instance=None):
+            self.data = data or {}
+            self.instance = instance
+
+        def is_valid(self):
+            return True
+
+        def save(self):
+            self.instance.key = self.data.get("db_key", self.instance.key)
+            self.instance.db.desc = self.data.get("db_desc", self.instance.db.desc)
+
+    captured = {"template": None, "context": None}
+
+    def fake_render(request, template, context):
+        captured["template"] = template
+        captured["context"] = context
+        if template == "roomeditor/_exit_row.html":
+            return HttpResponse(f"ROW:{context['ex'].key}")
+        return HttpResponse("FORM")
+
+    monkeypatch.setattr(views, "_room_qs", lambda: room_manager)
+    monkeypatch.setattr(views, "_exit_qs", lambda: exit_manager)
+    monkeypatch.setattr(views, "get_object_or_404", fake_get_object_or_404)
+    monkeypatch.setattr(views, "ObjectDB", DummyObjectDB)
+    monkeypatch.setattr(views, "DefaultExit", types.SimpleNamespace(path="evennia.default_exit"))
+    monkeypatch.setattr(views, "ExitForm", DummyExitForm)
+    monkeypatch.setattr(views, "RoomForm", DummyRoomForm)
+    monkeypatch.setattr(views, "render", fake_render)
+    monkeypatch.setattr(views, "reverse_dir", lambda key: f"{key}-rev")
+
+    class DummyAtomic:
+        def __enter__(self):
+            return None
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(views, "transaction", types.SimpleNamespace(atomic=lambda: DummyAtomic()))
+    return room_store, exit_store, captured
+
+
+def test_ansi_preview_returns_html(rf, monkeypatch):
+    """ansi_preview should return rendered HTML."""
+
+    monkeypatch.setattr(views, "parse_html", lambda text, strip_ansi=False: f"<p>{text}</p>")
+    request = rf.post("/ansi/preview/", {"text": "|rred|n"})
+    resp = views.ansi_preview(request)
+    assert json.loads(resp.content) == {"html": "<p>|rred|n</p>"}
+
+
+def test_exit_new_get_and_ajax_create(rf, dummy_env):
+    """exit_new renders form and creates exits via AJAX."""
+
+    room_store, exit_store, captured = dummy_env
+    request = rf.get("/exit/new/1/")
+    views.exit_new(request, room_pk=1)
+    assert captured["template"] == "roomeditor/_exit_form.html"
+
+    request = rf.post(
+        "/exit/new/1/",
+        {"key": "north", "destination": "2"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+    resp = views.exit_new(request, room_pk=1)
+    assert captured["template"] == "roomeditor/_exit_row.html"
+    data = json.loads(resp.content)
+    assert data["ok"] is True
+    assert data["row_html"] == "ROW:north"
+    assert any(ex.key == "north" for ex in exit_store.values())
+
+
+def test_exit_edit_ajax_updates_exit(rf, dummy_env):
+    """exit_edit updates an existing exit and returns new row HTML."""
+
+    room_store, exit_store, captured = dummy_env
+    ex = views.ObjectDB.objects.create(
+        typeclass_path="", db_key="north", db_location=room_store[1], db_destination=room_store[2]
+    )
+    request = rf.post(
+        f"/exit/{ex.id}/edit/",
+        {
+            "key": "east",
+            "destination": "2",
+            "description": "desc",
+            "lockstring": "lock",
+            "err_msg": "err",
+            "aliases": "a,b",
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+    resp = views.exit_edit(request, pk=ex.id)
+    assert captured["template"] == "roomeditor/_exit_row.html"
+    data = json.loads(resp.content)
+    assert data["row_html"] == "ROW:east"
+    ex = exit_store[ex.id]
+    assert ex.key == "east"
+    assert ex.db.desc == "desc"
+    assert ex.db.err_traverse == "err"
+    assert ex.aliases.all() == ["a", "b"]
+    assert ex.locks.first().lockstring == "lock"
+
+
+def test_exit_delete_ajax_removes_exit(rf, dummy_env):
+    """exit_delete removes exits via AJAX."""
+
+    room_store, exit_store, _ = dummy_env
+    ex = views.ObjectDB.objects.create(
+        typeclass_path="", db_key="north", db_location=room_store[1], db_destination=room_store[2]
+    )
+    request = rf.post(f"/exit/{ex.id}/delete/", HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+    resp = views.exit_delete(request, pk=ex.id)
+    assert json.loads(resp.content)["ok"] is True
+    assert ex.id not in exit_store
+
+
+def test_room_edit_warning_and_ajax_save(rf, dummy_env):
+    """room_edit warns on missing incoming exits and saves via AJAX."""
+
+    room_store, exit_store, captured = dummy_env
+    request = rf.get("/room/1/")
+    views.room_edit(request, pk=1)
+    assert captured["template"] == "roomeditor/room_form.html"
+    assert captured["context"]["has_incoming"] is False
+
+    request = rf.post(
+        "/room/1/",
+        {"db_key": "Hall", "db_desc": "desc"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+    resp = views.room_edit(request, pk=1)
+    assert json.loads(resp.content)["ok"] is True
+    assert room_store[1].key == "Hall"
+    assert room_store[1].db.desc == "desc"
