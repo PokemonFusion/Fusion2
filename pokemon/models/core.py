@@ -189,7 +189,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		through="PokemonLearnedMove",
 	)
 	active_moveset = models.ForeignKey(
-		"Moveset",
+		"pokemon.Moveset",
 		null=True,
 		blank=True,
 		on_delete=models.SET_NULL,
