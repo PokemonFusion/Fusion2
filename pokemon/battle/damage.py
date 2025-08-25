@@ -156,28 +156,37 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
 
 
 def damage_phrase(target: Pokemon, damage: int) -> str:
-	try:
-		from pokemon.helpers.pokemon_helpers import get_max_hp
+        """Return a coarse description of the damage dealt to ``target``.
 
-		maxhp = get_max_hp(target)
-	except Exception:  # pragma: no cover - fallback when helpers unavailable
-		maxhp = getattr(getattr(target, "base_stats", None), "hp", 0)
-	percent = (damage * 100) / maxhp
-	if percent >= 100:
-		return "EPIC"
-	elif percent > 75:
-		return "extreme"
-	elif percent > 50:
-		return "heavy"
-	elif percent > 25:
-		return "considerable"
-	elif percent > 15:
-		return "moderate"
-	elif percent > 5:
-		return "light"
-	elif percent > 0:
-		return "puny"
-	return "no"
+        Some tests provide very lightweight Pokémon stubs that may lack valid
+        hit point information, leading to a ``maxhp`` of ``0``.  Clamp the
+        maximum HP to at least ``1`` to avoid division-by-zero errors while
+        still yielding sensible phrases.
+        """
+
+        try:
+                from pokemon.helpers.pokemon_helpers import get_max_hp
+
+                maxhp = get_max_hp(target)
+        except Exception:  # pragma: no cover - fallback when helpers unavailable
+                maxhp = getattr(getattr(target, "base_stats", None), "hp", 0)
+        maxhp = max(1, maxhp)
+        percent = (damage * 100) / maxhp
+        if percent >= 100:
+                return "EPIC"
+        elif percent > 75:
+                return "extreme"
+        elif percent > 50:
+                return "heavy"
+        elif percent > 25:
+                return "considerable"
+        elif percent > 15:
+                return "moderate"
+        elif percent > 5:
+                return "light"
+        elif percent > 0:
+                return "puny"
+        return "no"
 
 
 def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, spread: bool = False) -> DamageResult:

@@ -1,4 +1,5 @@
 from django.db import transaction
+import sys
 
 try:
 	from pokemon.models.core import OwnedPokemon
@@ -24,21 +25,37 @@ except Exception:  # pragma: no cover - optional in tests
 
 
 def _get_calc_stats_from_model():
-	try:
-		from pokemon.battle import battleinstance as bi
+        """Return the battle stat calculator if available.
 
-		return getattr(bi, "_calc_stats_from_model", None)
-	except Exception:  # pragma: no cover
-		return None
+        Tests often stub ``pokemon.battle.battleinstance`` directly into
+        :mod:`sys.modules` without creating the full package hierarchy.  Looking
+        up the module via :data:`sys.modules` first avoids importing the real
+        battle package which may have heavy dependencies.
+        """
+
+        bi = sys.modules.get("pokemon.battle.battleinstance")
+        if bi is not None:
+                return getattr(bi, "_calc_stats_from_model", None)
+        try:  # pragma: no cover - fallback when running with real package
+                from pokemon.battle import battleinstance as bi  # type: ignore
+
+                return getattr(bi, "_calc_stats_from_model", None)
+        except Exception:  # pragma: no cover
+                return None
 
 
 def _get_create_battle_pokemon():
-	try:
-		from pokemon.battle import battleinstance as bi
+        """Return the battle Pokémon factory callable if available."""
 
-		return getattr(bi, "create_battle_pokemon", None)
-	except Exception:  # pragma: no cover
-		return None
+        bi = sys.modules.get("pokemon.battle.battleinstance")
+        if bi is not None:
+                return getattr(bi, "create_battle_pokemon", None)
+        try:  # pragma: no cover - fallback to importing real package
+                from pokemon.battle import battleinstance as bi  # type: ignore
+
+                return getattr(bi, "create_battle_pokemon", None)
+        except Exception:  # pragma: no cover
+                return None
 
 
 def clone_pokemon(pokemon: OwnedPokemon, for_ai: bool = True) -> OwnedPokemon:
