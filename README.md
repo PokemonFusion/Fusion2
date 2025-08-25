@@ -14,7 +14,7 @@ Project documentation lives in the [docs](docs/) folder:
 - [Code Map](docs/code-map.md)
 - [Reference Materials](docs/reference)
 
-To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
+The codebase targets **Python 3.12**. To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
 
 ```bash
 pip install -r requirements.txt
