@@ -1,63 +1,39 @@
-"""Utility helpers for the room/exit builder.
-
-This module exposes small helper functions used by the room builder views.
-"""
 from __future__ import annotations
 
-from collections.abc import Iterable
+"""Utility helpers for world building."""
 
-# Mapping of common exit directions to their reverse counterparts.
-DIR_REVERSE = {
-	"north": "south",
-	"south": "north",
-	"east": "west",
-	"west": "east",
-	"northeast": "southwest",
-	"ne": "sw",
-	"northwest": "southeast",
-	"nw": "se",
-	"southeast": "northwest",
-	"se": "nw",
-	"southwest": "northeast",
-	"sw": "ne",
-	"up": "down",
-	"down": "up",
-	"in": "out",
-	"out": "in",
+from typing import Dict, Optional
+
+# Unified reverse-direction map. Extend as needed.
+REVERSE_DIRS: Dict[str, str] = {
+    "north": "south", "south": "north",
+    "east": "west", "west": "east",
+    "northeast": "southwest", "southwest": "northeast",
+    "northwest": "southeast", "southeast": "northwest",
+    "up": "down", "down": "up",
+    "in": "out", "out": "in",
+    "ne": "sw", "sw": "ne", "nw": "se", "se": "nw",
+    "n": "s", "s": "n", "e": "w", "w": "e",
 }
 
+def reverse_dir(name: str) -> Optional[str]:
+    """Return opposite direction for a known direction key."""
+    if not name:
+        return None
+    lc = name.lower()
+    rev = REVERSE_DIRS.get(lc)
+    if not rev:
+        return None
+    # preserve original case style roughly
+    return (
+        rev
+        if name.islower()
+        else rev.capitalize() if name.istitle() else rev.upper() if name.isupper() else rev
+    )
 
+def normalize_aliases(raw: str) -> list[str]:
+    """Split comma-separated aliases into a clean list."""
+    if not raw:
+        return []
+    return [a.strip() for a in raw.split(",") if a.strip()]
 
-def reverse_dir(direction: str) -> str | None:
-	"""Return the reverse of ``direction`` if known.
-
-	Args:
-		direction: The exit direction to reverse.
-
-	Returns:
-		The opposite direction or ``None`` if no mapping exists.
-	"""
-	if not direction:
-		return None
-	direction = direction.lower().strip()
-	return DIR_REVERSE.get(direction)
-
-
-
-def normalize_aliases(raw: str | Iterable[str]) -> list[str]:
-	"""Normalize a comma-separated string of aliases.
-
-	Args:
-		raw: Either a string of aliases separated by commas/semicolons or an
-		iterable of alias strings.
-
-	Returns:
-		A list of unique, stripped alias strings.
-	"""
-	if not raw:
-		return []
-	if isinstance(raw, str):
-		parts = [p.strip() for p in raw.replace(";", ",").split(",")]
-	else:
-		parts = [str(p).strip() for p in raw]
-	return [p for p in parts if p]
