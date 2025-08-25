@@ -1,3 +1,9 @@
+"""Multi-battle integration tests using lightweight stubs.
+
+These tests construct a minimal battle environment with stubbed modules to
+ensure the engine handles multi-participant battles correctly.
+"""
+
 import importlib.util
 import os
 import random
@@ -66,33 +72,53 @@ BattleType = engine.BattleType
 
 
 def setup_participants(count):
-	base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
-	participants = []
-	for idx in range(1, count + 1):
-		poke = Pokemon(f"P{idx}mon")
-		poke.base_stats = base
-		poke.num = idx
-		poke.types = ["Normal"]
-		part = BattleParticipant(f"P{idx}", [poke], is_ai=False)
-		part.active = [poke]
-		participants.append(part)
-	return participants
+        """Create ``count`` battle participants with identical base stats."""
+
+        base = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+        participants = []
+        for idx in range(1, count + 1):
+                poke = Pokemon(f"P{idx}mon")
+                poke.base_stats = base
+                poke.num = idx
+                poke.types = ["Normal"]
+                part = BattleParticipant(f"P{idx}", [poke], is_ai=False)
+                part.active = [poke]
+                participants.append(part)
+        return participants
 
 
 def test_three_and_four_way_battles():
-	for count in (3, 4):
-		parts = setup_participants(count)
-		move = BattleMove("Tackle", power=40, accuracy=100)
-		for idx, part in enumerate(parts):
-			target = parts[(idx + 1) % count]
-			part.pending_action = Action(part, ActionType.MOVE, target, move, move.priority, pokemon=part.active[0])
+        """Ensure all participants take damage in three- and four-way battles."""
 
-		battle = Battle(BattleType.WILD, parts)
-		random.seed(0)
-		battle.run_turn()
+        try:
+                for count in (3, 4):
+                        parts = setup_participants(count)
+                        move = BattleMove("Tackle", power=40, accuracy=100)
+                        for idx, part in enumerate(parts):
+                                target = parts[(idx + 1) % count]
+                                part.pending_action = Action(
+                                        part,
+                                        ActionType.MOVE,
+                                        target,
+                                        move,
+                                        move.priority,
+                                        pokemon=part.active[0],
+                                )
 
-		for part in parts:
-			assert part.active[0].hp < 100
+                        battle = Battle(BattleType.WILD, parts)
+                        random.seed(0)
+                        battle.run_turn()
 
-	del sys.modules["pokemon.dex"]
-	del sys.modules["pokemon.data"]
+                        for part in parts:
+                                assert part.active[0].hp < 100
+        finally:
+                for name in (
+                        "pokemon.dex.entities",
+                        "pokemon.dex",
+                        "pokemon.data",
+                        "pokemon.battle.damage",
+                        "pokemon.battle.battledata",
+                        "pokemon.battle.engine",
+                        "pokemon.battle",
+                ):
+                        sys.modules.pop(name, None)
