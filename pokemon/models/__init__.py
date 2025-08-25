@@ -3,6 +3,8 @@
 Database models and related utilities for the Pokémon game.
 """
 
+from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
 
@@ -11,7 +13,9 @@ from .validators import validate_evs, validate_ivs
 # When running lightweight tests without the full environment configured we
 # allow individual imports to fail gracefully and expose ``None`` placeholders
 # instead.  Import errors in one module should not prevent others from loading
-# successfully, which previously led to missing-model system check errors.
+# successfully.  We therefore catch only configuration-related errors here so
+# that unexpected problems surface rather than silently producing missing
+# models during Django's system checks.
 
 # Core Pokémon models -------------------------------------------------------
 try:  # pragma: no cover - optional heavy dependencies
@@ -23,7 +27,7 @@ try:  # pragma: no cover - optional heavy dependencies
                 Pokemon,
                 SpeciesEntry,
         )
-except Exception:  # pragma: no cover - used when ORM isn't set up
+except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         (
                 MAX_PP_MULTIPLIER,
                 SpeciesEntry,
@@ -36,7 +40,7 @@ except Exception:  # pragma: no cover - used when ORM isn't set up
 # Fusion -------------------------------------------------------------------
 try:  # pragma: no cover - optional heavy dependencies
         from .fusion import PokemonFusion
-except Exception:  # pragma: no cover - used when ORM isn't set up
+except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         PokemonFusion = None
 
 # Moves and related models --------------------------------------------------
@@ -50,7 +54,7 @@ try:  # pragma: no cover - optional heavy dependencies
                 PokemonLearnedMove,
                 VerifiedMove,
         )
-except Exception:  # pragma: no cover - used when ORM isn't set up
+except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         (
                 Move,
                 VerifiedMove,
@@ -69,13 +73,13 @@ try:  # pragma: no cover - optional heavy dependencies
                 UserStorage,
                 ensure_boxes,
         )
-except Exception:  # pragma: no cover - used when ORM isn't set up
+except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         UserStorage = StorageBox = ActivePokemonSlot = ensure_boxes = None
 
 # Trainer ------------------------------------------------------------------
 try:  # pragma: no cover - optional heavy dependencies
         from .trainer import GymBadge, InventoryEntry, NPCTrainer, Trainer
-except Exception:  # pragma: no cover - used when ORM isn't set up
+except (ImportError, ImproperlyConfigured, AppRegistryNotReady):  # pragma: no cover - used when ORM isn't set up
         Trainer = NPCTrainer = GymBadge = InventoryEntry = None
 
 __all__ = [
