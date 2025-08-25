@@ -3,59 +3,86 @@
 Database models and related utilities for the Pokémon game.
 """
 
+from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
 
-# The remaining model imports depend on Django/Evennia being available.  When
-# running lightweight tests without the full environment configured we allow
-# these imports to fail gracefully and expose ``None`` placeholders instead.
-try:  # pragma: no cover - optional heavy dependencies
-	from .core import (
-		MAX_PP_MULTIPLIER,
-		BasePokemon,
-		BattleSlot,
-		OwnedPokemon,
-		Pokemon,
-		SpeciesEntry,
-	)
-	from .fusion import PokemonFusion
-	from .moves import (
-		ActiveMoveslot,
-		Move,
-		MovePPBoost,
-		Moveset,
-		MovesetSlot,
-		PokemonLearnedMove,
-		VerifiedMove,
-	)
-	from .storage import (
-		ActivePokemonSlot,
-		StorageBox,
-		UserStorage,
-		ensure_boxes,
-	)
-	from .trainer import GymBadge, InventoryEntry, NPCTrainer, Trainer
-except Exception:  # pragma: no cover - used when ORM isn't set up
-	(
-		MAX_PP_MULTIPLIER,
-		SpeciesEntry,
-		BasePokemon,
-		Pokemon,
-		OwnedPokemon,
-		BattleSlot,
-	) = (None,) * 6
-	(
-		Move,
-		VerifiedMove,
-		PokemonLearnedMove,
-		Moveset,
-		MovesetSlot,
-		ActiveMoveslot,
-		MovePPBoost,
-	) = (None,) * 7
-	Trainer = NPCTrainer = GymBadge = InventoryEntry = None
-	UserStorage = StorageBox = ActivePokemonSlot = ensure_boxes = None
-	PokemonFusion = None
+
+def _safe_import(module: str, names: list[str]):
+    try:
+        mod = __import__(module, fromlist=names)
+        return [getattr(mod, n) for n in names]
+    except (AppRegistryNotReady, ImproperlyConfigured, ImportError):
+        return [None] * len(names)
+
+
+# Core Pokémon models -------------------------------------------------------
+(
+    MAX_PP_MULTIPLIER,
+    BasePokemon,
+    BattleSlot,
+    OwnedPokemon,
+    Pokemon,
+    SpeciesEntry,
+) = _safe_import(
+    "pokemon.models.core",
+    [
+        "MAX_PP_MULTIPLIER",
+        "BasePokemon",
+        "BattleSlot",
+        "OwnedPokemon",
+        "Pokemon",
+        "SpeciesEntry",
+    ],
+)
+
+# Fusion -------------------------------------------------------------------
+(PokemonFusion,) = _safe_import("pokemon.models.fusion", ["PokemonFusion"])
+
+# Moves and related models --------------------------------------------------
+(
+    ActiveMoveslot,
+    Move,
+    MovePPBoost,
+    Moveset,
+    MovesetSlot,
+    PokemonLearnedMove,
+    VerifiedMove,
+) = _safe_import(
+    "pokemon.models.moves",
+    [
+        "ActiveMoveslot",
+        "Move",
+        "MovePPBoost",
+        "Moveset",
+        "MovesetSlot",
+        "PokemonLearnedMove",
+        "VerifiedMove",
+    ],
+)
+
+# Storage ------------------------------------------------------------------
+(
+    ActivePokemonSlot,
+    StorageBox,
+    UserStorage,
+    ensure_boxes,
+) = _safe_import(
+    "pokemon.models.storage",
+    ["ActivePokemonSlot", "StorageBox", "UserStorage", "ensure_boxes"],
+)
+
+# Trainer ------------------------------------------------------------------
+(
+    GymBadge,
+    InventoryEntry,
+    NPCTrainer,
+    Trainer,
+) = _safe_import(
+    "pokemon.models.trainer",
+    ["GymBadge", "InventoryEntry", "NPCTrainer", "Trainer"],
+)
 
 __all__ = [
 	"MAX_PP_MULTIPLIER",

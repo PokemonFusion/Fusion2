@@ -115,9 +115,18 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 
 	if prev_level is not None and new_level != prev_level:
 		mod = _get_helpers_module()
-		if mod and hasattr(mod, "refresh_stats"):
+		if mod:
 			try:
-				mod.refresh_stats(pokemon)
+				if hasattr(mod, "refresh_stats"):
+					# Normal path in the full runtime
+					mod.refresh_stats(pokemon)
+				else:
+					# CI/test stubs: do best-effort refresh
+					if hasattr(mod, "invalidate_stats"):
+						mod.invalidate_stats(pokemon)
+					if hasattr(mod, "get_stats"):
+						# Force re-compute to update cache
+						mod.get_stats(pokemon)
 			except Exception:  # pragma: no cover - safe fallback
 				pass
 
@@ -153,9 +162,15 @@ def add_evs(pokemon, gains: Dict[str, int]) -> None:
 		total += allowed
 	pokemon.evs = evs
 	mod = _get_helpers_module()
-	if mod and hasattr(mod, "refresh_stats"):
+	if mod:
 		try:
-			mod.refresh_stats(pokemon)
+			if hasattr(mod, "refresh_stats"):
+				mod.refresh_stats(pokemon)
+			else:
+				if hasattr(mod, "invalidate_stats"):
+					mod.invalidate_stats(pokemon)
+				if hasattr(mod, "get_stats"):
+					mod.get_stats(pokemon)
 		except Exception:  # pragma: no cover - safe fallback
 			pass
 
