@@ -3,9 +3,10 @@
 Database models and related utilities for the Pokémon game.
 """
 
+from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
-from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
 
 
 def _safe_import(module: str, names: list[str]):
