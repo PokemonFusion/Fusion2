@@ -6,23 +6,23 @@ from typing import Dict, Mapping
 
 
 def _invalidate_stat_cache(pokemon) -> None:
-        """Invalidate cached computed stats for ``pokemon``.
+		"""Invalidate cached computed stats for ``pokemon``.
 
-        This attempts to import the helpers module at runtime to avoid heavy
-        dependencies during tests. If available, a full ``refresh_stats`` is
-        performed; otherwise the ``_cached_stats`` attribute is cleared so the
-        next ``get_stats`` call recomputes the values.
-        """
+		This attempts to import the helpers module at runtime to avoid heavy
+		dependencies during tests. If available, a full ``refresh_stats`` is
+		performed; otherwise the ``_cached_stats`` attribute is cleared so the
+		next ``get_stats`` call recomputes the values.
+		"""
 
-        try:
-                from pokemon.helpers import pokemon_helpers as helpers  # type: ignore
+		try:
+				from pokemon.helpers import pokemon_helpers as helpers  # type: ignore
 
-                helpers.refresh_stats(pokemon)
-        except Exception:
-                try:
-                        delattr(pokemon, "_cached_stats")
-                except Exception:
-                        setattr(pokemon, "_cached_stats", None)
+				helpers.refresh_stats(pokemon)
+		except Exception:
+				try:
+						delattr(pokemon, "_cached_stats")
+				except Exception:
+						setattr(pokemon, "_cached_stats", None)
 
 
 from pokemon.services.move_management import learn_level_up_moves
@@ -84,77 +84,78 @@ def level_for_exp(exp: int, rate: str = "medium_fast") -> int:
 
 
 def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None) -> None:
-        """Add experience to ``pokemon`` and update its level."""
-        if amount <= 0:
-                return
+		"""Add experience to ``pokemon`` and update its level."""
+		if amount <= 0:
+				return
 
-        prev_level = getattr(pokemon, "level", None)
+		prev_level = getattr(pokemon, "level", None)
 
-        def _get_growth_rate(poke) -> str:
-                if rate:
-                        return rate
-                growth = getattr(poke, "growth_rate", None)
-                if growth:
-                        return growth
-                name = getattr(poke, "species", getattr(poke, "name", None))
-                if name:
-                        species = POKEDEX.get(name) or POKEDEX.get(str(name).lower()) or POKEDEX.get(str(name).capitalize())
-                        if species:
-                                return species.raw.get("growthRate", "medium_fast")
-                return "medium_fast"
+		def _get_growth_rate(poke) -> str:
+				if rate:
+						return rate
+				growth = getattr(poke, "growth_rate", None)
+				if growth:
+						return growth
+				name = getattr(poke, "species", getattr(poke, "name", None))
+				if name:
+						species = POKEDEX.get(name) or POKEDEX.get(str(name).lower()) or \
+								POKEDEX.get(str(name).capitalize())
+						if species:
+								return species.raw.get("growthRate", "medium_fast")
+				return "medium_fast"
 
-        if hasattr(pokemon, "total_exp"):
-                pokemon.total_exp = getattr(pokemon, "total_exp", 0) + amount
-                growth = _get_growth_rate(pokemon)
-                if hasattr(pokemon, "level"):
-                        pokemon.level = level_for_exp(pokemon.total_exp, growth)
-        else:
-                pokemon.experience = getattr(pokemon, "experience", 0) + amount
-                growth = _get_growth_rate(pokemon)
-                pokemon.level = level_for_exp(pokemon.experience, growth)
+		if hasattr(pokemon, "total_exp"):
+				pokemon.total_exp = getattr(pokemon, "total_exp", 0) + amount
+				growth = _get_growth_rate(pokemon)
+				if hasattr(pokemon, "level"):
+						pokemon.level = level_for_exp(pokemon.total_exp, growth)
+		else:
+				pokemon.experience = getattr(pokemon, "experience", 0) + amount
+				growth = _get_growth_rate(pokemon)
+				pokemon.level = level_for_exp(pokemon.experience, growth)
 
-        new_level = getattr(pokemon, "level", None)
-        if prev_level is not None and new_level and new_level > prev_level:
-                try:
-                        learn_level_up_moves(pokemon, caller=caller, prompt=True)
-                except TypeError:
-                        learn_level_up_moves(pokemon)
+		new_level = getattr(pokemon, "level", None)
+		if prev_level is not None and new_level and new_level > prev_level:
+				try:
+						learn_level_up_moves(pokemon, caller=caller, prompt=True)
+				except TypeError:
+						learn_level_up_moves(pokemon)
 
-        if prev_level is not None and new_level != prev_level:
-                _invalidate_stat_cache(pokemon)
+		if prev_level is not None and new_level != prev_level:
+				_invalidate_stat_cache(pokemon)
 
 
 def add_evs(pokemon, gains: Mapping[str, int]) -> None:
-        """Apply EV gains to ``pokemon`` respecting limits."""
+		"""Apply EV gains to ``pokemon`` respecting limits."""
 
-        evs_attr = getattr(pokemon, "evs", {}) or {}
-        if isinstance(evs_attr, dict):
-                evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs_attr.items()}
-        else:
-                evs = {
-                        "hp": evs_attr[0],
-                        "attack": evs_attr[1],
-                        "defense": evs_attr[2],
-                        "special_attack": evs_attr[3],
-                        "special_defense": evs_attr[4],
-                        "speed": evs_attr[5],
-                }
+		evs_attr = getattr(pokemon, "evs", {}) or {}
+		if isinstance(evs_attr, dict):
+				evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs_attr.items()}
+		else:
+				evs = {
+						"hp": evs_attr[0],
+						"attack": evs_attr[1],
+						"defense": evs_attr[2],
+						"special_attack": evs_attr[3],
+						"special_defense": evs_attr[4],
+						"speed": evs_attr[5],
+				}
 
-        total = sum(evs.values())
-        for stat, val in gains.items():
-                full = STAT_KEY_MAP.get(stat, stat)
-                if full not in ALL_STATS:
-                        continue
-                if total >= EV_LIMIT:
-                        break
-                current = evs.get(full, 0)
-                allowed = min(val, STAT_EV_LIMIT - current, EV_LIMIT - total)
-                if allowed <= 0:
-                        continue
-                evs[full] = current + allowed
-                total += allowed
-        pokemon.evs = evs
-        _invalidate_stat_cache(pokemon)
+		total = sum(evs.values())
+		for stat, val in gains.items():
+				full = STAT_KEY_MAP.get(stat, stat)
+				if full not in ALL_STATS:
+						continue
+				if total >= EV_LIMIT:
+						break
+				current = evs.get(full, 0)
+				allowed = min(val, STAT_EV_LIMIT - current, EV_LIMIT - total)
+				if allowed <= 0:
+						continue
+				evs[full] = current + allowed
+				total += allowed
+		pokemon.evs = evs
+		_invalidate_stat_cache(pokemon)
 
 
 def _nature_mod(nature: str, stat: str) -> float:
