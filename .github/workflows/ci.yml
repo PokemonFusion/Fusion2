@@ -1,137 +1,79 @@
 name: CI
+
 on:
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
-      - '.github/**'
   push:
     branches: [main]
-  schedule:
-    - cron: '0 6 * * *'
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ci-advice:
-    name: CI Advice (comment)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements.txt
-            requirements-dev.txt
-      - name: Install dev deps for assessor
-        run: |
-          pip install -U pip pyyaml
-      - name: Run assessor (markdown)
-        run: |
-          # If tool is missing (first PR before file lands), don't fail the job.
-          if [ -f tools/ci_assessor.py ]; then
-            python tools/ci_assessor.py --markdown > ci_assessment.md || true
-          else
-            echo "# CI Assessment\n\nThe assessor script isn't in this branch yet." > ci_assessment.md
-          fi
-      - name: Comment on PR with assessment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-file: ci_assessment.md
-
   lint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements.txt
-            requirements-dev.txt
-      - name: Install dev deps
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install lint deps
         run: |
-          pip install -U pip
-          pip install -r requirements.txt
+          python -m pip install -U pip
           pip install -r requirements-dev.txt
+          pip install ruff
+
       - name: Ruff
         run: ruff check .
 
-  test:
+  tests:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    needs: lint
     env:
-      PF2_NO_EVENNIA: "1"
+      PYTHONPATH: ${{ github.workspace }}
+      # Use this env var if your tests gate anything Evennia-specific off:
+      # F2_NO_EVENNIA: "1"
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements.txt
-            requirements-dev.txt
-      - name: Set PYTHONPATH
-        shell: bash
-        run: |
-          echo "PYTHONPATH=${PYTHONPATH}:$(pwd):$(pwd)/fusion2" >> $GITHUB_ENV
-          echo "PYTHONPATH set to: $(cat $GITHUB_ENV | grep PYTHONPATH)"
-      - name: Install dev deps
-        run: |
-          pip install -U pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-      - name: Run tests (no coverage)
-        env:
-          PYTHONPATH: ${{ env.PYTHONPATH }}
-        run: |
-          pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
 
-  test-with-coverage:
-    runs-on: ubuntu-latest
-    needs: []
-    if: github.event_name != 'pull_request'
-    env:
-      PF2_NO_EVENNIA: "1"
-      PYTHONDONTWRITEBYTECODE: "1"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements.txt
-            requirements-dev.txt
-      - name: Set PYTHONPATH
-        shell: bash
-        run: |
-          echo "PYTHONPATH=${PYTHONPATH}:$(pwd):$(pwd)/fusion2" >> $GITHUB_ENV
-          echo "PYTHONPATH set to: $(cat $GITHUB_ENV | grep PYTHONPATH)"
+          python-version: "3.12"
+          cache: "pip"
+
       - name: Install deps
         run: |
-          pip install -U pip
+          python -m pip install -U pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-      - name: Run tests with coverage (parallel)
-        env:
-          PYTHONPATH: ${{ env.PYTHONPATH }}
+          # Optional: speed
+          pip install pytest-xdist coverage
+
+      - name: Show versions (debug)
         run: |
-          coverage run -m pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
-          coverage combine
+          python -V
+          pip -V
+          pip list
+
+      - name: Run tests (parallel) with coverage
+        run: |
+          coverage run -m pytest -q -n auto --dist=loadgroup --durations=25
           coverage xml
+
       - name: Coverage report
         if: always()
         run: coverage report -m || true
+
+      # Optional: upload coverage to a service
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ./coverage.xml
+      #     fail_ci_if_error: false
