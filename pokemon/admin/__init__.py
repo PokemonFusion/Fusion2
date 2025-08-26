@@ -20,7 +20,10 @@ except Exception:  # Any import failure leaves models unset for safe registratio
     Move = ActiveMoveslot = None
     Trainer = GymBadge = None
     StorageBox = UserStorage = None
-from .owned_pokemon import OwnedPokemonAdmin
+try:  # pragma: no cover - defensive import
+    from .owned_pokemon import OwnedPokemonAdmin
+except Exception:  # Missing model leaves admin class unset
+    OwnedPokemonAdmin = None
 
 
 def _register(model, admin_class=None):
