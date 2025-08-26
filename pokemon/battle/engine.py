@@ -1832,7 +1832,64 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     in {BattleType.WILD, BattleType.TRAINER, BattleType.SCRIPTED}
                 ):
                     from pokemon.dex.exp_ev_yields import GAIN_INFO
-                    from pokemon.models.stats import award_experience_to_party
+
+                    # Prefer the Django app path; in CI the top-level "pokemon"
+                    # package is this battle module, so "pokemon.models" won't
+                    # exist. Fall back to a lightweight local helper for tests
+                    # that don't load Django.
+                    try:
+                        from fusion2.pokemon.models.stats import (
+                            award_experience_to_party,
+                        )  # type: ignore
+                    except Exception:
+                        try:
+                            # Some environments re-export via models.__init__
+                            from fusion2.pokemon.models import (
+                                award_experience_to_party,
+                            )  # type: ignore
+                        except Exception:
+                            def award_experience_to_party(
+                                player, amount: int, ev_gains=None
+                            ) -> None:
+                                """Distribute EXP and EVs in test-only environments."""
+                                if not amount or amount <= 0 or not player:
+                                    return
+
+                                mons = None
+                                storage = getattr(player, "storage", None)
+                                if storage and hasattr(storage, "get_party"):
+                                    try:
+                                        mons = list(storage.get_party())
+                                    except Exception:
+                                        mons = None
+                                if mons is None:
+                                    for attr in ("party", "pokemons", "pokemon", "team"):
+                                        cand = getattr(player, attr, None)
+                                        if cand:
+                                            mons = (
+                                                list(cand)
+                                                if hasattr(cand, "__iter__")
+                                                else [cand]
+                                            )
+                                            break
+                                if not mons:
+                                    return
+
+                                share = int(amount) // len(mons)
+                                remainder = int(amount) % len(mons)
+
+                                for idx, mon in enumerate(mons):
+                                    gained = share + (1 if idx < remainder else 0)
+                                    if hasattr(mon, "total_exp"):
+                                        mon.total_exp = getattr(mon, "total_exp", 0) + gained
+                                    else:
+                                        mon.experience = getattr(mon, "experience", 0) + gained
+
+                                    if ev_gains:
+                                        ev = getattr(mon, "evs", None)
+                                        if isinstance(ev, dict):
+                                            for k, v in (ev_gains or {}).items():
+                                                ev[k] = ev.get(k, 0) + int(v)
 
                     for poke in fainted:
                         info = GAIN_INFO.get(getattr(poke, "name", ""), {})

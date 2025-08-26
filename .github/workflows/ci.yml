@@ -74,7 +74,6 @@ jobs:
     env:
       PF2_NO_EVENNIA: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      PYTHONPATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -84,12 +83,17 @@ jobs:
           cache-dependency-path: |
             requirements.txt
             requirements-dev.txt
+      - name: Ensure project on PYTHONPATH
+        run: |
+          echo "PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/fusion2" >> $GITHUB_ENV
       - name: Install dev deps
         run: |
           pip install -U pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Run tests (no coverage)
+        env:
+          PYTHONPATH: ${{ env.PYTHONPATH }}
         run: |
           pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
 
@@ -100,7 +104,6 @@ jobs:
     env:
       PF2_NO_EVENNIA: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      PYTHONPATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -110,12 +113,17 @@ jobs:
           cache-dependency-path: |
             requirements.txt
             requirements-dev.txt
+      - name: Ensure project on PYTHONPATH
+        run: |
+          echo "PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/fusion2" >> $GITHUB_ENV
       - name: Install deps
         run: |
           pip install -U pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Run tests with coverage (parallel)
+        env:
+          PYTHONPATH: ${{ env.PYTHONPATH }}
         run: |
           coverage run -m pytest -q -n auto --dist=loadgroup --durations=25 --run-dex-tests
           coverage combine
