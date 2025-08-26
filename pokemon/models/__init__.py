@@ -1,114 +1,14 @@
-"""Convenience re-exports for Pokémon models.
+"""Lightweight package init for `pokemon.models`.
 
-Database models and related utilities for the Pokémon game.
+Do **not** eagerly import Evennia/Django-dependent modules here; CI unit tests may
+import :mod:`pokemon.models.stats` without the Evennia runtime. Keep this module
+cheap and free of side effects.
 """
 
-from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+from typing import TYPE_CHECKING
 
-from .enums import Gender, Nature
-from .validators import validate_evs, validate_ivs
+# Safe, pure-Python utilities can be imported here in the future. Keep
+# Django/Evennia-dependent imports inside their respective modules.
 
-
-def _safe_import(module: str, names: list[str]):
-    try:
-        mod = __import__(module, fromlist=names)
-        return [getattr(mod, n) for n in names]
-    except (AppRegistryNotReady, ImproperlyConfigured, ImportError):
-        return [None] * len(names)
-
-
-# Core Pokémon models -------------------------------------------------------
-(
-    MAX_PP_MULTIPLIER,
-    BasePokemon,
-    BattleSlot,
-    OwnedPokemon,
-    Pokemon,
-    SpeciesEntry,
-) = _safe_import(
-    "pokemon.models.core",
-    [
-        "MAX_PP_MULTIPLIER",
-        "BasePokemon",
-        "BattleSlot",
-        "OwnedPokemon",
-        "Pokemon",
-        "SpeciesEntry",
-    ],
-)
-
-# Fusion -------------------------------------------------------------------
-(PokemonFusion,) = _safe_import("pokemon.models.fusion", ["PokemonFusion"])
-
-# Moves and related models --------------------------------------------------
-(
-    ActiveMoveslot,
-    Move,
-    MovePPBoost,
-    Moveset,
-    MovesetSlot,
-    PokemonLearnedMove,
-    VerifiedMove,
-) = _safe_import(
-    "pokemon.models.moves",
-    [
-        "ActiveMoveslot",
-        "Move",
-        "MovePPBoost",
-        "Moveset",
-        "MovesetSlot",
-        "PokemonLearnedMove",
-        "VerifiedMove",
-    ],
-)
-
-# Storage ------------------------------------------------------------------
-(
-    ActivePokemonSlot,
-    StorageBox,
-    UserStorage,
-    ensure_boxes,
-) = _safe_import(
-    "pokemon.models.storage",
-    ["ActivePokemonSlot", "StorageBox", "UserStorage", "ensure_boxes"],
-)
-
-# Trainer ------------------------------------------------------------------
-(
-    GymBadge,
-    InventoryEntry,
-    NPCTrainer,
-    Trainer,
-) = _safe_import(
-    "pokemon.models.trainer",
-    ["GymBadge", "InventoryEntry", "NPCTrainer", "Trainer"],
-)
-
-__all__ = [
-	"MAX_PP_MULTIPLIER",
-	"validate_ivs",
-	"validate_evs",
-	"Gender",
-	"Nature",
-	"SpeciesEntry",
-	"BasePokemon",
-	"Pokemon",
-	"OwnedPokemon",
-	"BattleSlot",
-	"Move",
-	"VerifiedMove",
-	"PokemonLearnedMove",
-	"Moveset",
-	"MovesetSlot",
-	"ActiveMoveslot",
-	"MovePPBoost",
-	"Trainer",
-	"NPCTrainer",
-	"GymBadge",
-	"InventoryEntry",
-	"UserStorage",
-	"StorageBox",
-	"ActivePokemonSlot",
-	"ensure_boxes",
-	"PokemonFusion",
-]
+if TYPE_CHECKING:  # pragma: no cover - only for type checkers
+    from . import stats  # noqa: F401
