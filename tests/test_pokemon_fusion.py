@@ -2,6 +2,8 @@ import importlib
 import sys
 import types
 
+import pytest
+
 
 # Set up fake models
 class FakeManager:
@@ -57,8 +59,20 @@ fusion_mod = importlib.import_module("utils.fusion")
 
 
 class DummyPK:
-	def __init__(self, uid):
-		self.unique_id = uid
+        def __init__(self, uid, in_party=False):
+                self.unique_id = uid
+                self.in_party = in_party
+
+
+class DummyStorage:
+        def __init__(self, raise_error=False):
+                self.raise_error = raise_error
+                self.calls = []
+
+        def add_active_pokemon(self, pokemon):
+                if self.raise_error:
+                        raise ValueError("Party already has six Pokémon.")
+                self.calls.append(pokemon)
 
 
 def test_record_and_get_parents():
@@ -87,13 +101,43 @@ def test_no_duplicate_when_reused():
 
 
 def test_permanent_flag():
+        FakePokemonFusion.objects.store.clear()
+        trainer = DummyPK("t")
+        pokemon = DummyPK("p")
+        result = DummyPK("c")
+        fusion_mod.record_fusion(result, trainer, pokemon, permanent=True)
+        entry = list(FakePokemonFusion.objects.store.values())[0]
+        assert entry.permanent is True
+
+
+def test_adds_result_to_storage():
 	FakePokemonFusion.objects.store.clear()
-	trainer = DummyPK("t")
+	storage = DummyStorage()
+	trainer = types.SimpleNamespace(user=types.SimpleNamespace(storage=storage))
 	pokemon = DummyPK("p")
 	result = DummyPK("c")
-	fusion_mod.record_fusion(result, trainer, pokemon, permanent=True)
-	entry = list(FakePokemonFusion.objects.store.values())[0]
-	assert entry.permanent is True
+	fusion_mod.record_fusion(result, trainer, pokemon)
+	assert storage.calls == [result]
+
+
+def test_skips_add_when_already_in_party():
+	FakePokemonFusion.objects.store.clear()
+	storage = DummyStorage()
+	trainer = types.SimpleNamespace(user=types.SimpleNamespace(storage=storage))
+	pokemon = DummyPK("p")
+	result = DummyPK("c", in_party=True)
+	fusion_mod.record_fusion(result, trainer, pokemon)
+	assert storage.calls == []
+
+
+def test_party_full_raises_value_error():
+	FakePokemonFusion.objects.store.clear()
+	storage = DummyStorage(raise_error=True)
+	trainer = types.SimpleNamespace(user=types.SimpleNamespace(storage=storage))
+	pokemon = DummyPK("p")
+	result = DummyPK("c")
+	with pytest.raises(ValueError, match="Party already has six Pokémon"):
+		fusion_mod.record_fusion(result, trainer, pokemon)
 
 
 def teardown_module(module):
