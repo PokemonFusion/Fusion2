@@ -16,16 +16,25 @@ def record_fusion(result, trainer, pokemon, permanent=False):
 	    ``OwnedPokemon`` fused with ``trainer``.
 	permanent
 	    Whether this fusion is permanent.
+
+	Raises
+	------
+	ValueError
+	    If the trainer's active party is full and the fused Pokémon could
+	    not be added.
 	"""
 
 	fusion, _ = PokemonFusion.objects.get_or_create(
-		trainer=trainer,
-		pokemon=pokemon,
-		defaults={"result": result, "permanent": permanent},
+	        trainer=trainer,
+	        pokemon=pokemon,
+	        defaults={"result": result, "permanent": permanent},
 	)
 	storage = getattr(getattr(trainer, "user", None), "storage", None)
-	if storage and result not in storage.active_pokemon.all():
-		storage.add_active_pokemon(result)
+	if storage and not getattr(result, "in_party", False):
+	        try:
+	                storage.add_active_pokemon(result)
+	        except ValueError as err:
+	                raise ValueError(f"Unable to add fused Pokémon to party: {err}") from err
 	return fusion
 
 
