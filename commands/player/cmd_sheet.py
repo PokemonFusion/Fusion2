@@ -1,12 +1,11 @@
 from evennia import Command
 
 from pokemon.helpers.pokemon_helpers import get_max_hp
+from pokemon.models.fusion import PokemonFusion
 from pokemon.models.stats import level_for_exp
 from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
 from utils.xp_utils import get_display_xp
-
-from pokemon.models.fusion import PokemonFusion
 
 
 class CmdSheet(Command):
