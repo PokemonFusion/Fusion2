@@ -1,13 +1,22 @@
+from django.apps import apps
+
+
 def _get_boxes(caller):
-	storage = caller.storage
-	return list(storage.boxes.all().order_by("id"))
+        storage = caller.storage
+        return list(storage.boxes.all().order_by("id"))
 
 
 def _get_party(caller):
-	storage = caller.storage
-	if hasattr(storage, "get_party"):
-		return storage.get_party()
-	return list(storage.active_pokemon.all())
+        """Return the caller's party, excluding fused Pokémon."""
+
+        storage = caller.storage
+        if hasattr(storage, "get_party"):
+                party = storage.get_party()
+        else:
+                party = list(storage.active_pokemon.all())
+
+        PokemonFusion = apps.get_model("pokemon", "PokemonFusion")
+        return [p for p in party if not PokemonFusion.objects.filter(result=p).exists()]
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -61,14 +70,15 @@ def node_box(caller, raw_input=None, **kwargs):
 
 
 def node_deposit(caller, raw_input=None, **kwargs):
-	party = _get_party(caller)
-	if raw_input is None:
-		lines = ["Select a Pokémon to deposit:"]
-		for i, mon in enumerate(party, 1):
-			disp = mon.nickname or mon.species
-			lines.append(f"  {i}. {disp}")
-		lines.append("B. Back")
-		return "\n".join(lines), [{"key": "_default", "goto": "node_deposit"}]
+        party = _get_party(caller)
+        if raw_input is None:
+                lines = ["Select a Pokémon to deposit:"]
+                for i, mon in enumerate(party, 1):
+                        disp = mon.nickname or mon.species
+                        lines.append(f"  {i}. {disp}")
+                lines.append("Fused Pokémon remain in the party and cannot be stored.")
+                lines.append("B. Back")
+                return "\n".join(lines), [{"key": "_default", "goto": "node_deposit"}]
 
 	cmd = raw_input.strip().lower()
 	if cmd == "b":

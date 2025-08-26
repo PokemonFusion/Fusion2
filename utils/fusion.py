@@ -23,6 +23,9 @@ def record_fusion(result, trainer, pokemon, permanent=False):
 		pokemon=pokemon,
 		defaults={"result": result, "permanent": permanent},
 	)
+	storage = getattr(getattr(trainer, "user", None), "storage", None)
+	if storage and result not in storage.active_pokemon.all():
+		storage.add_active_pokemon(result)
 	return fusion
 
 
