@@ -6,10 +6,7 @@ from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
 from utils.xp_utils import get_display_xp
 
-try:  # pragma: no cover - fallback in minimal environments
-	from utils import fusion as fusion_utils
-except Exception:  # pragma: no cover - fusion support optional
-	fusion_utils = None
+from pokemon.models.fusion import PokemonFusion
 
 
 class CmdSheet(Command):
@@ -80,6 +77,10 @@ class CmdSheetPokemon(Command):
 			if hasattr(caller.storage, "get_party")
 			else list(caller.storage.active_pokemon.all())
 		)
+		fusion_entry = PokemonFusion.objects.filter(trainer=caller).first()
+		result = getattr(fusion_entry, "result", None)
+		if result and result not in party:
+			party.append(result)
 		if self.show_all:
 			if not party:
 				caller.msg("You have no Pokémon in your party.")
@@ -109,16 +110,15 @@ class CmdSheetPokemon(Command):
 				gender = getattr(mon, "gender", "?")
 				name = mon.name
 				label = ""
-				if fusion_utils:
-					try:
-						trainer, _parent = fusion_utils.get_fusion_parents(mon)
-					except Exception:  # pragma: no cover - safety
-						trainer = None
-					if trainer:
-						tname = getattr(trainer, "key", getattr(trainer, "name", ""))
-						name = f"{tname} ({getattr(mon, 'species', name)})"
-						label = " (fusion)"
-				lines.append(f"{idx}: {name}{label} (Lv {level} HP {hp}/{max_hp} {gender} {status})")
+				entry = getattr(mon, "fusion_result", None)
+				if entry:
+					trainer = getattr(entry, "trainer", None)
+					tname = getattr(trainer, "key", getattr(trainer, "name", ""))
+					name = f"{tname} ({getattr(mon, 'species', name)})"
+					label = " (fusion)"
+				lines.append(
+					f"{idx}: {name}{label} (Lv {level} HP {hp}/{max_hp} {gender} {status})"
+				)
 			caller.msg("\n".join(lines))
 			return
 
