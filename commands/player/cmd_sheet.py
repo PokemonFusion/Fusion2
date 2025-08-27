@@ -1,3 +1,5 @@
+"""Commands for viewing trainer and Pokémon information."""
+
 from evennia import Command
 
 from pokemon.helpers.pokemon_helpers import get_max_hp
@@ -27,6 +29,7 @@ class CmdSheet(Command):
 			self.mode = "brief"
 
 	def func(self):
+		"""Execute the command."""
 		caller = self.caller
 		sheet = display_trainer_sheet(caller)
 		caller.msg(sheet)
@@ -70,16 +73,42 @@ class CmdSheetPokemon(Command):
 			self.slot = int(arg)
 
 	def func(self):
+		"""Execute the command."""
 		caller = self.caller
-		party = (
-			caller.storage.get_party()
-			if hasattr(caller.storage, "get_party")
-			else list(caller.storage.active_pokemon.all())
-		)
-		fusion_entry = PokemonFusion.objects.filter(trainer=caller).first()
+
+		# Get party; normalize to a fixed-size list (6) with None for empties
+		if hasattr(caller.storage, "get_party"):
+			party = list(caller.storage.get_party()) or []
+		else:
+			party = list(caller.storage.active_pokemon.all())
+
+		if len(party) < 6:
+			party = party + [None] * (6 - len(party))
+		elif len(party) > 6:
+			party = party[:6]
+
+		trainer = getattr(caller, "trainer", None)
+		fusion_entry = PokemonFusion.objects.filter(trainer=trainer).first() if trainer else None
 		result = getattr(fusion_entry, "result", None)
-		if result and result not in party:
-			party.append(result)
+
+		# If fused, inject the fusion result into the first empty slot;
+		# otherwise, if all are full and the result isn't already in party, append if space.
+		if result:
+			already_in_party = any(m and getattr(m, "id", None) == getattr(result, "id", object()) for m in party if m)
+			if not already_in_party:
+				try:
+					empty_idx = party.index(None)
+					party[empty_idx] = result
+				except ValueError:
+					if len(party) < 6:
+						party.append(result)
+
+			try:
+				setattr(result, "_pf2_is_fusion_slot", True)
+				setattr(result, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
+			except Exception:
+				pass
+
 		if self.show_all:
 			if not party:
 				caller.msg("You have no Pokémon in your party.")
@@ -88,7 +117,10 @@ class CmdSheetPokemon(Command):
 			for idx, mon in enumerate(party, 1):
 				if not mon:
 					continue
-				sheets.append(display_pokemon_sheet(caller, mon, slot=idx, mode=self.mode))
+				sheet = display_pokemon_sheet(caller, mon, slot=idx, mode=self.mode)
+				if getattr(mon, "_pf2_is_fusion_slot", False):
+					sheet += "\n|yNote: This slot shows your active Fusion form.|n"
+				sheets.append(sheet)
 			caller.msg("\n-------\n".join(sheets))
 			return
 
@@ -98,6 +130,8 @@ class CmdSheetPokemon(Command):
 				return
 			lines = ["|wParty Pokémon|n"]
 			for idx, mon in enumerate(party, 1):
+				if not mon:
+					continue
 				level = getattr(mon, "level", None)
 				if level is None:
 					xp_val = get_display_xp(mon)
@@ -109,15 +143,13 @@ class CmdSheetPokemon(Command):
 				gender = getattr(mon, "gender", "?")
 				name = mon.name
 				label = ""
-				entry = getattr(mon, "fusion_result", None)
-				if entry:
-					trainer = getattr(entry, "trainer", None)
-					tname = getattr(trainer, "key", getattr(trainer, "name", ""))
-					name = f"{tname} ({getattr(mon, 'species', name)})"
+				if getattr(mon, "_pf2_is_fusion_slot", False):
+					owner = getattr(mon, "_pf2_fusion_owner_name", "")
+					base = getattr(mon, "species", name)
+					if owner:
+						name = f"{owner} ({base})"
 					label = " (fusion)"
-				lines.append(
-					f"{idx}: {name}{label} (Lv {level} HP {hp}/{max_hp} {gender} {status})"
-				)
+				lines.append(f"{idx}: {name}{label} (Lv {level} HP {hp}/{max_hp} {gender} {status})")
 			caller.msg("\n".join(lines))
 			return
 
@@ -131,4 +163,6 @@ class CmdSheetPokemon(Command):
 			return
 
 		sheet = display_pokemon_sheet(caller, mon, slot=self.slot, mode=self.mode)
+		if getattr(mon, "_pf2_is_fusion_slot", False):
+			sheet += "\n|yNote: This slot shows your active Fusion form.|n"
 		caller.msg(sheet)
