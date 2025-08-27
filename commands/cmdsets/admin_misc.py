@@ -5,6 +5,7 @@ from evennia import CmdSet
 from commands.admin.cmd_adminpokemon import CmdListPokemon, CmdPokemonInfo, CmdRemovePokemon
 from commands.admin.cmd_gitpull import CmdGitPull
 from commands.admin.cmd_givepokemon import CmdGivePokemon
+from commands.admin.cmd_fixfusion import CmdFixFusion
 from commands.debug.cmd_logusage import CmdLogUsage, CmdMarkVerified
 
 
@@ -19,9 +20,10 @@ class AdminMiscCmdSet(CmdSet):
 			CmdGivePokemon,
 			CmdListPokemon,
 			CmdRemovePokemon,
-			CmdPokemonInfo,
-			CmdGitPull,
-			CmdLogUsage,
-			CmdMarkVerified,
-		):
+                        CmdPokemonInfo,
+                        CmdFixFusion,
+                        CmdGitPull,
+                        CmdLogUsage,
+                        CmdMarkVerified,
+                ):
 			self.add(cmd())

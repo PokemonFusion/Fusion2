@@ -13,6 +13,7 @@ from pokemon.data.starters import STARTER_LOOKUP, get_starter_names
 from pokemon.dex import POKEDEX
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from pokemon.models.storage import ensure_boxes
+from utils.fusion import record_fusion
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
 
@@ -535,6 +536,24 @@ def finish_fusion(caller, raw_string):
     data = caller.ndb.chargen or {}
     caller.db.gender = data.get("player_gender")
     caller.db.fusion_species = data.get("species")
+    fused = None
+    species_key = data.get("species_key")
+    trainer = getattr(caller, "trainer", None)
+    if species_key and trainer:
+        try:
+            instance = _generate_instance(species_key, 5)
+            if instance:
+                fused = _build_owned_pokemon(
+                    caller,
+                    instance,
+                    data.get("ability"),
+                    data.get("player_gender"),
+                    data.get("nature"),
+                    5,
+                )
+                record_fusion(fused, trainer, fused, permanent=True)
+        except Exception:  # pragma: no cover - defensive
+            fused = None
     caller.db.fusion_ability = data.get("ability")
     caller.db.fusion_nature = data.get("nature")
     caller.msg(
