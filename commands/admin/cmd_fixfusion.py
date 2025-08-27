@@ -1,8 +1,10 @@
 """Admin command to repair missing fusion records."""
 
 from evennia import Command
-
+from django.core.exceptions import ValidationError
 from utils.fusion import record_fusion
+from pokemon.models.core import OwnedPokemon
+from pokemon.models.storage import ActivePokemonSlot
 
 
 class CmdFixFusion(Command):
@@ -35,18 +37,46 @@ class CmdFixFusion(Command):
         if not (species and trainer and storage):
             self.caller.msg("Target has no fusion data.")
             return
+
+        # Locate the fused Pokémon: check party, then boxes, then all owned
         party = storage.get_party() if hasattr(storage, "get_party") else list(
             getattr(storage, "active_pokemon", []))
-        fused = None
-        for mon in party:
-            mon_species = getattr(mon, "species", None)
-            name = getattr(mon_species, "name", mon_species)
-            if name == species:
-                fused = mon
-                break
+        fused = next(
+            (
+                mon
+                for mon in party
+                if getattr(getattr(mon, "species", None), "name", getattr(mon, "species", None))
+                == species
+            ),
+            None,
+        )
         if not fused:
-            self.caller.msg("No matching fused Pokémon found in party.")
+            boxes = getattr(storage, "stored_pokemon", None)
+            if hasattr(boxes, "filter"):
+                fused = boxes.filter(species__iexact=species).first()
+        if not fused and trainer:
+            fused = OwnedPokemon.objects.filter(trainer=trainer, species__iexact=species).first()
+        if not fused:
+            self.caller.msg("No matching fused Pokémon owned by target.")
             return
+
+        # Ensure the fused Pokémon is in the active party
+        if not getattr(fused, "in_party", False):
+            try:
+                storage.add_active_pokemon(fused)
+            except (ValidationError, ValueError) as err:
+                self.caller.msg(f"Couldn't add to party: {err}")
+                return
+            slot_rel = ActivePokemonSlot.objects.filter(storage=storage, pokemon=fused).first()
+            slot_no = getattr(slot_rel, "slot", None)
+            self.caller.msg(
+                f"Added {getattr(fused, 'name', fused)} to party in slot {slot_no or '?'}"
+            )
+        else:
+            self.caller.msg(
+                f"{getattr(fused, 'name', fused)} already in party (slot {getattr(fused, 'party_slot', '?')})."
+            )
+
         try:
             record_fusion(fused, trainer, fused, permanent=True)
         except Exception as err:  # pragma: no cover - defensive
