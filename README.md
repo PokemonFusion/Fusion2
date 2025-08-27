@@ -38,6 +38,18 @@ make test
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
+## Updating dependencies
+
+Pinned dependency versions in `requirements.txt` and `requirements-dev.txt` are generated from the corresponding `.in` files using [pip-tools](https://github.com/jazzband/pip-tools).
+
+To refresh these pins after modifying either `.in` file, run:
+
+```bash
+./tools/compile_requirements.sh --upgrade
+```
+
+The script will regenerate both requirement files with updated versions.
+
 A project-wide [.editorconfig](.editorconfig) enforces tab indentation and LF line endings. Linting is configured through [ruff.toml](ruff.toml), and tests are discovered via [pytest.ini](pytest.ini). Copy [.env.example](.env.example) to `.env` to configure local environment variables. Common development tasks are provided by the [Makefile](Makefile):
 
 ```bash
