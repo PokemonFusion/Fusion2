@@ -2,27 +2,78 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
+
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
+          cache: "pip"
+
+      - name: Install lint deps
         run: |
-          pip install -r requirements.txt -r requirements-dev.txt
+          python -m pip install -U pip
+          pip install -r requirements-dev.txt
           pip install ruff
-          pip install -e .
-      - name: Lint
+
+      - name: Ruff
         run: ruff check .
-      - name: Test (no Evennia)
-        env:
-          PF2_NO_EVENNIA: "1"
-        run: pytest -q
+
+  tests:
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
+      PF2_NO_EVENNIA: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          # Optional: speed
+          pip install pytest-xdist coverage
+          pip install -e .
+
+      - name: Show versions (debug)
+        run: |
+          python -V
+          pip -V
+          pip list
+
+      - name: Run tests (parallel) with coverage
+        run: |
+          coverage run -m pytest -q -n auto --dist=loadgroup --durations=25
+          coverage xml
+
+      - name: Coverage report
+        if: always()
+        run: coverage report -m || true
+
+      # Optional: upload coverage to a service
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ./coverage.xml
+      #     fail_ci_if_error: false
