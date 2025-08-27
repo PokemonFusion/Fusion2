@@ -64,7 +64,7 @@ jobs:
 
       - name: Run tests (parallel) with coverage
         run: |
-          coverage run -m pytest -q -n auto --dist=loadgroup --durations=25
+          coverage run -m pytest -q --dist=loadgroup --durations=25
           coverage xml
 
       - name: Coverage report
