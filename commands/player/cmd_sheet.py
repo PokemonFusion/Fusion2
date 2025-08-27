@@ -1,3 +1,5 @@
+"""Commands for viewing trainer and Pokémon information."""
+
 from evennia import Command
 
 from pokemon.helpers.pokemon_helpers import get_max_hp
@@ -27,6 +29,7 @@ class CmdSheet(Command):
 			self.mode = "brief"
 
 	def func(self):
+		"""Execute the command."""
 		caller = self.caller
 		sheet = display_trainer_sheet(caller)
 		caller.msg(sheet)
@@ -70,13 +73,19 @@ class CmdSheetPokemon(Command):
 			self.slot = int(arg)
 
 	def func(self):
+		"""Execute the command."""
 		caller = self.caller
 		party = (
 			caller.storage.get_party()
 			if hasattr(caller.storage, "get_party")
 			else list(caller.storage.active_pokemon.all())
 		)
-		fusion_entry = PokemonFusion.objects.filter(trainer=caller).first()
+		trainer = getattr(caller, "trainer", None)
+		fusion_entry = (
+			PokemonFusion.objects.filter(trainer=trainer).first()
+			if trainer
+			else None
+		)
 		result = getattr(fusion_entry, "result", None)
 		if result and result not in party:
 			party.append(result)

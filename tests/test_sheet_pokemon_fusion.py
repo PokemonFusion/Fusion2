@@ -326,9 +326,13 @@ def test_sheet_pokemon_lists_fusion_without_utils():
                 def get_party(self):
                         return [other_mon]
 
+        class DummyTrainer:
+                key = "Ash"
+
         class DummyCaller:
                         key = "Ash"
                         storage = DummyStorage()
+                        trainer = DummyTrainer()
                         msgs = []
 
                         def msg(self, text):
@@ -336,7 +340,7 @@ def test_sheet_pokemon_lists_fusion_without_utils():
 
         caller = DummyCaller()
 
-        fusion_entry = cmd_mod.PokemonFusion(trainer=caller, pokemon=other_mon, result=fused_mon)
+        fusion_entry = cmd_mod.PokemonFusion(trainer=caller.trainer, pokemon=other_mon, result=fused_mon)
         cmd_mod.PokemonFusion.objects.store.append(fusion_entry)
         fused_mon.fusion_result = fusion_entry
 
