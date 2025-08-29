@@ -87,27 +87,35 @@ class CmdSheetPokemon(Command):
             party = party[:6]
 
         trainer = getattr(caller, "trainer", None)
-        # Fusion support was removed in migration 0034; skip fusion lookup.
-        fusion_entry = None
-        result = getattr(fusion_entry, "result", None)
-
-        # If fused, inject the fusion result into the first empty slot;
-        # otherwise, if all are full and the result isn't already in party, append if space.
-        if result:
-            already_in_party = any(m and getattr(m, "id", None) == getattr(result, "id", object()) for m in party if m)
-            if not already_in_party:
+        fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
+        result = None
+        if fusion_species:
+            try:
+                search = list(caller.storage.active_pokemon.all())
+            except Exception:
+                search = []
+            result = next(
+                (
+                    mon
+                    for mon in search
+                    if getattr(getattr(mon, "species", None), "name", getattr(mon, "species", None))
+                    == fusion_species
+                ),
+                None,
+            )
+            if result and result not in party:
                 try:
                     empty_idx = party.index(None)
                     party[empty_idx] = result
                 except ValueError:
                     if len(party) < 6:
                         party.append(result)
-
-            try:
-                setattr(result, "_pf2_is_fusion_slot", True)
-                setattr(result, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
-            except Exception:
-                pass
+            if result:
+                try:
+                    setattr(result, "_pf2_is_fusion_slot", True)
+                    setattr(result, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
+                except Exception:
+                    pass
 
         if self.show_all:
             if not party:
