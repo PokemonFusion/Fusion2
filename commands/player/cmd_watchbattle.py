@@ -8,7 +8,7 @@ from utils.locks import require_no_battle_lock
 from world.system_init import get_system
 
 
-class CmdBattleWatch(Command):
+class CmdWatchBattle(Command):
         """Start watching a battle.
 
         Usage:
@@ -34,7 +34,7 @@ class CmdBattleWatch(Command):
                 self.caller.msg(f"You begin watching battle #{bid}.")
 
 
-class CmdBattleUnwatch(Command):
+class CmdUnwatchBattle(Command):
         """Stop watching a battle.
 
         Usage:
