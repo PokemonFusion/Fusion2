@@ -15,6 +15,7 @@ except Exception:  # pragma: no cover
 from utils.battle_display import render_move_gui
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
+from world.system_init import get_system
 
 try:  # pragma: no cover - battle engine may not be available in tests
 	from pokemon.battle import Action, ActionType, BattleMove
@@ -52,17 +53,21 @@ class CmdBattleAttack(Command):
 		if not getattr(self.caller.db, "battle_control", False):
 			self.caller.msg("|rWe aren't waiting for you to command right now.")
 			return
-		try:  # pragma: no cover - battle session may be absent in tests
-			from pokemon.battle.battleinstance import BattleSession
-		except Exception:  # pragma: no cover
+		system = get_system()
+		manager = getattr(system, "battle_manager", None)
+		inst = manager.for_player(self.caller) if manager else None
+		if not inst:
+			try:  # pragma: no cover - battle session may be absent in tests
+				from pokemon.battle.battleinstance import BattleSession
+			except Exception:  # pragma: no cover
 
-			class BattleSession:  # type: ignore[override]
-				@staticmethod
-				def ensure_for_player(caller):
-					return getattr(caller.ndb, "battle_instance", None)
+				class BattleSession:  # type: ignore[override]
+					@staticmethod
+					def ensure_for_player(caller):
+						return getattr(caller.ndb, "battle_instance", None)
 
-		inst = BattleSession.ensure_for_player(self.caller)
-		if not inst or not inst.battle:
+			inst = BattleSession.ensure_for_player(self.caller)
+		if not inst or not getattr(inst, "battle", None):
 			self.caller.msg(NOT_IN_BATTLE_MSG)
 			return
 		participant = _get_participant(inst, self.caller)
