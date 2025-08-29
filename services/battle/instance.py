@@ -5,6 +5,11 @@ import random
 import time
 from typing import Any, Dict, Optional
 
+try:  # pragma: no cover - model import may fail during tests
+    from pokemon.models.core import BattleSlot
+except Exception:  # pragma: no cover - fallback when Django isn't ready
+    BattleSlot = None  # type: ignore
+
 from utils.safe_import import safe_import
 
 try:  # pragma: no cover - Evennia may be absent in tests
@@ -104,3 +109,57 @@ class BattleInstance(DefaultScript):
             self.stop()
         except Exception:  # pragma: no cover - stop may not exist
             pass
+
+    # ------------------------------------------------------------------
+    # Slot synchronisation
+    # ------------------------------------------------------------------
+    def _sync_slots(self) -> None:
+        """Mirror active Pokémon state to ``BattleSlot`` rows.
+
+        The game state keeps snapshots for each participant's party.  This
+        helper updates or creates ``BattleSlot`` entries for the currently
+        active Pokémon on both sides and removes stale rows for this battle.
+        It is tolerant to missing database connections to remain test friendly.
+        """
+
+        if BattleSlot is None:
+            return
+
+        battle_id = self.db.state.get("id")
+        active_ids = []
+        for team_key, team_idx in (("p1", 1), ("p2", 2)):
+            team = self.db.state.get(team_key, {})
+            party = team.get("party_snapshot", [])
+            active_index = int(team.get("active_index", 0))
+            if 0 <= active_index < len(party):
+                mon = party[active_index]
+                uid = mon.get("unique_id")
+                if not uid:
+                    continue
+                active_ids.append(uid)
+                try:
+                    BattleSlot.objects.update_or_create(
+                        pokemon_id=uid,
+                        defaults={
+                            "battle_id": battle_id,
+                            "battle_team": team_idx,
+                            "current_hp": mon.get("current_hp", 0),
+                            "status": mon.get("status", ""),
+                            "fainted": bool(mon.get("fainted", False)),
+                        },
+                    )
+                except Exception:  # pragma: no cover - database errors are ignored
+                    continue
+        if active_ids:
+            try:
+                BattleSlot.objects.filter(battle_id=battle_id).exclude(
+                    pokemon_id__in=active_ids
+                ).delete()
+            except Exception:  # pragma: no cover - database errors are ignored
+                pass
+
+    def touch(self) -> None:
+        """Update ``last_tick`` timestamp and sync active slots."""
+
+        self.db.state["last_tick"] = time.time()
+        self._sync_slots()
