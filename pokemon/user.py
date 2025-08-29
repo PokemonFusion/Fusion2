@@ -165,10 +165,6 @@ class User(DefaultCharacter, InventoryMixin):
         if not pokemon:
             return "No such Pokémon."
 
-        PokemonFusion = apps.get_model("pokemon", "PokemonFusion")
-        if PokemonFusion.objects.filter(result=pokemon).exists():
-            return "Fused Pokémon cannot be stored."
-
         if pokemon in self.storage.active_pokemon.all():
             self.storage.remove_active_pokemon(pokemon)
         self.storage.stored_pokemon.add(pokemon)

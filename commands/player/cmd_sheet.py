@@ -3,7 +3,6 @@
 from evennia import Command
 
 from pokemon.helpers.pokemon_helpers import get_max_hp
-from pokemon.models.fusion import PokemonFusion
 from pokemon.models.stats import level_for_exp
 from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
@@ -87,9 +86,10 @@ class CmdSheetPokemon(Command):
 		elif len(party) > 6:
 			party = party[:6]
 
-		trainer = getattr(caller, "trainer", None)
-		fusion_entry = PokemonFusion.objects.filter(trainer=trainer).first() if trainer else None
-		result = getattr(fusion_entry, "result", None)
+                trainer = getattr(caller, "trainer", None)
+                # Fusion support was removed in migration 0034; skip fusion lookup.
+                fusion_entry = None
+                result = getattr(fusion_entry, "result", None)
 
 		# If fused, inject the fusion result into the first empty slot;
 		# otherwise, if all are full and the result isn't already in party, append if space.
