@@ -2,6 +2,7 @@ import importlib.util
 import os
 import sys
 import types
+import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -16,7 +17,8 @@ def load_cmd_module():
     return mod
 
 
-def test_sheet_pokemon_fusion_slot_displays_level_and_hp():
+@pytest.mark.parametrize("stats,expected", [({"hp": 30}, "HP 25/30"), (None, "HP 25/25")])
+def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, expected):
     # Preserve original modules
     patched = {
         "evennia": sys.modules.get("evennia"),
@@ -88,7 +90,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp():
                 fusion_nature="Bold",
                 level=10,
                 hp=25,
-                stats={"hp": 30},
+                stats=stats,
                 gender="M",
             )
             self.storage = DummyStorage()
@@ -108,4 +110,4 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp():
     assert caller.msgs, "No output captured"
     output = caller.msgs[-1]
     assert "Lv 10" in output
-    assert "HP 25/30" in output
+    assert expected in output

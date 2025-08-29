@@ -99,7 +99,10 @@ class CmdSheetPokemon(Command):
                 level=getattr(caller.db, "level", None),
                 hp=getattr(caller.db, "hp", None),
             )
-            setattr(fusion_mon, "_cached_stats", getattr(caller.db, "stats", {}))
+            stats = getattr(caller.db, "stats", None)
+            if not stats:
+                stats = {"hp": getattr(caller.db, "hp", 0)}
+            setattr(fusion_mon, "_cached_stats", stats)
             try:
                 search = list(caller.storage.active_pokemon.all())
             except Exception:
