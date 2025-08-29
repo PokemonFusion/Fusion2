@@ -12,3 +12,10 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover - only for type checkers
     from . import stats  # noqa: F401
+
+# Import models for Django auto-discovery.  The try/except keeps this module
+# importable in contexts where Django isn't configured (like during unit tests).
+try:  # pragma: no cover - best effort for Django
+    from .fusion import PokemonFusion  # noqa: F401
+except Exception:  # pragma: no cover - Django not initialized
+    PokemonFusion = None  # type: ignore
