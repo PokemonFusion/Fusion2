@@ -1,6 +1,7 @@
 """Commands for viewing trainer and Pokémon information."""
 
 from evennia import Command
+from types import SimpleNamespace
 
 from pokemon.helpers.pokemon_helpers import get_max_hp
 from pokemon.models.stats import level_for_exp
@@ -88,13 +89,22 @@ class CmdSheetPokemon(Command):
 
         trainer = getattr(caller, "trainer", None)
         fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
-        result = None
         if fusion_species:
+            fusion_mon = SimpleNamespace(
+                name=fusion_species,
+                species=fusion_species,
+                ability=getattr(caller.db, "fusion_ability", None),
+                nature=getattr(caller.db, "fusion_nature", None),
+                gender=getattr(caller.db, "gender", "?"),
+                level=getattr(caller.db, "level", None),
+                hp=getattr(caller.db, "hp", None),
+            )
+            setattr(fusion_mon, "_cached_stats", getattr(caller.db, "stats", {}))
             try:
                 search = list(caller.storage.active_pokemon.all())
             except Exception:
                 search = []
-            result = next(
+            fused = next(
                 (
                     mon
                     for mon in search
@@ -103,19 +113,20 @@ class CmdSheetPokemon(Command):
                 ),
                 None,
             )
-            if result and result not in party:
-                try:
-                    empty_idx = party.index(None)
-                    party[empty_idx] = result
-                except ValueError:
-                    if len(party) < 6:
-                        party.append(result)
-            if result:
-                try:
-                    setattr(result, "_pf2_is_fusion_slot", True)
-                    setattr(result, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
-                except Exception:
-                    pass
+            if fused:
+                for attr in ("activemoveslot_set", "pp_bonuses", "moves", "ivs", "evs"):
+                    if hasattr(fused, attr):
+                        setattr(fusion_mon, attr, getattr(fused, attr))
+                if fused in party:
+                    party[party.index(fused)] = None
+            setattr(fusion_mon, "_pf2_is_fusion_slot", True)
+            setattr(fusion_mon, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
+            try:
+                empty_idx = party.index(None)
+                party[empty_idx] = fusion_mon
+            except ValueError:
+                if len(party) < 6:
+                    party.append(fusion_mon)
 
         if self.show_all:
             if not party:
