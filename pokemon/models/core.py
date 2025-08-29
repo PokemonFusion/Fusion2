@@ -255,7 +255,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			from pokemon.dex import MOVEDEX  # type: ignore
 		except Exception:
 			try:
-				from pokemon.data.moves import py_dict as MOVEDEX  # type: ignore
+                            from pokemon.dex.moves.movesdex import py_dict as MOVEDEX  # type: ignore
 			except Exception:  # pragma: no cover - optional
 				MOVEDEX = {}
 

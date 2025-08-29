@@ -61,9 +61,11 @@ select = ["E", "F", "I"]
 # Generated dex/data modules using star-import helpers.
 "pokemon/dex/abilities/abilitiesdex.py" = ["F403"]
 "pokemon/dex/items/itemsdex.py" = ["F403"]
-"pokemon/data/moves.py" = ["F403"]
+"pokemon/dex/moves/movesdex.py" = ["F403", "E101"]
 "pokemon/dex/conditions.py" = ["F403"]
 "pokemon/dex/pokedex/*.py" = ["F403"]
+
+"pokemon/ui/move_gui.py" = ["E101"]
 
 # Tooling that mirrors the same generation pattern.
 "tools/data_generation/dex/py/abilitiesdex.py" = ["F403"]
