@@ -132,3 +132,113 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
     cmd.parse()
     cmd.func()
     assert caller.msgs[-1].startswith("sheet")
+
+
+def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
+    patched = {
+        "evennia": sys.modules.get("evennia"),
+        "pokemon": sys.modules.get("pokemon"),
+        "pokemon.helpers": sys.modules.get("pokemon.helpers"),
+        "pokemon.helpers.pokemon_helpers": sys.modules.get("pokemon.helpers.pokemon_helpers"),
+        "pokemon.models": sys.modules.get("pokemon.models"),
+        "pokemon.models.stats": sys.modules.get("pokemon.models.stats"),
+        "utils": sys.modules.get("utils"),
+        "utils.display": sys.modules.get("utils.display"),
+        "utils.display_helpers": sys.modules.get("utils.display_helpers"),
+        "utils.xp_utils": sys.modules.get("utils.xp_utils"),
+    }
+
+    captured = {}
+
+    try:
+        fake_evennia = types.ModuleType("evennia")
+        fake_evennia.Command = type("Command", (), {})
+        sys.modules["evennia"] = fake_evennia
+
+        sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
+        fake_helpers.get_max_hp = lambda mon: getattr(mon, "_cached_stats", {}).get("hp", 0)
+        fake_helpers.get_stats = lambda mon: getattr(mon, "_cached_stats", {})
+        sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers
+
+        sys.modules["pokemon.models"] = types.ModuleType("pokemon.models")
+        fake_stats = types.ModuleType("pokemon.models.stats")
+        fake_stats.level_for_exp = lambda xp, growth: xp
+        sys.modules["pokemon.models.stats"] = fake_stats
+
+        sys.modules["utils"] = types.ModuleType("utils")
+        fake_display = types.ModuleType("utils.display")
+
+        def fake_display_pokemon_sheet(caller, mon, **kwargs):
+            captured["hp"] = getattr(mon, "hp", 0)
+            captured["max_hp"] = fake_helpers.get_max_hp(mon)
+            return "sheet"
+
+        fake_display.display_pokemon_sheet = fake_display_pokemon_sheet
+        fake_display.display_trainer_sheet = lambda *args, **kwargs: "trainer"
+        sys.modules["utils.display"] = fake_display
+
+        fake_disp_helpers = types.ModuleType("utils.display_helpers")
+        fake_disp_helpers.get_status_effects = lambda mon: "NORM"
+        sys.modules["utils.display_helpers"] = fake_disp_helpers
+
+        fake_xp = types.ModuleType("utils.xp_utils")
+        fake_xp.get_display_xp = lambda mon: 0
+        sys.modules["utils.xp_utils"] = fake_xp
+
+        cmd_mod = load_cmd_module()
+
+    finally:
+        for name, module in patched.items():
+            if module is not None:
+                sys.modules[name] = module
+            else:
+                sys.modules.pop(name, None)
+
+    fused = types.SimpleNamespace(
+        species="Pikachu",
+        hp=20,
+        _cached_stats={"hp": 40},
+        activemoveslot_set=[],
+        pp_bonuses={},
+        moves=[],
+        ivs=[],
+        evs=[],
+    )
+
+    class DummyStorage:
+        def get_party(self):
+            return []
+
+        active_pokemon = types.SimpleNamespace(all=lambda: [fused])
+
+    class DummyCaller:
+        def __init__(self):
+            self.key = "Ash"
+            self.db = types.SimpleNamespace(
+                fusion_species="Pikachu",
+                fusion_ability="Static",
+                fusion_nature="Bold",
+                level=10,
+                hp=None,
+                stats=None,
+                gender="M",
+            )
+            self.storage = DummyStorage()
+            self.msgs = []
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller()
+
+    cmd = cmd_mod.CmdSheetPokemon()
+    cmd.caller = caller
+    cmd.args = "1"
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+
+    assert captured["hp"] == 20
+    assert captured["max_hp"] == 40

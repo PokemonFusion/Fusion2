@@ -90,22 +90,9 @@ class CmdSheetPokemon(Command):
         trainer = getattr(caller, "trainer", None)
         fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
         if fusion_species:
-            hp_val = getattr(caller.db, "hp", 0) or 0
-            fusion_mon = SimpleNamespace(
-                name=fusion_species,
-                species=fusion_species,
-                ability=getattr(caller.db, "fusion_ability", None),
-                nature=getattr(caller.db, "fusion_nature", None),
-                gender=getattr(caller.db, "gender", "?"),
-                level=getattr(caller.db, "level", None),
-                hp=hp_val,
-            )
-            stats = getattr(caller.db, "stats", {}) or {}
-            if not isinstance(stats, dict):
-                stats = {}
-            if stats.get("hp") is None:
-                stats["hp"] = hp_val
-            setattr(fusion_mon, "_cached_stats", stats)
+            hp_val = getattr(caller.db, "hp", None)
+            stats = getattr(caller.db, "stats", None)
+            stats = stats.copy() if isinstance(stats, dict) else {}
             try:
                 search = list(caller.storage.active_pokemon.all())
             except Exception:
@@ -120,11 +107,30 @@ class CmdSheetPokemon(Command):
                 None,
             )
             if fused:
+                if not stats:
+                    stats = getattr(fused, "_cached_stats", {}) or {}
+                if hp_val is None:
+                    hp_val = getattr(fused, "hp", getattr(fused, "current_hp", None))
+            if hp_val is None:
+                hp_val = stats.get("hp", 0)
+            if stats.get("hp") is None:
+                stats["hp"] = hp_val
+            fusion_mon = SimpleNamespace(
+                name=fusion_species,
+                species=fusion_species,
+                ability=getattr(caller.db, "fusion_ability", None),
+                nature=getattr(caller.db, "fusion_nature", None),
+                gender=getattr(caller.db, "gender", "?"),
+                level=getattr(caller.db, "level", None),
+                hp=hp_val or 0,
+            )
+            if fused:
                 for attr in ("activemoveslot_set", "pp_bonuses", "moves", "ivs", "evs"):
                     if hasattr(fused, attr):
                         setattr(fusion_mon, attr, getattr(fused, attr))
                 if fused in party:
                     party[party.index(fused)] = None
+            setattr(fusion_mon, "_cached_stats", stats)
             setattr(fusion_mon, "_pf2_is_fusion_slot", True)
             setattr(fusion_mon, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
             try:
