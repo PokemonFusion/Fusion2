@@ -83,3 +83,37 @@ class ActivePokemonSlot(models.Model):
 	def save(self, *args, **kwargs):
 		self.full_clean()
 		return super().save(*args, **kwargs)
+
+
+def move_to_party(mon, storage: UserStorage, slot: int | None = None) -> None:
+	"""Move ``mon`` into ``storage``'s active party.
+
+	This removes the Pokémon from any storage boxes and from the stored
+	collection before adding it to the party.
+	"""
+	storage.remove_active_pokemon(mon)
+	storage.stored_pokemon.remove(mon)
+	mon.boxes.clear()
+	storage.add_active_pokemon(mon, slot)
+
+
+def move_to_box(mon, storage: UserStorage, box: StorageBox) -> None:
+	"""Place ``mon`` into ``box`` within ``storage``.
+
+	The Pokémon is removed from the active party and any other boxes before
+	being added to the target box and the stored collection.
+	"""
+	if box.storage != storage:
+		raise ValueError("Box does not belong to storage.")
+	storage.remove_active_pokemon(mon)
+	storage.stored_pokemon.add(mon)
+	mon.boxes.clear()
+	box.pokemon.add(mon)
+
+
+def release(mon, storage: UserStorage) -> None:
+	"""Release ``mon`` from ``storage`` entirely."""
+	storage.remove_active_pokemon(mon)
+	storage.stored_pokemon.remove(mon)
+	mon.boxes.clear()
+	mon.delete()

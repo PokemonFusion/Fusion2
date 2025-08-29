@@ -5,6 +5,7 @@ and storage boxes.
 """
 
 from evennia import Command
+from utils.locks import require_no_battle_lock
 
 
 class CmdDepositPokemon(Command):
@@ -19,6 +20,8 @@ class CmdDepositPokemon(Command):
 	help_category = "Pokemon"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		parts = self.args.split()
 		if not parts:
 			self.caller.msg("Usage: deposit <pokemon_id> [box]")
@@ -44,6 +47,8 @@ class CmdWithdrawPokemon(Command):
 	help_category = "Pokemon"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		parts = self.args.split()
 		if not parts:
 			self.caller.msg("Usage: withdraw <pokemon_id> [box]")
@@ -89,6 +94,8 @@ class CmdSetHoldItem(Command):
 	help_category = "Pokemon"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		if not self.args or "=" not in self.args:
 			self.caller.msg("Usage: setholditem <slot>=<item>")
 			return
