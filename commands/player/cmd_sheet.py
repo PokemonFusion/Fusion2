@@ -90,6 +90,7 @@ class CmdSheetPokemon(Command):
         trainer = getattr(caller, "trainer", None)
         fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
         if fusion_species:
+            hp_val = getattr(caller.db, "hp", 0) or 0
             fusion_mon = SimpleNamespace(
                 name=fusion_species,
                 species=fusion_species,
@@ -97,11 +98,13 @@ class CmdSheetPokemon(Command):
                 nature=getattr(caller.db, "fusion_nature", None),
                 gender=getattr(caller.db, "gender", "?"),
                 level=getattr(caller.db, "level", None),
-                hp=getattr(caller.db, "hp", None),
+                hp=hp_val,
             )
-            stats = getattr(caller.db, "stats", None)
-            if not stats:
-                stats = {"hp": getattr(caller.db, "hp", 0)}
+            stats = getattr(caller.db, "stats", {}) or {}
+            if not isinstance(stats, dict):
+                stats = {}
+            if stats.get("hp") is None:
+                stats["hp"] = hp_val
             setattr(fusion_mon, "_cached_stats", stats)
             try:
                 search = list(caller.storage.active_pokemon.all())

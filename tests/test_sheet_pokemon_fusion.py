@@ -17,8 +17,11 @@ def load_cmd_module():
     return mod
 
 
-@pytest.mark.parametrize("stats,expected", [({"hp": 30}, "HP 25/30"), (None, "HP 25/25")])
-def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, expected):
+@pytest.mark.parametrize(
+    "stats,hp,expected",
+    [({"hp": 30}, 25, "HP 25/30"), (None, 25, "HP 25/25"), (None, None, "HP 0/0")],
+)
+def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
     # Preserve original modules
     patched = {
         "evennia": sys.modules.get("evennia"),
@@ -53,7 +56,15 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, expected):
 
         sys.modules["utils"] = types.ModuleType("utils")
         fake_display = types.ModuleType("utils.display")
-        fake_display.display_pokemon_sheet = lambda *args, **kwargs: "sheet"
+
+        def fake_display_pokemon_sheet(caller, mon, **kwargs):
+            hp_val = getattr(mon, "hp", 0)
+            max_hp = fake_helpers.get_max_hp(mon)
+            if max_hp <= 0:
+                pass
+            return "sheet"
+
+        fake_display.display_pokemon_sheet = fake_display_pokemon_sheet
         fake_display.display_trainer_sheet = lambda *args, **kwargs: "trainer"
         sys.modules["utils.display"] = fake_display
 
@@ -89,7 +100,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, expected):
                 fusion_ability="Static",
                 fusion_nature="Bold",
                 level=10,
-                hp=25,
+                hp=hp,
                 stats=stats,
                 gender="M",
             )
@@ -100,6 +111,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, expected):
             self.msgs.append(text)
 
     caller = DummyCaller()
+
     cmd = cmd_mod.CmdSheetPokemon()
     cmd.caller = caller
     cmd.args = ""
@@ -111,3 +123,12 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, expected):
     output = caller.msgs[-1]
     assert "Lv 10" in output
     assert expected in output
+
+    caller.msgs = []
+    cmd = cmd_mod.CmdSheetPokemon()
+    cmd.caller = caller
+    cmd.args = "1"
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+    assert caller.msgs[-1].startswith("sheet")
