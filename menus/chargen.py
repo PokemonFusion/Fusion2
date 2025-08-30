@@ -321,6 +321,7 @@ def _handle_starter_species_input(caller, raw_input, **kwargs):
         )
     key = STARTER_LOOKUP.get(entry)
     if not key:
+        _invalid(caller)
         caller.msg("|rInvalid species.|n Use |wstarterlist|n or |wpokemonlist|n.")
         return (
             "starter_species",
@@ -328,7 +329,7 @@ def _handle_starter_species_input(caller, raw_input, **kwargs):
         )
     caller.ndb.chargen["species_key"] = key
     caller.ndb.chargen["species"] = POKEDEX[key].raw.get("name", key)
-    return "starter_ability"
+    return "starter_ability", {}
 
 
 def starter_ability(caller, raw_string, **kwargs):
