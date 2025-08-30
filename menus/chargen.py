@@ -222,63 +222,57 @@ def human_type(caller, raw_string, **kwargs):
 
 
 def fusion_species(caller, raw_string, **kwargs):
-    caller.ndb.chargen["player_gender"] = kwargs.get("gender")
+    """Prompt for the player's fusion species."""
+    if "gender" in kwargs:
+        caller.ndb.chargen["player_gender"] = kwargs["gender"]
     text = "Enter the species for your fusion:"
     options = (
-        {"key": "_default", "goto": "fusion_ability"},
+        {"key": "_default", "exec": _handle_fusion_species_input},
         ABORT_OPTION,
     )
     return text, options
 
 
-def fusion_ability(caller, raw_string, **kwargs):
-    """Accept either raw key or display name here."""
-    entry = raw_string.strip()
+def _handle_fusion_species_input(caller, raw_input, **kwargs):
+    """Validate fusion species input and route to ability selection."""
+    entry = (raw_input or "").strip()
     if entry.lower() in ABORT_INPUTS:
         return node_abort(caller)
-
-    # Lookup via our universal mapping
     key = POKEMON_KEY_LOOKUP.get(entry.lower())
     if not key:
-        _invalid(caller)
         caller.msg("|rInvalid species.|n Try again.")
-        return fusion_species(caller, "")
-
+        return "fusion_species"
     mon = POKEDEX[key]
-    caller.ndb.chargen.update(
-        {
-            "species_key": key,
-            "species": mon.raw.get("name", mon.name),
-        }
-    )
+    caller.ndb.chargen.update({"species_key": key, "species": mon.raw.get("name", mon.name)})
+    return "fusion_ability"
 
-    # Gather unique abilities
+
+def fusion_ability(caller, raw_string, **kwargs):
+    """Display ability options for the chosen fusion species."""
+    mon = POKEDEX[caller.ndb.chargen["species_key"]]
     raw_abs = mon.raw.get("abilities", {}) or {}
     ab_list = []
     for a in raw_abs.values():
         name = a.name if hasattr(a, "name") else a
         if name not in ab_list:
             ab_list.append(name)
-
-        # Skip to nature selection if only one
-        if len(ab_list) <= 1:
-            caller.ndb.chargen["ability"] = ab_list[0] if ab_list else ""
-            return fusion_nature(caller, "")
-
-        text = "Choose your fusion's ability:\n" + format_columns(ab_list) + "\n"
-        base_opts = tuple(
-            {
-                "key": ab.lower(),
-                "desc": ab,
-                "goto": ("fusion_nature", {"ability": ab}),
-            }
-            for ab in ab_list
-        )
-        options = base_opts + (
-            ABORT_OPTION,
-            {"key": "_default", "goto": "_repeat", "exec": _invalid},
-        )
-        return text, options
+    if len(ab_list) <= 1:
+        caller.ndb.chargen["ability"] = ab_list[0] if ab_list else ""
+        return fusion_nature(caller, "")
+    text = "Choose your fusion's ability:\n" + format_columns(ab_list) + "\n"
+    base_opts = tuple(
+        {
+            "key": ab.lower(),
+            "desc": ab,
+            "goto": ("fusion_nature", {"ability": ab}),
+        }
+        for ab in ab_list
+    )
+    options = base_opts + (
+        ABORT_OPTION,
+        {"key": "_default", "goto": "_repeat", "exec": _invalid},
+    )
+    return text, options
 
 
 def fusion_nature(caller, raw_string, **kwargs):
@@ -294,43 +288,58 @@ def fusion_nature(caller, raw_string, **kwargs):
 
 
 def starter_species(caller, raw_string, **kwargs):
-    caller.ndb.chargen["favored_type"] = kwargs.get("type")
+    """Prompt for starter Pokémon species."""
+    if "type" in kwargs:
+        caller.ndb.chargen["favored_type"] = kwargs["type"]
 
-    text = "Enter the species for your starter Pokémon\n(use 'starterlist' or 'pokemonlist' to view valid options):"
+    text = "Enter the species for your starter Pokémon\n" "(use 'starterlist' or 'pokemonlist' to view valid options):"
     options = [
         {
             "key": ("starterlist", "starters", "pokemonlist"),
             "exec": lambda cb: cb.msg("Starter Pokémon:\n" + ", ".join(get_starter_names())),
-            "goto": ("starter_species", {"type": caller.ndb.chargen["favored_type"]}),
+            "goto": (
+                "starter_species",
+                {"type": caller.ndb.chargen["favored_type"]},
+            ),
         },
         ABORT_OPTION,
-        {
-            "key": "_default",
-            "goto": "starter_ability",
-        },
+        {"key": "_default", "exec": _handle_starter_species_input},
     ]
     return text, tuple(options)
 
 
-def starter_ability(caller, raw_string, **kwargs):
-    entry = raw_string.strip().lower()
-
+def _handle_starter_species_input(caller, raw_input, **kwargs):
+    """Validate starter species input and show ability options."""
+    entry = (raw_input or "").strip().lower()
     if entry in ABORT_INPUTS:
         return node_abort(caller)
-
     if entry in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
-
+        return (
+            "starter_species",
+            {"type": caller.ndb.chargen.get("favored_type")},
+        )
     key = STARTER_LOOKUP.get(entry)
     if not key:
-        _invalid(caller)
         caller.msg("|rInvalid species.|n Use |wstarterlist|n or |wpokemonlist|n.")
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
-
-    # Valid species
+        return (
+            "starter_species",
+            {"type": caller.ndb.chargen.get("favored_type")},
+        )
     caller.ndb.chargen["species_key"] = key
     caller.ndb.chargen["species"] = POKEDEX[key].raw.get("name", key)
+    return "starter_ability"
+
+
+def starter_ability(caller, raw_string, **kwargs):
+    """Display ability options for the chosen starter species."""
+    key = caller.ndb.chargen.get("species_key")
+    if not key:
+        caller.msg("|rInvalid state.|n Choose a species first.")
+        return (
+            "starter_species",
+            {"type": caller.ndb.chargen.get("favored_type")},
+        )
 
     mon = POKEDEX[key]
     abilities = mon.raw.get("abilities", {}) or {}
