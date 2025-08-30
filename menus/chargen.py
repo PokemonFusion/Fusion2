@@ -227,7 +227,7 @@ def fusion_species(caller, raw_string, **kwargs):
         caller.ndb.chargen["player_gender"] = kwargs["gender"]
     text = "Enter the species for your fusion:"
     options = (
-        {"key": "_default", "exec": _handle_fusion_species_input},
+        {"key": "_default", "goto": _handle_fusion_species_input},
         ABORT_OPTION,
     )
     return text, options
@@ -303,7 +303,7 @@ def starter_species(caller, raw_string, **kwargs):
             ),
         },
         ABORT_OPTION,
-        {"key": "_default", "exec": _handle_starter_species_input},
+        {"key": "_default", "goto": _handle_starter_species_input},
     ]
     return text, tuple(options)
 
@@ -368,7 +368,7 @@ def starter_ability(caller, raw_string, **kwargs):
         k["ability"] = choice
         return "starter_nature", k
 
-    options = [ABORT_OPTION, {"key": "_default", "exec": _pick_ability}]
+    options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
     return text, tuple(options)
 
 
