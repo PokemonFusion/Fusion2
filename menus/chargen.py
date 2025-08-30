@@ -13,6 +13,7 @@ from pokemon.data.starters import STARTER_LOOKUP, get_starter_names
 from pokemon.dex import POKEDEX
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from pokemon.models.storage import ensure_boxes
+from utils.enhanced_evmenu import INVALID_INPUT_MSG
 from utils.fusion import record_fusion
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
@@ -61,7 +62,7 @@ ABORT_OPTION = {"key": ("q", "quit", "exit"), "desc": "Abort", "goto": "node_abo
 
 def _invalid(caller):
     """Notify caller of invalid input."""
-    caller.msg("Invalid entry.\nTry again.")
+    caller.msg(INVALID_INPUT_MSG)
 
 
 def format_columns(items, columns=4, indent=2):
@@ -239,7 +240,8 @@ def fusion_ability(caller, raw_string, **kwargs):
     # Lookup via our universal mapping
     key = POKEMON_KEY_LOOKUP.get(entry.lower())
     if not key:
-        caller.msg("Unknown species.\nTry again.")
+        _invalid(caller)
+        caller.msg("|rInvalid species.|n Try again.")
         return fusion_species(caller, "")
 
     mon = POKEDEX[key]
@@ -322,7 +324,8 @@ def starter_ability(caller, raw_string, **kwargs):
 
     key = STARTER_LOOKUP.get(entry)
     if not key:
-        caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
+        _invalid(caller)
+        caller.msg("|rInvalid species.|n Use |wstarterlist|n or |wpokemonlist|n.")
         return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
 
     # Valid species
@@ -365,7 +368,7 @@ def starter_ability(caller, raw_string, **kwargs):
     opts.append(
         {
             "key": "_default",
-            "exec": lambda cb: cb.msg("Invalid choice. Please pick 1, 2… or H."),
+            "exec": lambda cb: (_invalid(cb), cb.msg("|rInvalid choice.|n Pick |w1|n, |w2|n… or |wH|n.")),
             "goto": "_repeat",
         }
     )
@@ -389,7 +392,8 @@ def starter_gender(caller, raw_string, **kwargs):
         return node_abort(caller)
     nature = NATURE_LOOKUP.get(entry)
     if not nature:
-        caller.msg("Invalid nature.\nTry again.")
+        _invalid(caller)
+        caller.msg("|rInvalid nature.|n Try again.")
         return starter_nature(caller, "")
     caller.ndb.chargen["nature"] = nature
 
@@ -469,7 +473,8 @@ def starter_confirm(caller, raw_string, **kwargs):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
         return starter_species(caller, "", type=data.get("favored_type"))
     if low not in STARTER_NAMES:
-        caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
+        _invalid(caller)
+        caller.msg("|rInvalid species.|n Use |wstarterlist|n or |wpokemonlist|n.")
         return starter_species(caller, "", type=data.get("favored_type"))
 
     text = (
@@ -501,7 +506,8 @@ def fusion_confirm(caller, raw_string, **kwargs):
             return node_abort(caller)
         nature = NATURE_LOOKUP.get(entry)
         if not nature:
-            caller.msg("Invalid nature.\nTry again.")
+            _invalid(caller)
+            caller.msg("|rInvalid nature.|n Try again.")
             return fusion_nature(caller, "")
         caller.ndb.chargen["nature"] = nature
 
