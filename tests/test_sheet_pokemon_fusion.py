@@ -45,8 +45,18 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
         sys.modules["pokemon"] = types.ModuleType("pokemon")
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
-        fake_helpers.get_max_hp = lambda mon: getattr(mon, "_cached_stats", {}).get("hp", 0)
-        fake_helpers.get_stats = lambda mon: getattr(mon, "_cached_stats", {})
+        store = {}
+
+        def fake_get_stats(mon):
+            if isinstance(mon, (str, bytes)):
+                return store.get(mon, {})
+            return getattr(mon, "_cached_stats", {})
+
+        def fake_get_max_hp(mon):
+            return fake_get_stats(mon).get("hp", 0)
+
+        fake_helpers.get_max_hp = fake_get_max_hp
+        fake_helpers.get_stats = fake_get_stats
         sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers
 
         sys.modules["pokemon.models"] = types.ModuleType("pokemon.models")
@@ -57,7 +67,10 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
         sys.modules["utils"] = types.ModuleType("utils")
         fake_display = types.ModuleType("utils.display")
 
+        captured_mon = {}
+
         def fake_display_pokemon_sheet(caller, mon, **kwargs):
+            captured_mon["mon"] = mon
             hp_val = getattr(mon, "hp", 0)
             max_hp = fake_helpers.get_max_hp(mon)
             if max_hp <= 0:
@@ -97,6 +110,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
             self.key = "Ash"
             self.db = types.SimpleNamespace(
                 fusion_species="Pikachu",
+                fusion_id="fusion-uid",
                 fusion_ability="Static",
                 fusion_nature="Bold",
                 level=10,
@@ -132,6 +146,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
     cmd.parse()
     cmd.func()
     assert caller.msgs[-1].startswith("sheet")
+    assert getattr(captured_mon.get("mon"), "unique_id", None) == caller.db.fusion_id
 
 
 def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
@@ -149,6 +164,7 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
     }
 
     captured = {}
+    store = {}
 
     try:
         fake_evennia = types.ModuleType("evennia")
@@ -158,8 +174,17 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
         sys.modules["pokemon"] = types.ModuleType("pokemon")
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
-        fake_helpers.get_max_hp = lambda mon: getattr(mon, "_cached_stats", {}).get("hp", 0)
-        fake_helpers.get_stats = lambda mon: getattr(mon, "_cached_stats", {})
+
+        def fake_get_stats(mon):
+            if isinstance(mon, (str, bytes)):
+                return store.get(mon, {})
+            return getattr(mon, "_cached_stats", {})
+
+        def fake_get_max_hp(mon):
+            return fake_get_stats(mon).get("hp", 0)
+
+        fake_helpers.get_max_hp = fake_get_max_hp
+        fake_helpers.get_stats = fake_get_stats
         sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers
 
         sys.modules["pokemon.models"] = types.ModuleType("pokemon.models")
@@ -171,8 +196,9 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
         fake_display = types.ModuleType("utils.display")
 
         def fake_display_pokemon_sheet(caller, mon, **kwargs):
+            captured["mon"] = mon
             captured["hp"] = getattr(mon, "hp", 0)
-            captured["max_hp"] = fake_helpers.get_max_hp(mon)
+            captured["max_hp"] = fake_helpers.get_max_hp(getattr(mon, "unique_id", mon))
             return "sheet"
 
         fake_display.display_pokemon_sheet = fake_display_pokemon_sheet
@@ -205,7 +231,9 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
         moves=[],
         ivs=[],
         evs=[],
+        unique_id="fusion-uid",
     )
+    store[fused.unique_id] = fused._cached_stats
 
     class DummyStorage:
         def get_party(self):
@@ -218,6 +246,7 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
             self.key = "Ash"
             self.db = types.SimpleNamespace(
                 fusion_species="Pikachu",
+                fusion_id=fused.unique_id,
                 fusion_ability="Static",
                 fusion_nature="Bold",
                 level=10,
@@ -242,3 +271,5 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
 
     assert captured["hp"] == 20
     assert captured["max_hp"] == 40
+    assert getattr(captured.get("mon"), "unique_id", None) == fused.unique_id
+    assert fake_helpers.get_stats(captured["mon"].unique_id)["hp"] == 40
