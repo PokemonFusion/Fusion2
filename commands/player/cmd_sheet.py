@@ -89,7 +89,8 @@ class CmdSheetPokemon(Command):
 
         trainer = getattr(caller, "trainer", None)
         fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
-        if fusion_species:
+        fusion_id = getattr(getattr(caller, "db", None), "fusion_id", None)
+        if fusion_species or fusion_id:
             hp_val = getattr(caller.db, "hp", None)
             stats = getattr(caller.db, "stats", None)
             stats = stats.copy() if isinstance(stats, dict) else {}
@@ -97,16 +98,32 @@ class CmdSheetPokemon(Command):
                 search = list(caller.storage.active_pokemon.all())
             except Exception:
                 search = []
-            fused = next(
-                (
-                    mon
-                    for mon in search
-                    if getattr(getattr(mon, "species", None), "name", getattr(mon, "species", None))
-                    == fusion_species
-                ),
-                None,
-            )
+            fused = None
+            if fusion_id:
+                fused = next(
+                    (
+                        mon
+                        for mon in search
+                        if str(getattr(mon, "unique_id", "")) == str(fusion_id)
+                    ),
+                    None,
+                )
+            if not fused and fusion_species:
+                fused = next(
+                    (
+                        mon
+                        for mon in search
+                        if getattr(getattr(mon, "species", None), "name", getattr(mon, "species", None))
+                        == fusion_species
+                    ),
+                    None,
+                )
             if fused:
+                fusion_id = fusion_id or getattr(fused, "unique_id", None)
+                if not fusion_species:
+                    fusion_species = getattr(
+                        getattr(fused, "species", None), "name", getattr(fused, "species", None)
+                    )
                 if not stats:
                     stats = getattr(fused, "_cached_stats", {}) or {}
                 if hp_val is None:
@@ -124,6 +141,9 @@ class CmdSheetPokemon(Command):
                 level=getattr(caller.db, "level", None),
                 hp=hp_val or 0,
             )
+            if fusion_id is not None:
+                setattr(fusion_mon, "unique_id", fusion_id)
+                setattr(fusion_mon, "id", fusion_id)
             if fused:
                 for attr in ("activemoveslot_set", "pp_bonuses", "moves", "ivs", "evs"):
                     if hasattr(fused, attr):

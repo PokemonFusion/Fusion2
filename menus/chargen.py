@@ -552,6 +552,7 @@ def finish_fusion(caller, raw_string):
                     5,
                 )
                 record_fusion(fused, trainer, fused, permanent=True)
+                caller.db.fusion_id = getattr(fused, "unique_id", None)
         except Exception:  # pragma: no cover - defensive
             fused = None
     caller.db.fusion_ability = data.get("ability")

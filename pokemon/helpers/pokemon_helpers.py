@@ -13,6 +13,26 @@ from pokemon.services.move_management import learn_level_up_moves
 from pokemon.utils.boosts import STAT_KEY_MAP
 
 
+def _resolve_pokemon(pokemon):
+        """Return a Pokémon model when given an identifier.
+
+        Many helpers in this module accept either an :class:`OwnedPokemon`
+        instance or its unique identifier.  This small utility attempts to
+        resolve identifiers to model instances while gracefully handling
+        missing database dependencies.  If resolution fails, ``pokemon`` is
+        returned unchanged or ``None``.
+        """
+
+        if isinstance(pokemon, (str, bytes)):
+                try:  # pragma: no cover - database access optional in tests
+                        from pokemon.models.core import OwnedPokemon
+
+                        return OwnedPokemon.objects.filter(unique_id=pokemon).first()
+                except Exception:  # pragma: no cover - fallback when models unavailable
+                        return None
+        return pokemon
+
+
 def calculate_stats(species, level, ivs, evs, nature):
         """Return calculated stats, falling back to generated data if needed."""
 
@@ -34,6 +54,10 @@ def calculate_stats(species, level, ivs, evs, nature):
 
 def _calculate_from_data(pokemon):
         """Return freshly calculated stats based on stored attributes."""
+
+        pokemon = _resolve_pokemon(pokemon)
+        if pokemon is None:
+                return {}
 
         ivs_attr = getattr(pokemon, "ivs", [0, 0, 0, 0, 0, 0])
         evs_attr = getattr(pokemon, "evs", [0, 0, 0, 0, 0, 0])
@@ -68,14 +92,18 @@ def _calculate_from_data(pokemon):
 
 
 def _get_stats_from_data(pokemon):
-	"""Return cached calculated stats based on stored attributes."""
+        """Return cached calculated stats based on stored attributes."""
 
-	cache = getattr(pokemon, "_cached_stats", None)
-	if cache is not None:
-		return cache
-	stats = _calculate_from_data(pokemon)
-	setattr(pokemon, "_cached_stats", stats)
-	return stats
+        pokemon = _resolve_pokemon(pokemon)
+        if pokemon is None:
+                return {}
+
+        cache = getattr(pokemon, "_cached_stats", None)
+        if cache is not None:
+                return cache
+        stats = _calculate_from_data(pokemon)
+        setattr(pokemon, "_cached_stats", stats)
+        return stats
 
 
 def refresh_stats(pokemon):
