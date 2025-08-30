@@ -445,6 +445,7 @@ def starter_gender(caller, raw_string, **kwargs):
 
 
 def starter_confirm(caller, raw_string, **kwargs):
+    """Confirm the player's starter Pokémon selection."""
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
     if kwargs.get("gender"):
@@ -461,13 +462,13 @@ def starter_confirm(caller, raw_string, **kwargs):
         caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
         return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
 
-        text = (
-            f"You chose {caller.ndb.chargen['species']} "
-            f"({caller.ndb.chargen['starter_gender']}) "
-            f"with ability {caller.ndb.chargen['ability']} "
-            f"and nature {caller.ndb.chargen['nature']} as your starter.\n"
-            "Proceed? (Y/N)"
-        )
+    text = (
+        f"You chose {caller.ndb.chargen['species']} "
+        f"({caller.ndb.chargen['starter_gender']}) "
+        f"with ability {caller.ndb.chargen['ability']} "
+        f"and nature {caller.ndb.chargen['nature']} as your starter.\n"
+        "Proceed? (Y/N)"
+    )
     options = (
         {"key": ("Y", "y"), "desc": "Yes", "goto": "finish_human"},
         {"key": ("N", "n"), "desc": "No", "goto": "starter_species"},
@@ -509,19 +510,20 @@ def fusion_confirm(caller, raw_string, **kwargs):
 
 
 def finish_human(caller, raw_string):
+    """Create the chosen starter Pokémon and finish human character creation."""
     data = caller.ndb.chargen or {}
     key = data.get("species_key")
     if not key:
         caller.msg("Error: No starter selected.")
         return None, None
 
-        pk = _create_starter(
-            caller,
-            key,
-            data.get("ability"),
-            data.get("starter_gender"),
-            data.get("nature"),
-        )
+    pk = _create_starter(
+        caller,
+        key,
+        data.get("ability"),
+        data.get("starter_gender"),
+        data.get("nature"),
+    )
     if not pk:
         caller.msg("Starter creation failed. Please try again.")
         return None, None
