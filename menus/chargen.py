@@ -387,6 +387,8 @@ def starter_nature(caller, raw_string, **kwargs):
 
 
 def starter_gender(caller, raw_string, **kwargs):
+    """Prompt for the starter Pokémon's gender."""
+
     entry = raw_string.strip().lower()
     if entry in ABORT_INPUTS:
         return node_abort(caller)
@@ -411,6 +413,7 @@ def starter_gender(caller, raw_string, **kwargs):
             {
                 "key": (gender, gender.lower()),
                 "desc": desc,
+                "exec": lambda cb, g=gender: cb.ndb.chargen.__setitem__("starter_gender", g),
                 "goto": ("starter_confirm", {"gender": gender}),
             }
         )
@@ -421,6 +424,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 {
                     "key": ("M", "m"),
                     "desc": "Male",
+                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "M"),
                     "goto": ("starter_confirm", {"gender": "M"}),
                 }
             )
@@ -429,6 +433,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 {
                     "key": ("F", "f"),
                     "desc": "Female",
+                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "F"),
                     "goto": ("starter_confirm", {"gender": "F"}),
                 }
             )
@@ -437,6 +442,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 {
                     "key": ("N", "n"),
                     "desc": "Genderless",
+                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "N"),
                     "goto": ("starter_confirm", {"gender": "N"}),
                 }
             )
@@ -463,7 +469,17 @@ def starter_confirm(caller, raw_string, **kwargs):
     gender = data.get("starter_gender")
 
     if not all([species, ability, nature, gender]):
-        caller.msg("Starter information incomplete. Please choose again.")
+        missing = [
+            name
+            for name, val in (
+                ("species", species),
+                ("ability", ability),
+                ("nature", nature),
+                ("gender", gender),
+            )
+            if not val
+        ]
+        caller.msg(f"|rStarter information incomplete|n ({', '.join(missing)} missing). " "Please choose again.")
         return starter_species(caller, "", type=data.get("favored_type"))
 
     low = species.lower()
