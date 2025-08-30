@@ -425,11 +425,12 @@ def starter_gender(caller, raw_string, **kwargs):
     ratio = getattr(data, "gender_ratio", None)
     gender = getattr(data, "gender", None)
 
-    text = "Choose your starter's gender:"
     options: list[dict] = []
+    valid: list[str] = []
 
     if gender in ("M", "F", "N"):
         desc = {"M": "Male", "F": "Female", "N": "Genderless"}[gender]
+        valid.append(gender)
         options.append(
             {
                 "key": (gender, gender.lower()),
@@ -441,6 +442,7 @@ def starter_gender(caller, raw_string, **kwargs):
     else:
         m, f = (ratio.M, ratio.F) if ratio else (0.5, 0.5)
         if m > 0:
+            valid.append("M")
             options.append(
                 {
                     "key": ("M", "m"),
@@ -450,6 +452,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 }
             )
         if f > 0:
+            valid.append("F")
             options.append(
                 {
                     "key": ("F", "f"),
@@ -459,6 +462,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 }
             )
         if m == 0 and f == 0:
+            valid.append("N")
             options.append(
                 {
                     "key": ("N", "n"),
@@ -467,6 +471,10 @@ def starter_gender(caller, raw_string, **kwargs):
                     "goto": ("starter_confirm", {"gender": "N"}),
                 }
             )
+
+    labels = {"M": "(M)ale", "F": "(F)emale", "N": "(N) Genderless"}
+    choice_text = " or ".join(labels[v] for v in valid)
+    text = f"Choose your starter's gender: {choice_text}"
 
     options += [
         ABORT_OPTION,
