@@ -76,10 +76,24 @@ def format_columns(items, columns=4, indent=2):
     return "\n".join(lines)
 
 
+def _normalize_species_key(maybe_key: str) -> str:
+    """
+    Resolve any user or display name into the canonical POKEDEX key.
+    Falls back to the input so we can surface a helpful error if needed.
+    """
+    if not maybe_key:
+        return ""
+    return POKEMON_KEY_LOOKUP.get(maybe_key.lower(), maybe_key)
+
+
 def _generate_instance(species_key: str, level: int):
-    """Return a generated Pokémon instance or ``None`` if invalid."""
+    """Return a generated Pokémon instance or ``None`` if invalid, after normalization."""
+    key = _normalize_species_key(species_key)
+    # Extra guard: if it's not in POKEDEX, bail early with a clear signal
+    if key not in POKEDEX:
+        return None
     try:
-        return generate_pokemon(species_key, level=level)
+        return generate_pokemon(key, level=level)
     except ValueError:
         return None
 
@@ -129,9 +143,10 @@ def _create_starter(
     level: int = 5,
 ):
     """Instantiate and store a starter Pokémon for the player."""
-    instance = _generate_instance(species_key, level)
+    normalized = _normalize_species_key(species_key)
+    instance = _generate_instance(normalized, level)
     if not instance:
-        char.msg("That species does not exist.")
+        char.msg(f'|rThat species does not exist|n (input="{species_key}", normalized="{normalized}").')
         return None
 
     pokemon = _build_owned_pokemon(char, instance, ability, gender, nature, level)
