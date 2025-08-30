@@ -82,4 +82,13 @@ class CmdFixFusion(Command):
         except Exception as err:  # pragma: no cover - defensive
             self.caller.msg(f"Error: {err}")
             return
-        self.caller.msg(f"Recorded fusion for {target.key}.")
+
+        fid = getattr(fused, "unique_id", None)
+        target.db.fusion_id = fid
+        if not getattr(target.db, "fusion_species", None):
+            target.db.fusion_species = getattr(
+                getattr(fused, "species", None), "name", None
+            )
+        self.caller.msg(
+            f"Recorded fusion for {target.key}; stored fusion ID {fid}."
+        )
