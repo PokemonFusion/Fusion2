@@ -446,32 +446,45 @@ def starter_gender(caller, raw_string, **kwargs):
 
 def starter_confirm(caller, raw_string, **kwargs):
     """Confirm the player's starter Pokémon selection."""
-    if kwargs.get("ability"):
-        caller.ndb.chargen["ability"] = kwargs["ability"]
-    if kwargs.get("gender"):
-        caller.ndb.chargen["starter_gender"] = kwargs["gender"]
+    data = caller.ndb.chargen or {}
 
-    species = caller.ndb.chargen["species"]
+    if kwargs.get("ability"):
+        data["ability"] = kwargs["ability"]
+    if kwargs.get("gender"):
+        data["starter_gender"] = kwargs["gender"]
+
+    species = data.get("species")
+    ability = data.get("ability")
+    nature = data.get("nature")
+    gender = data.get("starter_gender")
+
+    if not all([species, ability, nature, gender]):
+        caller.msg("Starter information incomplete. Please choose again.")
+        return starter_species(caller, "", type=data.get("favored_type"))
+
     low = species.lower()
     if low in ABORT_INPUTS:
         return node_abort(caller)
     if low in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
+        return starter_species(caller, "", type=data.get("favored_type"))
     if low not in STARTER_NAMES:
         caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
+        return starter_species(caller, "", type=data.get("favored_type"))
 
     text = (
-        f"You chose {caller.ndb.chargen['species']} "
-        f"({caller.ndb.chargen['starter_gender']}) "
-        f"with ability {caller.ndb.chargen['ability']} "
-        f"and nature {caller.ndb.chargen['nature']} as your starter.\n"
+        f"You chose {species} "
+        f"({gender}) with ability {ability} "
+        f"and nature {nature} as your starter.\n"
         "Proceed? (Y/N)"
     )
     options = (
         {"key": ("Y", "y"), "desc": "Yes", "goto": "finish_human"},
-        {"key": ("N", "n"), "desc": "No", "goto": "starter_species"},
+        {
+            "key": ("N", "n"),
+            "desc": "No",
+            "goto": ("starter_species", {"type": data.get("favored_type")}),
+        },
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
