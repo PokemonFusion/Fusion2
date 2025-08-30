@@ -353,40 +353,28 @@ def starter_ability(caller, raw_string, **kwargs):
         lines.append(f"  H: {abilities['H']}")
     text = "\n".join(lines)
 
-    opts = []
-    for k in numeric_keys:
-        opts.append(
-            {
-                "key": str(int(k) + 1),
-                "desc": f"{abilities[k]}",
-                "exec": lambda cb, k=k: cb.ndb.chargen.__setitem__("ability", abilities[k]),
-                "goto": "starter_nature",
-            }
-        )
+    mapping: dict[str, str] = {str(int(k) + 1): abilities[k] for k in numeric_keys}
     if "H" in abilities:
-        opts.append(
-            {
-                "key": "H",
-                "desc": f"{abilities['H']}",
-                "exec": lambda cb: cb.ndb.chargen.__setitem__("ability", abilities["H"]),
-                "goto": "starter_nature",
-            }
-        )
+        mapping.update({"H": abilities["H"], "h": abilities["H"]})
 
-    opts.append(ABORT_OPTION)
-    opts.append(
-        {
-            "key": "_default",
-            "exec": lambda cb: (_invalid(cb), cb.msg("|rInvalid choice.|n Pick |w1|n, |w2|n… or |wH|n.")),
-            "goto": "_repeat",
-        }
-    )
+    def _pick_ability(caller, raw, **k):
+        choice = mapping.get((raw or "").strip())
+        if not choice:
+            _invalid(caller)
+            caller.msg("|rInvalid ability.|n Pick |w1|n, |w2|n… or |wH|n.")
+            return "starter_ability", k
+        k = dict(k)
+        k["ability"] = choice
+        return "starter_nature", k
 
-    return text, tuple(opts)
+    options = [ABORT_OPTION, {"key": "_default", "exec": _pick_ability}]
+    return text, tuple(options)
 
 
 def starter_nature(caller, raw_string, **kwargs):
     """Prompt for starter nature."""
+    if kwargs.get("ability"):
+        caller.ndb.chargen["ability"] = kwargs["ability"]
     text = "Choose your starter's nature:\n" + format_columns(NATURE_NAMES, columns=5) + "\n"
     options = (
         ABORT_OPTION,
