@@ -50,8 +50,11 @@ TYPES = [
 NATURE_NAMES = list(NATURES_MAP.keys())
 NATURE_LOOKUP = {n.lower(): n for n in NATURE_NAMES}
 
-# Starter‐specific lookup (name/key → key)
+# Starter sets
+# - STARTER_LOOKUP is assumed to map lowercased names/aliases → canonical key
+# - We keep its key set for help text, and also precompute the *canonical key* set
 STARTER_NAMES = set(STARTER_LOOKUP.keys())
+STARTER_KEY_SET = set(STARTER_LOOKUP.values())
 
 ABORT_INPUTS = {"abort", ".abort", "q", "quit", "exit"}
 ABORT_OPTION = {"key": ("q", "quit", "exit"), "desc": "Abort", "goto": "node_abort"}
@@ -62,6 +65,7 @@ ABORT_OPTION = {"key": ("q", "quit", "exit"), "desc": "Abort", "goto": "node_abo
 
 def _invalid(caller):
     """Notify caller of invalid input."""
+    # Use our shared, width-safe message from enhanced_evmenu for consistency
     caller.msg(INVALID_INPUT_MSG)
 
 
@@ -334,14 +338,18 @@ def _handle_starter_species_input(caller, raw_input, **kwargs):
             "starter_species",
             {"type": caller.ndb.chargen.get("favored_type")},
         )
-    key = STARTER_LOOKUP.get(entry)
+    # First, resolve whatever the player typed (display name or key) to a canonical dex key
+    key = POKEMON_KEY_LOOKUP.get(entry)
+    # If that fails, fall back to any alias in STARTER_LOOKUP (covers custom starter aliases)
     if not key:
+        key = STARTER_LOOKUP.get(entry)
+
+    # Must be a real Pokémon and also be allowed as a starter
+    if not key or key not in POKEDEX or key not in STARTER_KEY_SET:
         _invalid(caller)
-        caller.msg("|rInvalid species.|n Use |wstarterlist|n or |wpokemonlist|n.")
-        return (
-            "starter_species",
-            {"type": caller.ndb.chargen.get("favored_type")},
-        )
+        caller.msg("|rInvalid starter species.|n Use |wstarterlist|n or |wpokemonlist|n.")
+        return ("starter_species", {"type": caller.ndb.chargen.get("favored_type")})
+
     caller.ndb.chargen["species_key"] = key
     caller.ndb.chargen["species"] = POKEDEX[key].raw.get("name", key)
     return "starter_ability", {}
@@ -492,18 +500,17 @@ def starter_confirm(caller, raw_string, **kwargs):
             )
             if not val
         ]
-        caller.msg(f"|rStarter information incomplete|n ({', '.join(missing)} missing). " "Please choose again.")
+        caller.msg(f"|rStarter information incomplete|n ({', '.join(missing)} missing). Please choose again.")
         return starter_species(caller, "", type=data.get("favored_type"))
 
-    low = species.lower()
-    if low in ABORT_INPUTS:
+    if species and species.lower() in ABORT_INPUTS:
         return node_abort(caller)
-    if low in ("starterlist", "starters", "pokemonlist"):
+    if species and species.lower() in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
         return starter_species(caller, "", type=data.get("favored_type"))
-    if low not in STARTER_NAMES:
-        _invalid(caller)
-        caller.msg("|rInvalid species.|n Use |wstarterlist|n or |wpokemonlist|n.")
+    # Validate using the canonical key to avoid display-name vs key mismatches
+    if data.get("species_key") not in STARTER_KEY_SET:
+        caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
         return starter_species(caller, "", type=data.get("favored_type"))
 
     text = (
