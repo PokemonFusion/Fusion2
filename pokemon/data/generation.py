@@ -295,7 +295,7 @@ def generate_pokemon(
 
     rng = random.Random(seed)
 
-    species = POKEDEX.get(species_name.lower())
+    species = POKEDEX.get(species_name)
     if not species:
         try:
             species = POKEDEX_BY_NUM.get(int(species_name))
