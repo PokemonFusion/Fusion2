@@ -268,30 +268,39 @@ def _handle_fusion_species_input(caller, raw_input, **kwargs):
 
 def fusion_ability(caller, raw_string, **kwargs):
     """Display ability options for the chosen fusion species."""
-    mon = POKEDEX[caller.ndb.chargen["species_key"]]
-    raw_abs = mon.raw.get("abilities", {}) or {}
-    ab_list = []
-    for a in raw_abs.values():
-        name = a.name if hasattr(a, "name") else a
-        if name not in ab_list:
-            ab_list.append(name)
-    if len(ab_list) <= 1:
-        caller.ndb.chargen["ability"] = ab_list[0] if ab_list else ""
-        return fusion_nature(caller, "")
-    text = "Choose your fusion's ability:\n" + format_columns(ab_list) + "\n"
-    base_opts = tuple(
-        {
-            "key": ab.lower(),
-            "desc": ab,
-            "goto": ("fusion_nature", {"ability": ab}),
-        }
-        for ab in ab_list
-    )
-    options = base_opts + (
-        ABORT_OPTION,
-        {"key": "_default", "goto": "_repeat", "exec": _invalid},
-    )
-    return text, options
+    key = caller.ndb.chargen.get("species_key")
+    if not key:
+        caller.msg("|rInvalid state.|n Choose a species first.")
+        return "fusion_species"
+
+    mon = POKEDEX[key]
+    abilities = mon.raw.get("abilities", {}) or {}
+
+    numeric_keys = sorted(k for k in abilities if k.isdigit())
+
+    lines = ["Choose one of the following abilities:"]
+    for k in numeric_keys:
+        lines.append(f"  {int(k) + 1}: {abilities[k]}")
+    if "H" in abilities:
+        lines.append(f"  H: {abilities['H']}")
+    text = "\n".join(lines)
+
+    mapping: dict[str, str] = {str(int(k) + 1): abilities[k] for k in numeric_keys}
+    if "H" in abilities:
+        mapping.update({"H": abilities["H"], "h": abilities["H"]})
+
+    def _pick_ability(caller, raw, **k):
+        choice = mapping.get((raw or "").strip())
+        if not choice:
+            _invalid(caller)
+            caller.msg("|rInvalid ability.|n Pick |w1|n, |w2|n… or |wH|n.")
+            return "fusion_ability", k
+        k = dict(k)
+        k["ability"] = choice
+        return "fusion_nature", k
+
+    options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
+    return text, tuple(options)
 
 
 def fusion_nature(caller, raw_string, **kwargs):
@@ -608,11 +617,12 @@ def finish_fusion(caller, raw_string):
         try:
             instance = _generate_instance(species_key, 5)
             if instance:
+                gender_letter = (data.get("player_gender") or "N")[0].upper()
                 fused = _build_owned_pokemon(
                     caller,
                     instance,
                     data.get("ability"),
-                    data.get("player_gender"),
+                    gender_letter,
                     data.get("nature"),
                     5,
                 )
