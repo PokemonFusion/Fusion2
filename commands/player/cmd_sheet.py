@@ -132,13 +132,21 @@ class CmdSheetPokemon(Command):
                 hp_val = stats.get("hp", 0)
             if stats.get("hp") is None:
                 stats["hp"] = hp_val
+            level_val = getattr(caller.db, "level", None)
+            exp_val = getattr(caller.db, "total_exp", None)
+            if fused:
+                if level_val is None:
+                    level_val = getattr(fused, "level", None)
+                if exp_val is None:
+                    exp_val = getattr(fused, "total_exp", None)
             fusion_mon = SimpleNamespace(
                 name=fusion_species,
                 species=fusion_species,
                 ability=getattr(caller.db, "fusion_ability", None),
                 nature=getattr(caller.db, "fusion_nature", None),
                 gender=getattr(caller.db, "gender", "?"),
-                level=getattr(caller.db, "level", None),
+                level=level_val,
+                total_exp=exp_val,
                 hp=hp_val or 0,
             )
             if fusion_id is not None:
