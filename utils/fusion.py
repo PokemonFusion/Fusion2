@@ -20,8 +20,12 @@ def record_fusion(result: Any, trainer: Any, pokemon: Any, permanent: bool = Fal
     pokemon
         The original Pokémon fused with the trainer.  Kept for API compatibility.
     permanent
-        Whether the fusion is permanent (unused).
+        Whether the fusion is permanent. Permanent fusions level using the
+        special ``"fusion"`` growth rate.
     """
+
+    if permanent:
+        setattr(result, "growth_rate", "fusion")
 
     storage = getattr(getattr(trainer, "user", None), "storage", None)
     if storage and not getattr(result, "in_party", False):
