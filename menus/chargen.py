@@ -13,6 +13,7 @@ from pokemon.data.starters import STARTER_LOOKUP, get_starter_names
 from pokemon.dex import POKEDEX
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from pokemon.models.storage import ensure_boxes
+from utils.enhanced_evmenu import INVALID_INPUT_MSG
 from utils.fusion import record_fusion
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
@@ -49,8 +50,11 @@ TYPES = [
 NATURE_NAMES = list(NATURES_MAP.keys())
 NATURE_LOOKUP = {n.lower(): n for n in NATURE_NAMES}
 
-# Starter‐specific lookup (name/key → key)
+# Starter sets
+# - STARTER_LOOKUP is assumed to map lowercased names/aliases → canonical key
+# - We keep its key set for help text, and also precompute the *canonical key* set
 STARTER_NAMES = set(STARTER_LOOKUP.keys())
+STARTER_KEY_SET = set(STARTER_LOOKUP.values())
 
 ABORT_INPUTS = {"abort", ".abort", "q", "quit", "exit"}
 ABORT_OPTION = {"key": ("q", "quit", "exit"), "desc": "Abort", "goto": "node_abort"}
@@ -61,7 +65,8 @@ ABORT_OPTION = {"key": ("q", "quit", "exit"), "desc": "Abort", "goto": "node_abo
 
 def _invalid(caller):
     """Notify caller of invalid input."""
-    caller.msg("Invalid entry.\nTry again.")
+    # Use our shared, width-safe message from enhanced_evmenu for consistency
+    caller.msg(INVALID_INPUT_MSG)
 
 
 def format_columns(items, columns=4, indent=2):
@@ -75,10 +80,24 @@ def format_columns(items, columns=4, indent=2):
     return "\n".join(lines)
 
 
+def _normalize_species_key(maybe_key: str) -> str:
+    """
+    Resolve any user or display name into the canonical POKEDEX key.
+    Falls back to the input so we can surface a helpful error if needed.
+    """
+    if not maybe_key:
+        return ""
+    return POKEMON_KEY_LOOKUP.get(maybe_key.lower(), maybe_key)
+
+
 def _generate_instance(species_key: str, level: int):
-    """Return a generated Pokémon instance or ``None`` if invalid."""
+    """Return a generated Pokémon instance or ``None`` if invalid, after normalization."""
+    key = _normalize_species_key(species_key)
+    # Extra guard: if it's not in POKEDEX, bail early with a clear signal
+    if key not in POKEDEX:
+        return None
     try:
-        return generate_pokemon(species_key, level=level)
+        return generate_pokemon(key, level=level)
     except ValueError:
         return None
 
@@ -128,9 +147,10 @@ def _create_starter(
     level: int = 5,
 ):
     """Instantiate and store a starter Pokémon for the player."""
-    instance = _generate_instance(species_key, level)
+    normalized = _normalize_species_key(species_key)
+    instance = _generate_instance(normalized, level)
     if not instance:
-        char.msg("That species does not exist.")
+        char.msg(f'|rThat species does not exist|n (input="{species_key}", normalized="{normalized}").')
         return None
 
     pokemon = _build_owned_pokemon(char, instance, ability, gender, nature, level)
@@ -221,62 +241,66 @@ def human_type(caller, raw_string, **kwargs):
 
 
 def fusion_species(caller, raw_string, **kwargs):
-    caller.ndb.chargen["player_gender"] = kwargs.get("gender")
+    """Prompt for the player's fusion species."""
+    if "gender" in kwargs:
+        caller.ndb.chargen["player_gender"] = kwargs["gender"]
     text = "Enter the species for your fusion:"
     options = (
-        {"key": "_default", "goto": "fusion_ability"},
+        {"key": "_default", "goto": _handle_fusion_species_input},
         ABORT_OPTION,
     )
     return text, options
 
 
-def fusion_ability(caller, raw_string, **kwargs):
-    """Accept either raw key or display name here."""
-    entry = raw_string.strip()
+def _handle_fusion_species_input(caller, raw_input, **kwargs):
+    """Validate fusion species input and route to ability selection."""
+    entry = (raw_input or "").strip()
     if entry.lower() in ABORT_INPUTS:
         return node_abort(caller)
-
-    # Lookup via our universal mapping
     key = POKEMON_KEY_LOOKUP.get(entry.lower())
     if not key:
-        caller.msg("Unknown species.\nTry again.")
-        return fusion_species(caller, "")
+        caller.msg("|rInvalid species.|n Try again.")
+        return "fusion_species"
+    mon = POKEDEX[key]
+    caller.ndb.chargen.update({"species_key": key, "species": mon.raw.get("name", mon.name)})
+    return "fusion_ability"
+
+
+def fusion_ability(caller, raw_string, **kwargs):
+    """Display ability options for the chosen fusion species."""
+    key = caller.ndb.chargen.get("species_key")
+    if not key:
+        caller.msg("|rInvalid state.|n Choose a species first.")
+        return "fusion_species"
 
     mon = POKEDEX[key]
-    caller.ndb.chargen.update(
-        {
-            "species_key": key,
-            "species": mon.raw.get("name", mon.name),
-        }
-    )
+    abilities = mon.raw.get("abilities", {}) or {}
 
-    # Gather unique abilities
-    raw_abs = mon.raw.get("abilities", {}) or {}
-    ab_list = []
-    for a in raw_abs.values():
-        name = a.name if hasattr(a, "name") else a
-        if name not in ab_list:
-            ab_list.append(name)
+    numeric_keys = sorted(k for k in abilities if k.isdigit())
 
-        # Skip to nature selection if only one
-        if len(ab_list) <= 1:
-            caller.ndb.chargen["ability"] = ab_list[0] if ab_list else ""
-            return fusion_nature(caller, "")
+    lines = ["Choose one of the following abilities:"]
+    for k in numeric_keys:
+        lines.append(f"  {int(k) + 1}: {abilities[k]}")
+    if "H" in abilities:
+        lines.append(f"  H: {abilities['H']}")
+    text = "\n".join(lines)
 
-        text = "Choose your fusion's ability:\n" + format_columns(ab_list) + "\n"
-        base_opts = tuple(
-            {
-                "key": ab.lower(),
-                "desc": ab,
-                "goto": ("fusion_nature", {"ability": ab}),
-            }
-            for ab in ab_list
-        )
-        options = base_opts + (
-            ABORT_OPTION,
-            {"key": "_default", "goto": "_repeat", "exec": _invalid},
-        )
-        return text, options
+    mapping: dict[str, str] = {str(int(k) + 1): abilities[k] for k in numeric_keys}
+    if "H" in abilities:
+        mapping.update({"H": abilities["H"], "h": abilities["H"]})
+
+    def _pick_ability(caller, raw, **k):
+        choice = mapping.get((raw or "").strip())
+        if not choice:
+            _invalid(caller)
+            caller.msg("|rInvalid ability.|n Pick |w1|n, |w2|n… or |wH|n.")
+            return "fusion_ability", k
+        k = dict(k)
+        k["ability"] = choice
+        return "fusion_nature", k
+
+    options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
+    return text, tuple(options)
 
 
 def fusion_nature(caller, raw_string, **kwargs):
@@ -292,42 +316,63 @@ def fusion_nature(caller, raw_string, **kwargs):
 
 
 def starter_species(caller, raw_string, **kwargs):
-    caller.ndb.chargen["favored_type"] = kwargs.get("type")
+    """Prompt for starter Pokémon species."""
+    if "type" in kwargs:
+        caller.ndb.chargen["favored_type"] = kwargs["type"]
 
-    text = "Enter the species for your starter Pokémon\n(use 'starterlist' or 'pokemonlist' to view valid options):"
+    text = "Enter the species for your starter Pokémon\n" "(use 'starterlist' or 'pokemonlist' to view valid options):"
     options = [
         {
             "key": ("starterlist", "starters", "pokemonlist"),
             "exec": lambda cb: cb.msg("Starter Pokémon:\n" + ", ".join(get_starter_names())),
-            "goto": ("starter_species", {"type": caller.ndb.chargen["favored_type"]}),
+            "goto": (
+                "starter_species",
+                {"type": caller.ndb.chargen["favored_type"]},
+            ),
         },
         ABORT_OPTION,
-        {
-            "key": "_default",
-            "goto": "starter_ability",
-        },
+        {"key": "_default", "goto": _handle_starter_species_input},
     ]
     return text, tuple(options)
 
 
-def starter_ability(caller, raw_string, **kwargs):
-    entry = raw_string.strip().lower()
-
+def _handle_starter_species_input(caller, raw_input, **kwargs):
+    """Validate starter species input and show ability options."""
+    entry = (raw_input or "").strip().lower()
     if entry in ABORT_INPUTS:
         return node_abort(caller)
-
     if entry in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
-
-    key = STARTER_LOOKUP.get(entry)
+        return (
+            "starter_species",
+            {"type": caller.ndb.chargen.get("favored_type")},
+        )
+    # First, resolve whatever the player typed (display name or key) to a canonical dex key
+    key = POKEMON_KEY_LOOKUP.get(entry)
+    # If that fails, fall back to any alias in STARTER_LOOKUP (covers custom starter aliases)
     if not key:
-        caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
+        key = STARTER_LOOKUP.get(entry)
 
-    # Valid species
+    # Must be a real Pokémon and also be allowed as a starter
+    if not key or key not in POKEDEX or key not in STARTER_KEY_SET:
+        _invalid(caller)
+        caller.msg("|rInvalid starter species.|n Use |wstarterlist|n or |wpokemonlist|n.")
+        return ("starter_species", {"type": caller.ndb.chargen.get("favored_type")})
+
     caller.ndb.chargen["species_key"] = key
     caller.ndb.chargen["species"] = POKEDEX[key].raw.get("name", key)
+    return "starter_ability", {}
+
+
+def starter_ability(caller, raw_string, **kwargs):
+    """Display ability options for the chosen starter species."""
+    key = caller.ndb.chargen.get("species_key")
+    if not key:
+        caller.msg("|rInvalid state.|n Choose a species first.")
+        return (
+            "starter_species",
+            {"type": caller.ndb.chargen.get("favored_type")},
+        )
 
     mon = POKEDEX[key]
     abilities = mon.raw.get("abilities", {}) or {}
@@ -341,40 +386,28 @@ def starter_ability(caller, raw_string, **kwargs):
         lines.append(f"  H: {abilities['H']}")
     text = "\n".join(lines)
 
-    opts = []
-    for k in numeric_keys:
-        opts.append(
-            {
-                "key": str(int(k) + 1),
-                "desc": f"{abilities[k]}",
-                "exec": lambda cb, k=k: cb.ndb.chargen.__setitem__("ability", abilities[k]),
-                "goto": "starter_nature",
-            }
-        )
+    mapping: dict[str, str] = {str(int(k) + 1): abilities[k] for k in numeric_keys}
     if "H" in abilities:
-        opts.append(
-            {
-                "key": "H",
-                "desc": f"{abilities['H']}",
-                "exec": lambda cb: cb.ndb.chargen.__setitem__("ability", abilities["H"]),
-                "goto": "starter_nature",
-            }
-        )
+        mapping.update({"H": abilities["H"], "h": abilities["H"]})
 
-    opts.append(ABORT_OPTION)
-    opts.append(
-        {
-            "key": "_default",
-            "exec": lambda cb: cb.msg("Invalid choice. Please pick 1, 2… or H."),
-            "goto": "_repeat",
-        }
-    )
+    def _pick_ability(caller, raw, **k):
+        choice = mapping.get((raw or "").strip())
+        if not choice:
+            _invalid(caller)
+            caller.msg("|rInvalid ability.|n Pick |w1|n, |w2|n… or |wH|n.")
+            return "starter_ability", k
+        k = dict(k)
+        k["ability"] = choice
+        return "starter_nature", k
 
-    return text, tuple(opts)
+    options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
+    return text, tuple(options)
 
 
 def starter_nature(caller, raw_string, **kwargs):
     """Prompt for starter nature."""
+    if kwargs.get("ability"):
+        caller.ndb.chargen["ability"] = kwargs["ability"]
     text = "Choose your starter's nature:\n" + format_columns(NATURE_NAMES, columns=5) + "\n"
     options = (
         ABORT_OPTION,
@@ -384,12 +417,15 @@ def starter_nature(caller, raw_string, **kwargs):
 
 
 def starter_gender(caller, raw_string, **kwargs):
+    """Prompt for the starter Pokémon's gender."""
+
     entry = raw_string.strip().lower()
     if entry in ABORT_INPUTS:
         return node_abort(caller)
     nature = NATURE_LOOKUP.get(entry)
     if not nature:
-        caller.msg("Invalid nature.\nTry again.")
+        _invalid(caller)
+        caller.msg("|rInvalid nature.|n Try again.")
         return starter_nature(caller, "")
     caller.ndb.chargen["nature"] = nature
 
@@ -398,44 +434,56 @@ def starter_gender(caller, raw_string, **kwargs):
     ratio = getattr(data, "gender_ratio", None)
     gender = getattr(data, "gender", None)
 
-    text = "Choose your starter's gender:"
     options: list[dict] = []
+    valid: list[str] = []
 
     if gender in ("M", "F", "N"):
         desc = {"M": "Male", "F": "Female", "N": "Genderless"}[gender]
+        valid.append(gender)
         options.append(
             {
                 "key": (gender, gender.lower()),
                 "desc": desc,
+                "exec": lambda cb, g=gender: cb.ndb.chargen.__setitem__("starter_gender", g),
                 "goto": ("starter_confirm", {"gender": gender}),
             }
         )
     else:
         m, f = (ratio.M, ratio.F) if ratio else (0.5, 0.5)
         if m > 0:
+            valid.append("M")
             options.append(
                 {
                     "key": ("M", "m"),
                     "desc": "Male",
+                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "M"),
                     "goto": ("starter_confirm", {"gender": "M"}),
                 }
             )
         if f > 0:
+            valid.append("F")
             options.append(
                 {
                     "key": ("F", "f"),
                     "desc": "Female",
+                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "F"),
                     "goto": ("starter_confirm", {"gender": "F"}),
                 }
             )
         if m == 0 and f == 0:
+            valid.append("N")
             options.append(
                 {
                     "key": ("N", "n"),
                     "desc": "Genderless",
+                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "N"),
                     "goto": ("starter_confirm", {"gender": "N"}),
                 }
             )
+
+    labels = {"M": "(M)ale", "F": "(F)emale", "N": "(N) Genderless"}
+    choice_text = " or ".join(labels[v] for v in valid)
+    text = f"Choose your starter's gender: {choice_text}"
 
     options += [
         ABORT_OPTION,
@@ -445,32 +493,56 @@ def starter_gender(caller, raw_string, **kwargs):
 
 
 def starter_confirm(caller, raw_string, **kwargs):
+    """Confirm the player's starter Pokémon selection."""
+    data = caller.ndb.chargen or {}
+
     if kwargs.get("ability"):
-        caller.ndb.chargen["ability"] = kwargs["ability"]
+        data["ability"] = kwargs["ability"]
     if kwargs.get("gender"):
-        caller.ndb.chargen["starter_gender"] = kwargs["gender"]
+        data["starter_gender"] = kwargs["gender"]
 
-    species = caller.ndb.chargen["species"]
-    low = species.lower()
-    if low in ABORT_INPUTS:
+    species = data.get("species")
+    ability = data.get("ability")
+    nature = data.get("nature")
+    gender = data.get("starter_gender")
+
+    if not all([species, ability, nature, gender]):
+        missing = [
+            name
+            for name, val in (
+                ("species", species),
+                ("ability", ability),
+                ("nature", nature),
+                ("gender", gender),
+            )
+            if not val
+        ]
+        caller.msg(f"|rStarter information incomplete|n ({', '.join(missing)} missing). Please choose again.")
+        return starter_species(caller, "", type=data.get("favored_type"))
+
+    if species and species.lower() in ABORT_INPUTS:
         return node_abort(caller)
-    if low in ("starterlist", "starters", "pokemonlist"):
+    if species and species.lower() in ("starterlist", "starters", "pokemonlist"):
         caller.msg("Starter Pokémon:\n" + ", ".join(get_starter_names()))
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
-    if low not in STARTER_NAMES:
+        return starter_species(caller, "", type=data.get("favored_type"))
+    # Validate using the canonical key to avoid display-name vs key mismatches
+    if data.get("species_key") not in STARTER_KEY_SET:
         caller.msg("Invalid starter species.\nUse 'starterlist' or 'pokemonlist'.")
-        return starter_species(caller, "", type=caller.ndb.chargen.get("favored_type"))
+        return starter_species(caller, "", type=data.get("favored_type"))
 
-        text = (
-            f"You chose {caller.ndb.chargen['species']} "
-            f"({caller.ndb.chargen['starter_gender']}) "
-            f"with ability {caller.ndb.chargen['ability']} "
-            f"and nature {caller.ndb.chargen['nature']} as your starter.\n"
-            "Proceed? (Y/N)"
-        )
+    text = (
+        f"You chose {species} "
+        f"({gender}) with ability {ability} "
+        f"and nature {nature} as your starter.\n"
+        "Proceed? (Y/N)"
+    )
     options = (
         {"key": ("Y", "y"), "desc": "Yes", "goto": "finish_human"},
-        {"key": ("N", "n"), "desc": "No", "goto": "starter_species"},
+        {
+            "key": ("N", "n"),
+            "desc": "No",
+            "goto": ("starter_species", {"type": data.get("favored_type")}),
+        },
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
     )
@@ -487,7 +559,8 @@ def fusion_confirm(caller, raw_string, **kwargs):
             return node_abort(caller)
         nature = NATURE_LOOKUP.get(entry)
         if not nature:
-            caller.msg("Invalid nature.\nTry again.")
+            _invalid(caller)
+            caller.msg("|rInvalid nature.|n Try again.")
             return fusion_nature(caller, "")
         caller.ndb.chargen["nature"] = nature
 
@@ -509,19 +582,20 @@ def fusion_confirm(caller, raw_string, **kwargs):
 
 
 def finish_human(caller, raw_string):
+    """Create the chosen starter Pokémon and finish human character creation."""
     data = caller.ndb.chargen or {}
     key = data.get("species_key")
     if not key:
         caller.msg("Error: No starter selected.")
         return None, None
 
-        pk = _create_starter(
-            caller,
-            key,
-            data.get("ability"),
-            data.get("starter_gender"),
-            data.get("nature"),
-        )
+    pk = _create_starter(
+        caller,
+        key,
+        data.get("ability"),
+        data.get("starter_gender"),
+        data.get("nature"),
+    )
     if not pk:
         caller.msg("Starter creation failed. Please try again.")
         return None, None
@@ -543,11 +617,12 @@ def finish_fusion(caller, raw_string):
         try:
             instance = _generate_instance(species_key, 5)
             if instance:
+                gender_letter = (data.get("player_gender") or "N")[0].upper()
                 fused = _build_owned_pokemon(
                     caller,
                     instance,
                     data.get("ability"),
-                    data.get("player_gender"),
+                    gender_letter,
                     data.get("nature"),
                     5,
                 )
