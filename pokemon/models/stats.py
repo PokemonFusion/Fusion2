@@ -6,23 +6,18 @@ from typing import Dict, Mapping
 
 
 def _invalidate_stat_cache(pokemon) -> None:
-		"""Invalidate cached computed stats for ``pokemon``.
+                """Remove any manually stored stat cache on ``pokemon``.
 
-		This attempts to import the helpers module at runtime to avoid heavy
-		dependencies during tests. If available, a full ``refresh_stats`` is
-		performed; otherwise the ``_cached_stats`` attribute is cleared so the
-		next ``get_stats`` call recomputes the values.
-		"""
+                The previous implementation recomputed and cached stats whenever
+                a change occurred.  Since automatic caching has been disabled, we
+                simply drop the ``_cached_stats`` attribute if it exists so future
+                stat lookups are freshly calculated.
+                """
 
-		try:
-				from pokemon.helpers import pokemon_helpers as helpers  # type: ignore
-
-				helpers.refresh_stats(pokemon)
-		except Exception:
-				try:
-						delattr(pokemon, "_cached_stats")
-				except Exception:
-						setattr(pokemon, "_cached_stats", None)
+                try:
+                                delattr(pokemon, "_cached_stats")
+                except Exception:
+                                setattr(pokemon, "_cached_stats", None)
 
 
 from pokemon.services.move_management import learn_level_up_moves
