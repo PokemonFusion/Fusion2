@@ -3,7 +3,7 @@
 from evennia import Command
 from types import SimpleNamespace
 
-from pokemon.helpers.pokemon_helpers import get_max_hp
+from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import level_for_exp
 from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
@@ -125,7 +125,7 @@ class CmdSheetPokemon(Command):
                         getattr(fused, "species", None), "name", getattr(fused, "species", None)
                     )
                 if not stats:
-                    stats = getattr(fused, "_cached_stats", {}) or {}
+                    stats = get_stats(fused) or {}
                 if hp_val is None:
                     hp_val = getattr(fused, "hp", getattr(fused, "current_hp", None))
             if hp_val is None:
@@ -158,7 +158,9 @@ class CmdSheetPokemon(Command):
                         setattr(fusion_mon, attr, getattr(fused, attr))
                 if fused in party:
                     party[party.index(fused)] = None
-            setattr(fusion_mon, "_cached_stats", stats)
+            required = {"hp", "attack", "defense", "sp_attack", "sp_defense", "speed"}
+            if required.issubset(stats):
+                setattr(fusion_mon, "_cached_stats", stats)
             setattr(fusion_mon, "_pf2_is_fusion_slot", True)
             setattr(fusion_mon, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
             try:
