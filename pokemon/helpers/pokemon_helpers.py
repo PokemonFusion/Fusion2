@@ -1,11 +1,10 @@
 """Helper functions for working with Pokémon stats.
 
-This module exposes convenience wrappers for calculating and caching a
-Pokémon's stats.  Stats are expensive to compute, so we store the most
-recently calculated values on the object itself and only recompute when
-necessary.  ``refresh_stats`` can be used to force a recalculation when an
-event occurs that would change the numbers (level up, EV gain, species
-change, etc.).
+Historically this module cached calculated stats on the Pokémon instance to
+avoid repeated heavy calculations.  The caching mechanism proved unreliable
+and has been disabled for now.  All helpers now recompute stats on each call
+and ``refresh_stats`` simply returns freshly calculated values without storing
+them.  Support for caching can be reintroduced later if needed.
 """
 
 from pokemon.data.generation import generate_pokemon
@@ -92,7 +91,13 @@ def _calculate_from_data(pokemon):
 
 
 def _get_stats_from_data(pokemon):
-        """Return cached calculated stats based on stored attributes."""
+        """Return calculated stats based on stored attributes.
+
+        If the caller has explicitly set ``_cached_stats`` on the Pokémon,
+        those values are returned, but no new cache is created.  This keeps
+        compatibility with callers that manually seed stats while effectively
+        disabling automatic caching.
+        """
 
         pokemon = _resolve_pokemon(pokemon)
         if pokemon is None:
@@ -101,22 +106,18 @@ def _get_stats_from_data(pokemon):
         cache = getattr(pokemon, "_cached_stats", None)
         if cache is not None:
                 return cache
-        stats = _calculate_from_data(pokemon)
-        setattr(pokemon, "_cached_stats", stats)
-        return stats
+        return _calculate_from_data(pokemon)
 
 
 def refresh_stats(pokemon):
-	"""Recalculate and cache stats for ``pokemon``.
+        """Recalculate stats for ``pokemon``.
 
-	This helper should be invoked whenever something happens that would
-	alter a Pokémon's stats, such as level changes, EV gains or species
-	changes.  It returns the newly computed stats dictionary.
-	"""
+        The previous implementation updated a cached value on the Pokémon
+        instance.  With caching disabled this simply returns freshly computed
+        stats so callers can decide how to use them.
+        """
 
-	stats = _calculate_from_data(pokemon)
-	setattr(pokemon, "_cached_stats", stats)
-	return stats
+        return _calculate_from_data(pokemon)
 
 
 def get_max_hp(pokemon) -> int:
