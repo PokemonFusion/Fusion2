@@ -10,6 +10,7 @@ from typing import Dict
 from pokemon.data.generation import NATURES as NATURES_MAP
 from pokemon.data.generation import generate_pokemon
 from pokemon.data.starters import STARTER_LOOKUP, get_starter_names
+from pokemon.data.text import ABILITIES_TEXT
 from pokemon.dex import POKEDEX
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from pokemon.models.storage import ensure_boxes
@@ -78,6 +79,13 @@ def format_columns(items, columns=4, indent=2):
         padded = [str(it).ljust(col_width) for it in row]
         lines.append(" " * indent + "".join(padded).rstrip())
     return "\n".join(lines)
+
+
+def _ability_desc(name: str) -> str:
+    """Return a short description for an ability."""
+    key = name.lower().replace(" ", "").replace("-", "")
+    entry = ABILITIES_TEXT.get(key, {})
+    return entry.get("shortDesc", "No description available.")
 
 
 def _normalize_species_key(maybe_key: str) -> str:
@@ -279,11 +287,17 @@ def fusion_ability(caller, raw_string, **kwargs):
     numeric_keys = sorted(k for k in abilities if k.isdigit())
 
     lines = ["Choose one of the following abilities:"]
+    help_lines = ["Ability details:"]
     for k in numeric_keys:
-        lines.append(f"  {int(k) + 1}: {abilities[k]}")
+        name = abilities[k]
+        lines.append(f"  {int(k) + 1}: {name}")
+        help_lines.append(f"  {int(k) + 1}: {name} - {_ability_desc(name)}")
     if "H" in abilities:
-        lines.append(f"  H: {abilities['H']}")
+        name = abilities["H"]
+        lines.append(f"  H: {name}")
+        help_lines.append(f"  H: {name} - {_ability_desc(name)}")
     text = "\n".join(lines)
+    help_text = "\n".join(help_lines)
 
     mapping: dict[str, str] = {str(int(k) + 1): abilities[k] for k in numeric_keys}
     if "H" in abilities:
@@ -300,7 +314,7 @@ def fusion_ability(caller, raw_string, **kwargs):
         return "fusion_nature", k
 
     options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
-    return text, tuple(options)
+    return (text, help_text), tuple(options)
 
 
 def fusion_nature(caller, raw_string, **kwargs):
@@ -308,11 +322,21 @@ def fusion_nature(caller, raw_string, **kwargs):
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
     text = "Choose your fusion's nature:\n" + format_columns(NATURE_NAMES, columns=5) + "\n"
+    help_lines = ["Nature effects:"]
+    for name in NATURE_NAMES:
+        inc, dec = NATURES_MAP[name]
+        if inc or dec:
+            inc_text = inc.replace("_", " ").title() if inc else ""
+            dec_text = dec.replace("_", " ").title() if dec else ""
+            help_lines.append(f"{name}: +{inc_text} / -{dec_text}")
+        else:
+            help_lines.append(f"{name}: No effect.")
+    help_text = "\n".join(help_lines)
     options = (
         ABORT_OPTION,
         {"key": "_default", "goto": "fusion_confirm"},
     )
-    return text, options
+    return (text, help_text), options
 
 
 def starter_species(caller, raw_string, **kwargs):
@@ -380,11 +404,17 @@ def starter_ability(caller, raw_string, **kwargs):
     numeric_keys = sorted(k for k in abilities if k.isdigit())
 
     lines = ["Choose one of the following abilities:"]
+    help_lines = ["Ability details:"]
     for k in numeric_keys:
-        lines.append(f"  {int(k) + 1}: {abilities[k]}")
+        name = abilities[k]
+        lines.append(f"  {int(k) + 1}: {name}")
+        help_lines.append(f"  {int(k) + 1}: {name} - {_ability_desc(name)}")
     if "H" in abilities:
-        lines.append(f"  H: {abilities['H']}")
+        name = abilities["H"]
+        lines.append(f"  H: {name}")
+        help_lines.append(f"  H: {name} - {_ability_desc(name)}")
     text = "\n".join(lines)
+    help_text = "\n".join(help_lines)
 
     mapping: dict[str, str] = {str(int(k) + 1): abilities[k] for k in numeric_keys}
     if "H" in abilities:
@@ -401,7 +431,7 @@ def starter_ability(caller, raw_string, **kwargs):
         return "starter_nature", k
 
     options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
-    return text, tuple(options)
+    return (text, help_text), tuple(options)
 
 
 def starter_nature(caller, raw_string, **kwargs):
@@ -409,11 +439,21 @@ def starter_nature(caller, raw_string, **kwargs):
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
     text = "Choose your starter's nature:\n" + format_columns(NATURE_NAMES, columns=5) + "\n"
+    help_lines = ["Nature effects:"]
+    for name in NATURE_NAMES:
+        inc, dec = NATURES_MAP[name]
+        if inc or dec:
+            inc_text = inc.replace("_", " ").title() if inc else ""
+            dec_text = dec.replace("_", " ").title() if dec else ""
+            help_lines.append(f"{name}: +{inc_text} / -{dec_text}")
+        else:
+            help_lines.append(f"{name}: No effect.")
+    help_text = "\n".join(help_lines)
     options = (
         ABORT_OPTION,
         {"key": "_default", "goto": "starter_gender"},
     )
-    return text, options
+    return (text, help_text), options
 
 
 def starter_gender(caller, raw_string, **kwargs):
