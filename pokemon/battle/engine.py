@@ -90,6 +90,10 @@ import os
 import sys
 
 from pokemon.dex import MOVEDEX
+try:  # pragma: no cover - ability data may be stubbed during tests
+    from pokemon.dex import ABILITYDEX  # type: ignore
+except Exception:  # pragma: no cover - fallback to empty mapping
+    ABILITYDEX = {}
 
 _BASE_PATH = os.path.dirname(__file__)
 
@@ -208,6 +212,21 @@ def is_self_target(target: str | None) -> bool:
     return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
 
 
+def _resolve_ability(ability):
+    """Return an :class:`~pokemon.dex.entities.Ability` for ``ability``.
+
+    Pokémon instances within tests sometimes store their ability as a simple
+    string identifier rather than an :class:`Ability` object.  This helper
+    looks up such strings in :data:`pokemon.dex.ABILITYDEX` and returns the
+    corresponding instance so callers can safely invoke callbacks.  If the
+    ability cannot be resolved, ``None`` is returned.
+    """
+
+    if ability and not hasattr(ability, "call"):
+        return ABILITYDEX.get(str(ability))
+    return ability
+
+
 def _apply_move_damage(
     user, target, battle_move: "BattleMove", battle, *, spread: bool = False
 ):
@@ -257,7 +276,7 @@ def _apply_move_damage(
     # used for damage computation.
 
     for owner in (user, target):
-        ability = getattr(owner, "ability", None)
+        ability = _resolve_ability(getattr(owner, "ability", None))
         if not ability:
             continue
 
@@ -317,7 +336,7 @@ def _apply_move_damage(
             )
             if same_team:
                 for ally in getattr(part, "active", []):
-                    ability = getattr(ally, "ability", None)
+                    ability = _resolve_ability(getattr(ally, "ability", None))
                     if not ability:
                         continue
                     try:
@@ -359,7 +378,7 @@ def _apply_move_damage(
     # Defensive abilities may further adjust the power of incoming moves via
     # ``onSourceBasePower``.  This hook is separate from ``onBasePower`` above,
     # which applies when the ability's owner uses a move.
-    target_ability = getattr(target, "ability", None)
+    target_ability = _resolve_ability(getattr(target, "ability", None))
     if target_ability:
         try:
             new_power = target_ability.call(
@@ -562,7 +581,7 @@ class BattleMove:
                 active_pokes = [user, target]
 
             for poke in active_pokes:
-                ability = getattr(poke, "ability", None)
+                ability = _resolve_ability(getattr(poke, "ability", None))
                 if ability:
                     try:
                         ability.call(
@@ -589,7 +608,7 @@ class BattleMove:
                 abilities_funcs = None
 
             for poke, other in ((target, user), (user, target)):
-                ability = getattr(poke, "ability", None)
+                ability = _resolve_ability(getattr(poke, "ability", None))
                 if ability and getattr(ability, "raw", None):
                     cb_name = ability.raw.get("onTryHit")
                     cb = (
@@ -737,8 +756,8 @@ class BattleMove:
             from pokemon.battle.damage import percent_check
             from pokemon.battle.utils import apply_boost
 
-            ability_source = getattr(user, "ability", None)
-            ability_target = getattr(target, "ability", None)
+            ability_source = _resolve_ability(getattr(user, "ability", None))
+            ability_target = _resolve_ability(getattr(target, "ability", None))
             item_source = getattr(user, "item", None) or getattr(
                 user, "held_item", None
             )
@@ -1042,7 +1061,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def register_handlers(self, pokemon) -> None:
         """Register ability and item callbacks for ``pokemon``."""
-        ability = getattr(pokemon, "ability", None)
+        ability = _resolve_ability(getattr(pokemon, "ability", None))
         if ability and isinstance(getattr(ability, "raw", None), dict):
             self._register_callbacks(ability.raw, pokemon)
 
@@ -1070,7 +1089,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Mark ``pokemon`` as fainted and trigger callbacks."""
         pokemon.is_fainted = True
 
-        ability = getattr(pokemon, "ability", None)
+        ability = _resolve_ability(getattr(pokemon, "ability", None))
         if ability and hasattr(ability, "call"):
             try:
                 ability.call("onFaint", pokemon, self)
@@ -1105,7 +1124,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if part.has_lost:
                 continue
             for pokemon in part.active:
-                ability = getattr(pokemon, "ability", None)
+                ability = _resolve_ability(getattr(pokemon, "ability", None))
                 if not ability or not hasattr(ability, "call"):
                     continue
                 try:
@@ -1152,7 +1171,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if opp is part or opp.has_lost:
                     continue
                 for pokemon in part.active:
-                    ability = getattr(pokemon, "ability", None)
+                    ability = _resolve_ability(getattr(pokemon, "ability", None))
                     if not ability or not hasattr(ability, "call"):
                         continue
                     for foe in opp.active:
@@ -1513,7 +1532,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # ``False`` the move is cancelled immediately.
         for part in self.participants:
             for poke in getattr(part, "active", []):
-                ability = getattr(poke, "ability", None)
+                ability = _resolve_ability(getattr(poke, "ability", None))
                 if ability and hasattr(ability, "call"):
                     try:
                         blocked = ability.call(
@@ -1535,7 +1554,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         # Trigger abilities that react to an opposing Pokémon attempting to move
         for poke, foe in ((user, target), (target, user)):
-            ability = getattr(poke, "ability", None)
+            ability = _resolve_ability(getattr(poke, "ability", None))
             if ability and hasattr(ability, "call"):
                 try:
                     ability.call(
@@ -1942,7 +1961,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     poke.toxic_counter = counter + 1
 
                 # Ability and item residual callbacks
-                ability = getattr(poke, "ability", None)
+                ability = _resolve_ability(getattr(poke, "ability", None))
                 if ability and hasattr(ability, "call"):
                     try:
                         ability.call("onResidual", poke, self)
@@ -1985,7 +2004,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         weather_handler.onWeather(poke)
                     except Exception:
                         pass
-                ability = getattr(poke, "ability", None)
+                ability = _resolve_ability(getattr(poke, "ability", None))
                 if ability and hasattr(ability, "call"):
                     try:
                         ability.call("onWeather", pokemon=poke)
