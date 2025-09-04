@@ -6,7 +6,7 @@ from evennia.utils.ansi import strip_ansi  # for width calc of ANSI-colored line
 from evennia.utils.evmenu import EvMenu
 
 # Generic invalid-input feedback shared across menus
-INVALID_INPUT_MSG = "|rInvalid input.|n Try again. Type |wh|n for help."
+INVALID_INPUT_MSG = "|rInvalid input.|n Try again. Type |whelp|n for help."
 
 # Example usage::
 #
@@ -25,13 +25,13 @@ INVALID_INPUT_MSG = "|rInvalid input.|n Try again. Type |wh|n for help."
 #         show_title=True,                   # show title in border/top line
 #         show_options=True,                 # render option list
 #         show_footer=True,                  # render footer prompt and hints
-#         footer_prompt="Number",            # prompt text inside footer
+#         footer_prompt="Make Choice",       # prompt text inside footer
 #         border_color="|y",                 # border color (pipe-ANSI)
 #         title_text_color="|w",             # title text color
 #         option_number_color="|c",          # option number color
 #         option_desc_color="|w",            # option description color
-#         prompt_color="|g",                 # color of [Enter Number]
-#         hint_color="|w",                   # color of 'q'/'h' hints
+#         prompt_color="|g",                 # color of [Make Choice]
+#         hint_color="|w",                   # color of 'q'/'help' hints
 #         start_kwargs=None,                 # kwargs forwarded to start node
 #         **menu_kwargs,                     # additional EvMenu kwargs
 #     )
@@ -96,7 +96,7 @@ class EnhancedEvMenu(EvMenu):
         show_title=True,
         show_options=True,
         show_footer=True,
-        footer_prompt="Number",
+        footer_prompt="Make Choice",
         border_color="|y",
         title_text_color="|w",
         option_number_color="|c",
@@ -155,6 +155,16 @@ class EnhancedEvMenu(EvMenu):
                 self.goto(None, "")
                 return
 
+        if low == "h":
+            if getattr(self, "default", None):
+                goto_node, goto_kwargs = self.default
+                self.goto(goto_node, raw_string, **(goto_kwargs or {}))
+            else:
+                self.invalid_msg()
+                if self.auto_repeat_invalid:
+                    self.goto(None, "")
+            return
+
         return super().parse_input(raw_string)
 
     def invalid_msg(self):
@@ -174,16 +184,16 @@ class EnhancedEvMenu(EvMenu):
             if self.auto_quit:
                 tail.append(f"{self.hint_color}'q' to quit|n")
             if self.auto_help:
-                tail.append(f"{self.hint_color}'h' for help|n")
+                tail.append(f"{self.hint_color}'help' for help|n")
             extra = f" | {' | '.join(tail)}" if tail else ""
             bc, pc = self.border_color, self.prompt_color
-            self.msg(f"{bc}==|n {pc}[Enter {prompt}]|n{extra}")
+            self.msg(f"{bc}==|n {pc}[{prompt}]|n{extra}")
         else:
             tail = []
             if self.auto_quit:
                 tail.append("'q' to quit")
             if self.auto_help:
-                tail.append("'h' for help")
+                tail.append("'help' for help")
             extra = ("; " + " · ".join(tail)) if tail else ""
             self.msg(f"[Type {prompt.lower()} or command{extra}]")
 
@@ -300,17 +310,17 @@ class EnhancedEvMenu(EvMenu):
                 if self.auto_quit:
                     tail.append(f"{self.hint_color}'q' to quit|n")
                 if self.auto_help:
-                    tail.append(f"{self.hint_color}'h' for help|n")
+                    tail.append(f"{self.hint_color}'help' for help|n")
                 hints = (" | " + " | ".join(tail)) if tail else ""
                 result += (
-                    f"\n\n{self.border_color}== {self.prompt_color}[Enter {prompt}]|n{hints}{self.border_color} ==|n"
+                    f"\n\n{self.border_color}== {self.prompt_color}[{prompt}]|n{hints}{self.border_color} ==|n"
                 )
             else:
                 tail = []
                 if self.auto_quit:
                     tail.append("'q' to quit")
                 if self.auto_help:
-                    tail.append("'h' for help")
+                    tail.append("'help' for help")
                 hints = ("; " + " · ".join(tail)) if tail else ""
                 result += f"\n\n[Type {prompt.lower()} or command{hints}]."
         return result
