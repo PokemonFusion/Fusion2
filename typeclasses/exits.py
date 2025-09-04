@@ -23,4 +23,9 @@ class Exit(ObjectParent, DefaultExit):
 
 	"""
 
-	pass
+        # Exits should never override core command aliases such as ``look``.
+        # By giving exits a lower priority than the default cmdset, regular
+        # commands will take precedence when there is a name clash with an
+        # exit alias (for example, an exit alias ``l`` will no longer shadow
+        # the ``look`` command).
+        priority = -1

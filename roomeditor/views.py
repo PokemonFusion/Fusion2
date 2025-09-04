@@ -28,6 +28,36 @@ def _parse_aliases(raw: str) -> list[str]:
 	pieces = re.split(r"[;,\s]+", raw)
 	return [p for p in (s.strip() for s in pieces) if p]
 
+def _default_exit_locks(user) -> str:
+	"""Return the default lockstring for a new exit.
+
+	The web editor needs to present the locks an exit will receive when it is
+	created in-game. These locks include both the standard security settings
+	and ownership tied to the current user.
+
+	Args:
+		user: The requesting user, expected to have an ``id`` attribute.
+
+	Returns:
+		str: The lockstring representing the default exit locks.
+	"""
+
+	uid = getattr(user, "id", 0)
+	return (
+		"call:true();"
+		f"control:id({uid}) or perm(Admin);"
+		f"delete:id({uid}) or perm(Admin);"
+		"drop:holds();"
+		f"edit:id({uid}) or perm(Admin);"
+		"examine:perm(Builder);"
+		"get:false();"
+		"puppet:false();"
+		"teleport:false();"
+		"teleport_here:false();"
+		"tell:perm(Admin);"
+		"traverse:all();"
+		"view:all()"
+	)
 
 def is_builder(user):
 	"""Return True if user has Builder or Admin permissions."""
@@ -135,7 +165,7 @@ def room_edit(request, room_id=None):
 		"outgoing": outgoing,
 		"incoming": incoming,
 		"no_incoming": room is not None and not incoming,
-		"default_locks": Exit.get_default_lockstring(account=request.user),
+		"default_locks": _default_exit_locks(request.user),
 	}
 	return render(request, "roomeditor/room_form.html", context)
 
@@ -203,6 +233,6 @@ def edit_exit(request, room_id, exit_id):
 			"form": form,
 			"room": room,
 			"exit": exit_obj,
-			"default_locks": Exit.get_default_lockstring(account=request.user),
+			"default_locks": _default_exit_locks(request.user),
 		},
 	)
