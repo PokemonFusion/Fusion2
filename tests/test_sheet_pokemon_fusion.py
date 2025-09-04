@@ -1,279 +1,275 @@
-"""Tests for the +sheet/pokemon command when handling fusions."""
-
 import importlib.util
 import os
 import sys
 import types
+import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 
-def load_module(path, name):
-    """Dynamically load a module from ``path`` under ``name``."""
-    spec = importlib.util.spec_from_file_location(name, path)
+def load_cmd_module():
+    path = os.path.join(ROOT, "commands", "player", "cmd_sheet.py")
+    spec = importlib.util.spec_from_file_location("commands.player.cmd_sheet", path)
     mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
+    sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
     return mod
 
 
-def test_sheet_pokemon_lists_fusion_for_new_trainer():
-    """Ensure fusions are created during chargen and listed on the sheet."""
-
-    # Preserve real modules so we can restore them later
-    orig_evennia = sys.modules.get("evennia")
-    orig_pokemon = sys.modules.get("pokemon")
-    orig_helpers_pkg = sys.modules.get("pokemon.helpers")
-    orig_pokemon_helpers = sys.modules.get("pokemon.helpers.pokemon_helpers")
-    orig_models_pkg = sys.modules.get("pokemon.models")
-    orig_stats = sys.modules.get("pokemon.models.stats")
-    orig_utils_pkg = sys.modules.get("utils")
-    orig_utils_display = sys.modules.get("utils.display")
-    orig_utils_display_helpers = sys.modules.get("utils.display_helpers")
-    orig_utils_xp_utils = sys.modules.get("utils.xp_utils")
-    orig_models_fusion = sys.modules.get("pokemon.models.fusion")
-    orig_data_generation = sys.modules.get("pokemon.data.generation")
-    orig_data_starters = sys.modules.get("pokemon.data.starters")
-    orig_dex = sys.modules.get("pokemon.dex")
-    orig_models_storage = sys.modules.get("pokemon.models.storage")
+@pytest.mark.parametrize(
+    "stats,hp,expected",
+    [({"hp": 30}, 25, "HP 25/30"), (None, 25, "HP 25/25"), (None, None, "HP 0/0")],
+)
+def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
+    # Preserve original modules
+    patched = {
+        "evennia": sys.modules.get("evennia"),
+        "pokemon": sys.modules.get("pokemon"),
+        "pokemon.helpers": sys.modules.get("pokemon.helpers"),
+        "pokemon.helpers.pokemon_helpers": sys.modules.get("pokemon.helpers.pokemon_helpers"),
+        "pokemon.models": sys.modules.get("pokemon.models"),
+        "pokemon.models.stats": sys.modules.get("pokemon.models.stats"),
+        "utils": sys.modules.get("utils"),
+        "utils.display": sys.modules.get("utils.display"),
+        "utils.display_helpers": sys.modules.get("utils.display_helpers"),
+        "utils.xp_utils": sys.modules.get("utils.xp_utils"),
+    }
 
     try:
-        # ------------------------------------------------------------------
-        # Stub required modules
-        # ------------------------------------------------------------------
-        evennia_mod = types.ModuleType("evennia")
-        evennia_mod.Command = type("Command", (), {})
-        sys.modules["evennia"] = evennia_mod
+        # Stub modules required by cmd_sheet
+        fake_evennia = types.ModuleType("evennia")
+        fake_evennia.Command = type("Command", (), {})
+        sys.modules["evennia"] = fake_evennia
 
-        pokemon_pkg = types.ModuleType("pokemon")
-        pokemon_pkg.__path__ = []
-        sys.modules["pokemon"] = pokemon_pkg
+        sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
+        store = {}
 
-        helpers_pkg = types.ModuleType("pokemon.helpers")
-        helpers_pkg.__path__ = []
-        sys.modules["pokemon.helpers"] = helpers_pkg
+        def fake_get_stats(mon):
+            if isinstance(mon, (str, bytes)):
+                return store.get(mon, {})
+            return getattr(mon, "_cached_stats", {})
 
-        class DummyMon:
-            def __init__(self, name):
-                self.name = name
-                self.species = name
-                self.level = 5
-                self.hp = 10
-                self.max_hp = 20
-                self.gender = "M"
-                self.id = 1
-                self.in_party = False
+        def fake_get_max_hp(mon):
+            return fake_get_stats(mon).get("hp", 0)
 
-        def create_owned_pokemon(species, trainer, level, **kwargs):
-            return DummyMon(species)
+        fake_helpers.get_max_hp = fake_get_max_hp
+        fake_helpers.get_stats = fake_get_stats
+        sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers
 
-        helpers_mod = types.ModuleType("pokemon.helpers.pokemon_helpers")
-        helpers_mod.get_max_hp = lambda mon: mon.max_hp
-        helpers_mod.create_owned_pokemon = create_owned_pokemon
-        sys.modules["pokemon.helpers.pokemon_helpers"] = helpers_mod
+        sys.modules["pokemon.models"] = types.ModuleType("pokemon.models")
+        fake_stats = types.ModuleType("pokemon.models.stats")
+        fake_stats.level_for_exp = lambda xp, growth: xp
+        sys.modules["pokemon.models.stats"] = fake_stats
 
-        data_pkg = types.ModuleType("pokemon.data")
-        data_pkg.__path__ = []
-        sys.modules["pokemon.data"] = data_pkg
+        sys.modules["utils"] = types.ModuleType("utils")
+        fake_display = types.ModuleType("utils.display")
 
-        gen_mod = types.ModuleType("pokemon.data.generation")
-        gen_mod.NATURES = {"Hardy": None}
+        captured_mon = {}
 
-        ivs_obj = types.SimpleNamespace(
-            hp=0, attack=0, defense=0, special_attack=0, special_defense=0, speed=0
-        )
+        def fake_display_pokemon_sheet(caller, mon, **kwargs):
+            captured_mon["mon"] = mon
+            hp_val = getattr(mon, "hp", 0)
+            max_hp = fake_helpers.get_max_hp(mon)
+            if max_hp <= 0:
+                pass
+            return "sheet"
 
-        def generate_pokemon(key, level):
-            return types.SimpleNamespace(
-                species=types.SimpleNamespace(name="Pikachu"),
-                ability="Static",
-                ivs=ivs_obj,
-                gender="M",
-                nature="Hardy",
-            )
+        fake_display.display_pokemon_sheet = fake_display_pokemon_sheet
+        fake_display.display_trainer_sheet = lambda *args, **kwargs: "trainer"
+        sys.modules["utils.display"] = fake_display
 
-        gen_mod.generate_pokemon = generate_pokemon
-        sys.modules["pokemon.data.generation"] = gen_mod
-        data_pkg.generation = gen_mod
+        fake_disp_helpers = types.ModuleType("utils.display_helpers")
+        fake_disp_helpers.get_status_effects = lambda mon: "NORM"
+        sys.modules["utils.display_helpers"] = fake_disp_helpers
 
-        starters_mod = types.ModuleType("pokemon.data.starters")
-        starters_mod.STARTER_LOOKUP = {}
-        starters_mod.get_starter_names = lambda: []
-        sys.modules["pokemon.data.starters"] = starters_mod
-        data_pkg.starters = starters_mod
+        fake_xp = types.ModuleType("utils.xp_utils")
+        fake_xp.get_display_xp = lambda mon: 0
+        sys.modules["utils.xp_utils"] = fake_xp
 
-        dex_mod = types.ModuleType("pokemon.dex")
-        dex_mod.POKEDEX = {
-            "pikachu": types.SimpleNamespace(raw={"name": "Pikachu"}, name="Pikachu")
-        }
-        sys.modules["pokemon.dex"] = dex_mod
+        cmd_mod = load_cmd_module()
 
-        models_pkg = types.ModuleType("pokemon.models")
-        models_pkg.__path__ = []
-        sys.modules["pokemon.models"] = models_pkg
-
-        stats_mod = types.ModuleType("pokemon.models.stats")
-        stats_mod.level_for_exp = lambda xp, growth: xp
-        sys.modules["pokemon.models.stats"] = stats_mod
-
-        storage_mod = types.ModuleType("pokemon.models.storage")
-        storage_mod.ensure_boxes = lambda s: s
-        sys.modules["pokemon.models.storage"] = storage_mod
-        models_pkg.storage = storage_mod
-
-        class FakeManager:
-            def __init__(self):
-                self.store = []
-
-            def get_or_create(self, defaults=None, **kwargs):
-                trainer = kwargs.get("trainer")
-                pokemon = kwargs.get("pokemon")
-                defaults = defaults or {}
-                for obj in self.store:
-                    if obj.trainer is trainer and obj.pokemon is pokemon:
-                        return obj, False
-                obj = FakePokemonFusion(
-                    trainer=trainer,
-                    pokemon=pokemon,
-                    result=defaults.get("result"),
-                    permanent=defaults.get("permanent", False),
-                )
-                self.store.append(obj)
-                return obj, True
-
-            def filter(self, **kwargs):
-                trainer = kwargs.get("trainer")
-                items = [e for e in self.store if e.trainer is trainer]
-
-                class _QS(list):
-                    def first(self_inner):
-                        return self_inner[0] if self_inner else None
-
-                return _QS(items)
-
-        class FakePokemonFusion:
-            objects = FakeManager()
-
-            def __init__(self, trainer=None, pokemon=None, result=None, permanent=False):
-                self.trainer = trainer
-                self.pokemon = pokemon
-                self.result = result
-                self.permanent = permanent
-                if result:
-                    setattr(result, "fusion_result", self)
-
-        fusion_mod = types.ModuleType("pokemon.models.fusion")
-        fusion_mod.PokemonFusion = FakePokemonFusion
-        sys.modules["pokemon.models.fusion"] = fusion_mod
-        models_pkg.fusion = fusion_mod
-
-        utils_pkg = types.ModuleType("utils")
-        sys.modules["utils"] = utils_pkg
-
-        display_mod = types.ModuleType("utils.display")
-        display_mod.display_pokemon_sheet = lambda *a, **k: ""
-        display_mod.display_trainer_sheet = lambda *a, **k: ""
-        sys.modules["utils.display"] = display_mod
-        utils_pkg.display = display_mod
-
-        display_helpers_mod = types.ModuleType("utils.display_helpers")
-        display_helpers_mod.get_status_effects = lambda mon: "OK"
-        sys.modules["utils.display_helpers"] = display_helpers_mod
-        utils_pkg.display_helpers = display_helpers_mod
-
-        xp_utils_mod = types.ModuleType("utils.xp_utils")
-        xp_utils_mod.get_display_xp = lambda mon: 0
-        sys.modules["utils.xp_utils"] = xp_utils_mod
-        utils_pkg.xp_utils = xp_utils_mod
-
-        # Load utils.fusion so chargen can record fusions
-        spec_fusion = importlib.util.spec_from_file_location(
-            "utils.fusion", os.path.join(ROOT, "utils", "fusion.py")
-        )
-        fusion_utils = importlib.util.module_from_spec(spec_fusion)
-        sys.modules[spec_fusion.name] = fusion_utils
-        spec_fusion.loader.exec_module(fusion_utils)
-        utils_pkg.fusion = fusion_utils
-
-        # Load target modules
-        cmd_mod = load_module(
-            os.path.join(ROOT, "commands", "player", "cmd_sheet.py"),
-            "commands.player.cmd_sheet",
-        )
-        chargen_mod = load_module(
-            os.path.join(ROOT, "menus", "chargen.py"), "menus.chargen"
-        )
-
-        # ------------------------------------------------------------------
-        # Create a fused trainer via chargen
-        # ------------------------------------------------------------------
-        class DummyStorage:
-            def __init__(self):
-                self.party = []
-
-            def add_active_pokemon(self, mon):
-                self.party.append(mon)
-
-            def get_party(self):
-                return list(self.party)
-
-        storage = DummyStorage()
-        trainer = types.SimpleNamespace(user=types.SimpleNamespace(storage=storage))
-        caller = types.SimpleNamespace(
-            key="Ash",
-            storage=storage,
-            trainer=trainer,
-            ndb=types.SimpleNamespace(
-                chargen={
-                    "player_gender": "M",
-                    "species_key": "pikachu",
-                    "species": "Pikachu",
-                    "ability": "Static",
-                    "nature": "Hardy",
-                }
-            ),
-            db=types.SimpleNamespace(),
-            msgs=[],
-        )
-        caller.msg = lambda text: caller.msgs.append(text)
-
-        chargen_mod.finish_fusion(caller, "")
-
-        # Invoke the sheet command
-        cmd = cmd_mod.CmdSheetPokemon()
-        cmd.caller = caller
-        cmd.args = ""
-        cmd.switches = []
-        cmd.parse()
-        cmd.func()
-
-        output = caller.msgs[-1]
-        assert "Ash (Pikachu) (fusion)" in output
     finally:
-        # ------------------------------------------------------------------
-        # Restore modules
-        # ------------------------------------------------------------------
-        mapping = {
-            "evennia": orig_evennia,
-            "pokemon": orig_pokemon,
-            "pokemon.helpers": orig_helpers_pkg,
-            "pokemon.helpers.pokemon_helpers": orig_pokemon_helpers,
-            "pokemon.models": orig_models_pkg,
-            "pokemon.models.stats": orig_stats,
-            "utils": orig_utils_pkg,
-            "utils.display": orig_utils_display,
-            "utils.display_helpers": orig_utils_display_helpers,
-            "utils.xp_utils": orig_utils_xp_utils,
-            "pokemon.models.fusion": orig_models_fusion,
-            "pokemon.data.generation": orig_data_generation,
-            "pokemon.data.starters": orig_data_starters,
-            "pokemon.dex": orig_dex,
-            "pokemon.models.storage": orig_models_storage,
-        }
-        for name, mod in mapping.items():
-            if mod is not None:
-                sys.modules[name] = mod
+        # Restore original modules
+        for name, module in patched.items():
+            if module is not None:
+                sys.modules[name] = module
             else:
                 sys.modules.pop(name, None)
 
+    class DummyStorage:
+        def get_party(self):
+            return []
+
+        active_pokemon = types.SimpleNamespace(all=lambda: [])
+
+    class DummyCaller:
+        def __init__(self):
+            self.key = "Ash"
+            self.db = types.SimpleNamespace(
+                fusion_species="Pikachu",
+                fusion_id="fusion-uid",
+                fusion_ability="Static",
+                fusion_nature="Bold",
+                level=10,
+                hp=hp,
+                stats=stats,
+                gender="M",
+            )
+            self.storage = DummyStorage()
+            self.msgs = []
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller()
+
+    cmd = cmd_mod.CmdSheetPokemon()
+    cmd.caller = caller
+    cmd.args = ""
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+
+    assert caller.msgs, "No output captured"
+    output = caller.msgs[-1]
+    assert "Lv 10" in output
+    assert expected in output
+
+    caller.msgs = []
+    cmd = cmd_mod.CmdSheetPokemon()
+    cmd.caller = caller
+    cmd.args = "1"
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+    assert caller.msgs[-1].startswith("sheet")
+    assert getattr(captured_mon.get("mon"), "unique_id", None) == caller.db.fusion_id
+
+
+def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
+    patched = {
+        "evennia": sys.modules.get("evennia"),
+        "pokemon": sys.modules.get("pokemon"),
+        "pokemon.helpers": sys.modules.get("pokemon.helpers"),
+        "pokemon.helpers.pokemon_helpers": sys.modules.get("pokemon.helpers.pokemon_helpers"),
+        "pokemon.models": sys.modules.get("pokemon.models"),
+        "pokemon.models.stats": sys.modules.get("pokemon.models.stats"),
+        "utils": sys.modules.get("utils"),
+        "utils.display": sys.modules.get("utils.display"),
+        "utils.display_helpers": sys.modules.get("utils.display_helpers"),
+        "utils.xp_utils": sys.modules.get("utils.xp_utils"),
+    }
+
+    captured = {}
+    store = {}
+
+    try:
+        fake_evennia = types.ModuleType("evennia")
+        fake_evennia.Command = type("Command", (), {})
+        sys.modules["evennia"] = fake_evennia
+
+        sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
+
+        def fake_get_stats(mon):
+            if isinstance(mon, (str, bytes)):
+                return store.get(mon, {})
+            return getattr(mon, "_cached_stats", {})
+
+        def fake_get_max_hp(mon):
+            return fake_get_stats(mon).get("hp", 0)
+
+        fake_helpers.get_max_hp = fake_get_max_hp
+        fake_helpers.get_stats = fake_get_stats
+        sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers
+
+        sys.modules["pokemon.models"] = types.ModuleType("pokemon.models")
+        fake_stats = types.ModuleType("pokemon.models.stats")
+        fake_stats.level_for_exp = lambda xp, growth: xp
+        sys.modules["pokemon.models.stats"] = fake_stats
+
+        sys.modules["utils"] = types.ModuleType("utils")
+        fake_display = types.ModuleType("utils.display")
+
+        def fake_display_pokemon_sheet(caller, mon, **kwargs):
+            captured["mon"] = mon
+            captured["hp"] = getattr(mon, "hp", 0)
+            captured["max_hp"] = fake_helpers.get_max_hp(getattr(mon, "unique_id", mon))
+            return "sheet"
+
+        fake_display.display_pokemon_sheet = fake_display_pokemon_sheet
+        fake_display.display_trainer_sheet = lambda *args, **kwargs: "trainer"
+        sys.modules["utils.display"] = fake_display
+
+        fake_disp_helpers = types.ModuleType("utils.display_helpers")
+        fake_disp_helpers.get_status_effects = lambda mon: "NORM"
+        sys.modules["utils.display_helpers"] = fake_disp_helpers
+
+        fake_xp = types.ModuleType("utils.xp_utils")
+        fake_xp.get_display_xp = lambda mon: 0
+        sys.modules["utils.xp_utils"] = fake_xp
+
+        cmd_mod = load_cmd_module()
+
+    finally:
+        for name, module in patched.items():
+            if module is not None:
+                sys.modules[name] = module
+            else:
+                sys.modules.pop(name, None)
+
+    fused = types.SimpleNamespace(
+        species="Pikachu",
+        hp=20,
+        _cached_stats={"hp": 40},
+        activemoveslot_set=[],
+        pp_bonuses={},
+        moves=[],
+        ivs=[],
+        evs=[],
+        unique_id="fusion-uid",
+    )
+    store[fused.unique_id] = fused._cached_stats
+
+    class DummyStorage:
+        def get_party(self):
+            return []
+
+        active_pokemon = types.SimpleNamespace(all=lambda: [fused])
+
+    class DummyCaller:
+        def __init__(self):
+            self.key = "Ash"
+            self.db = types.SimpleNamespace(
+                fusion_species="Pikachu",
+                fusion_id=fused.unique_id,
+                fusion_ability="Static",
+                fusion_nature="Bold",
+                level=10,
+                hp=None,
+                stats=None,
+                gender="M",
+            )
+            self.storage = DummyStorage()
+            self.msgs = []
+
+        def msg(self, text):
+            self.msgs.append(text)
+
+    caller = DummyCaller()
+
+    cmd = cmd_mod.CmdSheetPokemon()
+    cmd.caller = caller
+    cmd.args = "1"
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+
+    assert captured["hp"] == 20
+    assert captured["max_hp"] == 40
+    assert getattr(captured.get("mon"), "unique_id", None) == fused.unique_id
+    assert fake_helpers.get_stats(captured["mon"].unique_id)["hp"] == 40

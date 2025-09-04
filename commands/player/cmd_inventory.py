@@ -5,6 +5,7 @@ viewing items, adding new ones, giving them to others and using them.
 """
 
 from evennia import Command
+from utils.locks import require_no_battle_lock
 
 from pokemon.dex import ITEMDEX
 
@@ -51,6 +52,8 @@ class CmdAddItem(Command):
 	help_category = "Pokemon"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		parts = self.args.split()
 		if len(parts) != 2:
 			self.caller.msg("Usage: additem <item> <amount>")
@@ -91,6 +94,8 @@ class CmdGiveItem(Command):
 		self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		if not all([self.target_name, self.item_name]):
 			self.caller.msg("Usage: +giveitem <player> = <item>:<amount>")
 			return
@@ -98,6 +103,8 @@ class CmdGiveItem(Command):
 		target = self.caller.search(self.target_name)
 		if not target or not hasattr(target, "trainer"):
 			self.caller.msg("Player not found or has no trainer record.")
+			return
+		if not require_no_battle_lock(target):
 			return
 
 		if self.item_name not in ITEMDEX:
@@ -121,6 +128,8 @@ class CmdUseItem(Command):
 	help_category = "Inventory"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		args = self.args.strip()
 		trainer = getattr(self.caller, "trainer", None)
 

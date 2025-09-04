@@ -1,70 +1,109 @@
-"""Commands to watch or unwatch ongoing battles."""
+"""Commands to manage watching ongoing battles."""
 
 from __future__ import annotations
 
-from evennia import Command, search_object
+from evennia import Command
+
+from utils.locks import require_no_battle_lock
+from world.system_init import get_system
 
 
 class CmdWatchBattle(Command):
-	"""Watch another character's ongoing battle.
+        """Start watching a battle.
 
-	Usage:
-	  +watchbattle <character or battle id>
-	"""
+        Usage:
+          +battlewatch <battle id>
+        """
 
-	key = "+watchbattle"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+        key = "+battlewatch"
+        locks = "cmd:all()"
+        help_category = "Pokemon"
 
-	def func(self):
-		if not self.args:
-			self.caller.msg("Usage: +watchbattle <character or battle id>")
-			return
-		arg = self.args.strip()
-		inst = None
-		target = None
-		if arg.isdigit():
-			from pokemon.battle.handler import battle_handler
-
-			bid = int(arg)
-			inst = battle_handler.instances.get(bid)
-			if not inst:
-				self.caller.msg("No battle with that ID found.")
-				return
-		else:
-			target_list = search_object(arg)
-			if not target_list:
-				self.caller.msg("No such character.")
-				return
-			target = target_list[0]
-			inst = getattr(target.ndb, "battle_instance", None)
-			if not inst:
-				self.caller.msg("They are not currently in battle.")
-				return
-		inst.add_watcher(self.caller)
-		self.caller.move_to(inst.room, quiet=True)
-		if target:
-			self.caller.msg(f"You begin watching {target.key}'s battle (#{inst.room.id}).")
-		else:
-			self.caller.msg(f"You begin watching battle #{inst.room.id}.")
+        def func(self):
+                if not require_no_battle_lock(self.caller):
+                        return
+                if not self.args or not self.args.strip().isdigit():
+                        self.caller.msg("Usage: +battlewatch <battle id>")
+                        return
+                bid = int(self.args.strip())
+                system = get_system()
+                manager = getattr(system, "battle_manager", None)
+                if not manager or not manager.watch(bid, self.caller):
+                        self.caller.msg("No battle with that ID found.")
+                        return
+                self.caller.msg(f"You begin watching battle #{bid}.")
 
 
 class CmdUnwatchBattle(Command):
-	"""Stop watching the current battle.
+        """Stop watching a battle.
 
-	Usage:
-	  +unwatchbattle
-	"""
+        Usage:
+          +battleunwatch <battle id>
+        """
 
-	key = "+unwatchbattle"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+        key = "+battleunwatch"
+        locks = "cmd:all()"
+        help_category = "Pokemon"
 
-	def func(self):
-		inst = self.caller.location.ndb.instance if self.caller.location else None
-		if not inst or not hasattr(inst, "remove_watcher"):
-			self.caller.msg("You are not watching a battle.")
-			return
-		inst.remove_watcher(self.caller)
-		self.caller.msg("You stop watching the battle.")
-		self.caller.move_to(inst.room.home or self.caller.home, quiet=True)
+        def func(self):
+                if not require_no_battle_lock(self.caller):
+                        return
+                if not self.args or not self.args.strip().isdigit():
+                        self.caller.msg("Usage: +battleunwatch <battle id>")
+                        return
+                bid = int(self.args.strip())
+                system = get_system()
+                manager = getattr(system, "battle_manager", None)
+                if not manager or not manager.unwatch(bid, self.caller):
+                        self.caller.msg("No battle with that ID found.")
+                        return
+                self.caller.msg(f"You stop watching battle #{bid}.")
+
+
+class CmdBattleMute(Command):
+        """Mute updates from a battle.
+
+        Usage:
+          +battlemute <battle id>
+        """
+
+        key = "+battlemute"
+        locks = "cmd:all()"
+        help_category = "Pokemon"
+
+        def func(self):
+                if not require_no_battle_lock(self.caller):
+                        return
+                if not self.args or not self.args.strip().isdigit():
+                        self.caller.msg("Usage: +battlemute <battle id>")
+                        return
+                bid = int(self.args.strip())
+                system = get_system()
+                manager = getattr(system, "battle_manager", None)
+                if not manager or not manager.unwatch(bid, self.caller):
+                        self.caller.msg("No battle with that ID found.")
+                        return
+                self.caller.msg(f"You mute battle #{bid}.")
+
+
+class CmdBattleList(Command):
+        """List all active battles."""
+
+        key = "+battlelist"
+        locks = "cmd:all()"
+        help_category = "Pokemon"
+
+        def func(self):
+                system = get_system()
+                manager = getattr(system, "battle_manager", None)
+                if not manager:
+                        self.caller.msg("Battle manager unavailable.")
+                        return
+                insts = getattr(manager.ndb, "instances", {})
+                if not insts:
+                        self.caller.msg("No active battles.")
+                        return
+                lines = ["|wActive battles|n"]
+                for bid in sorted(insts):
+                        lines.append(f"  {bid}")
+                self.caller.msg("\n".join(lines))

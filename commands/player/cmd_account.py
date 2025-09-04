@@ -1,5 +1,6 @@
 from django.conf import settings
 from evennia import Command, search_account
+from utils.locks import require_no_battle_lock
 from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
 
 
@@ -74,12 +75,16 @@ class CmdTradePokemon(Command):
 	help_category = "Pokemon"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		if not self.args or "=" not in self.args:
 			self.caller.msg("Usage: tradepokemon <pokemon_id>=<character>")
 			return
 		pid, target_name = [part.strip() for part in self.args.split("=", 1)]
 		target = self.caller.search(target_name)
 		if not target:
+			return
+		if not require_no_battle_lock(target):
 			return
 		if target.account == self.caller.account:
 			self.caller.msg("You cannot trade items between your own characters.")

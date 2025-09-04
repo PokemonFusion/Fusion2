@@ -5,6 +5,7 @@ evolution mechanics.
 """
 
 from evennia import Command
+from utils.locks import require_no_battle_lock
 
 
 class CmdChooseMoveset(Command):
@@ -30,6 +31,8 @@ class CmdChooseMoveset(Command):
 			self.slot = self.index = None
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		if self.slot is None or self.index is None:
 			self.caller.msg("Usage: +moveset <slot>=<set#>")
 			return
@@ -69,6 +72,8 @@ class CmdTeachMove(Command):
 		self.move_name = right.strip()
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		if self.slot is None or not self.move_name:
 			self.caller.msg("Usage: +move <slot>=<move>")
 			return
@@ -109,6 +114,8 @@ class CmdLearn(Command):
 			self.slot = None
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		from pokemon.utils.move_learning import get_learnable_levelup_moves
 
 		if self.slot is None:
@@ -160,6 +167,8 @@ class CmdEvolvePokemon(Command):
 	help_category = "Pokemon"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		"""Attempt to evolve one of the player's Pokémon."""
 		parts = self.args.split()
 		if not parts:

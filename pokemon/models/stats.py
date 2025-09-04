@@ -58,18 +58,18 @@ __all__ = [
 
 
 def exp_for_level(level: int, rate: str = "medium_fast") -> int:
-	"""Return the experience required for the given level."""
-	level = max(1, min(level, 100))
-	match rate:
-		case "fast":
-			return int(4 * level**3 / 5)
-		case "slow":
-			return int(5 * level**3 / 4)
-		case "medium_slow":
-			return int(1.2 * level**3 - 15 * level**2 + 100 * level - 140)
-		case _:
-			# medium_fast by default
-			return level**3
+        """Return the experience required for the given level."""
+        level = max(1, min(level, 100))
+        match rate:
+                case "fast":
+                        return int(4 * level**3 / 5)
+                case "slow":
+                        return int(5 * level**3 / 4)
+                case "medium_slow":
+                        return int(1.2 * level**3 - 15 * level**2 + 100 * level - 140)
+                case _:
+                        # medium_fast by default
+                        return level**3
 
 
 def level_for_exp(exp: int, rate: str = "medium_fast") -> int:

@@ -7,13 +7,15 @@ __all__ = ["get_display_xp", "get_next_level_xp"]
 
 
 def get_display_xp(pokemon: PokemonLike) -> int:
-	"""Return the experience total for ``pokemon``."""
+        """Return the experience total for ``pokemon``."""
 
-	for attr in ("xp", "experience", "total_exp"):
-		val = getattr(pokemon, attr, None)
-		if val is not None:
-			return int(val)
-	return 0
+        for attr in ("xp", "experience", "total_exp"):
+                val = getattr(pokemon, attr, None)
+                if val is None and hasattr(pokemon, "db"):
+                        val = getattr(pokemon.db, attr, None)
+                if val is not None:
+                        return int(val)
+        return 0
 
 
 def get_next_level_xp(pokemon: PokemonLike) -> int:
