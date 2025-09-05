@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from utils.battle_display import render_battle_ui
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def format_turn_banner(turn: int) -> str:
@@ -68,29 +71,38 @@ def display_battle_interface(
 	captain_b,
 	battle_state,
 	*,
-	viewer_team=None,
+	viewer_team: str | None = None,
 	waiting_on=None,
-) -> str:
+	) -> str:
 	"""Return a formatted battle interface string using the new renderer.
-
-	``captain_a`` and ``captain_b`` must always be supplied in this A/B order.
-	The ``viewer_team`` argument then determines which side's player sees
-	absolute HP values; the opposite side will see percentages.
-
+	
+	``captain_a`` and ``captain_b`` must always be supplied in this A/B
+	order.  The ``viewer_team`` argument then determines which side's
+	player sees absolute HP values; the opposite side will see
+	percentages.  Invalid values default to observer mode and emit a
+	warning.
+	
 	Parameters
 	----------
 	captain_a, captain_b:
-		The trainers heading the A and B sides of the battle.
+	        The trainers heading the A and B sides of the battle.
 	battle_state:
-		Object providing weather, field and round information.
+	        Object providing weather, field and round information.
 	viewer_team:
-		"A", "B" or ``None`` to indicate which side the viewer belongs to
-		and therefore which side receives absolute HP values.
+	        "A", "B" or ``None`` to indicate which side the viewer belongs to
+	        and therefore which side receives absolute HP values. Any other
+	        value is treated as ``None``.
 	waiting_on:
-		Optional Pokémon instance to indicate which combatant has not yet
-		selected an action.  When provided a footer line is displayed showing
-		which Pokémon the system is waiting on.
+	        Optional Pokémon instance to indicate which combatant has not yet
+	        selected an action.  When provided a footer line is displayed showing
+	        which Pokémon the system is waiting on.
 	"""
+
+	if viewer_team not in ("A", "B", None):
+		logger.warning(
+			"Invalid viewer_team %r; defaulting to observer view", viewer_team
+		)
+		viewer_team = None
 
 	class _StateAdapter:
 		"""Light adapter exposing the API expected by the renderer."""
