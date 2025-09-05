@@ -35,3 +35,37 @@
 - `docs/` - project documentation and reference materials
 
 See [code-map.md](code-map.md) for more details on the codebase layout.
+
+## Battle HP Display
+
+During a battle, trainers see exact hit point numbers for their own Pokémon
+(for example, `25/40 HP`) while viewing the opposing team as percentages.
+Spectators watching the fight see percentage-based values for both teams so
+they know the relative health of each combatant without exact numbers.
+
+### Example
+
+```
+Team A's view
+  Team A
+    Pikachu 35/50 HP
+    Bulbasaur 20/45 HP
+  Team B
+    Charmander 26%
+    Squirtle 86%
+
+Team B's view
+  Team A
+    Pikachu 70%
+    Bulbasaur 44%
+  Team B
+    Charmander 10/39 HP
+    Squirtle 30/35 HP
+
+Watcher view
+  Team A: Pikachu 70%, Bulbasaur 44%
+  Team B: Charmander 26%, Squirtle 86%
+```
+
+This ensures battlers can track precise HP while observers only see
+percentages.
