@@ -150,9 +150,31 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 		respectively.
 	"""
 
-	iface_a = display_battle_interface(captain_a, captain_b, state, viewer_team="A", waiting_on=waiting_on)
-	iface_b = display_battle_interface(captain_b, captain_a, state, viewer_team="B", waiting_on=waiting_on)
-	iface_w = display_battle_interface(captain_a, captain_b, state, viewer_team=None, waiting_on=waiting_on)
+	# ``display_battle_interface`` always expects the trainers in A/B order and
+	# relies on ``viewer_team`` to determine perspective.  Pass ``captain_a`` and
+	# ``captain_b`` in that order for every call so the helper remains consistent
+	# for all viewers.
+	iface_a = display_battle_interface(
+	captain_a,
+	captain_b,
+	state,
+	viewer_team="A",
+	waiting_on=waiting_on,
+	)
+	iface_b = display_battle_interface(
+	captain_a,
+	captain_b,
+	state,
+	viewer_team="B",
+	waiting_on=waiting_on,
+	)
+	iface_w = display_battle_interface(
+	captain_a,
+	captain_b,
+	state,
+	viewer_team=None,
+	waiting_on=waiting_on,
+	)
 	return iface_a, iface_b, iface_w
 
 
