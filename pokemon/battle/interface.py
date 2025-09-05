@@ -64,8 +64,8 @@ def broadcast_note(session, text: str, *, use_prefix: bool | None = None) -> Non
 
 
 def display_battle_interface(
-	trainer,
-	opponent,
+	captain_a,
+	captain_b,
 	battle_state,
 	*,
 	viewer_team=None,
@@ -73,14 +73,19 @@ def display_battle_interface(
 ) -> str:
 	"""Return a formatted battle interface string using the new renderer.
 
+	``captain_a`` and ``captain_b`` must always be supplied in this A/B order.
+	The ``viewer_team`` argument then determines which side's player sees
+	absolute HP values; the opposite side will see percentages.
+
 	Parameters
 	----------
-	trainer, opponent:
-		The two trainers participating in battle.
+	captain_a, captain_b:
+		The trainers heading the A and B sides of the battle.
 	battle_state:
 		Object providing weather, field and round information.
 	viewer_team:
-		"A", "B" or ``None`` to indicate which side the viewer belongs to.
+		"A", "B" or ``None`` to indicate which side the viewer belongs to
+		and therefore which side receives absolute HP values.
 	waiting_on:
 		Optional Pokémon instance to indicate which combatant has not yet
 		selected an action.  When provided a footer line is displayed showing
@@ -90,19 +95,19 @@ def display_battle_interface(
 	class _StateAdapter:
 		"""Light adapter exposing the API expected by the renderer."""
 
-		def __init__(self, trainer, opponent, state):
-			self._trainers = {"A": trainer, "B": opponent}
+		def __init__(self, captain_a, captain_b, state):
+			self._captains = {"A": captain_a, "B": captain_b}
 			self._state = state
 
 		def get_side(self, viewer):
-			if viewer is self._trainers["A"]:
+			if viewer is self._captains["A"]:
 				return "A"
-			if viewer is self._trainers["B"]:
+			if viewer is self._captains["B"]:
 				return "B"
 			return None
 
 		def get_trainer(self, side):
-			return self._trainers.get(side)
+			return self._captains.get(side)
 
 		@property
 		def weather(self):
@@ -119,8 +124,10 @@ def display_battle_interface(
 		# Optional, used by UI title and _battle_tag for wild encounters
 		encounter_kind = property(lambda self: getattr(self._state, "encounter_kind", ""))
 
-	viewer = trainer if viewer_team == "A" else opponent if viewer_team == "B" else None
-	adapter = _StateAdapter(trainer, opponent, battle_state)
+	viewer = (
+		captain_a if viewer_team == "A" else captain_b if viewer_team == "B" else None
+	)
+	adapter = _StateAdapter(captain_a, captain_b, battle_state)
 	return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)
 
 
@@ -128,7 +135,7 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 	"""Return interface strings for both sides and observers.
 
 	This helper centralises construction of the per-side battle UI.  It wraps
-	:func:`display_battle_interface` for the two trainers and for watchers so
+:func:`display_battle_interface` for the two captains and for watchers so
 	the caller can simply broadcast the returned strings to the appropriate
 	audiences.
 
@@ -150,10 +157,10 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 		respectively.
 	"""
 
-	# ``display_battle_interface`` always expects the trainers in A/B order and
-	# relies on ``viewer_team`` to determine perspective.  Pass ``captain_a`` and
-	# ``captain_b`` in that order for every call so the helper remains consistent
-	# for all viewers.
+# ``display_battle_interface`` always expects the captains in A/B order and
+# relies on ``viewer_team`` to determine perspective.  Pass ``captain_a`` and
+# ``captain_b`` in that order for every call so the helper remains consistent
+# for all viewers.
 	iface_a = display_battle_interface(
 	captain_a,
 	captain_b,
