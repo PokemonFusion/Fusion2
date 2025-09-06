@@ -1,32 +1,23 @@
-import re
+# Tabs are intentional.
+from __future__ import annotations
 
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import get_object_or_404, redirect, render
-
-try:
-	from evennia.utils import text2html
-except Exception:  # pragma: no cover - fallback for tests without evennia
-
-	class _Dummy:
-		@staticmethod
-		def parse_html(text, strip_ansi=False):
-			return text
-
-	text2html = _Dummy()
-from evennia import create_object
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, HttpRequest, HttpResponse
+from django.views.decorators.http import require_POST
 from evennia.objects.models import ObjectDB
-
-from typeclasses.exits import Exit
-
-from .forms import ExitForm, RoomForm
-
-
-def _parse_aliases(raw: str) -> list[str]:
-	"""Return a list of aliases from a raw string."""
-	if not raw:
-		return []
-	pieces = re.split(r"[;,\s]+", raw)
-	return [p for p in (s.strip() for s in pieces) if p]
+try:
+	from evennia.utils.text2html import parse_html
+except Exception:
+	def parse_html(text, strip_ansi=False):
+		return text
+from django.db import transaction
+from utils.build_utils import reverse_dir
+from .forms import RoomForm, ExitForm
+try:
+	from evennia import DefaultExit
+except Exception:
+	class DefaultExit:
+		path = ""
 
 def _default_exit_locks(user) -> str:
 	"""Return the default lockstring for a new exit.
@@ -59,180 +50,146 @@ def _default_exit_locks(user) -> str:
 		"view:all()"
 	)
 
-def is_builder(user):
-	"""Return True if user has Builder or Admin permissions."""
-	if not user.is_authenticated:
-		return False
-	return user.is_superuser or user.check_permstring("Builder") or user.check_permstring("Builders")
+def _room_qs():
+	"""Queryset for room objects."""
+	return ObjectDB.objects.filter(db_typeclass_path__icontains=".rooms.")
 
+def _exit_qs():
+	"""Queryset for exit objects."""
+	return ObjectDB.objects.filter(db_typeclass_path__icontains=".exits.")
 
-@login_required
-@user_passes_test(is_builder)
-def room_list(request):
-	"""Display a list of all rooms."""
-	rooms = ObjectDB.objects.filter(db_location__isnull=True, db_typeclass_path__contains="rooms").order_by("id")
-	dangling = {room.id: not ObjectDB.objects.filter(db_destination=room).exists() for room in rooms}
-	dangling_ids = [rid for rid, val in dangling.items() if val]
-	return render(
-		request,
-		"roomeditor/room_list.html",
-		{"rooms": rooms, "dangling_ids": dangling_ids},
-	)
-
-
-@login_required
-@user_passes_test(is_builder)
-def room_edit(request, room_id=None):
-	"""Create or edit a room."""
-	room = None
-	if room_id:
-		room = get_object_or_404(ObjectDB, id=room_id)
-	if request.method == "POST" and ("save_room" in request.POST or "preview_room" in request.POST):
-		form = RoomForm(request.POST)
-		if form.is_valid():
-			data = form.cleaned_data
-			if "save_room" in request.POST:
-				if room is None:
-					room = create_object(data["room_class"], key=data["name"])
-				elif room.typeclass_path != data["room_class"]:
-					room.swap_typeclass(data["room_class"], clean_attributes=False)
-				room.key = data["name"]
-				room.db.desc = data["desc"]
-				room.db.is_pokemon_center = data["is_center"]
-				room.db.is_item_shop = data["is_shop"]
-				room.db.allow_hunting = data["allow_hunting"]
-				chart = []
-				for entry in data["hunt_chart"].split(","):
-					if not entry.strip():
-						continue
-					try:
-						mon, rate = entry.split(":")
-						chart.append({"name": mon.strip(), "weight": int(rate.strip())})
-					except ValueError:
-						continue
-				room.db.hunt_chart = chart
-				room.save()
-				return redirect("roomeditor:room-list")
-			else:
-				data["desc_html"] = text2html.parse_html(data["desc"])
-				return render(request, "roomeditor/room_preview.html", {"preview": data})
-	else:
-		initial = {"room_class": "typeclasses.rooms.Room"}
-		if room:
-			chart = room.db.hunt_chart or []
-			initial = {
-				"name": room.key,
-				"desc": room.db.desc,
-				"room_class": room.typeclass_path,
-				"is_center": room.db.is_pokemon_center,
-				"is_shop": room.db.is_item_shop,
-				"allow_hunting": room.db.allow_hunting,
-				"hunt_chart": ", ".join(f"{entry['name']}:{entry.get('weight', 1)}" for entry in chart),
-			}
-		form = RoomForm(initial=initial)
-
-	exit_form = ExitForm()
-	outgoing = []
-	incoming = []
-	if room:
-		outgoing = ObjectDB.objects.filter(db_location=room, db_typeclass_path__contains="exits")
-		incoming = ObjectDB.objects.filter(db_destination=room)
-	if request.method == "POST" and "add_exit" in request.POST and room:
-		exit_form = ExitForm(request.POST)
-		if exit_form.is_valid():
-			dest = get_object_or_404(ObjectDB, id=int(exit_form.cleaned_data["dest_id"]))
-			exit_obj = create_object(
-				Exit,
-				key=exit_form.cleaned_data["direction"],
-				location=room,
-				destination=dest,
-			)
-			exit_obj.db.desc = exit_form.cleaned_data.get("desc")
-			exit_obj.db.err_traverse = exit_form.cleaned_data.get("err_traverse")
-			lockstring = exit_form.cleaned_data.get("locks")
-			if lockstring:
-				exit_obj.locks.replace(lockstring)
-			aliases = _parse_aliases(exit_form.cleaned_data.get("aliases"))
-			if aliases:
-				exit_obj.aliases.add(aliases)
-			exit_obj.at_cmdset_get(force_init=True)
-			return redirect("roomeditor:room-edit", room_id=room.id)
-
-	context = {
-		"form": form,
-		"room": room,
-		"exit_form": exit_form,
-		"outgoing": outgoing,
-		"incoming": incoming,
-		"no_incoming": room is not None and not incoming,
-		"default_locks": _default_exit_locks(request.user),
-	}
-	return render(request, "roomeditor/room_form.html", context)
-
-
-@login_required
-@user_passes_test(is_builder)
-def delete_exit(request, exit_id, room_id):
-	room = get_object_or_404(ObjectDB, id=room_id)
-	exit_obj = get_object_or_404(ObjectDB, id=exit_id)
-	exit_obj.delete()
-	return redirect("roomeditor:room-edit", room_id=room.id)
-
-
-@login_required
-@user_passes_test(is_builder)
-def delete_room(request, room_id):
-	"""Delete an existing room and return to the list."""
-	room = get_object_or_404(ObjectDB, id=room_id)
-	room.delete()
-	return redirect("roomeditor:room-list")
-
-
-@login_required
-@user_passes_test(is_builder)
-def edit_exit(request, room_id, exit_id):
-	"""Edit an existing exit."""
-	room = get_object_or_404(ObjectDB, id=room_id)
-	exit_obj = get_object_or_404(ObjectDB, id=exit_id)
+def room_edit(request: HttpRequest, pk: int):
+	"""Edit an existing room."""
+	room = get_object_or_404(_room_qs(), pk=pk)
 	if request.method == "POST":
-		form = ExitForm(request.POST)
+		form = RoomForm(request.POST, instance=room)
 		if form.is_valid():
-			exit_obj.key = form.cleaned_data["direction"]
-			exit_obj.destination = get_object_or_404(ObjectDB, id=int(form.cleaned_data["dest_id"]))
-			exit_obj.db.desc = form.cleaned_data.get("desc")
-			exit_obj.db.err_traverse = form.cleaned_data.get("err_traverse")
-			lockstring = form.cleaned_data.get("locks")
-			if lockstring:
-				exit_obj.locks.replace(lockstring)
-			else:
-				exit_obj.locks.clear()
-			exit_obj.aliases.clear()
-			aliases = _parse_aliases(form.cleaned_data.get("aliases"))
-			if aliases:
-				exit_obj.aliases.add(aliases)
-			exit_obj.save()
-			exit_obj.at_cmdset_get(force_init=True)
-			return redirect("roomeditor:room-edit", room_id=room.id)
+			form.save()
+			if request.headers.get("Hx-Request") or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+				return JsonResponse({"ok": True})
+			return redirect("roomeditor:room_edit", pk=room.pk)
 	else:
-		form = ExitForm(
-			initial={
-				"direction": exit_obj.key,
-				"dest_id": exit_obj.destination.id if exit_obj.destination else None,
-				"desc": exit_obj.db.desc,
-				"err_traverse": exit_obj.db.err_traverse,
-				"locks": str(exit_obj.locks),
-				"aliases": "; ".join(exit_obj.aliases.all()),
-				"exit_id": exit_obj.id,
-			}
-		)
-
+		form = RoomForm(instance=room)
+	incoming = _exit_qs().filter(db_destination_id=room.id).exists()
 	return render(
 		request,
-		"roomeditor/exit_form.html",
+		"roomeditor/room_form.html",
 		{
 			"form": form,
 			"room": room,
-			"exit": exit_obj,
-			"default_locks": _default_exit_locks(request.user),
+			"has_incoming": incoming,
+			"exits": _exit_qs().filter(db_location_id=room.id).order_by("db_key"),
 		},
 	)
+
+@require_POST
+def ansi_preview(request: HttpRequest):
+	"""Return ANSI text rendered to HTML."""
+	text = request.POST.get("text", "")
+	html = parse_html(text, strip_ansi=False)
+	return JsonResponse({"html": html})
+
+def exit_new(request: HttpRequest, room_pk: int):
+	"""Create a new exit from a room."""
+	room = get_object_or_404(_room_qs(), pk=room_pk)
+	if request.method == "POST":
+		form = ExitForm(request.POST)
+		if form.is_valid():
+			with transaction.atomic():
+				ex = ObjectDB.objects.create(
+					typeclass_path=DefaultExit.path,
+					db_key=form.cleaned_data["key"],
+					db_location=room,
+					db_destination=form.cleaned_data["destination"],
+				)
+				aliases = form.cleaned_alias_list()
+				if aliases:
+					ex.aliases.add(*aliases)
+				if form.cleaned_data.get("description"):
+					ex.db.desc = form.cleaned_data["description"]
+				if form.cleaned_data.get("lockstring"):
+					ex.locks.add(form.cleaned_data["lockstring"])
+				if form.cleaned_data.get("err_msg"):
+					ex.db.err_traverse = form.cleaned_data["err_msg"]
+				rev_obj = None
+				if form.cleaned_data.get("auto_reverse"):
+					rkey = reverse_dir(form.cleaned_data["key"])
+					if rkey:
+						rev_obj = ObjectDB.objects.create(
+							typeclass_path=DefaultExit.path,
+							db_key=rkey,
+							db_location=form.cleaned_data["destination"],
+							db_destination=room,
+						)
+						if aliases:
+							rev_obj.aliases.add(*aliases)
+						if form.cleaned_data.get("description"):
+							rev_obj.db.desc = form.cleaned_data["description"]
+						if form.cleaned_data.get("lockstring"):
+							rev_obj.locks.add(form.cleaned_data["lockstring"])
+						if form.cleaned_data.get("err_msg"):
+							rev_obj.db.err_traverse = form.cleaned_data["err_msg"]
+			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+				html = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")
+				return JsonResponse({"ok": True, "row_html": html})
+			return redirect("roomeditor:room_edit", pk=room.pk)
+	else:
+		form = ExitForm()
+	return render(request, "roomeditor/_exit_form.html", {"form": form, "room": room})
+
+def exit_edit(request: HttpRequest, pk: int):
+	"""Edit an existing exit."""
+	ex = get_object_or_404(_exit_qs(), pk=pk)
+	if request.method == "POST":
+		form = ExitForm(request.POST)
+		if form.is_valid():
+			with transaction.atomic():
+				ex.key = form.cleaned_data["key"]
+				ex.destination = form.cleaned_data["destination"]
+				ex.aliases.clear()
+				aliases = form.cleaned_alias_list()
+				if aliases:
+					ex.aliases.add(*aliases)
+				ex.db.desc = form.cleaned_data.get("description") or ""
+				ex.locks.clear()
+				if form.cleaned_data.get("lockstring"):
+					ex.locks.add(form.cleaned_data["lockstring"])
+				ex.db.err_traverse = form.cleaned_data.get("err_msg") or ""
+			ex.save()
+			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+				row = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")
+				return JsonResponse({"ok": True, "row_html": row})
+			return redirect("roomeditor:room_edit", pk=ex.location_id)
+	else:
+		initial = {
+			"key": ex.key,
+			"destination": ex.destination_id,
+			"description": ex.db.desc or "",
+			"lockstring": ex.locks.first().lockstring if ex.locks.first() else "",
+			"err_msg": ex.db.err_traverse or "",
+			"aliases": ", ".join(ex.aliases.all()),
+			"auto_reverse": False,
+		}
+		form = ExitForm(initial=initial)
+	return render(request, "roomeditor/_exit_form.html", {"form": form, "exit": ex})
+
+@require_POST
+def exit_delete(request: HttpRequest, pk: int):
+	"""Delete an exit."""
+	ex = get_object_or_404(_exit_qs(), pk=pk)
+	room_pk = ex.location_id
+	ex.delete()
+	if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+		return JsonResponse({"ok": True})
+	return redirect("roomeditor:room_edit", pk=room_pk)
+
+def room_search_api(request: HttpRequest):
+	"""Return rooms matching a query for autocomplete."""
+	q = (request.GET.get("q") or "").strip()
+	results = []
+	if q:
+		qs = _room_qs().filter(db_key__icontains=q).order_by("db_key")[:20]
+		results = [{"id": r.id, "text": f"{r.key} (#{r.id})"} for r in qs]
+	return JsonResponse({"results": results})
+
+room_edit.__wrapped__ = room_edit

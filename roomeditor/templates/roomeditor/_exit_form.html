@@ -1,0 +1,15 @@
+<form id="exit-form" method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Save</button>
+    </div>
+</form>
+<script>
+// Enhance destination select with a basic text filter w/o heavy libs.
+(function(){
+    const sel = document.querySelector('select[data-role="destination-select"]');
+    if (!sel) return;
+    // Minimal: no client filter; rely on server search endpoint via roomeditor.js autocomplete.
+})();
+</script>
