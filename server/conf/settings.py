@@ -47,20 +47,23 @@ AUTO_PUPPET_ON_LOGIN = False
 # production environments.
 DEV_MODE = False
 
+# Run world initialization hooks at server start/stop
+SERVER_STARTSTOP_MODULE = "world.system_init"
+
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
 ######################################################################
 try:
-	from server.conf.secret_settings import *
+    from server.conf.secret_settings import *
 except ImportError:
-	print("secret_settings.py file not found or failed to import.")
+    print("secret_settings.py file not found or failed to import.")
 
 # Optional third-party apps. None at this time.
 
 # Local apps
 INSTALLED_APPS += (
-	"pokemon",
-	"roomeditor",
+    "pokemon",
+    "roomeditor",
 )
 
 # Allow use of unconventional field names used in legacy models
@@ -68,13 +71,13 @@ SILENCED_SYSTEM_CHECKS = ["fields.E001"]
 
 # Custom permission hierarchy with Validator role
 PERMISSION_HIERARCHY = [
-	"Guest",
-	"Player",
-	"Helper",
-	"Validator",
-	"Builder",
-	"Admin",
-	"Developer",
+    "Guest",
+    "Player",
+    "Helper",
+    "Validator",
+    "Builder",
+    "Admin",
+    "Developer",
 ]
 
 # Use the custom character typeclass with Pokémon helpers

@@ -81,7 +81,15 @@ from .storage import BattleDataWrapper
 
 
 class BattleInstance(_ScriptBase):
-    """Legacy placeholder kept to clean up old script-based battles."""
+    """Legacy placeholder used to clean up obsolete script-based battles.
+
+    Subclassing ``ScriptBase`` lets Evennia treat this as a valid script when
+    loading old records, while the abstract ``Meta`` prevents Django from
+    registering an additional model.
+    """
+
+    class Meta:
+        abstract = True  # prevent Django from creating a new model
 
     def at_script_creation(self):
         self.persistent = False

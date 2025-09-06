@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
+from django.db import IntegrityError
+from django.db.models import Max
 from django.utils import timezone
 from evennia import DefaultCharacter
 
@@ -35,6 +37,7 @@ except Exception:  # pragma: no cover - fallback during import issues
             return objs[0] if objs else None
         return None
 
+
 if TYPE_CHECKING:  # pragma: no cover - type checking only
     from .models import GymBadge, StorageBox, Trainer, UserStorage
 
@@ -64,8 +67,7 @@ class User(DefaultCharacter, InventoryMixin):
 
     def show_pokemon_on_user(self):
         party = (
-            self.storage.get_party() if hasattr(self.storage, "get_party") else list(
-                self.storage.active_pokemon.all())
+            self.storage.get_party() if hasattr(self.storage, "get_party") else list(self.storage.active_pokemon.all())
         )
         return "\n".join(
             f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}" for pokemon in party
@@ -98,9 +100,15 @@ class User(DefaultCharacter, InventoryMixin):
         # Ensure a storage record and starter boxes exist for this character.
         _ = self.storage
         Trainer = apps.get_model("pokemon", "Trainer")
-        Trainer.objects.get_or_create(
-            user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
-        )
+        # allocate next available trainer number to avoid unique collisions
+        next_number = (Trainer.objects.aggregate(max_num=Max("trainer_number"))["max_num"] or 0) + 1
+        while True:
+            try:
+                Trainer.objects.get_or_create(user=self, defaults={"trainer_number": next_number})
+            except IntegrityError:
+                next_number += 1
+                continue
+            break
         if self.db.inventory is None:
             from utils.inventory import Inventory
 
@@ -202,16 +210,13 @@ class User(DefaultCharacter, InventoryMixin):
 
     def get_active_pokemon_by_slot(self, slot: int):
         """Return the active Pokémon at the given slot (1-6)."""
-        slot_obj = self.storage.active_slots.select_related(
-            "pokemon").filter(slot=slot).first()
+        slot_obj = self.storage.active_slots.select_related("pokemon").filter(slot=slot).first()
         return slot_obj.pokemon if slot_obj else None
 
     @property
     def trainer(self) -> "Trainer":
         Trainer = apps.get_model("pokemon", "Trainer")
-        trainer, _ = Trainer.objects.get_or_create(
-            user=self, defaults={"trainer_number": Trainer.objects.count() + 1}
-        )
+        trainer, _ = Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
         return trainer
 
     # Helper proxy methods
