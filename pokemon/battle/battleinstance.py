@@ -71,24 +71,31 @@ from .compat import (
     log_warn,
     search_object,
 )
-from .compat import (
-    ScriptBase as _ScriptBase,
-)
 from .handler import battle_handler
 from .persistence import StatePersistenceMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
 from .storage import BattleDataWrapper
 
 
-class BattleInstance(_ScriptBase):
-    """Legacy placeholder kept to clean up old script-based battles."""
+class BattleInstance:
+    """
+    Legacy placeholder kept to clean up old script-based battles.
+
+    NOTE: Do NOT subclass Evennia's Script base here. Making this a plain class
+    avoids Django registering another 'battleinstance' model in the 'scripts' app,
+    which conflicts with services.battle.instance.BattleInstance.
+    """
 
     def at_script_creation(self):
-        self.persistent = False
+        """No-op kept for backward compatibility."""
+        setattr(self, "persistent", False)
 
     def at_server_start(self):
+        """Best-effort call to stop an old script object if present."""
         try:
-            self.stop()
+            stop = getattr(self, "stop", None)
+            if callable(stop):
+                stop()
         except Exception:
             pass
 
