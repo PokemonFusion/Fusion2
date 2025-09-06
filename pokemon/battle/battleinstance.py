@@ -71,30 +71,32 @@ from .compat import (
     log_warn,
     search_object,
 )
+from .compat import (
+    ScriptBase as _ScriptBase,
+)
 from .handler import battle_handler
 from .persistence import StatePersistenceMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
 from .storage import BattleDataWrapper
 
 
-class BattleInstance:
+class BattleInstance(_ScriptBase):
+    """Legacy placeholder used to clean up obsolete script-based battles.
+
+    Subclassing ``ScriptBase`` lets Evennia treat this as a valid script when
+    loading old records, while the abstract ``Meta`` prevents Django from
+    registering an additional model.
     """
-    Legacy placeholder kept to clean up old script-based battles.
-    NOTE: Do NOT subclass Evennia's Script base here. Making this a plain class
-    avoids Django registering another 'battleinstance' model in the 'scripts' app,
-    which conflicts with ``services.battle.instance.BattleInstance``.
-    """
+
+    class Meta:
+        abstract = True  # prevent Django from creating a new model
 
     def at_script_creation(self):
-        """No-op; kept for backward compatibility."""
-        setattr(self, "persistent", False)
+        self.persistent = False
 
     def at_server_start(self):
-        """Best-effort stop if an old script object happens to call into this."""
         try:
-            stop = getattr(self, "stop", None)
-            if callable(stop):
-                stop()
+            self.stop()
         except Exception:
             pass
 
