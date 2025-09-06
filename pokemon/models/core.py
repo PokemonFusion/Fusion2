@@ -189,7 +189,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		through="PokemonLearnedMove",
 	)
 	active_moveset = models.ForeignKey(
-		"Moveset",
+		"pokemon.Moveset",
 		null=True,
 		blank=True,
 		on_delete=models.SET_NULL,
@@ -255,7 +255,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			from pokemon.dex import MOVEDEX  # type: ignore
 		except Exception:
 			try:
-				from pokemon.data.moves import py_dict as MOVEDEX  # type: ignore
+                            from pokemon.dex.moves.movesdex import py_dict as MOVEDEX  # type: ignore
 			except Exception:  # pragma: no cover - optional
 				MOVEDEX = {}
 

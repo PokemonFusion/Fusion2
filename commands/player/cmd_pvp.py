@@ -1,4 +1,5 @@
 from evennia import Command
+from utils.locks import require_no_battle_lock
 
 from pokemon.battle.pvp import (
 	create_request,
@@ -42,6 +43,8 @@ class CmdPvpList(Command):
 	help_category = "Pokemon/PvP"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		reqs = get_requests(self.caller.location)
 		if not reqs:
 			self.caller.msg("No active PVP requests here.")
@@ -65,6 +68,8 @@ class CmdPvpCreate(Command):
 	help_category = "Pokemon/PvP"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		password = self.args.strip() or None
 		try:
 			create_request(self.caller, password=password)
@@ -86,6 +91,8 @@ class CmdPvpJoin(Command):
 	help_category = "Pokemon/PvP"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		if not self.args:
 			self.caller.msg("Usage: +pvp/join <player> [password]")
 			return
@@ -138,6 +145,8 @@ class CmdPvpAbort(Command):
 	help_category = "Pokemon/PvP"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		remove_request(self.caller)
 		self.caller.msg("PVP request aborted.")
 
@@ -154,6 +163,8 @@ class CmdPvpStart(Command):
 	help_category = "Pokemon/PvP"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		reqs = get_requests(self.caller.location)
 		req = reqs.get(self.caller.id)
 		if not req:

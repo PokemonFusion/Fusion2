@@ -159,9 +159,12 @@ class User(DefaultCharacter, InventoryMixin):
         return boxes[index - 1]
 
     def deposit_pokemon(self, pokemon_id: str, box_index: int = 1) -> str:
+        """Deposit a Pokémon into a storage box if possible."""
+
         pokemon = self.get_pokemon_by_id(pokemon_id)
         if not pokemon:
             return "No such Pokémon."
+
         if pokemon in self.storage.active_pokemon.all():
             self.storage.remove_active_pokemon(pokemon)
         self.storage.stored_pokemon.add(pokemon)

@@ -10,18 +10,20 @@ To keep these environments usable we skip registration for any missing models.
 
 from django.contrib import admin
 
-from ..models import (
-    ActiveMoveslot,
-    BattleSlot,
-    GymBadge,
-    Move,
-    OwnedPokemon,
-    Pokemon,
-    StorageBox,
-    Trainer,
-    UserStorage,
-)
-from .owned_pokemon import OwnedPokemonAdmin
+try:  # pragma: no cover - defensive import
+    from ..models.core import BattleSlot, OwnedPokemon, Pokemon
+    from ..models.moves import ActiveMoveslot, Move
+    from ..models.storage import StorageBox, UserStorage
+    from ..models.trainer import GymBadge, Trainer
+except Exception:  # Any import failure leaves models unset for safe registration
+    Pokemon = OwnedPokemon = BattleSlot = None
+    Move = ActiveMoveslot = None
+    Trainer = GymBadge = None
+    StorageBox = UserStorage = None
+try:  # pragma: no cover - defensive import
+    from .owned_pokemon import OwnedPokemonAdmin
+except Exception:  # Missing model leaves admin class unset
+    OwnedPokemonAdmin = None
 
 
 def _register(model, admin_class=None):

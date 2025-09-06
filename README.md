@@ -2,7 +2,7 @@
 
 This project is an experimental MUD built with [Evennia](https://www.evennia.com/). It aims to reimagine the world of Pokémon in a text-based multiplayer setting. The repository hosts the game code as well as data files for Pokémon, regions and mechanics.
 
-Please note that the server is under heavy development. You can follow progress on the [GitHub repository](https://github.com/PokemonFusion/Fusion2) and report issues on the [issue tracker](https://github.com/PokemonFusion/Fusion2/issues).
+Please note that the server is under heavy development. You can follow progress on the project repository and report issues on the corresponding tracker.
 
 For setup instructions and other notes migrated from the original Evennia README, see [README.instructions.md](README.instructions.md).
 
@@ -14,7 +14,7 @@ Project documentation lives in the [docs](docs/) folder:
 - [Code Map](docs/code-map.md)
 - [Reference Materials](docs/reference)
 
-To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
+The codebase targets **Python 3.12**. To run the server you must install the Python requirements, including `psycopg2` for PostgreSQL support:
 
 ```bash
 pip install -r requirements.txt
@@ -29,17 +29,23 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt  # optional
 ```
 
-You can then run the test suite with `pytest`.  See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+Continuous integration stubs out the Evennia dependency by setting `PF2_NO_EVENNIA=1` before running tests.  Export this variable locally to mimic the CI environment and avoid requiring Evennia:
+
+```bash
+export PF2_NO_EVENNIA=1
+make test
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 A project-wide [.editorconfig](.editorconfig) enforces tab indentation and LF line endings. Linting is configured through [ruff.toml](ruff.toml), and tests are discovered via [pytest.ini](pytest.ini). Copy [.env.example](.env.example) to `.env` to configure local environment variables. Common development tasks are provided by the [Makefile](Makefile):
 
 ```bash
 make setup  # install dependencies
 make lint   # run Ruff
-make test   # run pytest
+make test   # run tests
 ```
 
 ## License
 
 This project is distributed under the terms of the [MIT License](LICENSE).
-

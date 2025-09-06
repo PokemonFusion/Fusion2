@@ -80,7 +80,7 @@ class Moveset(models.Model):
 class MovesetSlot(models.Model):
 	"""A single move within a moveset."""
 
-	moveset = models.ForeignKey("Moveset", on_delete=models.CASCADE, related_name="slots")
+	moveset = models.ForeignKey("pokemon.Moveset", on_delete=models.CASCADE, related_name="slots")
 	move = models.ForeignKey("Move", on_delete=models.CASCADE)
 	slot = models.PositiveSmallIntegerField()
 

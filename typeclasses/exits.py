@@ -13,14 +13,17 @@ from .objects import ObjectParent
 
 
 class Exit(ObjectParent, DefaultExit):
-	"""
-	Exits are connectors between rooms. Exits are normal Objects except
-	they defines the `destination` property and overrides some hooks
-	and methods to represent the exits.
+    """Exit connecting two rooms.
 
-	See mygame/typeclasses/objects.py for a list of
-	properties and methods available on all Objects child classes like this.
+    Exits are normal :class:`evennia.objects.objects.DefaultObject` subclasses
+    that define a ``destination`` and may customize traversal behavior.
 
-	"""
+    See ``mygame/typeclasses/objects.py`` for available properties and
+    methods common to all object child classes.
+    """
 
-	pass
+    # Exits should never override core command aliases such as ``look``. By
+    # giving exits a lower priority than the default cmdset, regular commands
+    # will take precedence when there is a name clash with an exit alias (for
+    # example, an exit alias ``l`` will no longer shadow the ``look`` command).
+    priority = -1

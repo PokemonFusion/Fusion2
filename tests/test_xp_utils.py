@@ -6,9 +6,9 @@ get_next_level_xp = mod.get_next_level_xp
 
 
 class DummyMon:
-	def __init__(self, **attrs):
-		for k, v in attrs.items():
-			setattr(self, k, v)
+        def __init__(self, **attrs):
+                for k, v in attrs.items():
+                        setattr(self, k, v)
 
 
 def test_get_display_xp_attribute():
@@ -22,8 +22,14 @@ def test_get_display_xp_from_total_exp():
 
 
 def test_get_display_xp_missing():
-	mon = DummyMon()
-	assert get_display_xp(mon) == 0
+        mon = DummyMon()
+        assert get_display_xp(mon) == 0
+
+
+def test_get_display_xp_from_db():
+        mon = DummyMon()
+        mon.db = DummyMon(total_exp=450)
+        assert get_display_xp(mon) == 450
 
 
 def test_get_next_level_xp():

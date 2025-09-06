@@ -202,23 +202,27 @@ class CmdUiPreview(Command):
 		if "/waiting " in args:
 			self.waiting_on = args.split("/waiting ", 1)[1].strip() or None
 
-	def func(self):
-		caller = self.caller
-		state = make_mock_battle_state()
-		trainerA, trainerB = state.trainerA, state.trainerB
-		ui = display_battle_interface(
-			trainerA,
-			trainerB,
-			state,
-			viewer_team=self.viewer_team,
-			waiting_on=self.waiting_on,
-		)
-		caller.msg(ui)
-		view_team = self.viewer_team or "A"
-		active = trainerA.active_pokemon if view_team == "A" else trainerB.active_pokemon
-		slots, pp_overrides = build_moves_dict_from_active(active)
-		gui = render_move_gui(slots, pp_overrides=pp_overrides)
-		caller.msg("\n" + gui)
+        def func(self):
+                caller = self.caller
+                state = make_mock_battle_state()
+                captain_a, captain_b = state.captainA, state.captainB
+                ui = display_battle_interface(
+                        captain_a,
+                        captain_b,
+                        state,
+                        viewer_team=self.viewer_team,
+                        waiting_on=self.waiting_on,
+                )
+                caller.msg(ui)
+                view_team = self.viewer_team or "A"
+                active = (
+                        captain_a.active_pokemon
+                        if view_team == "A"
+                        else captain_b.active_pokemon
+                )
+                slots, pp_overrides = build_moves_dict_from_active(active)
+                gui = render_move_gui(slots, pp_overrides=pp_overrides)
+                caller.msg("\n" + gui)
 
 
 @dataclass
@@ -241,13 +245,13 @@ class MockTrainer:
 
 @dataclass
 class MockBattleState:
-	trainerA: MockTrainer
-	trainerB: MockTrainer
-	weather: str = "Hail"
-	field: str = "Electric Terrain"
-	round: int = 5
-	declare: dict = dc_field(default_factory=dict)
-	watchers: set = dc_field(default_factory=set)
+        captainA: MockTrainer
+        captainB: MockTrainer
+        weather: str = "Hail"
+        field: str = "Electric Terrain"
+        round: int = 5
+        declare: dict = dc_field(default_factory=dict)
+        watchers: set = dc_field(default_factory=set)
 
 
 def make_mock_battle_state() -> MockBattleState:
@@ -255,11 +259,11 @@ def make_mock_battle_state() -> MockBattleState:
 	move_b = {"name": "Ember", "type": "Fire", "category": "Special", "pp": (25, 25), "power": 40, "accuracy": 100}
 	mon_a = MockPokemon(name="Eevee", hp=39, max_hp=55, moves=[move_a])
 	mon_b = MockPokemon(name="Charmander", hp=39, max_hp=39, moves=[move_b])
-	trainerA = MockTrainer(name="Red", team=[mon_a], active_pokemon=mon_a)
-	trainerB = MockTrainer(name="Blue", team=[mon_b], active_pokemon=mon_b)
-	state = MockBattleState(trainerA=trainerA, trainerB=trainerB)
-	state.declare = {"A1": {"move": "Tackle", "target": "B1"}, "B1": {"move": "Ember", "target": "A1"}}
-	return state
+        captainA = MockTrainer(name="Red", team=[mon_a], active_pokemon=mon_a)
+        captainB = MockTrainer(name="Blue", team=[mon_b], active_pokemon=mon_b)
+        state = MockBattleState(captainA=captainA, captainB=captainB)
+        state.declare = {"A1": {"move": "Tackle", "target": "B1"}, "B1": {"move": "Ember", "target": "A1"}}
+        return state
 
 
 def build_moves_dict_from_active(active: Any) -> Tuple[List[Any], Dict[int, int]]:

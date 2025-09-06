@@ -40,7 +40,7 @@ exclude = [
 line-length = 100
 
 [tool.ruff.format]
-indent-style = "tab"
+indent-style = "space"
 
 
 [tool.ruff.lint]
@@ -48,7 +48,6 @@ indent-style = "tab"
 ignore = [
 	"F841",  # allow unused local variables
 	"F402",  # allow import shadowed by loop variable
-	"E101",  # allow indention to contain mixed spaces and tabs
 	"E402",  # allow module level import not at top of file
 	"F821",  # allow undefined name
 	"E731",  # allow lamba expression for assigning.
@@ -66,9 +65,11 @@ select = ["E", "F", "I"]
 # Generated dex/data modules using star-import helpers.
 "pokemon/dex/abilities/abilitiesdex.py" = ["F403"]
 "pokemon/dex/items/itemsdex.py" = ["F403"]
-"pokemon/data/moves.py" = ["F403"]
+"pokemon/dex/moves/movesdex.py" = ["F403", "E101"]
 "pokemon/dex/conditions.py" = ["F403"]
 "pokemon/dex/pokedex/*.py" = ["F403"]
+
+"pokemon/ui/move_gui.py" = ["E101"]
 
 # Tooling that mirrors the same generation pattern.
 "tools/data_generation/dex/py/abilitiesdex.py" = ["F403"]

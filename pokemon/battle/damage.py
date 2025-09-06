@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass, field
 from math import floor
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -11,8 +11,16 @@ by a damaging move so that defensive abilities such as Aftermath can respond
 to the attack.
 """
 
-from ..data import TYPE_CHART
-from ..dex import Move, Pokemon
+try:
+	from ..data import TYPE_CHART
+except Exception:  # pragma: no cover - allow tests without data pkg
+	TYPE_CHART = {}
+
+if TYPE_CHECKING:  # pragma: no cover
+	from ..dex import Move, Pokemon
+else:  # pragma: no cover - runtime placeholders
+	Move = Any  # type: ignore[assignment]
+	Pokemon = Any  # type: ignore[assignment]
 
 try:  # pragma: no cover - allow running as a standalone module in tests
 	from pokemon.battle.callbacks import _resolve_callback
@@ -73,24 +81,40 @@ def critical_hit_check() -> bool:
 	return percent_check(1 / 24)
 
 
+def _get_types(pokemon) -> List[str]:
+	"""Return normalized types for ``pokemon``.
+
+	Prefers the runtime ``pokemon.types`` attribute but falls back to
+	``pokemon.species.types`` when missing or empty.  Returned values are
+	lowercase strings to simplify comparisons.
+	"""
+
+	types = getattr(pokemon, "types", None)
+	if types:
+		return [str(t).lower() for t in types]
+	species = getattr(pokemon, "species", None)
+	types = getattr(species, "types", None)
+	return [str(t).lower() for t in (types or [])]
+
+
 def base_damage(level: int, power: int, atk: int, defense: int, *, return_roll: bool = False):
-        """Return base damage and optionally the random roll used.
+	"""Return base damage and optionally the random roll used.
 
-        The simplified damage formula can receive zero values for ``atk`` or
-        ``defense`` when stubbed Pokémon instances lack proper stats.  Clamp
-        both to at least ``1`` so we avoid division-by-zero errors and always
-        inflict a minimum of one point of damage after applying the random
-        modifier.
-        """
+	The simplified damage formula can receive zero values for ``atk`` or
+	``defense`` when stubbed Pokémon instances lack proper stats.  Clamp
+	both to at least ``1`` so we avoid division-by-zero errors and always
+	inflict a minimum of one point of damage after applying the random
+	modifier.
+	"""
 
-        defense = max(1, defense)
-        atk = max(1, atk)
-        dmg = floor(floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50) + 2
-        rand_mod = random.randint(85, 100) / 100.0
-        result = max(1, floor(dmg * rand_mod))
-        if return_roll:
-                return result, rand_mod
-        return result
+	defense = max(1, defense)
+	atk = max(1, atk)
+	dmg = floor(floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50) + 2
+	rand_mod = random.randint(85, 100) / 100.0
+	result = max(1, floor(dmg * rand_mod))
+	if return_roll:
+		return result, rand_mod
+	return result
 
 
 def stab_multiplier(attacker: Pokemon, move: Move) -> float:
@@ -104,12 +128,8 @@ def stab_multiplier(attacker: Pokemon, move: Move) -> float:
 	if not move.type:
 		return 1.0
 
-	types = getattr(attacker, "types", None)
-	if types is None and hasattr(attacker, "species") and getattr(attacker.species, "types", None):
-		types = attacker.species.types
-	types = types or []
-
-	has_type = move.type.lower() in {t.lower() for t in types}
+	types = _get_types(attacker)
+	has_type = str(move.type).lower() in types
 	stab = 1.5 if has_type else 1.0
 
 	ability = getattr(attacker, "ability", None)
@@ -156,12 +176,21 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
 
 
 def damage_phrase(target: Pokemon, damage: int) -> str:
+	"""Return a coarse description of the damage dealt to ``target``.
+
+	Some tests provide very lightweight Pokémon stubs that may lack valid
+	hit point information, leading to a ``maxhp`` of ``0``.  Clamp the
+	maximum HP to at least ``1`` to avoid division-by-zero errors while
+	still yielding sensible phrases.
+	"""
+
 	try:
 		from pokemon.helpers.pokemon_helpers import get_max_hp
 
 		maxhp = get_max_hp(target)
 	except Exception:  # pragma: no cover - fallback when helpers unavailable
 		maxhp = getattr(getattr(target, "base_stats", None), "hp", 0)
+	maxhp = max(1, maxhp)
 	percent = (damage * 100) / maxhp
 	if percent >= 100:
 		return "EPIC"
