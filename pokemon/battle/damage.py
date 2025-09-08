@@ -538,23 +538,23 @@ def apply_damage(
 	Parameters
 	----------
 	attacker, target:
-	    Combatants involved in the damage calculation.
+		Combatants involved in the damage calculation.
 	move:
-	    The move being used.
+		The move being used.
 	battle:
-	    Optional battle context passed to :func:`damage_calc`.
+		Optional battle context passed to :func:`damage_calc`.
 	spread:
-	    If ``True`` the move is treated as spread damage.
+		If ``True`` the move is treated as spread damage.
 	update_hp:
-	    When ``True`` (default) the calculated damage is subtracted from the
-	    target's HP.  Set to ``False`` to only compute the damage value, e.g.
-	    when hitting a substitute.
+		When ``True`` (default) the calculated damage is subtracted from the
+		target's HP.  Set to ``False`` to only compute the damage value, e.g.
+		when hitting a substitute.
 
 	Returns
 	-------
 	DamageResult
-	    The result object from :func:`damage_calc` with ``debug['damage']``
-	    updated to the final damage amount after callbacks.
+		The result object from :func:`damage_calc` with ``debug['damage']``
+		updated to the final damage amount after callbacks.
 	"""
 
 	result = damage_calc(attacker, target, move, battle=battle, spread=spread)
