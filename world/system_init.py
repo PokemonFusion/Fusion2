@@ -40,3 +40,9 @@ def at_server_start() -> None:
         return
     if not hasattr(system, "battle_manager"):
         system.battle_manager = BattleManager()
+    # Optional: ask manager to rebuild its registry from ServerConfig/rooms
+    if hasattr(system.battle_manager, "restore_from_persistence"):
+        try:
+            system.battle_manager.restore_from_persistence()
+        except Exception:
+            pass

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from types import SimpleNamespace
 from typing import Any, Optional
 
 from utils.safe_import import safe_import
@@ -11,6 +12,7 @@ try:  # pragma: no cover - Evennia may be absent in tests
     evennia = safe_import("evennia")
     DefaultScript = evennia.DefaultScript  # type: ignore[attr-defined]
 except Exception:  # pragma: no cover - fallback
+
     class DefaultScript:  # type: ignore[no-redef]
         """Minimal stand-in for Evennia's ``DefaultScript``."""
 
@@ -27,6 +29,17 @@ from .instance import BattleInstance
 
 class BattleManager(DefaultScript):
     """Global manager maintaining active ``BattleInstance`` objects."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # non-persistent, runtime registry
+        try:
+            self.ndb = getattr(self, "ndb", None) or SimpleNamespace()
+            if not hasattr(self.ndb, "instances"):
+                self.ndb.instances = {}
+        except Exception:
+            # fall back to plain dict attribute in worst case
+            self.ndb = SimpleNamespace(instances={})
 
     def at_script_creation(self) -> None:  # pragma: no cover - only called by Evennia
         self.persistent = True
@@ -47,19 +60,28 @@ class BattleManager(DefaultScript):
         inst.setup(battle_id, getattr(initiator, "id", None))
         if opponent is not None:
             inst.db.state["p2"]["trainer_id"] = getattr(opponent, "id", None)
-        self.ndb.instances[battle_id] = inst
+        registry = getattr(self.ndb, "instances", None)
+        if registry is None:
+            self.ndb.instances = registry = {}
+        registry[battle_id] = inst
         return inst
 
     def get(self, battle_id: int) -> Optional[BattleInstance]:
         """Return the battle instance for ``battle_id`` if active."""
-        return self.ndb.instances.get(battle_id)
+        registry = getattr(self.ndb, "instances", None)
+        if not registry:
+            return None
+        return registry.get(battle_id)
 
     def for_player(self, player) -> Optional[BattleInstance]:
         """Return the instance a player is involved in if any."""
         pid = getattr(player, "id", None)
         if pid is None:
             return None
-        for inst in self.ndb.instances.values():
+        ndb = getattr(self, "ndb", None)
+        if not ndb or not hasattr(ndb, "instances"):
+            return None
+        for inst in ndb.instances.values():
             p1 = inst.db.state.get("p1", {}).get("trainer_id")
             p2 = inst.db.state.get("p2", {}).get("trainer_id")
             if pid in {p1, p2}:
@@ -89,11 +111,14 @@ class BattleManager(DefaultScript):
     # Termination and cleanup
     # ------------------------------------------------------------------
     def abort(self, battle_id: int) -> None:
-        inst = self.get(battle_id)
+        registry = getattr(self.ndb, "instances", None)
+        if not registry:
+            return
+        inst = registry.get(battle_id)
         if not inst:
             return
         inst.invalidate()
-        self.ndb.instances.pop(battle_id, None)
+        registry.pop(battle_id, None)
 
     def abort_request(self, battle_id: int, requester) -> bool:
         """Handle an abort request from ``requester`` for ``battle_id``."""
@@ -102,7 +127,9 @@ class BattleManager(DefaultScript):
             return False
         if inst.db.state.get("turn", 0) < 2:
             inst.invalidate()
-            self.ndb.instances.pop(battle_id, None)
+            registry = getattr(self.ndb, "instances", None)
+            if registry:
+                registry.pop(battle_id, None)
             return True
         rid = getattr(requester, "id", requester)
         inst.db.state.setdefault("log", []).append(f"{rid} forfeits.")
@@ -110,6 +137,9 @@ class BattleManager(DefaultScript):
 
     def gc(self) -> None:
         """Garbage collect invalidated instances."""
-        to_remove = [bid for bid, inst in self.ndb.instances.items() if getattr(inst.ndb, "invalidated", False)]
+        registry = getattr(self.ndb, "instances", None)
+        if not registry:
+            return
+        to_remove = [bid for bid, inst in registry.items() if getattr(inst.ndb, "invalidated", False)]
         for bid in to_remove:
-            self.ndb.instances.pop(bid, None)
+            registry.pop(bid, None)
