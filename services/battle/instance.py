@@ -5,6 +5,8 @@ import random
 import time
 from typing import Any, Dict, Optional
 
+from pokemon.battle.watchers import notify_watchers
+
 try:  # pragma: no cover - model import may fail during tests
     from pokemon.models.core import BattleSlot
 except Exception:  # pragma: no cover - fallback when Django isn't ready
@@ -99,8 +101,10 @@ class BattleInstance(DefaultScript):
         """Send ``text`` to the battle channel if available."""
         chan = getattr(self.ndb, "channel", None)
         prefix = getattr(self.ndb, "prefix", "")
+        message = f"{prefix} {text}" if prefix else text
         if chan and hasattr(chan, "msg"):
-            chan.msg(f"{prefix} {text}")
+            chan.msg(message)
+        notify_watchers(self.db.state, message)
 
     def invalidate(self) -> None:
         """Invalidate the battle without persisting further state."""
