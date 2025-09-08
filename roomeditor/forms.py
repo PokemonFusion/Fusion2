@@ -62,6 +62,10 @@ if hasattr(ObjectDB, "_meta"):
         class Meta:
             model = ObjectDB
             fields = ["db_key", "db_location", "db_lock_storage"]
+            labels = {
+                "db_key": "Name",
+                "db_location": "Room parent",
+            }
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -77,8 +81,8 @@ else:
 
     class RoomForm(forms.Form):
         # Fallback form used during tests when ObjectDB is a dummy.
-        db_key = forms.CharField(label="Key")
-        db_location = forms.CharField(required=False)
+        db_key = forms.CharField(label="Name")
+        db_location = forms.CharField(label="Room parent", required=False)
         db_lock_storage = forms.CharField(required=False)
         desc = forms.CharField(
             widget=forms.Textarea(attrs={"data-role": "ansi-preview-source"}),
