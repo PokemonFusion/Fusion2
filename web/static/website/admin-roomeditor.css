@@ -1,0 +1,21 @@
+:root {
+--poke-accent: #e83e8c; /* reuse your site accent if different */
+--poke-accent-2: #ffcc00;
+}
+.card-admin .card-header {
+background: linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,0));
+}
+.page-title .h3 { font-weight: 600; }
+.table-admin tbody tr:hover { background: rgba(0,0,0,.02); }
+.badge.bg-warning { border: 1px solid rgba(0,0,0,.08); }
+.sticky-actions {
+position: sticky; bottom: 0; background: var(--bs-body-bg);
+padding-top: .25rem; padding-bottom: .25rem;
+border-top: 1px solid rgba(0,0,0,.05);
+}
+.card-exit { border-left: 4px solid var(--poke-accent); }
+.btn-poke, .btn-outline-primary { border-radius: .5rem; }
+.form-grid > p { margin-bottom: .75rem; } /* tighten {{ form.as_p }} gaps */
+/* optional: compact inputs inside modals */
+.modal .form-control, .modal .form-select { min-height: 2.25rem; }
+

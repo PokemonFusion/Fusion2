@@ -1,8 +1,8 @@
-<form id="exit-form" method="post" action="">
+<form id="exit-form" method="post" action="" class="needs-validation" novalidate>
     {% csrf_token %}
     {{ form.as_p }}
-    <div class="d-flex gap-2">
-        <button class="btn btn-primary" type="submit">Save</button>
+    <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save</button>
     </div>
 </form>
 <script>

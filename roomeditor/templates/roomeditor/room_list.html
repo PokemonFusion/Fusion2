@@ -3,19 +3,36 @@
 
 {% block titleblock %}Room List{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/admin-roomeditor.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="row">
+<div class="row g-3">
   <div class="col">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h1 class="card-title mb-0">Rooms</h1>
-          <button class="btn btn-sm btn-success" data-action="modal-new-room">Add Room</button>
+    <div class="card card-admin">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="page-title">
+          <h1 class="h3 mb-0">Rooms</h1>
+          <small class="text-muted">Builder tools → Room Editor</small>
         </div>
-        <hr />
-        <table class="table table-striped">
+        <div class="d-flex gap-2">
+          <input id="room-filter" class="form-control form-control-sm" placeholder="Filter by name / id">
+          <button class="btn btn-sm btn-success" data-action="modal-new-room">
+            <i class="bi bi-plus-lg"></i> Add Room
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="table table-hover align-middle table-admin">
           <thead>
-            <tr><th>ID</th><th>Name</th><th>Description</th><th>Class</th><th></th></tr>
+            <tr>
+              <th style="width:80px">ID</th>
+              <th style="width:260px">Name</th>
+              <th>Description</th>
+              <th style="width:220px">Class</th>
+              <th style="width:200px"></th>
+            </tr>
           </thead>
           <tbody id="room-table-body">
           {% for room in rooms %}
@@ -31,7 +48,7 @@
 </div>
 
 <div class="modal" tabindex="-1" id="modalHost">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Room</h5>
@@ -45,4 +62,19 @@
   </div>
 </div>
 <script src="{% static 'roomeditor/roomeditor.js' %}"></script>
+<script>
+  // lightweight client filter for table
+  (function(){
+    const f = document.getElementById('room-filter');
+    const rows = document.querySelectorAll('#room-table-body tr[data-room-id]');
+    if (!f) return;
+    f.addEventListener('input', () => {
+      const q = f.value.toLowerCase().trim();
+      rows.forEach(r => {
+        const txt = r.innerText.toLowerCase();
+        r.style.display = txt.includes(q) ? '' : 'none';
+      });
+    });
+  })();
+</script>
 {% endblock %}

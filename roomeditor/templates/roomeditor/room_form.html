@@ -1,22 +1,41 @@
 {% load static %}
-<h1>Edit Room: {{ room.db_key }} (#{{ room.id }})</h1>
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/admin-roomeditor.css' %}">
+{% endblock %}
+<div class="page-title mb-3">
+  <h1 class="h3 mb-0">Edit Room: {{ room.db_key }} <span class="text-muted">#{{ room.id }}</span></h1>
+  <small class="text-muted">Builder tools → Room Editor</small>
+  <hr class="mt-2 mb-3"/>
+</div>
 {% if not has_incoming %}
-    <div class="alert alert-warning">⚠️ This room has no incoming exits. Players cannot reach it unless another room links here.</div>
-{% endif %}
-<form id="room-form" method="post" action="">{% csrf_token %}
-    {{ form.as_p }}
-    <div class="d-flex gap-2">
-        <button class="btn btn-primary" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" id="preview-desc">Preview Description</button>
+    <div class="alert alert-warning">
+      ⚠️ This room has no incoming exits. Players cannot reach it unless another room links here.
     </div>
-</form>
+{% endif %}
+<div class="card card-admin">
+  <div class="card-body">
+    <form id="room-form" method="post" action="">{% csrf_token %}
+      <div class="form-grid">
+        {{ form.as_p }}
+      </div>
+      <div class="d-flex gap-2 mt-2 sticky-actions">
+          <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save</button>
+          <button class="btn btn-outline-secondary" type="button" id="preview-desc">
+            <i class="bi bi-eye"></i> Preview Description
+          </button>
+      </div>
+    </form>
+  </div>
+</div>
 <div id="desc-preview" class="card mt-3" style="display:none;">
     <div class="card-header">Live Preview</div>
     <div class="card-body" id="desc-preview-body"></div>
 </div>
 <hr/>
 <h2>Exits</h2>
-<button class="btn btn-sm btn-success" data-action="modal-new-exit" data-room="{{ room.id }}">Add Exit</button>
+<button class="btn btn-sm btn-success" data-action="modal-new-exit" data-room="{{ room.id }}">
+  <i class="bi bi-plus-lg"></i> Add Exit
+</button>
 <div id="exit-list" class="mt-2">
     {% for ex in exits %}
         {% include "roomeditor/_exit_row.html" with ex=ex %}
@@ -27,7 +46,7 @@
 
 <!-- Modal host -->
 <div class="modal" tabindex="-1" id="modalHost">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Exit</h5>
@@ -41,3 +60,12 @@
     </div>
 </div>
 <script src="{% static 'roomeditor/roomeditor.js' %}"></script>
+<script>
+  // Ensure desc field is hooked for live ANSI preview
+  (function(){
+    const desc = document.querySelector('textarea[name="desc"]');
+    if (desc && !desc.hasAttribute('data-role')) {
+      desc.setAttribute('data-role', 'ansi-preview-source');
+    }
+  })();
+</script>
