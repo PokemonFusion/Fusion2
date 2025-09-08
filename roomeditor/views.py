@@ -178,7 +178,7 @@ def exit_edit(request: HttpRequest, pk: int):
 	else:
 		initial = {
 			"key": ex.key,
-			"destination": ex.destination_id,
+			"destination": ex.db_destination_id,
 			"description": ex.db.desc or "",
 			"lockstring": ex.locks.first().lockstring if ex.locks.first() else "",
 			"err_msg": ex.db.err_traverse or "",
