@@ -23,8 +23,10 @@ def get_system() -> Any:
         else:
             _system_holder = evennia.create_script("typeclasses.scripts.Script", key="System")
     except Exception:  # pragma: no cover - fallback simple holder
+
         class _Holder:
             pass
+
         _system_holder = _Holder()
     return _system_holder
 
