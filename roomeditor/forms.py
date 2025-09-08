@@ -31,6 +31,10 @@ class ExitForm(forms.Form):
         if hasattr(qs, "order_by"):
             qs = qs.order_by("db_key")
         self.fields["destination"].queryset = qs
+        # show both name and ID for clarity when selecting destinations
+        self.fields["destination"].label_from_instance = (
+            lambda obj: f"{obj.db_key} (#{obj.id})"
+        )
 
     description = forms.CharField(label="Description", widget=forms.Textarea, required=False)
     lockstring = forms.CharField(
