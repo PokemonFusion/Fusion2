@@ -50,15 +50,22 @@
 	const modal = $('#modalHost');
 	const modalBody = $('#modalBody');
 	let bsModal = null;
-	function openModal(html) {
-	modalBody.innerHTML = html;
-	if (!bsModal) {
-		bsModal = new bootstrap.Modal(modal);
-	}
-	bsModal.show();
-	attachExitFormHandler();
-	attachRoomFormHandler();
-	}
+function openModal(html) {
+modalBody.innerHTML = html;
+if (!bsModal) {
+bsModal = new bootstrap.Modal(modal);
+}
+bsModal.show();
+attachExitFormHandler();
+attachRoomFormHandler();
+// cross-version close fallback
+modal.querySelectorAll('[data-close-modal]').forEach(btn => {
+btn.addEventListener('click', (e) => {
+try { bsModal && bsModal.hide(); } catch(_) {}
+try { $(modal).modal('hide'); } catch(_) {}
+}, { once: true });
+});
+}
 	// Add Exit/Room actions (modal)
 	document.addEventListener('click', async (e) => {
 	const t = e.target;
