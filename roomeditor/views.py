@@ -224,11 +224,12 @@ def exit_edit(request: HttpRequest, pk: int):
 		elif request.headers.get("X-Requested-With") == "XMLHttpRequest":
 			return JsonResponse({"ok": False, "error": form.errors.as_text()}, status=400)
 	else:
+		locks = ex.locks.all()
 		initial = {
 			"key": ex.key,
 			"destination": ex.db_destination_id,
 			"description": ex.db.desc or "",
-			"lockstring": ex.locks.first().lockstring if ex.locks.first() else "",
+			"lockstring": locks[0] if locks else "",
 			"err_msg": ex.db.err_traverse or "",
 			"aliases": ", ".join(ex.aliases.all()),
 			"auto_reverse": False,
