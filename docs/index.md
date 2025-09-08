@@ -69,3 +69,11 @@ Watcher view
 
 This ensures battlers can track precise HP while observers only see
 percentages.
+
+## Deterministic Battle Replays
+
+Each battle script stores an ``rng_seed`` when it is created.  Logging this
+value during debugging allows the sequence of random events to be
+reconstructed.  Create a ``random.Random(rng_seed)`` instance and pass it
+through battle helpers to reproduce move accuracy checks, damage rolls and
+capture attempts exactly.

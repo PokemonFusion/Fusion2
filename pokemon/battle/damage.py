@@ -1,12 +1,12 @@
 import random
 from dataclasses import dataclass, field
 from math import floor
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 """Damage calculation helpers and convenience wrappers.
 
 This module contains the core damage application logic used by the battle
-engine.  It has been updated to invoke ability callbacks when a Pokémon is hit
+engine.	 It has been updated to invoke ability callbacks when a Pokémon is hit
 by a damaging move so that defensive abilities such as Aftermath can respond
 to the attack.
 """
@@ -62,23 +62,33 @@ class DamageResult:
 MULTIHITCOUNT = {2: 3, 3: 3, 4: 1, 5: 1}
 
 
-def percent_check(chance: float) -> bool:
-	"""Return True if random roll succeeds."""
-	return chance > random.random()
+def percent_check(chance: float, rng: Optional[random.Random] = None) -> bool:
+	"""Return True if a random roll succeeds.
+
+	Parameters
+	----------
+	chance:
+		Probability threshold between 0 and 1.
+	rng:
+		Optional :class:`random.Random` compatible object. Defaults to the
+		module-level :mod:`random` generator when ``None``.
+	"""
+	rng = rng or random
+	return chance > rng.random()
 
 
-def accuracy_check(move: Move) -> bool:
+def accuracy_check(move: Move, rng: Optional[random.Random] = None) -> bool:
 	"""Very small accuracy check using move.accuracy."""
 	if move.accuracy is True:
 		return True
 	if isinstance(move.accuracy, (int, float)):
-		return percent_check(float(move.accuracy) / 100.0)
+		return percent_check(float(move.accuracy) / 100.0, rng=rng)
 	return True
 
 
-def critical_hit_check() -> bool:
+def critical_hit_check(rng: Optional[random.Random] = None) -> bool:
 	"""Simplified crit check."""
-	return percent_check(1 / 24)
+	return percent_check(1 / 24, rng=rng)
 
 
 def _get_types(pokemon) -> List[str]:
@@ -97,20 +107,29 @@ def _get_types(pokemon) -> List[str]:
 	return [str(t).lower() for t in (types or [])]
 
 
-def base_damage(level: int, power: int, atk: int, defense: int, *, return_roll: bool = False):
+def base_damage(
+	level: int,
+	power: int,
+	atk: int,
+	defense: int,
+	*,
+	return_roll: bool = False,
+	rng: Optional[random.Random] = None,
+):
 	"""Return base damage and optionally the random roll used.
 
 	The simplified damage formula can receive zero values for ``atk`` or
-	``defense`` when stubbed Pokémon instances lack proper stats.  Clamp
+	``defense`` when stubbed Pokémon instances lack proper stats.	Clamp
 	both to at least ``1`` so we avoid division-by-zero errors and always
 	inflict a minimum of one point of damage after applying the random
 	modifier.
 	"""
 
+	rng = rng or random
 	defense = max(1, defense)
 	atk = max(1, atk)
 	dmg = floor(floor(floor(((2 * level) / 5) + 2) * power * (atk * 1.0) / defense) / 50) + 2
-	rand_mod = random.randint(85, 100) / 100.0
+	rand_mod = rng.randint(85, 100) / 100.0
 	result = max(1, floor(dmg * rand_mod))
 	if return_roll:
 		return result, rand_mod
@@ -179,7 +198,7 @@ def damage_phrase(target: Pokemon, damage: int) -> str:
 	"""Return a coarse description of the damage dealt to ``target``.
 
 	Some tests provide very lightweight Pokémon stubs that may lack valid
-	hit point information, leading to a ``maxhp`` of ``0``.  Clamp the
+	hit point information, leading to a ``maxhp`` of ``0``.	 Clamp the
 	maximum HP to at least ``1`` to avoid division-by-zero errors while
 	still yielding sensible phrases.
 	"""
@@ -209,13 +228,22 @@ def damage_phrase(target: Pokemon, damage: int) -> str:
 	return "no"
 
 
-def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, spread: bool = False) -> DamageResult:
+def damage_calc(
+	attacker: Pokemon,
+	target: Pokemon,
+	move: Move,
+	battle=None,
+	*,
+	spread: bool = False,
+	rng: Optional[random.Random] = None,
+) -> DamageResult:
 	result = DamageResult()
+	rng = rng or getattr(battle, "rng", random)
 	numhits = 1
 	multihit = move.raw.get("multihit") if move.raw else None
 	if isinstance(multihit, list):
 		population, weights = zip(*MULTIHITCOUNT.items())
-		numhits = random.choices(population, weights)[0]
+		numhits = rng.choices(population, weights)[0]
 	elif multihit is not None:
 		numhits = multihit
 
@@ -314,7 +342,7 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 
 		move.accuracy = accuracy
 
-		if not accuracy_check(move):
+		if not accuracy_check(move, rng=rng):
 			result.text.append(f"{attacker.name} uses {move.name} but it missed!")
 			continue
 
@@ -408,13 +436,20 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 				except Exception:
 					pass
 
-		# ``base_damage`` expects the attacker's level.  Older stubs used in
+		# ``base_damage`` expects the attacker's level.	 Older stubs used in
 		# tests only define ``num`` so we fall back to that when ``level`` is
 		# missing for backwards compatibility.
 		level = getattr(attacker, "level", None)
 		if level is None:
 			level = getattr(attacker, "num", 1)
-		dmg, rand_mod = base_damage(level, power, atk_stat, def_stat, return_roll=True)
+		dmg, rand_mod = base_damage(
+			level,
+			power,
+			atk_stat,
+			def_stat,
+			return_roll=True,
+			rng=rng,
+		)
 		result.debug.setdefault("level", []).append(level)
 		result.debug.setdefault("power", []).append(power)
 		result.debug.setdefault("attack", []).append(atk_stat)
@@ -483,7 +518,7 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 			crit = True
 		else:
 			chance = chances.get(crit_ratio, 1.0)
-			crit = percent_check(chance)
+			crit = percent_check(chance, rng=rng)
 		if crit:
 			dmg = floor(dmg * 1.5)
 			result.debug.setdefault("critical", []).append(True)
@@ -503,7 +538,7 @@ def damage_calc(attacker: Pokemon, target: Pokemon, move: Move, battle=None, *, 
 			if secondary and isinstance(secondary, dict):
 				status = secondary.get("status", status)
 				chance = secondary.get("chance", chance)
-			if status and percent_check(chance / 100.0):
+			if status and percent_check(chance / 100.0, rng=rng):
 				setattr(target, "status", status)
 				try:
 					from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
@@ -532,32 +567,38 @@ def apply_damage(
 	*,
 	spread: bool = False,
 	update_hp: bool = True,
+	rng: Optional[random.Random] = None,
 ) -> DamageResult:
 	"""Run :func:`damage_calc` and apply the result to ``target``.
 
 	Parameters
 	----------
 	attacker, target:
-	    Combatants involved in the damage calculation.
+		Combatants involved in the damage calculation.
 	move:
-	    The move being used.
+		The move being used.
 	battle:
-	    Optional battle context passed to :func:`damage_calc`.
+		Optional battle context passed to :func:`damage_calc`.
 	spread:
-	    If ``True`` the move is treated as spread damage.
+		If ``True`` the move is treated as spread damage.
 	update_hp:
-	    When ``True`` (default) the calculated damage is subtracted from the
-	    target's HP.  Set to ``False`` to only compute the damage value, e.g.
-	    when hitting a substitute.
+		When ``True`` (default) the calculated damage is subtracted from the
+		target's HP.  Set to ``False`` to only compute the damage value, e.g.
+		when hitting a substitute.
 
 	Returns
 	-------
 	DamageResult
-	    The result object from :func:`damage_calc` with ``debug['damage']``
-	    updated to the final damage amount after callbacks.
+		The result object from :func:`damage_calc` with ``debug['damage']``
+		updated to the final damage amount after callbacks.
 	"""
 
-	result = damage_calc(attacker, target, move, battle=battle, spread=spread)
+	if rng is None and battle is not None:
+		rng = getattr(battle, "rng", None)
+	try:
+		result = damage_calc(attacker, target, move, battle=battle, spread=spread, rng=rng)
+	except TypeError:  # pragma: no cover - fallback for older overrides
+		result = damage_calc(attacker, target, move, battle=battle, spread=spread)
 	dmg = sum(result.debug.get("damage", []))
 
 	try:  # pragma: no cover - callbacks may be absent in tests
@@ -638,7 +679,7 @@ def apply_damage(
 	# Abilities such as Damp modify damage globally regardless of the
 	# defender.  Iterate over all active Pokémon in the battle and invoke
 	# their ``onAnyDamage`` callbacks, allowing them to adjust the pending
-	# damage value.  The last non-``None`` return value is used.
+	# damage value.	 The last non-``None`` return value is used.
 
 	if battle is not None:
 		for part in getattr(battle, "participants", []):
@@ -840,19 +881,30 @@ def apply_damage(
 	return result
 
 
-def calculate_damage(attacker: Pokemon, defender: Pokemon, move: Move, battle=None) -> DamageResult:
+def calculate_damage(
+	attacker: Pokemon,
+	defender: Pokemon,
+	move: Move,
+	battle=None,
+	rng: Optional[random.Random] = None,
+) -> DamageResult:
 	"""Public helper mirroring :func:`damage_calc`."""
-	return damage_calc(attacker, defender, move, battle=battle)
+	return damage_calc(attacker, defender, move, battle=battle, rng=rng)
 
 
-def check_move_accuracy(attacker: Pokemon, defender: Pokemon, move: Move) -> bool:
+def check_move_accuracy(
+	attacker: Pokemon,
+	defender: Pokemon,
+	move: Move,
+	rng: Optional[random.Random] = None,
+) -> bool:
 	"""Return ``True`` if ``move`` would hit ``defender``."""
-	return accuracy_check(move)
+	return accuracy_check(move, rng=rng)
 
 
-def calculate_critical_hit() -> bool:
+def calculate_critical_hit(rng: Optional[random.Random] = None) -> bool:
 	"""Proxy for :func:`critical_hit_check`."""
-	return critical_hit_check()
+	return critical_hit_check(rng=rng)
 
 
 def calculate_type_effectiveness(target: Pokemon, move: Move) -> float:

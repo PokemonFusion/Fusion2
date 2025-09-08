@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from typing import Callable, List, Optional, Tuple
 
 from .battledata import BattleData, Pokemon, Team
@@ -53,9 +54,11 @@ def build_initial_state(
 	captainA,
 	notify: Callable[[str], None],
 	captainB: Optional[object] = None,
+	*,
+	rng: Optional[random.Random] = None,
 ) -> BattleLogic:
 	"""Construct the initial battle objects and return the logic wrapper."""
-	battle = Battle(battle_type, [player_participant, opponent_participant])
+	battle = Battle(battle_type, [player_participant, opponent_participant], rng=rng)
 
 	player_team = Team(trainer=captainA.key, pokemon_list=player_pokemon)
 	opponent_name = getattr(opponent_participant, "key", None) or getattr(opponent_participant, "name", "Opponent")

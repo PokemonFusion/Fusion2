@@ -1,7 +1,8 @@
 from django.conf import settings
 from evennia import Command, search_account
-from utils.locks import require_no_battle_lock
 from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
+
+from utils.locks import require_no_battle_lock
 
 
 class CmdCharCreate(DefaultCmdCharCreate):
