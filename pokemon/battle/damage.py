@@ -621,7 +621,7 @@ def apply_damage(
 
 	abilities_funcs = items_funcs = None
 	try:  # pragma: no cover - callback modules may be absent in tests
-		from pokemon.dex.functions import abilities_funcs, items_funcs	# type: ignore
+		from pokemon.dex.functions import abilities_funcs, items_funcs  # type: ignore
 	except Exception:  # pragma: no cover
 		abilities_funcs = items_funcs = None
 
@@ -711,7 +711,7 @@ def apply_damage(
 	# before applying the final damage.  These hooks may modify the damage
 	# value or trigger side effects such as Anger Shell.
 	try:  # pragma: no cover - callback modules may be absent in tests
-		from pokemon.dex.functions import abilities_funcs, items_funcs	# type: ignore
+		from pokemon.dex.functions import abilities_funcs, items_funcs  # type: ignore
 	except Exception:  # pragma: no cover
 		abilities_funcs = items_funcs = None
 

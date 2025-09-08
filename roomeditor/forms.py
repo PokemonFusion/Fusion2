@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from django import forms
 from evennia.objects.models import ObjectDB
+
 from utils.build_utils import normalize_aliases
 
 

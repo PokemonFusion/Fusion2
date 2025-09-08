@@ -1,10 +1,11 @@
 """Admin command to repair missing fusion records."""
 
-from evennia import Command
 from django.core.exceptions import ValidationError
-from utils.fusion import record_fusion
+from evennia import Command
+
 from pokemon.models.core import OwnedPokemon
 from pokemon.models.storage import ActivePokemonSlot
+from utils.fusion import record_fusion
 
 
 class CmdFixFusion(Command):

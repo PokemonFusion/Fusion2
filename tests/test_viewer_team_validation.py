@@ -1,10 +1,11 @@
 import logging
+
 from tests.test_interface_display import (
-    iface,
-    display_battle_interface,
+    BattleState,
     DummyMon,
     DummyTrainer,
-    BattleState,
+    display_battle_interface,
+    iface,
 )
 
 

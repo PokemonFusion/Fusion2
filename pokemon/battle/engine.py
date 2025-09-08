@@ -90,6 +90,7 @@ import os
 import sys
 
 from pokemon.dex import MOVEDEX
+
 try:  # pragma: no cover - ability data may be stubbed during tests
     from pokemon.dex import ABILITYDEX  # type: ignore
 except Exception:  # pragma: no cover - fallback to empty mapping

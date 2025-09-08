@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from utils.battle_display import render_battle_ui
 import logging
+
+from utils.battle_display import render_battle_ui
 
 logger = logging.getLogger(__name__)
 

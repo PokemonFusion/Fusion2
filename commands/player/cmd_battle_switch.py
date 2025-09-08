@@ -5,8 +5,9 @@ from __future__ import annotations
 from evennia import Command
 from evennia.utils.evmenu import get_input
 
-from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
 from world.system_init import get_system
+
+from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
 
 try:  # pragma: no cover - battle engine may not be available in tests
 	from pokemon.battle import Action, ActionType
