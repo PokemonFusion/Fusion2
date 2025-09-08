@@ -1,5 +1,5 @@
 {% extends "website/base.html" %}
-{% load roomeditor_tags %}
+{% load roomeditor_tags static %}
 
 {% block titleblock %}Room List{% endblock %}
 
@@ -8,35 +8,41 @@
   <div class="col">
     <div class="card">
       <div class="card-body">
-        <h1 class="card-title">Rooms</h1>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h1 class="card-title mb-0">Rooms</h1>
+          <button class="btn btn-sm btn-success" data-action="modal-new-room">Add Room</button>
+        </div>
         <hr />
-        {% if rooms %}
         <table class="table table-striped">
           <thead>
             <tr><th>ID</th><th>Name</th><th>Description</th><th>Class</th><th></th></tr>
           </thead>
-          <tbody>
+          <tbody id="room-table-body">
           {% for room in rooms %}
-            <tr>
-              <td>{{ room.id }}</td>
-              <td>{{ room.key }}</td>
-              <td>{{ room.db.desc }}</td>
-              <td>{{ room.typeclass_path|class_name }}</td>
-              <td>
-                <a class="btn btn-sm btn-secondary" href="{% url 'roomeditor:room_edit' room.id %}">Edit</a>
-                {% if room.id in dangling_ids %}
-                <span class="badge badge-warning">No incoming exits</span>
-                {% endif %}
-              </td>
-            </tr>
+            {% include "roomeditor/_room_row.html" with room=room dangling_ids=dangling_ids %}
+          {% empty %}
+            <tr class="text-muted"><td colspan="5">No rooms found.</td></tr>
           {% endfor %}
           </tbody>
         </table>
-        {% else %}
-        <p>No rooms found.</p>
-        {% endif %}
       </div>
     </div>
   </div>
 </div>
+
+<div class="modal" tabindex="-1" id="modalHost">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Room</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'roomeditor/roomeditor.js' %}"></script>
 {% endblock %}
