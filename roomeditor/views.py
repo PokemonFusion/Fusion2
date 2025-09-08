@@ -62,6 +62,17 @@ def _exit_qs():
 	"""Queryset for exit objects."""
 	return ObjectDB.objects.filter(db_typeclass_path__icontains=".exits.")
 
+def room_list(request: HttpRequest):
+	"""Display a list of rooms available for editing."""
+	rooms = _room_qs().order_by("db_key")
+	incoming_ids = set(_exit_qs().values_list("db_destination_id", flat=True))
+	dangling_ids = {room.id for room in rooms if room.id not in incoming_ids}
+	return render(
+		request,
+		"roomeditor/room_list.html",
+		{"rooms": rooms, "dangling_ids": dangling_ids},
+	)
+
 def room_edit(request: HttpRequest, pk: int):
 	"""Edit an existing room."""
 	room = get_object_or_404(_room_qs(), pk=pk)
