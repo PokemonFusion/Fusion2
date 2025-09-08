@@ -5,8 +5,9 @@ from . import views
 
 app_name = "roomeditor"
 urlpatterns = [
-	path("room/<int:pk>/", views.room_edit, name="room_edit"),
-	path("exit/new/<int:room_pk>/", views.exit_new, name="exit_new"),
+        path("rooms/", views.room_list, name="room-list"),
+        path("room/<int:pk>/", views.room_edit, name="room_edit"),
+        path("exit/new/<int:room_pk>/", views.exit_new, name="exit_new"),
 	path("exit/<int:pk>/edit/", views.exit_edit, name="exit_edit"),
 	path("exit/<int:pk>/delete/", views.exit_delete, name="exit_delete"),
 	path("ansi/preview/", views.ansi_preview, name="ansi_preview"),
