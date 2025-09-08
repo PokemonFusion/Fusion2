@@ -1,9 +1,11 @@
-"""Backward-compatible BattleRoom typeclass."""
+"""Backward-compatible BattleRoom typeclass.
 
-from .rooms import BattleRoom as _BattleRoom
+This module simply re-exports :class:`typeclasses.rooms.BattleRoom` under the
+legacy ``typeclasses.battleroom`` path. Importing :class:`BattleRoom` from this
+module will therefore return the original implementation without creating a
+duplicate Django model.
+"""
 
+from .rooms import BattleRoom
 
-class BattleRoom(_BattleRoom):
-    """Compatibility shim preserving legacy import path."""
-
-    pass
+__all__ = ["BattleRoom"]
