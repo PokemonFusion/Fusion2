@@ -72,13 +72,13 @@
             }
         }
         if (t.matches('[data-action="modal-new-room"]')) {
-            const html = await get('/roomeditor/room/new/');
+            const html = await get('/roomeditor/rooms/new/');
             openModal(html);
         }
         if (t.matches('[data-action="delete-room"]')) {
             const roomId = t.getAttribute('data-room');
             if (!confirm('Delete this room?')) return;
-            const res = await post(`/roomeditor/room/${roomId}/delete/`, {});
+            const res = await post(`/roomeditor/rooms/${roomId}/delete/`, {});
             if (res && res.ok) {
                 const row = document.querySelector(`[data-room-id="${roomId}"]`);
                 if (row) row.remove();
