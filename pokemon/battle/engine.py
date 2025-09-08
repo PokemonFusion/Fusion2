@@ -478,7 +478,7 @@ def _select_ai_action(
     if not opponents:
         return None
 
-    opponent = random.choice(opponents)
+    opponent = battle.rng.choice(opponents)
     if not opponent.active:
         return None
 
@@ -897,8 +897,27 @@ class BattleMove:
 class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     """Main battle controller for one or more sides."""
 
-    def __init__(self, battle_type: BattleType, participants: List[BattleParticipant]):
-        """Create a new battle with arbitrary participants."""
+    def __init__(
+        self,
+        battle_type: BattleType,
+        participants: List[BattleParticipant],
+        *,
+        rng: Optional[random.Random] = None,
+    ) -> None:
+        """Create a new battle with arbitrary participants.
+
+        Parameters
+        ----------
+        battle_type:
+            Type of battle being run.
+        participants:
+            List of :class:`BattleParticipant` instances taking part.
+        rng:
+            Optional :class:`random.Random` compatible object used for all random
+            rolls. When ``None`` the module-level :mod:`random` generator is
+            used, allowing ``random.seed`` to control determinism in tests.
+        """
+
         self.type = battle_type
         self.participants = participants
         self.turn_count = 0
@@ -908,6 +927,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         self.field = Field()
         self.debug: bool = False
+        self.rng = rng or random
 
     # ------------------------------------------------------------------
     # Battle initialisation helpers
@@ -2164,7 +2184,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Proxy to :func:`pokemon.battle.damage.critical_hit_check`."""
         from .damage import critical_hit_check
 
-        return critical_hit_check()
+        return critical_hit_check(rng=self.rng)
 
     def calculate_type_effectiveness(self, target, move) -> float:
         from .damage import type_effectiveness

@@ -42,6 +42,7 @@ class BattleInstance(DefaultScript):
     def setup(self, battle_id: int, initiator_id: Optional[int] = None) -> None:
         """Populate initial state for the battle instance."""
         seed = random.randint(0, 2**31 - 1)
+        self.rng = random.Random(seed)
         now = time.time()
         self.db.state = {
             "id": battle_id,
@@ -73,6 +74,8 @@ class BattleInstance(DefaultScript):
         self.ndb.accounts: Dict[int, Any] = {}
         self.ndb.characters: Dict[int, Any] = {}
         self.ndb.speed_cache: Dict[str, Any] = {}
+        # Expose the RNG on ``ndb`` so other components can access it
+        self.ndb.rng = self.rng
         try:  # pragma: no cover - channel support optional
             chan = create_channel(f"battle-{battle_id}")
             self.ndb.channel = chan

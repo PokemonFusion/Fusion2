@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import random
-from typing import List
+from typing import List, Optional
 
 from utils.safe_import import safe_import
 
 try:
-        MOVEDEX = safe_import("pokemon.dex").MOVEDEX  # type: ignore[attr-defined]
+	MOVEDEX = safe_import("pokemon.dex").MOVEDEX  # type: ignore[attr-defined]
 except ModuleNotFoundError:  # pragma: no cover - dex may be unavailable in tests
-        MOVEDEX = {}
+	MOVEDEX = {}
 
-from ._shared import _normalize_key
+try:
+	from ._shared import _normalize_key  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - fallback when helper unavailable
+
+	def _normalize_key(name: str) -> str:  # type: ignore[misc]
+		return str(name).replace(" ", "").replace("-", "").lower()
 from .battledata import TurnInit
 
 
@@ -21,7 +26,7 @@ class _Priority:
 
 	priorities: List[int] = []
 
-	def __init__(self, turndata: TurnInit, pokemon):
+	def __init__(self, turndata: TurnInit, pokemon, rng: random.Random):
 		pokemon.tempvals.clear()
 		if turndata.switch is not None:
 			self.priority = 6
@@ -38,7 +43,7 @@ class _Priority:
 			self.priority = 0
 
 		self.priorities.append(self.priority)
-		self.speed = getattr(pokemon, "speed", 0) + random.uniform(0.0, 0.1)
+		self.speed = getattr(pokemon, "speed", 0) + rng.uniform(0.0, 0.1)
 
 	@classmethod
 	def max(cls) -> int:
@@ -49,11 +54,12 @@ class _Priority:
 		return min(cls.priorities) if cls.priorities else 0
 
 
-def calculateTurnorder(battleround) -> List[str]:
+def calculateTurnorder(battleround, rng: Optional[random.Random] = None) -> List[str]:
 	"""Return the resolution order for the given turn."""
 
+	rng = rng or random
 	_Priority.priorities.clear()
-	priorities = {key: _Priority(pos.turninit, pos.pokemon) for key, pos in battleround.positions.items()}
+	priorities = {key: _Priority(pos.turninit, pos.pokemon, rng) for key, pos in battleround.positions.items()}
 
 	turnorder: List[str] = []
 	for pri in range(_Priority.max(), _Priority.min() - 1, -1):
