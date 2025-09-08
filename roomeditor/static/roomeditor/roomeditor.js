@@ -44,9 +44,10 @@
         }
         bsModal.show();
         attachExitFormHandler();
+        attachRoomFormHandler();
     }
 
-    // Add Exit (modal)
+    // Add Exit/Room actions (modal)
     document.addEventListener('click', async (e) => {
         const t = e.target;
         if (t.matches('[data-action="modal-new-exit"]')) {
@@ -67,6 +68,19 @@
             const res = await post(`/roomeditor/exit/${exId}/delete/`, {});
             if (res && res.ok) {
                 const row = document.querySelector(`[data-exit-id="${exId}"]`);
+                if (row) row.remove();
+            }
+        }
+        if (t.matches('[data-action="modal-new-room"]')) {
+            const html = await get('/roomeditor/room/new/');
+            openModal(html);
+        }
+        if (t.matches('[data-action="delete-room"]')) {
+            const roomId = t.getAttribute('data-room');
+            if (!confirm('Delete this room?')) return;
+            const res = await post(`/roomeditor/room/${roomId}/delete/`, {});
+            if (res && res.ok) {
+                const row = document.querySelector(`[data-room-id="${roomId}"]`);
                 if (row) row.remove();
             }
         }
@@ -94,6 +108,32 @@
                 bsModal && bsModal.hide();
             } else {
                 // Replace body with returned form (if provided). Fallback to reload.
+                location.reload();
+            }
+        });
+    }
+
+    function attachRoomFormHandler() {
+        const form = $('#room-form', modalBody);
+        if (!form) return;
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = new URLSearchParams(new FormData(form));
+            const url = form.getAttribute('action') || window.location.href;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'X-Requested-With':'XMLHttpRequest'},
+                body: data
+            }).then(r => r.json());
+            if (res && res.ok) {
+                if (res.row_html) {
+                    const list = $('#room-table-body');
+                    if (list) {
+                        list.insertAdjacentHTML('beforeend', res.row_html);
+                    }
+                }
+                bsModal && bsModal.hide();
+            } else {
                 location.reload();
             }
         });

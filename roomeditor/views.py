@@ -23,6 +23,12 @@ except Exception:
 	class DefaultExit:
 		path = ""
 
+try:
+	from evennia import DefaultRoom
+except Exception:
+	class DefaultRoom:
+		path = "typeclasses.rooms.Room"
+
 def _default_exit_locks(user) -> str:
 	"""Return the default lockstring for a new exit.
 
@@ -73,6 +79,31 @@ def room_list(request: HttpRequest):
 		{"rooms": rooms, "dangling_ids": dangling_ids},
 	)
 
+def room_new(request: HttpRequest):
+	"""Create a new room."""
+	if request.method == "POST":
+		form = RoomForm(request.POST)
+		if form.is_valid():
+			data = getattr(form, "cleaned_data", form.data)
+			room = ObjectDB.objects.create(
+				typeclass_path=DefaultRoom.path,
+				db_key=data.get("db_key", ""),
+				db_location=data.get("db_location") or None,
+				db_lock_storage=data.get("db_lock_storage") or "",
+			)
+			room.db.desc = data.get("desc") or data.get("db_desc") or ""
+			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+				html = render(
+					request,
+					"roomeditor/_room_row.html",
+					{"room": room, "dangling_ids": {room.id}},
+				).content.decode("utf-8")
+				return JsonResponse({"ok": True, "row_html": html})
+			return redirect("roomeditor:room_edit", pk=room.id)
+	else:
+		form = RoomForm()
+	return render(request, "roomeditor/_room_form.html", {"form": form})
+
 def room_edit(request: HttpRequest, pk: int):
 	"""Edit an existing room."""
 	room = get_object_or_404(_room_qs(), pk=pk)
@@ -96,6 +127,15 @@ def room_edit(request: HttpRequest, pk: int):
 			"exits": _exit_qs().filter(db_location_id=room.id).order_by("db_key"),
 		},
 	)
+
+@require_POST
+def room_delete(request: HttpRequest, pk: int):
+	"""Delete a room."""
+	room = get_object_or_404(_room_qs(), pk=pk)
+	room.delete()
+	if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+		return JsonResponse({"ok": True})
+	return redirect("roomeditor:room-list")
 
 @require_POST
 def ansi_preview(request: HttpRequest):
