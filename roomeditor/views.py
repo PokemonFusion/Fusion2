@@ -100,6 +100,8 @@ def room_new(request: HttpRequest):
 				).content.decode("utf-8")
 				return JsonResponse({"ok": True, "row_html": html})
 			return redirect("roomeditor:room_edit", pk=room.id)
+		elif request.headers.get("X-Requested-With") == "XMLHttpRequest":
+			return JsonResponse({"ok": False, "error": form.errors.as_text()}, status=400)
 	else:
 		form = RoomForm()
 	return render(request, "roomeditor/_room_form.html", {"form": form})
@@ -114,6 +116,8 @@ def room_edit(request: HttpRequest, pk: int):
 			if request.headers.get("Hx-Request") or request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				return JsonResponse({"ok": True})
 			return redirect("roomeditor:room_edit", pk=room.pk)
+		elif request.headers.get("Hx-Request") or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+			return JsonResponse({"ok": False, "error": form.errors.as_text()}, status=400)
 	else:
 		form = RoomForm(instance=room)
 	incoming = _exit_qs().filter(db_destination_id=room.id).exists()
@@ -188,6 +192,8 @@ def exit_new(request: HttpRequest, room_pk: int):
 				html = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")
 				return JsonResponse({"ok": True, "row_html": html})
 			return redirect("roomeditor:room_edit", pk=room.pk)
+		elif request.headers.get("X-Requested-With") == "XMLHttpRequest":
+			return JsonResponse({"ok": False, "error": form.errors.as_text()}, status=400)
 	else:
 		form = ExitForm()
 	return render(request, "roomeditor/_exit_form.html", {"form": form, "room": room})
@@ -215,6 +221,8 @@ def exit_edit(request: HttpRequest, pk: int):
 				row = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")
 				return JsonResponse({"ok": True, "row_html": row})
 			return redirect("roomeditor:room_edit", pk=ex.location_id)
+		elif request.headers.get("X-Requested-With") == "XMLHttpRequest":
+			return JsonResponse({"ok": False, "error": form.errors.as_text()}, status=400)
 	else:
 		initial = {
 			"key": ex.key,
