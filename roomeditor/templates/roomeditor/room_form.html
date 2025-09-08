@@ -1,7 +1,13 @@
+{% extends "website/base.html" %}
 {% load static %}
+
+{% block titleblock %}Edit Room: {{ room.db_key }} (#{{ room.id }}){% endblock %}
+
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'website/admin-roomeditor.css' %}">
 {% endblock %}
+
+{% block content %}
 <div class="page-title mb-3">
   <h1 class="h3 mb-0">Edit Room: {{ room.db_key }} <span class="text-muted">#{{ room.id }}</span></h1>
   <small class="text-muted">Builder tools → Room Editor</small>
@@ -69,3 +75,4 @@
     }
   })();
 </script>
+{% endblock content %}
