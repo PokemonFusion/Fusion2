@@ -101,7 +101,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         opp = getattr(self.captainB, "key", getattr(self.captainB, "id", "?")) if self.captainB else None
         return f"<BattleSession id={self.battle_id} captainA={player} captainB={opp}>"
 
-    def __init__(self, player, opponent: Optional[object] = None):
+    def __init__(
+        self,
+        player,
+        opponent: Optional[object] = None,
+        *,
+        rng: Optional[random.Random] = None,
+    ) -> None:
         log_info(
             (
                 f"Initializing BattleSession {getattr(player, 'id', '?')} between "
@@ -111,6 +117,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         )
         self.teamA: List[object] = [player]
         self.teamB: List[object] = [opponent] if opponent else []
+        self.rng = rng or random
         self.room = getattr(player, "location", None)
         if self.room is None:
             raise ValueError("BattleSession requires the player to have a location")
@@ -147,6 +154,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         # keep a non-persistent watcher set on ndb
         self.ndb = type("NDB", (), {})()
         self.ndb.watchers_live = set()
+        self.ndb.rng = self.rng
         self.temp_pokemon_ids: List[int] = []
 
         log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
@@ -532,7 +540,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if opponent_participant.pokemons:
             opponent_participant.active = [opponent_participant.pokemons[0]]
 
-        battle = Battle(BattleType.PVP, [player_participant, opponent_participant])
+        battle = Battle(
+            BattleType.PVP,
+            [player_participant, opponent_participant],
+            rng=self.rng,
+        )
 
         teamA = Team(trainer=self.captainA.key, pokemon_list=player_pokemon)
         teamB = Team(trainer=self.captainB.key, pokemon_list=opp_pokemon)
@@ -596,7 +608,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     # ------------------------------------------------------------------
     def _select_opponent(self) -> tuple[Pokemon, str, BattleType]:
         """Return the opponent Pokemon, its name and the battle type."""
-        opponent_kind = random.choice(["pokemon", "trainer"])
+        opponent_kind = self.rng.choice(["pokemon", "trainer"])
         log_info(f"Selecting opponent: {opponent_kind}")
         if opponent_kind == "pokemon":
             opponent_poke = generate_wild_pokemon(self.captainA.location)
@@ -660,6 +672,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             self.captainA,
             self.notify,
             self.captainB,
+            rng=self.rng,
         )
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
         persist_initial_state(self, player_participant, player_pokemon)

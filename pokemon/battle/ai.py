@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import random
 from dataclasses import dataclass
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 from .damage import stab_multiplier, type_effectiveness
 
@@ -56,7 +56,16 @@ class AIMoveSelector:
 		"gimmick": (0.7, 1.3),
 	}
 
-	def select_move(self, ai_level: int, ai_personality: str, pokemon, opponent, battle_state) -> Move:
+	def select_move(
+		self,
+		ai_level: int,
+		ai_personality: str,
+		pokemon,
+		opponent,
+		battle_state,
+		*,
+		rng: Optional[random.Random] = None,
+	) -> Move:
 		"""Return the best move for the current situation.
 
 		Parameters
@@ -79,9 +88,10 @@ class AIMoveSelector:
 		moves = [m for m in moves if self._move_allowed(m, ai_level)]
 		moves = self._filter_invalid_moves(moves, pokemon, opponent, ai_level)
 
+		rng = rng or random
 		if not moves:
 			# Fall back to any move; even an invalid one is better than no action
-			return random.choice(list(getattr(pokemon, "moves", [])))
+			return rng.choice(list(getattr(pokemon, "moves", [])))
 
 		scored: List[ScoredMove] = []
 		for move in moves:
@@ -94,7 +104,7 @@ class AIMoveSelector:
 		best = scored[0]
 		logger.debug("AI evaluated moves: %s", scored)
 		if best.score <= 0:
-			return random.choice([m.move for m in scored])
+			return rng.choice([m.move for m in scored])
 		return best.move
 
 	# ------------------------------------------------------------------
