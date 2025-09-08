@@ -8,13 +8,13 @@ from django.db import transaction
 
 from pokemon.models.core import OwnedPokemon
 from pokemon.models.moves import ActiveMoveslot, Move, Moveset, MovesetSlot
-from pokemon.models.trainer import Trainer
 from pokemon.models.stats import (
-    award_experience_to_party,
-    add_experience,
     add_evs,
+    add_experience,
     apply_item_ev_mod,
+    award_experience_to_party,
 )
+from pokemon.models.trainer import Trainer
 from utils.locks import clear_battle_lock
 
 

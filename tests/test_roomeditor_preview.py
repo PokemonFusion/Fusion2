@@ -1,4 +1,5 @@
 """Tests for room editor views and AJAX behavior."""
+import json
 import sys
 import types
 
@@ -7,7 +8,6 @@ import pytest
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import RequestFactory
-import json
 
 # Configure minimal Django settings.
 if not settings.configured:

@@ -5,9 +5,9 @@ viewing items, adding new ones, giving them to others and using them.
 """
 
 from evennia import Command
-from utils.locks import require_no_battle_lock
 
 from pokemon.dex import ITEMDEX
+from utils.locks import require_no_battle_lock
 
 
 class CmdInventory(Command):

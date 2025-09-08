@@ -1,7 +1,8 @@
 """Commands for viewing trainer and Pokémon information."""
 
-from evennia import Command
 from types import SimpleNamespace
+
+from evennia import Command
 
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import level_for_exp

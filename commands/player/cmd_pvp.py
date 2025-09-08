@@ -1,5 +1,4 @@
 from evennia import Command
-from utils.locks import require_no_battle_lock
 
 from pokemon.battle.pvp import (
 	create_request,
@@ -8,6 +7,7 @@ from pokemon.battle.pvp import (
 	remove_request,
 	start_pvp_battle,
 )
+from utils.locks import require_no_battle_lock
 
 
 class CmdPvpHelp(Command):

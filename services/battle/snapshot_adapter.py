@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List
 
-from pokemon.models.core import OwnedPokemon, ActiveMoveslot
-from pokemon.models.storage import UserStorage, ActivePokemonSlot
+from pokemon.models.core import ActiveMoveslot, OwnedPokemon
 from pokemon.models.stats import calculate_stats
+from pokemon.models.storage import ActivePokemonSlot, UserStorage
 
 
 class SnapshotAdapter:

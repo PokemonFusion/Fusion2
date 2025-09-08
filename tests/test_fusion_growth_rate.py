@@ -1,9 +1,9 @@
 
 import types
 
-from pokemon.models.stats import exp_for_level, level_for_exp, add_experience
-from utils.xp_utils import get_next_level_xp
+from pokemon.models.stats import add_experience, exp_for_level, level_for_exp
 from utils.fusion import record_fusion
+from utils.xp_utils import get_next_level_xp
 
 
 def test_exp_level_conversion_for_slow_rate():

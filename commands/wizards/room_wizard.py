@@ -5,7 +5,6 @@ from __future__ import annotations
 from evennia import DefaultExit
 from evennia.objects.models import ObjectDB
 from evennia.utils import create, evmenu
-
 from fusion2.utils.build_utils import normalize_aliases, reverse_dir
 
 MENU_COLORS = {"title": "|W", "key": "|y", "warn": "|r"}

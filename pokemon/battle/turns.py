@@ -100,10 +100,11 @@ class TurnProcessor:
 					except Exception:
 						pass
 
+				rng = getattr(self, "rng", random)
 				if status == "slp":
 					turns = poke.tempvals.get("slp_turns")
 					if turns is None:
-						turns = random.randint(1, 3)
+						turns = rng.randint(1, 3)
 					else:
 						turns -= 1
 					if turns <= 0:
@@ -258,7 +259,8 @@ class TurnProcessor:
 				speed = 0
 
 			action.speed = speed
-			action._tiebreak = random.random()
+			rng = getattr(self, "rng", random)
+			action._tiebreak = rng.random()
 
 		if trick_room:
 			key = lambda a: (a.priority, -a.speed, a._tiebreak)
@@ -417,16 +419,17 @@ class TurnProcessor:
 				if result is False:
 					return True
 
+		rng = getattr(self, "rng", random)
 		if status == "par":
-			return random.random() < 0.25
+			return rng.random() < 0.25
 		if status == "frz":
-			if random.random() < 0.2:
+			if rng.random() < 0.2:
 				pokemon.status = 0
 				return False
 		if status == "slp":
 			turns = pokemon.tempvals.get("slp_turns")
 			if turns is None:
-				turns = random.randint(1, 3)
+				turns = rng.randint(1, 3)
 				pokemon.tempvals["slp_turns"] = turns
 			if turns > 0:
 				turns -= 1
@@ -497,15 +500,13 @@ class TurnProcessor:
 			try:
 				from pokemon.dex.functions import pokedex_funcs
 			except Exception:
-			        class pokedex_funcs:  # type: ignore
-			                @staticmethod
-			                def get_catch_rate(name: str) -> int:
-			                        return 255
+				class pokedex_funcs:  # type: ignore
+					@staticmethod
+					def get_catch_rate(name: str) -> int:
+						return 255
 			catch_rate = pokedex_funcs.get_catch_rate(getattr(target_poke, "name", "")) or 0
 			status = getattr(target_poke, "status", None)
 			max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
-			import random as _random
-
 			from . import capture as capture_mod
 
 			try:
@@ -516,15 +517,16 @@ class TurnProcessor:
 			except ModuleNotFoundError:
 				ball_mods = {}
 			ball_mod = ball_mods.get(item_key, 1.0)
-			# Use the global RNG so callers can control determinism
-			# with ``random.seed`` during tests.
+			rng = getattr(self, "rng", random)
+			# Use the battle's RNG so callers can control determinism
+			# via :class:`random.Random` instances.
 			caught = capture_mod.attempt_capture(
 				max_hp,
 				target_poke.hp,
 				catch_rate,
 				ball_modifier=ball_mod,
 				status=status,
-				rng=_random,
+				rng=rng,
 			)
 			if hasattr(action.actor, "remove_item"):
 				try:
