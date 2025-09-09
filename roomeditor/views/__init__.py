@@ -16,7 +16,7 @@ from django.db import transaction
 from utils.build_utils import reverse_dir
 
 from ..forms import ExitForm, RoomForm
-from ..utils.locks import apply_default_locks
+from ..utils.locks import compose_exit_default, compose_room_default
 
 try:
 	from evennia import DefaultExit
@@ -63,7 +63,11 @@ def room_new(request: HttpRequest):
 				db_lock_storage=data.get("db_lock_storage") or "",
 			)
 			room.db.desc = data.get("desc") or data.get("db_desc") or ""
-			apply_default_locks(room, as_exit=False, user_id=getattr(getattr(request, "user", None), "id", 0), caller_id=None)
+			lockstring = compose_room_default(
+				user_id=getattr(getattr(request, "user", None), "id", 0),
+				creator_id=None,
+			)
+			room.locks.add(lockstring)
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				html = render(
 					request,
@@ -133,7 +137,11 @@ def exit_new(request: HttpRequest, room_pk: int):
 					db_location=room,
 					db_destination=form.cleaned_data["destination"],
 				)
-				apply_default_locks(ex, as_exit=True, user_id=getattr(getattr(request, "user", None), "id", 0), caller_id=None)
+				lockstring = compose_exit_default(
+					user_id=getattr(getattr(request, "user", None), "id", 0),
+					creator_id=None,
+				)
+				ex.locks.add(lockstring)
 				aliases = form.cleaned_alias_list()
 				if aliases:
 					ex.aliases.add(*aliases)
@@ -153,7 +161,11 @@ def exit_new(request: HttpRequest, room_pk: int):
 							db_location=form.cleaned_data["destination"],
 							db_destination=room,
 						)
-						apply_default_locks(rev_obj, as_exit=True, user_id=getattr(getattr(request, "user", None), "id", 0), caller_id=None)
+						rev_lock = compose_exit_default(
+							user_id=getattr(getattr(request, "user", None), "id", 0),
+							creator_id=None,
+						)
+						rev_obj.locks.add(rev_lock)
 						if aliases:
 							rev_obj.aliases.add(*aliases)
 						if form.cleaned_data.get("description"):

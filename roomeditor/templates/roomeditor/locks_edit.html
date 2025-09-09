@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<h1>Default Locks (Rooms & Exits)</h1>
+<h1>Lockstring Composer (Rooms & Exits)</h1>
 
 <form method="post" id="lock-form">{% csrf_token %}
   <fieldset class="card p-3">
@@ -30,7 +30,7 @@
   <fieldset class="card p-3 mt-3">
     <legend>Raw (Advanced)</legend>
     <div>
-      <label>Room default lockstring</label>
+      <label>Room lockstring</label>
       {{ form.room_lockstring }}
       {% if room_validation %}
         <p class="{{ room_validation.0|yesno:'ok,err' }}">
@@ -40,7 +40,7 @@
       <button type="button" class="btn btn-secondary" data-target="id_room_lockstring">Validate</button>
     </div>
     <div class="mt-2">
-      <label>Exit default lockstring</label>
+      <label>Exit lockstring</label>
       {{ form.exit_lockstring }}
       {% if exit_validation %}
         <p class="{{ exit_validation.0|yesno:'ok,err' }}">
@@ -52,7 +52,7 @@
   </fieldset>
 
   <div class="mt-3">
-    <button class="btn btn-primary" type="submit">Save defaults</button>
+    <button class="btn btn-primary" type="submit">Compose</button>
   </div>
 </form>
 

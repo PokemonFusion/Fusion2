@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpRequest, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 
-from ..models import LockDefaults
 from .. import forms
 from ..utils.locks import compose_exit_default, compose_room_default, validate_lockstring
 
@@ -18,8 +17,7 @@ def _is_builder(user):
 @login_required
 @user_passes_test(_is_builder)
 def edit_defaults(request: HttpRequest):
-    """Allow builders to compose and persist default lockstrings."""
-    defaults = LockDefaults.get()
+    """Compose and preview default lockstrings."""
     if request.method == "POST":
         form = forms.LockComposerForm(request.POST)
         if form.is_valid():
@@ -29,9 +27,9 @@ def edit_defaults(request: HttpRequest):
 
             traverse = traverse_custom if traverse_choice == "expr" and traverse_custom else traverse_choice
 
-            caller_id = request.user.id if include_creator else None
-            composed_room = compose_room_default(request.user.id, caller_id)
-            composed_exit = compose_exit_default(request.user.id, caller_id, traverse)
+            creator_id = request.user.id if include_creator else None
+            composed_room = compose_room_default(request.user.id, creator_id)
+            composed_exit = compose_exit_default(request.user.id, creator_id, traverse)
 
             room_final = form.cleaned_data["room_lockstring"].strip() or composed_room
             exit_final = form.cleaned_data["exit_lockstring"].strip() or composed_exit
@@ -39,33 +37,27 @@ def edit_defaults(request: HttpRequest):
             ok_r, msg_r = validate_lockstring(room_final)
             ok_e, msg_e = validate_lockstring(exit_final)
 
-            if not ok_r or not ok_e:
-                return render(
-                    request,
-                    "roomeditor/locks_edit.html",
-                    {
-                        "form": form,
-                        "room_validation": (ok_r, msg_r),
-                        "exit_validation": (ok_e, msg_e),
-                        "composed_room": composed_room,
-                        "composed_exit": composed_exit,
-                    },
-                )
-
-            defaults.room_default = room_final
-            defaults.exit_default = exit_final
-            defaults.save()
-            return redirect("roomeditor:locks_edit")
+            return render(
+                request,
+                "roomeditor/locks_edit.html",
+                {
+                    "form": form,
+                    "room_validation": (ok_r, msg_r),
+                    "exit_validation": (ok_e, msg_e),
+                    "composed_room": composed_room,
+                    "composed_exit": composed_exit,
+                },
+            )
     else:
-        caller_id = request.user.id
-        composed_room = compose_room_default(request.user.id, caller_id)
-        composed_exit = compose_exit_default(request.user.id, caller_id, "all()")
+        creator_id = request.user.id
+        composed_room = compose_room_default(request.user.id, creator_id)
+        composed_exit = compose_exit_default(request.user.id, creator_id, "all()")
         form = forms.LockComposerForm(
             initial={
                 "include_creator": True,
                 "traverse_choice": "all()",
-                "room_lockstring": defaults.room_default or composed_room,
-                "exit_lockstring": defaults.exit_default or composed_exit,
+                "room_lockstring": composed_room,
+                "exit_lockstring": composed_exit,
             }
         )
 
