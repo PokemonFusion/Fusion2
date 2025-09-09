@@ -93,3 +93,14 @@ BASE_CHARACTER_TYPECLASS = "pokemon.user.User"
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # USE_X_FORWARDED_HOST = True
 # WEBSOCKET_CLIENT_URL = "/ws"  # relative path works behind HTTPS proxy
+
+# ---------------------------------------------------------------------------
+# Lockstring defaults
+# ---------------------------------------------------------------------------
+
+# Base lock expressions used when composing default room/exit locks.
+ROOM_LOCK_BASE = "get:false();puppet:false();teleport:false();teleport_here:true()"
+EXIT_LOCK_BASE = "puppet:false();traverse:all();get:false();teleport:false();teleport_here:false()"
+
+# Include the creating object's id() in the owner triple when composing locks.
+INCLUDE_CREATOR_IN_OWNER = True

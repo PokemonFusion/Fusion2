@@ -31,6 +31,10 @@ class ExitForm(forms.Form):
         if hasattr(qs, "order_by"):
             qs = qs.order_by("db_key")
         self.fields["destination"].queryset = qs
+        # show both name and ID for clarity when selecting destinations
+        self.fields["destination"].label_from_instance = (
+            lambda obj: f"{obj.db_key} (#{obj.id})"
+        )
 
     description = forms.CharField(label="Description", widget=forms.Textarea, required=False)
     lockstring = forms.CharField(
@@ -88,3 +92,33 @@ else:
             widget=forms.Textarea(attrs={"data-role": "ansi-preview-source"}),
             required=False,
         )
+TRAVERSE_CHOICES = [
+	("all()",            "Everyone"),
+	("perm(Builder)",    "Builders"),
+	("perm(Admin)",      "Admins"),
+	("holds(key)",       "Holds a key item"),
+	("expr",             "Custom expression (advanced)"),
+]
+
+
+class LockComposerForm(forms.Form):
+	"""Form used to compose default lockstrings."""
+
+	include_creator = forms.BooleanField(
+		required=False,
+		initial=True,
+		help_text="Include the creating object id() in control/delete/edit",
+	)
+	traverse_choice = forms.ChoiceField(
+		choices=TRAVERSE_CHOICES, required=True, initial="all()"
+	)
+	traverse_custom = forms.CharField(
+		required=False, help_text="Only used if 'Custom' is selected."
+	)
+	# Raw textareas (advanced)
+	room_lockstring = forms.CharField(
+		widget=forms.Textarea(attrs={"rows":4}), required=False
+	)
+	exit_lockstring = forms.CharField(
+		widget=forms.Textarea(attrs={"rows":4}), required=False
+	)

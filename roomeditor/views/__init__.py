@@ -15,7 +15,8 @@ from django.db import transaction
 
 from utils.build_utils import reverse_dir
 
-from .forms import ExitForm, RoomForm
+from ..forms import ExitForm, RoomForm
+from ..utils.locks import compose_exit_default, compose_room_default
 
 try:
 	from evennia import DefaultExit
@@ -29,36 +30,6 @@ except Exception:
 	class DefaultRoom:
 		path = "typeclasses.rooms.Room"
 
-def _default_exit_locks(user) -> str:
-	"""Return the default lockstring for a new exit.
-
-	The web editor needs to present the locks an exit will receive when it is
-	created in-game. These locks include both the standard security settings
-	and ownership tied to the current user.
-
-	Args:
-		user: The requesting user, expected to have an ``id`` attribute.
-
-	Returns:
-		str: The lockstring representing the default exit locks.
-	"""
-
-	uid = getattr(user, "id", 0)
-	return (
-		"call:true();"
-		f"control:id({uid}) or perm(Admin);"
-		f"delete:id({uid}) or perm(Admin);"
-		"drop:holds();"
-		f"edit:id({uid}) or perm(Admin);"
-		"examine:perm(Builder);"
-		"get:false();"
-		"puppet:false();"
-		"teleport:false();"
-		"teleport_here:false();"
-		"tell:perm(Admin);"
-		"traverse:all();"
-		"view:all()"
-	)
 
 def _room_qs():
 	"""Queryset for room objects."""
@@ -92,6 +63,11 @@ def room_new(request: HttpRequest):
 				db_lock_storage=data.get("db_lock_storage") or "",
 			)
 			room.db.desc = data.get("desc") or data.get("db_desc") or ""
+			lockstring = compose_room_default(
+				user_id=getattr(getattr(request, "user", None), "id", 0),
+				creator_id=None,
+			)
+			room.locks.add(lockstring)
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				html = render(
 					request,
@@ -161,6 +137,11 @@ def exit_new(request: HttpRequest, room_pk: int):
 					db_location=room,
 					db_destination=form.cleaned_data["destination"],
 				)
+				lockstring = compose_exit_default(
+					user_id=getattr(getattr(request, "user", None), "id", 0),
+					creator_id=None,
+				)
+				ex.locks.add(lockstring)
 				aliases = form.cleaned_alias_list()
 				if aliases:
 					ex.aliases.add(*aliases)
@@ -180,6 +161,11 @@ def exit_new(request: HttpRequest, room_pk: int):
 							db_location=form.cleaned_data["destination"],
 							db_destination=room,
 						)
+						rev_lock = compose_exit_default(
+							user_id=getattr(getattr(request, "user", None), "id", 0),
+							creator_id=None,
+						)
+						rev_obj.locks.add(rev_lock)
 						if aliases:
 							rev_obj.aliases.add(*aliases)
 						if form.cleaned_data.get("description"):
