@@ -1,0 +1,7 @@
+evennia
+psycopg2
+# Utilities for scraping Bulbapedia data
+requests
+beautifulsoup4
+lxml
+django>=4.0
