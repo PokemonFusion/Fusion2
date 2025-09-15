@@ -2,6 +2,7 @@
 from django.urls import path
 
 from . import views
+from .views import locks
 
 app_name = "roomeditor"
 urlpatterns = [
@@ -14,4 +15,6 @@ urlpatterns = [
         path("exit/<int:pk>/delete/", views.exit_delete, name="exit_delete"),
         path("ansi/preview/", views.ansi_preview, name="ansi_preview"),
         path("api/rooms/", views.room_search_api, name="room_search_api"),
+        path("locks/", locks.edit_defaults, name="locks_edit"),
+        path("locks/validate/", locks.api_validate_lockstring, name="locks_validate"),
 ]
