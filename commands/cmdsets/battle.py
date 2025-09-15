@@ -5,6 +5,7 @@ from evennia import CmdSet
 from commands.debug.cmd_debugbattle import CmdDebugBattle
 from commands.debug.cmd_movedata import CmdDebugMoveData
 from commands.player.cmd_battle_attack import CmdBattleAttack
+from commands.player.cmd_battle_concede import CmdBattleConcede
 from commands.player.cmd_battle_flee import CmdBattleFlee
 from commands.player.cmd_battle_item import CmdBattleItem
 from commands.player.cmd_battle_switch import CmdBattleSwitch
@@ -20,11 +21,12 @@ class BattleCmdSet(CmdSet):
 
 	def at_cmdset_creation(self):
 		"""Populate the cmdset."""
-		for cmd in (
-			CmdBattleAttack,
-			CmdBattleSwitch,
-			CmdBattleItem,
-			CmdBattleFlee,
+                for cmd in (
+                        CmdBattleAttack,
+                        CmdBattleSwitch,
+                        CmdBattleItem,
+                        CmdBattleConcede,
+                        CmdBattleFlee,
 			CmdWatchBattle,
 			CmdUnwatchBattle,
 			CmdShowBattle,
