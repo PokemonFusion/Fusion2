@@ -90,7 +90,7 @@ class CmdBattleSwitch(Command):
 						pass
 				elif hasattr(inst, "maybe_run_turn"):
 					try:
-						inst.maybe_run_turn()
+						inst.maybe_run_turn(actor=self.caller)
 					except Exception:
 						pass
 				return False
@@ -125,6 +125,6 @@ class CmdBattleSwitch(Command):
 				pass
 		elif hasattr(inst, "maybe_run_turn"):
 			try:
-				inst.maybe_run_turn()
+				inst.maybe_run_turn(actor=self.caller)
 			except Exception:
 				pass

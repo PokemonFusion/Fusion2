@@ -50,7 +50,7 @@ class ActionQueue:
 				f"{pokemon_name} already has an action queued this turn.",
 			)
 			log_info(f"Ignored {action_desc} for {pokemon_name} at {pos_name}: action already queued")
-			self.maybe_run_turn()
+			self.maybe_run_turn(actor=caller)
 			return True
 		return False
 
@@ -115,7 +115,7 @@ class ActionQueue:
 		# turndata snapshots.
 		self.storage.set("state", self._compact_state_for_persist(self.logic.state.to_dict()))
 		log_info(f"Saved {save_desc} for {pokemon_name} at {pos_name} to room state")
-		self.maybe_run_turn()
+		self.maybe_run_turn(actor=caller)
 
 	# ------------------------------------------------------------------
 	# Public queueing API

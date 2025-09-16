@@ -77,6 +77,6 @@ class CmdBattleItem(Command):
 				pass
 		elif hasattr(inst, "maybe_run_turn"):
 			try:
-				inst.maybe_run_turn()
+				inst.maybe_run_turn(actor=self.caller)
 			except Exception:
 				pass

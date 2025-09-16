@@ -225,6 +225,6 @@ def _queue_move(caller, inst, participant, move_obj, target, target_pos: str) ->
 			pass
 	elif hasattr(inst, "maybe_run_turn"):
 		try:
-			inst.maybe_run_turn()
+			inst.maybe_run_turn(actor=caller)
 		except Exception:  # pragma: no cover
 			pass
