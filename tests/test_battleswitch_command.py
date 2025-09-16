@@ -115,7 +115,7 @@ class FakeInstance:
 		self.ran = True
 		self.battle.run_turn()
 
-	def maybe_run_turn(self):
+	def maybe_run_turn(self, actor=None):
 		pass
 
 

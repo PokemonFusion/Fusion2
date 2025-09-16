@@ -199,14 +199,35 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 
 
 def broadcast_interfaces(session, *, waiting_on=None) -> None:
-	"""Render and send interfaces for ``session`` to all participants."""
+        """Render and send interfaces for ``session`` to all participants."""
 
-	iface_a, iface_b, iface_w = render_interfaces(
-		session.captainA, session.captainB, session.state, waiting_on=waiting_on
-	)
-	for t in getattr(session, "teamA", []):
-		session._msg_to(t, iface_a)
-	for t in getattr(session, "teamB", []):
-		session._msg_to(t, iface_b)
-	for w in getattr(session, "observers", []):
-		session._msg_to(w, iface_w)
+        iface_a, iface_b, iface_w = render_interfaces(
+                session.captainA, session.captainB, session.state, waiting_on=waiting_on
+        )
+        for t in getattr(session, "teamA", []):
+                session._msg_to(t, iface_a)
+        for t in getattr(session, "teamB", []):
+                session._msg_to(t, iface_b)
+        for w in getattr(session, "observers", []):
+                session._msg_to(w, iface_w)
+
+
+def send_interface_to(session, target, *, waiting_on=None) -> None:
+        """Render and send the battle interface for ``target`` only."""
+
+        if not target:
+                return
+
+        iface_a, iface_b, iface_w = render_interfaces(
+                session.captainA, session.captainB, session.state, waiting_on=waiting_on
+        )
+        if target in getattr(session, "teamA", []):
+                session._msg_to(target, iface_a)
+        elif target in getattr(session, "teamB", []):
+                session._msg_to(target, iface_b)
+        elif target in getattr(session, "observers", []):
+                session._msg_to(target, iface_w)
+        else:
+                # Default to the observer view for any untracked recipient so the
+                # interface still renders from a neutral perspective.
+                session._msg_to(target, iface_w)

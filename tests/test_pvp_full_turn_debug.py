@@ -42,7 +42,7 @@ def test_pvp_turn_debug_logging(monkeypatch):
 	inst.battle.log_action = logs.append
 
 	# Avoid the automatic turn resolution so we can inspect the queued state.
-	monkeypatch.setattr(inst, "maybe_run_turn", lambda: None)
+	monkeypatch.setattr(inst, "maybe_run_turn", lambda actor=None: None)
 
 	inst.queue_move("tackle", caller=p1)
 	inst.queue_move("tackle", caller=p2)

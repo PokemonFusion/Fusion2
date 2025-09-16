@@ -59,6 +59,27 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback imp
             session._msg_to(w, iface_w)
 
 
+try:  # pragma: no cover - interface may be stubbed in tests
+    send_interface_to = safe_import("pokemon.battle.interface").send_interface_to  # type: ignore[attr-defined]
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback implementation
+
+    def send_interface_to(session, target, *, waiting_on=None):  # type: ignore[misc]
+        if not target:
+            return
+
+        iface_a, iface_b, iface_w = render_interfaces(
+            session.captainA, session.captainB, session.state, waiting_on=waiting_on
+        )
+        if target in getattr(session, "teamA", []):
+            session._msg_to(target, iface_a)
+        elif target in getattr(session, "teamB", []):
+            session._msg_to(target, iface_b)
+        elif target in getattr(session, "observers", []):
+            session._msg_to(target, iface_w)
+        else:
+            session._msg_to(target, iface_w)
+
+
 from utils.pokemon_utils import build_battle_pokemon_from_model
 
 from .compat import (
@@ -778,7 +799,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             return True
         return False
 
-    def maybe_run_turn(self) -> None:
+    def maybe_run_turn(self, actor=None) -> None:
         if self.is_turn_ready():
             log_info(f"Turn ready for battle {self.battle_id}")
             self.run_turn()
@@ -793,7 +814,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             if waiting_poke:
                 self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
                 try:
-                    broadcast_interfaces(self, waiting_on=waiting_poke)
+                    if actor:
+                        send_interface_to(self, actor, waiting_on=waiting_poke)
+                    else:
+                        broadcast_interfaces(self, waiting_on=waiting_poke)
                 except Exception:
                     log_warn("Failed to display waiting interface", exc_info=True)
 
