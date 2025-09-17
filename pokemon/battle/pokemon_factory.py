@@ -122,19 +122,25 @@ def create_battle_pokemon(
 		except Exception:
 			db_obj = None
 
-	return Pokemon(
-		name=inst.species.name,
-		level=inst.level,
-		hp=getattr(db_obj, "current_hp", getattr(inst.stats, "hp", level)),
-		max_hp=getattr(inst.stats, "hp", level),
-		moves=moves,
-		ability=getattr(inst, "ability", None),
-		ivs=ivs_list,
-		evs=evs_list,
-		nature=nature,
-		model_id=str(getattr(db_obj, "unique_id", "")) if db_obj else None,
-		gender=getattr(inst, "gender", "N"),
-	)
+		identifier = None
+		if db_obj:
+			identifier = getattr(db_obj, "unique_id", getattr(db_obj, "model_id", None))
+		model_id = str(identifier) if identifier else None
+
+
+		return Pokemon(
+			name=inst.species.name,
+			level=inst.level,
+			hp=getattr(db_obj, "current_hp", getattr(inst.stats, "hp", level)),
+			max_hp=getattr(inst.stats, "hp", level),
+			moves=moves,
+			ability=getattr(inst, "ability", None),
+			ivs=ivs_list,
+			evs=evs_list,
+			nature=nature,
+			model_id=model_id,
+			gender=getattr(inst, "gender", "N"),
+		)
 
 
 def generate_wild_pokemon(location=None) -> Pokemon:

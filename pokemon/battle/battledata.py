@@ -245,7 +245,17 @@ class Pokemon:
 		level = data.get("level", 1)
 		moves = [Move.from_dict(m) for m in data.get("moves", [])]
 		max_hp = data.get("max_hp")
-		model_id = data.get("model_id")
+		model_id_raw = data.get("model_id")
+		if isinstance(model_id_raw, str):
+			cleaned = model_id_raw.strip()
+			if not cleaned or cleaned.lower() in {"none", "null"}:
+				model_id = None
+			else:
+				model_id = cleaned
+		elif model_id_raw is None:
+			model_id = None
+		else:
+			model_id = str(model_id_raw)
 		ability = data.get("ability")
 		item = data.get("item")
 		ivs = data.get("ivs")
@@ -253,7 +263,6 @@ class Pokemon:
 		nature = data.get("nature", "Hardy")
 		types = data.get("types")
 		gender = data.get("gender", "N")
-
 		slots = None
 		if model_id:
 			try:

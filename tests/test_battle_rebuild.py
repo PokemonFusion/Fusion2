@@ -310,6 +310,42 @@ def test_pokemon_serialization_minimal():
 	assert restored.hp == 20
 
 
+
+
+def test_build_battle_pokemon_without_identifier_preserves_moves():
+	from utils.pokemon_utils import build_battle_pokemon_from_model
+
+	class DummyModel:
+		def __init__(self):
+			self.name = "NoID"
+			self.species = "NoID"
+			self.level = 7
+			self.current_hp = 30
+			self.moves = ["Tackle", "Growl"]
+			self.gender = "N"
+
+	battle_poke = build_battle_pokemon_from_model(DummyModel())
+
+	assert battle_poke.model_id is None
+
+	stored = battle_poke.to_dict()
+	move_names = [m["name"] for m in stored.get("moves", [])]
+	assert move_names[:2] == ["Tackle", "Growl"]
+
+
+def test_pokemon_from_dict_ignores_none_model_id():
+	data = {
+		"name": "NoID",
+		"level": 5,
+		"model_id": "None",
+		"moves": [{"name": "Tackle"}, {"name": "Growl"}],
+		"current_hp": 25,
+	}
+
+	restored = bd_mod.Pokemon.from_dict(data)
+
+	assert restored.model_id is None
+	assert [mv.name for mv in restored.moves[:2]] == ["Tackle", "Growl"]
 def test_from_dict_calculates_max_hp():
 	fake_models_pkg = types.ModuleType("pokemon.models")
 	fake_models_pkg.__path__ = []
