@@ -88,6 +88,7 @@ class TurnManager:
 		self._notify_turn_banner()
 		log_info(f"Running turn for battle {self.battle_id}")
 		self._set_player_control(False)
+		battle_finished = False
 		try:
 			self.battle.run_turn()
 		except Exception:
@@ -99,6 +100,26 @@ class TurnManager:
 			)
 			self.notify(f"Battle error:\n{err_txt}")
 		else:
+			battle = self.battle
+			roster_size = 0
+			winner = None
+			if battle and getattr(battle, "participants", None):
+				try:
+					roster_size = sum(len(getattr(part, "pokemons", [])) for part in battle.participants)
+				except Exception:
+					roster_size = 0
+			if battle:
+				try:
+					if hasattr(battle, "check_win_conditions"):
+						winner = battle.check_win_conditions()
+						battle_finished = getattr(battle, "battle_over", False) or bool(winner)
+					else:
+						battle_finished = getattr(battle, "battle_over", False)
+				except Exception:
+					log_warn("Failed to evaluate battle win conditions", exc_info=True)
+					battle_finished = getattr(battle, "battle_over", False)
+				if roster_size <= 0 and not winner:
+					battle_finished = False
 			log_info(f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}")
 			if self.state:
 				# Keep the battle state in sync with the engine's turn counter so
@@ -107,6 +128,16 @@ class TurnManager:
 			if self.data and getattr(self.data, "battle", None):
 				self.data.battle.turn = getattr(self.battle, "turn_count", self.data.battle.turn)
 			self._notify_turn_banner()
+			if battle_finished:
+				if hasattr(self, "end"):
+					try:
+						self.end()  # type: ignore[misc]
+					except Exception:
+						log_err(
+							f"Failed to finalize battle {self.battle_id}",
+							exc_info=True,
+						)
+				return
 
 		if self.state:
 			self.state.declare.clear()
