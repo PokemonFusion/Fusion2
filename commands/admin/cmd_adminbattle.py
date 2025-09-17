@@ -14,6 +14,313 @@ from pokemon.battle.storage import BattleDataWrapper
 from utils.battle_display import render_move_gui
 
 
+def _resolve_battle_context(argument: str):
+    """Return the battle instance, room and id for ``argument``."""
+
+    arg = (argument or "").strip()
+    inst = None
+    room = None
+    bid = None
+    target = None
+
+    if not arg:
+        return inst, room, bid, target
+
+    if arg.isdigit():
+        bid = int(arg)
+        inst = battle_handler.instances.get(bid)
+        if inst:
+            room = inst.room
+    else:
+        targets = search_object(arg)
+        if targets:
+            target = targets[0]
+            inst = getattr(getattr(target, "ndb", None), "battle_instance", None)
+            if inst:
+                bid = inst.battle_id
+                room = inst.room
+            else:
+                bid = getattr(getattr(target, "db", None), "battle_id", None)
+                room = getattr(target, "location", None)
+
+    return inst, room, bid, target
+
+
+def _strip_empty(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Return ``data`` without ``None`` values or empty containers."""
+
+    return {k: v for k, v in data.items() if v is not None and v != [] and v != {}}
+
+
+def _summarize_obj(obj) -> str | None:
+    """Return a short human-readable description for ``obj``."""
+
+    if not obj:
+        return None
+    name = getattr(obj, "key", None) or getattr(obj, "name", None)
+    ident = getattr(obj, "id", None)
+    if name and ident is not None:
+        return f"{name} (#{ident})"
+    if name:
+        return str(name)
+    if ident is not None:
+        return f"#{ident}"
+    return str(obj)
+
+
+def _summarize_pokemon(pokemon) -> Dict[str, Any] | None:
+    """Return a snapshot of a Pokémon's key battle attributes."""
+
+    if not pokemon:
+        return None
+
+    moves = []
+    for move in getattr(pokemon, "moves", []) or []:
+        name = getattr(move, "name", None) or getattr(move, "key", None)
+        if not name:
+            name = str(move)
+        moves.append(str(name))
+
+    info: Dict[str, Any] = {
+        "name": getattr(pokemon, "name", getattr(pokemon, "species", None)),
+        "hp": getattr(pokemon, "hp", None),
+        "max_hp": getattr(pokemon, "max_hp", None),
+        "status": getattr(pokemon, "status", None),
+        "moves": moves,
+        "model_id": getattr(pokemon, "model_id", None),
+    }
+
+    ability = getattr(pokemon, "ability", None)
+    if ability:
+        info["ability"] = getattr(ability, "name", str(ability))
+
+    item = getattr(pokemon, "item", None)
+    if item:
+        info["item"] = getattr(item, "name", str(item))
+
+    return _strip_empty(info)
+
+
+def _summarize_action(action) -> Dict[str, Any] | None:
+    """Return a readable representation of a queued battle action."""
+
+    if not action:
+        return None
+
+    data: Dict[str, Any] = {}
+    a_type = getattr(action, "action_type", None)
+    if a_type is not None:
+        data["type"] = getattr(a_type, "name", str(a_type))
+    move = getattr(action, "move", None)
+    if move:
+        data["move"] = getattr(move, "name", str(move))
+    target = getattr(action, "target", None)
+    if target:
+        data["target"] = _summarize_obj(target)
+    priority = getattr(action, "priority", None)
+    if priority is not None:
+        data["priority"] = priority
+    return _strip_empty(data)
+
+
+def _summarize_participant(participant) -> Dict[str, Any] | None:
+    """Summarize a :class:`BattleParticipant` for debugging output."""
+
+    if not participant:
+        return None
+
+    pokemons = [
+        snap
+        for snap in (
+            _summarize_pokemon(poke)
+            for poke in getattr(participant, "pokemons", []) or []
+        )
+        if snap
+    ]
+    active = [
+        snap
+        for snap in (
+            _summarize_pokemon(poke)
+            for poke in getattr(participant, "active", []) or []
+        )
+        if snap
+    ]
+
+    data: Dict[str, Any] = {
+        "name": getattr(participant, "name", None),
+        "team": getattr(participant, "team", None),
+        "player": _summarize_obj(getattr(participant, "player", None)),
+        "is_ai": getattr(participant, "is_ai", None),
+        "pokemons": pokemons,
+        "active": active,
+    }
+
+    pending = _summarize_action(getattr(participant, "pending_action", None))
+    if pending:
+        data["pending_action"] = pending
+
+    return _strip_empty(data)
+
+
+def _summarize_trainer(trainer) -> Dict[str, Any] | None:
+    """Return relevant battle state stored on a trainer."""
+
+    if not trainer:
+        return None
+
+    info: Dict[str, Any] = {"object": _summarize_obj(trainer)}
+
+    battle_id = getattr(getattr(trainer, "db", None), "battle_id", None)
+    if battle_id is not None:
+        info.setdefault("db", {})["battle_id"] = battle_id
+
+    inst = getattr(getattr(trainer, "ndb", None), "battle_instance", None)
+    if inst is not None or hasattr(getattr(trainer, "ndb", None), "battle_instance"):
+        ref = getattr(inst, "battle_id", None) if inst else None
+        info.setdefault("ndb", {})["battle_instance"] = ref
+
+    active = _summarize_pokemon(getattr(trainer, "active_pokemon", None))
+    if active:
+        info["active_pokemon"] = active
+
+    team_members = [
+        snap
+        for snap in (
+            _summarize_pokemon(poke)
+            for poke in getattr(trainer, "team", []) or []
+        )
+        if snap
+    ]
+    if team_members:
+        info["team"] = team_members
+
+    return _strip_empty(info)
+
+
+def _room_snapshot(room, battle_id: int) -> Dict[str, Any]:
+    """Capture stored battle data on ``room`` for ``battle_id``."""
+
+    info: Dict[str, Any] = {"object": _summarize_obj(room)}
+
+    battles = getattr(getattr(room, "db", None), "battles", None)
+    if battles is not None:
+        info.setdefault("db", {})["battles"] = list(battles)
+
+    storage = BattleDataWrapper(room, battle_id)
+    stored: Dict[str, Any] = {}
+    for part in ("data", "state", "trainers", "temp_pokemon_ids", "logic"):
+        value = storage.get(part)
+        if value is not None:
+            stored[part] = value
+    if stored:
+        info["stored"] = stored
+
+    battle_map = getattr(getattr(room, "ndb", None), "battle_instances", None)
+    if isinstance(battle_map, dict):
+        info.setdefault("ndb", {})["battle_instances"] = {
+            str(key): _summarize_obj(val) for key, val in battle_map.items()
+        }
+    elif battle_map is not None:
+        info.setdefault("ndb", {})["battle_instances"] = str(battle_map)
+
+    return _strip_empty(info)
+
+
+def _session_snapshot(inst) -> Dict[str, Any]:
+    """Return a consolidated view of live battle session data."""
+
+    if not inst:
+        return {"present": False}
+
+    summary: Dict[str, Any] = {
+        "present": True,
+        "battle_id": getattr(inst, "battle_id", None),
+        "captainA": _summarize_obj(getattr(inst, "captainA", None)),
+        "captainB": _summarize_obj(getattr(inst, "captainB", None)),
+        "teamA": [_summarize_obj(obj) for obj in getattr(inst, "teamA", []) if obj],
+        "teamB": [_summarize_obj(obj) for obj in getattr(inst, "teamB", []) if obj],
+        "observers": [_summarize_obj(obj) for obj in getattr(inst, "observers", []) if obj],
+        "temp_pokemon_ids": list(getattr(inst, "temp_pokemon_ids", []) or []),
+    }
+
+    state = getattr(inst, "state", None)
+    if state is not None:
+        summary["state_turn"] = getattr(state, "turn", None)
+
+    battle = getattr(inst, "battle", None)
+    if battle is not None:
+        summary["battle_turn"] = getattr(battle, "turn_count", None)
+
+    inst_ndb = getattr(inst, "ndb", None)
+    watchers_live = getattr(inst_ndb, "watchers_live", None)
+    if watchers_live:
+        summary["watchers_live"] = sorted(list(watchers_live))
+
+    logic = getattr(inst, "logic", None)
+    if logic is not None:
+        logic_battle = getattr(logic, "battle", None)
+        if logic_battle is not None:
+            summary["logic_turn"] = getattr(logic_battle, "turn_count", None)
+            participants = [
+                snap
+                for snap in (
+                    _summarize_participant(part)
+                    for part in getattr(logic_battle, "participants", []) or []
+                )
+                if snap
+            ]
+            if participants:
+                summary["participants"] = participants
+
+        logic_data = getattr(logic, "data", None)
+        if logic_data is not None:
+            teams = getattr(logic_data, "teams", {}) or {}
+            team_info: Dict[str, Any] = {}
+            for key in ("A", "B"):
+                team = teams.get(key)
+                if not team:
+                    continue
+                members = [
+                    snap
+                    for snap in (
+                        _summarize_pokemon(poke)
+                        for poke in getattr(team, "returnlist", lambda: [])()
+                    )
+                    if snap
+                ]
+                if members:
+                    team_info[key] = members
+            if team_info:
+                summary["logic_team"] = team_info
+
+    return _strip_empty(summary)
+
+
+def _battle_snapshot(inst, room, battle_id: int) -> Dict[str, Any]:
+    """Construct the full snapshot dictionary for output."""
+
+    snapshot: Dict[str, Any] = {
+        "room": _room_snapshot(room, battle_id),
+        "session": _session_snapshot(inst),
+    }
+
+    trainers: List[Dict[str, Any]] = []
+    seen: set[int] = set()
+    if inst:
+        for obj in list(getattr(inst, "teamA", []) or []) + list(getattr(inst, "teamB", []) or []):
+            if not obj or id(obj) in seen:
+                continue
+            seen.add(id(obj))
+            snapshot_info = _summarize_trainer(obj)
+            if snapshot_info:
+                trainers.append(snapshot_info)
+
+    if trainers:
+        snapshot["trainers"] = trainers
+
+    return snapshot
+
+
 class CmdAbortBattle(Command):
     """Force end an ongoing battle.
 
@@ -96,32 +403,12 @@ class CmdBattleInfo(Command):
             self.caller.msg("Usage: +battleinfo <character or battle id>")
             return
 
-        arg = self.args.strip()
-        inst = None
-        room = None
-        bid = None
-
-        if arg.isdigit():
-            bid = int(arg)
-            inst = battle_handler.instances.get(bid)
-            if inst:
-                room = inst.room
-        else:
-            targets = search_object(arg)
-            if not targets:
-                self.caller.msg("No such character.")
-                return
-            target = targets[0]
-            inst = getattr(target.ndb, "battle_instance", None)
-            if inst:
-                bid = inst.battle_id
-                room = inst.room
-            else:
-                bid = getattr(target.db, "battle_id", None)
-                room = target.location
-
+        inst, room, bid, target = _resolve_battle_context(self.args)
         if bid is None or room is None:
-            self.caller.msg("No battle data found.")
+            if target is None:
+                self.caller.msg("No battle data found.")
+            else:
+                self.caller.msg("No battle data found for that target.")
             return
 
         storage = BattleDataWrapper(room, bid)
@@ -142,6 +429,35 @@ class CmdBattleInfo(Command):
             self.caller.msg("No stored data for that battle.")
         else:
             self.caller.msg("\n".join(lines))
+
+
+class CmdBattleSnapshot(Command):
+    """Display stored and live battle values for comparison.
+
+    Usage:
+      +battlecheck <character or battle id>
+    """
+
+    key = "+battlecheck"
+    locks = "cmd:perm(Wizards)"
+    help_category = "Admin"
+
+    def func(self):
+        if not self.args:
+            self.caller.msg("Usage: +battlecheck <character or battle id>")
+            return
+
+        inst, room, bid, target = _resolve_battle_context(self.args)
+        if bid is None or room is None:
+            if target is None:
+                self.caller.msg("No battle data found.")
+            else:
+                self.caller.msg("No battle data found for that target.")
+            return
+
+        snapshot = _battle_snapshot(inst, room, bid)
+        formatted = pprint.pformat(snapshot, indent=2, width=78, sort_dicts=False)
+        self.caller.msg(f"Battle {bid} snapshot:\n{formatted}")
 
 
 class CmdRetryTurn(Command):

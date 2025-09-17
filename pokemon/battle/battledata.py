@@ -203,9 +203,22 @@ class Pokemon:
 			self.toxic_counter = 0
 
 	def to_dict(self) -> Dict:
-		"""Return a minimal serialisable representation of this Pokémon."""
+		"""Return a serialisable representation of this Pokémon."""
 
-		info = {
+		def _move_payload(move) -> Dict:
+			if hasattr(move, "to_dict"):
+				return move.to_dict()  # type: ignore[return-value]
+			name = getattr(move, "name", move)
+			payload = {"name": name}
+			priority = getattr(move, "priority", None)
+			if priority is not None:
+				payload["priority"] = priority
+			pokemon_types = getattr(move, "pokemon_types", None)
+			if pokemon_types:
+				payload["pokemon_types"] = list(pokemon_types)
+			return payload
+
+		info: Dict[str, Any] = {
 			"current_hp": self.hp,
 			"status": self.status,
 			"boosts": self.boosts,
@@ -216,20 +229,20 @@ class Pokemon:
 
 		if self.model_id:
 			info["model_id"] = self.model_id
-			return info
 
 		if self.ability is not None:
 			info["ability"] = getattr(self.ability, "name", self.ability)
 		if self.item is not None:
 			info["item"] = getattr(self.item, "name", self.item)
+
 		info.update(
 			{
 				"name": self.name,
 				"level": self.level,
 				"max_hp": self.max_hp,
-				"moves": [m.to_dict() for m in self.moves],
-				"ivs": self.ivs,
-				"evs": self.evs,
+				"moves": [_move_payload(m) for m in self.moves],
+				"ivs": list(self.ivs),
+				"evs": list(self.evs),
 				"nature": self.nature,
 				"types": list(self.types),
 			}
@@ -245,7 +258,17 @@ class Pokemon:
 		level = data.get("level", 1)
 		moves = [Move.from_dict(m) for m in data.get("moves", [])]
 		max_hp = data.get("max_hp")
-		model_id = data.get("model_id")
+		model_id_raw = data.get("model_id")
+		if isinstance(model_id_raw, str):
+			cleaned = model_id_raw.strip()
+			if not cleaned or cleaned.lower() in {"none", "null"}:
+				model_id = None
+			else:
+				model_id = cleaned
+		elif model_id_raw is None:
+			model_id = None
+		else:
+			model_id = str(model_id_raw)
 		ability = data.get("ability")
 		item = data.get("item")
 		ivs = data.get("ivs")
@@ -253,7 +276,6 @@ class Pokemon:
 		nature = data.get("nature", "Hardy")
 		types = data.get("types")
 		gender = data.get("gender", "N")
-
 		slots = None
 		if model_id:
 			try:

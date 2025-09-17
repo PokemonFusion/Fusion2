@@ -144,6 +144,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     evs = getattr(model, "evs", [0, 0, 0, 0, 0, 0])
     nature = getattr(model, "nature", "Hardy")
 
+    identifier = getattr(model, "unique_id", getattr(model, "model_id", None))
+    model_id = str(identifier) if identifier else None
+
     battle_poke = Pokemon(
         name=name,
         level=level,
@@ -154,7 +157,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         ivs=ivs,
         evs=evs,
         nature=nature,
-        model_id=str(getattr(model, "unique_id", getattr(model, "model_id", "")) or None),
+        model_id=model_id,
         gender=getattr(model, "gender", "N"),
     )
     if slots is not None:
