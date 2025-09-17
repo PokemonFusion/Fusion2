@@ -3,11 +3,12 @@
 from evennia import CmdSet
 
 from commands.admin.cmd_adminbattle import (
-	CmdAbortBattle,
-	CmdBattleInfo,
-	CmdRestoreBattle,
-	CmdRetryTurn,
-	CmdUiPreview,
+        CmdAbortBattle,
+        CmdBattleInfo,
+        CmdBattleSnapshot,
+        CmdRestoreBattle,
+        CmdRetryTurn,
+        CmdUiPreview,
 )
 
 
@@ -18,11 +19,12 @@ class BattleAdminCmdSet(CmdSet):
 
 	def at_cmdset_creation(self):
 		"""Populate the cmdset."""
-		for cmd in (
-			CmdAbortBattle,
-			CmdRestoreBattle,
-			CmdBattleInfo,
-			CmdRetryTurn,
-			CmdUiPreview,
-		):
-			self.add(cmd())
+                for cmd in (
+                        CmdAbortBattle,
+                        CmdRestoreBattle,
+                        CmdBattleInfo,
+                        CmdBattleSnapshot,
+                        CmdRetryTurn,
+                        CmdUiPreview,
+                ):
+                        self.add(cmd())
