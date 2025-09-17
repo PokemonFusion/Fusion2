@@ -33,6 +33,7 @@ except Exception:  # pragma: no cover - fallback stubs when Evennia missing
 
 
 from .storage import BattleDataWrapper
+from .registry import REGISTRY
 
 if TYPE_CHECKING:
 	from .battleinstance import BattleSession
@@ -77,7 +78,7 @@ class BattleHandler:
 			except Exception:
 				continue
 			if inst:
-				self.instances[int(bid)] = inst
+				self.register(inst)
 		self._save()
 
 	def save(self) -> None:
@@ -86,6 +87,8 @@ class BattleHandler:
 
 	def clear(self) -> None:
 		"""Remove all tracked battle instances."""
+		for inst in list(self.instances.values()):
+			REGISTRY.unregister(inst)
 		self.instances.clear()
 		ServerConfig.objects.conf(key="active_battle_rooms", delete=True)
 
@@ -94,11 +97,17 @@ class BattleHandler:
 	# -------------------------------------------------------------
 	def register(self, inst: BattleSession) -> None:
 		"""Track the given battle session."""
+		if not inst:
+			return
 		self.instances[inst.battle_id] = inst
+		REGISTRY.register(inst)
 		self._save()
 
 	def unregister(self, inst: BattleSession) -> None:
+		if not inst:
+			return
 		bid = inst.battle_id
+		REGISTRY.unregister(inst)
 		if bid in self.instances:
 			del self.instances[bid]
 			self._save()
