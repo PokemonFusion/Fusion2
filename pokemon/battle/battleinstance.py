@@ -535,7 +535,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         log_info(f"Initializing PvP battle {self.battle_id} between {self.captainA.key} and {self.captainB.key}")
 
-        player_pokemon = self._prepare_player_party(self.captainA, full_heal=True)
+        player_pokemon = self._prepare_player_party(self.captainA)
 
         opp_pokemon = self._prepare_player_party(self.captainB)
 
@@ -661,8 +661,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Return a list of battle-ready Pokemon for a trainer.
 
         If ``full_heal`` is ``True`` the Pokémon start with full HP regardless
-        of any stored current HP value. This mirrors the behaviour used when
-        starting PvP battles where all participant Pokémon begin at full health.
+        of any stored current HP value. This is primarily useful for scripted
+        encounters that override health when constructing temporary teams.
         """
         log_info(f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})")
         party = (
@@ -722,9 +722,92 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         battle_handler.register(self)
         log_info(f"Battle {self.battle_id} registered with handler")
 
+    def _sync_player_pokemon_state(self) -> None:
+        """Persist battle results back to the owning player models.
+
+        ``BattleSession`` creates temporary battle representations of a
+        trainer's Pokémon. This helper mirrors the resulting HP and status back
+        onto the owning :class:`~pokemon.models.core.OwnedPokemon` instances so
+        that battles leave lasting effects on a player's party.
+        """
+
+        if not self.battle or not getattr(self.battle, "participants", None):
+            return
+
+        for participant in self.battle.participants:
+            player = getattr(participant, "player", None)
+            if not player:
+                continue
+
+            storage = getattr(player, "storage", None)
+            if not storage:
+                continue
+
+            party: List[Any] = []
+            if hasattr(storage, "get_party"):
+                try:
+                    party = list(storage.get_party())
+                except Exception:
+                    party = []
+            if not party and hasattr(storage, "active_pokemon"):
+                manager = storage.active_pokemon
+                try:
+                    party = list(manager.all())  # type: ignore[attr-defined]
+                except Exception:
+                    try:
+                        party = list(manager)
+                    except Exception:
+                        party = []
+            if not party:
+                continue
+
+            lookup: Dict[str, Any] = {}
+            for mon in party:
+                identifier = getattr(mon, "unique_id", None) or getattr(mon, "id", None)
+                if identifier is not None:
+                    lookup[str(identifier)] = mon
+
+            for poke in getattr(participant, "pokemons", []):
+                model_id = getattr(poke, "model_id", None)
+                if not model_id:
+                    continue
+
+                mon = lookup.get(str(model_id))
+                if not mon:
+                    continue
+
+                max_hp = getattr(mon, "current_hp", 0)
+                get_max_hp = getattr(mon, "get_max_hp", None)
+                if callable(get_max_hp):
+                    try:
+                        max_hp = int(get_max_hp())
+                    except Exception:
+                        max_hp = getattr(mon, "current_hp", 0)
+
+                hp_val = int(getattr(poke, "hp", getattr(mon, "current_hp", 0)) or 0)
+                hp_val = max(0, min(hp_val, max_hp if max_hp else hp_val))
+                if hasattr(mon, "current_hp"):
+                    mon.current_hp = hp_val
+
+                status_val = getattr(poke, "status", "")
+                if isinstance(status_val, int):
+                    status_val = "" if status_val <= 0 else str(status_val)
+                if hasattr(mon, "status"):
+                    mon.status = status_val or ""
+
+                if hasattr(mon, "save"):
+                    try:
+                        mon.save(update_fields=["current_hp", "status"])
+                    except Exception:
+                        try:
+                            mon.save()
+                        except Exception:
+                            pass
+
     def end(self) -> None:
         """End the battle and clean up."""
         log_info(f"Ending battle {self.battle_id}")
+        self._sync_player_pokemon_state()
         self._set_player_control(False)
         try:
             from ..models import OwnedPokemon
