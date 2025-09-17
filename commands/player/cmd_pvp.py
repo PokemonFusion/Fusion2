@@ -22,6 +22,8 @@ class CmdPvpHelp(Command):
 	help_category = "Pokemon/PvP"
 
 	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
 		lines = ["|wPlayer vs Player commands|n"]
 		lines.append("  +pvp/list - list open PVP requests")
 		lines.append("  +pvp/create [password] - create a PVP request")
