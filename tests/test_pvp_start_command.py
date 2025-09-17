@@ -80,7 +80,7 @@ def test_pvpstart_fails_if_host_in_battle():
 	cmd_mod.start_pvp_battle = orig_start
 
 	assert started == []
-	assert caller.msgs and "already engaged" in caller.msgs[-1].lower()
+	assert caller.msgs and "cannot do that during battle" in caller.msgs[-1].lower()
 
 
 def test_pvpstart_fails_if_opponent_in_battle():
@@ -144,3 +144,90 @@ def test_pvpstart_starts_when_free():
 	assert started and started[0][0] is caller and started[0][1] is opponent
 	assert removed
 	assert not caller.msgs
+
+
+def test_pvp_commands_blocked_during_battle_instance():
+	orig = setup_evennia()
+	cmd_mod = load_cmd_module()
+
+	try:
+		caller = DummyCaller(in_battle=True)
+		cmd = cmd_mod.CmdPvpHelp()
+		cmd.caller = caller
+		cmd.func()
+		assert caller.msgs and "cannot do that during battle" in caller.msgs[-1].lower()
+
+		calls = []
+		orig_get = cmd_mod.get_requests
+		try:
+			def fake_get_requests(location):
+				calls.append(True)
+				return {}
+
+			cmd_mod.get_requests = fake_get_requests
+			caller = DummyCaller(in_battle=True)
+			cmd = cmd_mod.CmdPvpList()
+			cmd.caller = caller
+			cmd.func()
+		finally:
+			cmd_mod.get_requests = orig_get
+
+		assert not calls
+		assert caller.msgs and "cannot do that during battle" in caller.msgs[-1].lower()
+
+		create_calls = []
+		orig_create = cmd_mod.create_request
+		try:
+			def fake_create_request(*args, **kwargs):
+				create_calls.append(True)
+				return None
+
+			cmd_mod.create_request = fake_create_request
+			caller = DummyCaller(in_battle=True)
+			cmd = cmd_mod.CmdPvpCreate()
+			cmd.caller = caller
+			cmd.args = ""
+			cmd.func()
+		finally:
+			cmd_mod.create_request = orig_create
+
+		assert not create_calls
+		assert caller.msgs and "cannot do that during battle" in caller.msgs[-1].lower()
+
+		find_calls = []
+		orig_find = cmd_mod.find_request
+		try:
+			def fake_find_request(*args, **kwargs):
+				find_calls.append(True)
+				return None
+
+			cmd_mod.find_request = fake_find_request
+			caller = DummyCaller(in_battle=True)
+			cmd = cmd_mod.CmdPvpJoin()
+			cmd.caller = caller
+			cmd.args = "Alice"
+			cmd.func()
+		finally:
+			cmd_mod.find_request = orig_find
+
+		assert not find_calls
+		assert caller.msgs and "cannot do that during battle" in caller.msgs[-1].lower()
+
+		remove_calls = []
+		orig_remove = cmd_mod.remove_request
+		try:
+			def fake_remove_request(*args, **kwargs):
+				remove_calls.append(True)
+
+			cmd_mod.remove_request = fake_remove_request
+			caller = DummyCaller(in_battle=True)
+			cmd = cmd_mod.CmdPvpAbort()
+			cmd.caller = caller
+			cmd.func()
+		finally:
+			cmd_mod.remove_request = orig_remove
+
+		assert not remove_calls
+		assert caller.msgs and "cannot do that during battle" in caller.msgs[-1].lower()
+	finally:
+		restore_evennia(orig)

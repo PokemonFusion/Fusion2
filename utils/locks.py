@@ -23,16 +23,22 @@ def clear_battle_lock(caller) -> None:
 
 
 def require_no_battle_lock(caller) -> bool:
-    """Ensure ``caller`` is not currently battle-locked.
+    """Ensure ``caller`` is not currently in battle.
 
     Returns
     -------
     bool
-        ``True`` if no battle lock is present, ``False`` otherwise. When a
-        battle lock is present a message will be sent to the caller.
+        ``True`` if the caller is free to act, ``False`` otherwise. When the
+        caller is in battle a message will be sent.
     """
     db = getattr(caller, "db", None)
     if db and getattr(db, "battle_lock", None):
         caller.msg("You cannot do that during battle.")
         return False
+
+    ndb = getattr(caller, "ndb", None)
+    if ndb and getattr(ndb, "battle_instance", None):
+        caller.msg("You cannot do that during battle.")
+        return False
+
     return True
