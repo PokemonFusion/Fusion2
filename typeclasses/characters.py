@@ -17,10 +17,10 @@ from evennia.objects.objects import DefaultCharacter
 
 _BASE_PATH = os.path.dirname(__file__)
 if "typeclasses" not in sys.modules:
-	spec_pkg = importlib.machinery.ModuleSpec("typeclasses", loader=None, is_package=True)
-	pkg = importlib.util.module_from_spec(spec_pkg)
-	pkg.__path__ = [_BASE_PATH]
-	sys.modules["typeclasses"] = pkg
+        spec_pkg = importlib.machinery.ModuleSpec("typeclasses", loader=None, is_package=True)
+        pkg = importlib.util.module_from_spec(spec_pkg)
+        pkg.__path__ = [_BASE_PATH]
+        sys.modules["typeclasses"] = pkg
 
 try:
 	from .objects import ObjectParent
@@ -34,6 +34,7 @@ except Exception:  # pragma: no cover - fallback when package missing
 from django.utils.translation import gettext as _
 
 from utils.pokedex import DexTrackerMixin
+from pokemon.battle.interface import format_turn_banner
 
 
 class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
@@ -66,6 +67,26 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 				self.execute_cmd("+showbattle")
 			except Exception:
 				pass
+
+			if self in getattr(inst, "trainers", []):
+				battle = getattr(inst, "battle", None)
+				state = getattr(inst, "state", None)
+				if battle or state:
+					turn = getattr(battle, "turn_count", None) if battle else None
+					if turn is None and state is not None:
+						turn = getattr(state, "turn", None)
+					if turn is None:
+						turn = 1
+					try:
+						turn_no = int(turn)
+					except Exception:
+						turn_no = 1
+					if turn_no < 1:
+						turn_no = 1
+					try:
+						self.msg(format_turn_banner(turn_no))
+					except Exception:
+						pass
 
 	def at_pre_move(self, destination, **kwargs):
 		"""Prevent leaving while hosting a PVP request."""
