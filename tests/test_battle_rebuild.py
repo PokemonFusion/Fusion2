@@ -289,25 +289,36 @@ def test_trainer_ids_saved_and_restored():
 	assert storage_after.get("trainers") == {"teamA": [1], "teamB": [2]}
 
 
-def test_pokemon_serialization_minimal():
-	poke = bd_mod.Pokemon("Bulbasaur", level=5, hp=20, max_hp=30, model_id="abc")
+def test_pokemon_serialization_includes_fallback_fields():
+	poke = bd_mod.Pokemon(
+		"Bulbasaur",
+		level=5,
+		hp=20,
+		max_hp=30,
+		model_id="abc",
+		moves=[bd_mod.Move("Tackle"), bd_mod.Move("Growl")],
+	)
 	poke.ability = "Overgrow"
+	poke.item = "Miracle Seed"
+	poke.ivs = [1, 2, 3, 4, 5, 6]
+	poke.evs = [6, 5, 4, 3, 2, 1]
 	data = poke.to_dict()
 
-	assert "name" not in data
-	assert "level" not in data
-	assert "max_hp" not in data
-	assert "moves" not in data
-	assert "ivs" not in data
-	assert "evs" not in data
-	assert "nature" not in data
-	assert "ability" not in data
 	assert data.get("model_id") == "abc"
-	assert data.get("current_hp") == 20
+	assert data.get("name") == "Bulbasaur"
+	assert data.get("level") == 5
+	assert data.get("max_hp") == 30
+	assert data.get("ability") == "Overgrow"
+	assert data.get("item") == "Miracle Seed"
+	assert data.get("ivs") == [1, 2, 3, 4, 5, 6]
+	assert data.get("evs") == [6, 5, 4, 3, 2, 1]
+	move_names = [m["name"] for m in data.get("moves", [])]
+	assert move_names[:2] == ["Tackle", "Growl"]
 
 	restored = bd_mod.Pokemon.from_dict(data)
 	assert restored.model_id == "abc"
 	assert restored.hp == 20
+	assert [mv.name for mv in restored.moves[:2]] == ["Tackle", "Growl"]
 
 
 
@@ -346,6 +357,33 @@ def test_pokemon_from_dict_ignores_none_model_id():
 
 	assert restored.model_id is None
 	assert [mv.name for mv in restored.moves[:2]] == ["Tackle", "Growl"]
+
+
+def test_pokemon_from_dict_uses_serialized_moves_when_lookup_fails():
+	data = {
+		"name": "Bulbasaur",
+		"level": 5,
+		"model_id": "missing",
+		"moves": [{"name": "Tackle"}, {"name": "Growl"}],
+		"current_hp": 25,
+	}
+
+	original_safe_import = bd_mod.safe_import
+
+	def fake_safe_import(path):
+		if path == "pokemon.models":
+			raise ModuleNotFoundError
+		return original_safe_import(path)
+
+	bd_mod.safe_import = fake_safe_import
+	try:
+		restored = bd_mod.Pokemon.from_dict(data)
+	finally:
+		bd_mod.safe_import = original_safe_import
+
+	assert restored.model_id == "missing"
+	assert [mv.name for mv in restored.moves[:2]] == ["Tackle", "Growl"]
+
 def test_from_dict_calculates_max_hp():
 	fake_models_pkg = types.ModuleType("pokemon.models")
 	fake_models_pkg.__path__ = []
