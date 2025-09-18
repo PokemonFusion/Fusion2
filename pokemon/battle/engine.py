@@ -929,6 +929,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.field = Field()
         self.debug: bool = False
         self.rng = rng or random
+        self._rewards_granted: bool = False
 
     # ------------------------------------------------------------------
     # Battle initialisation helpers
@@ -2211,5 +2212,66 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         return getattr(pokemon, "tempvals", {}).get("quash", False)
 
     def handle_end_of_battle_rewards(self, winner: BattleParticipant) -> None:
-        """Placeholder for reward distribution."""
-        pass
+        """Award post-battle rewards to the winning participant.
+
+        Experience is granted during ``run_faint``. This hook focuses on
+        trainer battle prize money so that the player's trainer model reflects
+        victories outside of PvP encounters.
+        """
+
+        if self._rewards_granted:
+            return
+
+        if not winner or not getattr(winner, "player", None):
+            return
+
+        if self.type is not BattleType.TRAINER:
+            return
+
+        try:  # pragma: no cover - data import optional in tests
+            from pokemon.dex.exp_ev_yields import GAIN_INFO  # type: ignore
+        except Exception:  # pragma: no cover - fallback to empty mapping
+            GAIN_INFO = {}
+
+        prize_money = 0
+        for participant in self.participants:
+            if participant is winner or not getattr(participant, "has_lost", False):
+                continue
+            if getattr(participant, "player", None):
+                # PvP opponents handle their own persistence.
+                continue
+            for poke in getattr(participant, "pokemons", []):
+                if getattr(poke, "hp", 0) > 0:
+                    continue
+                species = getattr(poke, "name", getattr(poke, "species", ""))
+                info = GAIN_INFO.get(species, {}) if species else {}
+                amount = int(info.get("exp", 0)) if info else 0
+                if amount <= 0:
+                    level = getattr(poke, "level", 1) or 1
+                    amount = max(10, int(level) * 10)
+                prize_money += amount
+
+        if prize_money <= 0:
+            self._rewards_granted = True
+            return
+
+        recipient = winner.player
+        trainer = getattr(recipient, "trainer", None)
+        if trainer and hasattr(trainer, "add_money"):
+            try:
+                trainer.add_money(prize_money)
+            except Exception:  # pragma: no cover - persistence best-effort
+                pass
+        else:
+            add_money = getattr(recipient, "add_money", None)
+            if callable(add_money):
+                try:
+                    add_money(prize_money)
+                except Exception:  # pragma: no cover - persistence best-effort
+                    pass
+
+        if hasattr(self, "log_action"):
+            self.log_action(
+                f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!"
+            )
+        self._rewards_granted = True
