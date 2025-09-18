@@ -1111,6 +1111,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Mark ``pokemon`` as fainted and trigger callbacks."""
         pokemon.is_fainted = True
 
+        name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+        try:  # pragma: no cover - data package may be unavailable in tests
+            from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+        except Exception:  # pragma: no cover
+            DEFAULT_TEXT = {"default": {"faint": "[POKEMON] fainted!"}}
+
+        template = DEFAULT_TEXT.get("default", {}).get("faint")
+        if template:
+            message = template.replace("[POKEMON]", name)
+            self.log_action(message)
+
         ability = _resolve_ability(getattr(pokemon, "ability", None))
         if ability and hasattr(ability, "call"):
             try:
