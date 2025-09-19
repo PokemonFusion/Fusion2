@@ -111,33 +111,68 @@ def test_pursuit_before_switch():
 
 
 def test_switch_resolves_before_attack():
-	atk = make_pokemon("Atk", 1)
-	sw1 = make_pokemon("Sw1", 2)
-	sw2 = make_pokemon("Sw2", 3)
-	move = BattleMove("Tackle", power=40, accuracy=100)
-	p1 = BattleParticipant("A", [atk], is_ai=False)
-	p2 = BattleParticipant("B", [sw1, sw2], is_ai=False)
-	p1.active = [atk]
-	p2.active = [sw1]
-	act = Action(p1, ActionType.MOVE, p2, move, move.priority, pokemon=atk)
-	p1.pending_action = act
-	sw1.tempvals = {"switch_out": True}
-	battle = Battle(BattleType.WILD, [p1, p2])
-	random.seed(0)
-	battle.run_turn()
-	assert p2.active[0] is sw2
-	assert sw1.hp == 100
-	assert sw2.hp < 100
+        atk = make_pokemon("Atk", 1)
+        sw1 = make_pokemon("Sw1", 2)
+        sw2 = make_pokemon("Sw2", 3)
+        move = BattleMove("Tackle", power=40, accuracy=100)
+        p1 = BattleParticipant("A", [atk], is_ai=False)
+        p2 = BattleParticipant("B", [sw1, sw2], is_ai=False)
+        p1.active = [atk]
+        p2.active = [sw1]
+        act = Action(p1, ActionType.MOVE, p2, move, move.priority, pokemon=atk)
+        p1.pending_action = act
+        sw1.tempvals = {"switch_out": True}
+        battle = Battle(BattleType.WILD, [p1, p2])
+        random.seed(0)
+        battle.run_turn()
+        assert p2.active[0] is sw2
+        assert sw1.hp == 100
+        assert sw2.hp < 100
+
+
+def test_fainted_pokemon_cannot_use_move():
+        fainted = make_pokemon("Fainted", 1)
+        fainted.hp = 0
+        fainted.tempvals = {}
+        opponent = make_pokemon("Opponent", 2)
+        move = BattleMove("Test", power=40, accuracy=100)
+
+        calls = []
+
+        def on_hit(user, target, battle):
+                calls.append((user, target))
+                return True
+
+        move.onHit = on_hit
+
+        participant = BattleParticipant("A", [fainted], is_ai=False)
+        opponent_part = BattleParticipant("B", [opponent], is_ai=False)
+        participant.active = [fainted]
+        opponent_part.active = [opponent]
+        action = Action(
+                participant,
+                ActionType.MOVE,
+                opponent_part,
+                move,
+                move.priority,
+                pokemon=fainted,
+        )
+        battle = Battle(BattleType.WILD, [participant, opponent_part])
+
+        battle.use_move(action)
+
+        assert calls == []
+        assert fainted.tempvals.get("switch_out") is True
 
 
 def test_spread_modifier():
-	a = make_pokemon("A", 1)
-	b = make_pokemon("B", 2)
-	move = Move(name="Surf", num=0, type="Water", category="Special", power=50, accuracy=100, pp=None, raw={})
-	random.seed(0)
-	res1 = pkg_battle.damage_calc(a, b, move)
-	dmg1 = sum(res1.debug["damage"])
-	random.seed(0)
-	res2 = pkg_battle.damage_calc(a, b, move, spread=True)
-	dmg2 = sum(res2.debug["damage"])
-	assert dmg2 == int(dmg1 * 0.75)
+        a = make_pokemon("A", 1)
+        b = make_pokemon("B", 2)
+        move = Move(name="Surf", num=0, type="Water", category="Special", power=50, accuracy=100, pp=None, raw={})
+        random.seed(0)
+        res1 = pkg_battle.damage_calc(a, b, move)
+        dmg1 = sum(res1.debug["damage"])
+        random.seed(0)
+        res2 = pkg_battle.damage_calc(a, b, move, spread=True)
+        dmg2 = sum(res2.debug["damage"])
+        assert dmg2 == int(dmg1 * 0.75)
