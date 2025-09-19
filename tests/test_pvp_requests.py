@@ -3,6 +3,8 @@ import os
 import sys
 import types
 
+import pytest
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
@@ -99,12 +101,26 @@ class FakeRoom:
 		self.msgs.append(text)
 
 
+class DummyStorage:
+	def __init__(self, *, hp=10):
+		self.hp = hp
+
+	def get_party(self):
+		return [types.SimpleNamespace(current_hp=self.hp)]
+
+
 def test_create_request_locks_and_announces():
 	orig = setup_evennia()
 	pvp = load_pvp_module()
 
 	room = FakeRoom()
-	host = types.SimpleNamespace(id=1, key="Alice", location=room, db=types.SimpleNamespace())
+	host = types.SimpleNamespace(
+		id=1,
+		key="Alice",
+		location=room,
+		db=types.SimpleNamespace(),
+		storage=DummyStorage(),
+	)
 
 	req = pvp.create_request(host)
 
@@ -116,12 +132,39 @@ def test_create_request_locks_and_announces():
 	restore_evennia(orig)
 
 
+def test_create_request_requires_usable_pokemon():
+	orig = setup_evennia()
+	pvp = load_pvp_module()
+
+	room = FakeRoom()
+	host = types.SimpleNamespace(
+		id=1,
+		key="Alice",
+		location=room,
+		db=types.SimpleNamespace(),
+		storage=DummyStorage(hp=0),
+	)
+
+	try:
+		with pytest.raises(ValueError) as exc:
+			pvp.create_request(host)
+		assert "able to battle" in str(exc.value)
+	finally:
+		restore_evennia(orig)
+
+
 def test_remove_request_unlocks():
 	orig = setup_evennia()
 	pvp = load_pvp_module()
 
 	room = FakeRoom()
-	host = types.SimpleNamespace(id=1, key="Alice", location=room, db=types.SimpleNamespace())
+	host = types.SimpleNamespace(
+		id=1,
+		key="Alice",
+		location=room,
+		db=types.SimpleNamespace(),
+		storage=DummyStorage(),
+	)
 
 	pvp.create_request(host)
 	pvp.remove_request(host)

@@ -7,14 +7,27 @@ from pokemon.battle.pvp import (
 	remove_request,
 	start_pvp_battle,
 )
+from pokemon.helpers.party_helpers import has_usable_pokemon as _has_usable_party
 from utils.locks import require_no_battle_lock
+
+
+def _caller_has_usable_pokemon(caller) -> bool:
+	"""Return ``True`` if ``caller`` can field a conscious Pokémon."""
+
+	checker = getattr(caller, "has_usable_pokemon", None)
+	if callable(checker):
+		try:
+			return bool(checker())
+		except TypeError:  # pragma: no cover - defensive for odd stubs
+			pass
+	return _has_usable_party(caller)
 
 
 class CmdPvpHelp(Command):
 	"""Show available PVP commands.
 
 	Usage:
-	  +pvp
+          +pvp
 	"""
 
 	key = "+pvp"
@@ -72,6 +85,9 @@ class CmdPvpCreate(Command):
 	def func(self):
 		if not require_no_battle_lock(self.caller):
 			return
+		if not _caller_has_usable_pokemon(self.caller):
+			self.caller.msg("You don't have any Pokémon able to battle.")
+			return
 		password = self.args.strip() or None
 		try:
 			create_request(self.caller, password=password)
@@ -94,6 +110,9 @@ class CmdPvpJoin(Command):
 
 	def func(self):
 		if not require_no_battle_lock(self.caller):
+			return
+		if not _caller_has_usable_pokemon(self.caller):
+			self.caller.msg("You don't have any Pokémon able to battle.")
 			return
 		if not self.args:
 			self.caller.msg("Usage: +pvp/join <player> [password]")

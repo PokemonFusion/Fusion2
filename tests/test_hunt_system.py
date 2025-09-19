@@ -71,7 +71,7 @@ class DummyAttr(types.SimpleNamespace):
 
 class DummyStorage:
 	def get_party(self):
-		return [types.SimpleNamespace(ability=None)]
+		return [types.SimpleNamespace(ability=None, current_hp=10)]
 
 
 class DummyHunter:
@@ -123,3 +123,18 @@ def test_hunt_not_allowed():
 	hunter = DummyHunter()
 	msg = hs.perform_fixed_hunt(hunter, "Rattata", 3)
 	assert msg == "You can't hunt here."
+
+
+def test_hunt_requires_conscious_pokemon():
+	room = DummyRoom()
+	hs = HuntSystem(room)
+	hunter = DummyHunter()
+	hunter.location = room
+
+	class FaintedStorage(DummyStorage):
+		def get_party(self):
+			return [types.SimpleNamespace(ability=None, current_hp=0)]
+
+	hunter.storage = FaintedStorage()
+	msg = hs.perform_hunt(hunter)
+	assert msg == "You don't have any Pokémon able to battle."
