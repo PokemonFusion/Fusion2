@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+from pokemon.helpers.party_helpers import has_usable_pokemon
+
 
 @dataclass
 class PVPRequest:
@@ -57,6 +59,8 @@ def get_requests(location) -> Dict[int, PVPRequest]:
 
 def create_request(host, password: Optional[str] = None) -> PVPRequest:
 	"""Create a new request on the host's location."""
+	if not has_usable_pokemon(host):
+		raise ValueError("You don't have any Pokémon able to battle.")
 	reqs = get_requests(host.location)
 	if host.id in reqs:
 		raise ValueError("You are already hosting a PVP request.")

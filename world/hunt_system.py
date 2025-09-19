@@ -17,11 +17,12 @@ except Exception:  # pragma: no cover - Evennia not installed in CI
                 pass
 
 from pokemon.battle.battleinstance import (
-	BattleSession,
-	BattleType,
-	create_battle_pokemon,
-	generate_trainer_pokemon,
+        BattleSession,
+        BattleType,
+        create_battle_pokemon,
+        generate_trainer_pokemon,
 )
+from pokemon.helpers.party_helpers import has_usable_pokemon
 
 
 class HuntSystem:
@@ -69,9 +70,7 @@ class HuntSystem:
 		last = getattr(hunter.ndb, "last_hunt_time", 0)
 		if last and time.time() - last < 3:
 			return "You need to wait before hunting again."
-		storage = getattr(hunter, "storage", None)
-		party = storage.get_party() if storage and hasattr(storage, "get_party") else []
-		if not party:
+		if not has_usable_pokemon(hunter):
 			return "You don't have any Pokémon able to battle."
 		tp_cost = getattr(self.room.db, "tp_cost", 0)
 		if tp_cost:

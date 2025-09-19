@@ -9,6 +9,10 @@ from django.db.models import Max
 from django.utils import timezone
 from evennia import DefaultCharacter
 
+from pokemon.helpers.party_helpers import (
+    get_active_party as _get_active_party,
+    has_usable_pokemon as _has_usable_party,
+)
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from utils.inventory import InventoryMixin
 
@@ -123,6 +127,16 @@ class User(DefaultCharacter, InventoryMixin):
 
         ensure_boxes(storage)
         return storage
+
+    def get_active_party(self):
+        """Return the list of active Pokémon for this character."""
+
+        return _get_active_party(self)
+
+    def has_usable_pokemon(self) -> bool:
+        """Return ``True`` if at least one active Pokémon can battle."""
+
+        return _has_usable_party(self)
 
     # ------------------------------------------------------------------
     # Starter selection

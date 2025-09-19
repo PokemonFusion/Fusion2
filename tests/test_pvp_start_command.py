@@ -41,15 +41,19 @@ def restore_evennia(orig_evennia):
 
 
 class DummyCaller:
-	def __init__(self, pid=1, key="Alice", in_battle=False):
+	def __init__(self, pid=1, key="Alice", in_battle=False, has_party=True):
 		self.id = pid
 		self.key = key
 		self.location = object()
 		self.msgs = []
 		self.ndb = types.SimpleNamespace(battle_instance=(object() if in_battle else None))
+		self._has_party = has_party
 
 	def msg(self, text):
 		self.msgs.append(text)
+
+	def has_usable_pokemon(self):
+		return self._has_party
 
 
 def test_pvpstart_fails_if_host_in_battle():
@@ -144,6 +148,21 @@ def test_pvpstart_starts_when_free():
 	assert started and started[0][0] is caller and started[0][1] is opponent
 	assert removed
 	assert not caller.msgs
+
+
+def test_pvpcreate_requires_conscious_pokemon():
+	orig = setup_evennia()
+	cmd_mod = load_cmd_module()
+
+	try:
+		caller = DummyCaller(has_party=False)
+		cmd = cmd_mod.CmdPvpCreate()
+		cmd.caller = caller
+		cmd.args = ""
+		cmd.func()
+		assert caller.msgs and "able to battle" in caller.msgs[-1].lower()
+	finally:
+		restore_evennia(orig)
 
 
 def test_pvp_commands_blocked_during_battle_instance():
