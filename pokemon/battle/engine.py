@@ -1446,6 +1446,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         user = action.pokemon or (
             action.actor.active[0] if action.actor.active else None
         )
+        if not user:
+            return
+
+        if getattr(user, "hp", 0) <= 0:
+            tempvals = getattr(user, "tempvals", None)
+            if tempvals is None:
+                tempvals = {}
+                setattr(user, "tempvals", tempvals)
+            tempvals["switch_out"] = True
+            return
+
         # Ensure we have full move data loaded from the dex
         key = getattr(action.move, "key", None)
         if not key and getattr(action.move, "name", None):
