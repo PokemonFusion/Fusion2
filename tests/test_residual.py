@@ -44,9 +44,9 @@ def setup_battle(status):
 
 
 def test_burn_residual_damage():
-	battle, p1, _ = setup_battle("brn")
-	battle.residual()
-	assert p1.hp == 70
+        battle, p1, _ = setup_battle("brn")
+        battle.residual()
+        assert p1.hp == 75
 
 
 def test_poison_residual_damage():

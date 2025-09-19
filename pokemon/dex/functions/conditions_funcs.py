@@ -5,20 +5,35 @@ from __future__ import annotations
 import random
 
 
+from pokemon.battle.status import BurnStatus
+
+
 class Brn:
-	"""Burn status condition."""
+        """Burn status condition."""
 
-	def onResidual(self, pokemon, *_, **__):
-		"""Apply burn damage each turn."""
-		max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 1))
-		damage = max(1, max_hp // 8)
-		pokemon.hp = max(0, getattr(pokemon, "hp", 0) - damage)
-		return damage
+        def __init__(self) -> None:
+                self._impl = BurnStatus()
 
-	def onStart(self, pokemon, *_, **__):
-		"""Initialize burn status."""
-		setattr(pokemon, "status", "brn")
-		return True
+        def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
+                return self._impl.modify_attack(
+                        atk,
+                        attacker=attacker,
+                        defender=defender,
+                        move=move,
+                )
+
+        def onResidual(self, pokemon, *_, battle=None, **__):
+                return self._impl.on_residual(pokemon, battle=battle)
+
+        def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
+                return self._impl.on_start(
+                        pokemon,
+                        battle=battle,
+                        source=source,
+                        effect=effect,
+                        previous=previous,
+                        bypass_protection=bypass_protection,
+                )
 
 
 class Par:

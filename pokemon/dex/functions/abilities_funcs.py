@@ -907,10 +907,16 @@ class Filter:
 
 
 class Flamebody:
-	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and move.flags.get("contact"):
-			if random() < 0.3 and hasattr(source, "setStatus"):
-				source.setStatus("brn")
+        def onDamagingHit(self, damage, target=None, source=None, move=None):
+                if source and move and move.flags.get("contact"):
+                        if random() < 0.3 and hasattr(source, "setStatus"):
+                                battle = getattr(target, "battle", None)
+                                source.setStatus(
+                                        "brn",
+                                        source=target,
+                                        battle=battle,
+                                        effect="ability:flamebody",
+                                )
 
 
 class Flareboost:
@@ -3041,10 +3047,16 @@ class Symbiosis:
 
 
 class Synchronize:
-	def onAfterSetStatus(self, status, target=None, source=None, effect=None):
-		if target and source and target is getattr(self, "effect_state", {}).get("target") and source is not target:
-			if status not in {0, None} and hasattr(source, "setStatus"):
-				source.setStatus(status)
+        def onAfterSetStatus(self, status, target=None, source=None, effect=None):
+                if target and source and target is getattr(self, "effect_state", {}).get("target") and source is not target:
+                        if status not in {0, None} and hasattr(source, "setStatus"):
+                                battle = getattr(target, "battle", None)
+                                source.setStatus(
+                                        status,
+                                        source=target,
+                                        battle=battle,
+                                        effect="ability:synchronize",
+                                )
 
 
 class Tabletsofruin:

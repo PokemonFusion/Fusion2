@@ -744,8 +744,14 @@ class BattleMove:
         if status:
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected is not None:
-                battle.apply_status_condition(affected, status)
-                battle.announce_status_change(affected, status)
+                applied = battle.apply_status_condition(
+                    affected,
+                    status,
+                    source=user,
+                    effect=self,
+                )
+                if applied:
+                    battle.announce_status_change(affected, status)
 
         # Apply secondary effects such as additional boosts or status changes
         secondaries: List[Dict[str, Any]] = []
@@ -805,9 +811,15 @@ class BattleMove:
 
                 if sec.get("boosts") and target:
                     apply_boost(target, sec["boosts"])
-                if sec.get("status") and target:
-                    setattr(target, "status", sec["status"])
-                    battle.announce_status_change(target, sec["status"])
+                if sec.get("status") and target and battle:
+                    applied = battle.apply_status_condition(
+                        target,
+                        sec["status"],
+                        source=user,
+                        effect=self,
+                    )
+                    if applied:
+                        battle.announce_status_change(target, sec["status"])
                 if (
                     sec.get("volatileStatus")
                     and target
@@ -873,9 +885,15 @@ class BattleMove:
                 if self_sec and user:
                     if self_sec.get("boosts"):
                         apply_boost(user, self_sec["boosts"])
-                    if self_sec.get("status"):
-                        setattr(user, "status", self_sec["status"])
-                        battle.announce_status_change(user, self_sec["status"])
+                    if self_sec.get("status") and battle:
+                        applied = battle.apply_status_condition(
+                            user,
+                            self_sec["status"],
+                            source=user,
+                            effect=self,
+                        )
+                        if applied:
+                            battle.announce_status_change(user, self_sec["status"])
                     if self_sec.get("volatileStatus") and hasattr(user, "volatiles"):
                         user.volatiles.setdefault(self_sec["volatileStatus"], True)
                         battle.announce_status_change(user, self_sec["volatileStatus"])
