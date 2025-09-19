@@ -4949,7 +4949,12 @@ class Rest:
 		max_hp = getattr(user, "max_hp", getattr(user, "hp", 0))
 		user.hp = max_hp
 		if hasattr(user, "setStatus"):
-			user.setStatus("slp")
+			user.setStatus(
+				"slp",
+					battle=battle,
+					source=user,
+					effect="move:rest",
+			)
 		return True
 
 	def onTry(self, *args, **kwargs):

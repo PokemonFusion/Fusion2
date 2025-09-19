@@ -5,135 +5,178 @@ from __future__ import annotations
 import random
 
 
-from pokemon.battle.status import BurnStatus
+from pokemon.battle.status import (
+        BadPoison,
+        Burn,
+        Freeze,
+        Paralysis,
+        Poison,
+        Sleep,
+)
 
 
 class Brn:
-        """Burn status condition."""
+        """Burn status condition wrapper."""
 
         def __init__(self) -> None:
-                self._impl = BurnStatus()
-
-        def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
-                return self._impl.modify_attack(
-                        atk,
-                        attacker=attacker,
-                        defender=defender,
-                        move=move,
-                )
-
-        def onResidual(self, pokemon, *_, battle=None, **__):
-                return self._impl.on_residual(pokemon, battle=battle)
+                self._impl = Burn()
 
         def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
-                return self._impl.on_start(
+                if not self._impl.at_apply(
                         pokemon,
-                        battle=battle,
+                        battle,
                         source=source,
                         effect=effect,
                         previous=previous,
-                        bypass_protection=bypass_protection,
-                )
+                        allow_self_inflict=bypass_protection,
+                ):
+                        return False
+                self._impl.on_start(pokemon, battle, effect=effect)
+                return True
+
+        def onResidual(self, pokemon, *_, battle=None, **__):
+                self._impl.on_end_turn(pokemon, battle)
+                return None
+
+        def onModifyAtk(self, atk, attacker=None, defender=None, move=None):
+                if attacker is None:
+                        return atk
+                return self._impl.modify_attack(attacker, atk, move=move)
 
 
 class Par:
-	"""Paralysis condition."""
+        """Paralysis condition wrapper."""
 
-	def onBeforeMove(self, pokemon, *_, **__):
-		"""25% chance to be unable to act."""
-		if random.random() < 0.25:
-			if hasattr(pokemon, "tempvals"):
-				pokemon.tempvals["cant_move"] = "par"
-			return False
-		return True
+        def __init__(self) -> None:
+                self._impl = Paralysis()
 
-	def onModifySpe(self, spe, *_, **__):
-		"""Halve the Speed stat."""
-		return spe // 2
+        def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
+                if not self._impl.at_apply(
+                        pokemon,
+                        battle,
+                        source=source,
+                        effect=effect,
+                        previous=previous,
+                        allow_self_inflict=bypass_protection,
+                ):
+                        return False
+                self._impl.on_start(pokemon, battle)
+                return True
 
-	def onStart(self, pokemon, *_, **__):
-		setattr(pokemon, "status", "par")
-		return True
+        def onBeforeMove(self, pokemon, *_, battle=None, **__):
+                return self._impl.on_before_move(pokemon, battle)
+
+        def onModifySpe(self, spe, *args, pokemon=None, **kwargs):
+                if pokemon is None and args:
+                        pokemon = args[0]
+                modifier = self._impl.speed_mod(pokemon)
+                return int(spe * modifier)
 
 
 class Slp:
-	"""Sleep condition."""
+        """Sleep condition wrapper."""
 
-	def onBeforeMove(self, pokemon, *_, **__):
-		turns = getattr(pokemon, "tempvals", {}).get("slp_turns")
-		if turns is None:
-			return True
-		if turns <= 0:
-			pokemon.status = 0
-			pokemon.tempvals.pop("slp_turns", None)
-			return True
-		pokemon.tempvals["slp_turns"] = turns - 1
-		return False
+        def __init__(self) -> None:
+                self._impl = Sleep()
 
-	def onStart(self, pokemon, *_, **__):
-		if hasattr(pokemon, "tempvals"):
-			pokemon.tempvals["slp_turns"] = random.randint(1, 3)
-		setattr(pokemon, "status", "slp")
-		return True
+        def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
+                if not self._impl.at_apply(
+                        pokemon,
+                        battle,
+                        source=source,
+                        effect=effect,
+                        previous=previous,
+                        allow_self_inflict=bypass_protection,
+                ):
+                        return False
+                self._impl.on_start(pokemon, battle, effect=effect)
+                return True
+
+        def onBeforeMove(self, pokemon, *_, battle=None, **__):
+                return self._impl.on_before_move(pokemon, battle)
 
 
 class Frz:
-	"""Frozen condition."""
+        """Frozen condition wrapper."""
 
-	def onAfterMoveSecondary(self, *_, **__):
-		return True
+        def __init__(self) -> None:
+                self._impl = Freeze()
 
-	def onBeforeMove(self, pokemon, *_, **__):
-		if random.random() < 0.2:
-			pokemon.status = 0
-			return True
-		return False
+        def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
+                if not self._impl.at_apply(
+                        pokemon,
+                        battle,
+                        source=source,
+                        effect=effect,
+                        previous=previous,
+                        allow_self_inflict=bypass_protection,
+                ):
+                        return False
+                self._impl.on_start(pokemon, battle)
+                return True
 
-	def onDamagingHit(self, *_, **__):
-		return True
+        def onBeforeMove(self, pokemon, *_, battle=None, **__):
+                return self._impl.on_before_move(pokemon, battle)
 
-	def onModifyMove(self, *_, **__):
-		return True
-
-	def onStart(self, pokemon, *_, **__):
-		setattr(pokemon, "status", "frz")
-		return True
+        def onDamagingHit(self, pokemon, damage=None, source=None, move=None, battle=None, **__):
+                self._impl.on_hit_by_move(pokemon, move, battle)
+                return True
 
 
 class Psn:
-	"""Poison condition."""
+        """Poison condition wrapper."""
 
-	def onResidual(self, pokemon, *_, **__):
-		max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 1))
-		damage = max(1, max_hp // 8)
-		pokemon.hp = max(0, getattr(pokemon, "hp", 0) - damage)
-		return damage
+        def __init__(self) -> None:
+                self._impl = Poison()
 
-	def onStart(self, pokemon, *_, **__):
-		setattr(pokemon, "status", "psn")
-		return True
+        def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
+                if not self._impl.at_apply(
+                        pokemon,
+                        battle,
+                        source=source,
+                        effect=effect,
+                        previous=previous,
+                        allow_self_inflict=bypass_protection,
+                ):
+                        return False
+                self._impl.on_start(pokemon, battle)
+                return True
+
+        def onResidual(self, pokemon, *_, battle=None, **__):
+                self._impl.on_end_turn(pokemon, battle)
+                return None
 
 
 class Tox:
-	"""Badly poisoned condition."""
+        """Badly poisoned condition wrapper."""
 
-	def onResidual(self, pokemon, *_, **__):
-		max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 1))
-		counter = getattr(pokemon, "toxic_counter", 1)
-		damage = max(1, (max_hp * counter) // 16)
-		pokemon.hp = max(0, getattr(pokemon, "hp", 0) - damage)
-		pokemon.toxic_counter = counter + 1
-		return damage
+        def __init__(self) -> None:
+                self._impl = BadPoison()
 
-	def onStart(self, pokemon, *_, **__):
-		setattr(pokemon, "status", "tox")
-		setattr(pokemon, "toxic_counter", 1)
-		return True
+        def onStart(self, pokemon, *_, battle=None, source=None, effect=None, previous=None, bypass_protection=False, **__):
+                if not self._impl.at_apply(
+                        pokemon,
+                        battle,
+                        source=source,
+                        effect=effect,
+                        previous=previous,
+                        allow_self_inflict=bypass_protection,
+                ):
+                        return False
+                self._impl.on_start(pokemon, battle)
+                return True
 
-	def onSwitchIn(self, pokemon, *_, **__):
-		pokemon.status = "psn"
-		pokemon.toxic_counter = 0
-		return True
+        def onResidual(self, pokemon, *_, battle=None, **__):
+                self._impl.on_end_turn(pokemon, battle)
+                return None
+
+        def onSwitchIn(self, pokemon, *_, battle=None, **__):
+                self._impl.on_switch_in(pokemon, battle)
+                return True
+
+        def onSwitchOut(self, pokemon, *_, battle=None, **__):
+                self._impl.on_switch_out(pokemon, battle)
+                return True
 
 
 class Confusion:

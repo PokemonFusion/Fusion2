@@ -22,6 +22,28 @@ except Exception:  # pragma: no cover - optional for lightweight test stubs
 from . import capture as capture_mod
 from .messaging import MessagingMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
+from .status import (
+        STATUS_BURN,
+        STATUS_FREEZE,
+        STATUS_PARALYSIS,
+        STATUS_POISON,
+        STATUS_SLEEP,
+        STATUS_TOXIC,
+        Burn,
+        BurnStatus,
+        Freeze,
+        FreezeStatus,
+        Paralysis,
+        ParalysisStatus,
+        Poison,
+        PoisonStatus,
+        BadPoison,
+        BadPoisonStatus,
+        Sleep,
+        SleepStatus,
+        StatusCondition,
+        can_apply_status,
+)
 from .storage import BattleDataWrapper
 
 
@@ -56,5 +78,25 @@ __all__ = [
 	"create_participants",
 	"build_initial_state",
 	"persist_initial_state",
-	"MessagingMixin",
+        "MessagingMixin",
+        "StatusCondition",
+        "can_apply_status",
+        "STATUS_BURN",
+        "STATUS_POISON",
+        "STATUS_TOXIC",
+        "STATUS_PARALYSIS",
+        "STATUS_SLEEP",
+        "STATUS_FREEZE",
+        "Burn",
+        "BurnStatus",
+        "Poison",
+        "PoisonStatus",
+        "BadPoison",
+        "BadPoisonStatus",
+        "Paralysis",
+        "ParalysisStatus",
+        "Sleep",
+        "SleepStatus",
+        "Freeze",
+        "FreezeStatus",
 ]
