@@ -261,7 +261,7 @@ class ConditionHelpers:
 		dest_attr: str,
 		handler_registry: Dict[str, Any],
 		context: Optional[Dict[str, Any]] = None,
-	) -> None:
+	) -> bool:
 		"""Generic helper to apply a battle condition to ``pokemon``.
 
 		Parameters
@@ -280,38 +280,82 @@ class ConditionHelpers:
 		    method, if available.
 		"""
 
+		previous_value = None
 		if dest_attr == "volatiles":
 			volatiles = getattr(pokemon, "volatiles", None)
 			if volatiles is None:
 				volatiles = {}
 				pokemon.volatiles = volatiles
+			previous_value = volatiles.get(condition)
 			volatiles[condition] = True
 		else:
+			previous_value = getattr(pokemon, dest_attr, None)
 			setattr(pokemon, dest_attr, condition)
 
 		handler = (handler_registry or {}).get(condition)
+		success = True
 		if handler and hasattr(handler, "onStart"):
-			ctx = context or {}
+			ctx = dict(context or {})
+			ctx.setdefault("previous", previous_value)
 			try:
-				handler.onStart(pokemon, **ctx)
+				result = handler.onStart(pokemon, **ctx)
 			except Exception:
 				try:
-					handler.onStart(pokemon)
+					result = handler.onStart(pokemon)
 				except Exception:
-					handler.onStart()
+					result = handler.onStart()
+			if result is False:
+				success = False
 
-	def apply_status_condition(self, pokemon, condition: str) -> None:
+		if not success:
+			if dest_attr == "volatiles":
+				if previous_value is None:
+					getattr(pokemon, "volatiles", {}).pop(condition, None)
+				else:
+					pokemon.volatiles[condition] = previous_value
+			else:
+				setattr(pokemon, dest_attr, previous_value)
+			return False
+		return True
+
+	def apply_status_condition(
+		self,
+		pokemon,
+		condition: str,
+		*,
+		source=None,
+		effect=None,
+		bypass_protection: bool = False,
+	) -> bool:
 		"""Inflict a major status condition on ``pokemon``."""
+		if hasattr(pokemon, "setStatus"):
+			return bool(
+				pokemon.setStatus(
+					condition,
+					source=source,
+					battle=self,
+					effect=effect,
+					bypass_protection=bypass_protection,
+				)
+			)
 		try:
 			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 		except Exception:  # pragma: no cover - handler lookup optional
 			CONDITION_HANDLERS = {}
-		self.apply_condition(
-			pokemon,
-			condition,
-			dest_attr="status",
-			handler_registry=CONDITION_HANDLERS,
-			context={"battle": self},
+		return bool(
+			self.apply_condition(
+				pokemon,
+				condition,
+				dest_attr="status",
+				handler_registry=CONDITION_HANDLERS,
+				context={
+					"battle": self,
+					"source": source,
+					"effect": effect,
+					"previous": getattr(pokemon, "status", None),
+					"bypass_protection": bypass_protection,
+				},
+			)
 		)
 
 	def apply_volatile_status(self, pokemon, condition: str) -> None:

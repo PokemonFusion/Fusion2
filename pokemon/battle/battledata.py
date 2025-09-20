@@ -195,12 +195,61 @@ class Pokemon:
 	def getName(self) -> str:
 		return self.name
 
-	def setStatus(self, status: str | int) -> None:
-		self.status = status
-		if status == "tox":
+	def setStatus(
+		self,
+		status: str | int,
+		*,
+		source=None,
+		battle=None,
+		effect=None,
+		bypass_protection: bool = False,
+	) -> bool:
+		"""Attempt to set a major status condition on this Pokémon."""
+
+		previous_status = getattr(self, "status", 0)
+		previous_toxic = getattr(self, "toxic_counter", 0)
+
+		if isinstance(status, str):
+			status_key = status.lower()
+		else:
+			status_key = status
+
+		if status_key in {None, "", 0}:
+			self.status = 0
+			self.toxic_counter = 0
+			return True
+
+		self.status = status_key
+		if status_key == "tox":
 			self.toxic_counter = 1
 		else:
 			self.toxic_counter = 0
+
+		try:
+			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+
+			handler = CONDITION_HANDLERS.get(status_key)
+		except Exception:
+			handler = None
+
+		ctx = {
+			"battle": battle or getattr(self, "battle", None),
+			"source": source,
+			"effect": effect,
+			"previous": previous_status,
+			"bypass_protection": bypass_protection,
+		}
+
+		if handler and hasattr(handler, "onStart"):
+			try:
+				result = handler.onStart(self, **ctx)
+			except TypeError:
+				result = handler.onStart(self, ctx.get("battle"))
+			if result is False:
+				self.status = previous_status
+				self.toxic_counter = previous_toxic
+				return False
+		return True
 
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this Pokémon."""

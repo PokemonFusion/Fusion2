@@ -409,6 +409,26 @@ def damage_calc(
 		# Determine the stat actually used for damage after all modifications
 		atk_stat = atk_stat if atk_key == "attack" else spa_stat
 
+		if atk_key == "attack":
+			try:
+				from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
+			except Exception:
+				CONDITION_HANDLERS = {}
+			status = getattr(attacker, "status", None)
+			handler = (CONDITION_HANDLERS or {}).get(status)
+			if handler and hasattr(handler, "onModifyAtk"):
+				try:
+					new_atk = handler.onModifyAtk(
+						atk_stat,
+						attacker=attacker,
+						defender=target,
+						move=move,
+					)
+				except Exception:
+					new_atk = atk_stat
+				if isinstance(new_atk, (int, float)):
+					atk_stat = int(new_atk)
+
 		power = move.power or 0
 		if battle is not None:
 			field = getattr(battle, "field", None)
@@ -539,15 +559,27 @@ def damage_calc(
 				status = secondary.get("status", status)
 				chance = secondary.get("chance", chance)
 			if status and percent_check(chance / 100.0, rng=rng):
-				setattr(target, "status", status)
-				try:
-					from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
-				except Exception:
-					CONDITION_HANDLERS = {}
-				handler = CONDITION_HANDLERS.get(status)
-				if handler and hasattr(handler, "onStart"):
-					handler.onStart(target, source=attacker, battle=battle)
-				if status == "brn":
+				applied = False
+				if battle is not None:
+					applied = battle.apply_status_condition(
+						target,
+						status,
+						source=attacker,
+						effect=move,
+					)
+				elif hasattr(target, "setStatus"):
+					applied = bool(
+						target.setStatus(
+							status,
+							source=attacker,
+							battle=None,
+							effect=move,
+						)
+					)
+				else:
+					setattr(target, "status", status)
+					applied = True
+				if applied and status == "brn":
 					result.text.append(f"{target.name} was burned!")
 	if numhits > 1:
 		result.text.append(f"{attacker.name} hit {numhits} times!")

@@ -945,9 +945,16 @@ class Fistplate:
 
 
 class Flameorb:
-	def onResidual(self, pokemon=None):
-		if pokemon and not getattr(pokemon, "status", None):
-			pokemon.setStatus("brn")
+        def onResidual(self, pokemon=None):
+                if pokemon and not getattr(pokemon, "status", None):
+                        battle = getattr(pokemon, "battle", None)
+                        pokemon.setStatus(
+                                "brn",
+                                source=pokemon,
+                                battle=battle,
+                                effect="item:flameorb",
+                                bypass_protection=True,
+                        )
 
 
 class Flameplate:

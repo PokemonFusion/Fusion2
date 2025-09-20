@@ -195,7 +195,12 @@ class Beakblast:
 	def onHit(self, user, target, battle):
 		"""Burn the target on contact."""
 		if hasattr(target, "setStatus"):
-			target.setStatus("brn")
+			target.setStatus(
+				"brn",
+				source=user,
+				battle=battle,
+				effect="move:beakblast",
+			)
 		return True
 
 	def onStart(self, user, target, battle):
@@ -433,7 +438,12 @@ class Burningbulwark:
 	def onHit(self, user, target, battle):
 		"""Burn contact attackers."""
 		if hasattr(target, "setStatus"):
-			target.setStatus("brn")
+			target.setStatus(
+				"brn",
+				source=user,
+				battle=battle,
+				effect="move:burningbulwark",
+			)
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -449,7 +459,13 @@ class Burningbulwark:
 		"""Block the incoming move and burn contact attackers."""
 		flags = getattr(move, "flags", {}) if move else {}
 		if flags.get("contact") and hasattr(source, "setStatus"):
-			source.setStatus("brn")
+			battle = getattr(target, "battle", None)
+			source.setStatus(
+				"brn",
+				source=target,
+				battle=battle,
+				effect="move:burningbulwark",
+			)
 		return False
 
 
@@ -459,7 +475,12 @@ class Burningjealousy:
 		boosts = getattr(target, "boosts", {})
 		if any(v > 0 for v in boosts.values()):
 			if hasattr(target, "setStatus"):
-				target.setStatus("brn")
+				target.setStatus(
+					"brn",
+					source=user,
+					battle=battle,
+					effect="move:burningjealousy",
+				)
 		return True
 
 
@@ -4928,7 +4949,12 @@ class Rest:
 		max_hp = getattr(user, "max_hp", getattr(user, "hp", 0))
 		user.hp = max_hp
 		if hasattr(user, "setStatus"):
-			user.setStatus("slp")
+			user.setStatus(
+				"slp",
+					battle=battle,
+					source=user,
+					effect="move:rest",
+			)
 		return True
 
 	def onTry(self, *args, **kwargs):
@@ -6640,7 +6666,13 @@ class Triattack:
 	def onHit(self, user, target, battle):
 		"""20% chance to burn, paralyze, or freeze the target."""
 		if random() < 0.2 and hasattr(target, "setStatus"):
-			target.setStatus(choice(["brn", "par", "frz"]))
+			status = choice(["brn", "par", "frz"])
+			target.setStatus(
+				status,
+				source=user,
+				battle=battle,
+				effect="move:triattack",
+			)
 		return True
 
 
