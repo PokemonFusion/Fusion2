@@ -8,6 +8,7 @@ from .status_core import (
 	can_apply_status,
 	has_ability,
 	has_type,
+	log_status_damage,
 )
 
 _FACADE_MOVES = {'facade'}
@@ -56,6 +57,7 @@ class Burn(StatusCondition):
 		divisor = 32 if has_ability(pokemon, 'heatproof') else 16
 		damage = max(1, max_hp // divisor)
 		pokemon.hp = max(0, getattr(pokemon, 'hp', 0) - damage)
+		log_status_damage(pokemon, battle, STATUS_BURN)
 		return None
 
 	def modify_attack(self, pokemon, attack_value, move=None):

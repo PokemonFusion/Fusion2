@@ -37,6 +37,7 @@ Battle = eng_mod.Battle
 BattleParticipant = eng_mod.BattleParticipant
 BattleType = eng_mod.BattleType
 
+from pokemon.data.text import DEFAULT_TEXT
 from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 
 
@@ -58,6 +59,20 @@ def setup_battle(status: str):
     p1.battle = battle
     p2.battle = battle
     return battle, p1, p2
+
+
+def _expected_status_message(status: str, name: str) -> str:
+    template = DEFAULT_TEXT.get(status, {}).get("damage")
+    visited = set()
+    while isinstance(template, str) and template.startswith("#"):
+        ref = template[1:]
+        if not ref or ref in visited:
+            break
+        visited.add(ref)
+        template = DEFAULT_TEXT.get(ref, {}).get("damage")
+    if not isinstance(template, str):
+        return ""
+    return template.replace("[POKEMON]", name)
 
 
 def test_burn_residual_damage():
@@ -106,3 +121,27 @@ def test_toxic_converts_on_switch_out():
 
     assert p1.status == "tox"
     assert p1.toxic_counter == 1
+
+
+def test_burn_residual_announces_damage():
+    battle, p1, _ = setup_battle("brn")
+    logs: list[str] = []
+    battle.log_action = logs.append
+    battle.residual()
+    assert _expected_status_message("brn", p1.name) in logs
+
+
+def test_poison_residual_announces_damage():
+    battle, p1, _ = setup_battle("psn")
+    logs: list[str] = []
+    battle.log_action = logs.append
+    battle.residual()
+    assert _expected_status_message("psn", p1.name) in logs
+
+
+def test_toxic_residual_announces_damage():
+    battle, p1, _ = setup_battle("tox")
+    logs: list[str] = []
+    battle.log_action = logs.append
+    battle.residual()
+    assert _expected_status_message("tox", p1.name) in logs

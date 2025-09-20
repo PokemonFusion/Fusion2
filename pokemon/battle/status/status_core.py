@@ -11,6 +11,7 @@ __all__ = [
 	'has_ability',
 	'has_type',
 	'iter_allies',
+	'log_status_damage',
 	'STATUS_BURN',
 	'STATUS_POISON',
 	'STATUS_TOXIC',
@@ -230,3 +231,33 @@ class StatusCondition:
 	def modify_attack(self, pokemon, attack_value, move=None):
 		"""Return the modified Attack stat for physical moves."""
 		return attack_value
+
+
+def log_status_damage(pokemon, battle, status_key: str) -> None:
+	"""Log residual damage for *status_key* if a battle logger is available."""
+
+	if battle is None or not hasattr(battle, 'log_action'):
+		return None
+
+	try:  # pragma: no cover - exercised when data package is unavailable
+		from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+	except Exception:  # pragma: no cover - fallback strings for lightweight tests
+		DEFAULT_TEXT = {
+			'brn': {'damage': '  [POKEMON] was hurt by its burn!'},
+			'psn': {'damage': '  [POKEMON] was hurt by poison!'},
+			'tox': {'damage': '  [POKEMON] was hurt by poison!'},
+		}
+
+	template = DEFAULT_TEXT.get(status_key, {}).get('damage')
+	visited = set()
+	while isinstance(template, str) and template.startswith('#'):
+		ref = template[1:]
+		if not ref or ref in visited:
+			break
+		visited.add(ref)
+		template = DEFAULT_TEXT.get(ref, {}).get('damage')
+
+	if isinstance(template, str) and template:
+		name = getattr(pokemon, 'name', getattr(pokemon, 'species', 'Pokemon'))
+		battle.log_action(template.replace('[POKEMON]', name))
+	return None

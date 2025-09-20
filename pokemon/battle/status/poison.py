@@ -10,6 +10,7 @@ from .status_core import (
 	has_ability,
 	has_type,
 	iter_allies,
+	log_status_damage,
 )
 
 
@@ -67,6 +68,7 @@ class Poison(StatusCondition):
 			return None
 		damage = max(1, max_hp // 8)
 		pokemon.hp = max(0, getattr(pokemon, 'hp', 0) - damage)
+		log_status_damage(pokemon, battle, STATUS_POISON)
 		return None
 
 
@@ -121,4 +123,5 @@ class BadPoison(StatusCondition):
 		damage = max(1, (max_hp * counter) // 16)
 		pokemon.hp = max(0, getattr(pokemon, 'hp', 0) - damage)
 		pokemon.toxic_counter = counter + 1
+		log_status_damage(pokemon, battle, STATUS_TOXIC)
 		return None
