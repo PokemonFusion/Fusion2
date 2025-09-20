@@ -1996,6 +1996,32 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def residual(self) -> None:
         """Process residual effects and handle end-of-turn fainting."""
 
+        try:  # pragma: no cover - data package may be unavailable in tests
+            from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+        except Exception:  # pragma: no cover - fallback templates for tests
+            DEFAULT_TEXT = {
+                "brn": {"damage": "  [POKEMON] was hurt by its burn!"},
+                "psn": {"damage": "  [POKEMON] was hurt by poison!"},
+                "tox": {"damage": "  [POKEMON] was hurt by poison!"},
+            }
+
+        def _log_status_damage(status_key: str, pokemon) -> None:
+            template = DEFAULT_TEXT.get(status_key, {}).get("damage")
+            visited = set()
+            while isinstance(template, str) and template.startswith("#"):
+                ref = template[1:]
+                if not ref or ref in visited:
+                    break
+                visited.add(ref)
+                template = DEFAULT_TEXT.get(ref, {}).get("damage")
+            if not isinstance(template, str) or not template:
+                return None
+            if not hasattr(self, "log_action"):
+                return None
+            name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+            self.log_action(template.replace("[POKEMON]", name))
+            return None
+
         # Apply residual damage from status conditions
         for part in self.participants:
             if part.has_lost:
@@ -2015,12 +2041,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     max_hp = getattr(poke, "max_hp", getattr(poke, "hp", 1))
                     damage = max(1, max_hp // 8)
                     poke.hp = max(0, poke.hp - damage)
+                    _log_status_damage(status, poke)
                 elif status == "tox":
                     max_hp = getattr(poke, "max_hp", getattr(poke, "hp", 1))
                     counter = getattr(poke, "toxic_counter", 1)
                     damage = max(1, (max_hp * counter) // 16)
                     poke.hp = max(0, poke.hp - damage)
                     poke.toxic_counter = counter + 1
+                    _log_status_damage(status, poke)
 
                 # Ability and item residual callbacks
                 ability = _resolve_ability(getattr(poke, "ability", None))
