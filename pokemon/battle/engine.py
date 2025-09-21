@@ -40,7 +40,7 @@ import importlib
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
 from utils.safe_import import safe_import
 
@@ -191,6 +191,35 @@ try:  # pragma: no cover - optional at runtime
 except ModuleNotFoundError:  # pragma: no cover - used in lightweight test stubs
     conditions_funcs = None
 moves_funcs = None
+
+
+def _get_default_text() -> Dict[str, Dict[str, str]]:
+    """Return the localized battle text mapping with graceful fallback."""
+
+    try:  # pragma: no cover - optional dependency during lightweight tests
+        from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+    except Exception:  # pragma: no cover - fallback when data package missing
+        return {"default": {}, "drain": {}, "recoil": {}}
+    return DEFAULT_TEXT  # type: ignore[return-value]
+
+
+def _apply_placeholders(
+    template: str, replacements: Mapping[str, Sequence[str] | str]
+) -> str:
+    """Substitute placeholder tokens in ``template`` with ``replacements``."""
+
+    message = template
+    for placeholder, value in replacements.items():
+        if isinstance(value, Sequence) and not isinstance(value, str):
+            values = [str(part) for part in value if part is not None]
+            if not values:
+                continue
+            for part in values[:-1]:
+                message = message.replace(placeholder, part, 1)
+            message = message.replace(placeholder, values[-1])
+        else:
+            message = message.replace(placeholder, str(value))
+    return message
 
 
 def is_self_target(target: str | None) -> bool:
@@ -547,10 +576,46 @@ class BattleMove:
         logic can still be exercised without the full data package.
         """
 
-        try:  # pragma: no cover - exercised in tests using stubs
-            from pokemon.data.text import DEFAULT_TEXT  # type: ignore
-        except Exception:  # pragma: no cover
-            DEFAULT_TEXT = {"default": {}, "drain": {}, "recoil": {}}
+        DEFAULT_TEXT = _get_default_text()
+
+        if battle and hasattr(battle, "log_action"):
+            default_messages = DEFAULT_TEXT.get("default", {})
+            actor_name = getattr(user, "name", None) or getattr(user, "species", "Pokemon")
+            move_name = getattr(self, "name", "Move")
+
+            move_template = default_messages.get("move")
+            if move_template:
+                message = move_template.replace("[POKEMON]", str(actor_name)).replace(
+                    "[MOVE]", str(move_name)
+                )
+                battle.log_action(message)
+
+            ability_template = default_messages.get("abilityActivation")
+            if ability_template:
+                ability_obj = _resolve_ability(getattr(user, "ability", None))
+                ability_name = getattr(ability_obj, "name", None)
+                if not ability_name:
+                    raw_ability = getattr(user, "ability", None)
+                    ability_name = getattr(raw_ability, "name", None)
+                    if not ability_name and isinstance(raw_ability, str):
+                        ability_name = raw_ability
+                if ability_name:
+                    ability_message = ability_template.replace(
+                        "[POKEMON]", str(actor_name)
+                    ).replace("[ABILITY]", str(ability_name))
+                    battle.log_action(ability_message)
+
+            item_template = default_messages.get("activateItem")
+            if item_template:
+                item = getattr(user, "item", None) or getattr(user, "held_item", None)
+                item_name = getattr(item, "name", None)
+                if not item_name and isinstance(item, str):
+                    item_name = item
+                if item_name:
+                    item_message = item_template.replace("[POKEMON]", str(actor_name)).replace(
+                        "[ITEM]", str(item_name)
+                    )
+                    battle.log_action(item_message)
 
         if self.onTry:
             self.onTry(user, target, self, battle)
@@ -948,12 +1013,99 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.debug: bool = False
         self.rng = rng or random
         self._rewards_granted: bool = False
+        self._result_logged: bool = False
+
+    def _format_default_message(
+        self,
+        key: str,
+        replacements: Mapping[str, Sequence[str] | str],
+        fallback: str | None = None,
+    ) -> str | None:
+        """Return the formatted message for ``key`` from :data:`DEFAULT_TEXT`."""
+
+        default_messages = _get_default_text().get("default", {})
+        template = default_messages.get(key) or fallback
+        if not template:
+            return None
+        return _apply_placeholders(template, replacements)
+
+    @staticmethod
+    def _pokemon_nickname(pokemon) -> str:
+        """Return the best nickname representation for ``pokemon``."""
+
+        nickname = getattr(pokemon, "name", None) or getattr(
+            pokemon, "nickname", None
+        )
+        if nickname:
+            return str(nickname)
+        species = getattr(pokemon, "species", None)
+        if hasattr(species, "name") and getattr(species, "name"):
+            return str(getattr(species, "name"))
+        if species:
+            return str(species)
+        return "Pokemon"
+
+    def _pokemon_fullname(self, pokemon) -> str:
+        """Return a display-friendly full name for ``pokemon``."""
+
+        nickname = self._pokemon_nickname(pokemon)
+        species = getattr(pokemon, "species", None)
+        species_name = None
+        if hasattr(species, "name") and getattr(species, "name"):
+            species_name = str(getattr(species, "name"))
+        elif isinstance(species, str) and species:
+            species_name = species
+        if species_name and species_name != nickname:
+            return f"{nickname} ({species_name})"
+        return nickname
+
+    def _log_switch_in(self, participant: BattleParticipant, pokemon) -> None:
+        """Log the standard switch-in message for ``pokemon``."""
+
+        message = self._format_default_message(
+            "switchIn",
+            {
+                "[TRAINER]": getattr(participant, "name", "Trainer"),
+                "[FULLNAME]": self._pokemon_fullname(pokemon),
+            },
+        )
+        if message:
+            self.log_action(message)
+
+    def _log_switch_out(self, participant: BattleParticipant, pokemon) -> None:
+        """Log the switch-out message for ``pokemon``."""
+
+        message = self._format_default_message(
+            "switchOut",
+            {
+                "[TRAINER]": getattr(participant, "name", "Trainer"),
+                "[NICKNAME]": self._pokemon_nickname(pokemon),
+            },
+        )
+        if message:
+            self.log_action(message)
 
     # ------------------------------------------------------------------
     # Battle initialisation helpers
     # ------------------------------------------------------------------
     def start_battle(self) -> None:
         """Prepare the battle by sending out the first available Pokémon."""
+        names = [
+            getattr(part, "name", "Trainer")
+            for part in self.participants
+            if not getattr(part, "has_lost", False)
+        ]
+        if len(names) >= 2:
+            trainer_values = names[:2]
+        elif names:
+            trainer_values = [names[0], names[0]]
+        else:
+            trainer_values = ["Trainer", "Trainer"]
+        message = self._format_default_message(
+            "startBattle", {"[TRAINER]": trainer_values}
+        )
+        if message:
+            self.log_action(message)
         for participant in self.participants:
             if participant.active:
                 continue
@@ -961,6 +1113,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if getattr(poke, "hp", 1) > 0:
                     participant.active.append(poke)
                     self.on_enter_battle(poke)
+                    self._log_switch_in(participant, poke)
                     if len(participant.active) >= getattr(participant, "max_active", 1):
                         break
 
@@ -981,6 +1134,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             else:
                 return
         self.on_enter_battle(pokemon)
+        self._log_switch_in(part, pokemon)
 
     def switch_pokemon(
         self, participant: BattleParticipant, new_pokemon, slot: int = 0
@@ -989,6 +1143,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if len(participant.active) <= slot:
             participant.active.append(new_pokemon)
             self.on_enter_battle(new_pokemon)
+            self._log_switch_in(participant, new_pokemon)
             return
         current = participant.active[slot]
         if current is new_pokemon:
@@ -996,6 +1151,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.on_switch_out(current)
         participant.active[slot] = new_pokemon
         self.on_enter_battle(new_pokemon)
+        self._log_switch_in(participant, new_pokemon)
         self.apply_entry_hazards(new_pokemon)
 
     def participant_for(self, pokemon) -> Optional[BattleParticipant]:
@@ -1120,6 +1276,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def on_switch_out(self, pokemon) -> None:
         """Handle effects when ``pokemon`` leaves the field."""
+        part = self.participant_for(pokemon)
+        if part:
+            self._log_switch_out(part, pokemon)
         self.dispatcher.dispatch("switch_out", pokemon=pokemon, battle=self)
         vols = list(getattr(pokemon, "volatiles", {}).keys())
         for vol in vols:

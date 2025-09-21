@@ -61,6 +61,22 @@ class TurnProcessor:
 	def start_turn(self) -> None:
 		"""Reset temporary flags or display status."""
 		self.turn_count += 1
+		if hasattr(self, "log_action"):
+			message = None
+			if hasattr(self, "_format_default_message"):
+				message = self._format_default_message(
+					"turn", {"[NUMBER]": str(self.turn_count)}
+				)
+			else:
+				try:  # pragma: no cover - optional dependency
+					from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+				except Exception:  # pragma: no cover
+					DEFAULT_TEXT = {"default": {}}
+				template = DEFAULT_TEXT.get("default", {}).get("turn")
+				if template:
+					message = template.replace("[NUMBER]", str(self.turn_count))
+			if message:
+				self.log_action(message)
 		if self.turn_count == 1:
 			for part in self.participants:
 				for poke in part.active:
