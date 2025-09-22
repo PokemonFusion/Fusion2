@@ -63,10 +63,29 @@ class Freeze(StatusCondition):
 	def on_before_move(self, pokemon, battle) -> bool:
 		if random.random() < 0.2:
 			pokemon.status = 0
+			if battle:
+				battle.announce_status_change(
+					pokemon,
+					self.name,
+					event="end",
+				)
 			return True
+		if battle:
+			battle.announce_status_change(
+				pokemon,
+				self.name,
+				event="cant",
+			)
 		return False
 
 	def on_hit_by_move(self, pokemon, move, battle) -> None:
 		if _move_thaws(move):
 			pokemon.status = 0
+			if battle:
+				battle.announce_status_change(
+					pokemon,
+					self.name,
+					event="endFromMove",
+					effect=move,
+				)
 		return None

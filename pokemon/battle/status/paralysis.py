@@ -38,6 +38,12 @@ class Paralysis(StatusCondition):
 		if random.random() < 0.25:
 			if hasattr(pokemon, 'tempvals'):
 				pokemon.tempvals['cant_move'] = 'par'
+			if battle:
+				battle.announce_status_change(
+					pokemon,
+					self.name,
+					event="cant",
+				)
 			return False
 		return True
 

@@ -8,7 +8,7 @@ if ROOT not in sys.path:
 
 from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 
-from .helpers import build_battle
+from .helpers import build_battle, resolve_status_text
 
 
 def test_poison_residual_damage():
@@ -95,3 +95,47 @@ def test_purifying_salt_blocks_poison():
         applied = battle.apply_status_condition(target, "psn", source=battle.participants[0].active[0], effect="move:toxic")
         assert applied is False
         assert target.status != "psn"
+
+
+def test_poison_status_messages():
+        battle, attacker, target = build_battle()
+        logs = []
+        battle.log_action = logs.append
+
+        applied = battle.apply_status_condition(target, "psn", source=attacker, effect="move:toxic")
+        assert applied is True
+        psn_start = resolve_status_text("psn", "start")
+        assert psn_start is not None
+        assert logs[-1] == psn_start.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        battle.apply_status_condition(target, "psn", source=attacker, effect="move:toxic")
+        psn_already = resolve_status_text("psn", "alreadyStarted")
+        assert psn_already is not None
+        assert logs[-1] == psn_already.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        target.setStatus(0, battle=battle)
+        psn_end = resolve_status_text("psn", "end")
+        assert psn_end is not None
+        assert logs[-1] == psn_end.replace("[POKEMON]", target.name)
+
+        # Verify badly poisoned messages share the same templates
+        logs.clear()
+        applied = battle.apply_status_condition(target, "tox", source=attacker, effect="move:toxic")
+        assert applied is True
+        tox_start = resolve_status_text("tox", "start")
+        assert tox_start is not None
+        assert logs[-1] == tox_start.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        battle.apply_status_condition(target, "tox", source=attacker, effect="move:toxic")
+        tox_already = resolve_status_text("tox", "alreadyStarted")
+        assert tox_already is not None
+        assert logs[-1] == tox_already.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        target.setStatus(0, battle=battle)
+        tox_end = resolve_status_text("tox", "end")
+        assert tox_end is not None
+        assert logs[-1] == tox_end.replace("[POKEMON]", target.name)

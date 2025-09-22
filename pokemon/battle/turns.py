@@ -437,11 +437,20 @@ class TurnProcessor:
 
 		rng = getattr(self, "rng", random)
 		if status == "par":
-			return rng.random() < 0.25
+			if rng.random() < 0.25:
+				if hasattr(self, "announce_status_change"):
+					self.announce_status_change(pokemon, "par", event="cant")
+				return True
+			return False
 		if status == "frz":
 			if rng.random() < 0.2:
 				pokemon.status = 0
+				if hasattr(self, "announce_status_change"):
+					self.announce_status_change(pokemon, "frz", event="end")
 				return False
+			if hasattr(self, "announce_status_change"):
+				self.announce_status_change(pokemon, "frz", event="cant")
+			return True
 		if status == "slp":
 			turns = pokemon.tempvals.get("slp_turns")
 			if turns is None:
@@ -453,7 +462,11 @@ class TurnProcessor:
 				if turns == 0:
 					pokemon.status = 0
 					pokemon.tempvals.pop("slp_turns", None)
+					if hasattr(self, "announce_status_change"):
+						self.announce_status_change(pokemon, "slp", event="end")
 					return False
+				if hasattr(self, "announce_status_change"):
+					self.announce_status_change(pokemon, "slp", event="cant")
 				return True
 		return False
 

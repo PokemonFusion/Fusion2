@@ -96,6 +96,11 @@ try:  # pragma: no cover - ability data may be stubbed during tests
 except Exception:  # pragma: no cover - fallback to empty mapping
     ABILITYDEX = {}
 
+try:  # pragma: no cover - item data may be optional during tests
+    from pokemon.dex import ITEMDEX  # type: ignore
+except Exception:  # pragma: no cover - fallback to empty mapping
+    ITEMDEX = {}
+
 _BASE_PATH = os.path.dirname(__file__)
 
 if "pokemon" not in sys.modules:
@@ -809,14 +814,12 @@ class BattleMove:
         if status:
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected is not None:
-                applied = battle.apply_status_condition(
+                battle.apply_status_condition(
                     affected,
                     status,
                     source=user,
                     effect=self,
                 )
-                if applied:
-                    battle.announce_status_change(affected, status)
 
         # Apply secondary effects such as additional boosts or status changes
         secondaries: List[Dict[str, Any]] = []
@@ -877,21 +880,19 @@ class BattleMove:
                 if sec.get("boosts") and target:
                     apply_boost(target, sec["boosts"])
                 if sec.get("status") and target and battle:
-                    applied = battle.apply_status_condition(
+                    battle.apply_status_condition(
                         target,
                         sec["status"],
                         source=user,
                         effect=self,
                     )
-                    if applied:
-                        battle.announce_status_change(target, sec["status"])
                 if (
                     sec.get("volatileStatus")
                     and target
                     and hasattr(target, "volatiles")
                 ):
                     target.volatiles.setdefault(sec["volatileStatus"], True)
-                    battle.announce_status_change(target, sec["volatileStatus"])
+                    battle.apply_volatile_status(target, sec["volatileStatus"])
 
                 if sec.get("drain") and result is not None and user:
                     dmg = 0
@@ -951,17 +952,15 @@ class BattleMove:
                     if self_sec.get("boosts"):
                         apply_boost(user, self_sec["boosts"])
                     if self_sec.get("status") and battle:
-                        applied = battle.apply_status_condition(
-                            user,
-                            self_sec["status"],
-                            source=user,
-                            effect=self,
-                        )
-                        if applied:
-                            battle.announce_status_change(user, self_sec["status"])
+                            battle.apply_status_condition(
+                                user,
+                                self_sec["status"],
+                                source=user,
+                                effect=self,
+                            )
                     if self_sec.get("volatileStatus") and hasattr(user, "volatiles"):
                         user.volatiles.setdefault(self_sec["volatileStatus"], True)
-                        battle.announce_status_change(user, self_sec["volatileStatus"])
+                        battle.apply_volatile_status(user, self_sec["volatileStatus"])
                     if self_sec.get("heal"):
                         heal = self_sec["heal"]
                         frac = (
@@ -1058,6 +1057,49 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if species_name and species_name != nickname:
             return f"{nickname} ({species_name})"
         return nickname
+
+    def _item_display_name(self, item) -> str:
+        """Return a display string for ``item``."""
+
+        if hasattr(item, "name") and getattr(item, "name"):
+            return str(getattr(item, "name"))
+        item_key = None
+        if isinstance(item, str):
+            item_key = _normalize_key(item)
+        elif getattr(item, "key", None):
+            item_key = _normalize_key(getattr(item, "key"))
+        if item_key:
+            entry = ITEMDEX.get(item_key)
+            if entry:
+                for attr in ("name", "id"):
+                    value = getattr(entry, attr, None)
+                    if value:
+                        return str(value)
+            return item_key.replace("-", " ").replace("_", " ").title()
+        if isinstance(item, str):
+            return item
+        return str(item)
+
+    def _status_template(self, status_key: str, event: str) -> str | None:
+        """Return the message template for ``status_key`` and ``event``."""
+
+        messages = _get_default_text()
+        visited: set[str] = set()
+        current = status_key
+        while current:
+            entry = messages.get(current, {})
+            template = entry.get(event)
+            if template is None:
+                return None
+            if isinstance(template, str) and template.startswith("#"):
+                ref = template[1:]
+                if not ref or ref in visited:
+                    return None
+                visited.add(ref)
+                current = ref
+                continue
+            return template
+        return None
 
     def _log_switch_in(self, participant: BattleParticipant, pokemon) -> None:
         """Log the standard switch-in message for ``pokemon``."""
@@ -2335,9 +2377,53 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         bar = "[" + ("#" * percent).ljust(10) + "]"
         return bar
 
-    def announce_status_change(self, pokemon, status: str) -> None:
+    def announce_status_change(
+        self,
+        pokemon,
+        status: str,
+        *,
+        event: str | None = None,
+        source=None,
+        effect=None,
+        item=None,
+    ) -> None:
         """Notify about a status condition change."""
-        self.log_action(f"{getattr(pokemon, 'name', 'Pokemon')} is now {status}!")
+
+        status_key = _normalize_key(status)
+        event_key = event or "start"
+        message_template = (
+            self._status_template(status_key, event_key) if status_key else None
+        )
+        if not message_template:
+            name = getattr(pokemon, "name", getattr(pokemon, "nickname", "Pokemon"))
+            self.log_action(f"{name} is now {status_key or status}!")
+            return
+
+        replacements: Dict[str, Sequence[str] | str] = {
+            "[POKEMON]": self._pokemon_nickname(pokemon),
+        }
+
+        if item:
+            replacements["[ITEM]"] = self._item_display_name(item)
+        if source:
+            replacements["[SOURCE]"] = self._pokemon_nickname(source)
+        if effect is not None and "[MOVE]" in message_template:
+            move_name = None
+            if isinstance(effect, str) and effect.startswith("move:"):
+                move_name = effect.split(":", 1)[1]
+            else:
+                move_name = getattr(effect, "name", None)
+            if move_name:
+                replacements["[MOVE]"] = str(move_name)
+        if "[ITEM]" in message_template and "[ITEM]" not in replacements:
+            effect_ref = None
+            if isinstance(effect, str) and effect.startswith("item:"):
+                effect_ref = effect.split(":", 1)[1]
+            if effect_ref:
+                replacements["[ITEM]"] = self._item_display_name(effect_ref)
+
+        message = _apply_placeholders(message_template, replacements)
+        self.log_action(message)
 
     def display_stat_mods(self, pokemon) -> None:
         """Output current stat stages for debugging."""

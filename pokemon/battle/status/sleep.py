@@ -91,9 +91,21 @@ class Sleep(StatusCondition):
 		if turns <= 0:
 			pokemon.tempvals.pop('sleep_turns', None)
 			pokemon.status = 0
+			if battle:
+				battle.announce_status_change(
+					pokemon,
+					self.name,
+					event="end",
+				)
 			return True
 		pokemon.tempvals['sleep_turns'] = turns - 1
 		can_act = getattr(pokemon, 'can_use_while_asleep', None)
 		if callable(can_act) and can_act():
 			return True
+		if battle:
+			battle.announce_status_change(
+				pokemon,
+				self.name,
+				event="cant",
+			)
 		return False
