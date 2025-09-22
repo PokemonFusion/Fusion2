@@ -5,11 +5,12 @@ from __future__ import annotations
 import random
 
 from .status_core import (
-	STATUS_SLEEP,
-	StatusCondition,
-	can_apply_status,
-	has_ability,
-	iter_allies,
+        STATUS_SLEEP,
+        StatusCondition,
+        _log_terrain_block,
+        can_apply_status,
+        has_ability,
+        iter_allies,
 )
 
 
@@ -34,13 +35,17 @@ def _active_uproar(battle) -> bool:
 
 
 def _terrain_blocks_sleep(pokemon, battle) -> bool:
-	field = None
-	if battle:
-		field = getattr(battle, 'field', None)
-	if field is None:
-		field = getattr(pokemon, 'field', None)
-	terrain = str(getattr(field, 'terrain', '') or '').lower()
-	return terrain == 'electricterrain' and _is_grounded(pokemon)
+        field = None
+        if battle:
+                field = getattr(battle, 'field', None)
+        if field is None:
+                field = getattr(pokemon, 'field', None)
+        terrain = str(getattr(field, 'terrain', '') or '')
+        terrain_key = terrain.replace(' ', '').replace('-', '').lower()
+        if terrain_key == 'electricterrain' and _is_grounded(pokemon):
+                _log_terrain_block(pokemon, battle, terrain_key)
+                return True
+        return False
 
 
 class Sleep(StatusCondition):
