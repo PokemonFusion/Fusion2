@@ -134,10 +134,25 @@ def _is_self_inflicted(pokemon, source, effect, allow_self_inflict: bool) -> boo
 	return False
 
 
+def _log_terrain_block(pokemon, battle, terrain: str) -> None:
+	"""Log a terrain block message when possible."""
+
+	battle_obj = _get_battle(pokemon, battle)
+	if not battle_obj or not hasattr(battle_obj, 'log_field_event'):
+		return
+	try:
+		battle_obj.log_field_event(terrain, 'block', pokemon=pokemon)
+	except Exception:
+		pass
+
+
 def _blocked_by_misty_terrain(pokemon, battle=None) -> bool:
 	field = _get_field(pokemon, battle)
 	terrain = _normalize_name(getattr(field, 'terrain', None)) if field else ''
-	return terrain == 'mistyterrain' and _is_grounded(pokemon)
+	if terrain == 'mistyterrain' and _is_grounded(pokemon):
+		_log_terrain_block(pokemon, battle, terrain)
+		return True
+	return False
 
 
 def _blocked_by_safeguard(pokemon) -> bool:

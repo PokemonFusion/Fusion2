@@ -17,8 +17,114 @@ conditions_funcs = None
 from .callbacks import _resolve_callback
 
 
+def _get_default_text() -> Dict[str, Dict[str, str]]:
+    """Return localized battle text data when available."""
+
+    try:  # pragma: no cover - optional dependency during lightweight tests
+        from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+    except Exception:  # pragma: no cover - fallback when text tables unavailable
+        return {}
+    return DEFAULT_TEXT  # type: ignore[return-value]
+
+
+def _normalize_effect_name(name: object) -> str:
+    """Return a normalized identifier for weather and terrain effects."""
+
+    if not name:
+        return ""
+    text = str(name)
+    return text.replace(" ", "").replace("-", "").lower()
+
+
+def _field_message_template(effect_key: str, event: str) -> Optional[str]:
+    """Return the message template for ``effect_key`` and ``event``."""
+
+    if not effect_key:
+        return None
+    messages = _get_default_text()
+    visited: set[str] = set()
+    current = effect_key
+    while current:
+        entry = messages.get(current, {})
+        template = entry.get(event)
+        if template is None:
+            return None
+        if isinstance(template, str) and template.startswith("#"):
+            ref = template[1:]
+            if not ref or ref in visited:
+                return None
+            visited.add(ref)
+            current = ref
+            continue
+        if isinstance(template, str):
+            return template
+        return None
+    return None
+
+
 class ConditionHelpers:
 	"""Mixin providing battle condition utilities."""
+
+	def _format_field_message(
+		self,
+		effect: str | None,
+		event: str,
+		*,
+		pokemon=None,
+		move=None,
+		field=None,
+	) -> Optional[str]:
+		"""Return the formatted log message for a field effect event."""
+
+		effect_key = _normalize_effect_name(effect)
+		if not effect_key:
+			return None
+		template = _field_message_template(effect_key, event)
+		if not template:
+			return None
+
+		message = template
+		if "[POKEMON]" in message and pokemon is not None:
+			nickname_cb = getattr(self, "_pokemon_nickname", None)
+			name = None
+			if callable(nickname_cb):
+				try:
+					name = nickname_cb(pokemon)
+				except Exception:
+					name = None
+			if not name:
+				for attr in ("name", "nickname", "species"):
+					value = getattr(pokemon, attr, None)
+					if value:
+						name = value
+						break
+			message = message.replace("[POKEMON]", str(name or "Pokemon"))
+
+		if "[MOVE]" in message and move is not None:
+			move_name = getattr(move, "name", None) or move
+			message = message.replace("[MOVE]", str(move_name))
+
+		return message
+
+	def log_field_event(
+		self,
+		effect: str | None,
+		event: str,
+		*,
+		pokemon=None,
+		move=None,
+		field=None,
+	) -> None:
+		"""Log a message for ``effect`` and ``event`` if possible."""
+
+		logger = getattr(self, "log_action", None)
+		if not callable(logger):
+			return
+		message = self._format_field_message(
+			effect, event, pokemon=pokemon, move=move, field=field
+		)
+		if message:
+			logger(message)
 
 	# ------------------------------------------------------------------
 	# Side conditions
@@ -104,19 +210,22 @@ class ConditionHelpers:
 
 	def setWeather(self, name: str, source=None) -> bool:
 		"""Start a weather effect on the field."""
-		handler = self._lookup_effect(name)
+		effect_key = _normalize_effect_name(name)
+		handler = self._lookup_effect(name) or self._lookup_effect(effect_key)
 		if not handler:
 			return False
 
+		previous_weather = _normalize_effect_name(getattr(self.field, "weather", None))
+
 		# Allow abilities to veto the weather change or react to it.
-		weather_obj = type("Weather", (), {"id": name})()
+		weather_obj = type("Weather", (), {"id": effect_key})()
 		for participant in getattr(self, "participants", []):
 			for pokemon in getattr(participant, "active", []):
 				ability = getattr(pokemon, "ability", None)
 				cb = getattr(getattr(ability, "raw", {}), "get", lambda *_: None)("onAnySetWeather")
 				if callable(cb):
 					if hasattr(cb, "func") and hasattr(cb.func, "__self__"):
-						setattr(cb.func.__self__, "field_weather", getattr(self.field, "weather", None))
+						setattr(cb.func.__self__, "field_weather", previous_weather or getattr(self.field, "weather", None))
 					try:
 						res = cb(target=pokemon, source=source, weather=weather_obj)
 					except TypeError:
@@ -125,9 +234,10 @@ class ConditionHelpers:
 						except TypeError:
 							res = cb(pokemon)
 					if res is False:
+						self.log_field_event(previous_weather or effect_key, "block", pokemon=pokemon)
 						return False
 
-		effect = {}
+		effect: Dict[str, Any] = {}
 		dur_cb = getattr(handler, "durationCallback", None)
 		if callable(dur_cb):
 			try:
@@ -137,45 +247,48 @@ class ConditionHelpers:
 					effect["duration"] = dur_cb(source)
 				except Exception:
 					effect["duration"] = dur_cb()
-		self.field.add_pseudo_weather(name, effect)
+		self.field.add_pseudo_weather(effect_key, effect)
 		if hasattr(handler, "onFieldStart"):
 			try:
 				handler.onFieldStart(self.field, source=source)
 			except Exception:
 				handler.onFieldStart(self.field)
-		self.field.weather = name
+		self.field.weather = effect_key
 		self.field.weather_handler = handler
 		self.field.weather_state = {"source": source}
-		# Mirror weather state on the battle for callbacks expecting it.
 		self.weather_state = self.field.weather_state
+		self.log_field_event(effect_key, "start", pokemon=source, field=self.field)
 
 		for participant in getattr(self, "participants", []):
 			for pokemon in getattr(participant, "active", []):
 				ability = getattr(pokemon, "ability", None)
 				cb = getattr(getattr(ability, "raw", {}), "get", lambda *_: None)("onAnySetWeather")
 				if callable(cb) and hasattr(cb, "func") and hasattr(cb.func, "__self__"):
-					setattr(cb.func.__self__, "field_weather", name)
+					setattr(cb.func.__self__, "field_weather", effect_key)
 		return True
 
 	def clearWeather(self) -> None:
 		name = getattr(self.field, "weather", None)
+		name_key = _normalize_effect_name(name) if name else None
 		handler = getattr(self.field, "weather_handler", None)
-		if name and handler and hasattr(handler, "onFieldEnd"):
+		if name_key and handler and hasattr(handler, "onFieldEnd"):
 			try:
 				handler.onFieldEnd(self.field)
 			except Exception:
 				pass
-		if name:
-			self.field.pseudo_weather.pop(name, None)
+		if name_key:
+			self.field.pseudo_weather.pop(name_key, None)
 		self.field.weather = None
 		self.field.weather_state = {}
 		self.field.weather_handler = None
-		# Keep battle.weather_state in sync for ability callbacks
 		self.weather_state = self.field.weather_state
+		if name_key:
+			self.log_field_event(name_key, "end", field=self.field)
 
 	def setTerrain(self, name: str, source=None) -> bool:
 		"""Start a terrain effect on the field."""
-		handler = self._lookup_effect(name)
+		effect_key = _normalize_effect_name(name)
+		handler = self._lookup_effect(name) or self._lookup_effect(effect_key)
 		if not handler:
 			return False
 		effect = {}
@@ -188,29 +301,34 @@ class ConditionHelpers:
 					effect["duration"] = dur_cb(source)
 				except Exception:
 					effect["duration"] = dur_cb()
-		self.field.add_pseudo_weather(name, effect)
+		self.field.add_pseudo_weather(effect_key, effect)
 		if hasattr(handler, "onFieldStart"):
 			try:
 				handler.onFieldStart(self.field, source=source)
 			except Exception:
 				handler.onFieldStart(self.field)
-		self.field.terrain = name
+		self.field.terrain = effect_key
 		self.field.terrain_handler = handler
+		self.field.terrain_state = {"source": source}
+		self.log_field_event(effect_key, "start", pokemon=source, field=self.field)
 		return True
 
 	def clearTerrain(self) -> None:
 		name = getattr(self.field, "terrain", None)
+		name_key = _normalize_effect_name(name) if name else None
 		handler = getattr(self.field, "terrain_handler", None)
-		if name and handler and hasattr(handler, "onFieldEnd"):
+		if name_key and handler and hasattr(handler, "onFieldEnd"):
 			try:
 				handler.onFieldEnd(self.field)
 			except Exception:
 				pass
-		if name:
-			self.field.pseudo_weather.pop(name, None)
+		if name_key:
+			self.field.pseudo_weather.pop(name_key, None)
 		self.field.terrain = None
 		self.field.terrain_state = {}
 		self.field.terrain_handler = None
+		if name_key:
+			self.log_field_event(name_key, "end", field=self.field)
 
 	def apply_entry_hazards(self, pokemon) -> None:
 		"""Apply entry hazard effects to ``pokemon`` if present."""
@@ -390,11 +508,23 @@ class ConditionHelpers:
 
 	def handle_weather(self) -> None:
 		"""Apply residual effects of the current weather."""
+		weather_key = _normalize_effect_name(getattr(self.field, "weather", None))
+		if not weather_key:
+			return
+		self.log_field_event(weather_key, "upkeep", field=self.field)
 		self._handle_field_residual("weather_handler")
+		if weather_key not in getattr(self.field, "pseudo_weather", {}):
+			self.clearWeather()
 
 	def handle_terrain(self) -> None:
 		"""Apply residual effects of the active terrain."""
+		terrain_key = _normalize_effect_name(getattr(self.field, "terrain", None))
+		if not terrain_key:
+			return
+		self.log_field_event(terrain_key, "upkeep", field=self.field)
 		self._handle_field_residual("terrain_handler")
+		if terrain_key not in getattr(self.field, "pseudo_weather", {}):
+			self.clearTerrain()
 
 	def update_hazards(self) -> None:
 		"""Update hazard effects on the field."""
