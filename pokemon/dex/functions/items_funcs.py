@@ -163,7 +163,11 @@ class Apicotberry:
 class Aspearberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "frz":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:aspearberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "frz":
@@ -265,7 +269,11 @@ class Bigroot:
 class Bitterberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "confusion":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:bitterberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "confusion":
@@ -396,7 +404,11 @@ class Burndrive:
 class Burntberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) in {"brn", "frz"}:
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:burntberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) in {"brn", "frz"}:
@@ -460,7 +472,11 @@ class Chartiberry:
 class Cheriberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "par":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:cheriberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "par":
@@ -471,7 +487,11 @@ class Cheriberry:
 class Chestoberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "slp":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:chestoberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "slp":
@@ -945,16 +965,16 @@ class Fistplate:
 
 
 class Flameorb:
-        def onResidual(self, pokemon=None):
-                if pokemon and not getattr(pokemon, "status", None):
-                        battle = getattr(pokemon, "battle", None)
-                        pokemon.setStatus(
-                                "brn",
-                                source=pokemon,
-                                battle=battle,
-                                effect="item:flameorb",
-                                bypass_protection=True,
-                        )
+	def onResidual(self, pokemon=None):
+		if pokemon and not getattr(pokemon, "status", None):
+			battle = getattr(pokemon, "battle", None)
+			pokemon.setStatus(
+				"brn",
+				source=pokemon,
+				battle=battle,
+				effect="item:flameorb",
+				bypass_protection=True,
+			)
 
 
 class Flameplate:
@@ -1250,7 +1270,11 @@ class Iapapaberry:
 class Iceberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "frz":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:iceberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "frz":
@@ -1532,13 +1556,21 @@ class Lumberry:
 	def onAfterSetStatus(self, status=None, target=None, source=None, effect=None):
 		if target and status:
 			if hasattr(target, "setStatus"):
-				target.setStatus(0)
+				target.setStatus(
+					0,
+					battle=getattr(target, "battle", None),
+					effect="item:lumberry",
+				)
 			if hasattr(target, "item"):
 				target.item = None
 
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None):
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:lumberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None):
@@ -1792,7 +1824,11 @@ class Mindplate:
 class Mintberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "slp":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:mintberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "slp":
@@ -1803,7 +1839,11 @@ class Mintberry:
 class Miracleberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None):
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:miracleberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None):
@@ -1952,7 +1992,11 @@ class Payapaberry:
 class Pechaberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "psn":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:pechaberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "psn":
@@ -2221,7 +2265,14 @@ class Fullrestore:
 		if hasattr(pokemon, "current_hp"):
 			pokemon.current_hp = max_hp
 		if hasattr(pokemon, "status"):
-			pokemon.status = 0
+			if hasattr(pokemon, "setStatus"):
+				pokemon.setStatus(
+					0,
+					battle=getattr(pokemon, "battle", None),
+					effect="item:fullrestore",
+				)
+			else:
+				pokemon.status = 0
 		return True
 
 
@@ -2232,7 +2283,14 @@ class Antidote:
 		status = getattr(pokemon, "status", None)
 		if status not in {"psn", "tox"}:
 			return False
-		pokemon.status = 0
+		if hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:antidote",
+			)
+		else:
+			pokemon.status = 0
 		return True
 
 
@@ -2242,7 +2300,14 @@ class Paralyzeheal:
 			return False
 		if getattr(pokemon, "status", None) != "par":
 			return False
-		pokemon.status = 0
+		if hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:paralyzeheal",
+			)
+		else:
+			pokemon.status = 0
 		return True
 
 
@@ -2252,7 +2317,14 @@ class Burnheal:
 			return False
 		if getattr(pokemon, "status", None) != "brn":
 			return False
-		pokemon.status = 0
+		if hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:burnheal",
+			)
+		else:
+			pokemon.status = 0
 		return True
 
 
@@ -2262,7 +2334,14 @@ class Iceheal:
 			return False
 		if getattr(pokemon, "status", None) != "frz":
 			return False
-		pokemon.status = 0
+		if hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:iceheal",
+			)
+		else:
+			pokemon.status = 0
 		return True
 
 
@@ -2272,7 +2351,14 @@ class Awakening:
 			return False
 		if getattr(pokemon, "status", None) != "slp":
 			return False
-		pokemon.status = 0
+		if hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:awakening",
+			)
+		else:
+			pokemon.status = 0
 		return True
 
 
@@ -2283,7 +2369,14 @@ class Fullheal:
 		if hasattr(pokemon, "status"):
 			if getattr(pokemon, "status", None) == 0:
 				return False
-			pokemon.status = 0
+			if hasattr(pokemon, "setStatus"):
+				pokemon.setStatus(
+					0,
+					battle=getattr(pokemon, "battle", None),
+					effect="item:fullheal",
+				)
+			else:
+				pokemon.status = 0
 			return True
 		return False
 
@@ -2300,7 +2393,14 @@ class Revive:
 		heal = max_hp // 2
 		setattr(pokemon, hp_attr, heal)
 		if hasattr(pokemon, "status"):
-			pokemon.status = 0
+			if hasattr(pokemon, "setStatus"):
+				pokemon.setStatus(
+					0,
+					battle=getattr(pokemon, "battle", None),
+					effect="item:revive",
+				)
+			else:
+				pokemon.status = 0
 		if hasattr(pokemon, "fainted"):
 			pokemon.fainted = False
 		return True
@@ -2317,7 +2417,14 @@ class Maxrevive:
 		max_hp = getattr(pokemon, "max_hp", cur_hp)
 		setattr(pokemon, hp_attr, max_hp)
 		if hasattr(pokemon, "status"):
-			pokemon.status = 0
+			if hasattr(pokemon, "setStatus"):
+				pokemon.setStatus(
+					0,
+					battle=getattr(pokemon, "battle", None),
+					effect="item:maxrevive",
+				)
+			else:
+				pokemon.status = 0
 		if hasattr(pokemon, "fainted"):
 			pokemon.fainted = False
 		return True
@@ -2575,7 +2682,14 @@ class Healpowder:
 			return False
 		if getattr(pokemon, "status", None) == 0:
 			return False
-		pokemon.status = 0
+		if hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:healpowder",
+			)
+		else:
+			pokemon.status = 0
 		return True
 
 
@@ -2622,7 +2736,14 @@ class Revivalherb:
 		max_hp = getattr(pokemon, "max_hp", cur_hp)
 		setattr(pokemon, hp_attr, max_hp)
 		if hasattr(pokemon, "status"):
-			pokemon.status = 0
+			if hasattr(pokemon, "setStatus"):
+				pokemon.setStatus(
+					0,
+					battle=getattr(pokemon, "battle", None),
+					effect="item:revivalherb",
+				)
+			else:
+				pokemon.status = 0
 		if hasattr(pokemon, "fainted"):
 			pokemon.fainted = False
 		return True
@@ -2673,7 +2794,11 @@ class Abilitypatch:
 class Przcureberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "par":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:przcureberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "par":
@@ -2684,7 +2809,11 @@ class Przcureberry:
 class Psncureberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "psn":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:psncureberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "psn":
@@ -2755,7 +2884,11 @@ class Quickpowder:
 class Rawstberry:
 	def onEat(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "brn":
-			pokemon.setStatus(0)
+			pokemon.setStatus(
+				0,
+				battle=getattr(pokemon, "battle", None),
+				effect="item:rawstberry",
+			)
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and getattr(pokemon, "status", None) == "brn":

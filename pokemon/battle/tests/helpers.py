@@ -159,3 +159,29 @@ def run_damage(attacker, defender, move):
 def make_flame_orb():
         modules = load_modules()
         return modules["FlameOrb"]()
+
+
+def resolve_status_text(status: str, event: str) -> str | None:
+        """Return the text template for ``status`` and ``event``."""
+
+        try:
+                from pokemon.data.text import DEFAULT_TEXT  # type: ignore
+        except Exception:  # pragma: no cover - fallback when data missing
+                return None
+
+        key = status
+        visited: set[str] = set()
+        while key:
+                entry = DEFAULT_TEXT.get(key, {})
+                template = entry.get(event)
+                if template is None:
+                        return None
+                if isinstance(template, str) and template.startswith("#"):
+                        ref = template[1:]
+                        if not ref or ref in visited:
+                                return None
+                        visited.add(ref)
+                        key = ref
+                        continue
+                return template
+        return None

@@ -209,14 +209,32 @@ class Pokemon:
 		previous_status = getattr(self, "status", 0)
 		previous_toxic = getattr(self, "toxic_counter", 0)
 
+		battle_obj = battle or getattr(self, "battle", None)
+
+		def _normalize(value):
+			if isinstance(value, str):
+				normalized = value.strip().lower()
+				return normalized or 0
+			return value or 0
+
+		previous_key = _normalize(previous_status)
+
 		if isinstance(status, str):
-			status_key = status.lower()
+			status_key = status.strip().lower()
 		else:
 			status_key = status
 
 		if status_key in {None, "", 0}:
 			self.status = 0
 			self.toxic_counter = 0
+			if battle_obj and previous_key not in {None, "", 0}:
+				item_effect = effect if isinstance(effect, str) else None
+				battle_obj.announce_status_change(
+					self,
+					previous_key,
+					event="endFromItem" if item_effect and item_effect.startswith("item:") else "end",
+					effect=effect,
+				)
 			return True
 
 		self.status = status_key
@@ -249,6 +267,15 @@ class Pokemon:
 				self.status = previous_status
 				self.toxic_counter = previous_toxic
 				return False
+		if battle_obj and status_key not in {None, "", 0}:
+			event = "alreadyStarted" if previous_key == status_key else "start"
+			battle_obj.announce_status_change(
+				self,
+				status_key,
+				event=event,
+				source=source,
+				effect=effect,
+			)
 		return True
 
 	def to_dict(self) -> Dict:

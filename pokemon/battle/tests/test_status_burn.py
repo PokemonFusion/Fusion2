@@ -9,7 +9,13 @@ if ROOT not in sys.path:
 
 import pytest
 
-from .helpers import build_battle, make_flame_orb, physical_move, run_damage
+from .helpers import (
+        build_battle,
+        make_flame_orb,
+        physical_move,
+        resolve_status_text,
+        run_damage,
+)
 
 
 def test_burn_residual_standard():
@@ -122,3 +128,37 @@ def test_burn_purifying_salt_immunity():
         applied = battle.apply_status_condition(defender, "brn", source=battle.participants[0].active[0], effect="move:willowisp")
         assert applied is False
         assert defender.status != "brn"
+
+
+def test_burn_status_messages():
+        battle, attacker, defender = build_battle()
+        logs = []
+        battle.log_action = logs.append
+
+        applied = battle.apply_status_condition(defender, "brn", source=attacker, effect="move:willowisp")
+        assert applied is True
+        start_template = resolve_status_text("brn", "start")
+        assert start_template is not None
+        assert logs[-1] == start_template.replace("[POKEMON]", defender.name)
+
+        logs.clear()
+        battle.apply_status_condition(defender, "brn", source=attacker, effect="move:willowisp")
+        already_template = resolve_status_text("brn", "alreadyStarted")
+        assert already_template is not None
+        assert logs[-1] == already_template.replace("[POKEMON]", defender.name)
+
+        logs.clear()
+        defender.setStatus(0, battle=battle)
+        end_template = resolve_status_text("brn", "end")
+        assert end_template is not None
+        assert logs[-1] == end_template.replace("[POKEMON]", defender.name)
+
+        # Reapply burn to verify item-based curing text
+        battle.apply_status_condition(defender, "brn", source=attacker, effect="move:willowisp")
+        logs.clear()
+        defender.setStatus(0, battle=battle, effect="item:fullheal")
+        item_template = resolve_status_text("brn", "endFromItem")
+        assert item_template is not None
+        item_name = battle._item_display_name("fullheal")
+        expected = item_template.replace("[POKEMON]", defender.name).replace("[ITEM]", item_name)
+        assert logs[-1] == expected

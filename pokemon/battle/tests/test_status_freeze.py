@@ -10,7 +10,7 @@ if ROOT not in sys.path:
 
 from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 
-from .helpers import build_battle
+from .helpers import build_battle, resolve_status_text
 
 
 def test_freeze_random_thaw(monkeypatch):
@@ -69,3 +69,27 @@ def test_freeze_blocked_by_harsh_sunlight():
         applied = battle.apply_status_condition(target, "frz", source=battle.participants[0].active[0], effect="move:icebeam")
         assert applied is False
         assert target.status != "frz"
+
+
+def test_freeze_status_messages():
+        battle, attacker, target = build_battle()
+        logs = []
+        battle.log_action = logs.append
+
+        applied = battle.apply_status_condition(target, "frz", source=attacker, effect="move:icebeam")
+        assert applied is True
+        start_template = resolve_status_text("frz", "start")
+        assert start_template is not None
+        assert logs[-1] == start_template.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        battle.apply_status_condition(target, "frz", source=attacker, effect="move:icebeam")
+        already_template = resolve_status_text("frz", "alreadyStarted")
+        assert already_template is not None
+        assert logs[-1] == already_template.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        target.setStatus(0, battle=battle)
+        end_template = resolve_status_text("frz", "end")
+        assert end_template is not None
+        assert logs[-1] == end_template.replace("[POKEMON]", target.name)

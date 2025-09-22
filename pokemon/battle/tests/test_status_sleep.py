@@ -10,7 +10,7 @@ if ROOT not in sys.path:
 
 from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 
-from .helpers import build_battle
+from .helpers import build_battle, resolve_status_text
 
 
 def test_sleep_turn_range(monkeypatch):
@@ -71,3 +71,29 @@ def test_sleep_blocked_by_uproar():
         applied = battle.apply_status_condition(target, "slp", source=attacker, effect="move:spore")
         assert applied is False
         assert target.status != "slp"
+
+
+def test_sleep_status_messages(monkeypatch):
+        battle, attacker, target = build_battle()
+        logs = []
+        battle.log_action = logs.append
+
+        # Ensure deterministic sleep duration
+        monkeypatch.setattr(random, "randint", lambda *_args, **_kwargs: 2)
+        applied = battle.apply_status_condition(target, "slp", source=attacker, effect="move:spore")
+        assert applied is True
+        start_template = resolve_status_text("slp", "start")
+        assert start_template is not None
+        assert logs[-1] == start_template.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        battle.apply_status_condition(target, "slp", source=attacker, effect="move:spore")
+        already_template = resolve_status_text("slp", "alreadyStarted")
+        assert already_template is not None
+        assert logs[-1] == already_template.replace("[POKEMON]", target.name)
+
+        logs.clear()
+        target.setStatus(0, battle=battle)
+        end_template = resolve_status_text("slp", "end")
+        assert end_template is not None
+        assert logs[-1] == end_template.replace("[POKEMON]", target.name)
