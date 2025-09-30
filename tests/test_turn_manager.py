@@ -18,8 +18,14 @@ def test_prompt_next_turn_uses_helpers(monkeypatch):
     inst, _, _ = _setup_battle()
     calls = {"banner": False, "render": False}
 
-    monkeypatch.setattr(inst, "_notify_turn_banner", lambda: calls.__setitem__("banner", True))
-    monkeypatch.setattr(inst, "_render_interfaces", lambda: calls.__setitem__("render", True))
+    def record_banner(*_, **__):
+        calls["banner"] = True
+
+    def record_render(*_, **__):
+        calls["render"] = True
+
+    monkeypatch.setattr(inst, "_notify_turn_banner", record_banner)
+    monkeypatch.setattr(inst, "_render_interfaces", record_render)
 
     inst.prompt_next_turn()
 
@@ -35,7 +41,7 @@ def test_run_turn_persists_state(monkeypatch):
 
     monkeypatch.setattr(inst, "_persist_turn_state", lambda: calls.__setitem__("persist", True))
 
-    def fake_banner():
+    def fake_banner(*_, **__):
         calls["banner"] += 1
 
     monkeypatch.setattr(inst, "_notify_turn_banner", fake_banner)
@@ -44,7 +50,7 @@ def test_run_turn_persists_state(monkeypatch):
     inst.queue_move("tackle", caller=p2)
 
     assert calls["persist"] is True
-    assert calls["banner"] >= 2  # before and after running the turn
+    assert calls["banner"] == 1
 
 
 def test_run_turn_ends_battle_when_over(monkeypatch):

@@ -8,6 +8,7 @@ from commands.admin.cmd_adminbattle import (
     CmdBattleSnapshot,
     CmdRestoreBattle,
     CmdRetryTurn,
+    CmdToggleDamageNumbers,
     CmdUiPreview,
 )
 
@@ -25,6 +26,7 @@ class BattleAdminCmdSet(CmdSet):
             CmdBattleInfo,
             CmdBattleSnapshot,
             CmdRetryTurn,
+            CmdToggleDamageNumbers,
             CmdUiPreview,
         ):
             self.add(cmd())

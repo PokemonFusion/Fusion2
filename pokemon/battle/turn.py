@@ -38,11 +38,17 @@ class TurnManager:
 	# ------------------------------------------------------------------
 	# Private helpers
 	# ------------------------------------------------------------------
-	def _notify_turn_banner(self) -> None:
+	def _notify_turn_banner(self, *, upcoming: bool = False) -> None:
 		"""Send the current turn banner to listeners if a battle is active."""
 
-		if self.state and self.battle:
-			self.notify(format_turn_banner(getattr(self.battle, "turn_count", 1)))
+		if not (self.state and self.battle):
+			return
+		turn_no = getattr(self.battle, "turn_count", 0) or 0
+		if upcoming:
+			turn_no += 1
+		if turn_no <= 0:
+			turn_no = 1
+		self.notify(format_turn_banner(turn_no, closing=not upcoming))
 
 	def _render_interfaces(self) -> None:
 		"""Render and broadcast battle interfaces to participants and watchers."""
@@ -73,7 +79,7 @@ class TurnManager:
 		"""Prompt the player to issue a command for the next turn."""
 
 		self._set_player_control(True)
-		self._notify_turn_banner()
+		self._notify_turn_banner(upcoming=True)
 		self._render_interfaces()
 		self.msg("The battle awaits your move.")
 		if self.battle and getattr(self.battle, "turn_count", 0) == 1:
@@ -85,7 +91,6 @@ class TurnManager:
 		if not self.battle:
 			return
 
-		self._notify_turn_banner()
 		log_info(f"Running turn for battle {self.battle_id}")
 		self._set_player_control(False)
 		battle_finished = False

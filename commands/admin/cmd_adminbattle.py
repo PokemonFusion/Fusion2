@@ -3,7 +3,7 @@ from __future__ import annotations
 import pprint
 from dataclasses import dataclass
 from dataclasses import field as dc_field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from evennia import Command, search_object
 
@@ -492,6 +492,57 @@ class CmdRetryTurn(Command):
 
         inst.run_turn()
         self.caller.msg(f"Turn retried for battle {inst.battle_id}.")
+
+
+class CmdToggleDamageNumbers(Command):
+    """Toggle exact damage number announcements for a battle.
+
+    Usage:
+      +damage/toggle [<character or battle id>]
+
+    Without an argument the caller's active battle will be toggled.
+    """
+
+    key = "+damage/toggle"
+    aliases = ["+damagenumbers", "+damageexact"]
+    locks = "cmd:perm(Builder)"
+    help_category = "Admin"
+
+    def func(self):
+        arg = (self.args or "").strip()
+        inst: Optional[BattleSession] = None
+
+        if arg:
+            inst, _, bid, target = _resolve_battle_context(arg)
+            if not inst:
+                if target is None and bid is None:
+                    self.caller.msg("No battle data found.")
+                else:
+                    self.caller.msg("No battle found for that target.")
+                return
+        else:
+            inst = getattr(getattr(self.caller, "ndb", None), "battle_instance", None)
+            if not inst:
+                self.caller.msg("You are not currently participating in a battle.")
+                return
+
+        battle = getattr(inst, "battle", None)
+        if not battle:
+            self.caller.msg("Battle data is not available.")
+            return
+
+        current = getattr(battle, "show_damage_numbers", False)
+        battle.show_damage_numbers = not current
+        state = "enabled" if battle.show_damage_numbers else "disabled"
+
+        # Inform the caller and other battle participants of the new state.
+        self.caller.msg(
+            f"Exact damage numbers {state} for battle {inst.battle_id}."
+        )
+        try:
+            inst.msg(f"Exact damage numbers have been {state}.")
+        except Exception:
+            pass
 
 
 class CmdUiPreview(Command):
