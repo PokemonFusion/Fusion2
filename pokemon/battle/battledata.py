@@ -48,15 +48,21 @@ class Move:
 		data = {"name": self.name, "priority": self.priority}
 		if self.pokemon_types:
 			data["pokemon_types"] = list(self.pokemon_types)
+		pp_value = getattr(self, "pp", None)
+		if pp_value is not None:
+			data["pp"] = pp_value
 		return data
 
 	@classmethod
 	def from_dict(cls, data: Dict) -> "Move":
-		return cls(
+		obj = cls(
 			name=data["name"],
 			priority=data.get("priority", 0),
 			pokemon_types=data.get("pokemon_types"),
 		)
+		if "pp" in data:
+			setattr(obj, "pp", data["pp"])
+		return obj
 
 
 class Pokemon:
@@ -281,17 +287,62 @@ class Pokemon:
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this Pokémon."""
 
-		def _move_payload(move) -> Dict:
+		def _collect_slots(slots_obj):
+			if slots_obj is None:
+				return []
+			ordered = slots_obj
+			try:
+				ordered = ordered.order_by("slot")
+			except Exception:
+				pass
+			try:
+				ordered = ordered.all()
+			except Exception:
+				pass
+			try:
+				slots_list = list(ordered)
+			except Exception:
+				return []
+			if slots_list:
+				try:
+					slots_list.sort(key=lambda s: getattr(s, "slot", 0))
+				except Exception:
+					pass
+			return slots_list
+
+		slots = _collect_slots(getattr(self, "activemoveslot_set", None))
+		slot_pp_by_index = [getattr(slot, "current_pp", None) for slot in slots]
+		slot_pp_by_name: Dict[str, List[Optional[int]]] = {}
+		for slot in slots:
+			move_obj = getattr(slot, "move", None)
+			move_name = getattr(move_obj, "name", move_obj)
+			if move_name:
+				key = str(move_name).lower()
+				slot_pp_by_name.setdefault(key, []).append(getattr(slot, "current_pp", None))
+
+		def _move_payload(move, index: int) -> Dict:
 			if hasattr(move, "to_dict"):
-				return move.to_dict()  # type: ignore[return-value]
-			name = getattr(move, "name", move)
-			payload = {"name": name}
-			priority = getattr(move, "priority", None)
-			if priority is not None:
-				payload["priority"] = priority
-			pokemon_types = getattr(move, "pokemon_types", None)
-			if pokemon_types:
-				payload["pokemon_types"] = list(pokemon_types)
+				payload = dict(move.to_dict())  # type: ignore[assignment]
+			else:
+				name = getattr(move, "name", move)
+				payload = {"name": name}
+				priority = getattr(move, "priority", None)
+				if priority is not None:
+					payload["priority"] = priority
+				pokemon_types = getattr(move, "pokemon_types", None)
+				if pokemon_types:
+					payload["pokemon_types"] = list(pokemon_types)
+			pp_value = payload.get("pp", getattr(move, "pp", None))
+			if pp_value is None:
+				if 0 <= index < len(slot_pp_by_index):
+					pp_value = slot_pp_by_index[index]
+				if pp_value is None:
+					name_key = str(payload.get("name", getattr(move, "name", ""))).lower()
+					values = slot_pp_by_name.get(name_key)
+					if values:
+						pp_value = values.pop(0)
+			if pp_value is not None:
+				payload["pp"] = pp_value
 			return payload
 
 		info: Dict[str, Any] = {
@@ -316,7 +367,7 @@ class Pokemon:
 				"name": self.name,
 				"level": self.level,
 				"max_hp": self.max_hp,
-				"moves": [_move_payload(m) for m in self.moves],
+				"moves": [_move_payload(m, index) for index, m in enumerate(self.moves)],
 				"ivs": list(self.ivs),
 				"evs": list(self.evs),
 				"nature": self.nature,
@@ -415,6 +466,10 @@ class Pokemon:
 		)
 		if slots is not None:
 			obj.activemoveslot_set = slots
+		stored_moves = data.get("moves", [])
+		for move, move_data in zip(obj.moves, stored_moves):
+			if isinstance(move_data, dict) and "pp" in move_data:
+				setattr(move, "pp", move_data["pp"])
 		obj.tempvals = data.get("tempvals", {})
 		obj.boosts = data.get(
 			"boosts",
