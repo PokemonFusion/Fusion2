@@ -38,16 +38,30 @@ class TurnManager:
 	# ------------------------------------------------------------------
 	# Private helpers
 	# ------------------------------------------------------------------
+	def _turn_number(self, *, upcoming: bool = False) -> int:
+		"""Return the current or upcoming turn number."""
+
+		if not self.battle:
+			return 1
+		turn_no = getattr(self.battle, "turn_count", 0) or 0
+		if upcoming or turn_no <= 0:
+			turn_no += 1
+		return max(1, turn_no)
+
+	def _announce_turn_headline(self) -> None:
+		"""Announce the headline marker for the upcoming turn."""
+
+		if not (self.state and self.battle):
+			return
+		turn_no = self._turn_number(upcoming=True)
+		self.notify(f"== Turn {turn_no} ==")
+
 	def _notify_turn_banner(self, *, upcoming: bool = False) -> None:
 		"""Send the current turn banner to listeners if a battle is active."""
 
 		if not (self.state and self.battle):
 			return
-		turn_no = getattr(self.battle, "turn_count", 0) or 0
-		if upcoming:
-			turn_no += 1
-		if turn_no <= 0:
-			turn_no = 1
+		turn_no = self._turn_number(upcoming=upcoming)
 		self.notify(format_turn_banner(turn_no, closing=not upcoming))
 
 	def _render_interfaces(self) -> None:
@@ -79,7 +93,7 @@ class TurnManager:
 		"""Prompt the player to issue a command for the next turn."""
 
 		self._set_player_control(True)
-		self._notify_turn_banner(upcoming=True)
+		self._announce_turn_headline()
 		self._render_interfaces()
 		self.msg("The battle awaits your move.")
 		if self.battle and getattr(self.battle, "turn_count", 0) == 1:
@@ -93,6 +107,7 @@ class TurnManager:
 
 		log_info(f"Running turn for battle {self.battle_id}")
 		self._set_player_control(False)
+		self._notify_turn_banner(upcoming=True)
 		battle_finished = False
 		try:
 			self.battle.run_turn()
@@ -142,7 +157,7 @@ class TurnManager:
 							f"Failed to finalize battle {self.battle_id}",
 							exc_info=True,
 						)
-				return
+					return
 
 		if self.state:
 			self.state.declare.clear()

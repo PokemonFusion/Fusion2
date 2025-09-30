@@ -16,20 +16,20 @@ def test_prompt_next_turn_uses_helpers(monkeypatch):
     """`prompt_next_turn` delegates to banner and interface helpers."""
 
     inst, _, _ = _setup_battle()
-    calls = {"banner": False, "render": False}
+    calls = {"headline": False, "render": False}
 
-    def record_banner(*_, **__):
-        calls["banner"] = True
+    def record_headline(*_, **__):
+        calls["headline"] = True
 
     def record_render(*_, **__):
         calls["render"] = True
 
-    monkeypatch.setattr(inst, "_notify_turn_banner", record_banner)
+    monkeypatch.setattr(inst, "_announce_turn_headline", record_headline)
     monkeypatch.setattr(inst, "_render_interfaces", record_render)
 
     inst.prompt_next_turn()
 
-    assert calls["banner"] and calls["render"]
+    assert calls["headline"] and calls["render"]
 
 
 def test_run_turn_persists_state(monkeypatch):
@@ -37,12 +37,12 @@ def test_run_turn_persists_state(monkeypatch):
 
     inst, p1, p2 = _setup_battle()
     inst.prompt_next_turn = lambda: None  # avoid interface spam
-    calls = {"persist": False, "banner": 0}
+    calls = {"persist": False, "banner": []}
 
     monkeypatch.setattr(inst, "_persist_turn_state", lambda: calls.__setitem__("persist", True))
 
     def fake_banner(*_, **__):
-        calls["banner"] += 1
+        calls["banner"].append(__.get("upcoming", False))
 
     monkeypatch.setattr(inst, "_notify_turn_banner", fake_banner)
 
@@ -50,7 +50,7 @@ def test_run_turn_persists_state(monkeypatch):
     inst.queue_move("tackle", caller=p2)
 
     assert calls["persist"] is True
-    assert calls["banner"] == 1
+    assert calls["banner"] == [True, False]
 
 
 def test_run_turn_ends_battle_when_over(monkeypatch):
