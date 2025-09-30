@@ -43,10 +43,21 @@ class TurnManager:
 
 		if not self.battle:
 			return 1
-		turn_no = getattr(self.battle, "turn_count", 0) or 0
-		if upcoming or turn_no <= 0:
-			turn_no += 1
-		return max(1, turn_no)
+
+		turn_count = getattr(self.battle, "turn_count", 0) or 0
+
+		if upcoming:
+			# The engine's ``turn_count`` already tracks the next turn to
+			# execute once the battle has started.  Clamp to 1 for the
+			# initial announcement in case the counter is still zero.
+			return max(1, turn_count)
+
+		# When ``upcoming`` is ``False`` we are announcing the end of the
+		# current turn.  Because the engine increments ``turn_count`` at the
+		# start of ``run_turn``, subtract one so the closing banner matches
+		# the actions that just resolved.
+		completed_turn = turn_count - 1
+		return max(1, completed_turn)
 
 	def _announce_turn_headline(self) -> None:
 		"""Announce the headline marker for the upcoming turn."""
