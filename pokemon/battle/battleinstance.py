@@ -895,14 +895,15 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                         waiting_poke = pos.pokemon
                         break
             if waiting_poke:
-                self.msg(f"Waiting on {getattr(waiting_poke, 'name', str(waiting_poke))}...")
+                waiting_name = getattr(waiting_poke, "name", str(waiting_poke))
                 try:
                     if actor:
-                        send_interface_to(self, actor, waiting_on=waiting_poke)
+                        send_interface_to(self, actor)
                     else:
-                        broadcast_interfaces(self, waiting_on=waiting_poke)
+                        broadcast_interfaces(self)
                 except Exception:
                     log_warn("Failed to display waiting interface", exc_info=True)
+                self.msg(f"Waiting on {waiting_name}...")
 
 
 __all__ = ["BattleSession", "BattleInstance", "create_battle_pokemon"]

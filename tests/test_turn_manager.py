@@ -1,6 +1,8 @@
 """Tests for the :class:`TurnManager` mixin and turn helpers."""
 
-from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
+import types
+
+from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom, bi_mod
 
 
 def _setup_battle():
@@ -98,3 +100,43 @@ def test_run_turn_ends_battle_when_over(monkeypatch):
     assert end_called["value"] is True
     assert any("The battle has ended." in msg for msg in messages)
     assert check_calls["count"] >= 1
+
+
+def test_waiting_message_follows_interface(monkeypatch):
+    """`maybe_run_turn` shows the field UI before the waiting notice."""
+
+    inst, _, _ = _setup_battle()
+
+    monkeypatch.setattr(inst, "is_turn_ready", lambda: False)
+
+    waiting_pokemon = types.SimpleNamespace(name="Bulbasaur")
+
+    class _DummyPosition:
+        pokemon = waiting_pokemon
+
+        @staticmethod
+        def getAction():
+            return None
+
+    inst.logic.data = types.SimpleNamespace(
+        turndata=types.SimpleNamespace(positions={"slot": _DummyPosition()})
+    )
+
+    events: list[tuple] = []
+
+    def record_broadcast(session, *, waiting_on=None):
+        events.append(("broadcast", session, waiting_on))
+
+    def record_send(session, target, *, waiting_on=None):
+        events.append(("send", target, waiting_on))
+
+    monkeypatch.setattr(bi_mod, "broadcast_interfaces", record_broadcast)
+    monkeypatch.setattr(bi_mod, "send_interface_to", record_send)
+    monkeypatch.setattr(inst, "msg", lambda text: events.append(("msg", text)))
+
+    inst.maybe_run_turn()
+
+    assert events[0][0] == "broadcast"
+    assert events[-1] == ("msg", "Waiting on Bulbasaur...")
+    assert all(kind != "send" for kind, *_ in events)
+    assert events[0][2] is None
