@@ -882,7 +882,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             return True
         return False
 
-    def maybe_run_turn(self, actor=None) -> None:
+    def maybe_run_turn(self, actor=None, *, notify_waiting: bool = True) -> None:
         if self.is_turn_ready():
             log_info(f"Turn ready for battle {self.battle_id}")
             self.run_turn()
@@ -898,12 +898,17 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 waiting_name = getattr(waiting_poke, "name", str(waiting_poke))
                 try:
                     if actor:
-                        send_interface_to(self, actor)
+                        send_interface_to(self, actor, waiting_on=waiting_name)
                     else:
-                        broadcast_interfaces(self)
+                        broadcast_interfaces(self, waiting_on=waiting_name)
                 except Exception:
                     log_warn("Failed to display waiting interface", exc_info=True)
-                self.msg(f"Waiting on {waiting_name}...")
+                if notify_waiting:
+                    message = f"Waiting on {waiting_name}..."
+                    if actor:
+                        self._msg_to(actor, message)
+                    else:
+                        self.msg(message)
 
 
 __all__ = ["BattleSession", "BattleInstance", "create_battle_pokemon"]

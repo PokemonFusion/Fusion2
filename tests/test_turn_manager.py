@@ -139,4 +139,44 @@ def test_waiting_message_follows_interface(monkeypatch):
     assert events[0][0] == "broadcast"
     assert events[-1] == ("msg", "Waiting on Bulbasaur...")
     assert all(kind != "send" for kind, *_ in events)
-    assert events[0][2] is None
+    assert events[0][2] == "Bulbasaur"
+
+
+def test_duplicate_queue_skips_waiting_broadcast(monkeypatch):
+    """Duplicate declarations avoid spamming waiting notices to others."""
+
+    inst, p1, _ = _setup_battle()
+
+    monkeypatch.setattr(inst, "is_turn_ready", lambda: False)
+
+    waiting_pokemon = types.SimpleNamespace(name="Squirtle")
+
+    class _DummyPosition:
+        pokemon = waiting_pokemon
+
+        @staticmethod
+        def getAction():
+            return None
+
+    inst.logic.data = types.SimpleNamespace(
+        turndata=types.SimpleNamespace(positions={"slot": _DummyPosition()})
+    )
+
+    events: list[tuple] = []
+
+    def record_broadcast(session, *, waiting_on=None):  # pragma: no cover - guard
+        events.append(("broadcast", session, waiting_on))
+
+    def record_send(session, target, *, waiting_on=None):
+        events.append(("send", target, waiting_on))
+
+    monkeypatch.setattr(bi_mod, "broadcast_interfaces", record_broadcast)
+    monkeypatch.setattr(bi_mod, "send_interface_to", record_send)
+    monkeypatch.setattr(inst, "msg", lambda text: events.append(("msg", text)))
+    monkeypatch.setattr(inst, "_msg_to", lambda target, text: events.append(("to", target, text)))
+
+    inst.maybe_run_turn(actor=p1, notify_waiting=False)
+
+    assert all(kind != "msg" for kind, *_ in events)
+    assert all(kind != "to" for kind, *_ in events)
+    assert events == [("send", p1, "Squirtle")]
