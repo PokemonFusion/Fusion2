@@ -745,20 +745,67 @@ class TurnProcessor:
 			rng = getattr(self, "rng", random)
 			# Use the battle's RNG so callers can control determinism
 			# via :class:`random.Random` instances.
-			caught = capture_mod.attempt_capture(
+			trainer = getattr(action.actor, "trainer", None)
+			player = getattr(action.actor, "player", None)
+			if trainer is None and player is not None:
+				trainer = getattr(player, "trainer", None)
+
+			critical_rate = None
+			for source in (action.actor, player, trainer):
+				rate = getattr(source, "critical_capture_rate", None)
+				if rate is not None:
+					try:
+						critical_rate = float(rate)
+					except (TypeError, ValueError):
+						critical_rate = None
+					else:
+						break
+			if critical_rate is None and player is not None:
+				dex_caught = getattr(player, "dex_caught", None)
+				caught_count: Optional[int] = None
+				if dex_caught is not None:
+					try:
+						caught_count = len(list(dex_caught)) if callable(dex_caught) else len(dex_caught)
+					except TypeError:
+						try:
+							caught_count = len(list(dex_caught()))
+						except Exception:
+							caught_count = None
+				if caught_count is not None:
+					critical_rate = min(0.5, max(0, caught_count) / 600)
+
+			outcome = capture_mod.attempt_capture(
 				max_hp,
 				target_poke.hp,
 				catch_rate,
 				ball_modifier=ball_mod,
 				status=status,
 				rng=rng,
+				critical_chance=critical_rate,
+				return_details=True,
 			)
-			if hasattr(action.actor, "remove_item"):
+
+			nickname_cb = getattr(self, "_pokemon_nickname", None)
+			pokemon_name = None
+			if callable(nickname_cb):
 				try:
-					action.actor.remove_item(action.item)
+					pokemon_name = nickname_cb(target_poke)
 				except Exception:
-					pass
+					pokemon_name = getattr(target_poke, "name", "Pokemon")
+			if not pokemon_name:
+				pokemon_name = getattr(target_poke, "name", "Pokemon")
+
+			if getattr(outcome, "critical", False) and hasattr(self, "log_action"):
+				self.log_action("A critical capture!")
+
+			if hasattr(self, "log_action"):
+				for _ in range(getattr(outcome, "shakes", 0)):
+					self.log_action("The ball shook!")
+
+			caught = getattr(outcome, "caught", bool(outcome))
 			if caught:
+				if hasattr(self, "log_action"):
+					self.log_action(f"Gotcha! {pokemon_name} was caught!")
 				target.active.remove(target_poke)
 				if target_poke in target.pokemons:
 					target.pokemons.remove(target_poke)
@@ -792,8 +839,92 @@ class TurnProcessor:
 						)
 					except Exception:
 						pass
+
+				species_id = getattr(target_poke, "species", None) or getattr(target_poke, "name", None)
+				if trainer and species_id is not None:
+					if hasattr(trainer, "log_seen_pokemon"):
+						try:
+							trainer.log_seen_pokemon(species_id)
+						except Exception:
+							pass
+					if hasattr(trainer, "log_caught_pokemon"):
+						try:
+							trainer.log_caught_pokemon(species_id)
+						except Exception:
+							pass
+
+				if player is not None:
+					for method_name in ("mark_seen", "mark_caught"):
+						func = getattr(player, method_name, None)
+						if callable(func) and species_id is not None:
+							try:
+								func(str(species_id))
+							except Exception:
+								pass
+
+				held_item = getattr(target_poke, "item", None) or getattr(target_poke, "held_item", None)
+				held_name = None
+				if held_item:
+					held_name = getattr(held_item, "name", None)
+					if not held_name:
+						held_name = str(held_item)
+					if hasattr(target_poke, "item"):
+						try:
+							target_poke.item = None
+						except Exception:
+							pass
+					if hasattr(target_poke, "held_item"):
+						try:
+							target_poke.held_item = ""
+						except Exception:
+							pass
+				if held_name:
+					recipient = None
+					if trainer and hasattr(trainer, "add_item"):
+						recipient = trainer
+					elif hasattr(action.actor, "add_item"):
+						recipient = action.actor
+					elif player and hasattr(player, "add_item"):
+						recipient = player
+					if recipient:
+						try:
+							recipient.add_item(held_name, 1)
+						except Exception:
+							pass
+
+				storage = getattr(action.actor, "storage", None)
+				party_full = False
+				if storage and hasattr(storage, "get_party"):
+					try:
+						party = storage.get_party()
+						party_count = len(list(party)) if party is not None else 0
+					except Exception:
+						party_count = 6
+					party_full = party_count >= 6
+
+				if player is not None and hasattr(player, "ndb"):
+					pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
+					pending.append({"species": pokemon_name, "to_storage": party_full})
+					try:
+						player.ndb.pending_caught_pokemon = pending
+					except Exception:
+						pass
+
+				if hasattr(self, "log_action"):
+					if party_full:
+						self.log_action(f"{pokemon_name} was sent to your storage!")
+					else:
+						self.log_action(f"Would you like to give {pokemon_name} a nickname?")
 				target.has_lost = True
 				self.check_victory()
+			else:
+				if hasattr(action.actor, "remove_item"):
+					try:
+						action.actor.remove_item(action.item)
+					except Exception:
+						pass
+				if hasattr(self, "log_action"):
+					self.log_action(f"Oh no! {pokemon_name} broke free!")
 
 	def perform_move_action(self, action: Action) -> None:
 		"""Execute a move action."""
