@@ -6,6 +6,14 @@ from evennia.objects.models import ObjectDB
 from .core import SpeciesEntry
 
 
+def _resolve_species_entry(species: str | int) -> "SpeciesEntry | None":
+        """Return the :class:`SpeciesEntry` instance matching ``species`` if possible."""
+
+        if isinstance(species, int):
+                return SpeciesEntry.objects.filter(pk=species).first()
+        return SpeciesEntry.objects.filter(name__iexact=str(species)).first()
+
+
 class GymBadge(models.Model):
 	"""A gym badge rewarded for defeating a particular gym."""
 
@@ -44,14 +52,34 @@ class Trainer(models.Model):
 		self.save()
 		return True
 
-	def log_seen_pokemon(self, species: str | int) -> None:
-		"""Record that the trainer has seen the given species."""
-		if isinstance(species, int):
-			entry = SpeciesEntry.objects.filter(pk=species).first()
-		else:
-			entry = SpeciesEntry.objects.filter(name__iexact=str(species)).first()
-		if entry:
-			self.seen_pokemon.add(entry)
+        def log_seen_pokemon(self, species: str | int) -> None:
+                """Record that the trainer has seen the given species."""
+                entry = _resolve_species_entry(species)
+                if entry:
+                        self.seen_pokemon.add(entry)
+
+        def log_caught_pokemon(self, species: str | int) -> None:
+                """Record that the trainer has caught the given species."""
+
+                entry = _resolve_species_entry(species)
+                if not entry:
+                        return
+
+                self.seen_pokemon.add(entry)
+
+                # Mirror progress onto the underlying Evennia typeclass when available
+                user = getattr(self, "user", None)
+                target_name = entry.name
+                for source in (user, getattr(user, "typeclass", None)):
+                        if not source:
+                                continue
+                        for method in ("mark_seen", "mark_owned", "mark_caught"):
+                                func = getattr(source, method, None)
+                                if callable(func):
+                                        try:
+                                                func(target_name)
+                                        except Exception:
+                                                continue
 
 	def add_item(self, item_name: str, amount: int = 1) -> None:
 		"""Add ``amount`` of ``item_name`` to this trainer's inventory."""
