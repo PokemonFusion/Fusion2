@@ -199,6 +199,68 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	def __str__(self):
 		return f"{self.nickname or self.species} ({self.unique_id})"
 
+	def delete_if_wild(self) -> bool:
+		"""Delete this Pokémon if it represents a temporary battle instance.
+
+		Wild encounters and ad-hoc battle instances are stored in the
+		same table as a player's permanent Pokémon. These temporary
+		rows should be discarded once the battle resolves to avoid
+		filling the database with orphaned records. Party Pokémon owned
+		by a trainer must be preserved.
+
+		Returns ``True`` when the instance was deleted and ``False``
+		otherwise (for example when the Pokémon belongs to a trainer).
+		"""
+
+		is_temp = getattr(self, "is_wild", False) or getattr(self, "is_battle_instance", False)
+		has_owner = bool(getattr(self, "trainer_id", None) or getattr(self, "trainer", None))
+		has_ai_owner = bool(getattr(self, "ai_trainer_id", None) or getattr(self, "ai_trainer", None))
+		if not is_temp or has_owner or has_ai_owner:
+			return False
+
+		def _clear_relation(manager, *, action: str) -> None:
+			if not manager:
+				return
+			try:
+				if action == "clear":
+					clearer = getattr(manager, "clear", None)
+					if callable(clearer):
+						clearer()
+				elif action == "delete":
+					deleter = getattr(manager, "delete", None)
+					if callable(deleter):
+						deleter()
+				elif action == "all_delete":
+					iterable = manager
+					all_method = getattr(manager, "all", None)
+					if callable(all_method):
+						iterable = all_method()
+					deleter = getattr(iterable, "delete", None)
+					if callable(deleter):
+						deleter()
+			except Exception:
+				# Relations are best-effort; ignore if unavailable
+				pass
+
+		_clear_relation(getattr(self, "learned_moves", None), action="clear")
+		_clear_relation(getattr(self, "activemoveslot_set", None), action="all_delete")
+		_clear_relation(getattr(self, "movesets", None), action="all_delete")
+		_clear_relation(getattr(self, "pp_boosts", None), action="all_delete")
+
+		active_moveset = getattr(self, "active_moveset", None)
+		if active_moveset is not None:
+			_clear_relation(active_moveset, action="delete")
+			try:
+				self.active_moveset = None
+			except Exception:
+				pass
+
+		try:
+			self.delete()
+		except Exception:
+			return False
+		return True
+
 	@property
 	def name(self) -> str:
 		"""Return nickname if set, otherwise the species."""
@@ -255,7 +317,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			from pokemon.dex import MOVEDEX  # type: ignore
 		except Exception:
 			try:
-                            from pokemon.dex.moves.movesdex import py_dict as MOVEDEX  # type: ignore
+			    from pokemon.dex.moves.movesdex import py_dict as MOVEDEX  # type: ignore
 			except Exception:  # pragma: no cover - optional
 				MOVEDEX = {}
 
