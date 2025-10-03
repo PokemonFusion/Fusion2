@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from utils.safe_import import safe_import
 
+from ._shared import _normalize_key
 from .actions import Action, ActionType
 
 logger = logging.getLogger("battle")
@@ -487,8 +488,203 @@ class TurnProcessor:
 		if hasattr(pokemon, "boosts"):
 			pokemon.boosts = {}
 
+	def _emit_battle_message(self, message: str) -> None:
+		"""Send ``message`` using the available logging hooks."""
+
+		if not message:
+			return
+
+		logger.debug("Battle message: %s", message)
+
+		log_fn = getattr(self, "log_action", None)
+		if callable(log_fn):
+			try:
+				log_fn(message)
+				return
+			except Exception:
+				pass
+
+		notify_fn = getattr(self, "notify", None)
+		if callable(notify_fn):
+			try:
+				notify_fn(message)
+			except Exception:
+				pass
+
+	def _get_speed_value(self, pokemon) -> int:
+		"""Return a best-effort speed value for ``pokemon``."""
+
+		if not pokemon:
+			return 0
+
+		direct_attrs = ("speed", "spe", "spd")
+		for attr in direct_attrs:
+			value = getattr(pokemon, attr, None)
+			if isinstance(value, (int, float)):
+				return int(value)
+
+		base_stats = getattr(pokemon, "base_stats", None)
+		if isinstance(base_stats, dict):
+			for key in ("speed", "spe", "spd"):
+				value = base_stats.get(key)
+				if isinstance(value, (int, float)):
+					return int(value)
+		elif base_stats is not None:
+			for attr in ("speed", "spe", "spd"):
+				value = getattr(base_stats, attr, None)
+				if isinstance(value, (int, float)):
+					return int(value)
+
+		calc_fn = getattr(self, "calculate_stat", None)
+		if callable(calc_fn):
+			try:
+				return int(calc_fn(pokemon, "speed"))
+			except Exception:
+				pass
+
+		return int(getattr(pokemon, "temp_speed", 0) or 0)
+
+	def _ability_key(self, ability) -> str:
+		"""Return the normalized key for ``ability``."""
+
+		if not ability:
+			return ""
+		if isinstance(ability, str):
+			return _normalize_key(ability)
+		for attr in ("name", "key", "id"):
+			value = getattr(ability, attr, None)
+			if value:
+				return _normalize_key(value)
+		return _normalize_key(str(ability))
+
+	def attempt_flee(self, action: Action) -> bool:
+		"""Execute a flee attempt and return ``True`` on success."""
+
+		from .engine import BattleType
+
+		participant = getattr(action, "actor", None)
+		pokemon = getattr(action, "pokemon", None)
+		if pokemon is None and participant and getattr(participant, "active", None):
+			pokemon = participant.active[0]
+
+		result = {
+			"success": False,
+			"participant": participant,
+			"pokemon": pokemon,
+			"reason": "failed",
+		}
+
+		battle_type = getattr(self, "type", None)
+		type_value = getattr(battle_type, "value", battle_type)
+		trainer_name = getattr(participant, "name", "Trainer") if participant else "Trainer"
+
+		if type_value != BattleType.WILD.value:
+			message = f"{trainer_name} can't run from this battle!"
+			self._emit_battle_message(message)
+			result["reason"] = "restricted"
+			result["message"] = message
+			setattr(self, "_flee_result", result)
+			if participant is not None:
+				attempts = int(getattr(participant, "flee_attempts", 0))
+				setattr(participant, "flee_attempts", attempts + 1)
+			return False
+
+		if participant is not None:
+			attempts = int(getattr(participant, "flee_attempts", 0))
+		else:
+			attempts = 0
+
+		ability_key = self._ability_key(getattr(pokemon, "ability", None))
+		if ability_key == "runaway":
+			success = True
+			reason = "runaway"
+		else:
+			trapper_name = None
+			opponents = []
+			if hasattr(self, "opponents_of") and participant is not None:
+				opponents = self.opponents_of(participant)
+			trap_abilities = {"arenatrap", "shadowtag"}
+			trapped = False
+			for opp in opponents:
+				if not getattr(opp, "active", None):
+					continue
+				for foe in opp.active:
+					if not foe:
+						continue
+					opp_ability_key = self._ability_key(getattr(foe, "ability", None))
+					if opp_ability_key in trap_abilities:
+						trapped = True
+						trapper_name = getattr(getattr(foe, "ability", None), "name", None)
+						if not trapper_name:
+							trapper_name = opp_ability_key.replace("-", " ").title()
+						break
+				if trapped:
+					break
+
+			if trapped and ability_key != "runaway":
+				message = f"{trainer_name}'s Pokemon is trapped by {trapper_name or 'Arena Trap'}!"
+				self._emit_battle_message(message)
+				result["reason"] = "trapped"
+				result["trapper"] = trapper_name or "Arena Trap"
+				result["message"] = message
+				setattr(self, "_flee_result", result)
+				if participant is not None:
+					setattr(participant, "flee_attempts", attempts + 1)
+				return False
+
+			player_speed = self._get_speed_value(pokemon)
+			opponent_speed = 0
+			for opp in opponents:
+				if not getattr(opp, "active", None):
+					continue
+				for foe in opp.active:
+					opponent_speed = max(opponent_speed, self._get_speed_value(foe))
+
+			if player_speed > opponent_speed:
+				success = True
+				reason = "faster"
+			else:
+				rng = getattr(self, "rng", random)
+				opponent_speed = max(1, opponent_speed)
+				threshold = (player_speed * 128) // opponent_speed + attempts * 30
+				if threshold >= 255:
+					success = True
+				else:
+					roll = rng.randint(0, 255)
+					success = roll < threshold
+				reason = "formula" if success else "roll"
+				result["reason"] = reason
+
+		if participant is not None:
+			setattr(participant, "flee_attempts", attempts + 1)
+
+		pokemon_name = getattr(pokemon, "name", "Pokemon") if pokemon else "Pokemon"
+
+		if success:
+			message = f"{trainer_name} fled from the battle!"
+			self._emit_battle_message(message)
+			result["success"] = True
+			result["reason"] = reason
+			result["message"] = message
+			setattr(self, "battle_over", True)
+			setattr(self, "fled", participant)
+		else:
+			if result.get("reason") not in {"restricted", "trapped"}:
+				message = f"{pokemon_name} couldn't get away!"
+				self._emit_battle_message(message)
+				result["message"] = message
+
+		setattr(self, "_flee_result", result)
+		return bool(result.get("success"))
+
 	def execute_actions(self, actions: List[Action]) -> None:
 		for action in actions:
+			if getattr(self, "battle_over", False):
+				break
+			if action.action_type is ActionType.RUN:
+				if self.attempt_flee(action):
+					break
+				continue
 			if action.action_type is ActionType.MOVE and action.move:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
 				if self.status_prevents_move(actor_poke):

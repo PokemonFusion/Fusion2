@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from typing import Any, Dict, List, Optional, Set
+from types import SimpleNamespace
 
 from utils.safe_import import safe_import
 
@@ -521,6 +522,21 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         origin = getattr(self.captainA, "location", None)
         opponent_poke, opponent_name, battle_type = self._select_opponent()
+        if battle_type == BattleType.WILD and not self.captainB:
+            shell_name = f"Wild {getattr(opponent_poke, 'name', 'Pokémon')}"
+            opponent_shell = SimpleNamespace(
+                name=shell_name,
+                key=shell_name,
+                team=[opponent_poke],
+                active_pokemon=opponent_poke,
+                is_wild=True,
+                ndb=SimpleNamespace(),
+                db=SimpleNamespace(),
+            )
+            setattr(opponent_shell.db, "battle_id", self.battle_id)
+            opponent_shell.ndb.battle_instance = self
+            self.captainB = opponent_shell
+            self.trainers = [t for t in (self.captainA, self.captainB) if t]
         player_pokemon = self._prepare_player_party(self.captainA)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
         self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
@@ -711,6 +727,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Move players to the battle room and notify watchers."""
         log_info(f"Setting up battle room for {self.battle_id}")
         self.add_watcher(self.captainA)
+        if self.captainB and getattr(self.captainB, "id", None) is not None:
+            self.add_watcher(self.captainB)
         self.msg("Battle started!")
         self.msg(f"Battle ID: {self.battle_id}")
         self.notify(f"{getattr(self.captainA, 'key', 'Player')} has entered battle!")
