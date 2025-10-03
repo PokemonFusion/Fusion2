@@ -67,3 +67,17 @@ def test_spectator_shows_percent():
 	out = display_battle_interface(t_a, t_b, st, viewer_team=None)
 	assert "15/20" not in out and "30/60" not in out
 	assert "75%" in out and "50%" in out
+
+
+def test_display_interface_wild_title_uses_species():
+	mon_a = DummyMon("Pika", 15, 20)
+	wild_mon = DummyMon("Oddish", 30, 30)
+	t_a = DummyTrainer("Ash", mon_a)
+	wild_shell = DummyTrainer("Placeholder", wild_mon)
+	wild_shell.name = "???"
+	st = BattleState()
+	st.encounter_kind = "wild"
+
+	out = display_battle_interface(t_a, wild_shell, st, viewer_team="A")
+	assert "Wild Oddish" in out
+	assert "???" not in out

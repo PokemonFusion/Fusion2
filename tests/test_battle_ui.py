@@ -2,6 +2,7 @@
 
 import importlib.util
 import os
+import types
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODULE_PATH = os.path.join(ROOT, "pokemon", "ui", "battle_render.py")
@@ -33,17 +34,18 @@ class DummyState:
 	"""State stub providing trainers and field information."""
 
 	def __init__(self):
-		self.weather = "Clear"
-		self.field = "Neutral"
-		self.round_no = 5
-		self.A = DummyTrainer("Alice", DummyMon("Pikachu", level=5))
-		self.B = DummyTrainer("Bob", DummyMon("Eevee", level=5))
+	        self.weather = "Clear"
+	        self.field = "Neutral"
+	        self.round_no = 5
+	        self.A = DummyTrainer("Alice", DummyMon("Pikachu", level=5))
+	        self.B = DummyTrainer("Bob", DummyMon("Eevee", level=5))
+	        self.encounter_kind = ""
 
 	def get_side(self, viewer):
-		return "A"
+	        return "A"
 
 	def get_trainer(self, side):
-		return getattr(self, side)
+	        return getattr(self, side)
 
 
 def test_battle_ui_omits_round() -> None:
@@ -56,3 +58,19 @@ def test_battle_ui_omits_round() -> None:
 	assert "Round" not in clean
 	assert "Field: Neutral" in clean
 	assert "Weather: Clear" in clean
+
+
+def test_wild_battle_title_uses_species() -> None:
+	state = DummyState()
+	state.encounter_kind = "wild"
+	wild_mon = DummyMon("Oddish", level=3)
+	state.B = types.SimpleNamespace(
+	        name="Mystery Opponent",
+	        team=[wild_mon],
+	        active_pokemon=wild_mon,
+	)
+	viewer = state.A
+	out = render_battle_ui(state, viewer)
+	clean = battle_render.strip_ansi(out)
+	assert "Wild Oddish" in clean
+	assert "Mystery Opponent" not in clean
