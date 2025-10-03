@@ -74,7 +74,7 @@ def test_switch_pokemon_logs_out_and_in_messages() -> None:
         assert in_msg in logs
 
 
-def test_move_logging_includes_move_ability_and_item_templates() -> None:
+def test_move_logging_skips_move_template_but_logs_item() -> None:
         user = Pokemon("User", level=5)
         target = Pokemon("Target", level=5)
         noop = lambda *_, **__: None  # noqa: E731 - simple stub callback
@@ -93,18 +93,38 @@ def test_move_logging_includes_move_ability_and_item_templates() -> None:
 
         battle.use_move(action)
 
-        move_msg = (
-                DEFAULT_TEXT["default"]["move"].replace("[POKEMON]", "User").replace("[MOVE]", "Tackle")
-        )
         ability_msg = (
-                DEFAULT_TEXT["default"]["abilityActivation"].replace("[POKEMON]", "User").replace("[ABILITY]", "Overgrow")
+            DEFAULT_TEXT["default"]["abilityActivation"].replace("[POKEMON]", "User").replace("[ABILITY]", "Overgrow")
         )
         item_msg = (
-                DEFAULT_TEXT["default"]["activateItem"].replace("[POKEMON]", "User").replace("[ITEM]", "Oran Berry")
+            DEFAULT_TEXT["default"]["activateItem"].replace("[POKEMON]", "User").replace("[ITEM]", "Oran Berry")
         )
-        assert move_msg in logs
-        assert ability_msg in logs
+        move_msg = (
+            DEFAULT_TEXT["default"]["move"].replace("[POKEMON]", "User").replace("[MOVE]", "Tackle")
+        )
+        assert move_msg not in logs
+        assert ability_msg not in logs
         assert item_msg in logs
+
+
+def test_announce_ability_activation_logs_effect() -> None:
+    user = Pokemon("User", level=5)
+    target = Pokemon("Target", level=5)
+    part1 = BattleParticipant("P1", [user], is_ai=False)
+    part2 = BattleParticipant("P2", [target], is_ai=False)
+    part1.active = [user]
+    part2.active = [target]
+    battle = Battle(BattleType.WILD, [part1, part2])
+    logs: list[str] = []
+    battle.log_action = logs.append
+
+    detail = "The sunlight empowered User's attack!"
+    battle.announce_ability_activation(user, "Solar Power", detail)
+
+    ability_msg = (
+        DEFAULT_TEXT["default"]["abilityActivation"].replace("[POKEMON]", "User").replace("[ABILITY]", "Solar Power")
+    )
+    assert f"{ability_msg} {detail}" in logs
 
 
 def test_check_win_conditions_logs_victory_message() -> None:

@@ -1,6 +1,8 @@
 """Tests for the :class:`TurnManager` mixin and turn helpers."""
 
-from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
+import types
+
+from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom, bi_mod
 
 
 def _setup_battle():
@@ -16,14 +18,20 @@ def test_prompt_next_turn_uses_helpers(monkeypatch):
     """`prompt_next_turn` delegates to banner and interface helpers."""
 
     inst, _, _ = _setup_battle()
-    calls = {"banner": False, "render": False}
+    calls = {"headline": False, "render": False}
 
-    monkeypatch.setattr(inst, "_notify_turn_banner", lambda: calls.__setitem__("banner", True))
-    monkeypatch.setattr(inst, "_render_interfaces", lambda: calls.__setitem__("render", True))
+    def record_headline(*_, **__):
+        calls["headline"] = True
+
+    def record_render(*_, **__):
+        calls["render"] = True
+
+    monkeypatch.setattr(inst, "_announce_turn_headline", record_headline)
+    monkeypatch.setattr(inst, "_render_interfaces", record_render)
 
     inst.prompt_next_turn()
 
-    assert calls["banner"] and calls["render"]
+    assert calls["headline"] and calls["render"]
 
 
 def test_run_turn_persists_state(monkeypatch):
@@ -31,12 +39,12 @@ def test_run_turn_persists_state(monkeypatch):
 
     inst, p1, p2 = _setup_battle()
     inst.prompt_next_turn = lambda: None  # avoid interface spam
-    calls = {"persist": False, "banner": 0}
+    calls = {"persist": False, "banner": []}
 
     monkeypatch.setattr(inst, "_persist_turn_state", lambda: calls.__setitem__("persist", True))
 
-    def fake_banner():
-        calls["banner"] += 1
+    def fake_banner(*_, **__):
+        calls["banner"].append(__.get("upcoming", False))
 
     monkeypatch.setattr(inst, "_notify_turn_banner", fake_banner)
 
@@ -44,7 +52,7 @@ def test_run_turn_persists_state(monkeypatch):
     inst.queue_move("tackle", caller=p2)
 
     assert calls["persist"] is True
-    assert calls["banner"] >= 2  # before and after running the turn
+    assert calls["banner"] == [True, False]
 
 
 def test_run_turn_ends_battle_when_over(monkeypatch):
@@ -92,3 +100,83 @@ def test_run_turn_ends_battle_when_over(monkeypatch):
     assert end_called["value"] is True
     assert any("The battle has ended." in msg for msg in messages)
     assert check_calls["count"] >= 1
+
+
+def test_waiting_message_follows_interface(monkeypatch):
+    """`maybe_run_turn` shows the field UI before the waiting notice."""
+
+    inst, _, _ = _setup_battle()
+
+    monkeypatch.setattr(inst, "is_turn_ready", lambda: False)
+
+    waiting_pokemon = types.SimpleNamespace(name="Bulbasaur")
+
+    class _DummyPosition:
+        pokemon = waiting_pokemon
+
+        @staticmethod
+        def getAction():
+            return None
+
+    inst.logic.data = types.SimpleNamespace(
+        turndata=types.SimpleNamespace(positions={"slot": _DummyPosition()})
+    )
+
+    events: list[tuple] = []
+
+    def record_broadcast(session, *, waiting_on=None):
+        events.append(("broadcast", session, waiting_on))
+
+    def record_send(session, target, *, waiting_on=None):
+        events.append(("send", target, waiting_on))
+
+    monkeypatch.setattr(bi_mod, "broadcast_interfaces", record_broadcast)
+    monkeypatch.setattr(bi_mod, "send_interface_to", record_send)
+    monkeypatch.setattr(inst, "msg", lambda text: events.append(("msg", text)))
+
+    inst.maybe_run_turn()
+
+    assert events[0][0] == "broadcast"
+    assert events[-1] == ("msg", "Waiting on Bulbasaur...")
+    assert all(kind != "send" for kind, *_ in events)
+    assert events[0][2] == "Bulbasaur"
+
+
+def test_duplicate_queue_skips_waiting_broadcast(monkeypatch):
+    """Duplicate declarations avoid spamming waiting notices to others."""
+
+    inst, p1, _ = _setup_battle()
+
+    monkeypatch.setattr(inst, "is_turn_ready", lambda: False)
+
+    waiting_pokemon = types.SimpleNamespace(name="Squirtle")
+
+    class _DummyPosition:
+        pokemon = waiting_pokemon
+
+        @staticmethod
+        def getAction():
+            return None
+
+    inst.logic.data = types.SimpleNamespace(
+        turndata=types.SimpleNamespace(positions={"slot": _DummyPosition()})
+    )
+
+    events: list[tuple] = []
+
+    def record_broadcast(session, *, waiting_on=None):  # pragma: no cover - guard
+        events.append(("broadcast", session, waiting_on))
+
+    def record_send(session, target, *, waiting_on=None):
+        events.append(("send", target, waiting_on))
+
+    monkeypatch.setattr(bi_mod, "broadcast_interfaces", record_broadcast)
+    monkeypatch.setattr(bi_mod, "send_interface_to", record_send)
+    monkeypatch.setattr(inst, "msg", lambda text: events.append(("msg", text)))
+    monkeypatch.setattr(inst, "_msg_to", lambda target, text: events.append(("to", target, text)))
+
+    inst.maybe_run_turn(actor=p1, notify_waiting=False)
+
+    assert all(kind != "msg" for kind, *_ in events)
+    assert all(kind != "to" for kind, *_ in events)
+    assert events == [("send", p1, "Squirtle")]

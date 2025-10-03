@@ -586,29 +586,6 @@ class BattleMove:
         if battle and hasattr(battle, "log_action"):
             default_messages = DEFAULT_TEXT.get("default", {})
             actor_name = getattr(user, "name", None) or getattr(user, "species", "Pokemon")
-            move_name = getattr(self, "name", "Move")
-
-            move_template = default_messages.get("move")
-            if move_template:
-                message = move_template.replace("[POKEMON]", str(actor_name)).replace(
-                    "[MOVE]", str(move_name)
-                )
-                battle.log_action(message)
-
-            ability_template = default_messages.get("abilityActivation")
-            if ability_template:
-                ability_obj = _resolve_ability(getattr(user, "ability", None))
-                ability_name = getattr(ability_obj, "name", None)
-                if not ability_name:
-                    raw_ability = getattr(user, "ability", None)
-                    ability_name = getattr(raw_ability, "name", None)
-                    if not ability_name and isinstance(raw_ability, str):
-                        ability_name = raw_ability
-                if ability_name:
-                    ability_message = ability_template.replace(
-                        "[POKEMON]", str(actor_name)
-                    ).replace("[ABILITY]", str(ability_name))
-                    battle.log_action(ability_message)
 
             item_template = default_messages.get("activateItem")
             if item_template:
@@ -1010,6 +987,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         self.field = Field()
         self.debug: bool = False
+        # Toggle to display exact damage numbers alongside descriptive text.
+        self.show_damage_numbers: bool = False
         self.rng = rng or random
         self._rewards_granted: bool = False
         self._result_logged: bool = False
@@ -2000,9 +1979,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         user_name = getattr(user, "name", "Pokemon")
         target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
         if dmg > 0:
-            self.log_action(
-                f"{user_name} used {action.move.name} on {target_name} and dealt {dmg} damage!"
-            )
+            if getattr(self, "show_damage_numbers", False):
+                self.log_action(
+                    f"{user_name} used {action.move.name} on {target_name} and dealt {dmg} damage!"
+                )
             if boosts_changed:
                 self.announce_stat_changes(
                     user,
@@ -2376,6 +2356,26 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         percent = int((hp / max_hp) * 10)
         bar = "[" + ("#" * percent).ljust(10) + "]"
         return bar
+
+    def announce_ability_activation(self, pokemon, ability, detail: str) -> None:
+        """Log an ability activation along with its effect description."""
+
+        if not detail:
+            return
+        ability_name = getattr(ability, "name", None) or ability
+        if not ability_name:
+            return
+        ability_text = str(ability_name)
+        nickname = self._pokemon_nickname(pokemon)
+        message = self._format_default_message(
+            "abilityActivation",
+            {"[POKEMON]": nickname, "[ABILITY]": ability_text},
+            fallback=None,
+        )
+        if not message:
+            message = f"[{nickname}'s {ability_text}]"
+        final = f"{message} {detail}".strip()
+        self.log_action(final)
 
     def announce_status_change(
         self,

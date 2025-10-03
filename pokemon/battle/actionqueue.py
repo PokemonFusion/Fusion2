@@ -50,7 +50,7 @@ class ActionQueue:
 				f"{pokemon_name} already has an action queued this turn.",
 			)
 			log_info(f"Ignored {action_desc} for {pokemon_name} at {pos_name}: action already queued")
-			self.maybe_run_turn(actor=caller)
+			self.maybe_run_turn(actor=caller, notify_waiting=False)
 			return True
 		return False
 

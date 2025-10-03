@@ -84,8 +84,8 @@ def _display_battle_interface(*args, **kwargs):
 	return ""
 
 
-def _format_turn_banner(turn):
-	return ""
+def _format_turn_banner(turn, *, closing=False):
+        return ""
 
 
 def _render_interfaces(*args, **kwargs):

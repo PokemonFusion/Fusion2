@@ -9,9 +9,21 @@ from utils.battle_display import render_battle_ui
 logger = logging.getLogger(__name__)
 
 
-def format_turn_banner(turn: int) -> str:
-	"""Return a simple banner for turn notifications."""
-	return f"╭─ Turn {turn} ─╮"
+def format_turn_banner(turn: int, *, closing: bool = False) -> str:
+        """Return a simple banner for turn notifications.
+
+        Parameters
+        ----------
+        turn:
+                The turn number to display.
+        closing:
+                When ``True`` render the closing variant of the banner so the
+                artwork points upward, indicating the end of the turn.
+        """
+
+        left = "╰" if closing else "╭"
+        right = "╯" if closing else "╮"
+        return f"{left}─ Turn {turn} ─{right}"
 
 
 # -----------------------------------------------------------------------------
