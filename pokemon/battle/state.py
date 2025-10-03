@@ -11,6 +11,7 @@ class BattleState:
 	"""Representation of an ongoing battle."""
 
 	ai_type: str = "Wild"
+	encounter_kind: str = ""
 	ability_holder: Optional[str] = None
 	first_ability: Optional[str] = None
 	first_turn_taken: bool = False

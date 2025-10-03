@@ -66,6 +66,8 @@ def build_initial_state(
 	data = BattleData(player_team, opponent_team)
 
 	state = BattleState.from_battle_data(data, ai_type=battle_type.name)
+	if battle_type == BattleType.WILD:
+		state.encounter_kind = "wild"
 	state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
 	state.pokemon_control = {}
 	for poke in player_pokemon:
