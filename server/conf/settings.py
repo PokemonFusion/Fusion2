@@ -62,7 +62,7 @@ except ImportError:
 
 # Local apps
 INSTALLED_APPS += (
-    "pokemon",
+    "pokemon.apps.PokemonConfig",
     "roomeditor",
 )
 
