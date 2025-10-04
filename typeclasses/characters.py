@@ -89,10 +89,21 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 						pass
 
 	def at_pre_move(self, destination, **kwargs):
-		"""Prevent leaving while hosting a PVP request."""
-		if getattr(self.db, "pvp_locked", False):
-			self.msg("|rYou can't leave while waiting for a PVP battle.|n")
-			return False
+		"""Prevent leaving while hosting a PVP request or during battles."""
+		db = getattr(self, "db", None)
+		if db and getattr(db, "pvp_locked", False):
+		        self.msg("|rYou can't leave while waiting for a PVP battle.|n")
+		        return False
+
+		if db and hasattr(db, "battle_lock"):
+		        self.msg("You cannot do that during battle.")
+		        return False
+
+		ndb = getattr(self, "ndb", None)
+		if ndb and getattr(ndb, "battle_instance", None):
+		        self.msg("You cannot do that during battle.")
+		        return False
+
 		return super().at_pre_move(destination, **kwargs)
 
 	def at_say(
@@ -114,7 +125,7 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 		Args:
 		    message (str): The text to say.
 		    msg_self (str or bool, optional): Custom self message or a truthy
-		        value to use the default name-based format.
+			value to use the default name-based format.
 		    msg_location (str, optional): Message for the location.
 		    receivers (DefaultObject or iterable, optional): Whom to whisper to.
 		    msg_receivers (str, optional): Message for specific receivers.

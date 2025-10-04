@@ -295,7 +295,13 @@ def generate_pokemon(
 
     rng = random.Random(seed)
 
-    species = POKEDEX.get(species_name)
+    lookup_key = species_name
+    if isinstance(species_name, str):
+        lookup_key = species_name.lower()
+    else:
+        lookup_key = str(species_name).lower()
+
+    species = POKEDEX.get(lookup_key)
     if not species:
         try:
             species = POKEDEX_BY_NUM.get(int(species_name))

@@ -6,6 +6,7 @@ import time
 from typing import Any, Dict, Optional
 
 from pokemon.battle.watchers import notify_watchers
+from utils.locks import clear_battle_lock
 
 try:  # pragma: no cover - model import may fail during tests
     from pokemon.models.core import BattleSlot
@@ -111,6 +112,23 @@ class BattleInstance(DefaultScript):
 
     def invalidate(self) -> None:
         """Invalidate the battle without persisting further state."""
+        for char in list(getattr(self.ndb, "characters", {}).values()):
+            try:
+                clear_battle_lock(char)
+            except Exception:
+                pass
+            ndb = getattr(char, "ndb", None)
+            if ndb and getattr(ndb, "battle_instance", None) is self:
+                try:
+                    delattr(ndb, "battle_instance")
+                except Exception:
+                    pass
+            db = getattr(char, "db", None)
+            if db and hasattr(db, "battle_id"):
+                try:
+                    delattr(db, "battle_id")
+                except Exception:
+                    pass
         self.ndb.invalidated = True
         try:
             self.stop()
