@@ -110,3 +110,5 @@ def test_battle_session_start_assigns_wild_shell(monkeypatch):
 	assert getattr(session.captainB, "is_wild", False)
 	assert session.trainers == [session.captainA, session.captainB]
 	assert session.captainB.db.battle_id == session.battle_id
+	assert session.captainB.db.battle_lock == session.battle_id
+	assert player.db.battle_lock == session.battle_id
