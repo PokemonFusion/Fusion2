@@ -14,6 +14,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import ModuleType
 from typing import Any, Dict, List, Optional
 
 from utils.safe_import import safe_import
@@ -176,15 +177,32 @@ class Pokemon:
 
 		if not pdex:
 			try:  # pragma: no cover - last-resort direct file load
-				path = Path(__file__).resolve().parents[1] / "dex" / "pokedex.py"
-				spec = importlib.util.spec_from_file_location("pokemon.dex.pokedex", path)
-				module = importlib.util.module_from_spec(spec)
-				sys.modules.setdefault("pokemon.dex.pokedex", module)
-				assert spec and spec.loader  # help mypy
-				spec.loader.exec_module(module)
-				pdex = getattr(module, "pokedex", getattr(module, "POKEDEX", {}))
+				dex_root = Path(__file__).resolve().parents[1] / "dex"
+				pokedex_path = dex_root / "pokedex" / "__init__.py"
+				if pokedex_path.exists():
+					pkg_name = "pokemon.dex"
+					pkg_snapshot = set(sys.modules)
+					if pkg_name not in sys.modules:
+						stub = ModuleType(pkg_name)
+						stub.__path__ = [str(dex_root)]
+						sys.modules[pkg_name] = stub
+					spec = importlib.util.spec_from_file_location(
+						f"{pkg_name}.pokedex", pokedex_path
+					)
+					module = importlib.util.module_from_spec(spec)
+					sys.modules[spec.name] = module
+					assert spec and spec.loader  # help mypy
+					spec.loader.exec_module(module)
+					pdex = getattr(module, "pokedex", getattr(module, "POKEDEX", {}))
 			except Exception:
 				pdex = {}
+			finally:
+				if "pkg_snapshot" in locals():
+					new_modules = set(sys.modules) - pkg_snapshot
+					for mod_name in new_modules:
+						if mod_name.startswith("pokemon.dex"):
+							sys.modules.pop(mod_name, None)
+
 
 		try:  # pragma: no cover - POKEDEX access is optional
 			entry = pdex.get(species_name) or pdex.get(species_name.lower()) or pdex.get(species_name.capitalize())
