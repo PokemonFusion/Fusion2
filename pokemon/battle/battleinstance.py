@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import random
+from collections import deque
 from typing import Any, Dict, List, Optional, Set, Tuple
 from types import SimpleNamespace
 
 from utils.safe_import import safe_import
 
 from .actions import ActionType
-from .battledata import BattleData, Pokemon, Team
+from .battledata import BattleData, Move, Pokemon, Team
 from .engine import Battle, BattleParticipant, BattleType
 from .messaging import MessagingMixin
 from .state import BattleState
@@ -487,6 +488,138 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         obj.turn_state = {}
         obj.ndb = type("NDB", (), {})()
         logic = BattleLogic.from_dict({"data": data, "state": state})
+        # Ensure Pokémon have their correct moves restored before resuming.
+        try:
+            teams: Dict[str, Team] = getattr(logic.data, "teams", {}) or {}
+            raw_movesets: Dict[Any, Dict[str, str]] = getattr(logic.state, "movesets", {}) or {}
+            raw_state_teams: Dict[str, List[Any]] = getattr(logic.state, "teams", {}) or {}
+        except Exception:
+            teams = {}
+            raw_movesets = {}
+            raw_state_teams = {}
+
+        if isinstance(teams, dict) and teams:
+            normalized_movesets: Dict[Any, Dict[str, str]] = {}
+            for raw_pid, moveset in raw_movesets.items():
+                try:
+                    pid = int(raw_pid)
+                except (TypeError, ValueError):
+                    pid = raw_pid
+                normalized_movesets[pid] = moveset or {}
+
+            normalized_team_ids: Dict[str, deque[Any]] = {}
+            used_ids: Set[Any] = set()
+            for team_key, id_list in raw_state_teams.items():
+                queue: deque[Any] = deque()
+                for raw_pid in id_list or []:
+                    try:
+                        pid = int(raw_pid)
+                    except (TypeError, ValueError):
+                        pid = raw_pid
+                    if pid in normalized_movesets:
+                        queue.append(pid)
+                        used_ids.add(pid)
+                normalized_team_ids[team_key] = queue
+
+            unused_ids: deque[Any] = deque(
+                pid for pid in normalized_movesets.keys() if pid not in used_ids
+            )
+
+            def _needs_move_restore(poke: Pokemon) -> bool:
+                moves = getattr(poke, "moves", [])
+                if not moves:
+                    return True
+                for mv in moves:
+                    name = getattr(mv, "name", None)
+                    if not name:
+                        continue
+                    if _battle_norm_key(str(name)):
+                        return False
+                return True
+
+            def _moves_from_state(pid: Any) -> List[Move]:
+                if pid is None:
+                    return []
+                moveset = normalized_movesets.get(pid)
+                if not moveset:
+                    return []
+                ordered = []
+                for key in sorted(moveset.keys()):
+                    move_name = moveset[key]
+                    if not move_name:
+                        continue
+                    if not _battle_norm_key(str(move_name)):
+                        continue
+                    ordered.append(Move(str(move_name)))
+                return ordered
+
+            def _moves_from_relations(poke: Pokemon) -> List[Move]:
+                slot_source = getattr(poke, "activemoveslot_set", None)
+                move_names: List[str] = []
+                if slot_source is not None:
+                    try:
+                        iterable = slot_source.all().order_by("slot")
+                    except Exception:
+                        try:
+                            iterable = slot_source.order_by("slot")
+                        except Exception:
+                            iterable = slot_source
+                    try:
+                        for slot in iterable:
+                            move_obj = getattr(slot, "move", None)
+                            move_name = getattr(move_obj, "name", None) or getattr(slot, "name", None)
+                            if move_name and _battle_norm_key(str(move_name)):
+                                move_names.append(str(move_name))
+                    except Exception:
+                        move_names = []
+                if not move_names:
+                    model_id = getattr(poke, "model_id", None)
+                    if model_id:
+                        try:
+                            OwnedPokemon = safe_import("pokemon.models.core").OwnedPokemon  # type: ignore[attr-defined]
+                        except Exception:
+                            OwnedPokemon = None
+                        if OwnedPokemon:
+                            owned = None
+                            try:
+                                owned = OwnedPokemon.objects.filter(unique_id=model_id).first()
+                            except Exception:
+                                try:
+                                    owned = OwnedPokemon.objects.get(unique_id=model_id)
+                                except Exception:
+                                    owned = None
+                            if owned is not None:
+                                try:
+                                    rebuilt = build_battle_pokemon_from_model(owned)
+                                    for mv in getattr(rebuilt, "moves", [])[:4]:
+                                        move_name = getattr(mv, "name", None)
+                                        if move_name and _battle_norm_key(str(move_name)):
+                                            move_names.append(str(move_name))
+                                except Exception:
+                                    move_names = []
+                return [Move(name) for name in move_names[:4]] if move_names else []
+
+            for team_key, team in teams.items():
+                if not team or not hasattr(team, "returnlist"):
+                    continue
+                queue = normalized_team_ids.get(team_key, deque())
+                for poke in team.returnlist():
+                    if not poke:
+                        continue
+                    if not _needs_move_restore(poke):
+                        continue
+                    pid = queue.popleft() if queue else (unused_ids.popleft() if unused_ids else None)
+                    new_moves = _moves_from_state(pid)
+                    if not new_moves:
+                        new_moves = _moves_from_relations(poke)
+                    if not new_moves:
+                        continue
+                    poke.moves = new_moves
+                    if pid is not None:
+                        logic.state.movesets[pid] = {
+                            chr(ord("A") + idx): mv.name for idx, mv in enumerate(new_moves[:4])
+                        }
+        obj.logic = logic
         # Rebuild missing team or moveset data when restoring older saves
         if (
             not getattr(logic.state, "movesets", None)
