@@ -11,6 +11,10 @@ from ..dex.entities import Stats, Pokemon as SpeciesPokemon
 
 # Mapping for numeric dex-number lookups
 POKEDEX_BY_NUM = {mon.num: mon for mon in POKEDEX.values()}
+# Fast case-insensitive name lookups.  ``POKEDEX`` itself keeps canonical keys
+# which may use mixed casing, so we build a helper map that normalizes names.
+POKEDEX_LOOKUP = {name.lower(): mon for name, mon in POKEDEX.items()}
+POKEDEX_LOOKUP.update({mon.name.lower(): mon for mon in POKEDEX.values()})
 
 
 # Preprocess learnset level-up data at import time to avoid repeated parsing.
@@ -136,6 +140,35 @@ def get_valid_moves(species_name: str, level: int) -> List[str]:
     return moves
 
 
+def _resolve_species_entry(species_name: object) -> SpeciesPokemon | None:
+    """Return the Pokédex entry for ``species_name`` if available."""
+
+    if isinstance(species_name, SpeciesPokemon):
+        return species_name
+
+    if species_name is None:
+        return None
+
+    text = str(species_name).strip()
+    if not text:
+        return None
+
+    species = POKEDEX.get(text)
+    if species:
+        return species
+
+    normalized = text.lower()
+    species = POKEDEX_LOOKUP.get(normalized)
+    if species:
+        return species
+
+    try:
+        number = int(text)
+    except (TypeError, ValueError):
+        return None
+    return POKEDEX_BY_NUM.get(number)
+
+
 def choose_wild_moves(
     species_name: str,
     level: int,
@@ -152,18 +185,11 @@ def choose_wild_moves(
 
     rng = random.Random(seed)
 
-    key = species_name.lower()
-    species = POKEDEX.get(key)
+    species = _resolve_species_entry(species_name)
     if not species:
-        try:
-            num = int(species_name)
-        except (TypeError, ValueError):
-            return []
-        species = POKEDEX_BY_NUM.get(num)
-        if species:
-            key = species.name.lower()
-        else:
-            return []
+        return []
+
+    key = species.name.lower()
 
     types = [t.lower() for t in species.types]
 
@@ -295,18 +321,7 @@ def generate_pokemon(
 
     rng = random.Random(seed)
 
-    lookup_key = species_name
-    if isinstance(species_name, str):
-        lookup_key = species_name.lower()
-    else:
-        lookup_key = str(species_name).lower()
-
-    species = POKEDEX.get(lookup_key)
-    if not species:
-        try:
-            species = POKEDEX_BY_NUM.get(int(species_name))
-        except (TypeError, ValueError):
-            species = None
+    species = _resolve_species_entry(species_name)
     if not species:
         raise ValueError(f"Species '{species_name}' not found in Pokedex")
 
