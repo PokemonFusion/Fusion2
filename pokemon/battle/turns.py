@@ -666,11 +666,12 @@ class TurnProcessor:
 		for action in actions:
 			if getattr(self, "battle_over", False):
 				break
-			if action.action_type is ActionType.RUN:
+			action_type = getattr(action, "action_type", None)
+			if action_type is ActionType.RUN:
 				if self.attempt_flee(action):
 					break
 				continue
-			if action.action_type is ActionType.MOVE and action.move:
+			if action_type is ActionType.MOVE and action.move:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
 				if self.status_prevents_move(actor_poke):
 					continue
@@ -682,7 +683,12 @@ class TurnProcessor:
 					actor_poke.tempvals["moved"] = True
 				except Exception:
 					pass
-			elif action.action_type is ActionType.ITEM and action.item:
+			elif action_type is ActionType.ITEM and action.item:
+				self.execute_item(action)
+			elif action.item:
+				# ``ActionType`` enums may be reloaded during tests, so
+				# fall back to the presence of ``action.item`` to detect
+				# item usage.
 				self.execute_item(action)
 
 	def execute_turn(self, actions: List[Action]) -> None:
