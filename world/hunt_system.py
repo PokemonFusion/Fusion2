@@ -157,7 +157,12 @@ class HuntSystem:
 			poke = generate_trainer_pokemon()
 
 			def _sel():
-				return poke, "Trainer", BattleType.TRAINER
+				return (
+					poke,
+					"Trainer",
+					BattleType.TRAINER,
+					f"A trainer challenges you with {poke.name}!",
+				)
 
 			inst = BattleSession(hunter)
 			if getattr(poke, "model_id", None):
@@ -193,7 +198,12 @@ class HuntSystem:
 		poke = create_battle_pokemon(selected_name, level, is_wild=True)
 
 		def _select_override():
-			return poke, "Wild", BattleType.WILD
+			return (
+				poke,
+				"Wild",
+				BattleType.WILD,
+				f"A wild {poke.name} appears!",
+			)
 
 		inst = BattleSession(hunter)
 		if getattr(poke, "model_id", None):
@@ -233,7 +243,12 @@ class HuntSystem:
 		poke = create_battle_pokemon(name, level, is_wild=True)
 
 		def _select_override():
-			return poke, "Wild", BattleType.WILD
+			return (
+				poke,
+				"Wild",
+				BattleType.WILD,
+				f"A wild {poke.name} appears!",
+			)
 
 		inst = BattleSession(hunter)
 		if getattr(poke, "model_id", None):
