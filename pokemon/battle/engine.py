@@ -470,7 +470,16 @@ def _apply_move_damage(
         except Exception:
             move.basePowerCallback = None
 
-    return apply_damage(user, target, move, battle=battle, spread=spread)
+    result = apply_damage(user, target, move, battle=battle, spread=spread)
+
+    try:
+        move_power = getattr(move, "power", None)
+        if isinstance(move_power, (int, float)):
+            battle_move.power = int(move_power)
+    except Exception:
+        pass
+
+    return result
 
 
 def _select_ai_action(
