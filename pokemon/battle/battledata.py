@@ -384,6 +384,7 @@ class Pokemon:
 			{
 				"name": self.name,
 				"level": self.level,
+				"hp": self.hp,
 				"max_hp": self.max_hp,
 				"moves": [_move_payload(m, index) for index, m in enumerate(self.moves)],
 				"ivs": list(self.ivs),

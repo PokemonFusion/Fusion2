@@ -321,6 +321,14 @@ def test_pokemon_serialization_includes_fallback_fields():
 	assert [mv.name for mv in restored.moves[:2]] == ["Tackle", "Growl"]
 
 
+def test_pokemon_to_dict_preserves_current_and_max_hp():
+	mon = bd_mod.Pokemon("Squirtle", level=10, hp=32, max_hp=45)
+
+	payload = mon.to_dict()
+
+	assert payload["current_hp"] == 32
+	assert payload["hp"] == 32
+	assert payload["max_hp"] == 45
 
 
 def test_build_battle_pokemon_without_identifier_preserves_moves():
