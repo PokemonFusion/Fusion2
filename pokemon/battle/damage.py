@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from math import floor
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from ._shared import _normalize_key
+
 """Damage calculation helpers and convenience wrappers.
 
 This module contains the core damage application logic used by the battle
@@ -12,9 +14,14 @@ to the attack.
 """
 
 try:
-	from ..data import TYPE_CHART
+        from ..data import TYPE_CHART
 except Exception:  # pragma: no cover - allow tests without data pkg
-	TYPE_CHART = {}
+        TYPE_CHART = {}
+
+try:  # pragma: no cover - optional in lightweight test harnesses
+        from pokemon.dex import MOVEDEX as _MOVEDEX
+except Exception:  # pragma: no cover - fallback to empty mapping
+        _MOVEDEX = {}
 
 if TYPE_CHECKING:  # pragma: no cover
 	from ..dex import Move, Pokemon
@@ -430,6 +437,28 @@ def damage_calc(
 					atk_stat = int(new_atk)
 
 		power = move.power or 0
+		if power in (None, 0):
+			raw_data = getattr(move, "raw", None)
+			if isinstance(raw_data, dict):
+				base_power = raw_data.get("basePower")
+				if isinstance(base_power, (int, float)) and base_power > 0:
+					power = int(base_power)
+			if power in (None, 0):
+				key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
+				dex_entry = _MOVEDEX.get(key) if key else None
+				if dex_entry is not None:
+					base_power = None
+					raw_entry = getattr(dex_entry, "raw", None)
+					if isinstance(raw_entry, dict):
+						base_power = raw_entry.get("basePower")
+					if not isinstance(base_power, (int, float)):
+						base_power = getattr(dex_entry, "power", None)
+					if isinstance(base_power, (int, float)) and base_power > 0:
+						power = int(base_power)
+		if isinstance(power, (int, float)) and power > 0:
+			move.power = int(power)
+		else:
+			power = 0
 		if battle is not None:
 			field = getattr(battle, "field", None)
 			if field:
