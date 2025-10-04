@@ -462,93 +462,112 @@ def damage_calc(
 		level = getattr(attacker, "level", None)
 		if level is None:
 			level = getattr(attacker, "num", 1)
-		dmg, rand_mod = base_damage(
-			level,
-			power,
-			atk_stat,
-			def_stat,
-			return_roll=True,
-			rng=rng,
+		damaging_move = (
+			getattr(move, "category", None) != "Status"
+			and isinstance(power, (int, float))
+			and power > 0
 		)
-		result.debug.setdefault("level", []).append(level)
-		result.debug.setdefault("power", []).append(power)
-		result.debug.setdefault("attack", []).append(atk_stat)
-		result.debug.setdefault("defense", []).append(def_stat)
-		result.debug.setdefault("rand", []).append(rand_mod)
-		if battle is not None:
-			field = getattr(battle, "field", None)
-			if field:
-				weather_handler = getattr(field, "weather_handler", None)
-				if weather_handler:
-					cb = getattr(weather_handler, "onWeatherModifyDamage", None)
-					if callable(cb):
-						try:
-							wmult = cb(move)
-						except Exception:
-							wmult = cb(move=move)
-						if isinstance(wmult, (int, float)):
-							dmg = floor(dmg * wmult)
-		stab = stab_multiplier(attacker, move)
-		dmg = floor(dmg * stab)
-		result.debug.setdefault("stab", []).append(stab)
-		eff = type_effectiveness(target, move)
-		result.debug.setdefault("type_effectiveness", []).append(eff)
-		temp_eff = eff
-		if temp_eff > 1:
-			while temp_eff > 1:
-				result.text.append(DEFAULT_TEXT["default"]["superEffective"])
-				temp_eff /= 2
-		elif 0 < temp_eff < 1:
-			while temp_eff < 1:
-				result.text.append(DEFAULT_TEXT["default"]["resisted"])
-				temp_eff *= 2
-		elif temp_eff == 0:
-			result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
-			continue
-		dmg = floor(dmg * eff)
 
-		# Critical hit calculation with simple ratio handling
-		crit_ratio = 0
-		if move.raw:
-			crit_ratio = int(move.raw.get("critRatio", 0))
-		ability = getattr(attacker, "ability", None)
-		if ability and hasattr(ability, "call"):
-			try:
-				new_ratio = ability.call("onModifyCritRatio", crit_ratio, attacker=attacker, defender=target, move=move)
-			except Exception:
-				new_ratio = ability.call("onModifyCritRatio", crit_ratio)
-			if isinstance(new_ratio, (int, float)):
-				crit_ratio = int(new_ratio)
-		item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
-		if item and hasattr(item, "call"):
-			try:
-				new_ratio = item.call("onModifyCritRatio", crit_ratio, pokemon=attacker, target=target)
-			except Exception:
-				new_ratio = item.call("onModifyCritRatio", crit_ratio)
-			if isinstance(new_ratio, (int, float)):
-				crit_ratio = int(new_ratio)
-		if getattr(attacker, "volatiles", {}).get("focusenergy"):
-			crit_ratio += 2
-		if getattr(attacker, "volatiles", {}).get("laserfocus"):
-			crit_ratio = max(crit_ratio, 3)
-
-		chances = {0: 1 / 24, 1: 1 / 8, 2: 1 / 2}
-		crit = False
-		if move.raw and move.raw.get("willCrit"):
-			crit = True
-		else:
-			chance = chances.get(crit_ratio, 1.0)
-			crit = percent_check(chance, rng=rng)
-		if crit:
-			dmg = floor(dmg * 1.5)
-			result.debug.setdefault("critical", []).append(True)
-		else:
+		if not damaging_move:
+			rand_mod = 1.0
+			result.debug.setdefault("level", []).append(level)
+			result.debug.setdefault("power", []).append(power)
+			result.debug.setdefault("attack", []).append(atk_stat)
+			result.debug.setdefault("defense", []).append(def_stat)
+			result.debug.setdefault("rand", []).append(rand_mod)
+			result.debug.setdefault("stab", []).append(1.0)
+			result.debug.setdefault("type_effectiveness", []).append(1.0)
 			result.debug.setdefault("critical", []).append(False)
-		if spread:
-			dmg = int(dmg * 0.75)
-		if dmg < 1 and getattr(move, "category", None) != "Status" and isinstance(power, (int, float)) and power > 0:
-			dmg = 1
-		result.debug.setdefault("damage", []).append(dmg)
+			result.debug.setdefault("damage", []).append(0)
+			dmg = 0
+		else:
+			dmg, rand_mod = base_damage(
+				level,
+				power,
+				atk_stat,
+				def_stat,
+				return_roll=True,
+				rng=rng,
+			)
+			result.debug.setdefault("level", []).append(level)
+			result.debug.setdefault("power", []).append(power)
+			result.debug.setdefault("attack", []).append(atk_stat)
+			result.debug.setdefault("defense", []).append(def_stat)
+			result.debug.setdefault("rand", []).append(rand_mod)
+			if battle is not None:
+				field = getattr(battle, "field", None)
+				if field:
+					weather_handler = getattr(field, "weather_handler", None)
+					if weather_handler:
+						cb = getattr(weather_handler, "onWeatherModifyDamage", None)
+						if callable(cb):
+							try:
+								wmult = cb(move)
+							except Exception:
+								wmult = cb(move=move)
+							if isinstance(wmult, (int, float)):
+								dmg = floor(dmg * wmult)
+			stab = stab_multiplier(attacker, move)
+			dmg = floor(dmg * stab)
+			result.debug.setdefault("stab", []).append(stab)
+			eff = type_effectiveness(target, move)
+			result.debug.setdefault("type_effectiveness", []).append(eff)
+			temp_eff = eff
+			if temp_eff > 1:
+				while temp_eff > 1:
+					result.text.append(DEFAULT_TEXT["default"]["superEffective"])
+					temp_eff /= 2
+			elif 0 < temp_eff < 1:
+				while temp_eff < 1:
+					result.text.append(DEFAULT_TEXT["default"]["resisted"])
+					temp_eff *= 2
+			elif temp_eff == 0:
+				result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+				continue
+			dmg = floor(dmg * eff)
+
+			# Critical hit calculation with simple ratio handling
+			crit_ratio = 0
+			if move.raw:
+				crit_ratio = int(move.raw.get("critRatio", 0))
+			ability = getattr(attacker, "ability", None)
+			if ability and hasattr(ability, "call"):
+				try:
+					new_ratio = ability.call("onModifyCritRatio", crit_ratio, attacker=attacker, defender=target, move=move)
+				except Exception:
+					new_ratio = ability.call("onModifyCritRatio", crit_ratio)
+				if isinstance(new_ratio, (int, float)):
+					crit_ratio = int(new_ratio)
+			item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
+			if item and hasattr(item, "call"):
+				try:
+					new_ratio = item.call("onModifyCritRatio", crit_ratio, pokemon=attacker, target=target)
+				except Exception:
+					new_ratio = item.call("onModifyCritRatio", crit_ratio)
+				if isinstance(new_ratio, (int, float)):
+					crit_ratio = int(new_ratio)
+			if getattr(attacker, "volatiles", {}).get("focusenergy"):
+				crit_ratio += 2
+			if getattr(attacker, "volatiles", {}).get("laserfocus"):
+				crit_ratio = max(crit_ratio, 3)
+
+			chances = {0: 1 / 24, 1: 1 / 8, 2: 1 / 2}
+			crit = False
+			if move.raw and move.raw.get("willCrit"):
+				crit = True
+			else:
+				chance = chances.get(crit_ratio, 1.0)
+				crit = percent_check(chance, rng=rng)
+			if crit:
+				dmg = floor(dmg * 1.5)
+				result.debug.setdefault("critical", []).append(True)
+			else:
+				result.debug.setdefault("critical", []).append(False)
+			if spread:
+				dmg = int(dmg * 0.75)
+			if dmg < 1 and isinstance(power, (int, float)) and power > 0:
+				dmg = 1
+			result.debug.setdefault("damage", []).append(dmg)
 
 		# apply simple status effects like burns
 		if move.raw:
