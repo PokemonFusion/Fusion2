@@ -2,6 +2,8 @@ import random
 import types
 
 
+from unittest.mock import patch
+
 from pokemon.battle.actions import Action, ActionType
 from pokemon.battle.engine import Battle, BattleParticipant, BattleType
 from pokemon.battle.battleinstance import BattleSession
@@ -121,7 +123,7 @@ def _make_session(battle, *, end_expected):
         session.battle_id = 1
         session.turn_state = {}
         session._set_player_control = lambda value: None
-        session._notify_turn_banner = lambda: None
+        session._notify_turn_banner = lambda *a, **kw: None
         session._persisted = False
 
         def persist():
@@ -163,3 +165,29 @@ def test_battle_session_prompts_after_failed_flee():
         assert session.ended is False
         assert session.prompt_called is True
         assert session._persisted is True
+
+
+def test_run_move_invokes_flee_action():
+        """`Battle.run_move` should execute queued flee actions via `attempt_flee`."""
+
+        runner = SimplePokemon("Runner", speed=80)
+        opponent = SimplePokemon("Opponent", speed=50)
+        battle = _build_battle(runner, opponent)
+        run_action = Action(
+                battle.participants[0],
+                ActionType.RUN,
+                battle.participants[1],
+                pokemon=runner,
+        )
+        battle.participants[0].pending_action = run_action
+
+        def _fake_attempt(action):
+                assert action is run_action
+                battle.battle_over = True
+                return True
+
+        with patch.object(battle, "attempt_flee", side_effect=_fake_attempt) as attempt:
+                battle.run_move()
+
+        assert attempt.called
+        assert battle.battle_over is True

@@ -2062,15 +2062,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Execute ordered actions for this turn."""
         actions = self.select_actions()
         actions = self.order_actions(actions)
-
-        for action in actions:
-            if action.action_type is ActionType.MOVE:
-                self.use_move(action)
-            elif action.item:
-                # ``ActionType`` enums may be reloaded during tests,
-                # so rely on the presence of ``action.item`` rather
-                # than Enum identity to detect item usage.
-                self.execute_item(action)
+        self.execute_actions(actions)
 
     def run_faint(self) -> None:
         """Handle fainted Pokémon and mark participants as losing if needed."""
