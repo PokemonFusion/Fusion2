@@ -82,6 +82,7 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback imp
 
 
 from utils.pokemon_utils import build_battle_pokemon_from_model
+from utils.locks import clear_battle_lock, set_battle_lock
 
 from .compat import (
     BattleLogic,
@@ -152,18 +153,14 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if self.room is None:
             raise ValueError("BattleSession requires the player to have a location")
 
-        self.trainers: List[object] = self.teamA + self.teamB
+        self.trainers: List[object] = [t for t in self.teamA + self.teamB if t]
         self.observers: set[object] = set()
         self.turn_state: dict = {}
 
         self.battle_id = getattr(player, "id", 0)
-        if hasattr(player, "db"):
-            player.db.battle_id = self.battle_id
-        player.ndb.battle_instance = self
+        self._register_trainer(player)
         if opponent:
-            if hasattr(opponent, "db"):
-                opponent.db.battle_id = self.battle_id
-            opponent.ndb.battle_instance = self
+            self._register_trainer(opponent)
 
         battle_instances = getattr(self.room.ndb, "battle_instances", None)
         if not battle_instances:
@@ -240,6 +237,20 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         for trainer in self.trainers:
             if hasattr(trainer, "db"):
                 trainer.db.battle_control = value
+
+    def _register_trainer(self, trainer) -> None:
+        """Record battle state and locks for ``trainer``."""
+
+        if not trainer:
+            return
+
+        if hasattr(trainer, "db"):
+            trainer.db.battle_id = self.battle_id
+            set_battle_lock(trainer, self.battle_id)
+
+        ndb = getattr(trainer, "ndb", None)
+        if ndb is not None:
+            ndb.battle_instance = self
 
     @staticmethod
     def ensure_for_player(player) -> "BattleSession | None":
@@ -399,6 +410,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 team_a_objs.append(member)
                 if obj.captainA is None:
                     obj.captainA = member
+                obj._register_trainer(member)
         team_b_objs = []
         for tid in teamB:
             targets = search_object(f"#{tid}")
@@ -407,6 +419,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 team_b_objs.append(member)
                 if obj.captainB is None:
                     obj.captainB = member
+                obj._register_trainer(member)
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
 
@@ -460,12 +473,14 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if watcher not in team_a_objs:
                     team_a_objs.append(watcher)
                 obj.trainers.append(watcher)
+                obj._register_trainer(watcher)
             elif wid in teamB:
                 if obj.captainB is None:
                     obj.captainB = watcher
                 if watcher not in team_b_objs:
                     team_b_objs.append(watcher)
                 obj.trainers.append(watcher)
+                obj._register_trainer(watcher)
             else:
                 obj.observers.add(watcher)
         obj.ndb.watchers_live = set(obj.watchers)
@@ -473,6 +488,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             obj.trainers = team_a_objs + team_b_objs
         else:
             obj.trainers = []
+        for trainer in obj.trainers:
+            obj._register_trainer(trainer)
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
 
@@ -533,10 +550,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 ndb=SimpleNamespace(),
                 db=SimpleNamespace(),
             )
-            setattr(opponent_shell.db, "battle_id", self.battle_id)
-            opponent_shell.ndb.battle_instance = self
             self.captainB = opponent_shell
+            self._register_trainer(self.captainB)
             self.trainers = [t for t in (self.captainA, self.captainB) if t]
+            for trainer in self.trainers:
+                self._register_trainer(trainer)
         player_pokemon = self._prepare_player_party(self.captainA)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
         self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
@@ -860,10 +878,15 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 else:
                     delattr(self.room.db, "battles")
         for trainer in list(self.teamA) + list(self.teamB):
-            if getattr(getattr(trainer, "ndb", None), "battle_instance", None):
-                del trainer.ndb.battle_instance
-            if hasattr(trainer, "db") and hasattr(trainer.db, "battle_id"):
-                del trainer.db.battle_id
+            if not trainer:
+                continue
+            ndb = getattr(trainer, "ndb", None)
+            if ndb and getattr(ndb, "battle_instance", None) == self:
+                delattr(ndb, "battle_instance")
+            if hasattr(trainer, "db"):
+                clear_battle_lock(trainer)
+                if hasattr(trainer.db, "battle_id"):
+                    delattr(trainer.db, "battle_id")
         self.logic = None
         if self.state:
             self.notify("The battle has ended.")

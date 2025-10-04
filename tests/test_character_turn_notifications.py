@@ -131,3 +131,86 @@ def test_post_puppet_skips_notification_for_nonparticipants():
                 assert not messages
         finally:
                 restore_evennia(orig)
+
+
+def test_at_pre_move_blocks_when_battle_lock_present():
+        orig, char_mod = _make_character_module()
+        try:
+                char = char_mod.Character()
+                char.ndb = types.SimpleNamespace(battle_instance=None)
+                char.db = types.SimpleNamespace(pvp_locked=False, battle_lock="lock")
+
+                messages: list[str] = []
+                char.msg = lambda text: messages.append(text)
+
+                result = char.at_pre_move(object())
+
+                assert result is False
+                assert messages[-1] == "You cannot do that during battle."
+        finally:
+                restore_evennia(orig)
+
+
+def test_at_pre_move_blocks_when_battle_instance_present():
+        orig, char_mod = _make_character_module()
+        try:
+                char = char_mod.Character()
+                char.ndb = types.SimpleNamespace(battle_instance=object())
+                char.db = types.SimpleNamespace(pvp_locked=False)
+
+                messages: list[str] = []
+                char.msg = lambda text: messages.append(text)
+
+                result = char.at_pre_move(object())
+
+                assert result is False
+                assert messages[-1] == "You cannot do that during battle."
+        finally:
+                restore_evennia(orig)
+
+
+def test_at_pre_move_allows_after_battle_cleanup():
+        orig, char_mod = _make_character_module()
+        try:
+                from pokemon.battle.battleinstance import BattleSession
+
+                room = types.SimpleNamespace(
+                        id=7,
+                        db=types.SimpleNamespace(battles=[]),
+                        ndb=types.SimpleNamespace(battle_instances={}),
+                )
+                char = char_mod.Character()
+                char.id = 101
+                char.key = "Test"
+                char.ndb = types.SimpleNamespace(battle_instance=None)
+                char.db = types.SimpleNamespace(pvp_locked=False)
+                char.storage = types.SimpleNamespace(get_party=lambda: [])
+                char.location = room
+
+                messages: list[str] = []
+                char.msg = lambda text: messages.append(text)
+
+                session = BattleSession(char)
+                try:
+                        assert hasattr(char.db, "battle_lock")
+                        assert char.db.battle_lock == session.battle_id
+
+                        blocked = char.at_pre_move(object())
+                        assert blocked is False
+                        assert messages[-1] == "You cannot do that during battle."
+
+                        messages.clear()
+                        session.end()
+
+                        assert not hasattr(char.db, "battle_lock")
+                        assert getattr(char.ndb, "battle_instance", None) is None
+
+                        messages.clear()
+                        allowed = char.at_pre_move(object())
+                        assert allowed is True
+                        assert not messages
+                finally:
+                        if getattr(char.ndb, "battle_instance", None) is session:
+                                session.end()
+        finally:
+                restore_evennia(orig)
