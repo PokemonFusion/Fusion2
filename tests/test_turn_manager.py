@@ -34,6 +34,46 @@ def test_prompt_next_turn_uses_helpers(monkeypatch):
     assert calls["headline"] and calls["render"]
 
 
+def test_prompt_next_turn_calls_prompt_hook(monkeypatch):
+    """`prompt_next_turn` invokes the active Pokémon prompt hook when available."""
+
+    inst, _, _ = _setup_battle()
+    called = {"count": 0}
+
+    def record_prompt():
+        called["count"] += 1
+
+    monkeypatch.setattr(inst, "_prompt_active_pokemon", record_prompt)
+
+    inst.prompt_next_turn()
+
+    assert called["count"] == 1
+
+
+def test_prompt_active_pokemon_announces_names(monkeypatch):
+    """`_prompt_active_pokemon` tells trainers which Pokémon to command."""
+
+    inst, p1, p2 = _setup_battle()
+    deliveries: list[tuple] = []
+
+    def record_msg(target, text):
+        deliveries.append((target, text))
+
+    monkeypatch.setattr(inst, "_msg_to", record_msg)
+
+    pokemon_a = types.SimpleNamespace(name="Alpha")
+    pokemon_b = types.SimpleNamespace(name="Beta")
+    inst.data.turndata.positions = {
+        "A1": types.SimpleNamespace(pokemon=pokemon_a),
+        "B1": types.SimpleNamespace(pokemon=pokemon_b),
+    }
+
+    inst._prompt_active_pokemon()
+
+    assert any(target is p1 and "Choose an action for" in text for target, text in deliveries)
+    assert any(target is p2 and "Choose an action for" in text for target, text in deliveries)
+
+
 def test_run_turn_persists_state(monkeypatch):
     """`run_turn` uses state persistence helper when executing turns."""
 
@@ -180,3 +220,52 @@ def test_duplicate_queue_skips_waiting_broadcast(monkeypatch):
     assert all(kind != "msg" for kind, *_ in events)
     assert all(kind != "to" for kind, *_ in events)
     assert events == [("send", p1, "Squirtle")]
+
+
+def test_maybe_run_turn_auto_queues_ai(monkeypatch):
+    """AI opponents should select actions without waiting prompts."""
+
+    inst, p1, _ = _setup_battle()
+
+    positions = inst.data.turndata.positions
+    pos_a = positions.get("A1")
+    pos_b = positions.get("B1")
+    assert pos_a and pos_b
+
+    pokemon_a = types.SimpleNamespace(name="Alpha")
+    pokemon_b = types.SimpleNamespace(name="Beta")
+    pos_a.pokemon = pokemon_a
+    pos_b.pokemon = pokemon_b
+    inst.battle.participants[0].active = [pokemon_a]
+    inst.battle.participants[1].active = [pokemon_b]
+
+    pos_a.declareAttack("B1", "tackle")
+    inst.state.declare["A1"] = {"move": "tackle", "target": "B1"}
+    pos_b.removeDeclare()
+
+    def fake_ready():
+        return bool(pos_a.getAction() and pos_b.getAction())
+
+    monkeypatch.setattr(inst, "is_turn_ready", fake_ready)
+
+    messages: list[str] = []
+    monkeypatch.setattr(inst, "msg", lambda text: messages.append(text))
+
+    monkeypatch.setattr(inst, "run_turn", lambda: None)
+
+    auto_calls = {"result": None}
+
+    def fake_auto():
+        pos_b.declareAttack("A1", "tackle")
+        inst.state.declare["B1"] = {"move": "tackle", "target": "A1"}
+        auto_calls["result"] = True
+        return True
+
+    monkeypatch.setattr(inst, "_auto_queue_ai_actions", fake_auto)
+
+    inst.maybe_run_turn(actor=p1)
+
+    assert messages == []
+    assert auto_calls["result"] is True
+    assert pos_b.getAction() == "tackle"
+    assert inst.state.declare.get("B1", {}).get("move") == "tackle"
