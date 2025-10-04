@@ -106,6 +106,12 @@ class TurnManager:
 		self._set_player_control(True)
 		self._announce_turn_headline()
 		self._render_interfaces()
+		prompt_hook = getattr(self, "_prompt_active_pokemon", None)
+		if callable(prompt_hook):
+			try:
+				prompt_hook()
+			except Exception:
+				log_warn("Failed to prompt active Pokémon", exc_info=True)
 		self.msg("The battle awaits your move.")
 		if self.battle and getattr(self.battle, "turn_count", 0) == 1:
 			log_info(f"Prompted first turn for battle {self.battle_id}")

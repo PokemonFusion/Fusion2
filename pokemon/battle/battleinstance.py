@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 from types import SimpleNamespace
 
 from utils.safe_import import safe_import
 
+from .actions import ActionType
 from .battledata import BattleData, Pokemon, Team
 from .engine import Battle, BattleParticipant, BattleType
 from .messaging import MessagingMixin
@@ -86,6 +87,7 @@ from utils.locks import clear_battle_lock, set_battle_lock
 
 from .compat import (
     BattleLogic,
+    _battle_norm_key,
     create_battle_pokemon,
     generate_trainer_pokemon,
     generate_wild_pokemon,
@@ -101,6 +103,12 @@ from .handler import battle_handler
 from .persistence import StatePersistenceMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
 from .storage import BattleDataWrapper
+
+
+try:  # pragma: no cover - optional import path during tests
+    _select_ai_action = safe_import("pokemon.battle.engine")._select_ai_action  # type: ignore[attr-defined]
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback when engine unavailable
+    _select_ai_action = None  # type: ignore[assignment]
 
 
 class BattleInstance(_ScriptBase):
@@ -238,6 +246,148 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             if hasattr(trainer, "db"):
                 trainer.db.battle_control = value
 
+    # ------------------------------------------------------------
+    # Turn helpers
+    # ------------------------------------------------------------
+
+    def _position_for_pokemon(self, pokemon, positions: Dict[str, Any]) -> Tuple[str | None, Any | None]:
+        """Return the position name and data for ``pokemon`` if present."""
+
+        for name, pos in positions.items():
+            if getattr(pos, "pokemon", None) is pokemon:
+                return name, pos
+        return None, None
+
+    def _determine_target_position(self, action, positions: Dict[str, Any]) -> str:
+        """Best-effort resolution of the target position for ``action``."""
+
+        target_team = getattr(getattr(action, "target", None), "team", None)
+        if target_team:
+            active = list(getattr(getattr(action, "target", None), "active", []))
+            for name, pos in positions.items():
+                if not name.startswith(str(target_team)):
+                    continue
+                if getattr(pos, "pokemon", None) in active:
+                    return name
+            return f"{target_team}1"
+
+        actor_team = getattr(getattr(action, "actor", None), "team", None)
+        default_team = "A" if actor_team == "B" else "B"
+        for name in sorted(positions.keys()):
+            if name.startswith(default_team):
+                return name
+        return f"{default_team}1"
+
+    def _auto_queue_ai_actions(self) -> bool:
+        """Automatically queue actions for AI-controlled participants."""
+
+        if not self.battle or not self.data or not _select_ai_action:
+            return False
+
+        positions: Dict[str, Any] = getattr(getattr(self.data, "turndata", None), "positions", {}) or {}
+        if not positions:
+            return False
+
+        queued = False
+        for participant in getattr(self.battle, "participants", []):
+            if not getattr(participant, "is_ai", False):
+                continue
+            for pokemon in list(getattr(participant, "active", [])):
+                pos_name, pos = self._position_for_pokemon(pokemon, positions)
+                if not pos_name or not pos or pos.getAction():
+                    continue
+                try:
+                    action = _select_ai_action(participant, pokemon, self.battle)  # type: ignore[misc]
+                except Exception:
+                    action = None
+                if not action or getattr(action, "action_type", None) is not ActionType.MOVE:
+                    continue
+                move_obj = getattr(action, "move", None)
+                move_key = getattr(move_obj, "key", None) or getattr(move_obj, "name", None)
+                if not move_key:
+                    continue
+                target_pos = self._determine_target_position(action, positions)
+                norm_key = _battle_norm_key(str(move_key))
+                try:
+                    pos.declareAttack(target_pos, norm_key)
+                except Exception:
+                    continue
+                if self.state is not None:
+                    self.state.declare[pos_name] = {"move": norm_key, "target": target_pos}
+                participant.pending_action = action
+                queued = True
+
+        if queued and self.logic and getattr(self, "storage", None):
+            try:
+                compact = self._compact_state_for_persist(self.logic.state.to_dict())
+                self.storage.set("state", compact)
+            except Exception:
+                log_warn("Failed to persist AI action selection", exc_info=True)
+
+        return queued
+
+    def _trainer_for_position(self, pos_name: str, pokemon) -> Any | None:
+        """Return the trainer controlling ``pokemon`` at ``pos_name``."""
+
+        if not pokemon:
+            return None
+
+        state = self.state
+        if state:
+            poke_id = getattr(pokemon, "model_id", None)
+            if poke_id is not None:
+                owner_id = state.pokemon_control.get(str(poke_id))
+                if owner_id:
+                    for trainer in list(self.teamA) + list(self.teamB):
+                        if not trainer:
+                            continue
+                        tid = getattr(trainer, "id", None)
+                        if tid is not None and str(tid) == str(owner_id):
+                            return trainer
+
+        if pos_name.startswith("A"):
+            return self.captainA
+        if pos_name.startswith("B"):
+            return self.captainB
+        return None
+
+    @staticmethod
+    def _format_pokemon_names(names: List[str]) -> str:
+        """Return a human-friendly list for ``names``."""
+
+        if not names:
+            return ""
+        if len(names) == 1:
+            return names[0]
+        if len(names) == 2:
+            return f"{names[0]} and {names[1]}"
+        return f"{', '.join(names[:-1])}, and {names[-1]}"
+
+    def _prompt_active_pokemon(self) -> None:
+        """Notify trainers which Pokémon require commands this turn."""
+
+        if not self.data:
+            return
+        positions: Dict[str, Any] = getattr(getattr(self.data, "turndata", None), "positions", {}) or {}
+        if not positions:
+            return
+
+        prompts: Dict[Any, List[str]] = {}
+        for pos_name, pos in positions.items():
+            pokemon = getattr(pos, "pokemon", None)
+            if not pokemon:
+                continue
+            trainer = self._trainer_for_position(pos_name, pokemon)
+            if not trainer or getattr(trainer, "is_wild", False) or getattr(trainer, "is_npc", False):
+                continue
+            name = getattr(pokemon, "name", None) or getattr(pokemon, "species", None)
+            if not name:
+                continue
+            prompts.setdefault(trainer, []).append(str(name))
+
+        for trainer, names in prompts.items():
+            message = f"Choose an action for {self._format_pokemon_names(names)}."
+            self._msg_to(trainer, message)
     def _register_trainer(self, trainer) -> None:
         """Record battle state and locks for ``trainer``."""
 
@@ -538,7 +688,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             return
 
         origin = getattr(self.captainA, "location", None)
-        opponent_poke, opponent_name, battle_type = self._select_opponent()
+        opponent_poke, opponent_name, battle_type, intro_message = self._select_opponent()
         if battle_type == BattleType.WILD and not self.captainB:
             shell_name = f"Wild {getattr(opponent_poke, 'name', 'Pokémon')}"
             opponent_shell = SimpleNamespace(
@@ -558,7 +708,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         player_pokemon = self._prepare_player_party(self.captainA)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
         self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
-        self._setup_battle_room()
+        self._setup_battle_room(intro_message=intro_message)
 
     def start_pvp(self) -> None:
         """Start a battle between two players."""
@@ -669,8 +819,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     # ------------------------------------------------------------------
     # Helper methods extracted from ``start``
     # ------------------------------------------------------------------
-    def _select_opponent(self) -> tuple[Pokemon, str, BattleType]:
-        """Return the opponent Pokemon, its name and the battle type."""
+    def _select_opponent(self) -> tuple[Pokemon, str, BattleType, str | None]:
+        """Return the opponent details and introductory message."""
         opponent_kind = self.rng.choice(["pokemon", "trainer"])
         log_info(f"Selecting opponent: {opponent_kind}")
         if opponent_kind == "pokemon":
@@ -679,7 +829,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.WILD
             opponent_name = "Wild"
-            self.msg(f"A wild {opponent_poke.name} appears!")
+            intro_message = f"A wild {opponent_poke.name} appears!"
             log_info(f"Wild opponent {opponent_poke.name} generated")
         else:
             opponent_poke = generate_trainer_pokemon()
@@ -687,9 +837,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.TRAINER
             opponent_name = "Trainer"
-            self.msg(f"A trainer challenges you with {opponent_poke.name}!")
+            intro_message = f"A trainer challenges you with {opponent_poke.name}!"
             log_info(f"Trainer opponent {opponent_poke.name} generated")
-        return opponent_poke, opponent_name, battle_type
+        return opponent_poke, opponent_name, battle_type, intro_message
 
     def _prepare_player_party(self, trainer, full_heal: bool = False) -> List[Pokemon]:
         """Return a list of battle-ready Pokemon for a trainer.
@@ -741,7 +891,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         persist_initial_state(self, player_participant, player_pokemon)
         log_info(f"Saved battle data for id {self.battle_id}")
 
-    def _setup_battle_room(self) -> None:
+    def _setup_battle_room(self, intro_message: str | None = None) -> None:
         """Move players to the battle room and notify watchers."""
         log_info(f"Setting up battle room for {self.battle_id}")
         self.add_watcher(self.captainA)
@@ -753,6 +903,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
+
+        if intro_message:
+            self.msg(intro_message)
 
         self.prompt_next_turn()
         battle_handler.register(self)
@@ -927,29 +1080,41 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if self.is_turn_ready():
             log_info(f"Turn ready for battle {self.battle_id}")
             self.run_turn()
-        else:
-            log_info(f"Turn not ready for battle {self.battle_id}")
-            waiting_poke = None
-            if self.data:
-                for name, pos in self.data.turndata.positions.items():
-                    if not pos.getAction() and pos.pokemon:
-                        waiting_poke = pos.pokemon
-                        break
-            if waiting_poke:
-                waiting_name = getattr(waiting_poke, "name", str(waiting_poke))
-                try:
-                    if actor:
-                        send_interface_to(self, actor, waiting_on=waiting_name)
-                    else:
-                        broadcast_interfaces(self, waiting_on=waiting_name)
-                except Exception:
-                    log_warn("Failed to display waiting interface", exc_info=True)
-                if notify_waiting:
-                    message = f"Waiting on {waiting_name}..."
-                    if actor:
-                        self._msg_to(actor, message)
-                    else:
-                        self.msg(message)
+            return
+
+        if self._auto_queue_ai_actions() and self.is_turn_ready():
+            log_info(f"Turn ready for battle {self.battle_id} after AI selection")
+            self.run_turn()
+            return
+
+        log_info(f"Turn not ready for battle {self.battle_id}")
+        waiting_poke = None
+        if self.data:
+            for name, pos in self.data.turndata.positions.items():
+                if not pos.getAction() and pos.pokemon:
+                    waiting_poke = pos.pokemon
+                    break
+        waiting_participant = None
+        if waiting_poke and self.battle:
+            try:
+                waiting_participant = self.battle.participant_for(waiting_poke)
+            except Exception:
+                waiting_participant = None
+        if waiting_poke and not bool(getattr(waiting_participant, "is_ai", False)):
+            waiting_name = getattr(waiting_poke, "name", str(waiting_poke))
+            try:
+                if actor:
+                    send_interface_to(self, actor, waiting_on=waiting_name)
+                else:
+                    broadcast_interfaces(self, waiting_on=waiting_name)
+            except Exception:
+                log_warn("Failed to display waiting interface", exc_info=True)
+            if notify_waiting:
+                message = f"Waiting on {waiting_name}..."
+                if actor:
+                    self._msg_to(actor, message)
+                else:
+                    self.msg(message)
 
 
 __all__ = ["BattleSession", "BattleInstance", "create_battle_pokemon"]
