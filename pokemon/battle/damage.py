@@ -1,9 +1,11 @@
+import logging
 import random
 from dataclasses import dataclass, field
 from math import floor
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from ._shared import _normalize_key
+from utils.safe_import import safe_import
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -67,6 +69,87 @@ class DamageResult:
 
 
 MULTIHITCOUNT = {2: 3, 3: 3, 4: 1, 5: 1}
+
+
+logger = logging.getLogger("battle")
+
+
+def _notify_admins(message: str) -> None:
+        """Notify any connected administrators about an issue."""
+
+        try:
+                session_module = safe_import("evennia.server.sessionhandler")
+        except ModuleNotFoundError:  # pragma: no cover - Evennia not installed
+                return
+        handler = getattr(session_module, "SESSIONS", None) or getattr(session_module, "SESSION_HANDLER", None)
+        if handler is None:
+                return
+
+        sessions: List[Any] = []
+        for accessor in ("get_sessions", "sessions", "all_sessions"):
+                candidate = getattr(handler, accessor, None)
+                if callable(candidate):
+                        try:
+                                possible = candidate()
+                        except TypeError:
+                                try:
+                                        possible = candidate(handler)
+                                except Exception:
+                                        continue
+                elif isinstance(candidate, dict):
+                        possible = candidate.values()
+                elif isinstance(candidate, (list, tuple, set)):
+                        possible = candidate
+                else:
+                        continue
+                try:
+                        sessions = list(possible)
+                except TypeError:
+                        sessions = list(possible or [])
+                if sessions:
+                        break
+        if not sessions:
+                raw_sessions = getattr(handler, "sessions", None)
+                if isinstance(raw_sessions, dict):
+                        sessions = list(raw_sessions.values())
+                elif isinstance(raw_sessions, (list, tuple, set)):
+                        sessions = list(raw_sessions)
+
+        for session in sessions:
+                account = getattr(session, "account", None) or getattr(session, "player", None)
+                if account is None:
+                        continue
+                is_admin = bool(getattr(account, "is_superuser", False) or getattr(account, "is_staff", False))
+                check_perm = getattr(account, "check_permstring", None)
+                if callable(check_perm):
+                        try:
+                                if check_perm("Admins"):
+                                        is_admin = True
+                                elif check_perm("Wizards"):
+                                        is_admin = True
+                        except Exception:
+                                pass
+                if not is_admin:
+                        continue
+                messenger = getattr(session, "msg", None)
+                if callable(messenger):
+                        try:
+                                messenger(message)
+                        except Exception:
+                                continue
+
+
+def _report_dict_issue(reason: str, move_name: Optional[str], move_key: Optional[str]) -> None:
+        """Log dictionary lookup failures and alert administrators."""
+
+        details = reason
+        normalized_key = move_key or None
+        if move_name or normalized_key:
+                name_part = move_name or "unknown"
+                key_part = f" (key={normalized_key})" if normalized_key else ""
+                details = f"{reason} for move '{name_part}'{key_part}"
+        logger.warning(details)
+        _notify_admins(details)
 
 
 def percent_check(chance: float, rng: Optional[random.Random] = None) -> bool:
@@ -437,22 +520,53 @@ def damage_calc(
 					atk_stat = int(new_atk)
 
 		power = move.power or 0
+		move_name = getattr(move, "name", None)
+		move_key = getattr(move, "key", None) or _normalize_key(str(move_name or ""))
 		if power in (None, 0):
 			raw_data = getattr(move, "raw", None)
+			raw_issue = None
 			if isinstance(raw_data, dict):
 				base_power = raw_data.get("basePower")
 				if isinstance(base_power, (int, float)) and base_power > 0:
 					power = int(base_power)
-			if power in (None, 0):
-				key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
-				dex_entry = _MOVEDEX.get(key) if key else None
-				if dex_entry is not None:
+				else:
+					raw_issue = "Move raw data missing basePower"
+			else:
+				if raw_data is None:
+					raw_issue = "Move raw data unavailable"
+				else:
+					raw_issue = "Move raw data not a dict"
+			if raw_issue is not None:
+				_report_dict_issue(raw_issue, move_name, move_key)
+
+		if power in (None, 0):
+			if not move_key:
+				_report_dict_issue("Move key unavailable for MOVEDEX lookup", move_name, move_key)
+			elif not _MOVEDEX:
+				_report_dict_issue("MOVEDEX unavailable for power lookup", move_name, move_key)
+			else:
+				dex_entry = _MOVEDEX.get(move_key)
+				if dex_entry is None:
+					_report_dict_issue("MOVEDEX missing entry", move_name, move_key)
+				else:
 					base_power = None
 					raw_entry = getattr(dex_entry, "raw", None)
+					dex_issue = None
 					if isinstance(raw_entry, dict):
 						base_power = raw_entry.get("basePower")
-					if not isinstance(base_power, (int, float)):
+						if not isinstance(base_power, (int, float)) or base_power <= 0:
+							dex_issue = "Dex entry raw missing basePower"
+					else:
+						if raw_entry is None:
+							dex_issue = "Dex entry raw data unavailable"
+						else:
+							dex_issue = "Dex entry raw data not a dict"
+					if dex_issue is not None:
+						_report_dict_issue(dex_issue, move_name, move_key)
+					if not isinstance(base_power, (int, float)) or base_power <= 0:
 						base_power = getattr(dex_entry, "power", None)
+						if not isinstance(base_power, (int, float)) or base_power <= 0:
+							_report_dict_issue("Dex entry missing power attribute", move_name, move_key)
 					if isinstance(base_power, (int, float)) and base_power > 0:
 						power = int(base_power)
 		if isinstance(power, (int, float)) and power > 0:

@@ -1,5 +1,6 @@
 """Regression tests for damage calculation fallbacks."""
 
+import logging
 from types import SimpleNamespace
 
 from pokemon.battle.engine import BattleMove, _apply_move_damage
@@ -77,3 +78,31 @@ def test_apply_move_damage_loads_power_from_dex_when_missing():
         recorded_power = result.debug.get("power", [])
         assert recorded_power and recorded_power[0] == 90
         assert move.power == 90
+
+
+def test_missing_move_data_logs_and_notifies_admins(monkeypatch, caplog):
+        """Log and notify administrators when dictionaries fail to provide power."""
+
+        from pokemon.battle import damage
+
+        notifications: list[str] = []
+        monkeypatch.setattr(damage, "_notify_admins", lambda message: notifications.append(message))
+        monkeypatch.setattr(damage, "_MOVEDEX", {})
+
+        attacker = StubPokemon("Eevee")
+        target = StubPokemon("Charmander")
+        move = BattleMove(
+                name="Mystery Power",
+                power=0,
+                accuracy=100,
+                type="Normal",
+                raw={},
+        )
+
+        with caplog.at_level(logging.WARNING, logger="battle"):
+                _apply_move_damage(attacker, target, move, battle=StubBattle(attacker, target))
+
+        messages = [record.message for record in caplog.records]
+        assert any("Move raw data missing basePower" in msg for msg in messages)
+        assert any("MOVEDEX unavailable for power lookup" in msg for msg in messages)
+        assert len(notifications) >= 2
