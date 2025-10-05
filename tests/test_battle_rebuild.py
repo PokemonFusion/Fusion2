@@ -289,6 +289,63 @@ def test_trainer_ids_saved_and_restored():
 	assert storage_after.get("trainers") == {"teamA": [1], "teamB": [2]}
 
 
+def test_restore_recreates_wild_opponent_shell():
+	room = DummyRoom()
+	player = DummyPlayer(1, room)
+	session = BattleSession(player)
+
+	player_mon = bd_mod.Pokemon("Charmander", level=5, hp=20, max_hp=20)
+	wild_mon = bd_mod.Pokemon("Oddish", level=5, hp=18, max_hp=18)
+
+	BattleParticipant = eng_mod.BattleParticipant
+	BattleType = eng_mod.BattleType
+	battle = eng_mod.Battle(
+		BattleType.WILD,
+		[
+			BattleParticipant(player.key, [player_mon], player=player, team="A"),
+			BattleParticipant("Wild Oddish", [wild_mon], is_ai=True, team="B"),
+		],
+	)
+	battle.participants[0].active = [player_mon]
+	battle.participants[1].active = [wild_mon]
+
+	team_a = bd_mod.Team(trainer=player.key, pokemon_list=[player_mon])
+	team_b = bd_mod.Team(trainer="Wild Oddish", pokemon_list=[wild_mon])
+	data = bd_mod.BattleData(team_a, team_b)
+	state = st_mod.BattleState.from_battle_data(data, ai_type=BattleType.WILD.name)
+	state.encounter_kind = "wild"
+	state.watchers = set()
+
+	session.logic = bi_mod.BattleLogic(battle, data, state)
+	session.logic.battle.log_action = session.notify
+
+	session.storage.set("data", data.to_dict())
+	session.storage.set("state", state.to_dict())
+	session.storage.set("trainers", {"teamA": [player.id]})
+	session.storage.set("temp_pokemon_ids", [])
+
+	room.ndb.battle_instances = {}
+
+	orig_search = bi_mod.search_object
+	bi_mod.search_object = lambda dbref: [player] if str(dbref).lstrip("#") == "1" else []
+	try:
+		restored = BattleSession.restore(room, session.battle_id)
+	finally:
+		bi_mod.search_object = orig_search
+
+	assert restored is not None
+	assert restored.captainB is not None
+	assert getattr(restored.captainB, "is_wild", False)
+	assert restored.captainB.name == "Wild Oddish"
+	assert restored.captainB.active_pokemon is not None
+	assert restored.captainB.active_pokemon.name == "Oddish"
+	assert restored.captainB.team
+	assert restored.captainB.team[0].name == "Oddish"
+	assert restored.captainB in restored.trainers
+	assert getattr(restored.captainB.db, "battle_id", None) == restored.battle_id
+	assert restored.battle.participants[1].player is restored.captainB
+
+
 def test_pokemon_serialization_includes_fallback_fields():
 	poke = bd_mod.Pokemon(
 		"Bulbasaur",
