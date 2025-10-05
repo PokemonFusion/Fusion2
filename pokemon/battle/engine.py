@@ -116,7 +116,9 @@ if "pokemon.battle" not in sys.modules:
     sub.__path__ = [_BASE_PATH]
     sys.modules["pokemon.battle"] = sub
 
-from ._shared import _normalize_key
+from ._shared import _normalize_key, ensure_movedex_aliases
+
+ensure_movedex_aliases(MOVEDEX)
 
 
 def _get_move_class():

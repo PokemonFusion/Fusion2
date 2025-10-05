@@ -8,14 +8,15 @@ from evennia import Command
 from evennia.utils.evmenu import get_input
 
 try:  # pragma: no cover - EvMenu may not be available during tests
-	from utils.enhanced_evmenu import EnhancedEvMenu
+        from utils.enhanced_evmenu import EnhancedEvMenu
 except Exception:  # pragma: no cover
-	EnhancedEvMenu = None  # type: ignore
+        EnhancedEvMenu = None  # type: ignore
 
 from utils.battle_display import render_move_gui
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
+from pokemon.battle._shared import _normalize_key, ensure_movedex_aliases
 
 try:  # pragma: no cover - battle engine may not be available in tests
 	from pokemon.battle import Action, ActionType, BattleMove
@@ -87,7 +88,9 @@ class CmdBattleAttack(Command):
 				except Exception:
 					qs = list(slots_qs)
 
-		from pokemon.dex import MOVEDEX
+                from pokemon.dex import MOVEDEX
+
+                ensure_movedex_aliases(MOVEDEX)
 
 		# build simple slot list and PP overrides
 		letters = ["A", "B", "C", "D"]
@@ -99,10 +102,9 @@ class CmdBattleAttack(Command):
 				slots.append(move)
 				cur_pp = getattr(slot_obj, "current_pp", None)
 				if cur_pp is None:
-					move_key = move if isinstance(move, str) else getattr(move, "name", "")
-					# Normalize to MATCH engine _normalize_key (strip spaces/hyphens/apostrophes + lower)
-					norm = re.sub(r"[\s'\-]", "", (move_key or "")).lower()
-					dex = MOVEDEX.get(norm, None)
+                                        move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                                        norm = _normalize_key(move_key or "")
+                                        dex = MOVEDEX.get(norm, None)
 					max_pp = getattr(move, "pp", None) or (dex.pp if dex else None)
 					if max_pp is not None:
 						cur_pp = max_pp
@@ -113,9 +115,9 @@ class CmdBattleAttack(Command):
 				slots.append(move)
 				cur_pp = getattr(move, "current_pp", None)
 				if cur_pp is None:
-					move_key = move if isinstance(move, str) else getattr(move, "name", "")
-					norm = re.sub(r"[\s'\-]", "", (move_key or "")).lower()
-					dex = MOVEDEX.get(norm, None)
+                                        move_key = move if isinstance(move, str) else getattr(move, "name", "")
+                                        norm = _normalize_key(move_key or "")
+                                        dex = MOVEDEX.get(norm, None)
 					max_pp = getattr(move, "pp", None) or (dex.pp if dex else None)
 					if max_pp is not None:
 						cur_pp = max_pp
