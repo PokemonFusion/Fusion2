@@ -2,7 +2,7 @@ import logging
 import random
 from dataclasses import dataclass, field
 from math import floor
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from ._shared import _normalize_key
 from utils.safe_import import safe_import
@@ -150,6 +150,67 @@ def _report_dict_issue(reason: str, move_name: Optional[str], move_key: Optional
                 details = f"{reason} for move '{name_part}'{key_part}"
         logger.warning(details)
         _notify_admins(details)
+
+
+def _unique_candidates(values: Iterable[Optional[str]]) -> List[str]:
+        """Return an ordered list of unique, truthy candidate keys."""
+
+        seen: set[str] = set()
+        candidates: List[str] = []
+        for value in values:
+                if not value:
+                        continue
+                candidate = str(value)
+                if candidate not in seen:
+                        seen.add(candidate)
+                        candidates.append(candidate)
+        return candidates
+
+
+def _get_movedex_entry(move_name: Optional[str], move_key: Optional[str]):
+        """Locate a move entry in ``MOVEDEX`` regardless of key casing.
+
+        The packaged dex normalizes keys to lowercase, but legacy datasets and
+        ad-hoc dictionaries occasionally retain TitleCase identifiers.  To keep
+        damage calculation resilient we try a collection of normalized forms
+        before falling back to a case-insensitive scan of the mapping.
+        """
+
+        if not _MOVEDEX:
+                return None
+
+        raw_name = str(move_name or "")
+        stripped = raw_name.replace(" ", "")
+        normalized = _normalize_key(raw_name)
+        title_compact = stripped.title() if stripped else ""
+        capitalized = stripped.capitalize() if stripped else ""
+
+        for candidate in _unique_candidates(
+                (
+                        move_key,
+                        normalized,
+                        raw_name,
+                        stripped,
+                        stripped.lower(),
+                        raw_name.lower(),
+                        raw_name.title(),
+                        title_compact,
+                        capitalized,
+                )
+        ):
+                entry = _MOVEDEX.get(candidate)
+                if entry is not None:
+                        return entry
+
+        if not raw_name:
+                return None
+
+        lower_name = raw_name.lower()
+        for key, entry in _MOVEDEX.items():
+                key_str = str(key)
+                if key_str.lower() == lower_name or _normalize_key(key_str) == normalized:
+                        return entry
+        return None
 
 
 def percent_check(chance: float, rng: Optional[random.Random] = None) -> bool:
@@ -545,7 +606,7 @@ def damage_calc(
 			elif not _MOVEDEX:
 				_report_dict_issue("MOVEDEX unavailable for power lookup", move_name, move_key)
 			else:
-				dex_entry = _MOVEDEX.get(move_key)
+				dex_entry = _get_movedex_entry(move_name, move_key)
 				if dex_entry is None:
 					_report_dict_issue("MOVEDEX missing entry", move_name, move_key)
 				else:

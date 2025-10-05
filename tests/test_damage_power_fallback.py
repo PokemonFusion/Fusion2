@@ -3,7 +3,15 @@
 import logging
 from types import SimpleNamespace
 
+import pytest
+
 from pokemon.battle.engine import BattleMove, _apply_move_damage
+
+@pytest.fixture(autouse=True)
+def _silence_admin_notifications(monkeypatch):
+        from pokemon.battle import damage
+
+        monkeypatch.setattr(damage, "_notify_admins", lambda message: None)
 
 
 class StubPokemon:
@@ -106,3 +114,35 @@ def test_missing_move_data_logs_and_notifies_admins(monkeypatch, caplog):
         assert any("Move raw data missing basePower" in msg for msg in messages)
         assert any("MOVEDEX unavailable for power lookup" in msg for msg in messages)
         assert len(notifications) >= 2
+
+
+def test_movedex_lookup_accepts_titlecase_keys(monkeypatch):
+        """Fallback lookup finds moves stored with TitleCase dictionary keys."""
+
+        from pokemon.battle import damage
+
+        class FakeMoveEntry:
+                def __init__(self, power: int):
+                        self.power = power
+                        self.raw = {"basePower": power, "category": "Special"}
+
+        monkeypatch.setattr(
+                damage,
+                "_MOVEDEX",
+                {"Acid": FakeMoveEntry(40)},
+        )
+
+        attacker = StubPokemon("Bulbasaur", types=["Grass"])
+        target = StubPokemon("Oddish", types=["Grass"])
+        move = BattleMove(
+                name="Acid",
+                power=0,
+                accuracy=100,
+                type="Poison",
+                raw={"category": "Special"},
+        )
+
+        result = _apply_move_damage(attacker, target, move, battle=StubBattle(attacker, target))
+
+        assert result.debug.get("power", [None])[0] == 40
+        assert move.power == 40
