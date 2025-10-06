@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 
 _NORMALIZED_DEX_IDS: dict[int, dict[str, int]] = {}
@@ -46,6 +46,25 @@ def get_raw(entry: Any) -> dict[str, Any]:
         return dict(entry)
 
     return {}
+
+
+def get_pp(entry: Any) -> Optional[int]:
+    """Return the PP value associated with a dex entry if available."""
+
+    if entry is None:
+        return None
+
+    value = getattr(entry, "pp", None)
+    if value is None and isinstance(entry, Mapping):
+        value = entry.get("pp")
+    if value is None:
+        value = get_raw(entry).get("pp")
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def ensure_movedex_aliases(movedex: MutableMapping[str, Any]) -> None:

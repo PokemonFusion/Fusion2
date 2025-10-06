@@ -116,7 +116,7 @@ if "pokemon.battle" not in sys.modules:
     sub.__path__ = [_BASE_PATH]
     sys.modules["pokemon.battle"] = sub
 
-from ._shared import _normalize_key, ensure_movedex_aliases, get_raw
+from ._shared import _normalize_key, ensure_movedex_aliases, get_pp, get_raw
 
 ensure_movedex_aliases(MOVEDEX)
 
@@ -513,11 +513,18 @@ def _select_ai_action(
     move_data = moves[0] if moves else Move(name="Flail")
 
     mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
+    normalized_key = _normalize_key(mv_key)
     move_pp = getattr(move_data, "pp", None)
+    if move_pp is None:
+        move_pp = getattr(move_data, "current_pp", None)
+
+    dex_entry = MOVEDEX.get(normalized_key)
+    if move_pp is None and dex_entry is not None:
+        move_pp = get_pp(dex_entry)
 
     move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-    dex_key = _normalize_key(getattr(move, "key", mv_key))
-    dex_entry = MOVEDEX.get(dex_key)
+    if dex_entry is None:
+        dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
     priority = get_raw(dex_entry).get("priority", 0)
     move.priority = priority
 

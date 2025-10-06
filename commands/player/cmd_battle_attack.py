@@ -16,7 +16,12 @@ from utils.battle_display import render_move_gui
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
-from pokemon.battle._shared import _normalize_key, ensure_movedex_aliases, get_raw
+from pokemon.battle._shared import (
+    _normalize_key,
+    ensure_movedex_aliases,
+    get_pp,
+    get_raw,
+)
 from pokemon.dex import MOVEDEX
 
 ensure_movedex_aliases(MOVEDEX)
@@ -108,9 +113,7 @@ class CmdBattleAttack(Command):
                     dex = MOVEDEX.get(norm)
                     max_pp = getattr(move, "pp", None)
                     if max_pp is None and dex is not None:
-                        max_pp = getattr(dex, "pp", None)
-                        if max_pp is None:
-                            max_pp = get_raw(dex).get("pp")
+                        max_pp = get_pp(dex)
                     if max_pp is not None:
                         cur_pp = max_pp
                 if cur_pp is not None:
@@ -125,9 +128,7 @@ class CmdBattleAttack(Command):
                     dex = MOVEDEX.get(norm)
                     max_pp = getattr(move, "pp", None)
                     if max_pp is None and dex is not None:
-                        max_pp = getattr(dex, "pp", None)
-                        if max_pp is None:
-                            max_pp = get_raw(dex).get("pp")
+                        max_pp = get_pp(dex)
                     if max_pp is not None:
                         cur_pp = max_pp
                 if cur_pp is not None:
