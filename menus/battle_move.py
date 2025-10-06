@@ -216,6 +216,7 @@ def _queue_move(caller, inst, participant, move_obj, target, target_pos: str) ->
 		target,
 		move_obj,
 		getattr(move_obj, "priority", 0),
+		pokemon=participant.active[0] if getattr(participant, "active", None) else None,
 	)
 	participant.pending_action = action
 	if hasattr(inst, "queue_move"):
