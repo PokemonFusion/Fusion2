@@ -2,50 +2,80 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping
 
 
-_NORMALIZED_DEX_IDS: set[int] = set()
+_NORMALIZED_DEX_IDS: dict[int, dict[str, int]] = {}
 
 
 def _normalize_key(name: str) -> str:
-    """Return a normalized key for move lookups in ``MOVEDEX``.
+    """Return a normalized MOVEDEX key in TitleKey form.
 
-    The helper strips non-alphanumeric characters and lowercases the string so
-    that move names like ``'10,000,000 Volt Thunderbolt'`` become
-    ``'10000000voltthunderbolt'``.  Keeping this function lightweight avoids
-    circular imports between :mod:`engine` and :mod:`turnorder`.
+    Rules
+    -----
+    - Remove non-alphanumeric characters.
+    - Lowercase the remaining characters.
+    - Uppercase the *first alphabetical* character only, leaving the rest
+      lowercase.  This keeps inputs such as ``"Ancient Power"`` aligned with
+      Showdown's ``"Ancientpower"`` keys while retaining numeric prefixes like
+      ``"10,000,000 Volt Thunderbolt"`` -> ``"10000000Voltthunderbolt"``.
     """
-    if not name:
+
+    cleaned = re.sub(r"[^A-Za-z0-9]", "", str(name or ""))
+    if not cleaned:
         return ""
-    return re.sub(r"[^a-z0-9]", "", str(name).lower())
+
+    lowered = cleaned.lower()
+    for idx, ch in enumerate(lowered):
+        if ch.isalpha():
+            return lowered[:idx] + ch.upper() + lowered[idx + 1 :]
+    return lowered
+
+
+def get_raw(entry: Any) -> dict[str, Any]:
+    """Return a dictionary copy of a dex entry's raw data."""
+
+    if entry is None:
+        return {}
+
+    raw = getattr(entry, "raw", None)
+    if isinstance(raw, dict):
+        return dict(raw)
+
+    if isinstance(entry, Mapping):
+        return dict(entry)
+
+    return {}
 
 
 def ensure_movedex_aliases(movedex: MutableMapping[str, Any]) -> None:
-    """Add normalized-key aliases to ``MOVEDEX`` style mappings.
-
-    The Showdown data commonly stores moves using Title Case keys (``"Acid"``)
-    while the battle engine normalizes move identifiers (``"acid"``).  To keep
-    call sites lightweight, we add aliases the first time a module touches
-    ``MOVEDEX`` so lookups succeed regardless of capitalization or punctuation.
-    ``movedex`` may be any mutable mapping that exposes ``items`` and
-    ``__setitem__``; failures are silently ignored so tests with stub objects
-    continue to run.
-    """
-
-    mapping_id = id(movedex)
-    if mapping_id in _NORMALIZED_DEX_IDS:
-        return
+    """Add TitleKey aliases to ``MOVEDEX`` style mappings."""
 
     try:
         items: Iterable[tuple[str, Any]] = list(movedex.items())
     except Exception:
         return
 
+    mapping_id = id(movedex)
+    state = _NORMALIZED_DEX_IDS.setdefault(mapping_id, {})
+
     for key, entry in items:
-        alias_source = getattr(entry, "id", None) or getattr(entry, "name", None) or key
+        alias_source = (
+            getattr(entry, "id", None)
+            or getattr(entry, "name", None)
+            or (entry.get("id") if isinstance(entry, Mapping) else None)
+            or (entry.get("name") if isinstance(entry, Mapping) else None)
+            or key
+        )
         normalized = _normalize_key(alias_source)
-        if not normalized or normalized in movedex:
+        if not normalized or key == normalized:
+            continue
+        entry_id = id(entry)
+        stored_id = state.get(normalized)
+        existing = movedex.get(normalized)
+        if stored_id == entry_id and existing is entry:
+            continue
+        if stored_id == entry_id and existing is not entry:
             continue
         try:
             movedex[normalized] = entry
@@ -53,5 +83,4 @@ def ensure_movedex_aliases(movedex: MutableMapping[str, Any]) -> None:
             # If the mapping is immutable or otherwise rejects assignment we
             # stop early to avoid repeated failures.
             return
-
-    _NORMALIZED_DEX_IDS.add(mapping_id)
+        state[normalized] = entry_id

@@ -8,16 +8,24 @@ from typing import List, Optional
 from utils.safe_import import safe_import
 
 try:
-	MOVEDEX = safe_import("pokemon.dex").MOVEDEX  # type: ignore[attr-defined]
+        MOVEDEX = safe_import("pokemon.dex").MOVEDEX  # type: ignore[attr-defined]
 except ModuleNotFoundError:  # pragma: no cover - dex may be unavailable in tests
-	MOVEDEX = {}
+        MOVEDEX = {}
 
 try:
-	from ._shared import _normalize_key  # type: ignore[attr-defined]
+        from ._shared import _normalize_key, ensure_movedex_aliases, get_raw  # type: ignore[attr-defined]
 except Exception:  # pragma: no cover - fallback when helper unavailable
 
-	def _normalize_key(name: str) -> str:  # type: ignore[misc]
-		return str(name).replace(" ", "").replace("-", "").lower()
+        def _normalize_key(name: str) -> str:  # type: ignore[misc]
+                return str(name).replace(" ", "").replace("-", "").lower()
+
+        def ensure_movedex_aliases(movedex):  # type: ignore[misc]
+                return None
+
+        def get_raw(entry):  # type: ignore[misc]
+                return getattr(entry, "raw", {}) if entry else {}
+
+ensure_movedex_aliases(MOVEDEX)
 from .battledata import TurnInit
 
 
@@ -37,8 +45,10 @@ class _Priority:
 		elif turndata.recharge is not None:
 			self.priority = 6
 		elif turndata.attack:
+			ensure_movedex_aliases(MOVEDEX)
 			move_entry = MOVEDEX.get(_normalize_key(turndata.attack.move))
-			self.priority = getattr(move_entry, "raw", {}).get("priority", 0) if move_entry else 0
+			raw = get_raw(move_entry)
+			self.priority = raw.get("priority", 0) if raw else 0
 		else:
 			self.priority = 0
 

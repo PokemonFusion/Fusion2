@@ -16,7 +16,10 @@ from utils.battle_display import render_move_gui
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
-from pokemon.battle._shared import _normalize_key, ensure_movedex_aliases
+from pokemon.battle._shared import _normalize_key, ensure_movedex_aliases, get_raw
+from pokemon.dex import MOVEDEX
+
+ensure_movedex_aliases(MOVEDEX)
 
 try:  # pragma: no cover - battle engine may not be available in tests
     from pokemon.battle import Action, ActionType, BattleMove
@@ -54,6 +57,8 @@ class CmdBattleAttack(Command):
         if not getattr(self.caller.db, "battle_control", False):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
+        ensure_movedex_aliases(MOVEDEX)
+
         system = get_system()
         manager = getattr(system, "battle_manager", None)
         inst = manager.for_player(self.caller) if manager else None
@@ -88,10 +93,6 @@ class CmdBattleAttack(Command):
                 except Exception:
                     qs = list(slots_qs)
 
-        from pokemon.dex import MOVEDEX
-
-        ensure_movedex_aliases(MOVEDEX)
-
         # build simple slot list and PP overrides
         letters = ["A", "B", "C", "D"]
         slots: list = []
@@ -104,8 +105,12 @@ class CmdBattleAttack(Command):
                 if cur_pp is None:
                     move_key = move if isinstance(move, str) else getattr(move, "name", "")
                     norm = _normalize_key(move_key or "")
-                    dex = MOVEDEX.get(norm, None)
-                    max_pp = getattr(move, "pp", None) or (dex.pp if dex else None)
+                    dex = MOVEDEX.get(norm)
+                    max_pp = getattr(move, "pp", None)
+                    if max_pp is None and dex is not None:
+                        max_pp = getattr(dex, "pp", None)
+                        if max_pp is None:
+                            max_pp = get_raw(dex).get("pp")
                     if max_pp is not None:
                         cur_pp = max_pp
                 if cur_pp is not None:
@@ -117,8 +122,12 @@ class CmdBattleAttack(Command):
                 if cur_pp is None:
                     move_key = move if isinstance(move, str) else getattr(move, "name", "")
                     norm = _normalize_key(move_key or "")
-                    dex = MOVEDEX.get(norm, None)
-                    max_pp = getattr(move, "pp", None) or (dex.pp if dex else None)
+                    dex = MOVEDEX.get(norm)
+                    max_pp = getattr(move, "pp", None)
+                    if max_pp is None and dex is not None:
+                        max_pp = getattr(dex, "pp", None)
+                        if max_pp is None:
+                            max_pp = get_raw(dex).get("pp")
                     if max_pp is not None:
                         cur_pp = max_pp
                 if cur_pp is not None:
@@ -188,10 +197,9 @@ class CmdBattleAttack(Command):
             move_name_sel = selected_move if isinstance(selected_move, str) else getattr(selected_move, "name", "")
             move_pp = pp_overrides.get(sel_index) if sel_index is not None else None
             move_obj = BattleMove(move_name_sel, pp=move_pp)
-            # key on BattleMove is already normalized by engine.__post_init__;
-            # MOVEDEX expects normalized keys.
-            dex_entry = MOVEDEX.get(getattr(move_obj, "key", move_name_sel))
-            priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
+            move_key = getattr(move_obj, "key", None) or _normalize_key(move_name_sel)
+            dex_entry = MOVEDEX.get(move_key)
+            priority = get_raw(dex_entry).get("priority", 0)
             move_obj.priority = priority
             action = Action(
                 participant,
