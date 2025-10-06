@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Utilities for experience, EV handling and stat calculation."""
 
-from typing import Dict, Mapping
+from typing import Dict, Iterable, List, Mapping, Sequence
 
 
 def _invalidate_stat_cache(pokemon) -> None:
@@ -305,26 +305,198 @@ def distribute_experience(pokemon_list, amount: int, ev_gains: Dict[str, int] | 
 				pass
 
 
-def award_experience_to_party(player, amount: int, ev_gains: Dict[str, int] | None = None) -> None:
-	"""Award experience to a player's active party respecting EXP Share."""
+def _mon_identifier(mon) -> str | None:
+        """Return the best identifier for ``mon`` for participation mapping."""
 
-	storage = getattr(player, "storage", None)
-	if not storage or not hasattr(storage.active_pokemon, "all"):
-		return
+        for attr in ("unique_id", "model_id", "id"):
+                value = getattr(mon, attr, None)
+                if value is not None:
+                        return str(value)
+        return None
 
-	mons = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
-	if not mons:
-		return
 
-	if getattr(getattr(player, "db", {}), "exp_share", False):
-		distribute_experience(mons, amount, ev_gains)
-	else:
-		gained = apply_item_exp_mod(mons[0], amount)
-		add_experience(mons[0], gained)
-		if ev_gains:
-			add_evs(mons[0], apply_item_ev_mod(mons[0], ev_gains))
-		if hasattr(mons[0], "save"):
-			try:
-				mons[0].save()
-			except Exception:
-				pass
+def _is_fainted(mon) -> bool:
+        """Return ``True`` if ``mon`` is fainted based on available fields."""
+
+        for attr in ("current_hp", "hp"):
+                hp = getattr(mon, attr, None)
+                if hp is not None:
+                        return hp <= 0
+        return False
+
+
+def _format_reward_message(mon, exp_amount: int, ev_values: Mapping[str, int]) -> str | None:
+        """Return a human-readable reward summary for ``mon``."""
+
+        if not exp_amount and not any(ev_values.values()):
+                return None
+        name = (
+                getattr(mon, "nickname", None)
+                or getattr(mon, "name", None)
+                or getattr(mon, "species", None)
+                or "Pokemon"
+        )
+        parts: List[str] = []
+        if exp_amount:
+                parts.append(f"{exp_amount} EXP")
+        if any(ev_values.values()):
+                ev_parts = []
+                for stat, value in ev_values.items():
+                        if not value:
+                                continue
+                        label = DISPLAY_STAT_MAP.get(stat, stat.title())
+                        ev_parts.append(f"{label} +{value}")
+                if ev_parts:
+                        parts.append(f"EVs: {', '.join(ev_parts)}")
+        detail = " and ".join(parts)
+        return f"{name} gained {detail}!"
+
+
+def _notify_winner(player, caller, messages: Sequence[str]) -> None:
+        """Notify the winner about obtained experience and EVs."""
+
+        if not messages:
+                return
+        for msg in messages:
+                if not msg:
+                        continue
+                if caller and hasattr(caller, "log_action"):
+                        try:
+                                caller.log_action(msg)
+                        except Exception:
+                                pass
+                if hasattr(player, "msg"):
+                        try:
+                                player.msg(msg)
+                        except Exception:
+                                pass
+
+
+def _resolve_participants(
+        party: Sequence,
+        participants: Iterable | None,
+) -> List:
+        """Return the list of party Pokémon that actively participated."""
+
+        if not participants:
+                return []
+        party_by_id = {
+                ident: mon for mon in party if (ident := _mon_identifier(mon))
+        }
+        used: set = set()
+        resolved: List = []
+        for battle_mon in participants:
+                if _is_fainted(battle_mon):
+                        continue
+                identifier = _mon_identifier(battle_mon)
+                target = None
+                if identifier and identifier in party_by_id:
+                        target = party_by_id[identifier]
+                else:
+                        for candidate in party:
+                                if candidate in used:
+                                        continue
+                                if _is_fainted(candidate):
+                                        continue
+                                target = candidate
+                                break
+                if target is None:
+                        continue
+                if target in used:
+                        continue
+                used.add(target)
+                resolved.append(target)
+        return resolved
+
+
+def award_experience_to_party(
+        player,
+        amount: int,
+        ev_gains: Dict[str, int] | None = None,
+        *,
+        participants: Iterable | None = None,
+        caller=None,
+) -> None:
+        """Award experience/EVs to a player's party using EXP Share rules."""
+
+        storage = getattr(player, "storage", None)
+        if not storage or not hasattr(storage.active_pokemon, "all"):
+                return
+
+        mons = (
+                storage.get_party()
+                if hasattr(storage, "get_party")
+                else list(storage.active_pokemon.all())
+        )
+        if not mons:
+                return
+
+        ev_gains = ev_gains or {}
+        share_enabled = bool(getattr(getattr(player, "db", {}), "exp_share", False))
+
+        participant_mons = _resolve_participants(mons, participants)
+        # If participation could not be resolved fall back to the first healthy
+        # Pokémon so rewards are not lost.
+        if not participant_mons and amount and mons:
+                fallback = [mon for mon in mons if not _is_fainted(mon)]
+                if fallback:
+                        participant_mons = [fallback[0]]
+
+        participant_messages: List[str] = []
+        non_participant_messages: List[str] = []
+
+        if participant_mons:
+                share, remainder = divmod(amount, len(participant_mons))
+                for idx, mon in enumerate(participant_mons):
+                        gained = share + (1 if idx < remainder else 0)
+                        gained = apply_item_exp_mod(mon, gained)
+                        if gained:
+                                add_experience(mon, gained, caller=caller)
+                        if ev_gains:
+                                ev_payload = apply_item_ev_mod(mon, ev_gains)
+                                add_evs(mon, ev_payload)
+                        else:
+                                ev_payload = {}
+                        message = _format_reward_message(mon, gained, ev_payload)
+                        if message:
+                                participant_messages.append(message)
+                        if hasattr(mon, "save"):
+                                try:
+                                        mon.save()
+                                except Exception:
+                                        pass
+
+        recipients = set(participant_mons)
+        if share_enabled:
+                # Determine the base amount awarded to participants to derive
+                # the EXP Share payout for the rest of the party.
+                if participant_mons:
+                        base_amount = amount // len(participant_mons)
+                else:
+                        base_amount = amount // max(len(mons), 1)
+                shared_gain = base_amount // 2
+                extras = [
+                        mon
+                        for mon in mons
+                        if mon not in recipients and not _is_fainted(mon)
+                ]
+                for mon in extras:
+                        gained = apply_item_exp_mod(mon, shared_gain)
+                        if gained:
+                                add_experience(mon, gained, caller=caller)
+                        if ev_gains:
+                                ev_payload = apply_item_ev_mod(mon, ev_gains)
+                                add_evs(mon, ev_payload)
+                        else:
+                                ev_payload = {}
+                        if gained or any(ev_payload.values()):
+                                message = _format_reward_message(mon, gained, ev_payload)
+                                if message:
+                                        non_participant_messages.append(message)
+                        if hasattr(mon, "save"):
+                                try:
+                                        mon.save()
+                                except Exception:
+                                        pass
+
+        _notify_winner(player, caller, participant_messages + non_participant_messages)

@@ -55,14 +55,15 @@ BattleType = eng_mod.BattleType
 
 
 class DummyMon:
-	def __init__(self):
-		self.experience = 0
-		self.level = 1
-		self.growth_rate = "medium_fast"
-		self.evs = {}
+        def __init__(self, identifier):
+                self.experience = 0
+                self.level = 1
+                self.growth_rate = "medium_fast"
+                self.evs = {}
+                self.unique_id = identifier
 
-	def save(self):
-		pass
+        def save(self):
+                pass
 
 
 class DummyManager:
@@ -85,10 +86,11 @@ class DummyPlayer:
 
 
 def test_award_experience_on_faint():
-	player_mon = DummyMon()
+	player_mon = DummyMon("player-mon")
 	player = DummyPlayer([player_mon])
 
 	user = Pokemon("Bulbasaur", level=5, hp=50, max_hp=50)
+	user.model_id = "player-mon"
 	target = Pokemon("Pikachu", level=5, hp=0, max_hp=50)
 
 	p1 = BattleParticipant("Player", [user], player=player)

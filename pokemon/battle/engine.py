@@ -1012,6 +1012,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self._rewards_granted: bool = False
         self._result_logged: bool = False
 
+        # If any participant already has active Pokémon assigned (common in
+        # tests or restored battles) make sure they are marked as having
+        # participated so they receive rewards appropriately.
+        for part in self.participants:
+            for poke in getattr(part, "active", []) or []:
+                if hasattr(part, "record_participation"):
+                    part.record_participation(poke)
+
     def _format_default_message(
         self,
         key: str,
@@ -1307,6 +1315,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def on_enter_battle(self, pokemon) -> None:
         """Trigger events when ``pokemon`` enters the field."""
+        part = self.participant_for(pokemon)
+        if part and hasattr(part, "record_participation"):
+            part.record_participation(pokemon)
         self.register_handlers(pokemon)
         self.dispatcher.dispatch("pre_start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
@@ -2120,7 +2131,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             from fusion2.pokemon.models.stats import award_experience_to_party  # type: ignore
                         except Exception:
                             # Minimal test-only fallback that writes to `.experience`.
-                            def award_experience_to_party(player, amount: int, ev_gains=None, caller=None):  # type: ignore
+                            def award_experience_to_party(  # type: ignore
+                                player,
+                                amount: int,
+                                ev_gains=None,
+                                *,
+                                participants=None,
+                                caller=None,
+                            ):
                                 if not amount or amount <= 0 or not player:
                                     return
                                 party = None
@@ -2138,9 +2156,26 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                             party = None
                                 if not party:
                                     return
-                                count = len(party)
-                                share, remainder = divmod(int(amount), count)
-                                for i, mon in enumerate(party):
+                                resolved = party
+                                if participants:
+                                    resolved = []
+                                    for mon in participants:
+                                        identifier = getattr(mon, "model_id", None) or getattr(mon, "unique_id", None)
+                                        target = None
+                                        if identifier is not None:
+                                            for candidate in party:
+                                                if getattr(candidate, "unique_id", None) == identifier:
+                                                    target = candidate
+                                                    break
+                                        if not target and party:
+                                            target = party[0]
+                                        if target and target not in resolved:
+                                            resolved.append(target)
+                                    if not resolved:
+                                        resolved = party
+                                count = len(resolved)
+                                share, remainder = divmod(int(amount), max(count, 1))
+                                for i, mon in enumerate(resolved):
                                     gained = share + (1 if i < remainder else 0)
                                     setattr(mon, "experience", getattr(mon, "experience", 0) + gained)
 
@@ -2152,7 +2187,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         evs = info.get("evs", {})
                         if exp or evs:
                             try:
-                                award_experience_to_party(opponent.player, exp, evs, caller=self)
+                                award_experience_to_party(
+                                    opponent.player,
+                                    exp,
+                                    evs,
+                                    participants=getattr(opponent, "participating_pokemon", None),
+                                    caller=self,
+                                )
                             except TypeError:
                                 award_experience_to_party(opponent.player, exp, evs)
                         self.on_faint(poke)
