@@ -116,7 +116,9 @@ if "pokemon.battle" not in sys.modules:
     sub.__path__ = [_BASE_PATH]
     sys.modules["pokemon.battle"] = sub
 
-from ._shared import _normalize_key
+from ._shared import _normalize_key, ensure_movedex_aliases, get_pp, get_raw
+
+ensure_movedex_aliases(MOVEDEX)
 
 
 def _get_move_class():
@@ -470,7 +472,16 @@ def _apply_move_damage(
         except Exception:
             move.basePowerCallback = None
 
-    return apply_damage(user, target, move, battle=battle, spread=spread)
+    result = apply_damage(user, target, move, battle=battle, spread=spread)
+
+    try:
+        move_power = getattr(move, "power", None)
+        if isinstance(move_power, (int, float)):
+            battle_move.power = int(move_power)
+    except Exception:
+        pass
+
+    return result
 
 
 def _select_ai_action(
@@ -502,11 +513,19 @@ def _select_ai_action(
     move_data = moves[0] if moves else Move(name="Flail")
 
     mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
+    normalized_key = _normalize_key(mv_key)
     move_pp = getattr(move_data, "pp", None)
+    if move_pp is None:
+        move_pp = getattr(move_data, "current_pp", None)
+
+    dex_entry = MOVEDEX.get(normalized_key)
+    if move_pp is None and dex_entry is not None:
+        move_pp = get_pp(dex_entry)
 
     move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-    dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
-    priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
+    if dex_entry is None:
+        dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
+    priority = get_raw(dex_entry).get("priority", 0)
     move.priority = priority
 
     opponents = battle.opponents_of(participant)
@@ -1659,8 +1678,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         key = getattr(action.move, "key", None)
         if not key and getattr(action.move, "name", None):
             key = _normalize_key(action.move.name)
+        ensure_movedex_aliases(MOVEDEX)
         dex_move = MOVEDEX.get(key) if key else None
-        if not dex_move or not getattr(dex_move, "raw", None):
+        dex_raw = get_raw(dex_move) if dex_move else {}
+        if not dex_move or not dex_raw:
             try:
                 from pokemon import dex as _dex_mod
 
@@ -1673,15 +1694,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if MOVEDEX is not source:
                     MOVEDEX.clear()
                     MOVEDEX.update(source)
+                    ensure_movedex_aliases(MOVEDEX)
                 dex_move = MOVEDEX.get(key) if key else None
+                dex_raw = get_raw(dex_move) if dex_move else {}
             except Exception:
                 dex_move = None
+                dex_raw = {}
         if dex_move:
             # Merge raw dex data first so downstream code can read category/callbacks.
-            dex_raw = dict(getattr(dex_move, "raw", {}) or {})
+            merged_raw = dict(dex_raw)
             if action.move.raw:
-                dex_raw.update(action.move.raw)
-            action.move.raw = dex_raw
+                merged_raw.update(action.move.raw)
+            action.move.raw = merged_raw
 
             raw = action.move.raw
 
@@ -1714,7 +1738,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 "basePowerCallback",
             ):
                 if getattr(action.move, attr, None) is None:
-                    cb_name = dex_move.raw.get(attr)
+                    cb_name = raw.get(attr)
                     cb = _resolve_callback(cb_name, moves_funcs)
                     if callable(cb):
                         setattr(action.move, attr, cb)

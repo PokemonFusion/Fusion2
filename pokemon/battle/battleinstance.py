@@ -403,6 +403,88 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if ndb is not None:
             ndb.battle_instance = self
 
+    def _ensure_virtual_opponent(self) -> None:
+        """Create a lightweight wild opponent shell when no captain exists."""
+
+        if self.captainB or not self.logic:
+            return
+
+        battle = getattr(self.logic, "battle", None)
+        state = getattr(self.logic, "state", None)
+        data = getattr(self.logic, "data", None)
+
+        try:
+            battle_type = getattr(battle, "type", None)
+        except Exception:
+            battle_type = None
+
+        encounter = ""
+        if state is not None:
+            try:
+                encounter = (getattr(state, "encounter_kind", "") or "").lower()
+            except Exception:
+                encounter = ""
+
+        is_wild_battle = bool(
+            (isinstance(battle_type, BattleType) and battle_type == BattleType.WILD)
+            or encounter == "wild"
+        )
+
+        if not is_wild_battle:
+            return
+
+        try:
+            teams = getattr(data, "teams", {}) or {}
+            team_b = teams.get("B") if isinstance(teams, dict) else None
+            team_members = [p for p in team_b.returnlist() if p] if team_b else []
+        except Exception:
+            team_members = []
+
+        if not team_members:
+            return
+
+        active_mon = None
+        try:
+            participants = getattr(battle, "participants", [])
+            if len(participants) > 1:
+                active_list = getattr(participants[1], "active", []) or []
+                if active_list:
+                    active_mon = active_list[0]
+        except Exception:
+            active_mon = None
+
+        if active_mon is None:
+            active_mon = team_members[0]
+
+        species_raw = getattr(active_mon, "name", None) or getattr(active_mon, "species", None) or "Pokémon"
+        species_text = str(species_raw).strip() or "Pokémon"
+        if species_text.lower().startswith("wild "):
+            species_text = species_text[5:]
+        shell_name = f"Wild {species_text}".strip()
+
+        opponent_shell = SimpleNamespace(
+            name=shell_name,
+            key=shell_name,
+            team=team_members,
+            active_pokemon=active_mon,
+            is_wild=True,
+            ndb=SimpleNamespace(),
+            db=SimpleNamespace(),
+        )
+
+        self.captainB = opponent_shell
+        if getattr(self, "trainers", None) is None:
+            self.trainers = []
+        if opponent_shell not in self.trainers:
+            self.trainers.append(opponent_shell)
+        self._register_trainer(opponent_shell)
+
+        try:
+            if len(getattr(battle, "participants", [])) > 1:
+                battle.participants[1].player = opponent_shell
+        except Exception:
+            pass
+
     @staticmethod
     def ensure_for_player(player) -> "BattleSession | None":
         """Return the active battle instance for ``player`` if possible.
@@ -773,6 +855,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             obj.trainers = []
         for trainer in obj.trainers:
             obj._register_trainer(trainer)
+        obj._ensure_virtual_opponent()
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
 
