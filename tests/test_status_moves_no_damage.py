@@ -109,3 +109,17 @@ def test_status_move_applies_boost_without_damage(env, monkeypatch):
 	assert called["pokemon"] is user
 	dmg = battle._deal_damage(user, target, move)
 	assert dmg == 0
+
+
+def test_damage_calc_returns_zero_for_status_move(env, monkeypatch):
+	battle, user, target = setup_battle(env)
+	dmg_mod = env["damage"]
+	BattleMove = env["BattleMove"]
+	move = BattleMove("Growl", power=0, raw={"category": "Status"})
+	move.category = "Status"
+
+	monkeypatch.setattr(dmg_mod.random, "randint", lambda a, b: b)
+	monkeypatch.setattr(dmg_mod.random, "random", lambda: 0.0)
+
+	result = dmg_mod.damage_calc(user, target, move, battle=battle)
+	assert result.debug["damage"] == [0]

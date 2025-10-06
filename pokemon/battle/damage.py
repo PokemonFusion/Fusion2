@@ -394,8 +394,10 @@ def damage_calc(
 ) -> DamageResult:
     result = DamageResult()
     rng = rng or getattr(battle, "rng", random)
+
+    # Handle multihit distribution
     numhits = 1
-    multihit = move.raw.get("multihit") if move.raw else None
+    multihit = move.raw.get("multihit") if getattr(move, "raw", None) else None
     if isinstance(multihit, list):
         population, weights = zip(*MULTIHITCOUNT.items())
         numhits = rng.choices(population, weights)[0]
@@ -403,6 +405,7 @@ def damage_calc(
         numhits = multihit
 
     for _ in range(numhits):
+        # Pre-move dynamic power hook (Move instance API)
         if hasattr(move, "basePowerCallback") and callable(move.basePowerCallback):
             try:
                 new_power = move.basePowerCallback(attacker, target, move)
@@ -410,6 +413,7 @@ def damage_calc(
                     move.power = int(new_power)
             except Exception:
                 pass
+
         # ------------------------------------------------------------------
         # Accuracy modification hooks
         # ------------------------------------------------------------------
@@ -501,6 +505,9 @@ def damage_calc(
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
 
+        # ------------------------------------------------------------------
+        # Stat gathering + callbacks
+        # ------------------------------------------------------------------
         try:  # pragma: no cover - allows testing with minimal stubs
             from pokemon.battle.utils import get_modified_stat
         except Exception:
@@ -511,18 +518,14 @@ def damage_calc(
 
         atk_key = "attack" if move.category == "Physical" else "special_attack"
         def_key = "defense" if move.category == "Physical" else "special_defense"
-        # Retrieve both offensive stats so that ability callbacks which modify
-        # an unused stat (e.g. ``onModifySpA`` during a physical move) are still
-        # invoked.  This mirrors the behaviour of the comprehensive battle
-        # engine where such hooks may fire regardless of move category.
+
+        # Compute both ATK & SpA so ability hooks can touch either before selection
         atk_stat = get_modified_stat(attacker, "attack")
         spa_stat = get_modified_stat(attacker, "special_attack")
-        atk_stat = atk_stat if atk_key == "attack" else spa_stat
         def_stat = get_modified_stat(target, def_key)
 
         def _run_cb(holder, name, stat):
             """Safely invoke a stat-modifying callback."""
-
             if not holder or not hasattr(holder, "call"):
                 return stat
             try:
@@ -561,9 +564,10 @@ def damage_calc(
         atk_stat = _run_cb(opp_ability, "onAnyModifyAtk", atk_stat)
         atk_stat = _run_cb(opp_ability, "onAllyModifyAtk", atk_stat)
 
-        # Determine the stat actually used for damage after all modifications
+        # Select final attacking stat based on move category
         atk_stat = atk_stat if atk_key == "attack" else spa_stat
 
+        # Burn etc. (on physical)
         if atk_key == "attack":
             try:
                 from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
@@ -584,9 +588,14 @@ def damage_calc(
                 if isinstance(new_atk, (int, float)):
                     atk_stat = int(new_atk)
 
+        # ------------------------------------------------------------------
+        # Base power resolution (robust)
+        # ------------------------------------------------------------------
         power = move.power or 0
         move_name = getattr(move, "name", None)
         move_key = getattr(move, "key", None) or _normalize_key(str(move_name or ""))
+
+        # 1) Prefer move.raw["basePower"] if present
         if power in (None, 0):
             raw_data = getattr(move, "raw", None)
             raw_issue = None
@@ -604,6 +613,7 @@ def damage_calc(
             if raw_issue is not None:
                 _report_dict_issue(raw_issue, move_name, move_key)
 
+        # 2) Fallback: lookup in MOVEDEX (case-insensitive / normalized)
         if power in (None, 0):
             if not move_key:
                 _report_dict_issue("Move key unavailable for MOVEDEX lookup", move_name, move_key)
@@ -631,15 +641,16 @@ def damage_calc(
                     if not isinstance(base_power, (int, float)) or base_power <= 0:
                         base_power = getattr(dex_entry, "power", None)
                         if not isinstance(base_power, (int, float)) or base_power <= 0:
-                            _report_dict_issue(
-                                "Dex entry missing power attribute", move_name, move_key
-                            )
+                            _report_dict_issue("Dex entry missing power attribute", move_name, move_key)
                     if isinstance(base_power, (int, float)) and base_power > 0:
                         power = int(base_power)
+
         if isinstance(power, (int, float)) and power > 0:
             move.power = int(power)
         else:
             power = 0
+
+        # 3) Terrain/move callbacks that can still modify base power
         if battle is not None:
             field = getattr(battle, "field", None)
             if field:
@@ -656,7 +667,8 @@ def damage_calc(
                                 new_pow = cb(attacker, move)
                         if isinstance(new_pow, (int, float)):
                             power = int(new_pow)
-        if move.raw:
+
+        if getattr(move, "raw", None):
             cb = move.raw.get("basePowerCallback")
             if callable(cb):
                 try:
@@ -666,111 +678,141 @@ def damage_calc(
                 except Exception:
                     pass
 
-        # ``base_damage`` expects the attacker's level.     Older stubs used in
-        # tests only define ``num`` so we fall back to that when ``level`` is
-        # missing for backwards compatibility.
+        # ------------------------------------------------------------------
+        # Fast-path for non-damaging moves
+        # ------------------------------------------------------------------
+        damaging_move = (
+            getattr(move, "category", None) != "Status"
+            and isinstance(power, (int, float))
+            and power > 0
+        )
+
+        # ``base_damage`` expects level; older stubs may only have num
         level = getattr(attacker, "level", None)
         if level is None:
             level = getattr(attacker, "num", 1)
-        dmg, rand_mod = base_damage(
-            level,
-            power,
-            atk_stat,
-            def_stat,
-            return_roll=True,
-            rng=rng,
-        )
-        result.debug.setdefault("level", []).append(level)
-        result.debug.setdefault("power", []).append(power)
-        result.debug.setdefault("attack", []).append(atk_stat)
-        result.debug.setdefault("defense", []).append(def_stat)
-        result.debug.setdefault("rand", []).append(rand_mod)
-        if battle is not None:
-            field = getattr(battle, "field", None)
-            if field:
-                weather_handler = getattr(field, "weather_handler", None)
-                if weather_handler:
-                    cb = getattr(weather_handler, "onWeatherModifyDamage", None)
-                    if callable(cb):
-                        try:
-                            wmult = cb(move)
-                        except Exception:
-                            wmult = cb(move=move)
-                        if isinstance(wmult, (int, float)):
-                            dmg = floor(dmg * wmult)
-        stab = stab_multiplier(attacker, move)
-        dmg = floor(dmg * stab)
-        result.debug.setdefault("stab", []).append(stab)
-        eff = type_effectiveness(target, move)
-        result.debug.setdefault("type_effectiveness", []).append(eff)
-        temp_eff = eff
-        if temp_eff > 1:
-            while temp_eff > 1:
-                result.text.append(DEFAULT_TEXT["default"]["superEffective"])
-                temp_eff /= 2
-        elif 0 < temp_eff < 1:
-            while temp_eff < 1:
-                result.text.append(DEFAULT_TEXT["default"]["resisted"])
-                temp_eff *= 2
-        elif temp_eff == 0:
-            result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
-            continue
-        dmg = floor(dmg * eff)
 
-        # Critical hit calculation with simple ratio handling
-        crit_ratio = 0
-        if move.raw:
-            crit_ratio = int(move.raw.get("critRatio", 0))
-        ability = getattr(attacker, "ability", None)
-        if ability and hasattr(ability, "call"):
-            try:
-                new_ratio = ability.call(
-                    "onModifyCritRatio", crit_ratio, attacker=attacker, defender=target, move=move
-                )
-            except Exception:
-                new_ratio = ability.call("onModifyCritRatio", crit_ratio)
-            if isinstance(new_ratio, (int, float)):
-                crit_ratio = int(new_ratio)
-        item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
-        if item and hasattr(item, "call"):
-            try:
-                new_ratio = item.call(
-                    "onModifyCritRatio", crit_ratio, pokemon=attacker, target=target
-                )
-            except Exception:
-                new_ratio = item.call("onModifyCritRatio", crit_ratio)
-            if isinstance(new_ratio, (int, float)):
-                crit_ratio = int(new_ratio)
-        if getattr(attacker, "volatiles", {}).get("focusenergy"):
-            crit_ratio += 2
-        if getattr(attacker, "volatiles", {}).get("laserfocus"):
-            crit_ratio = max(crit_ratio, 3)
-
-        chances = {0: 1 / 24, 1: 1 / 8, 2: 1 / 2}
-        crit = False
-        if move.raw and move.raw.get("willCrit"):
-            crit = True
-        else:
-            chance = chances.get(crit_ratio, 1.0)
-            crit = percent_check(chance, rng=rng)
-        if crit:
-            dmg = floor(dmg * 1.5)
-            result.debug.setdefault("critical", []).append(True)
-        else:
+        if not damaging_move:
+            rand_mod = 1.0
+            result.debug.setdefault("level", []).append(level)
+            result.debug.setdefault("power", []).append(power)
+            result.debug.setdefault("attack", []).append(atk_stat)
+            result.debug.setdefault("defense", []).append(def_stat)
+            result.debug.setdefault("rand", []).append(rand_mod)
+            result.debug.setdefault("stab", []).append(1.0)
+            result.debug.setdefault("type_effectiveness", []).append(1.0)
             result.debug.setdefault("critical", []).append(False)
-        if spread:
-            dmg = int(dmg * 0.75)
-        if (
-            dmg < 1
-            and getattr(move, "category", None) != "Status"
-            and isinstance(power, (int, float))
-            and power > 0
-        ):
-            dmg = 1
-        result.debug.setdefault("damage", []).append(dmg)
+            result.debug.setdefault("damage", []).append(0)
+            dmg = 0
+        else:
+            # Base damage
+            dmg, rand_mod = base_damage(
+                level,
+                power,
+                atk_stat,
+                def_stat,
+                return_roll=True,
+                rng=rng,
+            )
+            result.debug.setdefault("level", []).append(level)
+            result.debug.setdefault("power", []).append(power)
+            result.debug.setdefault("attack", []).append(atk_stat)
+            result.debug.setdefault("defense", []).append(def_stat)
+            result.debug.setdefault("rand", []).append(rand_mod)
 
-        # apply simple status effects like burns
-        if move.raw:
+            # Weather
+            if battle is not None:
+                field = getattr(battle, "field", None)
+                if field:
+                    weather_handler = getattr(field, "weather_handler", None)
+                    if weather_handler:
+                        cb = getattr(weather_handler, "onWeatherModifyDamage", None)
+                        if callable(cb):
+                            try:
+                                wmult = cb(move)
+                            except Exception:
+                                wmult = cb(move=move)
+                            if isinstance(wmult, (int, float)):
+                                dmg = floor(dmg * wmult)
+
+            # STAB
+            stab = stab_multiplier(attacker, move)
+            dmg = floor(dmg * stab)
+            result.debug.setdefault("stab", []).append(stab)
+
+            # Type effectiveness (+ text)
+            eff = type_effectiveness(target, move)
+            result.debug.setdefault("type_effectiveness", []).append(eff)
+            temp_eff = eff
+            if temp_eff > 1:
+                while temp_eff > 1:
+                    result.text.append(DEFAULT_TEXT["default"]["superEffective"])
+                    temp_eff /= 2
+            elif 0 < temp_eff < 1:
+                while temp_eff < 1:
+                    result.text.append(DEFAULT_TEXT["default"]["resisted"])
+                    temp_eff *= 2
+            elif temp_eff == 0:
+                result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+                continue
+            dmg = floor(dmg * eff)
+
+            # Critical hit
+            crit_ratio = 0
+            if getattr(move, "raw", None):
+                crit_ratio = int(move.raw.get("critRatio", 0))
+            ability = getattr(attacker, "ability", None)
+            if ability and hasattr(ability, "call"):
+                try:
+                    new_ratio = ability.call(
+                        "onModifyCritRatio", crit_ratio, attacker=attacker, defender=target, move=move
+                    )
+                except Exception:
+                    new_ratio = ability.call("onModifyCritRatio", crit_ratio)
+                if isinstance(new_ratio, (int, float)):
+                    crit_ratio = int(new_ratio)
+            item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
+            if item and hasattr(item, "call"):
+                try:
+                    new_ratio = item.call(
+                        "onModifyCritRatio", crit_ratio, pokemon=attacker, target=target
+                    )
+                except Exception:
+                    new_ratio = item.call("onModifyCritRatio", crit_ratio)
+                if isinstance(new_ratio, (int, float)):
+                    crit_ratio = int(new_ratio)
+            if getattr(attacker, "volatiles", {}).get("focusenergy"):
+                crit_ratio += 2
+            if getattr(attacker, "volatiles", {}).get("laserfocus"):
+                crit_ratio = max(crit_ratio, 3)
+
+            chances = {0: 1 / 24, 1: 1 / 8, 2: 1 / 2}
+            crit = False
+            if getattr(move, "raw", None) and move.raw.get("willCrit"):
+                crit = True
+            else:
+                chance = chances.get(crit_ratio, 1.0)
+                crit = percent_check(chance, rng=rng)
+            if crit:
+                dmg = floor(dmg * 1.5)
+                result.debug.setdefault("critical", []).append(True)
+            else:
+                result.debug.setdefault("critical", []).append(False)
+
+            # Spread modifier
+            if spread:
+                dmg = int(dmg * 0.75)
+
+            # Minimum damage if it's a damaging move
+            if dmg < 1 and isinstance(power, (int, float)) and power > 0:
+                dmg = 1
+
+            result.debug.setdefault("damage", []).append(dmg)
+
+        # ------------------------------------------------------------------
+        # Simple secondary status application (e.g., burn)
+        # ------------------------------------------------------------------
+        if getattr(move, "raw", None):
             status = move.raw.get("status")
             chance = move.raw.get("statusChance", 100)
             secondary = move.raw.get("secondary")
@@ -800,10 +842,10 @@ def damage_calc(
                     applied = True
                 if applied and status == "brn":
                     result.text.append(f"{target.name} was burned!")
+
     if numhits > 1:
         result.text.append(f"{attacker.name} hit {numhits} times!")
     return result
-
 
 # ----------------------------------------------------------------------
 # Convenience wrappers for the battle engine

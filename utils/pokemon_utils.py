@@ -136,9 +136,29 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
 
     moves = [Move(name=m) for m in move_names[:4]]
 
-    current_hp = stats.get("hp", level)
-    if not full_heal:
-        current_hp = getattr(model, "current_hp", current_hp)
+    if full_heal:
+        current_hp = stats.get("hp", level)
+    else:
+        stored_hp = getattr(model, "current_hp", None)
+        if stored_hp is None:
+            stored_hp = getattr(model, "hp", None)
+        current_hp = stored_hp if stored_hp is not None else stats.get("hp", level)
+    try:
+        current_hp = int(current_hp)
+    except (TypeError, ValueError):
+        current_hp = stats.get("hp", level)
+
+    max_hp = stats.get("hp")
+    if max_hp is None:
+        max_hp = getattr(model, "max_hp", None)
+    if max_hp is None:
+        max_hp = getattr(model, "current_hp", None)
+    if max_hp is None:
+        max_hp = getattr(model, "hp", level)
+    try:
+        max_hp = int(max_hp)
+    except (TypeError, ValueError):
+        max_hp = stats.get("hp", getattr(model, "current_hp", level))
 
     ivs = getattr(model, "ivs", [0, 0, 0, 0, 0, 0])
     evs = getattr(model, "evs", [0, 0, 0, 0, 0, 0])
@@ -150,8 +170,8 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     battle_poke = Pokemon(
         name=name,
         level=level,
-        hp=current_hp,
-        max_hp=stats.get("hp", getattr(model, "current_hp", level)),
+        hp=max(0, current_hp),
+        max_hp=max_hp if max_hp is not None else current_hp,
         moves=moves,
         ability=getattr(model, "ability", None),
         ivs=ivs,

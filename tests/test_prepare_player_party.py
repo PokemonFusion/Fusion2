@@ -126,3 +126,29 @@ def test_prepare_party_uses_moveset_when_no_slots():
 	party = bi.BattleSession._prepare_player_party(session, trainer)
 	assert [m.name for m in party[0].moves] == ["tackle", "growl"]
 	assert hasattr(party[0], "activemoveslot_set")
+
+
+def test_prepare_party_preserves_model_hp_when_current_missing():
+	"""Pokémon without ``current_hp`` should retain their battle HP value."""
+
+	bi = load_module()
+	bi._calc_stats_from_model = lambda poke: {"hp": 80}
+
+	class FakePoke:
+		def __init__(self):
+			self.name = "Eevee"
+			self.level = 12
+			self.hp = 23
+			self.ivs = [0, 0, 0, 0, 0, 0]
+			self.evs = [0, 0, 0, 0, 0, 0]
+			self.nature = "Docile"
+
+	class FakeStorage:
+		def get_party(self):
+			return [FakePoke()]
+
+	trainer = types.SimpleNamespace(key="Serena", storage=FakeStorage())
+	session = object.__new__(bi.BattleSession)
+
+	party = bi.BattleSession._prepare_player_party(session, trainer)
+	assert party[0].hp == 23
