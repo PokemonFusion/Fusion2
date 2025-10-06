@@ -208,6 +208,7 @@ class CmdBattleAttack(Command):
                 target,
                 move_obj,
                 priority,
+                pokemon=active,
             )
             participant.pending_action = action
             self.caller.msg(f"You prepare to use {move_obj.name}.")

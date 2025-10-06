@@ -530,17 +530,21 @@ class TurnProcessor:
 		return int(getattr(pokemon, "temp_speed", 0) or 0)
 
 	def _ability_key(self, ability) -> str:
-		"""Return the normalized key for ``ability``."""
+		"""Return a lowercase normalized key for ``ability``."""
 
 		if not ability:
 			return ""
 		if isinstance(ability, str):
-			return _normalize_key(ability)
-		for attr in ("name", "key", "id"):
-			value = getattr(ability, attr, None)
-			if value:
-				return _normalize_key(value)
-		return _normalize_key(str(ability))
+			normalized = _normalize_key(ability)
+		else:
+			for attr in ("name", "key", "id"):
+				value = getattr(ability, attr, None)
+				if value:
+					normalized = _normalize_key(value)
+					break
+			else:
+				normalized = _normalize_key(str(ability))
+		return normalized.lower()
 
 	def attempt_flee(self, action: Action) -> bool:
 		"""Execute a flee attempt and return ``True`` on success."""
@@ -675,14 +679,12 @@ class TurnProcessor:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
 				if self.status_prevents_move(actor_poke):
 					continue
-				target_poke = None
-				if action.target and action.target.active:
-					target_poke = action.target.active[0]
-				action.move.execute(actor_poke, target_poke, self)
-				try:
-					actor_poke.tempvals["moved"] = True
-				except Exception:
-					pass
+				self.use_move(action)
+				if actor_poke is not None:
+					try:
+						actor_poke.tempvals["moved"] = True
+					except Exception:
+						pass
 			elif action_type is ActionType.ITEM and action.item:
 				self.execute_item(action)
 			elif action.item:
