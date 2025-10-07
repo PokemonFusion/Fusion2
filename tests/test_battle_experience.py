@@ -1,4 +1,5 @@
 import importlib.util
+import math
 import os
 import sys
 import types
@@ -137,7 +138,31 @@ def test_reward_message_logged_after_faint_once():
         faint_message = "Oddish fainted!"
         assert faint_message in logs
 
-        reward_msgs = [msg for msg in logs if "gained" in msg]
-        assert len(reward_msgs) == 1
-        assert logs.index(reward_msgs[0]) > logs.index(faint_message)
-        assert player.messages == []
+	gain = GAIN_INFO["Pikachu"]
+	expected = math.floor(gain["exp"] * target.level / 7)
+	assert player_mon.experience == expected
+	assert player_mon.evs.get("speed") == gain["evs"]["spe"]
+
+
+def test_trainer_experience_multiplier():
+	player_mon = DummyMon()
+	player = DummyPlayer([player_mon])
+
+	user = Pokemon("Bulbasaur", level=5, hp=50, max_hp=50)
+	target = Pokemon("Pikachu", level=5, hp=0, max_hp=50)
+
+	p1 = BattleParticipant("Player", [user], player=player)
+	p2 = BattleParticipant("Trainer", [target], is_ai=True)
+	p1.active = [user]
+	p2.active = [target]
+
+	battle = Battle(BattleType.TRAINER, [p1, p2])
+	battle.run_faint()
+
+	gain = GAIN_INFO["Pikachu"]
+	expected = math.floor(1.5 * gain["exp"] * target.level / 7)
+	assert player_mon.experience == expected
+  reward_msgs = [msg for msg in logs if "gained" in msg]
+  assert len(reward_msgs) == 1
+  assert logs.index(reward_msgs[0]) > logs.index(faint_message)
+  assert player.messages == []
