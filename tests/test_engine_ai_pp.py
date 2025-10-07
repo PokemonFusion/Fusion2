@@ -21,9 +21,13 @@ def test_select_ai_action_assigns_pp_from_movedex(source_attr):
 
     try:
         if source_attr == "pp":
-            fake_entry = types.SimpleNamespace(pp=25, raw={"priority": 1})
+            fake_entry = types.SimpleNamespace(
+                pp=25, raw={"priority": 1, "name": move_name}
+            )
         else:
-            fake_entry = types.SimpleNamespace(raw={"priority": 1, "pp": 15})
+            fake_entry = types.SimpleNamespace(
+                raw={"priority": 1, "pp": 15, "name": move_name}
+            )
         engine.MOVEDEX[key] = fake_entry
 
         participant = types.SimpleNamespace(name="AI Trainer")
@@ -47,6 +51,8 @@ def test_select_ai_action_assigns_pp_from_movedex(source_attr):
         assert expected_pp is not None
         assert action.move.pp == expected_pp
         assert action.move.priority == 1
+        assert action.move.name == move_name
+        assert action.move.key == key
     finally:
         if original_entry is None:
             engine.MOVEDEX.pop(key, None)

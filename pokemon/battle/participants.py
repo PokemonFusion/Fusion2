@@ -50,6 +50,12 @@ class BattleParticipant:
 		self.is_ai = is_ai
 		self.has_lost = False
 		self.pending_action: Optional[Action] = None
+		# Track every Pokémon that enters the field for reward
+		# distribution at the end of the battle. Lists preserve the
+		# order Pokémon participated in while the set helps avoid
+		# duplicates when a Pokémon switches in multiple times.
+		self.participating_pokemon: List = []
+		self._participant_cache: set[str] = set()
 
 		battle_side_cls = getattr(safe_import("pokemon.battle.engine"), "BattleSide")
 		self.side = battle_side_cls()
@@ -62,6 +68,30 @@ class BattleParticipant:
 		for poke in self.pokemons:
 			if poke is not None:
 				setattr(poke, "side", self.side)
+
+	def record_participation(self, pokemon) -> None:
+		"""Record that ``pokemon`` has actively participated.
+
+		The engine calls this whenever a Pokémon enters the field.
+		Participation is tracked using the ``model_id``/``unique_id``
+		attributes when available to ensure the correct storage
+		Pokémon receives post-battle rewards.
+		"""
+
+		if pokemon is None:
+			return
+		identifier = None
+		for attr in ("model_id", "unique_id", "id"):
+			value = getattr(pokemon, attr, None)
+			if value is not None:
+				identifier = str(value)
+				break
+		if identifier is None:
+			identifier = str(id(pokemon))
+		if identifier in self._participant_cache:
+			return
+		self._participant_cache.add(identifier)
+		self.participating_pokemon.append(pokemon)
 
 	def choose_action(self, battle: "Battle") -> Optional[Action]:
 		"""Return an :class:`Action` object for this turn."""

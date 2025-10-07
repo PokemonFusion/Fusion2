@@ -197,10 +197,14 @@ class CmdBattleAttack(Command):
 
             move_name_sel = selected_move if isinstance(selected_move, str) else getattr(selected_move, "name", "")
             move_pp = pp_overrides.get(sel_index) if sel_index is not None else None
-            move_obj = BattleMove(move_name_sel, pp=move_pp)
-            move_key = getattr(move_obj, "key", None) or _normalize_key(move_name_sel)
+            move_key = getattr(selected_move, "key", None) or _normalize_key(move_name_sel)
             dex_entry = MOVEDEX.get(move_key)
-            priority = get_raw(dex_entry).get("priority", 0)
+            dex_data = get_raw(dex_entry)
+            display_name = dex_data.get("name") or move_name_sel
+            move_obj = BattleMove(display_name, key=move_key, pp=move_pp)
+            if dex_data:
+                move_obj.raw = dex_data
+            priority = dex_data.get("priority", 0)
             move_obj.priority = priority
             action = Action(
                 participant,

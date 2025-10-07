@@ -56,49 +56,87 @@ BattleType = eng_mod.BattleType
 
 
 class DummyMon:
-	def __init__(self):
-		self.experience = 0
-		self.level = 1
-		self.growth_rate = "medium_fast"
-		self.evs = {}
+        def __init__(self, identifier):
+                self.experience = 0
+                self.level = 1
+                self.growth_rate = "medium_fast"
+                self.evs = {}
+                self.unique_id = identifier
 
-	def save(self):
-		pass
+        def save(self):
+                pass
 
 
 class DummyManager:
-	def __init__(self, mons):
-		self._mons = mons
+        def __init__(self, mons):
+                self._mons = mons
 
-	def all(self):
-		return list(self._mons)
+        def all(self):
+                return list(self._mons)
 
 
 class DummyStorage:
-	def __init__(self, mons):
-		self.active_pokemon = DummyManager(mons)
+        def __init__(self, mons):
+                self.active_pokemon = DummyManager(mons)
 
 
 class DummyPlayer:
-	def __init__(self, mons):
-		self.db = types.SimpleNamespace(exp_share=False)
-		self.storage = DummyStorage(mons)
+        def __init__(self, mons):
+                self.db = types.SimpleNamespace(exp_share=False)
+                self.storage = DummyStorage(mons)
+                self.messages: list[str] = []
+
+        def msg(self, text):
+                self.messages.append(text)
 
 
 def test_award_experience_on_faint():
-	player_mon = DummyMon()
-	player = DummyPlayer([player_mon])
+        player_mon = DummyMon("player-mon")
+        player = DummyPlayer([player_mon])
 
-	user = Pokemon("Bulbasaur", level=5, hp=50, max_hp=50)
-	target = Pokemon("Pikachu", level=5, hp=0, max_hp=50)
+        user = Pokemon("Bulbasaur", level=5, hp=50, max_hp=50)
+        user.model_id = "player-mon"
+        target = Pokemon("Pikachu", level=5, hp=0, max_hp=50)
 
-	p1 = BattleParticipant("Player", [user], player=player)
-	p2 = BattleParticipant("Wild", [target], is_ai=True)
-	p1.active = [user]
-	p2.active = [target]
+        p1 = BattleParticipant("Player", [user], player=player)
+        p2 = BattleParticipant("Wild", [target], is_ai=True)
+        p1.active = [user]
+        p2.active = [target]
 
-	battle = Battle(BattleType.WILD, [p1, p2])
-	battle.run_faint()
+        battle = Battle(BattleType.WILD, [p1, p2])
+        battle.run_faint()
+
+        gain = GAIN_INFO["Pikachu"]
+        assert player_mon.experience == gain["exp"]
+        assert player_mon.evs.get("speed") == gain["evs"]["spe"]
+
+
+def test_reward_message_logged_after_faint_once():
+        player_mon = DummyMon("player-mon")
+        player_mon.nickname = "Charmander"
+        player = DummyPlayer([player_mon])
+
+        user = Pokemon("Charmander", level=5, hp=40, max_hp=40)
+        user.model_id = "player-mon"
+        target = Pokemon("Oddish", level=5, hp=0, max_hp=40)
+
+        p1 = BattleParticipant("Player", [user], player=player)
+        p2 = BattleParticipant("Wild", [target], is_ai=True)
+        p1.active = [user]
+        p2.active = [target]
+
+        battle = Battle(BattleType.WILD, [p1, p2])
+
+        logs: list[str] = []
+
+        def capture(message: str) -> None:
+                logs.append(message)
+
+        battle.log_action = capture  # type: ignore[assignment]
+        battle.run_faint()
+
+        faint_message = "Oddish fainted!"
+        assert faint_message in logs
 
 	gain = GAIN_INFO["Pikachu"]
 	expected = math.floor(gain["exp"] * target.level / 7)
@@ -124,3 +162,7 @@ def test_trainer_experience_multiplier():
 	gain = GAIN_INFO["Pikachu"]
 	expected = math.floor(1.5 * gain["exp"] * target.level / 7)
 	assert player_mon.experience == expected
+  reward_msgs = [msg for msg in logs if "gained" in msg]
+  assert len(reward_msgs) == 1
+  assert logs.index(reward_msgs[0]) > logs.index(faint_message)
+  assert player.messages == []
