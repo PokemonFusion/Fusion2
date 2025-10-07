@@ -357,19 +357,26 @@ def _notify_winner(player, caller, messages: Sequence[str]) -> None:
 
         if not messages:
                 return
+        def _emit(recipient, attr: str, message: str) -> None:
+                if not recipient or not hasattr(recipient, attr):
+                        return
+                try:
+                        getattr(recipient, attr)(message)
+                except Exception:
+                        pass
+
+        target = caller if caller and hasattr(caller, "log_action") else None
+        fallback = None if target else player
+
         for msg in messages:
                 if not msg:
                         continue
-                if caller and hasattr(caller, "log_action"):
-                        try:
-                                caller.log_action(msg)
-                        except Exception:
-                                pass
-                if hasattr(player, "msg"):
-                        try:
-                                player.msg(msg)
-                        except Exception:
-                                pass
+                if target:
+                        _emit(target, "log_action", msg)
+                elif fallback:
+                        _emit(fallback, "msg", msg)
+                else:
+                        print(msg)
 
 
 def _resolve_participants(

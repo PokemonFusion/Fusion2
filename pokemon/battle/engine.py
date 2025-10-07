@@ -522,10 +522,16 @@ def _select_ai_action(
     if move_pp is None and dex_entry is not None:
         move_pp = get_pp(dex_entry)
 
-    move = BattleMove(getattr(move_data, "name", mv_key), pp=move_pp)
-    if dex_entry is None:
-        dex_entry = MOVEDEX.get(_normalize_key(getattr(move, "key", mv_key)))
-    priority = get_raw(dex_entry).get("priority", 0)
+    dex_data = get_raw(dex_entry)
+    display_name = (
+        dex_data.get("name")
+        or getattr(move_data, "name", None)
+        or mv_key
+    )
+    move = BattleMove(display_name, key=normalized_key, pp=move_pp)
+    if dex_data:
+        move.raw = dex_data
+    priority = dex_data.get("priority", 0)
     move.priority = priority
 
     opponents = battle.opponents_of(participant)
@@ -2180,6 +2186,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                     setattr(mon, "experience", getattr(mon, "experience", 0) + gained)
 
                     for poke in fainted:
+                        self.on_faint(poke)
                         info = GAIN_INFO.get(
                             getattr(poke, "name", getattr(poke, "species", "")), {}
                         )
@@ -2196,7 +2203,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 )
                             except TypeError:
                                 award_experience_to_party(opponent.player, exp, evs)
-                        self.on_faint(poke)
                 else:
                     for poke in fainted:
                         self.on_faint(poke)
