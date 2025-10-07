@@ -1,7 +1,5 @@
 """EVMenu nodes powering the in-game item store."""
 
-"""EVMenu nodes powering the in-game item store."""
-
 from __future__ import annotations
 
 from typing import Dict, Tuple
