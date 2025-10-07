@@ -59,17 +59,19 @@ class CmdBattleItem(Command):
 			return
 		participant = _get_participant(inst, self.caller)
 		target = inst.battle.opponent_of(participant)
-		action = Action(
-			participant,
-			ActionType.ITEM,
-			target,
-			item=item_name,
-			priority=6,
-		)
-		participant.pending_action = action
-		if hasattr(self.caller, "trainer"):
-			self.caller.trainer.remove_item(item_name)
-		self.caller.msg(f"You prepare to use {item_name}.")
+                action = Action(
+                        participant,
+                        ActionType.ITEM,
+                        target,
+                        item=item_name,
+                        priority=6,
+                )
+                participant.pending_action = action
+                if not self.caller.remove_item(item_name):
+                        self.caller.msg(f"You fumble with your {item_name} and fail to ready it.")
+                        participant.pending_action = None
+                        return
+                self.caller.msg(f"You prepare to use {item_name}.")
 		if hasattr(inst, "queue_item"):
 			try:
 				inst.queue_item(item_name, caller=self.caller)

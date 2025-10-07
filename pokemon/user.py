@@ -14,7 +14,7 @@ from pokemon.helpers.party_helpers import (
     has_usable_pokemon as _has_usable_party,
 )
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-from utils.inventory import InventoryMixin
+from utils.inventory import Inventory, InventoryMixin
 
 from .data.generation import generate_pokemon
 from .dex import POKEDEX
@@ -232,6 +232,36 @@ class User(DefaultCharacter, InventoryMixin):
         Trainer = apps.get_model("pokemon", "Trainer")
         trainer, _ = Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
         return trainer
+
+    def _update_inventory_cache_from_trainer(self) -> None:
+        """Synchronize the cached inventory with the trainer's records."""
+
+        try:
+            entries = self.trainer.list_inventory()
+        except Exception:
+            entries = []
+        cache = Inventory()
+        for entry in entries:
+            cache[entry.item_name.title()] = entry.quantity
+        self.db.inventory = cache
+
+    def add_item(self, name: str, quantity: int = 1) -> None:
+        """Add an item by delegating to the underlying trainer record."""
+
+        trainer = self.trainer
+        trainer.add_item(name, quantity)
+
+    def remove_item(self, name: str, quantity: int = 1) -> bool:
+        """Remove an item via the trainer, returning success."""
+
+        trainer = self.trainer
+        return trainer.remove_item(name, quantity)
+
+    def has_item(self, name: str, quantity: int = 1) -> bool:
+        """Return ``True`` if the trainer has at least ``quantity`` of ``name``."""
+
+        trainer = self.trainer
+        return trainer.has_item(name, quantity)
 
     # Helper proxy methods
     def add_badge(self, badge: "GymBadge") -> None:

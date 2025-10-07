@@ -81,12 +81,43 @@ class Trainer(models.Model):
                                         except Exception:
                                                 continue
 
+        def _sync_character_inventory(self) -> None:
+                """Update the attached character's cached inventory if possible."""
+
+                user = getattr(self, "user", None)
+                if not user:
+                        return
+                character = getattr(user, "typeclass", None)
+                if not character:
+                        return
+                updater = getattr(character, "_update_inventory_cache_from_trainer", None)
+                if callable(updater):
+                        try:
+                                updater()
+                        except Exception:
+                                pass
+
+        def get_item_quantity(self, item_name: str) -> int:
+                """Return the quantity of ``item_name`` owned by this trainer."""
+
+                item_name = item_name.lower()
+                entry = self.inventory.filter(item_name=item_name).first()
+                return entry.quantity if entry else 0
+
+        def has_item(self, item_name: str, amount: int = 1) -> bool:
+                """Return ``True`` if at least ``amount`` of ``item_name`` is owned."""
+
+                return self.get_item_quantity(item_name) >= amount
+
         def add_item(self, item_name: str, amount: int = 1) -> None:
                 """Add ``amount`` of ``item_name`` to this trainer's inventory."""
                 item_name = item_name.lower()
-                entry, _ = InventoryEntry.objects.get_or_create(owner=self, item_name=item_name, defaults={"quantity": 0})
+                entry, _ = InventoryEntry.objects.get_or_create(
+                        owner=self, item_name=item_name, defaults={"quantity": 0}
+                )
                 entry.quantity += amount
                 entry.save()
+                self._sync_character_inventory()
 
         def remove_item(self, item_name: str, amount: int = 1) -> bool:
                 """Remove ``amount`` of ``item_name`` and return success."""
@@ -102,6 +133,7 @@ class Trainer(models.Model):
                         entry.delete()
                 else:
                         entry.save()
+                self._sync_character_inventory()
                 return True
 
         def list_inventory(self):

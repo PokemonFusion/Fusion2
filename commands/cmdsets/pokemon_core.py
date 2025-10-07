@@ -31,13 +31,14 @@ from commands.player.cmd_learn_evolve import (
 )
 from commands.player.cmd_movesets import CmdMovesets
 from commands.player.cmd_party import (
-	CmdChargenInfo,
-	CmdDepositPokemon,
-	CmdSetHoldItem,
-	CmdShowBox,
-	CmdWithdrawPokemon,
+        CmdChargenInfo,
+        CmdDepositPokemon,
+        CmdSetHoldItem,
+        CmdShowBox,
+        CmdWithdrawPokemon,
 )
 from commands.player.cmd_sheet import CmdSheet, CmdSheetPokemon
+from commands.player.cmd_vendor import CmdVend
 
 
 class PokemonCoreCmdSet(CmdSet):
@@ -66,7 +67,8 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdAddItem,
 			CmdGiveItem,
 			CmdUseItem,
-			CmdMovesets,
+                        CmdMovesets,
+                        CmdVend,
 			CmdEvolvePokemon,
 			CmdExpShare,
 			CmdHeal,
