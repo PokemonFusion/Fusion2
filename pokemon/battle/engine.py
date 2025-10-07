@@ -37,6 +37,7 @@ corresponding methods simply ``pass`` for now.
 from __future__ import annotations
 
 import importlib
+import math
 import random
 from dataclasses import dataclass, field
 from enum import Enum
@@ -2148,7 +2149,19 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         info = GAIN_INFO.get(
                             getattr(poke, "name", getattr(poke, "species", "")), {}
                         )
-                        exp = info.get("exp", 0)
+                        base_exp = info.get("exp", 0)
+                        exp = 0
+                        if base_exp:
+                            level = getattr(poke, "level", 0) or 0
+                            if level:
+                                trainer_multiplier = (
+                                    1.5
+                                    if self.type in {BattleType.TRAINER, BattleType.SCRIPTED}
+                                    else 1
+                                )
+                                exp = math.floor(trainer_multiplier * base_exp * level / 7)
+                            else:
+                                exp = base_exp
                         evs = info.get("evs", {})
                         if exp or evs:
                             try:
