@@ -310,6 +310,47 @@ class FusionRoom(Room):
 			players.append(looker)
 		npcs = [c for c in characters if not c.has_account or c.attributes.get("npc")]
 
+		items = self.filter_visible(self.contents_get(content_type="object"), looker, **kwargs)
+
+		def _fmt_item(obj):
+			"""Return ANSI-formatted item name for fancy/simple view."""
+			name = getattr(obj, "key", "") or "Unknown"
+			if hasattr(obj, "get_display_name"):
+				try:
+					name = obj.get_display_name(looker=looker, **kwargs)
+				except Exception:
+					name = getattr(obj, "key", name) or name
+			if is_builder:
+				ident = getattr(obj, "id", None)
+				ident_str = f"#{ident}" if ident is not None else "#?"
+				name += f" |y({ident_str})|n"
+				db = getattr(obj, "db", None)
+				if getattr(db, "dark", False):
+					name += " |m(Dark)|n"
+			return name
+
+		item_names = [_fmt_item(obj) for obj in items]
+
+		def _fmt_item_sr(obj):
+			"""Return plain-text item name for screen reader mode."""
+			base = getattr(obj, "key", "") or "Unknown"
+			if hasattr(obj, "get_display_name"):
+				try:
+					base = obj.get_display_name(looker=looker, **kwargs)
+				except Exception:
+					base = getattr(obj, "key", base) or base
+			text = strip_ansi(base)
+			if is_builder:
+				ident = getattr(obj, "id", None)
+				ident_str = f" #{ident}" if ident is not None else " #?"
+				text += ident_str
+				db = getattr(obj, "db", None)
+				if getattr(db, "dark", False):
+					text += " (Dark)"
+			return text
+
+		sr_item_lines = [_fmt_item_sr(obj) for obj in items]
+
 		def _fmt_char(c, color="|w"):
 			s = f"{color}{c.key}|n"
 			if is_builder:
@@ -328,6 +369,12 @@ class FusionRoom(Room):
 			box.extend([rule, f"{self._tc(looker, 'primary')}  :Exits:|n"])
 			if exit_lines:
 				box.extend(exit_lines)
+			else:
+				box.append(" " * self.PAD_LEFT + "|xNone|n")
+			box.append(rule)
+			box.append(f"{self._tc(looker, 'primary')}  :Items:|n")
+			if item_names:
+				box.append(self._wrap_ansi(", ".join(item_names), width, indent=self.PAD_LEFT))
 			else:
 				box.append(" " * self.PAD_LEFT + "|xNone|n")
 			box.append(rule)
@@ -356,6 +403,12 @@ class FusionRoom(Room):
 					meta = f" #{ex.id}" if is_builder else ""
 					flag_text = f" [{' '.join(flags)}]" if flags else ""
 					box.append(f"- {n}{meta}{flag_text}")
+			else:
+				box.append("- None")
+			box.append("Items:")
+			if sr_item_lines:
+				for line in sr_item_lines:
+					box.append(f"- {line}")
 			else:
 				box.append("- None")
 			if player_names:
