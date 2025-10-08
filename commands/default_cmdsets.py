@@ -33,6 +33,7 @@ from commands.cmdsets.world_build import WorldBuildCmdSet
 from commands.debug.cmd_debugpy import CmdDebugPy
 from commands.player.cmd_account import CmdAlts, CmdCharCreate
 from commands.player.cmd_examine import CmdExamine
+from commands.player.cmd_look import CmdLook
 from commands.player.cmd_help import CmdHelp
 from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
 
@@ -48,12 +49,14 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
 
 	def at_cmdset_creation(self):
 		"""Populate the cmdset."""
-		super().at_cmdset_creation()
-		self.remove("help")
-		self.remove("@examine")
-		self.add(CmdHelp())
-		self.add(CmdExamine())
-		self.add(CmdDebugPy)
+                super().at_cmdset_creation()
+                self.remove("help")
+                self.remove("look")
+                self.remove("@examine")
+                self.add(CmdHelp())
+                self.add(CmdExamine())
+                self.add(CmdLook())
+                self.add(CmdDebugPy)
 
 		# Attach grouped command sets
 		self.add(BulletinBoardCmdSet())
