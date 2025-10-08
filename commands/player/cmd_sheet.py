@@ -6,7 +6,10 @@ from evennia import Command
 
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import level_for_exp
-from utils.display import display_pokemon_sheet, display_trainer_sheet
+from utils import display as display_utils
+
+display_pokemon_sheet = display_utils.display_pokemon_sheet
+display_trainer_sheet = display_utils.display_trainer_sheet
 from utils.display_helpers import get_status_effects
 from utils.xp_utils import get_display_xp
 
@@ -15,7 +18,7 @@ class CmdSheet(Command):
     """Display information about your trainer character.
 
     Usage:
-      +sheet [brief]
+      +sheet [/brief|/inv] [page]
     """
 
     key = "+sheet"
@@ -26,13 +29,32 @@ class CmdSheet(Command):
     def parse(self):
         self.mode = "full"
         self.switches = getattr(self, "switches", [])
-        if "brief" in self.switches:
+        self.show_inv_only = "inv" in self.switches
+        if self.show_inv_only:
+            self.mode = "inventory"
+        elif "brief" in self.switches:
             self.mode = "brief"
+
+        self.page = 1
+        if self.show_inv_only and self.args:
+            first_token = self.args.strip().split()[0]
+            try:
+                self.page = max(1, int(first_token))
+            except (TypeError, ValueError):
+                self.page = 1
 
     def func(self):
         """Execute the command."""
         caller = self.caller
-        sheet = display_trainer_sheet(caller)
+        if getattr(self, "show_inv_only", False):
+            inventory_renderer = getattr(display_utils, "display_full_inventory", None)
+            if inventory_renderer is None:
+                caller.msg(display_trainer_sheet(caller, mode="inventory"))
+                return
+            caller.msg(inventory_renderer(caller, page=self.page))
+            return
+
+        sheet = display_trainer_sheet(caller, mode=self.mode)
         caller.msg(sheet)
 
 
