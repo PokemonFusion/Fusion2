@@ -19,7 +19,7 @@ class CmdLook(Command):
     key = "look"
     aliases = ["l", "ls"]
     locks = "cmd:all()"
-    arg_regex = r"\\s|$"
+    arg_regex = r"\s|$"
 
     def func(self):
         """Execute the command."""
@@ -51,7 +51,11 @@ class CmdLook(Command):
         caller = self.caller
 
         matches = caller.search(raw_search, quiet=True)
+
         if matches:
+            if not isinstance(matches, list):
+                return matches
+
             if len(matches) == 1:
                 return matches[0]
 
@@ -59,7 +63,7 @@ class CmdLook(Command):
             if len(narrowed) == 1:
                 return narrowed[0]
 
-            caller.msg("Which one?")
+            caller.search(raw_search)
             return None
 
         candidates = self._gather_candidates()
@@ -67,10 +71,10 @@ class CmdLook(Command):
         if len(narrowed) == 1:
             return narrowed[0]
         if len(narrowed) > 1:
-            caller.msg("Which one?")
+            caller.search(raw_search)
             return None
 
-        caller.msg("You don't see that here.")
+        caller.search(raw_search)
         return None
 
     def _gather_candidates(self) -> List:
@@ -104,13 +108,17 @@ class CmdLook(Command):
     def _filter_partial_matches(self, raw_search: str, candidates: Iterable) -> List:
         """Filter candidates by case-insensitive partial matches."""
 
-        term = raw_search.lower()
+        term = raw_search.strip().lower()
+        if not term:
+            return []
         matches: List = []
 
         for obj in candidates:
             if not obj:
                 continue
-            names = [obj.key] + list(obj.aliases.all())
+            aliases = getattr(obj, "aliases", None)
+            alias_iterable = aliases.all() if hasattr(aliases, "all") else aliases or []
+            names = [obj.key] + list(alias_iterable)
             if any(term in name.lower() for name in names if name):
                 matches.append(obj)
 
