@@ -89,6 +89,7 @@ from utils.locks import clear_battle_lock, set_battle_lock
 from .compat import (
     BattleLogic,
     _battle_norm_key,
+    _calc_stats_from_model,
     create_battle_pokemon,
     generate_trainer_pokemon,
     generate_wild_pokemon,
