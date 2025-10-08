@@ -3,6 +3,7 @@
 from evennia import CmdSet
 
 from commands.player.cmd_pokedex import (
+	CmdItemdexSearch,
 	CmdMovedexSearch,
 	CmdMovesetSearch,
 	CmdPokedexAll,
@@ -22,6 +23,7 @@ class PokedexCmdSet(CmdSet):
 		for cmd in (
 			CmdPokedexSearch,
 			CmdPokedexAll,
+			CmdItemdexSearch,
 			CmdMovedexSearch,
 			CmdMovesetSearch,
 			CmdPokedexNumber,

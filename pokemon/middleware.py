@@ -4,7 +4,8 @@ import re
 from pathlib import Path
 
 from pokemon.data.learnsets.learnsets import LEARNSETS
-from pokemon.data.text import MOVES_TEXT
+from pokemon.data.text import ITEMS_TEXT, MOVES_TEXT
+from pokemon.dex import ITEMDEX as itemdex
 from pokemon.dex import MOVEDEX as movedex
 from pokemon.dex import POKEDEX as pokedex
 
@@ -62,6 +63,24 @@ for mon_name, details in pokedex.items():
 	for alias in {mon_name, _get(details, "name", mon_name)}:
 		key = _normalize_key(alias)
 		POKEMON_BY_NAME[key] = (mon_name, details)
+
+
+# Cache for item lookups keyed by normalized item name
+ITEM_BY_NAME = {}
+
+
+def _build_item_lookup():
+	"""Populate the item lookup cache from the loaded item dex."""
+
+	ITEM_BY_NAME.clear()
+	for item_name, details in itemdex.items():
+		display_name = _get(details, "name", item_name)
+		for alias in {item_name, display_name}:
+			key = _normalize_key(alias)
+			ITEM_BY_NAME[key] = (item_name, details)
+
+
+_build_item_lookup()
 
 
 def get_pokemon_by_number(number):
@@ -200,6 +219,101 @@ def format_move_details(name, details):
 	msg += f"Desc: {get_move_description(details)}\n"
 	msg += "-" * 55
 	return msg
+
+
+def get_item_by_name(name):
+	"""Return item data by name."""
+
+	if not ITEM_BY_NAME:
+		_build_item_lookup()
+
+	key = _normalize_key(name)
+	if key in ITEM_BY_NAME:
+		return ITEM_BY_NAME[key]
+
+	# Fallback to searching by canonical name from the text dataset
+	text_entry = ITEMS_TEXT.get(key)
+	if text_entry:
+		display_name = text_entry.get("name")
+		if display_name:
+			normalized = _normalize_key(display_name)
+			return ITEM_BY_NAME.get(normalized, (None, None))
+	return None, None
+
+
+def _get_item_text_entry(name, details):
+	"""Return the auxiliary text entry for an item if available."""
+
+	candidates = [
+		_normalize_key(name),
+		_normalize_key(_get(details, "name", name)),
+	]
+	for candidate in candidates:
+		entry = ITEMS_TEXT.get(candidate)
+		if entry:
+			return entry
+	return None
+
+
+def format_item_details(name, details):
+	"""Return a formatted description of an item."""
+
+	display_name = _get(details, "name", name)
+	lines = [f"{display_name}", "-" * 55]
+
+	if name != display_name:
+		lines.append(f"Dex Key: {name}")
+
+	generation = _get(details, "gen")
+	if generation is not None:
+		lines.append(f"Introduced: Generation {generation}")
+
+	availability = _get(details, "isNonstandard")
+	if availability:
+		lines.append(f"Availability: {availability}")
+
+	item_users = _get(details, "itemUser")
+	if item_users:
+		lines.append(f"Exclusive Users: {', '.join(item_users)}")
+
+	mega_stone = _get(details, "megaStone")
+	if mega_stone:
+		evolves = _get(details, "megaEvolves", "")
+		if evolves:
+			lines.append(f"Mega Evolution: {mega_stone} for {evolves}")
+		else:
+			lines.append(f"Mega Evolution: {mega_stone}")
+
+	fling = _get(details, "fling")
+	if isinstance(fling, dict) and "basePower" in fling:
+		lines.append(f"Fling Power: {fling['basePower']}")
+
+	# Include descriptive tags based on boolean flags
+	tags = []
+	tag_map = {
+		"isBerry": "Berry",
+		"isGem": "Gem",
+		"isPokeball": "Poké Ball",
+		"isMail": "Mail",
+		"isChoice": "Choice Item",
+	}
+	for attr, label in tag_map.items():
+		if _get(details, attr):
+			tags.append(label)
+	if tags:
+		lines.append(f"Tags: {', '.join(tags)}")
+
+	text_entry = _get_item_text_entry(name, details)
+	description = _get(details, "desc")
+	if not description and text_entry:
+		description = text_entry.get("desc") or text_entry.get("shortDesc")
+
+	if description:
+		if lines[-1] != "":
+			lines.append("")
+		lines.append(description)
+
+	return "\n".join(lines)
 
 
 CODE_RE = re.compile(r"^(?P<gen>\d+)(?P<type>[A-Z])(?P<data>.*)$")
