@@ -9,9 +9,11 @@ from pokemon.dex.functions.pokedex_funcs import (
 from pokemon.middleware import (
 	POKEMON_BY_NAME,
 	_normalize_key,
+	format_item_details,
 	format_move_details,
 	format_moveset,
 	format_pokemon_details,
+	get_item_by_name,
 	get_move_by_name,
 	get_moveset_by_name,
 	get_pokemon_by_name,
@@ -171,6 +173,34 @@ class CmdMovedexSearch(Command):
 			self.caller.msg(format_move_details(name, details))
 		else:
 			self.caller.msg("No move found with that name.")
+
+
+class CmdItemdexSearch(Command):
+	"""Look up item information.
+
+	Usage:
+	  +itemdex <item>
+	  itemdex <item>
+	"""
+
+	key = "+itemdex"
+	aliases = ["itemdex"]
+	locks = "cmd:all()"
+	help_category = "Pokemon/Dex"
+
+	def func(self):
+		args = self.args.strip()
+
+		if not args:
+			self.caller.msg("You need to specify an item name to search for.")
+			return
+
+		name, details = get_item_by_name(args)
+
+		if name and details:
+			self.caller.msg(format_item_details(name, details))
+		else:
+			self.caller.msg("No item found with that name.")
 
 
 class CmdMovesetSearch(Command):
