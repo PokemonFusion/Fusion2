@@ -19,7 +19,7 @@ class CmdLook(Command):
     key = "look"
     aliases = ["l", "ls"]
     locks = "cmd:all()"
-    arg_regex = r"\\s|$"
+    arg_regex = r"\s|$"
 
     def func(self):
         """Execute the command."""
