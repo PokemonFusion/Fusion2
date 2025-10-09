@@ -1,24 +1,31 @@
 """Commands for viewing trainer and Pokémon information."""
 
+import shlex
 from types import SimpleNamespace
+from typing import Optional
 
 from evennia import Command
 
+from pokemon.helpers.party_helpers import get_active_party
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import level_for_exp
-from utils import display as display_utils
-
-display_pokemon_sheet = display_utils.display_pokemon_sheet
-display_trainer_sheet = display_utils.display_trainer_sheet
+from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
 from utils.xp_utils import get_display_xp
 
 
 class CmdSheet(Command):
-    """Display information about your trainer character.
+    """Display your trainer overview, inventory, or a party slot.
 
     Usage:
-      +sheet [/brief|/inv] [page]
+      +sheet                     - full trainer card
+      +sheet/brief               - compact snapshot
+      +sheet/inv [page]          - paginated inventory
+      +sheet/inv cols <n>        - inventory with explicit columns (1-4)
+      +sheet/inv find <text>     - inventory filtered by name
+      +sheet/inv/cat             - grouped inventory view
+      +sheet <slot>              - Pokémon sheet for a party slot (if available)
+      +sheet/sr or +sheet/nosr   - toggle screen-reader formatting
     """
 
     key = "+sheet"
@@ -27,34 +34,131 @@ class CmdSheet(Command):
     help_category = "General"
 
     def parse(self):
-        self.mode = "full"
-        self.switches = getattr(self, "switches", [])
-        self.show_inv_only = "inv" in self.switches
-        if self.show_inv_only:
-            self.mode = "inventory"
-        elif "brief" in self.switches:
-            self.mode = "brief"
+        """Parse switches and arguments for trainer, inventory, or slot views."""
+
+        switches = {sw.lower() for sw in getattr(self, "switches", []) or []}
+
+        self.mode = "brief" if "brief" in switches else "full"
+        self.view_inventory = "inv" in switches and "cat" not in switches and "inv/cat" not in switches
+        self.view_inventory_by_category = "inv/cat" in switches or ("inv" in switches and "cat" in switches)
+        self.screen_reader_switch = "sr" in switches
+        self.disable_screen_reader = "nosr" in switches or ("off" in switches and "sr" in switches)
 
         self.page = 1
-        if self.show_inv_only and self.args:
-            first_token = self.args.strip().split()[0]
+        self.cols: Optional[int] = None
+        self.find = ""
+        self.slot: Optional[int] = None
+
+        raw_args = (self.args or "").strip()
+        tokens: list[str] = []
+        if raw_args:
             try:
-                self.page = max(1, int(first_token))
+                tokens = shlex.split(raw_args)
+            except ValueError:
+                tokens = raw_args.split()
+
+        if self.view_inventory and tokens and tokens[0].isdigit():
+            try:
+                self.page = max(1, int(tokens[0]))
+                tokens = tokens[1:]
             except (TypeError, ValueError):
-                self.page = 1
+                pass
+        elif not self.view_inventory and not self.view_inventory_by_category and tokens and tokens[0].isdigit():
+            try:
+                self.slot = int(tokens[0])
+                tokens = tokens[1:]
+            except (TypeError, ValueError):
+                self.slot = None
+
+        idx = 0
+        while idx < len(tokens):
+            token = tokens[idx]
+            lower = token.lower()
+            if lower == "cols" and idx + 1 < len(tokens):
+                try:
+                    value = int(tokens[idx + 1])
+                    self.cols = max(1, min(4, value))
+                except (TypeError, ValueError):
+                    self.cols = None
+                idx += 2
+                continue
+            if lower == "find":
+                self.find = " ".join(tokens[idx + 1 :]).strip()
+                break
+            idx += 1
 
     def func(self):
         """Execute the command."""
         caller = self.caller
-        if getattr(self, "show_inv_only", False):
-            inventory_renderer = getattr(display_utils, "display_full_inventory", None)
-            if inventory_renderer is None:
-                caller.msg(display_trainer_sheet(caller, mode="inventory"))
-                return
-            caller.msg(inventory_renderer(caller, page=self.page))
+        if self.screen_reader_switch:
+            caller.attributes.add("sheet_screen_reader", True)
+        if self.disable_screen_reader:
+            caller.attributes.add("sheet_screen_reader", False)
+
+        find_text = self.find or ""
+
+        if self.view_inventory_by_category:
+            try:
+                from utils.display import display_inventory_by_category
+
+                caller.msg(
+                    display_inventory_by_category(
+                        caller,
+                        cols=self.cols or 3,
+                        find=find_text,
+                    )
+                )
+            except Exception as exc:  # pragma: no cover - defensive for runtime errors
+                caller.msg(f"|rInventory (category) error:|n {exc}")
             return
 
-        sheet = display_trainer_sheet(caller, mode=self.mode)
+        if self.view_inventory:
+            try:
+                from utils.display import display_full_inventory
+
+                caller.msg(
+                    display_full_inventory(
+                        caller,
+                        page=self.page,
+                        cols=self.cols or 3,
+                        find=find_text,
+                    )
+                )
+            except Exception as exc:  # pragma: no cover - defensive for runtime errors
+                caller.msg(f"|rInventory error:|n {exc}")
+            return
+
+        if isinstance(self.slot, int):
+            try:
+                party = get_active_party(caller)
+            except Exception:  # pragma: no cover - best effort compatibility
+                party = []
+
+            if not party:
+                caller.msg("You have no Pokémon in your party.")
+                return
+            if self.slot < 1 or self.slot > len(party):
+                caller.msg("No Pokémon in that slot.")
+                return
+
+            pokemon = party[self.slot - 1]
+            if not pokemon:
+                caller.msg("That slot is empty.")
+                return
+
+            try:
+                sheet = display_pokemon_sheet(caller, pokemon, slot=self.slot, mode=self.mode)
+            except Exception as exc:  # pragma: no cover - defensive for runtime errors
+                caller.msg(f"|rPokémon sheet error:|n {exc}")
+                return
+
+            caller.msg(sheet)
+            return
+
+        try:
+            sheet = display_trainer_sheet(caller, mode=self.mode)
+        except TypeError:  # pragma: no cover - compatibility with legacy signature
+            sheet = display_trainer_sheet(caller)
         caller.msg(sheet)
 
 
