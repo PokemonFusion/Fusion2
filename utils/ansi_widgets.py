@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Iterable, Sequence
 
+from evennia.utils import ansi as _ansi
 from evennia.utils import utils as _utils
 
 __all__ = [
@@ -18,10 +19,18 @@ __all__ = [
 ]
 
 
+def _strip_ansi(text: str) -> str:
+        """Return ``text`` with ANSI codes removed using available helpers."""
+
+        if hasattr(_utils, "strip_ansi"):
+                return _utils.strip_ansi(text)
+        return _ansi.strip_ansi(text)
+
+
 def _strip_ansi_len(text: str) -> int:
         """Return the visible length of ``text`` with ANSI codes removed."""
 
-        return len(_utils.strip_ansi(text))
+        return len(_strip_ansi(text))
 
 
 def _ansi_pad(text: str, width: int, align: str = "left") -> str:

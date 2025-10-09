@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Iterable, List, Tuple
 
+from evennia.utils import ansi as _ansi
 from evennia.utils import utils as _utils
 
 ItemPairs = List[Tuple[str, int]]
@@ -14,7 +15,10 @@ __all__ = ["gather_inventory_pairs", "format_inventory_table"]
 def _strip(text: str) -> str:
         """Return ``text`` without ANSI codes as a plain string."""
 
-        return _utils.strip_ansi(str(text or ""))
+        raw = str(text or "")
+        if hasattr(_utils, "strip_ansi"):
+                return _utils.strip_ansi(raw)
+        return _ansi.strip_ansi(raw)
 
 
 def gather_inventory_pairs(char) -> ItemPairs:
