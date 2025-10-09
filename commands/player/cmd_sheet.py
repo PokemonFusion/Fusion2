@@ -1,5 +1,6 @@
 """Commands for viewing trainer and Pokémon information."""
 
+import shlex
 from types import SimpleNamespace
 
 from evennia import Command
@@ -18,7 +19,7 @@ class CmdSheet(Command):
     """Display information about your trainer character.
 
     Usage:
-      +sheet [/brief|/inv] [page]
+      +sheet [/brief|/sr|/inv|/inv/cat] [page] [cols <n>] [find <text>]
     """
 
     key = "+sheet"
@@ -29,29 +30,78 @@ class CmdSheet(Command):
     def parse(self):
         self.mode = "full"
         self.switches = getattr(self, "switches", [])
-        self.show_inv_only = "inv" in self.switches
+        self.show_inv_only = "inv" in self.switches and "cat" not in self.switches
+        self.show_inv_cat = "inv/cat" in self.switches or ("inv" in self.switches and "cat" in self.switches)
+        self.screen_reader_switch = "sr" in self.switches
+        self.disable_screen_reader = "nosr" in self.switches or (
+            "off" in self.switches and "sr" in self.switches
+        )
+
         if self.show_inv_only:
             self.mode = "inventory"
         elif "brief" in self.switches:
             self.mode = "brief"
 
         self.page = 1
-        if self.show_inv_only and self.args:
-            first_token = self.args.strip().split()[0]
+        self.cols = None
+        self.find = ""
+
+        tokens: list[str] = []
+        if self.args:
             try:
-                self.page = max(1, int(first_token))
-            except (TypeError, ValueError):
-                self.page = 1
+                tokens = shlex.split(self.args)
+            except ValueError:
+                tokens = self.args.strip().split()
+
+        idx = 0
+        page_set = False
+        while idx < len(tokens):
+            token = tokens[idx]
+            lower = token.lower()
+            if lower == "cols" and idx + 1 < len(tokens):
+                try:
+                    value = int(tokens[idx + 1])
+                    self.cols = max(1, min(4, value))
+                except (TypeError, ValueError):
+                    self.cols = None
+                idx += 2
+                continue
+            if lower == "find":
+                self.find = " ".join(tokens[idx + 1 :])
+                break
+            if not page_set and self.show_inv_only and token.isdigit():
+                try:
+                    self.page = max(1, int(token))
+                    page_set = True
+                except (TypeError, ValueError):
+                    pass
+            idx += 1
 
     def func(self):
         """Execute the command."""
         caller = self.caller
+        if self.screen_reader_switch:
+            caller.attributes.add("sheet_screen_reader", True)
+        if self.disable_screen_reader:
+            caller.attributes.add("sheet_screen_reader", False)
+
+        cols = self.cols or 3
+        find_text = self.find or ""
+
+        if getattr(self, "show_inv_cat", False):
+            inventory_renderer = getattr(display_utils, "display_inventory_by_category", None)
+            if inventory_renderer is None:
+                caller.msg("Inventory categories are unavailable.")
+                return
+            caller.msg(inventory_renderer(caller, cols=cols, find=find_text))
+            return
+
         if getattr(self, "show_inv_only", False):
             inventory_renderer = getattr(display_utils, "display_full_inventory", None)
             if inventory_renderer is None:
                 caller.msg(display_trainer_sheet(caller, mode="inventory"))
                 return
-            caller.msg(inventory_renderer(caller, page=self.page))
+            caller.msg(inventory_renderer(caller, page=self.page, cols=cols, find=find_text))
             return
 
         sheet = display_trainer_sheet(caller, mode=self.mode)

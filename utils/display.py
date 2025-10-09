@@ -11,16 +11,28 @@ from pokemon.models.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP, exp_for_level, 
 from pokemon.utils.pokemon_like import PokemonLike
 from utils.ansi import ansi
 from utils.ansi_widgets import (
+        THEME as WIDGET_THEME,
+        apply_screen_reader,
         bar,
         chip,
+        get_theme,
         header_box,
         infer_hp_phrase,
         infer_xp_phrase,
         join_items,
         kv_row,
         money_line,
+        section_divider,
+        stat_summary_row,
+        status_code,
+        themed_line,
+        type_chip,
 )
-from utils.inventory_view import gather_inventory_pairs, format_inventory_table
+from utils.inventory_view import (
+        gather_inventory_pairs,
+        format_inventory_by_category,
+        format_inventory_table,
+)
 from utils.display_helpers import (
         format_move_details,
         get_egg_description,
@@ -29,18 +41,23 @@ from utils.display_helpers import (
 from utils.faction_utils import get_faction_and_rank
 from utils.xp_utils import get_display_xp, get_next_level_xp
 
-__all__ = ["display_pokemon_sheet", "display_trainer_sheet", "display_full_inventory"]
+__all__ = [
+        "display_pokemon_sheet",
+        "display_trainer_sheet",
+        "display_full_inventory",
+        "display_inventory_by_category",
+]
 
 # ---- Theme & helpers ---------------------------------------------------------
 # Pipe-ANSI friendly theme; override as needed from call-sites later if desired.
 THEME = {
-	"accent": "|W",
-	"muted": "|x",
-	"border": "|g",
-	"value": "|w",
-	"warn": "|y",
-	"bad": "|r",
-	"good": "|G",
+        "accent": "|W",
+        "muted": "|x",
+        "border": "|g",
+        "value": "|w",
+        "warn": "|y",
+        "bad": "|r",
+        "good": "|G",
 }
 
 # Canonical-ish type colors. Fallback to default if unknown.
@@ -124,6 +141,14 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
 
         name = getattr(char, "key", "Unknown")
 
+        palette = get_theme(WIDGET_THEME)
+
+        attr_handler = getattr(char, "attributes", None)
+        try:
+                screen_reader = bool(attr_handler.get("sheet_screen_reader", default=False)) if attr_handler else False
+        except Exception:
+                screen_reader = False
+
         def _as_int(value):
                 try:
                         return int(value)
@@ -148,22 +173,31 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 morphology = "Fusion" if fusion_species else "Human"
         gender = getattr(db, "gender", None) or getattr(char, "gender", "?") or "?"
         status_raw = getattr(db, "status", None) or "None"
-        status_lower = str(status_raw).lower()
-        if status_lower in {"none", "normal", "ok", "healthy"}:
-                status_color = "|g"
-        elif status_lower in {"fainted", "knocked out", "ko"}:
-                status_color = "|r"
-        else:
-                status_color = "|y"
         faction_display = get_faction_and_rank(char) or "None"
 
-        species_display = _chip(species, "—", "|y")
-        morph_display = _chip(morphology, "—", "|c")
+        species_display = _chip(species, "—", palette.get("value", "|y"))
+        morph_display = _chip(morphology, "—", palette.get("type", "|c"))
         gender_display = _chip(gender, "?", "|b")
-        status_display = _chip(status_raw, "None", status_color)
+        status_display = status_code(status_raw, theme=palette, screen_reader=screen_reader)
         faction_chip = _chip(faction_display, "None", "|C")
 
-        attr_handler = getattr(char, "attributes", None)
+        nature = getattr(db, "nature", getattr(char, "nature", None)) or "—"
+        ability = getattr(db, "ability", getattr(char, "ability", None)) or "—"
+        held_item = (
+                getattr(db, "held_item", None)
+                or getattr(db, "held", None)
+                or getattr(db, "helditem", None)
+                or getattr(char, "held_item", None)
+                or "Nothing"
+        )
+
+        raw_types = getattr(db, "types", None) or getattr(char, "types", None) or []
+        if isinstance(raw_types, str):
+                type_list = [raw_types]
+        else:
+                type_list = list(raw_types)
+        type_str = " / ".join(type_chip(t, theme=palette, screen_reader=screen_reader) for t in type_list) if type_list else type_chip(None, theme=palette, screen_reader=screen_reader)
+
         try:
                 show_numbers = bool(attr_handler.get("sheet_debug", default=False)) if attr_handler else False
         except Exception:
@@ -200,6 +234,9 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 hp_display = chip("Unknown", "|x")
 
         xp_ratio = None
+        xp_progress = None
+        xp_span = None
+        next_requirement = None
         if xp_total is not None:
                 growth_rate = getattr(db, "growth_rate", getattr(char, "growth_rate", "medium_fast"))
                 try:
@@ -208,32 +245,37 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                         next_level = min(current_level + 1, 100)
                         current_floor = exp_for_level(current_level, growth_rate)
                         next_req = exp_for_level(next_level, growth_rate)
+                        next_requirement = next_req
                         span = max(1, next_req - current_floor)
                         progress = xp_total - current_floor
+                        xp_progress = max(0, progress)
+                        xp_span = span
                         xp_ratio = max(0.0, min(1.0, progress / span))
                 except Exception:
                         xp_ratio = None
 
-        if xp_total is not None and show_numbers:
-                xp_label_text = f"{xp_total:,} XP"
+        xp_label_text: str
+        if xp_total is not None and next_requirement is not None:
+                xp_label_text = f"{xp_total:,} / {next_requirement:,}"
                 if xp_to_next is not None:
                         xp_label_text += f" ({xp_to_next:,} to next)"
+        elif xp_total is not None and show_numbers:
+                xp_label_text = f"{xp_total:,} XP"
         elif xp_to_next is not None:
                 xp_label_text = infer_xp_phrase(xp_to_next)
-        elif xp_total is not None:
-                xp_label_text = f"{xp_total:,} XP"
         else:
                 xp_label_text = "Unknown"
-        xp_label = chip(xp_label_text, "|c")
-        if xp_ratio is not None:
-                xp_display = f"{bar(int(round(xp_ratio * 100)), 100)} {xp_label}"
+
+        xp_label = chip(xp_label_text, palette.get("type", "|c"), theme=palette, screen_reader=screen_reader)
+        if xp_ratio is not None and xp_progress is not None and xp_span is not None:
+                xp_display = f"{bar(xp_progress, xp_span)} {xp_label}"
         else:
                 xp_display = xp_label
 
         inv_pairs = gather_inventory_pairs(char)
-        inventory_display = join_items(inv_pairs, max_items=5)
+        inventory_display = join_items(inv_pairs, max_items=5, theme=palette, screen_reader=screen_reader)
         if not inventory_display:
-                inventory_display = chip("Empty", "|x")
+                inventory_display = chip("Empty", palette.get("muted", "|x"), theme=palette, screen_reader=screen_reader)
 
         def _first_attr(*names):
                 for attr in names:
@@ -244,9 +286,9 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
 
         wallet_value = _first_attr("money", "wallet", "cash", "credits", "pokedollars")
         bank_value = _first_attr("bank", "savings", "account")
-        money_display = money_line(wallet_value, bank_value)
+        money_display = money_line(wallet_value, bank_value, theme=palette, screen_reader=screen_reader)
         if not money_display:
-                money_display = chip("Unknown", "|x")
+                money_display = chip("Unknown", palette.get("muted", "|x"), theme=palette, screen_reader=screen_reader)
 
         header_label = {
                 "brief": "Trainer Snapshot",
@@ -254,57 +296,160 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         }.get(requested_mode, "Trainer Card")
         morph_text = str(morphology or "—")
         title = f"|y{header_label}|n · |w{morph_text}|n"
-        header = header_box(title, left=f"|W{name}|n", right=chip(f"Lv {level_str}", "|c"), width=width)
+        header = header_box(
+                title,
+                left=f"|W{name}|n",
+                right=chip(f"Lv {level_str}", palette.get("type", "|c"), theme=palette, screen_reader=screen_reader),
+                width=width,
+                theme=palette,
+                screen_reader=screen_reader,
+        )
 
         if requested_mode == "inventory":
                 lines = [
                         header,
-                        kv_row("Inventory", inventory_display, width=width),
-                        kv_row("Money", money_display, width=width),
+                        section_divider("Inventory", width=width, theme=palette, screen_reader=screen_reader),
+                        kv_row("Inventory", inventory_display, width=width, theme=palette, screen_reader=screen_reader),
+                        kv_row("Money", money_display, width=width, theme=palette, screen_reader=screen_reader),
                 ]
-                return "\n".join(line for line in lines if line)
+                sheet = "\n".join(line for line in lines if line)
+                return apply_screen_reader(sheet) if screen_reader else sheet
 
-        common_lines = [
-                header,
-                kv_row("Species", species_display, "Morph", morph_display, width=width),
-                kv_row("Sex", gender_display, "Faction", faction_chip, width=width),
-                kv_row("Status", status_display, width=width),
-                "",
-                kv_row("HP", hp_display, "EXP", xp_display, width=width),
+        stats_dict = getattr(db, "stats", None)
+        stat_values = {}
+        if isinstance(stats_dict, dict):
+                stat_values.update(stats_dict)
+        for attr in ("phys_atk", "phys_def", "sp_atk", "sp_def", "speed"):
+                value = getattr(db, attr, None)
+                if value is None:
+                        value = getattr(char, attr, None)
+                if value is not None:
+                        stat_values[attr] = value
+
+        hp_display: str
+        if hp_ratio is not None:
+                hp_label_text = f"{hp_current}/{hp_max}" if show_numbers else infer_hp_phrase(hp_current, hp_max)
+                if screen_reader:
+                        hp_label = f"({hp_label_text})"
+                else:
+                        hp_color = palette['ok'] if hp_ratio >= 0.66 else palette['warn'] if hp_ratio >= 0.33 else palette['bad']
+                        hp_label = chip(hp_label_text, hp_color, theme=palette, screen_reader=screen_reader)
+                pct = int(round(hp_ratio * 100))
+                hp_display = f"{bar(hp_current, hp_max)} {hp_label}  {pct}%  {status_code(status_raw, theme=palette, screen_reader=screen_reader)}"
+        else:
+                hp_display = chip("Unknown", palette.get("muted", "|x"), theme=palette, screen_reader=screen_reader)
+
+        profile_block = [
+                section_divider("Profile", width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Species", species_display, "Morph", morph_display, width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Sex", gender_display, "Faction", faction_chip, width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Status", status_display, "Type", type_str, width=width, theme=palette, screen_reader=screen_reader),
+        ]
+
+        traits_block = [
+                section_divider("Traits", width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Nature", str(nature), "Ability", str(ability), width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Held Item", str(held_item), width=width, theme=palette, screen_reader=screen_reader),
+        ]
+
+        vitals_block = [
+                section_divider("Vitals", width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("HP", hp_display, "EXP", xp_display, width=width, theme=palette, screen_reader=screen_reader),
+                stat_summary_row(stat_values, theme=palette, screen_reader=screen_reader, width=width),
+        ]
+
+        resources_block = [
+                section_divider("Resources", width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Inventory", inventory_display, width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Money", money_display, width=width, theme=palette, screen_reader=screen_reader),
         ]
 
         if requested_mode == "brief":
-                common_lines.append(kv_row("Money", money_display, width=width))
-                return "\n".join(line for line in common_lines if line)
+                lines = [header] + profile_block + vitals_block + [kv_row("Money", money_display, width=width, theme=palette, screen_reader=screen_reader)]
+                sheet = "\n".join(line for line in lines if line)
+                return apply_screen_reader(sheet) if screen_reader else sheet
 
-        # Full mode extras
-        common_lines.extend(
-                [
-                        "",
-                        kv_row("Inventory", inventory_display, width=width),
-                        kv_row("Money", money_display, width=width),
-                        "",
-                        "|wTips|n        : +sheet/brief  ·  +sheet/inv  ·  +sheet/pokemon",
-                ]
-        )
-        return "\n".join(line for line in common_lines if line is not None)
+        tips_line = "|wTips|n        : +sheet/brief  ·  +sheet/inv  ·  +sheet/pokemon"
+        full_lines = [header] + profile_block + traits_block + vitals_block + resources_block + [themed_line(width=width, theme=palette, screen_reader=screen_reader), tips_line]
+        sheet = "\n".join(line for line in full_lines if line)
+        return apply_screen_reader(sheet) if screen_reader else sheet
 
 
-def display_full_inventory(caller, page: int = 1) -> str:
+def display_full_inventory(caller, page: int = 1, *, cols: int = 3, find: str = "") -> str:
         """Return a paginated inventory table for ``caller``."""
 
         width = 60
+        palette = get_theme(WIDGET_THEME)
         name = getattr(caller, "key", "Unknown")
+
+        attr_handler = getattr(caller, "attributes", None)
+        try:
+                screen_reader = bool(attr_handler.get("sheet_screen_reader", default=False)) if attr_handler else False
+        except Exception:
+                screen_reader = False
+
         pairs = gather_inventory_pairs(caller)
+        filtered_pairs = pairs
+        if find:
+                needle = find.lower()
+                filtered_pairs = [(n, c) for (n, c) in pairs if needle in n.lower()]
 
-        header = header_box("Inventory", left=f"|W{name}|n", right=f"|w{len(pairs)} items|n", width=width)
-        tips = "|wTips|n : +sheet/inv [page]    ·    +sheet"
-        if not pairs:
-                _, footer = format_inventory_table([], page=1, rows=10, cols=3, width=width)
-                return "\n".join((header, "|w(empty)|n", footer, tips))
+        header_right = (
+                f"|w{len(filtered_pairs)} of {len(pairs)} items|n"
+                if find else f"|w{len(pairs)} items|n"
+        )
+        header = header_box(
+                "Inventory",
+                left=f"|W{name}|n",
+                right=header_right,
+                width=width,
+                theme=palette,
+                screen_reader=screen_reader,
+        )
+        tips = "|wTips|n : +sheet/inv [page]    ·    +sheet/inv cols <n>    ·    +sheet"
+        if not filtered_pairs:
+                _, footer = format_inventory_table([], page=1, rows=10, cols=cols, width=width)
+                sheet = "\n".join((header, "|w(no matches)|n" if find else "|w(empty)|n", footer, tips))
+                return apply_screen_reader(sheet) if screen_reader else sheet
 
-        body, footer = format_inventory_table(pairs, page=page, rows=10, cols=3, width=width)
-        return "\n".join((header, body, footer, tips))
+        body, footer = format_inventory_table(filtered_pairs, page=page, rows=10, cols=cols, width=width)
+        sheet = "\n".join((header, body, footer, tips))
+        return apply_screen_reader(sheet) if screen_reader else sheet
+
+
+def display_inventory_by_category(caller, *, cols: int = 3, find: str = "") -> str:
+        """Return a themed inventory overview grouped by category."""
+
+        width = 60
+        palette = get_theme(WIDGET_THEME)
+        name = getattr(caller, "key", "Unknown")
+
+        attr_handler = getattr(caller, "attributes", None)
+        try:
+                screen_reader = bool(attr_handler.get("sheet_screen_reader", default=False)) if attr_handler else False
+        except Exception:
+                screen_reader = False
+
+        pairs = gather_inventory_pairs(caller)
+        filtered_pairs = pairs
+        if find:
+                needle = find.lower()
+                filtered_pairs = [(n, c) for (n, c) in pairs if needle in n.lower()]
+
+        header_right = f"|w{len(filtered_pairs)} of {len(pairs)} items|n" if find else f"|w{len(pairs)} items|n"
+        header = header_box(
+                "Inventory by Category",
+                left=f"|W{name}|n",
+                right=header_right,
+                width=width,
+                theme=palette,
+                screen_reader=screen_reader,
+        )
+
+        body = format_inventory_by_category(pairs, cols=cols, width=width, find=find)
+        tips = "|wTips|n : +sheet/inv/cat cols <n>  ·  +sheet/inv/cat find <term>"
+        sheet = "\n".join((header, body, tips))
+        return apply_screen_reader(sheet) if screen_reader else sheet
 
 
 def _hp_bar(current: int, maximum: int, width: int = 20) -> str:
