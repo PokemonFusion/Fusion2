@@ -46,6 +46,7 @@ class DummyTrainer:
         self.name = name
         self.active_pokemon = mon
         self.team = [mon]
+        self.is_npc = False
 
 
 def test_render_interfaces_hp_and_percentages() -> None:
@@ -72,3 +73,21 @@ def test_render_interfaces_hp_and_percentages() -> None:
     # Watchers should only see percentages for both sides
     assert "15/20" not in iface_w and "30/60" not in iface_w
     assert "50%" in iface_w and "75%" in iface_w
+
+
+def test_render_interfaces_trainer_names_visible() -> None:
+    """Trainer battles should display the opposing trainer's name and party."""
+
+    mon_a = DummyMon("Squirt", 25, 30)
+    mon_b = DummyMon("Charm", 40, 40)
+    t_a = DummyTrainer("Leaf", mon_a)
+    t_b = DummyTrainer("Trainer Emery", mon_b)
+    t_b.is_npc = True
+    st = BattleState()
+    st.encounter_kind = "trainer"
+
+    iface_a, iface_b, iface_w = render_interfaces(t_a, t_b, st)
+
+    assert "Trainer Emery" in iface_a
+    assert "Trainer Emery" in iface_w
+    assert "Team" in iface_b and "●" in iface_b

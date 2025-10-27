@@ -84,22 +84,22 @@ def test_battle_session_start_assigns_wild_shell(monkeypatch):
 
 	wild_mon = types.SimpleNamespace(name="Oddish")
 
-	session._select_opponent = lambda: (wild_mon, "Wild", BattleType.WILD)
+	session._select_opponent = lambda: (wild_mon, "Wild", BattleType.WILD, None)
 	session._prepare_player_party = lambda trainer: []
 
 	def fake_init(origin, player_pokemon, opponent_poke, opponent_name, battle_type):
-		session.logic = types.SimpleNamespace(
-			state=types.SimpleNamespace(
-				encounter_kind="wild",
-				pokemon_control={},
-				watchers=set(),
-			),
-			data=None,
-			battle=None,
-		)
+	        session.logic = types.SimpleNamespace(
+	                state=types.SimpleNamespace(
+	                        encounter_kind="wild",
+	                        pokemon_control={},
+	                        watchers=set(),
+	                ),
+	                data=None,
+	                battle=None,
+	        )
 
 	session._init_battle_state = fake_init
-	session._setup_battle_room = lambda: None
+	session._setup_battle_room = lambda intro_message=None: None
 
 	session.start()
 
@@ -112,3 +112,54 @@ def test_battle_session_start_assigns_wild_shell(monkeypatch):
 	assert session.captainB.db.battle_id == session.battle_id
 	assert session.captainB.db.battle_lock == session.battle_id
 	assert player.db.battle_lock == session.battle_id
+
+
+def test_battle_session_start_assigns_trainer_shell(monkeypatch):
+	room = types.SimpleNamespace(
+	        db=types.SimpleNamespace(battles=[]),
+	        ndb=types.SimpleNamespace(battle_instances={}),
+	)
+	player = types.SimpleNamespace(
+	        key="Player",
+	        id=2,
+	        db=types.SimpleNamespace(),
+	        ndb=types.SimpleNamespace(),
+	        storage=types.SimpleNamespace(get_party=lambda: []),
+	        location=room,
+	)
+
+	session = BattleSession(player)
+
+	trainer_mon = types.SimpleNamespace(name="Charmander")
+	session._select_opponent = lambda: (
+	        trainer_mon,
+	        "Trainer Casey",
+	        BattleType.TRAINER,
+	        "Trainer Casey challenges you!",
+	)
+	session._prepare_player_party = lambda trainer: []
+
+	def fake_init(origin, player_pokemon, opponent_poke, opponent_name, battle_type):
+	        session.logic = types.SimpleNamespace(
+	                state=types.SimpleNamespace(
+	                        encounter_kind="trainer",
+	                        pokemon_control={},
+	                        watchers=set(),
+	                ),
+	                data=None,
+	                battle=None,
+	        )
+
+	session._init_battle_state = fake_init
+	session._setup_battle_room = lambda intro_message=None: None
+
+	session.start()
+
+	assert session.captainB is not None
+	assert session.captainB.name == "Trainer Casey"
+	assert session.captainB.active_pokemon is trainer_mon
+	assert session.captainB.team == [trainer_mon]
+	assert getattr(session.captainB, "is_npc", False)
+	assert session.trainers == [session.captainA, session.captainB]
+	assert session.captainB.db.battle_id == session.battle_id
+	assert session.captainB.db.battle_lock == session.battle_id

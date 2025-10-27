@@ -68,6 +68,8 @@ def build_initial_state(
 	state = BattleState.from_battle_data(data, ai_type=battle_type.name)
 	if battle_type == BattleType.WILD:
 		state.encounter_kind = "wild"
+	elif battle_type == BattleType.TRAINER:
+		state.encounter_kind = "trainer"
 	state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
 	state.pokemon_control = {}
 	for poke in player_pokemon:

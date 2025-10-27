@@ -196,14 +196,17 @@ def _name_and_chips_lines(mon, colw: int) -> list[str]:
 
 
 def _is_wild_battle(me, foe, state) -> bool:
-	if getattr(state, "encounter_kind", "").lower() == "wild":
-		return True
-	if getattr(foe, "is_wild", False):
-		return True
-	# Heuristic: foe is an NPC shell with a single active Pokémon and no name for a player group
-	party = getattr(foe, "team", None)
-	is_npc = getattr(foe, "is_npc", False)
-	return bool(is_npc and isinstance(party, (list, tuple)) and len(party) <= 1)
+        encounter = getattr(state, "encounter_kind", "").lower()
+        if encounter == "wild":
+                return True
+        if encounter == "trainer":
+                return False
+        if getattr(foe, "is_wild", False):
+                return True
+        # Heuristic: foe is an NPC shell with a single active Pokémon and no name for a player group
+        party = getattr(foe, "team", None)
+        is_npc = getattr(foe, "is_npc", False)
+        return bool(is_npc and isinstance(party, (list, tuple)) and len(party) <= 1)
 
 
 def _wild_species(foe) -> str:
