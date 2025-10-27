@@ -906,6 +906,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         origin = getattr(self.captainA, "location", None)
         opponent_poke, opponent_name, battle_type, intro_message = self._select_opponent()
+        opponent_shell = None
         if battle_type == BattleType.WILD and not self.captainB:
             shell_name = f"Wild {getattr(opponent_poke, 'name', 'Pokémon')}"
             opponent_shell = SimpleNamespace(
@@ -917,8 +918,19 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 ndb=SimpleNamespace(),
                 db=SimpleNamespace(),
             )
+        elif battle_type == BattleType.TRAINER:
+            trainer_name = opponent_name or f"Trainer {getattr(opponent_poke, 'name', 'Pokémon')}"
+            opponent_shell = SimpleNamespace(
+                name=trainer_name,
+                key=trainer_name,
+                team=[opponent_poke],
+                active_pokemon=opponent_poke,
+                is_npc=True,
+                ndb=SimpleNamespace(),
+                db=SimpleNamespace(),
+            )
+        if opponent_shell is not None:
             self.captainB = opponent_shell
-            self._register_trainer(self.captainB)
             self.trainers = [t for t in (self.captainA, self.captainB) if t]
             for trainer in self.trainers:
                 self._register_trainer(trainer)
@@ -1049,13 +1061,22 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             intro_message = f"A wild {opponent_poke.name} appears!"
             log_info(f"Wild opponent {opponent_poke.name} generated")
         else:
-            opponent_poke = generate_trainer_pokemon()
+            trainer_name = self.rng.choice(
+                [
+                    "Trainer Alex",
+                    "Trainer Bailey",
+                    "Trainer Casey",
+                    "Trainer Devon",
+                    "Trainer Emery",
+                ]
+            )
+            opponent_poke = generate_trainer_pokemon(trainer_name)
             if getattr(opponent_poke, "model_id", None):
                 self.temp_pokemon_ids.append(opponent_poke.model_id)
             battle_type = BattleType.TRAINER
-            opponent_name = "Trainer"
-            intro_message = f"A trainer challenges you with {opponent_poke.name}!"
-            log_info(f"Trainer opponent {opponent_poke.name} generated")
+            opponent_name = trainer_name
+            intro_message = f"{trainer_name} challenges you with {opponent_poke.name}!"
+            log_info(f"Trainer opponent {opponent_poke.name} generated for {trainer_name}")
         return opponent_poke, opponent_name, battle_type, intro_message
 
     def _prepare_player_party(self, trainer, full_heal: bool = False) -> List[Pokemon]:
