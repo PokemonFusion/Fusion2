@@ -7,12 +7,218 @@ battle engine. It is separated from ``battleinstance`` to keep that module
 focused on session management.
 """
 
-from typing import List
+import random
+import re
+
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 from pokemon.helpers.pokemon_spawn import get_spawn
 
 from ..data.generation import generate_pokemon
 from .battledata import Move, Pokemon
+
+
+TRAINER_ENCOUNTERS: Dict[str, Any] = {
+        "default": [
+                {"species": "Charmander", "min_level": 5, "max_level": 6, "weight": 1},
+                {"species": "Squirtle", "min_level": 5, "max_level": 6, "weight": 1},
+                {"species": "Bulbasaur", "min_level": 5, "max_level": 6, "weight": 1},
+        ],
+        "locations": {
+                "forest": [
+                        {"species": "Caterpie", "min_level": 3, "max_level": 5, "weight": 3},
+                        {"species": "Weedle", "min_level": 3, "max_level": 5, "weight": 2},
+                        {"species": "Metapod", "min_level": 4, "max_level": 6, "weight": 1},
+                ],
+                "mountain": [
+                        {"species": "Geodude", "min_level": 6, "max_level": 8, "weight": 2},
+                        {"species": "Onix", "min_level": 8, "max_level": 10, "weight": 1},
+                        {"species": "Machop", "min_level": 6, "max_level": 8, "weight": 1},
+                ],
+        },
+        "archetypes": {
+                "ace": [
+                        {"species": "Pikachu", "min_level": 7, "max_level": 9, "weight": 1},
+                        {"species": "Eevee", "min_level": 7, "max_level": 9, "weight": 1},
+                ],
+                "bug_catcher": [
+                        {"species": "Paras", "min_level": 5, "max_level": 7, "weight": 1},
+                        {"species": "Pinsir", "min_level": 7, "max_level": 9, "weight": 1},
+                ],
+        },
+        "pairs": {
+                ("forest", "bug_catcher"): [
+                        {"species": "Venonat", "min_level": 6, "max_level": 8, "weight": 1},
+                        {"species": "Beedrill", "min_level": 7, "max_level": 9, "weight": 1},
+                ]
+        },
+}
+
+
+def _normalize_key(value: Any) -> Optional[str]:
+        """Return a lower-case key representation for ``value``."""
+
+        if value is None:
+                return None
+        if isinstance(value, str):
+                cleaned = value.strip().lower()
+                if cleaned.startswith("#"):
+                        cleaned = cleaned.lstrip("#")
+                cleaned = re.sub(r"[\s\-]+", "_", cleaned)
+                return cleaned or None
+        for attr in ("key", "db_key", "dbref", "name"):
+                attr_value = getattr(value, attr, None)
+                if attr_value:
+                        return _normalize_key(attr_value)
+        representation = str(value).strip().lower()
+        return representation or None
+
+
+def _coerce_roster(entries: Any) -> List[Dict[str, Any]]:
+        """Return a normalised list of trainer encounter entries."""
+
+        if not entries:
+                return []
+        roster: List[Dict[str, Any]] = []
+        for entry in entries:
+                payload: Dict[str, Any]
+                if isinstance(entry, Mapping):
+                        species = entry.get("species") or entry.get("name")
+                        if not species:
+                                continue
+                        payload = dict(entry)
+                        payload["species"] = str(species)
+                        min_level = payload.get("min_level", payload.get("level"))
+                        payload["min_level"] = int(min_level or 1)
+                        payload["max_level"] = int(payload.get("max_level", payload["min_level"]))
+                        payload.setdefault("weight", 1)
+                elif isinstance(entry, (list, tuple)):
+                        if not entry:
+                                continue
+                        species = entry[0]
+                        if not species:
+                                continue
+                        min_level = entry[1] if len(entry) > 1 else 1
+                        max_level = entry[2] if len(entry) > 2 else min_level
+                        payload = {
+                                "species": str(species),
+                                "min_level": int(min_level or 1),
+                                "max_level": int(max_level or min_level or 1),
+                                "weight": int(entry[3]) if len(entry) > 3 else 1,
+                        }
+                else:
+                        continue
+                if payload["max_level"] < payload["min_level"]:
+                        payload["max_level"] = payload["min_level"]
+                roster.append(payload)
+        return roster
+
+
+def _lookup_pair_roster(
+        pairs: Mapping[Any, Iterable[Mapping[str, Any]]],
+        location_key: Optional[str],
+        archetype_key: Optional[str],
+) -> List[Dict[str, Any]]:
+        """Return roster for combined location/archetype keys."""
+
+        if not pairs or not (location_key or archetype_key):
+                return []
+        for key, values in pairs.items():
+                if isinstance(key, tuple):
+                        normalised = tuple(_normalize_key(part) for part in key)
+                        if len(normalised) == 2 and normalised == (location_key, archetype_key):
+                                roster = _coerce_roster(values)
+                                if roster:
+                                        return roster
+                else:
+                        normalised = _normalize_key(key)
+                        expected = ":".join(
+                                part for part in (location_key, archetype_key) if part is not None
+                        )
+                        if normalised == expected and expected:
+                                roster = _coerce_roster(values)
+                                if roster:
+                                        return roster
+        return []
+
+
+def _roster_from_context(trainer, context: Optional[MutableMapping[str, Any]]) -> List[Dict[str, Any]]:
+        """Return the configured roster for ``trainer`` and ``context``."""
+
+        context = context or {}
+        for key in ("roster", "encounters", "table"):
+                roster = _coerce_roster(context.get(key))
+                if roster:
+                        return roster
+
+        # Trainer-provided rosters take precedence over global tables.
+        for source in (trainer, getattr(trainer, "db", None)):
+                if not source:
+                        continue
+                for attr in ("trainer_roster", "trainer_encounters", "encounters", "roster"):
+                        roster = _coerce_roster(getattr(source, attr, None))
+                        if roster:
+                                return roster
+
+        location_key = _normalize_key(context.get("location"))
+        archetype_key = _normalize_key(context.get("archetype"))
+
+        if location_key is None and trainer is not None:
+                location_key = _normalize_key(getattr(trainer, "location", None))
+        if archetype_key is None and trainer is not None:
+                archetype_key = _normalize_key(getattr(trainer, "archetype", None)) or _normalize_key(
+                        getattr(trainer, "trainer_archetype", None)
+                )
+
+        pairs = _lookup_pair_roster(TRAINER_ENCOUNTERS.get("pairs", {}), location_key, archetype_key)
+        if pairs:
+                return pairs
+
+        if location_key:
+                for key, values in (TRAINER_ENCOUNTERS.get("locations", {}) or {}).items():
+                        if _normalize_key(key) == location_key:
+                                roster = _coerce_roster(values)
+                                if roster:
+                                        return roster
+
+        if archetype_key:
+                for key, values in (TRAINER_ENCOUNTERS.get("archetypes", {}) or {}).items():
+                        if _normalize_key(key) == archetype_key:
+                                roster = _coerce_roster(values)
+                                if roster:
+                                        return roster
+
+        return _coerce_roster(TRAINER_ENCOUNTERS.get("default"))
+
+
+def _resolve_trainer_identifier(trainer, context: Optional[MutableMapping[str, Any]], entry: Mapping[str, Any]):
+        """Return an identifier associated with the trainer encounter."""
+
+        if trainer is not None:
+                for attr in ("id", "dbid", "db_id", "pk", "unique_id"):
+                        value = getattr(trainer, attr, None)
+                        if value is not None:
+                                return value
+                dbref = getattr(trainer, "dbref", None)
+                if dbref:
+                        try:
+                                return int(str(dbref).lstrip("#"))
+                        except (TypeError, ValueError):
+                                return str(dbref)
+
+        context = context or {}
+        for key in ("trainer_id", "trainer_identifier", "identifier", "id"):
+                value = context.get(key)
+                if value is not None:
+                        return value
+
+        parts = [
+                _normalize_key(context.get("location")),
+                _normalize_key(context.get("archetype")),
+                _normalize_key(entry.get("species")),
+        ]
+        slug = ":".join(filter(None, parts))
+        return slug or _normalize_key(entry.get("species"))
 
 
 def _stat_list(source) -> List[int]:
@@ -157,10 +363,52 @@ def generate_wild_pokemon(location=None) -> Pokemon:
 	return create_battle_pokemon(species, level, is_wild=True)
 
 
-def generate_trainer_pokemon(trainer=None) -> Pokemon:
-	"""Return a simple trainer-owned Charmander."""
+def generate_trainer_pokemon(
+        trainer=None,
+        *,
+        context: Optional[MutableMapping[str, Any]] = None,
+        rng: Optional[random.Random] = None,
+) -> Pokemon:
+        """Return a trainer-owned Pokémon from configured encounter tables."""
 
-	return create_battle_pokemon("Charmander", 5, trainer=trainer, is_wild=False)
+        roster = _roster_from_context(trainer, context)
+        if not roster:
+                roster = [
+                        {"species": "Charmander", "min_level": 5, "max_level": 5, "weight": 1},
+                ]
+
+        rng = rng or random
+        weights = [entry.get("weight", 1) for entry in roster]
+        selected = rng.choices(roster, weights=weights, k=1)[0]
+
+        min_level = int(selected.get("min_level", selected.get("level", 1)) or 1)
+        max_level = int(selected.get("max_level", min_level) or min_level or 1)
+        if max_level < min_level:
+                max_level = min_level
+
+        level = rng.randint(min_level, max_level)
+
+        pokemon = create_battle_pokemon(
+                selected.get("species", "Charmander"),
+                level,
+                trainer=trainer,
+                is_wild=False,
+        )
+
+        setattr(pokemon, "is_wild", False)
+
+        identifier = _resolve_trainer_identifier(trainer, context, selected)
+        if identifier is not None:
+                if getattr(pokemon, "trainer_id", None) is None:
+                        setattr(pokemon, "trainer_id", identifier)
+                setattr(pokemon, "trainer_identifier", identifier)
+                if getattr(pokemon, "ai_trainer_id", None) is None:
+                        setattr(pokemon, "ai_trainer_id", identifier)
+
+        if trainer is not None and getattr(pokemon, "trainer", None) is None:
+                setattr(pokemon, "trainer", trainer)
+
+        return pokemon
 
 
 __all__ = [
