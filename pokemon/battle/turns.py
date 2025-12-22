@@ -911,11 +911,20 @@ class TurnProcessor:
 				target.has_lost = True
 				self.check_victory()
 			else:
-				if hasattr(action.actor, "remove_item"):
-					try:
-						action.actor.remove_item(action.item)
-					except Exception:
-						pass
+				remove_item = getattr(action.actor, "remove_item", None)
+				if callable(remove_item):
+					should_remove = True
+					checker = getattr(action.actor, "has_item", None)
+					if callable(checker):
+						try:
+							should_remove = checker(action.item, 1)
+						except TypeError:
+							should_remove = checker(action.item)
+					if should_remove:
+						try:
+							remove_item(action.item)
+						except Exception:
+							pass
 				if hasattr(self, "log_action"):
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
 

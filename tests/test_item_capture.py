@@ -213,6 +213,40 @@ def test_capture_failure_consumes_ball_and_logs(monkeypatch):
     assert not battle.battle_over
 
 
+def test_capture_failure_does_not_remove_ball_twice(monkeypatch):
+    attacker = Pokemon("Pikachu")
+    defender = Pokemon("Bulbasaur", hp=5, max_hp=100)
+    p1 = BattleParticipant("P1", [attacker], is_ai=False)
+    p2 = BattleParticipant("P2", [defender], is_ai=False)
+    p1.active = [attacker]
+    p2.active = [defender]
+
+    p1.inventory = {"Great Ball": 1}
+    consumed = {"count": 0}
+
+    def remove_item(name, quantity=1):
+        consumed["count"] += 1
+        p1.inventory[name] = p1.inventory.get(name, 0) - quantity
+        return True
+
+    p1.remove_item = remove_item
+    p1.remove_item("Great Ball")
+
+    def fake_capture(*args, **kwargs):
+        return capture_mod.CaptureOutcome(caught=False, shakes=1, critical=False)
+
+    monkeypatch.setattr(capture_mod, "attempt_capture", fake_capture)
+
+    action = Action(p1, ActionType.ITEM, p2, item="Great Ball", priority=6)
+    p1.pending_action = action
+
+    battle = Battle(BattleType.WILD, [p1, p2])
+    battle.run_turn()
+
+    assert consumed["count"] == 1
+    assert p1.inventory["Great Ball"] == 0
+
+
 def test_capture_updates_pokedex_and_transfers_item(monkeypatch):
     attacker = Pokemon("Pikachu")
     defender = Pokemon("Bulbasaur", hp=1, max_hp=100)
