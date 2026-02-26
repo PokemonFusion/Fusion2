@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import random
 from typing import List, Optional
 
 from utils.safe_import import safe_import
@@ -27,6 +26,7 @@ except Exception:  # pragma: no cover - fallback when helper unavailable
 
 ensure_movedex_aliases(MOVEDEX)
 from .battledata import TurnInit
+from .random_source import RandomSource, resolve_rng
 
 
 class _Priority:
@@ -34,7 +34,7 @@ class _Priority:
 
 	priorities: List[int] = []
 
-	def __init__(self, turndata: TurnInit, pokemon, rng: random.Random):
+	def __init__(self, turndata: TurnInit, pokemon, rng: RandomSource):
 		pokemon.tempvals.clear()
 		if turndata.switch is not None:
 			self.priority = 6
@@ -64,10 +64,11 @@ class _Priority:
 		return min(cls.priorities) if cls.priorities else 0
 
 
-def calculateTurnorder(battleround, rng: Optional[random.Random] = None) -> List[str]:
+def calculateTurnorder(battleround, rng: Optional[RandomSource] = None) -> List[str]:
 	"""Return the resolution order for the given turn."""
 
-	rng = rng or random
+	battle = getattr(battleround, "battle", None)
+	rng = resolve_rng(battle=battle, rng=rng)
 	_Priority.priorities.clear()
 	priorities = {key: _Priority(pos.turninit, pos.pokemon, rng) for key, pos in battleround.positions.items()}
 

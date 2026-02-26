@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import logging
-import random
 from typing import List, Optional
 
 from utils.safe_import import safe_import
 
 from ._shared import _normalize_key
 from .actions import Action, ActionType
+from .random_source import resolve_rng
 
 logger = logging.getLogger("battle")
 
@@ -102,7 +102,7 @@ class TurnProcessor:
 					except Exception:
 						pass
 
-				rng = getattr(self, "rng", random)
+				rng = resolve_rng(battle=self)
 				if status == "slp":
 					turns = poke.tempvals.get("slp_turns")
 					if turns is None:
@@ -261,7 +261,7 @@ class TurnProcessor:
 				speed = 0
 
 			action.speed = speed
-			rng = getattr(self, "rng", random)
+			rng = resolve_rng(battle=self)
 			action._tiebreak = rng.random()
 
 		if trick_room:
@@ -421,7 +421,7 @@ class TurnProcessor:
 				if result is False:
 					return True
 
-		rng = getattr(self, "rng", random)
+		rng = resolve_rng(battle=self)
 		if status == "par":
 			if rng.random() < 0.25:
 				if hasattr(self, "announce_status_change"):
@@ -633,7 +633,7 @@ class TurnProcessor:
 				success = True
 				reason = "faster"
 			else:
-				rng = getattr(self, "rng", random)
+				rng = resolve_rng(battle=self)
 				opponent_speed = max(1, opponent_speed)
 				threshold = (player_speed * 128) // opponent_speed + attempts * 30
 				if threshold >= 255:
@@ -735,7 +735,7 @@ class TurnProcessor:
 			except ModuleNotFoundError:
 				ball_mods = {}
 			ball_mod = ball_mods.get(item_key, 1.0)
-			rng = getattr(self, "rng", random)
+			rng = resolve_rng(battle=self)
 			# Use the battle's RNG so callers can control determinism
 			# via :class:`random.Random` instances.
 			trainer = getattr(action.actor, "trainer", None)

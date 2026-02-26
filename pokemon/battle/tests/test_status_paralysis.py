@@ -1,7 +1,6 @@
 """Tests for paralysis status behaviour."""
 
 import os
-import random
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -20,12 +19,21 @@ def test_paralysis_speed_halved():
         assert halved == 100
 
 
-def test_paralysis_can_prevent_move(monkeypatch):
+def test_paralysis_can_prevent_move():
         battle, _, target = build_battle(defender_status="par")
         handler = CONDITION_HANDLERS["par"]
-        monkeypatch.setattr(random, "random", lambda: 0.1)
+
+        class FakeRng:
+                def __init__(self, value):
+                        self.value = value
+
+                def random(self):
+                        return self.value
+
+        battle.rng = FakeRng(0.1)
         assert handler.onBeforeMove(target, battle=battle) is False
-        monkeypatch.setattr(random, "random", lambda: 0.5)
+
+        battle.rng = FakeRng(0.5)
         assert handler.onBeforeMove(target, battle=battle) is True
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Freeze status implementation."""
 
-import random
+from pokemon.battle.random_source import RandomSource, resolve_rng
 
 from .status_core import (
 	STATUS_FREEZE,
@@ -60,8 +60,9 @@ class Freeze(StatusCondition):
 			previous=previous,
 		)
 
-	def on_before_move(self, pokemon, battle) -> bool:
-		if random.random() < 0.2:
+	def on_before_move(self, pokemon, battle, *, rng: RandomSource | None = None) -> bool:
+		rng = resolve_rng(battle=battle, rng=rng)
+		if rng.random() < 0.2:
 			pokemon.status = 0
 			if battle:
 				battle.announce_status_change(

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 """Paralysis status implementation."""
 
-import random
-
+from pokemon.battle.random_source import RandomSource, resolve_rng
 from .status_core import (
 	STATUS_PARALYSIS,
 	StatusCondition,
@@ -34,8 +33,9 @@ class Paralysis(StatusCondition):
 			previous=previous,
 		)
 
-	def on_before_move(self, pokemon, battle) -> bool:
-		if random.random() < 0.25:
+	def on_before_move(self, pokemon, battle, *, rng: RandomSource | None = None) -> bool:
+		rng = resolve_rng(battle=battle, rng=rng)
+		if rng.random() < 0.25:
 			if hasattr(pokemon, 'tempvals'):
 				pokemon.tempvals['cant_move'] = 'par'
 			if battle:

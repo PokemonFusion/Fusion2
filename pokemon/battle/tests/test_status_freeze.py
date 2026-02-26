@@ -1,7 +1,6 @@
 """Tests for freeze status behaviour."""
 
 import os
-import random
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -13,18 +12,34 @@ from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 from .helpers import build_battle, resolve_status_text
 
 
-def test_freeze_random_thaw(monkeypatch):
+def test_freeze_random_thaw():
         handler = CONDITION_HANDLERS["frz"]
         battle, _, target = build_battle(defender_status="frz")
-        monkeypatch.setattr(random, "random", lambda: 0.1)
+
+        class FakeRng:
+                def __init__(self, value):
+                        self.value = value
+
+                def random(self):
+                        return self.value
+
+        battle.rng = FakeRng(0.1)
         assert handler.onBeforeMove(target, battle=battle) is True
         assert target.status == 0
 
 
-def test_freeze_can_keep_pokemon_frozen(monkeypatch):
+def test_freeze_can_keep_pokemon_frozen():
         handler = CONDITION_HANDLERS["frz"]
         battle, _, target = build_battle(defender_status="frz")
-        monkeypatch.setattr(random, "random", lambda: 0.5)
+
+        class FakeRng:
+                def __init__(self, value):
+                        self.value = value
+
+                def random(self):
+                        return self.value
+
+        battle.rng = FakeRng(0.5)
         assert handler.onBeforeMove(target, battle=battle) is False
         assert target.status == "frz"
 
