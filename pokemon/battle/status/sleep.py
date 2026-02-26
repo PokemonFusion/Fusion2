@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Sleep status implementation."""
 
-import random
+from pokemon.battle.random_source import RandomSource, resolve_rng
 
 from .status_core import (
         STATUS_SLEEP,
@@ -80,11 +80,12 @@ class Sleep(StatusCondition):
 			previous=previous,
 		)
 
-	def on_start(self, pokemon, battle, *, effect=None, **kwargs) -> None:
+	def on_start(self, pokemon, battle, *, effect=None, rng: RandomSource | None = None, **kwargs) -> None:
 		if not hasattr(pokemon, 'tempvals'):
 			setattr(pokemon, 'tempvals', {})
+		rng = resolve_rng(battle=battle, rng=rng)
 		via_rest = isinstance(effect, str) and effect.startswith('move:rest')
-		turns = 2 if via_rest else random.randint(1, 3)
+		turns = 2 if via_rest else rng.randint(1, 3)
 		pokemon.tempvals['sleep_turns'] = turns
 		return None
 

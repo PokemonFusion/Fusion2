@@ -1,7 +1,6 @@
 """Tests for sleep status behaviour."""
 
 import os
-import random
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -13,20 +12,21 @@ from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 from .helpers import build_battle, resolve_status_text
 
 
-def test_sleep_turn_range(monkeypatch):
+def test_sleep_turn_range():
         handler = CONDITION_HANDLERS["slp"]
         durations = set()
         sequence = [1, 2, 3]
         index = {"i": 0}
 
-        def fake_randint(a, b):
-                value = sequence[index["i"] % len(sequence)]
-                index["i"] += 1
-                return value
+        class FakeRng:
+                def randint(self, _a, _b):
+                        value = sequence[index["i"] % len(sequence)]
+                        index["i"] += 1
+                        return value
 
-        monkeypatch.setattr(random, "randint", fake_randint)
         for _ in range(3):
                 battle, _, target = build_battle()
+                battle.rng = FakeRng()
                 assert handler.onStart(target, battle=battle, effect=None, previous=None) is True
                 durations.add(target.tempvals.get("sleep_turns"))
         assert durations == {1, 2, 3}
@@ -73,13 +73,16 @@ def test_sleep_blocked_by_uproar():
         assert target.status != "slp"
 
 
-def test_sleep_status_messages(monkeypatch):
+def test_sleep_status_messages():
         battle, attacker, target = build_battle()
         logs = []
         battle.log_action = logs.append
 
-        # Ensure deterministic sleep duration
-        monkeypatch.setattr(random, "randint", lambda *_args, **_kwargs: 2)
+        class FakeRng:
+                def randint(self, *_args, **_kwargs):
+                        return 2
+
+        battle.rng = FakeRng()
         applied = battle.apply_status_condition(target, "slp", source=attacker, effect="move:spore")
         assert applied is True
         start_template = resolve_status_text("slp", "start")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 
-
+from pokemon.battle.random_source import resolve_rng
 from pokemon.battle.status import (
         BadPoison,
         Burn,
@@ -64,7 +64,7 @@ class Par:
                 return True
 
         def onBeforeMove(self, pokemon, *_, battle=None, **__):
-                return self._impl.on_before_move(pokemon, battle)
+                return self._impl.on_before_move(pokemon, battle, rng=resolve_rng(battle=battle))
 
         def onModifySpe(self, spe, *args, pokemon=None, **kwargs):
                 if pokemon is None and args:
@@ -116,7 +116,7 @@ class Frz:
                 return True
 
         def onBeforeMove(self, pokemon, *_, battle=None, **__):
-                return self._impl.on_before_move(pokemon, battle)
+                return self._impl.on_before_move(pokemon, battle, rng=resolve_rng(battle=battle))
 
         def onDamagingHit(self, pokemon, damage=None, source=None, move=None, battle=None, **__):
                 self._impl.on_hit_by_move(pokemon, move, battle)
