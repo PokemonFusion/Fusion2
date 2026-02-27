@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from utils.safe_import import safe_import
 
 from ._shared import _normalize_key
 from .actions import Action, ActionType
+from .contracts import BattleContextProtocol, CombatPokemonProtocol, ParticipantAdapter, ParticipantProtocol
 from .random_source import resolve_rng
 
 logger = logging.getLogger("battle")
@@ -141,42 +142,25 @@ class TurnProcessor:
 					poke.pending_tera = None
 
 	def select_actions(self) -> List[Action]:
+		"""Collect participant actions using the participant protocol contract."""
+
 		actions: List[Action] = []
-		for part in self.participants:
+		battle_ctx = cast(BattleContextProtocol, self)
+		for raw_participant in self.participants:
+			participant = raw_participant
+			if not isinstance(raw_participant, ParticipantProtocol):
+				participant = ParticipantAdapter(raw_participant)
+			part = cast(ParticipantProtocol, participant)
 			if part.has_lost:
 				continue
-			if hasattr(part, "choose_actions"):
-				part_actions = part.choose_actions(self)
-				if isinstance(part_actions, list):
-					actions.extend(part_actions)
-				elif part_actions:
-					actions.append(part_actions)
-			elif hasattr(part, "choose_action"):
-				action = part.choose_action(self)
-				if action:
-					actions.append(action)
-			else:
-				pending = getattr(part, "pending_action", None)
-				if not pending:
-					continue
-				if isinstance(pending, list):
-					for act in pending:
-						if act and act.target and act.target not in self.participants:
-							act.target = None
-						if act and not getattr(act, "target", None):
-							opps = self.opponents_of(part)
-							if opps:
-								act.target = opps[0]
-					actions.extend(pending)
-				else:
-					if pending.target and pending.target not in self.participants:
-						pending.target = None
-					if not pending.target:
-						opps = self.opponents_of(part)
-						if opps:
-							pending.target = opps[0]
-					actions.append(pending)
-				part.pending_action = None
+			for action in part.choose_actions(battle_ctx):
+				if action.target and action.target not in self.participants:
+					action.target = None
+				if not action.target:
+					opps = self.opponents_of(raw_participant)
+					if opps:
+						action.target = opps[0]
+				actions.append(action)
 		return actions
 
 	def collect_actions(self) -> List[Action]:
@@ -424,18 +408,21 @@ class TurnProcessor:
 		rng = resolve_rng(battle=self)
 		if status == "par":
 			if rng.random() < 0.25:
-				if hasattr(self, "announce_status_change"):
-					self.announce_status_change(pokemon, "par", event="cant")
+				cast(BattleContextProtocol, self).announce_status_change(
+					cast(CombatPokemonProtocol, pokemon), "par", event="cant"
+				)
 				return True
 			return False
 		if status == "frz":
 			if rng.random() < 0.2:
 				pokemon.status = 0
-				if hasattr(self, "announce_status_change"):
-					self.announce_status_change(pokemon, "frz", event="end")
+				cast(BattleContextProtocol, self).announce_status_change(
+					cast(CombatPokemonProtocol, pokemon), "frz", event="end"
+				)
 				return False
-			if hasattr(self, "announce_status_change"):
-				self.announce_status_change(pokemon, "frz", event="cant")
+			cast(BattleContextProtocol, self).announce_status_change(
+				cast(CombatPokemonProtocol, pokemon), "frz", event="cant"
+			)
 			return True
 		if status == "slp":
 			turns = pokemon.tempvals.get("slp_turns")
@@ -448,11 +435,13 @@ class TurnProcessor:
 				if turns == 0:
 					pokemon.status = 0
 					pokemon.tempvals.pop("slp_turns", None)
-					if hasattr(self, "announce_status_change"):
-						self.announce_status_change(pokemon, "slp", event="end")
+					cast(BattleContextProtocol, self).announce_status_change(
+						cast(CombatPokemonProtocol, pokemon), "slp", event="end"
+					)
 					return False
-				if hasattr(self, "announce_status_change"):
-					self.announce_status_change(pokemon, "slp", event="cant")
+				cast(BattleContextProtocol, self).announce_status_change(
+					cast(CombatPokemonProtocol, pokemon), "slp", event="cant"
+				)
 				return True
 		return False
 
@@ -481,13 +470,11 @@ class TurnProcessor:
 
 		logger.debug("Battle message: %s", message)
 
-		log_fn = getattr(self, "log_action", None)
-		if callable(log_fn):
-			try:
-				log_fn(message)
-				return
-			except Exception:
-				pass
+		try:
+			cast(BattleContextProtocol, self).log_action(message)
+			return
+		except Exception:
+			pass
 
 		notify_fn = getattr(self, "notify", None)
 		if callable(notify_fn):
