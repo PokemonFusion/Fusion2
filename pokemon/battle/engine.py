@@ -980,6 +980,195 @@ class BattleMove:
                             )
 
 
+class MessageFormatter:
+    """Format and emit human-readable battle messages."""
+
+    def __init__(
+        self,
+        text_provider: Callable[[], Dict[str, Dict[str, str]]] | None = None,
+    ) -> None:
+        """Initialize the formatter."""
+
+        self._text_provider = text_provider or _get_default_text
+
+    def format_default_message(
+        self,
+        key: str,
+        replacements: Mapping[str, Sequence[str] | str],
+        fallback: str | None = None,
+    ) -> str | None:
+        """Return the formatted ``default`` message for ``key``."""
+
+        default_messages = self._text_provider().get("default", {})
+        template = default_messages.get(key) or fallback
+        if not template:
+            return None
+        return _apply_placeholders(template, replacements)
+
+    def pokemon_nickname(self, pokemon) -> str:
+        """Return the best nickname representation for ``pokemon``."""
+
+        nickname = getattr(pokemon, "name", None) or getattr(pokemon, "nickname", None)
+        if nickname:
+            return str(nickname)
+        species = getattr(pokemon, "species", None)
+        if hasattr(species, "name") and getattr(species, "name"):
+            return str(getattr(species, "name"))
+        if species:
+            return str(species)
+        return "Pokemon"
+
+    def pokemon_fullname(self, pokemon) -> str:
+        """Return a display-friendly full name for ``pokemon``."""
+
+        nickname = self.pokemon_nickname(pokemon)
+        species = getattr(pokemon, "species", None)
+        species_name = None
+        if hasattr(species, "name") and getattr(species, "name"):
+            species_name = str(getattr(species, "name"))
+        elif isinstance(species, str) and species:
+            species_name = species
+        if species_name and species_name != nickname:
+            return f"{nickname} ({species_name})"
+        return nickname
+
+    def item_display_name(self, item) -> str:
+        """Return a display string for ``item``."""
+
+        if hasattr(item, "name") and getattr(item, "name"):
+            return str(getattr(item, "name"))
+        item_key = None
+        if isinstance(item, str):
+            item_key = _normalize_key(item)
+        elif getattr(item, "key", None):
+            item_key = _normalize_key(getattr(item, "key"))
+        if item_key:
+            entry = ITEMDEX.get(item_key)
+            if entry:
+                for attr in ("name", "id"):
+                    value = getattr(entry, attr, None)
+                    if value:
+                        return str(value)
+            return item_key.replace("-", " ").replace("_", " ").title()
+        if isinstance(item, str):
+            return item
+        return str(item)
+
+    def status_template(self, status_key: str, event: str) -> str | None:
+        """Return the message template for ``status_key`` and ``event``."""
+
+        messages = self._text_provider()
+        visited: set[str] = set()
+        current = status_key
+        while current:
+            entry = messages.get(current, {})
+            template = entry.get(event)
+            if template is None:
+                return None
+            if isinstance(template, str) and template.startswith("#"):
+                ref = template[1:]
+                if not ref or ref in visited:
+                    return None
+                visited.add(ref)
+                current = ref
+                continue
+            return template
+        return None
+
+
+class StatusService:
+    """Encapsulate status and immunity helper checks."""
+
+    def handle_immunities_and_abilities(self, battle: "Battle", attacker, target, move) -> bool:
+        """Return ``True`` if ``move`` is blocked before damage execution."""
+
+        eff = 1.0
+        if move.type:
+            eff = battle.calculate_type_effectiveness(target, move)
+        if eff == 0:
+            return True
+        if getattr(target, "volatiles", {}).get("protect"):
+            return True
+        return False
+
+    def check_protect_substitute(self, target) -> bool:
+        """Return ``True`` if ``target`` has protect/substitute volatile effects."""
+
+        vols = getattr(target, "volatiles", {})
+        return "protect" in vols or "substitute" in vols
+
+
+class TurnResolutionService:
+    """Provide turn-order helper checks for battle execution."""
+
+    def check_priority_override(self, pokemon) -> bool:
+        """Return whether temporary effects override normal priority."""
+
+        return getattr(pokemon, "tempvals", {}).get("quash", False)
+
+
+class RewardService:
+    """Apply post-battle reward rules."""
+
+    def handle_end_of_battle_rewards(self, battle: "Battle", winner: BattleParticipant) -> None:
+        """Award post-battle rewards to the winning participant."""
+
+        if battle._rewards_granted:
+            return
+        if not winner or not getattr(winner, "player", None):
+            return
+        if battle.type is not BattleType.TRAINER:
+            return
+
+        try:  # pragma: no cover - data import optional in tests
+            from pokemon.dex.exp_ev_yields import GAIN_INFO  # type: ignore
+        except Exception:  # pragma: no cover - fallback to empty mapping
+            GAIN_INFO = {}
+
+        prize_money = 0
+        for participant in battle.participants:
+            if participant is winner or not getattr(participant, "has_lost", False):
+                continue
+            if getattr(participant, "player", None):
+                continue
+            for poke in getattr(participant, "pokemons", []):
+                if getattr(poke, "hp", 0) > 0:
+                    continue
+                species = getattr(poke, "name", getattr(poke, "species", ""))
+                info = GAIN_INFO.get(species, {}) if species else {}
+                amount = int(info.get("exp", 0)) if info else 0
+                if amount <= 0:
+                    level = getattr(poke, "level", 1) or 1
+                    amount = max(10, int(level) * 10)
+                prize_money += amount
+
+        if prize_money <= 0:
+            battle._rewards_granted = True
+            return
+
+        recipient = winner.player
+        trainer = getattr(recipient, "trainer", None)
+        if trainer and hasattr(trainer, "add_money"):
+            try:
+                trainer.add_money(prize_money)
+            except Exception:  # pragma: no cover - persistence best-effort
+                pass
+        else:
+            add_money = getattr(recipient, "add_money", None)
+            if callable(add_money):
+                try:
+                    add_money(prize_money)
+                except Exception:  # pragma: no cover - persistence best-effort
+                    pass
+
+        if hasattr(battle, "log_action"):
+            battle.log_action(
+                f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!"
+            )
+
+        battle._rewards_granted = True
+
+
 class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     """Main battle controller for one or more sides."""
 
@@ -989,6 +1178,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         participants: List[BattleParticipant],
         *,
         rng: Optional[random.Random] = None,
+        turn_resolution_service: TurnResolutionService | None = None,
+        status_service: StatusService | None = None,
+        message_formatter: MessageFormatter | None = None,
+        reward_service: RewardService | None = None,
     ) -> None:
         """Create a new battle with arbitrary participants.
 
@@ -1018,6 +1211,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.rng = rng or random
         self._rewards_granted: bool = False
         self._result_logged: bool = False
+        self.turn_resolution_service = turn_resolution_service or TurnResolutionService()
+        self.status_service = status_service or StatusService()
+        self.message_formatter = message_formatter or MessageFormatter()
+        self.reward_service = reward_service or RewardService()
 
         # If any participant already has active Pokémon assigned (common in
         # tests or restored battles) make sure they are marked as having
@@ -1035,84 +1232,27 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     ) -> str | None:
         """Return the formatted message for ``key`` from :data:`DEFAULT_TEXT`."""
 
-        default_messages = _get_default_text().get("default", {})
-        template = default_messages.get(key) or fallback
-        if not template:
-            return None
-        return _apply_placeholders(template, replacements)
+        return self.message_formatter.format_default_message(key, replacements, fallback)
 
-    @staticmethod
-    def _pokemon_nickname(pokemon) -> str:
+    def _pokemon_nickname(self, pokemon) -> str:
         """Return the best nickname representation for ``pokemon``."""
 
-        nickname = getattr(pokemon, "name", None) or getattr(
-            pokemon, "nickname", None
-        )
-        if nickname:
-            return str(nickname)
-        species = getattr(pokemon, "species", None)
-        if hasattr(species, "name") and getattr(species, "name"):
-            return str(getattr(species, "name"))
-        if species:
-            return str(species)
-        return "Pokemon"
+        return self.message_formatter.pokemon_nickname(pokemon)
 
     def _pokemon_fullname(self, pokemon) -> str:
         """Return a display-friendly full name for ``pokemon``."""
 
-        nickname = self._pokemon_nickname(pokemon)
-        species = getattr(pokemon, "species", None)
-        species_name = None
-        if hasattr(species, "name") and getattr(species, "name"):
-            species_name = str(getattr(species, "name"))
-        elif isinstance(species, str) and species:
-            species_name = species
-        if species_name and species_name != nickname:
-            return f"{nickname} ({species_name})"
-        return nickname
+        return self.message_formatter.pokemon_fullname(pokemon)
 
     def _item_display_name(self, item) -> str:
         """Return a display string for ``item``."""
 
-        if hasattr(item, "name") and getattr(item, "name"):
-            return str(getattr(item, "name"))
-        item_key = None
-        if isinstance(item, str):
-            item_key = _normalize_key(item)
-        elif getattr(item, "key", None):
-            item_key = _normalize_key(getattr(item, "key"))
-        if item_key:
-            entry = ITEMDEX.get(item_key)
-            if entry:
-                for attr in ("name", "id"):
-                    value = getattr(entry, attr, None)
-                    if value:
-                        return str(value)
-            return item_key.replace("-", " ").replace("_", " ").title()
-        if isinstance(item, str):
-            return item
-        return str(item)
+        return self.message_formatter.item_display_name(item)
 
     def _status_template(self, status_key: str, event: str) -> str | None:
         """Return the message template for ``status_key`` and ``event``."""
 
-        messages = _get_default_text()
-        visited: set[str] = set()
-        current = status_key
-        while current:
-            entry = messages.get(current, {})
-            template = entry.get(event)
-            if template is None:
-                return None
-            if isinstance(template, str) and template.startswith("#"):
-                ref = template[1:]
-                if not ref or ref in visited:
-                    return None
-                visited.add(ref)
-                current = ref
-                continue
-            return template
-        return None
+        return self.message_formatter.status_template(status_key, event)
 
     def _log_switch_in(self, participant: BattleParticipant, pokemon) -> None:
         """Log the standard switch-in message for ``pokemon``."""
@@ -2584,83 +2724,22 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def handle_immunities_and_abilities(self, attacker, target, move) -> bool:
         """Return ``True`` if the move is blocked."""
-        eff = 1.0
-        if move.type:
-            eff = self.calculate_type_effectiveness(target, move)
-        if eff == 0:
-            return True
-        if getattr(target, "volatiles", {}).get("protect"):
-            return True
-        return False
+        return self.status_service.handle_immunities_and_abilities(
+            self, attacker, target, move
+        )
 
     def check_protect_substitute(self, target) -> bool:
-        vols = getattr(target, "volatiles", {})
-        return "protect" in vols or "substitute" in vols
+        """Return whether ``target`` has protect/substitute volatile effects."""
+
+        return self.status_service.check_protect_substitute(target)
 
     def check_priority_override(self, pokemon) -> bool:
-        return getattr(pokemon, "tempvals", {}).get("quash", False)
+        """Return whether temporary effects override normal action priority."""
+
+        return self.turn_resolution_service.check_priority_override(pokemon)
 
     def handle_end_of_battle_rewards(self, winner: BattleParticipant) -> None:
-        """Award post-battle rewards to the winning participant.
+        """Award post-battle rewards for the winning participant."""
 
-        Experience is granted during ``run_faint``. This hook focuses on
-        trainer battle prize money so that the player's trainer model reflects
-        victories outside of PvP encounters.
-        """
+        self.reward_service.handle_end_of_battle_rewards(self, winner)
 
-        if self._rewards_granted:
-            return
-
-        if not winner or not getattr(winner, "player", None):
-            return
-
-        if self.type is not BattleType.TRAINER:
-            return
-
-        try:  # pragma: no cover - data import optional in tests
-            from pokemon.dex.exp_ev_yields import GAIN_INFO  # type: ignore
-        except Exception:  # pragma: no cover - fallback to empty mapping
-            GAIN_INFO = {}
-
-        prize_money = 0
-        for participant in self.participants:
-            if participant is winner or not getattr(participant, "has_lost", False):
-                continue
-            if getattr(participant, "player", None):
-                # PvP opponents handle their own persistence.
-                continue
-            for poke in getattr(participant, "pokemons", []):
-                if getattr(poke, "hp", 0) > 0:
-                    continue
-                species = getattr(poke, "name", getattr(poke, "species", ""))
-                info = GAIN_INFO.get(species, {}) if species else {}
-                amount = int(info.get("exp", 0)) if info else 0
-                if amount <= 0:
-                    level = getattr(poke, "level", 1) or 1
-                    amount = max(10, int(level) * 10)
-                prize_money += amount
-
-        if prize_money <= 0:
-            self._rewards_granted = True
-            return
-
-        recipient = winner.player
-        trainer = getattr(recipient, "trainer", None)
-        if trainer and hasattr(trainer, "add_money"):
-            try:
-                trainer.add_money(prize_money)
-            except Exception:  # pragma: no cover - persistence best-effort
-                pass
-        else:
-            add_money = getattr(recipient, "add_money", None)
-            if callable(add_money):
-                try:
-                    add_money(prize_money)
-                except Exception:  # pragma: no cover - persistence best-effort
-                    pass
-
-        if hasattr(self, "log_action"):
-            self.log_action(
-                f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!"
-            )
-        self._rewards_granted = True
