@@ -16,6 +16,7 @@ conditions_funcs = None
 
 from .callbacks import _resolve_callback
 from .contracts import BattleContextProtocol
+from .error_handling import handle_battle_exception
 
 
 def _get_default_text() -> Dict[str, Dict[str, str]]:
@@ -65,6 +66,29 @@ def _field_message_template(effect_key: str, event: str) -> Optional[str]:
 
 class ConditionHelpers:
 	"""Mixin providing battle condition utilities."""
+
+	def _record_condition_failure(
+		self,
+		*,
+		context: str,
+		exception: Exception,
+		pokemon=None,
+		event: str | None = None,
+	) -> None:
+		"""Log and store structured condition callback failures."""
+		failure = handle_battle_exception(
+			battle=self,
+			context=context,
+			exception=exception,
+			pokemon=pokemon,
+			event=event,
+		)
+		entries = getattr(self, "_callback_failures", None)
+		if isinstance(entries, list):
+			entries.append(failure)
+		else:
+			self._callback_failures = [failure]
+
 
 	def _format_field_message(
 		self,
@@ -275,8 +299,8 @@ class ConditionHelpers:
 		if name_key and handler and hasattr(handler, "onFieldEnd"):
 			try:
 				handler.onFieldEnd(self.field)
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_condition_failure(context="clear_weather", exception=err, event=name_key)
 		if name_key:
 			self.field.pseudo_weather.pop(name_key, None)
 		self.field.weather = None
@@ -321,8 +345,8 @@ class ConditionHelpers:
 		if name_key and handler and hasattr(handler, "onFieldEnd"):
 			try:
 				handler.onFieldEnd(self.field)
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_condition_failure(context="clear_terrain", exception=err, event=name_key)
 		if name_key:
 			self.field.pseudo_weather.pop(name_key, None)
 		self.field.terrain = None
@@ -355,8 +379,8 @@ class ConditionHelpers:
 				if handler:
 					try:
 						handler = handler()
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_condition_failure(context="entry_hazard_handler", exception=err, pokemon=pokemon, event=effect)
 			if not handler:
 				continue
 			cb = getattr(handler, "onEntryHazard", None)
@@ -366,8 +390,8 @@ class ConditionHelpers:
 				except Exception:
 					try:
 						cb(pokemon)
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_condition_failure(context="entry_hazard_callback", exception=err, pokemon=pokemon, event=effect)
 
 	# ------------------------------------------------------------------
 	# Generic battle condition helpers
@@ -504,8 +528,8 @@ class ConditionHelpers:
 		if handler and hasattr(handler, "onFieldResidual"):
 			try:
 				handler.onFieldResidual(self.field)
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_condition_failure(context="field_residual", exception=err, event=effect_attr)
 
 	def handle_weather(self) -> None:
 		"""Apply residual effects of the current weather."""

@@ -46,6 +46,12 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 from utils.safe_import import safe_import
 
 try:
+    from .error_handling import battle_debug_fail_fast
+except Exception:  # pragma: no cover - fallback for stripped test stubs
+    def battle_debug_fail_fast(battle=None):
+        return False
+
+try:
     from .events import EventDispatcher  # type: ignore
 except Exception:  # pragma: no cover - fallback for tests with stubs
     try:
@@ -1206,6 +1212,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         self.field = Field()
         self.debug: bool = False
+        # In debug/testing modes we re-raise callback exceptions to fail fast.
+        self.fail_fast_errors: bool = battle_debug_fail_fast(self)
         # Toggle to display exact damage numbers alongside descriptive text.
         self.show_damage_numbers: bool = False
         self.rng = rng or random
