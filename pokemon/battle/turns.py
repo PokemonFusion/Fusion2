@@ -266,14 +266,14 @@ class TurnProcessor:
 						if isinstance(mod, (int, float)):
 							speed = int(mod)
 					except Exception as err:
-						self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
+						self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
 				if item and hasattr(item, "call"):
 					try:
 						mod = item.call("onModifySpe", speed, pokemon=poke)
 						if isinstance(mod, (int, float)):
 							speed = int(mod)
 					except Exception as err:
-						self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
+						self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
 			else:
 				speed = 0
 
