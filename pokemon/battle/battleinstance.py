@@ -130,8 +130,10 @@ class BattleInstance(_ScriptBase):
     def at_server_start(self):
         try:
             self.stop()
-        except Exception:
-            pass
+        except Exception as err:
+            log_warn("Battle session compatibility fallback failed", exc_info=True)
+            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                raise
 
 
 class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, StatePersistenceMixin):
@@ -483,8 +485,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         try:
             if len(getattr(battle, "participants", [])) > 1:
                 battle.participants[1].player = opponent_shell
-        except Exception:
-            pass
+        except Exception as err:
+            log_warn("Battle session compatibility fallback failed", exc_info=True)
+            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                raise
 
     @staticmethod
     def ensure_for_player(player) -> "BattleSession | None":
@@ -801,8 +805,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     if idx < len(team_map[t]):
                         part.player = team_map[t][idx]
                     team_idx[t] = idx + 1
-        except Exception:
-            pass
+        except Exception as err:
+            log_warn("Battle session compatibility fallback failed", exc_info=True)
+            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                raise
 
         # expose battle info on trainers for the interface
         try:
@@ -817,8 +823,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     part_b = obj.logic.battle.participants[1]
                     if part_b.active:
                         obj.captainB.active_pokemon = part_b.active[0]
-        except Exception:
-            pass
+        except Exception as err:
+            log_warn("Battle session compatibility fallback failed", exc_info=True)
+            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                raise
 
         for wid in obj.watchers:
             log_info(f"Restoring watcher {wid}")
@@ -883,8 +891,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .handler import battle_handler
 
             battle_handler.register(obj)
-        except Exception:
-            pass
+        except Exception as err:
+            log_warn("Battle session compatibility fallback failed", exc_info=True)
+            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                raise
 
         return obj
 
@@ -1014,8 +1024,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 self.captainA.active_pokemon = player_participant.active[0]
             if opponent_participant.active:
                 self.captainB.active_pokemon = opponent_participant.active[0]
-        except Exception:
-            pass
+        except Exception as err:
+            log_warn("Battle session compatibility fallback failed", exc_info=True)
+            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                raise
 
         # persist battle info on the room
         self.storage.set("data", self.logic.data.to_dict())
@@ -1228,8 +1240,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     except Exception:
                         try:
                             mon.save()
-                        except Exception:
-                            pass
+                        except Exception as err:
+                            log_warn("Failed to persist synced Pokemon state", exc_info=True)
+                            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                                raise
 
     def end(self) -> None:
         """End the battle and clean up."""
@@ -1245,8 +1259,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if OwnedPokemon:
                     poke = OwnedPokemon.objects.get(unique_id=pid)
                     poke.delete_if_wild()
-            except Exception:
-                pass
+            except Exception as err:
+                log_warn("Battle cleanup encountered an error", exc_info=True)
+                if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                    raise
         if OwnedPokemon:
             OwnedPokemon.objects.filter(
                 is_battle_instance=True,

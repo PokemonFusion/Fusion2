@@ -11,12 +11,38 @@ from ._shared import _normalize_key
 from .actions import Action, ActionType
 from .contracts import BattleContextProtocol, CombatPokemonProtocol, ParticipantAdapter, ParticipantProtocol
 from .random_source import resolve_rng
+from .error_handling import handle_battle_exception
 
 logger = logging.getLogger("battle")
 
 
 class TurnProcessor:
 	"""Mixin supplying turn and action execution logic."""
+
+	def _record_failure(
+		self,
+		*,
+		context: str,
+		exception: Exception,
+		pokemon=None,
+		event: str | None = None,
+		extra: Optional[dict] = None,
+	) -> None:
+		"""Log callback failures and store structured error payloads."""
+		failure = handle_battle_exception(
+			battle=self,
+			context=context,
+			exception=exception,
+			pokemon=pokemon,
+			event=event,
+			extra=extra,
+		)
+		entries = getattr(self, "_callback_failures", None)
+		if isinstance(entries, list):
+			entries.append(failure)
+		else:
+			self._callback_failures = [failure]
+
 
 	def run_action(self) -> None:
 		"""Main action runner modeled on Showdown's ``runAction``."""
@@ -100,8 +126,8 @@ class TurnProcessor:
 				if handler and hasattr(handler, "onBeforeTurn"):
 					try:
 						handler.onBeforeTurn(poke, battle=self)
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_failure(context="status_before_turn", exception=err, pokemon=poke, event="before_turn")
 
 				rng = resolve_rng(battle=self)
 				if status == "slp":
@@ -124,8 +150,8 @@ class TurnProcessor:
 							keep = handler.onBeforeTurn(poke, battle=self)
 							if keep is False:
 								vols.pop(vol, None)
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="volatile_before_turn", exception=err, pokemon=poke, event=vol)
 
 	def lock_choices(self) -> None:
 		"""Apply locked-in transformations like Mega Evolution or Terastallization."""
@@ -239,15 +265,15 @@ class TurnProcessor:
 						mod = ability.call("onModifySpe", speed, pokemon=poke)
 						if isinstance(mod, (int, float)):
 							speed = int(mod)
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
 				if item and hasattr(item, "call"):
 					try:
 						mod = item.call("onModifySpe", speed, pokemon=poke)
 						if isinstance(mod, (int, float)):
 							speed = int(mod)
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
 			else:
 				speed = 0
 
@@ -295,8 +321,8 @@ class TurnProcessor:
 				)
 				if isinstance(mod, (int, float)):
 					priority = mod
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="ability_priority", exception=err, pokemon=pokemon)
 			try:
 				frac = ability.call(
 					"onFractionalPriority",
@@ -307,8 +333,8 @@ class TurnProcessor:
 				)
 				if isinstance(frac, (int, float)):
 					priority += frac if frac != priority else 0
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="ability_priority", exception=err, pokemon=pokemon)
 
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
 		if item and hasattr(item, "call"):
@@ -316,8 +342,8 @@ class TurnProcessor:
 				frac = item.call("onFractionalPriority", pokemon=pokemon)
 				if isinstance(frac, (int, float)):
 					priority += frac
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="item_priority", exception=err, pokemon=pokemon)
 
 		status = getattr(pokemon, "status", None)
 		handler = CONDITION_HANDLERS.get(status)
@@ -327,15 +353,15 @@ class TurnProcessor:
 					mod = handler.onModifyPriority(priority, pokemon=pokemon, target=target, move=move)
 					if isinstance(mod, (int, float)):
 						priority = mod
-				except Exception:
-					pass
+				except Exception as err:
+					self._record_failure(context="status_priority", exception=err, pokemon=pokemon)
 			if hasattr(handler, "onFractionalPriority"):
 				try:
 					frac = handler.onFractionalPriority(priority, pokemon=pokemon, target=target, move=move)
 					if isinstance(frac, (int, float)):
 						priority += frac if frac != priority else 0
-				except Exception:
-					pass
+				except Exception as err:
+					self._record_failure(context="status_priority", exception=err, pokemon=pokemon)
 
 		volatiles = getattr(pokemon, "volatiles", {})
 		for vol in list(volatiles.keys()):
@@ -347,15 +373,15 @@ class TurnProcessor:
 					mod = handler.onModifyPriority(priority, pokemon=pokemon, target=target, move=move)
 					if isinstance(mod, (int, float)):
 						priority = mod
-				except Exception:
-					pass
+				except Exception as err:
+					self._record_failure(context="status_priority", exception=err, pokemon=pokemon)
 			if hasattr(handler, "onFractionalPriority"):
 				try:
 					frac = handler.onFractionalPriority(priority, pokemon=pokemon, target=target, move=move)
 					if isinstance(frac, (int, float)):
 						priority += frac if frac != priority else 0
-				except Exception:
-					pass
+				except Exception as err:
+					self._record_failure(context="status_priority", exception=err, pokemon=pokemon)
 
 		if getattr(pokemon, "tempvals", {}).pop("quash", False):
 			priority = -7
@@ -380,8 +406,8 @@ class TurnProcessor:
 				res = ability.call("onBeforeMove", pokemon=pokemon, battle=self)
 				if res is False:
 					return True
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="before_move_ability", exception=err, pokemon=pokemon)
 
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
 		if item and hasattr(item, "call"):
@@ -389,8 +415,8 @@ class TurnProcessor:
 				res = item.call("onBeforeMove", pokemon=pokemon, battle=self)
 				if res is False:
 					return True
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="before_move_item", exception=err, pokemon=pokemon)
 
 		handler = CONDITION_HANDLERS.get(status)
 		if handler and hasattr(handler, "onBeforeMove"):
@@ -480,15 +506,15 @@ class TurnProcessor:
 		try:
 			cast(BattleContextProtocol, self).log_action(message)
 			return
-		except Exception:
-			pass
+		except Exception as err:
+			self._record_failure(context="emit_log_action", exception=err, event="message")
 
 		notify_fn = getattr(self, "notify", None)
 		if callable(notify_fn):
 			try:
 				notify_fn(message)
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="emit_notify", exception=err, event="message")
 
 	def _get_speed_value(self, pokemon) -> int:
 		"""Return a best-effort speed value for ``pokemon``."""
@@ -518,8 +544,8 @@ class TurnProcessor:
 		if callable(calc_fn):
 			try:
 				return int(calc_fn(pokemon, "speed"))
-			except Exception:
-				pass
+			except Exception as err:
+				self._record_failure(context="calculate_speed", exception=err, pokemon=pokemon)
 
 		return int(getattr(pokemon, "temp_speed", 0) or 0)
 
@@ -677,8 +703,8 @@ class TurnProcessor:
 				if actor_poke is not None:
 					try:
 						actor_poke.tempvals["moved"] = True
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
 			elif action_type is ActionType.ITEM and action.item:
 				self.execute_item(action)
 			elif action.item:
@@ -811,10 +837,10 @@ class TurnProcessor:
 						if hasattr(action.actor, "storage") and hasattr(action.actor.storage, "stored_pokemon"):
 							try:
 								action.actor.storage.stored_pokemon.add(dbpoke)
-							except Exception:
-								pass
-					except Exception:
-						pass
+							except Exception as err:
+								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
+					except Exception as err:
+						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 				elif hasattr(action.actor, "add_pokemon_to_storage"):
 					try:
 						poke_types = getattr(target_poke, "types", [])
@@ -824,21 +850,21 @@ class TurnProcessor:
 							getattr(target_poke, "level", 1),
 							type_,
 						)
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				species_id = getattr(target_poke, "species", None) or getattr(target_poke, "name", None)
 				if trainer and species_id is not None:
 					if hasattr(trainer, "log_seen_pokemon"):
 						try:
 							trainer.log_seen_pokemon(species_id)
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 					if hasattr(trainer, "log_caught_pokemon"):
 						try:
 							trainer.log_caught_pokemon(species_id)
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				if player is not None:
 					for method_name in ("mark_seen", "mark_caught"):
@@ -846,8 +872,8 @@ class TurnProcessor:
 						if callable(func) and species_id is not None:
 							try:
 								func(str(species_id))
-							except Exception:
-								pass
+							except Exception as err:
+								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				held_item = getattr(target_poke, "item", None) or getattr(target_poke, "held_item", None)
 				held_name = None
@@ -858,13 +884,13 @@ class TurnProcessor:
 					if hasattr(target_poke, "item"):
 						try:
 							target_poke.item = None
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 					if hasattr(target_poke, "held_item"):
 						try:
 							target_poke.held_item = ""
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 				if held_name:
 					recipient = None
 					if trainer and hasattr(trainer, "add_item"):
@@ -876,8 +902,8 @@ class TurnProcessor:
 					if recipient:
 						try:
 							recipient.add_item(held_name, 1)
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				storage = getattr(action.actor, "storage", None)
 				party_full = False
@@ -894,8 +920,8 @@ class TurnProcessor:
 					pending.append({"species": pokemon_name, "to_storage": party_full})
 					try:
 						player.ndb.pending_caught_pokemon = pending
-					except Exception:
-						pass
+					except Exception as err:
+						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				if hasattr(self, "log_action"):
 					if party_full:
@@ -917,8 +943,8 @@ class TurnProcessor:
 					if should_remove:
 						try:
 							remove_item(action.item)
-						except Exception:
-							pass
+						except Exception as err:
+							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 				if hasattr(self, "log_action"):
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
 
