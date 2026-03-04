@@ -8,13 +8,14 @@ improve readability.
 from __future__ import annotations
 
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 # Dex helper modules are imported lazily to keep test stubs lightweight.
 moves_funcs = None
 conditions_funcs = None
 
 from .callbacks import _resolve_callback
+from .contracts import BattleContextProtocol
 
 
 def _get_default_text() -> Dict[str, Dict[str, str]]:
@@ -117,14 +118,14 @@ class ConditionHelpers:
 	) -> None:
 		"""Log a message for ``effect`` and ``event`` if possible."""
 
-		logger = getattr(self, "log_action", None)
-		if not callable(logger):
-			return
 		message = self._format_field_message(
 			effect, event, pokemon=pokemon, move=move, field=field
 		)
 		if message:
-			logger(message)
+			try:
+				cast(BattleContextProtocol, self).log_action(message)
+			except Exception:
+				return
 
 	# ------------------------------------------------------------------
 	# Side conditions
@@ -219,7 +220,7 @@ class ConditionHelpers:
 
 		# Allow abilities to veto the weather change or react to it.
 		weather_obj = type("Weather", (), {"id": effect_key})()
-		for participant in getattr(self, "participants", []):
+		for participant in self.participants:
 			for pokemon in getattr(participant, "active", []):
 				ability = getattr(pokemon, "ability", None)
 				cb = getattr(getattr(ability, "raw", {}), "get", lambda *_: None)("onAnySetWeather")
@@ -259,7 +260,7 @@ class ConditionHelpers:
 		self.weather_state = self.field.weather_state
 		self.log_field_event(effect_key, "start", pokemon=source, field=self.field)
 
-		for participant in getattr(self, "participants", []):
+		for participant in self.participants:
 			for pokemon in getattr(participant, "active", []):
 				ability = getattr(pokemon, "ability", None)
 				cb = getattr(getattr(ability, "raw", {}), "get", lambda *_: None)("onAnySetWeather")

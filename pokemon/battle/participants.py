@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional
 
+from .contracts import BattleContextProtocol
+
 from utils.safe_import import safe_import
 
 if TYPE_CHECKING:  # pragma: no cover - circular imports for typing only
@@ -94,7 +96,7 @@ class BattleParticipant:
                 self._participant_cache.add(identifier)
                 self.participating_pokemon.append(pokemon)
 
-        def choose_action(self, battle: "Battle") -> Optional[Action]:
+        def choose_action(self, battle: BattleContextProtocol) -> Optional[Action]:
                 """Return an :class:`Action` object for this turn."""
 
                 if self.pending_action:
@@ -117,7 +119,7 @@ class BattleParticipant:
 
                 return _select_ai_action(self, active_poke, battle)
 
-        def choose_actions(self, battle: "Battle") -> List[Action]:
+        def choose_actions(self, battle: BattleContextProtocol) -> List[Action]:
                 """Return a list of actions for all active Pokémon."""
 
                 if self.pending_action:

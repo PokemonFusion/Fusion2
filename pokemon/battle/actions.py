@@ -8,8 +8,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, cast
 
+from pokemon.battle.contracts import BattleContextProtocol
 from pokemon.battle.participants import BattleParticipant
 
 
@@ -73,7 +74,7 @@ class BattleActions:
 			self.battle_over = True
 			self.restore_transforms()
 			winner = remaining[0] if remaining else None
-			if not getattr(self, "_result_logged", False) and hasattr(self, "log_action"):
+			if not getattr(self, "_result_logged", False):
 				message: str | None = None
 				if winner:
 					if hasattr(self, "_format_default_message"):
@@ -102,7 +103,7 @@ class BattleActions:
 					else:
 						message = _format_result_message("tieBattle", tie_names)
 				if message:
-					self.log_action(message)
+					cast(BattleContextProtocol, self).log_action(message)
 				setattr(self, "_result_logged", True)
 			return winner
 		return None
