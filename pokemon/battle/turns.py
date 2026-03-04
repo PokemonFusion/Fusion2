@@ -153,7 +153,14 @@ class TurnProcessor:
 			part = cast(ParticipantProtocol, participant)
 			if part.has_lost:
 				continue
-			for action in part.choose_actions(battle_ctx):
+			raw_actions = part.choose_actions(battle_ctx)
+			if isinstance(raw_actions, list):
+				part_actions = raw_actions
+			elif raw_actions is None:
+				part_actions = []
+			else:
+				part_actions = [raw_actions]
+			for action in part_actions:
 				if action.target and action.target not in self.participants:
 					action.target = None
 				if not action.target:
