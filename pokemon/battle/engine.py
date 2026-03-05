@@ -1427,10 +1427,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if not callable(cb):
                 continue
 
-            def wrapped(*, pokemon=pokemon, callback=cb, **ctx):
-                if ctx.get("pokemon") is not pokemon:
+            def wrapped(*, _pokemon=pokemon, _callback=cb, **ctx):
+                """Invoke a registered callback while preserving legacy arity behavior."""
+                if ctx.get("pokemon") is not _pokemon:
                     return
-                callback(pokemon, self)
+                try:
+                    _callback(_pokemon, self)
+                except TypeError:
+                    try:
+                        _callback(_pokemon)
+                    except TypeError:
+                        _callback()
 
             wrapped.__name__ = f"event_{event}_{owner_name}_{key}"
             # Register the wrapped callback once to avoid duplicate
