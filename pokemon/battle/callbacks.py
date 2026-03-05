@@ -1,9 +1,8 @@
 """Callback resolution helpers for battle modules."""
 
-import sys
 from typing import Any
 
-from utils.safe_import import safe_import
+from .registry import CALLBACK_REGISTRY
 
 
 def _resolve_callback(cb_name, registry: Any):
@@ -25,30 +24,4 @@ def _resolve_callback(cb_name, registry: Any):
 
 	if not cb_name:
 		return None
-	if callable(cb_name):
-		return cb_name
-	if isinstance(cb_name, str):
-		cls_name, func_name = cb_name.split(".", 1)
-
-		# Allow an explicitly provided registry, but fall back to the default
-		# moves module if the expected class is missing.  This makes the
-		# callback resolution resilient to test environments that stub modules
-		# in ``sys.modules``.
-		if registry is None or not hasattr(registry, cls_name):
-			registry = sys.modules.get("pokemon.dex.functions.moves_funcs")
-			if registry is None:
-				try:  # pragma: no cover - optional lazy import
-					registry = safe_import("pokemon.dex.functions.moves_funcs")
-				except ModuleNotFoundError:
-					return cb_name
-		try:
-			cls = getattr(registry, cls_name, None)
-			if cls:
-				try:
-					obj = cls()
-				except Exception:
-					obj = cls
-				return getattr(obj, func_name, None)
-		except Exception:
-			return None
-	return cb_name
+	return CALLBACK_REGISTRY.resolve_compat(cb_name, registry=registry)
