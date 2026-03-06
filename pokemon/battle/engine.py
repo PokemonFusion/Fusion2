@@ -63,31 +63,26 @@ except Exception:  # pragma: no cover - fallback for tests with stubs
         class EventDispatcher:
             """Minimal dispatcher used when :mod:`pokemon.battle.events` is unavailable."""
 
-            def __init__(self) -> None:
+            def __init__(self, *, allow_arity_fallback: bool = False) -> None:
                 self._handlers = defaultdict(list)
+                self.allow_arity_fallback = allow_arity_fallback
 
             def register(self, event: str, handler: Callable[..., Any]) -> None:
                 self._handlers[event].append(handler)
 
             def dispatch(self, event: str, **context: Any) -> None:
                 for handler in list(self._handlers.get(event, [])):
-                    try:
-                        sig = inspect.signature(handler)
-                        if any(
-                            p.kind == inspect.Parameter.VAR_KEYWORD
-                            for p in sig.parameters.values()
-                        ):
-                            params = context
-                        else:
-                            params = {
-                                k: v for k, v in context.items() if k in sig.parameters
-                            }
-                        handler(**params)
-                    except Exception:
-                        try:
-                            handler()
-                        except Exception:
-                            pass
+                    sig = inspect.signature(handler)
+                    if any(
+                        p.kind == inspect.Parameter.VAR_KEYWORD
+                        for p in sig.parameters.values()
+                    ):
+                        params = context
+                    else:
+                        params = {
+                            k: v for k, v in context.items() if k in sig.parameters
+                        }
+                    handler(**params)
 
 
 import importlib.machinery
@@ -124,6 +119,7 @@ if "pokemon.battle" not in sys.modules:
     sys.modules["pokemon.battle"] = sub
 
 from ._shared import _normalize_key, ensure_movedex_aliases, get_pp, get_raw
+from .registry import CALLBACK_REGISTRY
 
 ensure_movedex_aliases(MOVEDEX)
 
@@ -1207,7 +1203,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.participants = participants
         self.turn_count = 0
         self.battle_over = False
-        self.dispatcher = EventDispatcher()
+        self.dispatcher = EventDispatcher(allow_arity_fallback=False)
         from .battledata import Field
 
         self.field = Field()
@@ -1411,7 +1407,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # ------------------------------------------------------------------
 
     def _register_callbacks(self, data: Dict[str, Any], pokemon) -> None:
-        """Helper to register callbacks from ability or item data."""
+        """Register typed callbacks from ability or item data at startup."""
         event_map = {
             "onPreStart": "pre_start",
             "onStart": "start",
@@ -1424,39 +1420,29 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             "onUpdate": "update",
         }
 
+        owner_name = getattr(pokemon, "name", getattr(pokemon, "species", "pokemon"))
         for key, event in event_map.items():
-            cb = data.get(key)
-            if not cb:
-                continue
-
-            if isinstance(cb, str):
-                try:
-                    mod_name, func_name = cb.split(".", 1)
-                    module = safe_import(f"pokemon.dex.functions.{mod_name.lower()}")
-                    cls = getattr(module, mod_name, None)
-                    cb = getattr(cls(), func_name) if cls else None
-                except ModuleNotFoundError:
-                    cb = None
+            registered_key = f"{id(self)}:{id(pokemon)}:{key}"
+            cb = CALLBACK_REGISTRY.register(registered_key, data.get(key))
             if not callable(cb):
                 continue
 
-            def handler(cb=cb, pokemon=pokemon):
-                def wrapped(**ctx):
-                    if ctx.get("pokemon") is not pokemon:
-                        return
+            def wrapped(*, _pokemon=pokemon, _callback=cb, **ctx):
+                """Invoke a registered callback while preserving legacy arity behavior."""
+                if ctx.get("pokemon") is not _pokemon:
+                    return
+                try:
+                    _callback(_pokemon, self)
+                except TypeError:
                     try:
-                        cb(pokemon, self)
+                        _callback(_pokemon)
                     except TypeError:
-                        try:
-                            cb(pokemon)
-                        except TypeError:
-                            cb()
+                        _callback()
 
-                return wrapped
-
+            wrapped.__name__ = f"event_{event}_{owner_name}_{key}"
             # Register the wrapped callback once to avoid duplicate
             # notifications for the same event.
-            self.dispatcher.register(event, handler())
+            self.dispatcher.register(event, wrapped)
 
     def register_handlers(self, pokemon) -> None:
         """Register ability and item callbacks for ``pokemon``."""
