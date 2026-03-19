@@ -154,7 +154,24 @@ class HuntSystem:
 		npc_chance = getattr(room.db, "npc_chance", 15)
 		tp_cost = getattr(room.db, "tp_cost", 0)
 		if random.randint(1, 100) <= npc_chance:
-			poke = generate_trainer_pokemon()
+			trainer_context = {
+				"location": getattr(room.db, "trainer_location", None) or getattr(room, "key", None),
+				"archetype": getattr(room.db, "trainer_archetype", None),
+				"roster": getattr(room.db, "trainer_roster", None)
+				or getattr(room.db, "trainer_encounters", None),
+				"trainer_id": getattr(room.db, "trainer_identifier", None),
+			}
+			trainer_context = {
+				key: value for key, value in trainer_context.items() if value is not None
+			}
+			trainer_rng = None
+			room_rng = getattr(getattr(room, "ndb", None), "rng", None)
+			if isinstance(room_rng, random.Random):
+				trainer_rng = room_rng
+			poke = generate_trainer_pokemon(
+				context=trainer_context or None,
+				rng=trainer_rng,
+                        )
 
 			def _sel():
 				return (

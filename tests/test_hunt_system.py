@@ -18,36 +18,36 @@ if "evennia" not in sys.modules:
 # its dependencies without requiring the real game engine.
 orig_pokemon_pkg = sys.modules.get("pokemon")
 if orig_pokemon_pkg is None:
-	import pokemon as orig_pokemon_pkg  # type: ignore
+        import pokemon as orig_pokemon_pkg  # type: ignore
 if "pokemon.battle.battleinstance" not in sys.modules:
-	battle_mod = types.ModuleType("pokemon.battle.battleinstance")
+        battle_mod = types.ModuleType("pokemon.battle.battleinstance")
 
-	class BattleType:
-		WILD = "wild"
-		TRAINER = "trainer"
+        class BattleType:
+                WILD = "wild"
+                TRAINER = "trainer"
 
-	class BattleSession:
-		def __init__(self, player, opponent=None):
-			self.captainA = player
+        class BattleSession:
+                def __init__(self, player, opponent=None):
+                        self.captainA = player
 
-		def start(self):
-			pass
+                def start(self):
+                        pass
 
-	def create_battle_pokemon(name, level, is_wild=False):
-		return types.SimpleNamespace(name=name, level=level)
+        def create_battle_pokemon(name, level, is_wild=False):
+                return types.SimpleNamespace(name=name, level=level)
 
-	def generate_trainer_pokemon():
-		return types.SimpleNamespace(name="Rattata", level=5)
+        def generate_trainer_pokemon(trainer=None, *, context=None, rng=None):
+                return types.SimpleNamespace(name="Rattata", level=5)
 
-	battle_mod.BattleType = BattleType
-	battle_mod.BattleSession = BattleSession
-	battle_mod.create_battle_pokemon = create_battle_pokemon
-	battle_mod.generate_trainer_pokemon = generate_trainer_pokemon
+        battle_mod.BattleType = BattleType
+        battle_mod.BattleSession = BattleSession
+        battle_mod.create_battle_pokemon = create_battle_pokemon
+        battle_mod.generate_trainer_pokemon = generate_trainer_pokemon
 
-	# Ensure the parent packages exist in ``sys.modules``
-	if "pokemon.battle" not in sys.modules:
-		sys.modules["pokemon.battle"] = types.ModuleType("pokemon.battle")
-	sys.modules["pokemon.battle.battleinstance"] = battle_mod
+        # Ensure the parent packages exist in ``sys.modules``
+        if "pokemon.battle" not in sys.modules:
+                sys.modules["pokemon.battle"] = types.ModuleType("pokemon.battle")
+        sys.modules["pokemon.battle.battleinstance"] = battle_mod
 
 from world.hunt_system import HuntSystem
 
