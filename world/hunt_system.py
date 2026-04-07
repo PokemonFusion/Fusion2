@@ -138,42 +138,35 @@ class HuntSystem:
 	# ------------------------------------------------------------------
 	# Main hunt entry points
 	# ------------------------------------------------------------------
-	def perform_hunt(self, hunter) -> str:
-		"""Resolve a hunt attempt and return the result message."""
-		room = self.room
-		err = self._pre_checks(hunter)
-		if err:
-			return err
+	def _start_battle_with_selection(self, hunter, poke, battle_type, intro_text) -> None:
+		"""Create and start a battle session with a preselected opponent."""
 
-		self._apply_walk_steps(hunter)
+		def _select_override():
+			side = "Trainer" if battle_type == BattleType.TRAINER else "Wild"
+			return (poke, side, battle_type, intro_text)
 
-		item_msg = self._check_itemfinder(hunter)
-		if item_msg:
-			return item_msg
+		inst = BattleSession(hunter)
+		if getattr(poke, "model_id", None):
+			inst.temp_pokemon_ids.append(poke.model_id)
+		inst._select_opponent = _select_override
+		inst.start()
 
-		npc_chance = getattr(room.db, "npc_chance", 15)
-		tp_cost = getattr(room.db, "tp_cost", 0)
-		if random.randint(1, 100) <= npc_chance:
-			poke = generate_trainer_pokemon()
+	def _deduct_training_points(self, hunter, tp_cost: int) -> None:
+		"""Deduct training points after successfully starting a battle."""
+		if tp_cost:
+			hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
 
-			def _sel():
-				return (
-					poke,
-					"Trainer",
-					BattleType.TRAINER,
-					f"A trainer challenges you with {poke.name}!",
-				)
+	def _resolve_npc_encounter(self, hunter, tp_cost: int) -> str:
+		"""Handle trainer encounter generation and battle startup."""
+		poke = generate_trainer_pokemon()
+		intro_text = f"A trainer challenges you with {poke.name}!"
+		self._start_battle_with_selection(hunter, poke, BattleType.TRAINER, intro_text)
+		self._deduct_training_points(hunter, tp_cost)
+		return intro_text
 
-			inst = BattleSession(hunter)
-			if getattr(poke, "model_id", None):
-				inst.temp_pokemon_ids.append(poke.model_id)
-			inst._select_opponent = _sel
-			inst.start()
-			if tp_cost:
-				hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
-			return f"A trainer challenges you with {poke.name}!"
-
-		encounter_rate = getattr(room.db, "encounter_rate", 100)
+	def _resolve_wild_encounter(self, hunter, tp_cost: int) -> str:
+		"""Handle wild encounter checks, spawn selection, and battle startup."""
+		encounter_rate = getattr(self.room.db, "encounter_rate", 100)
 		if random.randint(1, 100) > encounter_rate:
 			return "You didn't find any Pokémon."
 
@@ -194,27 +187,31 @@ class HuntSystem:
 		if self.spawn_callback:
 			self.spawn_callback(hunter, result)
 
-		# Start battle with the generated Pokémon
 		poke = create_battle_pokemon(selected_name, level, is_wild=True)
-
-		def _select_override():
-			return (
-				poke,
-				"Wild",
-				BattleType.WILD,
-				f"A wild {poke.name} appears!",
-			)
-
-		inst = BattleSession(hunter)
-		if getattr(poke, "model_id", None):
-			inst.temp_pokemon_ids.append(poke.model_id)
-		inst._select_opponent = _select_override
-		inst.start()
-
-		if tp_cost:
-			hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
-
+		intro_text = f"A wild {poke.name} appears!"
+		self._start_battle_with_selection(hunter, poke, BattleType.WILD, intro_text)
+		self._deduct_training_points(hunter, tp_cost)
 		return f"A wild {selected_name} (Lv {level}) appeared!"
+
+	def perform_hunt(self, hunter) -> str:
+		"""Resolve a hunt attempt and return the result message."""
+		room = self.room
+		err = self._pre_checks(hunter)
+		if err:
+			return err
+
+		self._apply_walk_steps(hunter)
+
+		item_msg = self._check_itemfinder(hunter)
+		if item_msg:
+			return item_msg
+
+		npc_chance = getattr(room.db, "npc_chance", 15)
+		tp_cost = getattr(room.db, "tp_cost", 0)
+		if random.randint(1, 100) <= npc_chance:
+			return self._resolve_npc_encounter(hunter, tp_cost)
+
+		return self._resolve_wild_encounter(hunter, tp_cost)
 
 	def perform_fixed_hunt(self, hunter, name: str, level: int) -> str:
 		"""Resolve a hunt with a predetermined Pokémon and level.
@@ -241,23 +238,10 @@ class HuntSystem:
 			self.spawn_callback(hunter, result)
 
 		poke = create_battle_pokemon(name, level, is_wild=True)
-
-		def _select_override():
-			return (
-				poke,
-				"Wild",
-				BattleType.WILD,
-				f"A wild {poke.name} appears!",
-			)
-
-		inst = BattleSession(hunter)
-		if getattr(poke, "model_id", None):
-			inst.temp_pokemon_ids.append(poke.model_id)
-		inst._select_opponent = _select_override
-		inst.start()
+		intro_text = f"A wild {poke.name} appears!"
+		self._start_battle_with_selection(hunter, poke, BattleType.WILD, intro_text)
 
 		tp_cost = getattr(room.db, "tp_cost", 0)
-		if tp_cost:
-			hunter.db.training_points = hunter.db.get("training_points", 0) - tp_cost
+		self._deduct_training_points(hunter, tp_cost)
 
 		return f"A wild {name} (Lv {level}) appeared!"
