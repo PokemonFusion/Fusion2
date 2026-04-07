@@ -4,7 +4,7 @@ import os
 import random
 import time
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Literal, Optional, TypedDict, cast
 
 try:  # pragma: no cover - Django may be unavailable in lightweight test envs
     from django.db import DatabaseError
@@ -45,6 +45,94 @@ except Exception:  # pragma: no cover - intentional boundary catch for optional 
 logger = logging.getLogger(__name__)
 
 
+class PlayerSideState(TypedDict):
+    """Runtime state for one battle side."""
+
+    trainer_id: Optional[int]
+    party_snapshot: List[Dict[str, Any]]
+    active_index: int
+    side_effects: List[str]
+
+
+class HazardsState(TypedDict):
+    """Hazards currently active on each side."""
+
+    p1: List[str]
+    p2: List[str]
+
+
+class QueueEntry(TypedDict, total=False):
+    """A queued battle command entry."""
+
+    player_id: int
+    action: Literal["move", "switch", "item", "run", "pass"]
+    move: str
+    target: str
+    slot: int
+    item: str
+    priority: int
+    speed: int
+
+
+class BattleMetadata(TypedDict):
+    """Top-level battle metadata and timing fields."""
+
+    id: int
+    rng_seed: int
+    started_at: float
+    last_tick: float
+    log: List[str]
+    watchers: List[int]
+    initiator_id: Optional[int]
+    turn: int
+    phase: str
+    weather: Optional[str]
+    terrain: Optional[str]
+
+
+class BattleState(BattleMetadata):
+    """Persisted script state payload for a battle instance."""
+
+    p1: PlayerSideState
+    p2: PlayerSideState
+    queue: List[QueueEntry]
+    hazards: HazardsState
+
+
+def build_initial_state(
+    battle_id: int, initiator_id: Optional[int], now: float, rng_seed: int
+) -> BattleState:
+    """Build the persisted initial state for a newly created battle."""
+
+    return {
+        "id": battle_id,
+        "rng_seed": rng_seed,
+        "started_at": now,
+        "last_tick": now,
+        "log": [],
+        "watchers": [],
+        "initiator_id": initiator_id,
+        "p1": {
+            "trainer_id": initiator_id,
+            "party_snapshot": [],
+            "active_index": 0,
+            "side_effects": [],
+        },
+        "p2": {
+            "trainer_id": None,
+            "party_snapshot": [],
+            "active_index": 0,
+            "side_effects": [],
+        },
+        "queue": [],
+        "turn": 0,
+        "phase": "init",
+        "weather": None,
+        "terrain": None,
+        "hazards": {"p1": [], "p2": []},
+    }
+
+
 class BattleInstance(DefaultScript):
     """Script container for an individual battle."""
 
@@ -56,33 +144,9 @@ class BattleInstance(DefaultScript):
         seed = random.randint(0, 2**31 - 1)
         self.rng = random.Random(seed)
         now = time.time()
-        self.db.state = {
-            "id": battle_id,
-            "rng_seed": seed,
-            "started_at": now,
-            "last_tick": now,
-            "log": [],
-            "watchers": [],
-            "initiator_id": initiator_id,
-            "p1": {
-                "trainer_id": initiator_id,
-                "party_snapshot": [],
-                "active_index": 0,
-                "side_effects": [],
-            },
-            "p2": {
-                "trainer_id": None,
-                "party_snapshot": [],
-                "active_index": 0,
-                "side_effects": [],
-            },
-            "queue": [],
-            "turn": 0,
-            "phase": "init",
-            "weather": None,
-            "terrain": None,
-            "hazards": {"p1": [], "p2": []},
-        }
+        self.db.state = build_initial_state(
+            battle_id=battle_id, initiator_id=initiator_id, now=now, rng_seed=seed
+        )
         self.ndb.accounts: Dict[int, Any] = {}
         self.ndb.characters: Dict[int, Any] = {}
         self.ndb.speed_cache: Dict[str, Any] = {}
@@ -97,19 +161,55 @@ class BattleInstance(DefaultScript):
             self.ndb.channel = None
             self.ndb.prefix = f"[B#{battle_id}]"
 
+    @property
+    def state(self) -> BattleState:
+        """Return battle state with a typed view."""
+
+        return cast(BattleState, self.db.state)
+
+    @property
+    def p1(self) -> PlayerSideState:
+        """Typed helper for player one side state."""
+
+        return self.state["p1"]
+
+    @property
+    def p2(self) -> PlayerSideState:
+        """Typed helper for player two side state."""
+
+        return self.state["p2"]
+
+    @property
+    def turn(self) -> int:
+        """Current turn number."""
+
+        return int(self.state.get("turn", 0))
+
+    @turn.setter
+    def turn(self, value: int) -> None:
+        """Set the current turn number."""
+
+        self.state["turn"] = int(value)
+
+    @property
+    def watchers(self) -> List[int]:
+        """Watcher ids registered for the battle."""
+
+        return self.state["watchers"]
+
     def add_watcher(self, watcher_id: int) -> None:
         """Register a watcher by id."""
-        watchers = list(self.db.state.get("watchers", []))
+        watchers = list(self.watchers)
         if watcher_id not in watchers:
             watchers.append(int(watcher_id))
-            self.db.state["watchers"] = watchers
+            self.state["watchers"] = watchers
 
     def remove_watcher(self, watcher_id: int) -> None:
         """Remove a watcher by id."""
-        watchers = list(self.db.state.get("watchers", []))
+        watchers = list(self.watchers)
         if watcher_id in watchers:
             watchers.remove(int(watcher_id))
-            self.db.state["watchers"] = watchers
+            self.state["watchers"] = watchers
 
     def msg(self, text: str) -> None:
         """Send ``text`` to the battle channel if available."""
@@ -118,7 +218,7 @@ class BattleInstance(DefaultScript):
         message = f"{prefix} {text}" if prefix else text
         if chan and hasattr(chan, "msg"):
             chan.msg(message)
-        notify_watchers(self.db.state, message)
+        notify_watchers(self.state, message)
 
     def invalidate(self) -> None:
         """Invalidate the battle without persisting further state."""
@@ -160,10 +260,10 @@ class BattleInstance(DefaultScript):
         if BattleSlot is None:
             return
 
-        battle_id = self.db.state.get("id")
+        battle_id = self.state.get("id")
         active_ids = []
         for team_key, team_idx in (("p1", 1), ("p2", 2)):
-            team = self.db.state.get(team_key, {})
+            team = self.state.get(team_key, {})
             party = team.get("party_snapshot", [])
             active_index = int(team.get("active_index", 0))
             if 0 <= active_index < len(party):
@@ -197,5 +297,5 @@ class BattleInstance(DefaultScript):
     def touch(self) -> None:
         """Update ``last_tick`` timestamp and sync active slots."""
 
-        self.db.state["last_tick"] = time.time()
+        self.state["last_tick"] = time.time()
         self._sync_slots()
