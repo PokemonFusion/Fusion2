@@ -6,7 +6,11 @@ import time
 import logging
 from typing import Any, Dict, Optional
 
-from django.db import DatabaseError
+try:  # pragma: no cover - Django may be unavailable in lightweight test envs
+    from django.db import DatabaseError
+except Exception:  # pragma: no cover - intentional boundary catch for optional Django dependency
+    class DatabaseError(Exception):
+        """Fallback database error type when Django is unavailable."""
 
 from pokemon.battle.watchers import notify_watchers
 from utils.locks import clear_battle_lock
