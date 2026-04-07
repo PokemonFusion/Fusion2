@@ -122,3 +122,28 @@ def test_restore_rehydrates_wild_moves_from_state():
         [name.lower() for name in moveset.values()] == expected_lower
         for moveset in restored.state.movesets.values()
     )
+
+
+def test_build_battle_pokemon_from_model_uses_slots_without_all():
+    class SlotCollection(list):
+        def order_by(self, field):
+            return sorted(self, key=lambda s: s.slot)
+
+    class DummyModel:
+        level = 7
+        species = "Sparko"
+        current_hp = 15
+        ivs = [0, 0, 0, 0, 0, 0]
+        evs = [0, 0, 0, 0, 0, 0]
+        nature = "Hardy"
+        ability = "Static"
+        gender = "N"
+        activemoveslot_set = SlotCollection(
+            [
+                types.SimpleNamespace(slot=2, move=types.SimpleNamespace(name="Growl")),
+                types.SimpleNamespace(slot=1, move=types.SimpleNamespace(name="Tackle")),
+            ]
+        )
+
+    battle_mon = build_battle_pokemon_from_model(DummyModel())
+    assert [mv.name for mv in battle_mon.moves][:2] == ["Tackle", "Growl"]

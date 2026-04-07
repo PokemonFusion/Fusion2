@@ -187,3 +187,8 @@ def test_wild_encounter_cleans_up_owned_pokemon(monkeypatch, flag):
     assert boosts.deleted
     assert active_moveset.deleted
     assert session.temp_pokemon_ids == []
+
+
+def test_ownedpokemon_party_slot_handles_missing_related_manager():
+    dummy = types.SimpleNamespace(active_slots=object())
+    assert OwnedPokemon.party_slot.fget(dummy) is None

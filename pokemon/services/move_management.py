@@ -8,9 +8,12 @@ wrappers that delegate to these helpers.
 
 from __future__ import annotations
 
+import logging
 from typing import Iterable
 
 from django.db import transaction
+
+logger = logging.getLogger(__name__)
 
 
 def _fallback_normalize_key(val: str) -> str:
@@ -157,14 +160,15 @@ def learn_level_up_moves(pokemon, *, caller=None, prompt: bool = False) -> None:
 			get_learnable_levelup_moves,
 			learn_move,
 		)
-	except Exception:  # pragma: no cover - module may be unavailable in tests
+	except ImportError:  # pragma: no cover - boundary: optional move-learning module
 		return
 
 	moves, _level_map = get_learnable_levelup_moves(pokemon)
 	for mv in moves:
 		try:
 			learn_move(pokemon, mv, caller=caller, prompt=prompt)
-		except Exception:  # pragma: no cover - ignore problematic moves
+		except (AttributeError, TypeError, ValueError):  # pragma: no cover - ignore malformed move rows
+			logger.debug("Failed to teach move '%s' during level-up learning.", mv, exc_info=True)
 			continue
 
 
@@ -194,10 +198,10 @@ def apply_active_moveset(pokemon) -> None:
 	def _apply():
 		try:
 			slot_iter = list(slots_rel.all().order_by("slot"))
-		except Exception:
+		except AttributeError:
 			try:
 				slot_iter = list(slots_rel.order_by("slot"))
-			except Exception:
+			except AttributeError:
 				slot_iter = list(slots_rel)
 
 		for slot in slot_iter:
@@ -225,7 +229,8 @@ def apply_active_moveset(pokemon) -> None:
 			if pending:
 				try:
 					actives.bulk_create(pending)
-				except Exception:
+				except (AttributeError, TypeError):
+					logger.debug("bulk_create unavailable; falling back to per-row create.", exc_info=True)
 					for row in pending:
 						actives.create(
 							move=row.move,
@@ -235,13 +240,14 @@ def apply_active_moveset(pokemon) -> None:
 		apply_current_pp(pokemon)
 		try:
 			pokemon.save()
-		except Exception:
-			pass
+		except (AttributeError, TypeError):
+			logger.debug("Unable to persist Pokémon after applying active moveset.", exc_info=True)
 
 	try:
 		with transaction.atomic():
 			_apply()
-	except Exception:
+	except transaction.TransactionManagementError:
+		logger.debug("Transaction unavailable; applying active moveset without atomic block.", exc_info=True)
 		_apply()
 
 

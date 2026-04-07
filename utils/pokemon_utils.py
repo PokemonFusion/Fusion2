@@ -1,16 +1,20 @@
 import sys
+import logging
 
 from django.db import transaction
+from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
 
 try:
     from pokemon.models.core import OwnedPokemon
-except Exception:  # pragma: no cover - optional in tests
+except (ImportError, AppRegistryNotReady, ImproperlyConfigured):  # pragma: no cover - optional in tests
     OwnedPokemon = None
 
 try:
     from pokemon.battle.battledata import Move, Pokemon
-except Exception:  # pragma: no cover - allow tests to stub
+except ImportError:  # pragma: no cover - allow tests to stub
     Pokemon = Move = None
+
+logger = logging.getLogger(__name__)
 
 
 def _fallback_normalize_key(val: str) -> str:
@@ -21,7 +25,7 @@ def _fallback_normalize_key(val: str) -> str:
 
 try:
     from pokemon.dex import POKEDEX as _GLOBAL_POKEDEX  # type: ignore
-except Exception:  # pragma: no cover - optional in tests
+except ImportError:  # pragma: no cover - optional in tests
     _GLOBAL_POKEDEX = {}
 
 
@@ -41,7 +45,7 @@ def _get_calc_stats_from_model():
         from pokemon.battle import battleinstance as bi  # type: ignore
 
         return getattr(bi, "_calc_stats_from_model", None)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         return None
 
 
@@ -55,7 +59,7 @@ def _get_create_battle_pokemon():
         from pokemon.battle import battleinstance as bi  # type: ignore
 
         return getattr(bi, "create_battle_pokemon", None)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         return None
 
 
@@ -119,17 +123,17 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     if not move_names and slots is not None:
         try:
             iterable = slots.all().order_by("slot")
-        except Exception:
+        except AttributeError:
             try:
                 iterable = slots.order_by("slot")
-            except Exception:
+            except AttributeError:
                 iterable = slots
         move_names = [getattr(s.move, "name", "") for s in iterable]
     if not move_names:
         if hasattr(model, "learned_moves"):
             try:
                 move_names = [m.name for m in model.learned_moves.all()[:4]]
-            except Exception:
+            except TypeError:
                 move_names = [m.name for m in model.learned_moves][:4]
     if not move_names:
         move_names = ["Flail"]
@@ -305,11 +309,11 @@ def make_move_from_dex(name: str, *, battle: bool = False):
     # Lazy imports to avoid requiring the full dex or battle engine in tests
     try:
         from pokemon import dex as dex_mod  # type: ignore
-    except Exception:
+    except ImportError:  # boundary: optional dex module
         dex_mod = None
     try:
         from pokemon.battle.engine import _normalize_key
-    except Exception:
+    except ImportError:
         _normalize_key = _fallback_normalize_key
 
     entry = None
@@ -317,7 +321,7 @@ def make_move_from_dex(name: str, *, battle: bool = False):
     if dex_mod is not None:
         try:
             entry = dex_mod.MOVEDEX.get(key)
-        except Exception:
+        except AttributeError:
             entry = None
 
     if not battle:
@@ -379,11 +383,11 @@ def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
 
     try:
         from pokemon import dex as dex_mod  # type: ignore
-    except Exception:
+    except ImportError:  # boundary: optional dex module
         dex_mod = None
     try:
         from pokemon.battle.engine import _normalize_key
-    except Exception:
+    except ImportError:
         _normalize_key = _fallback_normalize_key
 
     if Pokemon is None:
@@ -408,7 +412,8 @@ def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
                 sys.modules[spec.name] = real_dex
                 spec.loader.exec_module(real_dex)
                 sp = real_dex.POKEDEX.get(_normalize_key(species)) or real_dex.POKEDEX.get(species)
-        except Exception:
+        except (ImportError, AttributeError):
+            logger.debug("Unable to lazy-load dex module for species lookup.", exc_info=True)
             sp = None
     if sp is None:
         raise KeyError(f"Unknown species '{species}'")
