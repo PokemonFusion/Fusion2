@@ -1,5 +1,6 @@
 """Core models for Pokémon, including base and owned Pokémon classes."""
 
+import logging
 import math
 import uuid
 
@@ -12,6 +13,8 @@ from .validators import validate_evs, validate_ivs
 
 # Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
 MAX_PP_MULTIPLIER = 1.6
+
+logger = logging.getLogger(__name__)
 
 
 class SpeciesEntry(models.Model):
@@ -71,8 +74,8 @@ class BasePokemon(models.Model):
 					types = entry.get("types")
 				if types:
 					return [str(t).title() for t in types if t]
-		except Exception:
-			pass
+		except (ImportError, AttributeError, TypeError, KeyError):
+			logger.debug("Unable to resolve species types for '%s'.", species_name, exc_info=True)
 		return []
 
 	@property
@@ -238,9 +241,9 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 					deleter = getattr(iterable, "delete", None)
 					if callable(deleter):
 						deleter()
-			except Exception:
+			except (AttributeError, TypeError, ValueError):
 				# Relations are best-effort; ignore if unavailable
-				pass
+				logger.debug("Failed to clear temporary relation '%s'.", action, exc_info=True)
 
 		_clear_relation(getattr(self, "learned_moves", None), action="clear")
 		_clear_relation(getattr(self, "activemoveslot_set", None), action="all_delete")
@@ -252,12 +255,13 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			_clear_relation(active_moveset, action="delete")
 			try:
 				self.active_moveset = None
-			except Exception:
-				pass
+			except (AttributeError, TypeError):
+				logger.debug("Unable to clear active moveset pointer during cleanup.", exc_info=True)
 
 		try:
 			self.delete()
-		except Exception:
+		except AttributeError:
+			logger.warning("Temporary Pokémon missing delete method during cleanup.", exc_info=True)
 			return False
 		return True
 
@@ -284,7 +288,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		try:
 			slot_rel = self.active_slots.first()
 			return slot_rel.slot if slot_rel else None
-		except Exception:
+		except AttributeError:
 			return None
 
 	@property
@@ -301,8 +305,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			from pokemon.helpers.pokemon_helpers import refresh_stats
 
 			refresh_stats(self)
-		except Exception:  # pragma: no cover - optional
-			pass
+		except (ImportError, AttributeError, TypeError):  # pragma: no cover - optional
+			logger.debug("refresh_stats unavailable while setting level.", exc_info=True)
 
 	def heal(self) -> None:
 		"""Fully restore HP, clear status, and reset PP."""
@@ -315,15 +319,15 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			self.status = ""
 		try:
 			from pokemon.dex import MOVEDEX  # type: ignore
-		except Exception:
+		except ImportError:
 			try:
 			    from pokemon.dex.moves.movesdex import py_dict as MOVEDEX  # type: ignore
-			except Exception:  # pragma: no cover - optional
+			except ImportError:  # pragma: no cover - optional
 				MOVEDEX = {}
 
 		try:
 			from pokemon.battle.engine import _normalize_key
-		except Exception:  # pragma: no cover - fallback normaliser
+		except ImportError:  # pragma: no cover - fallback normaliser
 
 			def _normalize_key(val: str) -> str:
 				return val.replace(" ", "").replace("-", "").replace("'", "").lower()
@@ -333,7 +337,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		if manager is not None:
 			try:
 				iterable = manager.all()
-			except Exception:  # pragma: no cover
+			except AttributeError:  # pragma: no cover
 				iterable = manager
 			for b in iterable:
 				name = _normalize_key(getattr(getattr(b, "move", None), "name", ""))
@@ -343,7 +347,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		if slots is not None:
 			try:
 				slot_iter = slots.all()
-			except Exception:  # pragma: no cover
+			except AttributeError:  # pragma: no cover
 				slot_iter = slots
 		else:
 			slot_iter = []
@@ -366,17 +370,17 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		if updated:
 			try:
 				slots.bulk_update(updated, ["current_pp"])
-			except Exception:  # pragma: no cover - fallback for stubs
+			except (AttributeError, TypeError):  # pragma: no cover - fallback for stubs
 				for slot in updated:
 					try:
 						slot.save()
-					except Exception:
-						pass
+					except AttributeError:
+						logger.debug("Active move slot save unavailable during heal fallback.", exc_info=True)
 
 		try:
 			self.save()
-		except Exception:  # pragma: no cover
-			pass
+		except (AttributeError, TypeError):  # pragma: no cover
+			logger.debug("Unable to persist healed Pokémon state.", exc_info=True)
 
 	def learn_level_up_moves(self, *, caller=None, prompt: bool = False) -> None:
 		"""Teach any moves this Pokémon should know at its level.
@@ -406,7 +410,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			from pokemon.helpers.pokemon_helpers import get_max_hp
 
 			return get_max_hp(self)
-		except Exception:
+		except (ImportError, AttributeError):
 			return self.current_hp
 
 	def apply_pp_up(self, move_name: str) -> bool:
@@ -420,7 +424,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	def _apply_pp_boost(self, move_name: str, count: int) -> bool:
 		try:
 			from pokemon.dex import MOVEDEX  # type: ignore
-		except Exception:
+		except ImportError:
+			logger.debug("MOVEDEX unavailable while applying PP boost.", exc_info=True)
 			return False
 
 		move = self.learned_moves.filter(name__iexact=move_name).first()
@@ -446,16 +451,16 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		if updated:
 			try:
 				slots.bulk_update(updated, ["current_pp"])
-			except Exception:  # pragma: no cover
+			except (AttributeError, TypeError):  # pragma: no cover
 				for slot in updated:
 					try:
 						slot.save()
-					except Exception:
-						pass
+					except AttributeError:
+						logger.debug("Unable to save slot in PP boost fallback.", exc_info=True)
 		try:
 			self.save()
-		except Exception:
-			pass
+		except (AttributeError, TypeError):
+			logger.debug("Unable to persist PP boost state.", exc_info=True)
 		return True
 
 

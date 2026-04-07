@@ -3,14 +3,17 @@ from __future__ import annotations
 import os
 import random
 import time
+import logging
 from typing import Any, Dict, Optional
+
+from django.db import DatabaseError
 
 from pokemon.battle.watchers import notify_watchers
 from utils.locks import clear_battle_lock
 
 try:  # pragma: no cover - model import may fail during tests
     from pokemon.models.core import BattleSlot
-except Exception:  # pragma: no cover - fallback when Django isn't ready
+except Exception:  # pragma: no cover - intentional boundary catch when Django apps aren't loaded
     BattleSlot = None  # type: ignore
 
 from utils.safe_import import safe_import
@@ -21,7 +24,7 @@ try:  # pragma: no cover - Evennia may be absent in tests
     evennia = safe_import("evennia")
     DefaultScript = evennia.DefaultScript  # type: ignore[attr-defined]
     create_channel = evennia.create_channel  # type: ignore[attr-defined]
-except Exception:  # pragma: no cover - fallback stubs
+except Exception:  # pragma: no cover - intentional boundary catch for optional Evennia dependency
     class DefaultScript:  # type: ignore[no-redef]
         """Minimal stand-in for Evennia's ``DefaultScript``."""
 
@@ -34,6 +37,8 @@ except Exception:  # pragma: no cover - fallback stubs
 
     def create_channel(key: str, *_, **__) -> Any:  # type: ignore[misc]
         return type("Channel", (), {"key": key, "msg": lambda self, text, **kw: None})()
+
+logger = logging.getLogger(__name__)
 
 
 class BattleInstance(DefaultScript):
@@ -83,7 +88,8 @@ class BattleInstance(DefaultScript):
             chan = create_channel(f"battle-{battle_id}")
             self.ndb.channel = chan
             self.ndb.prefix = f"[B#{battle_id}]"
-        except Exception:
+        except (AttributeError, TypeError):
+            logger.debug("Battle channel unavailable; using watcher-only messaging.", exc_info=True)
             self.ndb.channel = None
             self.ndb.prefix = f"[B#{battle_id}]"
 
@@ -115,25 +121,25 @@ class BattleInstance(DefaultScript):
         for char in list(getattr(self.ndb, "characters", {}).values()):
             try:
                 clear_battle_lock(char)
-            except Exception:
-                pass
+            except (AttributeError, TypeError):
+                logger.debug("Failed to clear battle lock for character during invalidate.", exc_info=True)
             ndb = getattr(char, "ndb", None)
             if ndb and getattr(ndb, "battle_instance", None) is self:
                 try:
                     delattr(ndb, "battle_instance")
-                except Exception:
-                    pass
+                except (AttributeError, TypeError):
+                    logger.debug("Could not remove battle_instance from character ndb.", exc_info=True)
             db = getattr(char, "db", None)
             if db and hasattr(db, "battle_id"):
                 try:
                     delattr(db, "battle_id")
-                except Exception:
-                    pass
+                except (AttributeError, TypeError):
+                    logger.debug("Could not remove battle_id from character db.", exc_info=True)
         self.ndb.invalidated = True
         try:
             self.stop()
-        except Exception:  # pragma: no cover - stop may not exist
-            pass
+        except AttributeError:  # pragma: no cover - stop may not exist
+            logger.debug("BattleInstance.stop unavailable during invalidate.", exc_info=True)
 
     # ------------------------------------------------------------------
     # Slot synchronisation
@@ -173,15 +179,16 @@ class BattleInstance(DefaultScript):
                             "fainted": bool(mon.get("fainted", False)),
                         },
                     )
-                except Exception:  # pragma: no cover - database errors are ignored
+                except DatabaseError:  # pragma: no cover - database errors are ignored
+                    logger.debug("Failed to update BattleSlot during sync.", exc_info=True)
                     continue
         if active_ids:
             try:
                 BattleSlot.objects.filter(battle_id=battle_id).exclude(
                     pokemon_id__in=active_ids
                 ).delete()
-            except Exception:  # pragma: no cover - database errors are ignored
-                pass
+            except DatabaseError:  # pragma: no cover - database errors are ignored
+                logger.debug("Failed to prune stale BattleSlot rows.", exc_info=True)
 
     def touch(self) -> None:
         """Update ``last_tick`` timestamp and sync active slots."""
