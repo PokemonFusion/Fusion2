@@ -311,71 +311,14 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	def heal(self) -> None:
 		"""Fully restore HP, clear status, and reset PP."""
 		from pokemon.helpers.pokemon_helpers import get_max_hp
+		from pokemon.services.move_management import apply_current_pp
 
 		max_hp = get_max_hp(self)
 		if hasattr(self, "current_hp"):
 			self.current_hp = max_hp
 		if hasattr(self, "status"):
 			self.status = ""
-		try:
-			from pokemon.dex import MOVEDEX  # type: ignore
-		except ImportError:
-			try:
-			    from pokemon.dex.moves.movesdex import py_dict as MOVEDEX  # type: ignore
-			except ImportError:  # pragma: no cover - optional
-				MOVEDEX = {}
-
-		try:
-			from pokemon.battle.engine import _normalize_key
-		except ImportError:  # pragma: no cover - fallback normaliser
-
-			def _normalize_key(val: str) -> str:
-				return val.replace(" ", "").replace("-", "").replace("'", "").lower()
-
-		bonuses: dict[str, int] = {}
-		manager = getattr(self, "pp_boosts", None)
-		if manager is not None:
-			try:
-				iterable = manager.all()
-			except AttributeError:  # pragma: no cover
-				iterable = manager
-			for b in iterable:
-				name = _normalize_key(getattr(getattr(b, "move", None), "name", ""))
-				bonuses[name] = getattr(b, "bonus_pp", 0)
-
-		slots = getattr(self, "activemoveslot_set", None)
-		if slots is not None:
-			try:
-				slot_iter = slots.all()
-			except AttributeError:  # pragma: no cover
-				slot_iter = slots
-		else:
-			slot_iter = []
-
-		updated = []
-		for slot in slot_iter:
-			move_name = getattr(getattr(slot, "move", None), "name", "")
-			norm = _normalize_key(move_name)
-			md = MOVEDEX.get(norm)
-			base = None
-			if md is not None:
-				base = getattr(md, "pp", None)
-				if base is None and isinstance(md, dict):
-					base = md.get("pp")
-			bonus = bonuses.get(norm, 0)
-			if base is not None:
-				slot.current_pp = int(base) + int(bonus)
-				updated.append(slot)
-
-		if updated:
-			try:
-				slots.bulk_update(updated, ["current_pp"])
-			except (AttributeError, TypeError):  # pragma: no cover - fallback for stubs
-				for slot in updated:
-					try:
-						slot.save()
-					except AttributeError:
-						logger.debug("Active move slot save unavailable during heal fallback.", exc_info=True)
+		apply_current_pp(self)
 
 		try:
 			self.save()
