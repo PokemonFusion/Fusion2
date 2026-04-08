@@ -84,23 +84,35 @@ def get_dex_data() -> dict[str, Any]:
     try:
         from pokemon import dex as dex_mod
 
-        logger.debug("get_dex_data: using imported pokemon.dex module")
-        return {
-            "dex_module": dex_mod,
-            "pokedex": getattr(dex_mod, "POKEDEX", {}) or {},
-            "movedex": getattr(dex_mod, "MOVEDEX", {}) or {},
-        }
+        pokedex = getattr(dex_mod, "POKEDEX", {}) or {}
+        movedex = getattr(dex_mod, "MOVEDEX", {}) or {}
+        if pokedex or movedex:
+            logger.debug("get_dex_data: using imported pokemon.dex module")
+            return {
+                "dex_module": dex_mod,
+                "pokedex": pokedex,
+                "movedex": movedex,
+            }
+        logger.debug(
+            "get_dex_data: imported pokemon.dex has empty datasets; continuing fallback chain"
+        )
     except ImportError:  # pragma: no cover - optional dependency boundary
         logger.debug("get_dex_data: pokemon.dex import failed, checking module cache")
 
     cached_dex = sys.modules.get("pokemon.dex")
     if cached_dex is not None:
-        logger.debug("get_dex_data: using cached pokemon.dex from sys.modules")
-        return {
-            "dex_module": cached_dex,
-            "pokedex": getattr(cached_dex, "POKEDEX", {}) or {},
-            "movedex": getattr(cached_dex, "MOVEDEX", {}) or {},
-        }
+        pokedex = getattr(cached_dex, "POKEDEX", {}) or {}
+        movedex = getattr(cached_dex, "MOVEDEX", {}) or {}
+        if pokedex or movedex:
+            logger.debug("get_dex_data: using cached pokemon.dex from sys.modules")
+            return {
+                "dex_module": cached_dex,
+                "pokedex": pokedex,
+                "movedex": movedex,
+            }
+        logger.debug(
+            "get_dex_data: cached pokemon.dex has empty datasets; continuing fallback chain"
+        )
 
     try:  # pragma: no cover - fallback path
         dex_path = Path(__file__).resolve().parents[1] / "dex" / "__init__.py"
