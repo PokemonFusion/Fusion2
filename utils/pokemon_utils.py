@@ -1,8 +1,10 @@
-import sys
-import logging
-
 from django.db import transaction
 from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+from pokemon.utils.dependency_adapters import (
+    get_battle_factories,
+    get_dex_data,
+    normalize_key,
+)
 
 try:
     from pokemon.models.core import OwnedPokemon
@@ -13,55 +15,6 @@ try:
     from pokemon.battle.battledata import Move, Pokemon
 except ImportError:  # pragma: no cover - allow tests to stub
     Pokemon = Move = None
-
-logger = logging.getLogger(__name__)
-
-
-def _fallback_normalize_key(val: str) -> str:
-    """Simplified key normalisation used when engine helpers are unavailable."""
-
-    return val.replace(" ", "").replace("-", "").replace("'", "").lower()
-
-
-try:
-    from pokemon.dex import POKEDEX as _GLOBAL_POKEDEX  # type: ignore
-except ImportError:  # pragma: no cover - optional in tests
-    _GLOBAL_POKEDEX = {}
-
-
-def _get_calc_stats_from_model():
-    """Return the battle stat calculator if available.
-
-    Tests often stub ``pokemon.battle.battleinstance`` directly into
-    :mod:`sys.modules` without creating the full package hierarchy. Looking
-    up the module via :data:`sys.modules` first avoids importing the real
-    battle package which may have heavy dependencies.
-    """
-
-    bi = sys.modules.get("pokemon.battle.battleinstance")
-    if bi is not None:
-        return getattr(bi, "_calc_stats_from_model", None)
-    try:  # pragma: no cover - fallback when running with real package
-        from pokemon.battle import battleinstance as bi  # type: ignore
-
-        return getattr(bi, "_calc_stats_from_model", None)
-    except ImportError:  # pragma: no cover
-        return None
-
-
-def _get_create_battle_pokemon():
-    """Return the battle Pokémon factory callable if available."""
-
-    bi = sys.modules.get("pokemon.battle.battleinstance")
-    if bi is not None:
-        return getattr(bi, "create_battle_pokemon", None)
-    try:  # pragma: no cover - fallback to importing real package
-        from pokemon.battle import battleinstance as bi  # type: ignore
-
-        return getattr(bi, "create_battle_pokemon", None)
-    except ImportError:  # pragma: no cover
-        return None
-
 
 def clone_pokemon(pokemon: OwnedPokemon, for_ai: bool = True) -> OwnedPokemon:
     """Create a battle-only clone of ``pokemon``."""
@@ -108,7 +61,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     if Pokemon is None:
         raise RuntimeError("Battle modules not available")
 
-    calc_stats = _get_calc_stats_from_model()
+    calc_stats = get_battle_factories().get("calc_stats_from_model")
     stats = calc_stats(model) if calc_stats else {"hp": getattr(model, "current_hp", 1)}
 
     level = getattr(model, "computed_level", getattr(model, "level", 1))
@@ -207,7 +160,7 @@ def spawn_npc_pokemon(trainer, *, use_templates: bool = True) -> Pokemon:
             clone = clone_pokemon(template, for_ai=True)
             return battle_pokemon_from_owned(clone)
 
-    create_poke = _get_create_battle_pokemon()
+    create_poke = get_battle_factories().get("create_battle_pokemon")
     if create_poke is None:
         raise RuntimeError("Battle modules not available")
     return create_poke("Charmander", 5, trainer=trainer, is_wild=False)
@@ -306,23 +259,12 @@ def make_move_from_dex(name: str, *, battle: bool = False):
         gracefully when dex data is unavailable.
     """
 
-    # Lazy imports to avoid requiring the full dex or battle engine in tests
-    try:
-        from pokemon import dex as dex_mod  # type: ignore
-    except ImportError:  # boundary: optional dex module
-        dex_mod = None
-    try:
-        from pokemon.battle.engine import _normalize_key
-    except ImportError:
-        _normalize_key = _fallback_normalize_key
+    dex_data = get_dex_data()
+    movedex = dex_data.get("movedex", {}) or {}
 
     entry = None
-    key = _normalize_key(name)
-    if dex_mod is not None:
-        try:
-            entry = dex_mod.MOVEDEX.get(key)
-        except AttributeError:
-            entry = None
+    key = normalize_key(name)
+    entry = movedex.get(key)
 
     if not battle:
         # ``Move`` is a lightweight dex entity used primarily for display.  If
@@ -381,40 +323,13 @@ def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
     :class:`KeyError` to match dictionary semantics.
     """
 
-    try:
-        from pokemon import dex as dex_mod  # type: ignore
-    except ImportError:  # boundary: optional dex module
-        dex_mod = None
-    try:
-        from pokemon.battle.engine import _normalize_key
-    except ImportError:
-        _normalize_key = _fallback_normalize_key
+    dex_data = get_dex_data()
+    pokedex = dex_data.get("pokedex", {}) or {}
 
     if Pokemon is None:
         raise RuntimeError("Dex not available")
 
-    sp = None
-    if dex_mod is not None and getattr(dex_mod, "POKEDEX", None):
-        sp = dex_mod.POKEDEX.get(_normalize_key(species)) or dex_mod.POKEDEX.get(species)
-    if sp is None:
-        sp = _GLOBAL_POKEDEX.get(_normalize_key(species)) or _GLOBAL_POKEDEX.get(species)
-    if sp is None:
-        try:
-            import importlib.util
-            import sys
-            from pathlib import Path
-
-            spec = importlib.util.spec_from_file_location(
-                "pokemon.dex", Path(__file__).resolve().parents[1] / "pokemon" / "dex" / "__init__.py"
-            )
-            if spec and spec.loader:
-                real_dex = importlib.util.module_from_spec(spec)
-                sys.modules[spec.name] = real_dex
-                spec.loader.exec_module(real_dex)
-                sp = real_dex.POKEDEX.get(_normalize_key(species)) or real_dex.POKEDEX.get(species)
-        except (ImportError, AttributeError):
-            logger.debug("Unable to lazy-load dex module for species lookup.", exc_info=True)
-            sp = None
+    sp = pokedex.get(normalize_key(species)) or pokedex.get(species)
     if sp is None:
         raise KeyError(f"Unknown species '{species}'")
 
