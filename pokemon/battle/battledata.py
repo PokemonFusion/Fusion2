@@ -110,6 +110,12 @@ class Pokemon:
         self.tempvals: Dict[str, int] = {}
         # Track volatile status effects such as confusion or curses
         self.volatiles: Dict[str, Any] = {}
+        self.consumed_berry = False
+        self.last_item = None
+        self.last_consumed_item = None
+        self.last_removed_item = None
+        self.knocked_off = False
+        self.choice_locked_move = None
         self.boosts: Dict[str, int] = {
             "atk": 0,
             "def": 0,
@@ -154,6 +160,39 @@ class Pokemon:
         # exist.  Use the explicitly supplied types if provided; otherwise fall
         # back to a Pokédex lookup based on the Pokémon's species name.
         self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
+
+    def eat_item(self, *args, **kwargs):
+        """Delegate held-item consumption to the active battle when available."""
+
+        battle = kwargs.pop("battle", None) or getattr(self, "battle", None)
+        if battle and hasattr(battle, "eat_item"):
+            return battle.eat_item(self, *args, **kwargs)
+        return False
+
+    def use_item(self, *args, **kwargs):
+        """Delegate held-item use to the active battle when available."""
+
+        battle = kwargs.pop("battle", None) or getattr(self, "battle", None)
+        if battle and hasattr(battle, "use_item"):
+            return battle.use_item(self, *args, **kwargs)
+        return False
+
+    def take_item(self, *args, **kwargs):
+        """Delegate held-item removal to the active battle when available."""
+
+        battle = kwargs.pop("battle", None) or getattr(self, "battle", None)
+        if battle and hasattr(battle, "take_item"):
+            return battle.take_item(self, *args, **kwargs)
+        return None
+
+    def set_item(self, item, *args, **kwargs):
+        """Delegate held-item assignment to the active battle when available."""
+
+        battle = kwargs.pop("battle", None) or getattr(self, "battle", None)
+        if battle and hasattr(battle, "set_item"):
+            return battle.set_item(self, item, *args, **kwargs)
+        self.item = item
+        return True
 
     def _lookup_species_types(self) -> List[str]:
         """Return this Pokémon's types inferred from the Pokédex.

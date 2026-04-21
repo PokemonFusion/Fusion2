@@ -186,7 +186,7 @@ BattleActions = actions_mod.BattleActions
 ConditionHelpers = conditions_mod.ConditionHelpers
 TurnProcessor = turns_mod.TurnProcessor
 
-from .callbacks import _resolve_callback
+from .callbacks import _resolve_callback, invoke_callback, resolve_callback_from_modules
 
 battle_logger = logging.getLogger("battle")
 try:
@@ -588,6 +588,16 @@ class BattleMove:
     onTry: Optional[Callable] = None
     onBeforeMove: Optional[Callable] = None
     onAfterMove: Optional[Callable] = None
+    onModifyMove: Optional[Callable] = None
+    onPrepareHit: Optional[Callable] = None
+    onTryHit: Optional[Callable] = None
+    onTryHitSide: Optional[Callable] = None
+    onTryHitField: Optional[Callable] = None
+    onMoveFail: Optional[Callable] = None
+    onAfterMoveSecondary: Optional[Callable] = None
+    onAfterMoveSecondarySelf: Optional[Callable] = None
+    priorityChargeCallback: Optional[Callable] = None
+    beforeMoveCallback: Optional[Callable] = None
     basePowerCallback: Optional[Callable] = None
     type: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
@@ -628,9 +638,11 @@ class BattleMove:
                     battle.log_action(item_message)
 
         if self.onTry:
-            self.onTry(user, target, self, battle)
+            result = invoke_callback(self.onTry, user, target, self, battle=battle)
+            if result is False:
+                return
         if self.onHit:
-            handled = self.onHit(user, target, battle)
+            handled = invoke_callback(self.onHit, user, target, battle=battle)
             if handled is not True:
                 return
 
@@ -874,13 +886,7 @@ class BattleMove:
                 if sec.get("onHit"):
                     cb = _resolve_callback(sec.get("onHit"), moves_funcs)
                     if callable(cb):
-                        try:
-                            cb(user, target, battle)
-                        except TypeError:
-                            try:
-                                cb(user, target)
-                            except Exception:
-                                cb(target)
+                        invoke_callback(cb, user, target, battle=battle)
 
                 if sec.get("boosts") and target:
                     apply_boost(target, sec["boosts"])
@@ -980,6 +986,11 @@ class BattleMove:
                                     "[POKEMON]", getattr(user, "name", "Pokemon")
                                 )
                             )
+
+        if self.onAfterMoveSecondary:
+            invoke_callback(self.onAfterMoveSecondary, user, target, self, battle=battle)
+        if self.onAfterMoveSecondarySelf:
+            invoke_callback(self.onAfterMoveSecondarySelf, user, target, self, battle=battle)
 
 
 class MessageFormatter:
@@ -1776,6 +1787,108 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if move.pp is not None and move.pp > 0:
             move.pp -= 1
 
+    def _coerce_item(self, item):
+        """Return an item object for ``item`` when possible."""
+
+        if not item:
+            return None
+        if hasattr(item, "raw"):
+            return item
+        entry = ITEMDEX.get(str(item))
+        if entry is None:
+            normalized = _normalize_key(str(item))
+            entry = ITEMDEX.get(normalized) or ITEMDEX.get(str(item).title())
+        return entry
+
+    def _holder_item(self, pokemon):
+        """Return the currently held item object for ``pokemon``."""
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        item = self._coerce_item(item)
+        if item and getattr(pokemon, "item", None) is not item:
+            try:
+                pokemon.item = item
+            except Exception:
+                pass
+        return item
+
+    def _clear_item(self, pokemon) -> None:
+        """Remove the held item from ``pokemon`` without extra checks."""
+
+        if hasattr(pokemon, "item"):
+            pokemon.item = None
+        if hasattr(pokemon, "held_item"):
+            pokemon.held_item = ""
+
+    def use_item(self, pokemon, item=None, *, source=None, effect=None) -> bool:
+        """Run generic held-item use gating without consuming the item."""
+
+        item_obj = self._coerce_item(item) or self._holder_item(pokemon)
+        if not item_obj:
+            return False
+        if item_obj.call("onUseItem", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+            return False
+        if item_obj.call("onUse", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+            return False
+        return True
+
+    def eat_item(self, pokemon, *, source=None, effect=None, force: bool = False):
+        """Consume ``pokemon``'s held item following Showdown-style gates."""
+
+        item_obj = self._holder_item(pokemon)
+        if not item_obj:
+            return False
+        if not force:
+            if self.use_item(pokemon, item_obj, source=source, effect=effect) is False:
+                return False
+            if item_obj.call("onTryEatItem", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+                return False
+            if item_obj.call("onEatItem", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+                return False
+        item_name = getattr(item_obj, "name", str(item_obj))
+        item_obj.call("onEat", pokemon=pokemon, source=source, effect=effect, battle=self)
+        pokemon.last_item = item_name
+        pokemon.last_consumed_item = item_name
+        if "berry" in _normalize_key(item_name):
+            pokemon.consumed_berry = True
+        self._clear_item(pokemon)
+        return True
+
+    def take_item(self, pokemon, *, source=None, effect=None):
+        """Remove and return ``pokemon``'s held item if no effect blocks it."""
+
+        item_obj = self._holder_item(pokemon)
+        if not item_obj:
+            return None
+        allowed = item_obj.call("onTakeItem", item=item_obj, pokemon=pokemon, source=source, effect=effect, battle=self)
+        if allowed is False:
+            return None
+        ability = _resolve_ability(getattr(pokemon, "ability", None))
+        if ability and hasattr(ability, "call"):
+            allowed = ability.call("onTakeItem", item=item_obj, pokemon=pokemon, source=source, effect=effect, battle=self)
+            if allowed is False:
+                return None
+        item_name = getattr(item_obj, "name", str(item_obj))
+        pokemon.last_item = item_name
+        pokemon.last_removed_item = item_name
+        pokemon.knocked_off = True if _normalize_key(getattr(effect, "name", effect)) == "knockoff" else getattr(pokemon, "knocked_off", False)
+        self._clear_item(pokemon)
+        return item_obj
+
+    def set_item(self, pokemon, item, *, source=None, effect=None) -> bool:
+        """Assign ``item`` as the held item for ``pokemon`` and trigger start hooks."""
+
+        item_obj = self._coerce_item(item)
+        if not item_obj:
+            return False
+        pokemon.item = item_obj
+        if hasattr(pokemon, "held_item"):
+            pokemon.held_item = getattr(item_obj, "name", str(item_obj))
+        pokemon.last_item = getattr(item_obj, "name", str(item_obj))
+        pokemon.knocked_off = False
+        item_obj.call("onStart", pokemon=pokemon, source=source, effect=effect, battle=self)
+        return True
+
     def _deal_damage(
         self, user, target, move: BattleMove, *, spread: bool = False
     ) -> int:
@@ -1887,6 +2000,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 "onTry",
                 "onBeforeMove",
                 "onAfterMove",
+                "onModifyMove",
+                "onPrepareHit",
+                "onTryHit",
+                "onTryHitSide",
+                "onTryHitField",
+                "onMoveFail",
+                "onAfterMoveSecondary",
+                "onAfterMoveSecondarySelf",
+                "priorityChargeCallback",
+                "beforeMoveCallback",
                 "basePowerCallback",
             ):
                 if getattr(action.move, attr, None) is None:
@@ -1916,6 +2039,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if self.status_prevents_move(user):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
             return
+        if action.move.beforeMoveCallback:
+            before_move_result = invoke_callback(
+                action.move.beforeMoveCallback,
+                user,
+                target=None,
+                move=action.move,
+                battle=self,
+            )
+            if before_move_result is False:
+                return
 
         target_part = action.target
         if target_part not in self.participants or target_part.has_lost:
@@ -1936,6 +2069,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
+            if action.move.onMoveFail:
+                invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
             self.log_action(
                 f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
             )
@@ -2021,9 +2156,49 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             apply_boost(target, {}, source=user, effect=action.move)
 
         self.deduct_pp(user, action.move)
+        if action.move.onModifyMove:
+            invoke_callback(action.move.onModifyMove, action.move, user, target, battle=self)
         self.dispatcher.dispatch(
             "before_move", user=user, target=target, move=action.move, battle=self
         )
+
+        if action.move.onPrepareHit:
+            prepared = invoke_callback(action.move.onPrepareHit, user, target, action.move, battle=self)
+            if prepared is False:
+                if action.move.onMoveFail:
+                    invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
+                self.log_action(
+                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                )
+                return
+
+        if action.move.onTryHit:
+            try_hit = invoke_callback(action.move.onTryHit, target, user, action.move, battle=self)
+            if try_hit is False:
+                if action.move.onMoveFail:
+                    invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
+                self.log_action(
+                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                )
+                return
+        if action.move.onTryHitSide and target_part is not None:
+            try_hit_side = invoke_callback(action.move.onTryHitSide, target_part.side, user, action.move, battle=self)
+            if try_hit_side is False:
+                if action.move.onMoveFail:
+                    invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
+                self.log_action(
+                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                )
+                return
+        if action.move.onTryHitField:
+            try_hit_field = invoke_callback(action.move.onTryHitField, self.field, user, action.move, battle=self)
+            if try_hit_field is False:
+                if action.move.onMoveFail:
+                    invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
+                self.log_action(
+                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                )
+                return
 
         if getattr(target, "volatiles", {}).get("protect"):
             try:
@@ -2032,6 +2207,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
+            if action.move.onMoveFail:
+                invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
             self.log_action(f"{getattr(target, 'name', 'Pokemon')} protected itself!")
             return
 
@@ -2055,6 +2232,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                     pass
                                 if action.move.raw.get("selfdestruct") == "always":
                                     user.hp = 0
+                                if action.move.onMoveFail:
+                                    invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
                                 self.log_action(
                                     f"{action.move.name} failed to hit {getattr(target, 'name', 'Pokemon')}!"
                                 )
@@ -2109,6 +2288,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             hit = dmg > 0
             if sd == "always" or (sd == "ifHit" and hit):
                 user.hp = 0
+            if not hit and action.move.onMoveFail:
+                invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
             return
 
         # Allow moves to execute even when the target is normally immune.
@@ -2141,6 +2322,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.tempvals["moved"] = True
             except Exception:
                 pass
+            if action.move.onMoveFail:
+                invoke_callback(action.move.onMoveFail, user, target, action.move, battle=self)
             self.log_action(
                 f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
             )
@@ -2207,10 +2390,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 )
 
         if action.move.onAfterMove:
-            try:
-                action.move.onAfterMove(user, target, self)
-            except Exception:
-                action.move.onAfterMove(user, target)
+            invoke_callback(action.move.onAfterMove, user, target, battle=self)
 
         self.dispatcher.dispatch(
             "after_move", user=user, target=target, move=action.move, battle=self
@@ -2599,7 +2779,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     ) -> None:
         """Notify about a status condition change."""
 
-        status_key = _normalize_key(status)
+        status_key = _normalize_key(status).lower() if status is not None else ""
         event_key = event or "start"
         message_template = (
             self._status_template(status_key, event_key) if status_key else None

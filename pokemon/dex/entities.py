@@ -5,9 +5,43 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 BASE_PATH = Path(__file__).resolve().parents[2]
+
+try:
+	from pokemon.battle.callbacks import invoke_callback, resolve_callback_from_modules
+except Exception:  # pragma: no cover - battle package can be stubbed in tests
+	invoke_callback = None
+	resolve_callback_from_modules = None
+
+
+def _invoke_raw_callback(
+	raw: Dict[str, Any],
+	func: str,
+	*,
+	registry_modules: Union[str, List[str]],
+	args: Tuple[Any, ...],
+	kwargs: Dict[str, Any],
+):
+	"""Resolve and invoke a raw callback entry when possible."""
+
+	cb = raw.get(func)
+	if callable(cb):
+		if invoke_callback:
+			return invoke_callback(cb, *args, **kwargs)
+		return cb(*args, **kwargs)
+	if not isinstance(cb, str):
+		return None
+	if resolve_callback_from_modules:
+		resolved = resolve_callback_from_modules(cb, registry_modules)
+	else:
+		resolved = None
+	if callable(resolved):
+		if invoke_callback:
+			return invoke_callback(resolved, *args, **kwargs)
+		return resolved(*args, **kwargs)
+	return None
 
 
 @dataclass
@@ -30,10 +64,13 @@ class Ability:
 
 	def call(self, func: str, *args, **kwargs):
 		"""Call a stored ability callback if it exists."""
-		cb = self.raw.get(func)
-		if callable(cb):
-			return cb(*args, **kwargs)
-		return None
+		return _invoke_raw_callback(
+			self.raw,
+			func,
+			registry_modules="pokemon.dex.functions.abilities_funcs",
+			args=args,
+			kwargs=kwargs,
+		)
 
 
 @dataclass
@@ -97,10 +134,13 @@ class Item:
 
 	def call(self, func: str, *args, **kwargs):
 		"""Call a stored item callback if it exists."""
-		cb = self.raw.get(func)
-		if callable(cb):
-			return cb(*args, **kwargs)
-		return None
+		return _invoke_raw_callback(
+			self.raw,
+			func,
+			registry_modules="pokemon.dex.functions.items_funcs",
+			args=args,
+			kwargs=kwargs,
+		)
 
 
 @dataclass
@@ -120,10 +160,16 @@ class Condition:
 		)
 
 	def call(self, func: str, *args, **kwargs):
-		cb = self.raw.get(func)
-		if callable(cb):
-			return cb(*args, **kwargs)
-		return None
+		return _invoke_raw_callback(
+			self.raw,
+			func,
+			registry_modules=[
+				"pokemon.dex.functions.conditions_funcs",
+				"pokemon.dex.functions.moves_funcs",
+			],
+			args=args,
+			kwargs=kwargs,
+		)
 
 
 @dataclass(init=False)

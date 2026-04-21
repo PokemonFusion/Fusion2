@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import random
-from typing import Protocol, runtime_checkable
+try:
+    from typing import Protocol, runtime_checkable
+except ImportError:  # pragma: no cover - Python < 3.8 fallback
+    from typing_extensions import Protocol, runtime_checkable
 
 
 @runtime_checkable

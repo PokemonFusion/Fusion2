@@ -9,7 +9,11 @@ call-sites can rely on stable method signatures instead of ad-hoc probing.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, Sequence, runtime_checkable
+from typing import TYPE_CHECKING, Any, Iterable, Sequence
+try:
+    from typing import Protocol, runtime_checkable
+except ImportError:  # pragma: no cover - Python < 3.8 fallback
+    from typing_extensions import Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from .actions import Action

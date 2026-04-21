@@ -206,6 +206,14 @@ class TurnProcessor:
 			from pokemon.battle import utils
 		except Exception:
 			utils = None
+		try:
+			from pokemon.battle.callbacks import invoke_callback
+		except Exception:
+			invoke_callback = None
+		try:
+			from pokemon.dex import MOVEDEX
+		except Exception:
+			MOVEDEX = {}
 
 		trick_room = bool(self.field.get_pseudo_weather("trickroom"))
 
@@ -214,6 +222,26 @@ class TurnProcessor:
 			move = action.move
 			base_priority = action.priority
 			priority = base_priority
+			if move is not None:
+				cb = getattr(move, "priorityChargeCallback", None)
+				if cb is None:
+					move_key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
+					entry = MOVEDEX.get(move_key)
+					raw = getattr(entry, "raw", None) or getattr(move, "raw", {})
+					cb_name = raw.get("priorityChargeCallback") if isinstance(raw, dict) else None
+					try:
+						from pokemon.dex.functions.moves_funcs import __dict__ as moves_registry
+					except Exception:
+						moves_registry = None
+					if cb_name and moves_registry:
+						from .callbacks import _resolve_callback
+						cb = _resolve_callback(cb_name, registry=safe_import("pokemon.dex.functions.moves_funcs"))
+						if callable(cb):
+							setattr(move, "priorityChargeCallback", cb)
+				if callable(cb) and poke is not None and invoke_callback is not None:
+					charged = invoke_callback(cb, poke, target=None, move=move, battle=self)
+					if isinstance(charged, (int, float)):
+						priority = charged
 
 			ability = getattr(poke, "ability", None)
 			item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
@@ -725,14 +753,18 @@ class TurnProcessor:
 		from .engine import BattleType, _normalize_key
 
 		item_name = action.item.lower()
+		item_key = _normalize_key(item_name).lower()
 		target = action.target
-		if target not in self.participants or target.has_lost or not target.active:
-			opponents = self.opponents_of(action.actor)
-			target = opponents[0] if opponents else None
+		if item_key.endswith("ball"):
+			if target not in self.participants or target.has_lost or not target.active:
+				opponents = self.opponents_of(action.actor)
+				target = opponents[0] if opponents else None
+		else:
+			if target not in self.participants or target.has_lost or not target.active:
+				target = action.actor if getattr(action.actor, "active", None) else None
 		if not target or not target.active:
 			return
 
-		item_key = _normalize_key(item_name)
 		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
 			target_poke = target.active[0]
 			try:
@@ -947,6 +979,82 @@ class TurnProcessor:
 							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 				if hasattr(self, "log_action"):
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
+			return
+
+		target_poke = target.active[0]
+		checker = getattr(action.actor, "has_item", None)
+		if callable(checker):
+			try:
+				if not checker(action.item, 1):
+					return
+			except TypeError:
+				if not checker(action.item):
+					return
+
+		used = False
+		healing_items = {
+			"potion": 20,
+			"superpotion": 60,
+			"hyperpotion": 120,
+			"maxpotion": None,
+		}
+		status_items = {
+			"antidote": {"psn", "tox"},
+			"burnheal": {"brn"},
+			"iceheal": {"frz"},
+			"awakening": {"slp"},
+			"paralyzeheal": {"par"},
+			"fullheal": {"brn", "psn", "tox", "frz", "slp", "par"},
+			"fullrestore": {"brn", "psn", "tox", "frz", "slp", "par"},
+		}
+
+		if item_key in healing_items:
+			max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
+			if 0 < getattr(target_poke, "hp", 0) < max_hp:
+				amount = healing_items[item_key]
+				target_poke.hp = max_hp if amount is None else min(max_hp, getattr(target_poke, "hp", 0) + amount)
+				used = True
+
+		if item_key == "fullrestore" and getattr(target_poke, "status", 0):
+			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
+		elif item_key in status_items and getattr(target_poke, "status", 0) in status_items[item_key]:
+			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
+
+		if item_key == "revive" and getattr(target_poke, "hp", 0) <= 0:
+			max_hp = getattr(target_poke, "max_hp", 1)
+			target_poke.hp = max(1, max_hp // 2)
+			target_poke.is_fainted = False
+			used = True
+		elif item_key == "maxrevive" and getattr(target_poke, "hp", 0) <= 0:
+			max_hp = getattr(target_poke, "max_hp", 1)
+			target_poke.hp = max_hp
+			target_poke.is_fainted = False
+			used = True
+
+		if item_key == "ether":
+			for move in getattr(target_poke, "moves", []) or []:
+				pp = getattr(move, "pp", None)
+				if pp is None:
+					continue
+				move.pp = pp + 10
+				used = True
+				break
+
+		if not used:
+			if hasattr(self, "log_action"):
+				self.log_action(f"But {action.item} had no effect!")
+			return
+
+		remove_item = getattr(action.actor, "remove_item", None)
+		if callable(remove_item):
+			try:
+				remove_item(action.item)
+			except Exception as err:
+				self._record_failure(context="trainer_item", exception=err, pokemon=target_poke)
+		if hasattr(self, "log_action"):
+			self.log_action(
+				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {getattr(target_poke, 'name', 'Pokemon')}!"
+			)
 
 	def perform_move_action(self, action: Action) -> None:
 		"""Execute a move action."""
