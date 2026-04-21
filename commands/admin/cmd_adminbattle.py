@@ -208,7 +208,7 @@ def _room_snapshot(room, battle_id: int) -> Dict[str, Any]:
 
     storage = BattleDataWrapper(room, battle_id)
     stored: Dict[str, Any] = {}
-    for part in ("data", "state", "trainers", "temp_pokemon_ids", "logic"):
+    for part in ("data", "state", "trainers", "temp_pokemon_ids", "logic", "debug", "last_action"):
         value = storage.get(part)
         if value is not None:
             stored[part] = value
@@ -293,6 +293,18 @@ def _session_snapshot(inst) -> Dict[str, Any]:
             if team_info:
                 summary["logic_team"] = team_info
 
+    if state is not None:
+        summary["debug"] = bool(getattr(state, "debug", False))
+
+    if battle is not None:
+        summary["show_damage_numbers"] = bool(
+            getattr(battle, "show_damage_numbers", False)
+        )
+
+    debug_record = getattr(getattr(inst, "storage", None), "get", lambda *_: None)("debug")
+    if debug_record:
+        summary["debug_record"] = debug_record
+
     return _strip_empty(summary)
 
 
@@ -366,7 +378,7 @@ class CmdRestoreBattle(Command):
     """
 
     key = "+restorebattle"
-    locks = "cmd:perm(Wizards)"
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
@@ -395,7 +407,7 @@ class CmdBattleInfo(Command):
     """
 
     key = "+battleinfo"
-    locks = "cmd:perm(Wizards)"
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
@@ -417,6 +429,8 @@ class CmdBattleInfo(Command):
             "state": storage.get("state"),
             "trainers": storage.get("trainers"),
             "temp_pokemon_ids": storage.get("temp_pokemon_ids"),
+            "debug": storage.get("debug"),
+            "last_action": storage.get("last_action"),
         }
 
         lines = [f"Battle {bid} info:"]
@@ -439,7 +453,7 @@ class CmdBattleSnapshot(Command):
     """
 
     key = "+battlecheck"
-    locks = "cmd:perm(Wizards)"
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
@@ -464,7 +478,7 @@ class CmdRetryTurn(Command):
     """Retry the current turn of a battle."""
 
     key = "+retryturn"
-    locks = "cmd:perm(Wizards)"
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):

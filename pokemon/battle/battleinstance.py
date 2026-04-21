@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from collections import deque
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 from types import SimpleNamespace
 
@@ -105,6 +106,7 @@ from .handler import battle_handler
 from .persistence import StatePersistenceMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
 from .storage import BattleDataWrapper
+from utils.battle_logging import setup_daily_battle_log
 
 
 try:  # pragma: no cover - optional import path during tests
@@ -151,6 +153,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         *,
         rng: Optional[random.Random] = None,
     ) -> None:
+        self._battle_logger = setup_daily_battle_log(
+            Path(__file__).resolve().parents[2] / "server" / "logs"
+        )
         log_info(
             (
                 f"Initializing BattleSession {getattr(player, 'id', '?')} between "
@@ -197,6 +202,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.temp_pokemon_ids: List[int] = []
 
         log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
+        self.persist_debug_record(event="session_initialized")
         self._set_player_control(False)
 
     # ------------------------------------------------------------
@@ -249,6 +255,140 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         for trainer in self.trainers:
             if hasattr(trainer, "db"):
                 trainer.db.battle_control = value
+
+    def _safe_storage_get(self, part: str, default=None):
+        """Best-effort access to persisted battle storage."""
+
+        try:
+            return self.storage.get(part, default)
+        except Exception:
+            return default
+
+    def _summarize_action_debug(self, action) -> Dict[str, Any] | None:
+        """Return a compact debug summary for a queued action."""
+
+        if not action:
+            return None
+        payload: Dict[str, Any] = {}
+        action_type = getattr(action, "action_type", None)
+        if action_type is not None:
+            payload["type"] = getattr(action_type, "name", str(action_type))
+        move = getattr(action, "move", None)
+        if move is not None:
+            payload["move"] = getattr(move, "name", getattr(move, "key", str(move)))
+        target = getattr(action, "target", None)
+        if target is not None:
+            payload["target"] = getattr(target, "key", getattr(target, "name", str(target)))
+        priority = getattr(action, "priority", None)
+        if priority is not None:
+            payload["priority"] = priority
+        return payload or None
+
+    def _summarize_pokemon_debug(self, pokemon) -> Dict[str, Any] | None:
+        """Return a compact debug summary for a battle Pokemon."""
+
+        if not pokemon:
+            return None
+        moves = []
+        for move in getattr(pokemon, "moves", []) or []:
+            moves.append(getattr(move, "name", getattr(move, "key", str(move))))
+        payload: Dict[str, Any] = {
+            "name": getattr(pokemon, "name", getattr(pokemon, "species", None)),
+            "hp": getattr(pokemon, "hp", None),
+            "max_hp": getattr(pokemon, "max_hp", None),
+            "status": getattr(pokemon, "status", None),
+            "model_id": getattr(pokemon, "model_id", None),
+            "moves": moves,
+        }
+        ability = getattr(pokemon, "ability", None)
+        if ability:
+            payload["ability"] = getattr(ability, "name", str(ability))
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        if item:
+            payload["item"] = getattr(item, "name", str(item))
+        return {key: value for key, value in payload.items() if value not in (None, [], {}, "")}
+
+    def _summarize_participant_debug(self, participant) -> Dict[str, Any]:
+        """Return a compact debug summary for a battle participant."""
+
+        return {
+            "name": getattr(participant, "name", None),
+            "team": getattr(participant, "team", None),
+            "player": getattr(
+                getattr(participant, "player", None),
+                "key",
+                getattr(getattr(participant, "player", None), "name", None),
+            ),
+            "is_ai": bool(getattr(participant, "is_ai", False)),
+            "active": [
+                snap
+                for snap in (
+                    self._summarize_pokemon_debug(poke)
+                    for poke in getattr(participant, "active", []) or []
+                )
+                if snap
+            ],
+            "pending_action": self._summarize_action_debug(
+                getattr(participant, "pending_action", None)
+            ),
+        }
+
+    def _state_flags_debug(self) -> Dict[str, Any]:
+        """Return core state/debug flags for this session."""
+
+        battle = getattr(self, "battle", None)
+        state = getattr(self, "state", None)
+        return {
+            "battle_id": self.battle_id,
+            "turn": getattr(state, "turn", getattr(battle, "turn_count", 1)),
+            "battle_turn": getattr(battle, "turn_count", None),
+            "battle_type": getattr(getattr(battle, "type", None), "name", None),
+            "debug": bool(getattr(state, "debug", False) or getattr(battle, "debug", False)),
+            "show_damage_numbers": bool(getattr(battle, "show_damage_numbers", False)),
+            "watchers": sorted(list(getattr(self.ndb, "watchers_live", set()) or [])),
+            "trainers": [
+                getattr(trainer, "id", None)
+                for trainer in getattr(self, "trainers", [])
+                if getattr(trainer, "id", None) is not None
+            ],
+        }
+
+    def build_debug_record(self) -> Dict[str, Any]:
+        """Build a persisted debug snapshot for the battle."""
+
+        record = self._safe_storage_get("debug", {}) or {}
+        record.update(self._state_flags_debug())
+        record["declare"] = dict(getattr(getattr(self, "state", None), "declare", {}) or {})
+        record["participants"] = [
+            self._summarize_participant_debug(part)
+            for part in getattr(getattr(self, "battle", None), "participants", []) or []
+        ]
+        if getattr(self, "turn_state", None):
+            last_error = self.turn_state.get("error")
+            if last_error:
+                record["last_error"] = last_error
+        last_action = self._safe_storage_get("last_action")
+        if last_action is not None:
+            record["last_action"] = last_action
+        return record
+
+    def persist_debug_record(self, *, event: str | None = None, **details: Any) -> Dict[str, Any]:
+        """Persist and log a compact battle debug record."""
+
+        record = self.build_debug_record()
+        if event:
+            history = list(record.get("history", []) or [])
+            entry = {"event": event}
+            if details:
+                entry["details"] = details
+            history.append(entry)
+            record["history"] = history[-25:]
+        self.storage.set("debug", record)
+        try:
+            self._battle_logger.info("battle=%s debug=%s", self.battle_id, record)
+        except Exception:
+            log_warn("Failed to write battle debug record", exc_info=True)
+        return record
 
     # ------------------------------------------------------------
     # Turn helpers
@@ -570,6 +710,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         obj.room = room
         obj.battle_id = battle_id
         obj.storage = storage
+        obj._battle_logger = setup_daily_battle_log(
+            Path(__file__).resolve().parents[2] / "server" / "logs"
+        )
         obj.trainers = []
         obj.observers = set()
         obj.turn_state = {}
@@ -749,6 +892,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         # Ensure state turn matches data since we drop it during compaction
         obj.logic.state.turn = getattr(obj.logic.data.battle, "turn", 1)
         log_info("Restored logic and temp Pokemon ids")
+        obj.persist_debug_record(event="battle_restored")
 
         # Watchers: keep a live, non-persistent copy on ndb; normalize any persisted list
         try:
@@ -1042,6 +1186,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 trainer_ids["teamB"].append(self.captainB.id)
         self.storage.set("trainers", trainer_ids)
         log_info("Saved PvP battle data to room")
+        self.persist_debug_record(event="battle_started", mode="pvp")
 
         self.add_watcher(self.captainA)
         self.add_watcher(self.captainB)
@@ -1159,7 +1304,67 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         self.prompt_next_turn()
         battle_handler.register(self)
+        self.persist_debug_record(event="battle_started", mode="encounter")
         log_info(f"Battle {self.battle_id} registered with handler")
+
+    def start_test_battle(
+        self,
+        *,
+        species: str,
+        level: int = 5,
+        opponent_kind: str = "wild",
+        opponent_name: str | None = None,
+    ) -> None:
+        """Start an explicit debug battle against a generated opponent."""
+
+        battle_type = BattleType.TRAINER if str(opponent_kind).lower() == "trainer" else BattleType.WILD
+        opponent_poke = create_battle_pokemon(
+            species,
+            int(level),
+            trainer=opponent_name if battle_type == BattleType.TRAINER else None,
+            is_wild=battle_type == BattleType.WILD,
+        )
+        if getattr(opponent_poke, "model_id", None):
+            self.temp_pokemon_ids.append(opponent_poke.model_id)
+
+        shell_name = opponent_name or (
+            f"Wild {species}" if battle_type == BattleType.WILD else f"Trainer {species}"
+        )
+        opponent_shell = SimpleNamespace(
+            name=shell_name,
+            key=shell_name,
+            team=[opponent_poke],
+            active_pokemon=opponent_poke,
+            is_wild=battle_type == BattleType.WILD,
+            is_npc=battle_type == BattleType.TRAINER,
+            ndb=SimpleNamespace(),
+            db=SimpleNamespace(),
+        )
+        self.captainB = opponent_shell
+        self.trainers = [t for t in (self.captainA, self.captainB) if t]
+        for trainer in self.trainers:
+            self._register_trainer(trainer)
+
+        origin = getattr(self.captainA, "location", None)
+        player_pokemon = self._prepare_player_party(self.captainA)
+        self._init_battle_state(
+            origin,
+            player_pokemon,
+            opponent_poke,
+            shell_name,
+            battle_type,
+        )
+        self._setup_battle_room(
+            intro_message=(
+                f"A debug battle begins against {shell_name} and {opponent_poke.name}."
+            )
+        )
+        self.persist_debug_record(
+            event="test_battle_started",
+            species=species,
+            level=int(level),
+            opponent_kind=battle_type.name,
+        )
 
     def _sync_player_pokemon_state(self) -> None:
         """Persist battle results back to the owning player models.
@@ -1248,6 +1453,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def end(self) -> None:
         """End the battle and clean up."""
         log_info(f"Ending battle {self.battle_id}")
+        self.persist_debug_record(event="battle_ending")
         self._sync_player_pokemon_state()
         self._set_player_control(False)
         try:
@@ -1303,6 +1509,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         battle_handler.unregister(self)
         for seg in ("data", "state", "meta", "field", "active"):
             self.storage.delete(seg)
+        self.storage.delete("last_action")
+        self.storage.delete("debug")
         log_info(f"Cleared battle data for {self.battle_id}")
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")

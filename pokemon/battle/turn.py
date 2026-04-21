@@ -123,6 +123,12 @@ class TurnManager:
 			return
 
 		log_info(f"Running turn for battle {self.battle_id}")
+		debug_hook = getattr(self, "persist_debug_record", None)
+		if callable(debug_hook):
+			try:
+				debug_hook(event="turn_started")
+			except Exception:
+				pass
 		self._set_player_control(False)
 		self._notify_turn_banner(upcoming=True)
 		battle_finished = False
@@ -131,6 +137,11 @@ class TurnManager:
 		except Exception:
 			err_txt = traceback.format_exc()
 			self.turn_state["error"] = err_txt
+			if callable(debug_hook):
+				try:
+					debug_hook(event="turn_error", error=err_txt)
+				except Exception:
+					pass
 			log_err(
 				f"Error while running turn for battle {self.battle_id}:\n{err_txt}",
 				exc_info=False,
@@ -158,6 +169,7 @@ class TurnManager:
 				if roster_size <= 0 and not winner:
 					battle_finished = False
 			log_info(f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}")
+			self.turn_state.pop("error", None)
 			if self.state:
 				# Keep the battle state in sync with the engine's turn counter so
 				# interfaces relying on ``state.turn`` reflect the current turn.
@@ -165,6 +177,11 @@ class TurnManager:
 			if self.data and getattr(self.data, "battle", None):
 				self.data.battle.turn = getattr(self.battle, "turn_count", self.data.battle.turn)
 			self._notify_turn_banner()
+			if callable(debug_hook):
+				try:
+					debug_hook(event="turn_finished")
+				except Exception:
+					pass
 			if battle_finished:
 				if hasattr(self, "end"):
 					try:

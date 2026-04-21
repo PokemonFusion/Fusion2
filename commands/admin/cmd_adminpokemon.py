@@ -14,7 +14,7 @@ class CmdListPokemon(Command):
 	"""
 
 	key = "@listpokemon"
-	locks = "cmd:perm(Wizards)"
+	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def func(self):
@@ -83,7 +83,7 @@ class CmdPokemonInfo(Command):
 	"""
 
 	key = "@pokemoninfo"
-	locks = "cmd:perm(Wizards)"
+	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def func(self):

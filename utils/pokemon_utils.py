@@ -189,6 +189,64 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     return battle_poke
 
 
+def grant_generated_pokemon(
+    target,
+    species: str,
+    level: int,
+    *,
+    caller=None,
+    item: str | None = None,
+):
+    """Generate, persist, and grant a Pokemon to ``target``."""
+
+    from pokemon.data.generation import generate_pokemon
+    from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+
+    instance = generate_pokemon(species, level=level)
+    pokemon = create_owned_pokemon(
+        instance.species.name,
+        target.trainer,
+        instance.level,
+        gender=getattr(instance, "gender", "N"),
+        nature=getattr(instance, "nature", ""),
+        ability=getattr(instance, "ability", ""),
+        ivs=[
+            getattr(getattr(instance, "ivs", None), "hp", 0),
+            getattr(getattr(instance, "ivs", None), "attack", 0),
+            getattr(getattr(instance, "ivs", None), "defense", 0),
+            getattr(getattr(instance, "ivs", None), "special_attack", 0),
+            getattr(getattr(instance, "ivs", None), "special_defense", 0),
+            getattr(getattr(instance, "ivs", None), "speed", 0),
+        ],
+        evs=[0, 0, 0, 0, 0, 0],
+        held_item=item or "",
+    )
+
+    if item and hasattr(pokemon, "held_item"):
+        pokemon.held_item = item
+        if hasattr(pokemon, "save"):
+            try:
+                pokemon.save(update_fields=["held_item"])
+            except Exception:
+                try:
+                    pokemon.save()
+                except Exception:
+                    logger.debug("Unable to persist held item on granted pokemon.", exc_info=True)
+
+    target.storage.add_active_pokemon(pokemon)
+
+    if caller is not None and hasattr(caller, "msg"):
+        caller.msg(
+            f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}."
+        )
+    if caller is not None and target != caller and hasattr(target, "msg"):
+        target.msg(
+            f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}."
+        )
+
+    return pokemon
+
+
 def battle_pokemon_from_owned(pokemon: OwnedPokemon) -> Pokemon:
     """Create a battle-ready :class:`Pokemon` object from an ``OwnedPokemon``."""
 
@@ -208,9 +266,12 @@ def spawn_npc_pokemon(trainer, *, use_templates: bool = True) -> Pokemon:
             return battle_pokemon_from_owned(clone)
 
     create_poke = _get_create_battle_pokemon()
-    if create_poke is None:
+    if create_poke is not None:
+        return create_poke("Charmander", 5, trainer=trainer, is_wild=False)
+
+    if Pokemon is None:
         raise RuntimeError("Battle modules not available")
-    return create_poke("Charmander", 5, trainer=trainer, is_wild=False)
+    return Pokemon(name="Charmander", level=5, hp=20, max_hp=20, moves=[Move(name="Tackle")])
 
 
 def make_pokemon_from_dict(data: dict) -> Pokemon:

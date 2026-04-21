@@ -2557,7 +2557,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # ------------------------------------------------------------------
     def log_action(self, message: str) -> None:
         """Basic logger used by the engine."""
-        print(message)
+        battle_logger.info("%s", message)
 
     def display_hp_bar(self, pokemon) -> str:
         """Return a simple textual HP bar for ``pokemon``."""

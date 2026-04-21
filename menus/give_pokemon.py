@@ -1,6 +1,4 @@
-from pokemon.data.generation import generate_pokemon
 from pokemon.dex import POKEDEX
-from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -63,27 +61,35 @@ def node_level(caller, raw_input=None, **kwargs):
 	if level < 1:
 		level = 1
 	species = caller.ndb.givepoke.get("species")
-	instance = generate_pokemon(species, level=level)
-	pokemon = create_owned_pokemon(
-		instance.species.name,
-		target.trainer,
-		instance.level,
-		gender=instance.gender,
-		nature=instance.nature,
-		ability=instance.ability,
-		ivs=[
-			instance.ivs.hp,
-			instance.ivs.attack,
-			instance.ivs.defense,
-			instance.ivs.special_attack,
-			instance.ivs.special_defense,
-			instance.ivs.speed,
-		],
-		evs=[0, 0, 0, 0, 0, 0],
-	)
-	target.storage.add_active_pokemon(pokemon)
-	caller.msg(f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}.")
-	if target != caller:
-		target.msg(f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}.")
+	try:
+		from utils.pokemon_utils import grant_generated_pokemon
+
+		pokemon = grant_generated_pokemon(target, species, level, caller=caller)
+	except Exception:
+		from pokemon.data.generation import generate_pokemon
+		from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+
+		instance = generate_pokemon(species, level=level)
+		pokemon = create_owned_pokemon(
+			instance.species.name,
+			target.trainer,
+			instance.level,
+			gender=instance.gender,
+			nature=instance.nature,
+			ability=instance.ability,
+			ivs=[
+				instance.ivs.hp,
+				instance.ivs.attack,
+				instance.ivs.defense,
+				instance.ivs.special_attack,
+				instance.ivs.special_defense,
+				instance.ivs.speed,
+			],
+			evs=[0, 0, 0, 0, 0, 0],
+		)
+		target.storage.add_active_pokemon(pokemon)
+		caller.msg(f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}.")
+		if target != caller:
+			target.msg(f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}.")
 	del caller.ndb.givepoke
 	return None, None

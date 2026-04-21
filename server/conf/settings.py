@@ -45,7 +45,7 @@ AUTO_PUPPET_ON_LOGIN = False
 # When enabled, additional debug commands are exposed to all players and
 # certain administrative features become available. Set to ``False`` in
 # production environments.
-DEV_MODE = False
+DEV_MODE = True
 
 # Run world initialization hooks at server start/stop
 SERVER_STARTSTOP_MODULE = "world.system_init"

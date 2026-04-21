@@ -11,6 +11,7 @@ from commands.admin.cmd_adminbattle import (
     CmdToggleDamageNumbers,
     CmdUiPreview,
 )
+from commands.admin.cmd_testbattle import CmdStartTestBattle, CmdTestSpawn
 
 
 class BattleAdminCmdSet(CmdSet):
@@ -28,5 +29,7 @@ class BattleAdminCmdSet(CmdSet):
             CmdRetryTurn,
             CmdToggleDamageNumbers,
             CmdUiPreview,
+            CmdTestSpawn,
+            CmdStartTestBattle,
         ):
             self.add(cmd())

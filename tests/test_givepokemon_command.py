@@ -11,6 +11,7 @@ sys.path.insert(0, ROOT)
 menu_calls = []
 orig_evennia = sys.modules.get("evennia")
 orig_enhanced = sys.modules.get("utils.enhanced_evmenu")
+orig_pokemon_utils = sys.modules.get("utils.pokemon_utils")
 
 fake_evennia = types.ModuleType("evennia")
 fake_evennia.Command = type("Command", (), {})
@@ -35,6 +36,25 @@ def FakeEnhancedEvMenu(*args, **kwargs):
 
 fake_enhanced.EnhancedEvMenu = FakeEnhancedEvMenu
 sys.modules["utils.enhanced_evmenu"] = fake_enhanced
+
+grant_calls = []
+fake_pokemon_utils = types.ModuleType("utils.pokemon_utils")
+
+
+def fake_grant_generated_pokemon(target, species, level, *, caller=None, item=None):
+	grant_calls.append(
+		{
+			"target": target,
+			"species": species,
+			"level": level,
+			"caller": caller,
+			"item": item,
+		}
+	)
+
+
+fake_pokemon_utils.grant_generated_pokemon = fake_grant_generated_pokemon
+sys.modules["utils.pokemon_utils"] = fake_pokemon_utils
 
 # Provide empty menu module
 sys.modules.setdefault("menus.give_pokemon", types.ModuleType("menus.give_pokemon"))
@@ -136,3 +156,32 @@ def test_party_full_still_launches_menu():
 	sni = menu_calls[-1][1].get("startnode_input")
 	assert isinstance(sni, tuple) and sni[1].get("target") is target
 	assert not any("already full" in msg for msg in caller.msgs)
+
+
+def test_quick_grant_uses_generated_helper():
+	menu_calls.clear()
+	search_calls.clear()
+	grant_calls.clear()
+	cmd = cmd_mod.CmdGivePokemon()
+	caller = DummyCaller()
+	target = DummyChar("Trg")
+	fake_search_object.return_value = [target]
+	cmd.caller = caller
+	cmd.args = "Trg=Pikachu, 12"
+
+	cmd.func()
+
+	assert not menu_calls
+	assert grant_calls
+	call = grant_calls[-1]
+	assert call["target"] is target
+	assert call["species"] == "Pikachu"
+	assert call["level"] == 12
+	assert call["caller"] is caller
+
+
+def teardown_module():
+	if orig_pokemon_utils is not None:
+		sys.modules["utils.pokemon_utils"] = orig_pokemon_utils
+	else:
+		sys.modules.pop("utils.pokemon_utils", None)

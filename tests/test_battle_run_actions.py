@@ -144,6 +144,12 @@ def _make_session(battle, *, end_expected):
         session.end = end
         session.msg = lambda *a, **kw: None
         session.notify = lambda *a, **kw: None
+        session.debug_events = []
+
+        def persist_debug_record(**kwargs):
+                session.debug_events.append(kwargs)
+
+        session.persist_debug_record = persist_debug_record
         return session
 
 
@@ -165,6 +171,22 @@ def test_battle_session_prompts_after_failed_flee():
         assert session.ended is False
         assert session.prompt_called is True
         assert session._persisted is True
+
+
+class _ExplodingBattle(_DummyBattle):
+        def run_turn(self):
+                raise RuntimeError("boom")
+
+
+def test_battle_session_records_turn_error_debug():
+        battle = _ExplodingBattle(end_after=False)
+        session = _make_session(battle, end_expected=False)
+
+        session.run_turn()
+
+        assert "error" in session.turn_state
+        assert any(event.get("event") == "turn_error" for event in session.debug_events)
+        assert "boom" in session.turn_state["error"]
 
 
 def test_run_move_invokes_flee_action():
