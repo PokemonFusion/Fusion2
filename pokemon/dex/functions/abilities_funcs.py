@@ -1244,8 +1244,14 @@ class Harvest:
 			return
 		chance = 1.0 if getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"} else 0.5
 		if random() < chance:
-			pokemon.item = berry
-			pokemon.consumed_berry = None
+			battle = getattr(pokemon, "battle", None)
+			if battle and hasattr(battle, "set_item"):
+				if battle.set_item(pokemon, berry, source=pokemon, effect="ability:harvest"):
+					pokemon.consumed_berry = None
+					pokemon.berry_consumed = None
+			else:
+				pokemon.item = berry
+				pokemon.consumed_berry = None
 
 
 class Healer:
@@ -1666,9 +1672,9 @@ class Magicguard:
 
 class Magician:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
-		if source and move and not getattr(source, "item", None) and target and getattr(target, "item", None):
-			source.item = target.item
-			target.item = None
+		battle = getattr(source, "battle", None)
+		if battle and source and target and move and hasattr(battle, "steal_item"):
+			battle.steal_item(source, target, effect=getattr(move, "name", "ability:magician"))
 
 
 class Magmaarmor:
@@ -2047,18 +2053,24 @@ class Perishbody:
 
 class Pickpocket:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if target and source and move and move.flags.get("contact"):
-			if not target.item and getattr(source, "item", None):
-				target.item = source.item
-				source.item = None
+		battle = getattr(target, "battle", None)
+		if battle and target and source and move and move.flags.get("contact") and hasattr(battle, "steal_item"):
+			battle.steal_item(target, source, effect=getattr(move, "name", "ability:pickpocket"))
 
 
 class Pickup:
 	def onResidual(self, pokemon=None):
 		if pokemon and not getattr(pokemon, "item", None):
-			used = getattr(pokemon, "side", {}).get("used_items", [])
+			side = getattr(pokemon, "side", None)
+			used = getattr(side, "used_items", []) if side else []
 			if used:
-				pokemon.item = used[-1]
+				item = used[-1]
+				battle = getattr(pokemon, "battle", None)
+				if battle and hasattr(battle, "set_item"):
+					if battle.set_item(pokemon, item, source=pokemon, effect="ability:pickup"):
+						used.pop()
+				else:
+					pokemon.item = item
 
 
 class Pixilate:
@@ -3041,9 +3053,9 @@ class Swordofruin:
 class Symbiosis:
 	def onAllyAfterUseItem(self, item=None, source=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and source is not holder and not getattr(source, "item", None) and getattr(holder, "item", None):
-			source.item = holder.item
-			holder.item = None
+		battle = getattr(holder, "battle", None)
+		if battle and holder and source is not holder and hasattr(battle, "move_item"):
+			battle.move_item(holder, source, effect="ability:symbiosis", source=holder)
 
 
 class Synchronize:

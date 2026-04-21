@@ -54,9 +54,9 @@ def test_eat_item_consumes_berry_and_sets_flags():
 	attacker.hp = 40
 	battle.set_item(attacker, berry)
 
-	assert battle.eat_item(attacker) is True
+	assert battle.eat_item(attacker, force=True) is True
 	assert attacker.item is None
-	assert attacker.consumed_berry is True
+	assert getattr(attacker.consumed_berry, "name", None) == "Aguav Berry"
 	assert attacker.last_consumed_item == "Aguav Berry"
 	assert attacker.hp > 40
 
@@ -144,6 +144,134 @@ def test_after_move_secondary_self_hook_runs():
 	battle.use_move(action)
 
 	assert attacker.boosts.get("attack", attacker.boosts.get("atk", 0)) >= 3
+
+
+def test_move_on_after_hit_knock_off_removes_item():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle()
+	from pokemon.dex.entities import Item
+
+	leftovers = Item.from_dict("Leftovers", {"name": "Leftovers"})
+	battle.set_item(defender, leftovers)
+	move = BattleMove(
+		name="Knock Off",
+		raw={"category": "Physical", "basePower": 65, "onAfterHit": "Knockoff.onAfterHit"},
+	)
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert defender.item is None
+	assert defender.last_removed_item == "Leftovers"
+	assert defender.knocked_off is True
+
+
+def test_move_on_after_hit_thief_steals_item():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle()
+	from pokemon.dex.entities import Item
+
+	leftovers = Item.from_dict("Leftovers", {"name": "Leftovers"})
+	battle.set_item(defender, leftovers)
+	move = BattleMove(
+		name="Thief",
+		raw={"category": "Physical", "basePower": 60, "onAfterHit": "Thief.onAfterHit"},
+	)
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert getattr(attacker.item, "name", None) == "Leftovers"
+	assert defender.item is None
+
+
+def test_move_on_hit_trick_swaps_items():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle()
+	from pokemon.dex.entities import Item
+
+	choice_band = Item.from_dict("Choice Band", {"name": "Choice Band"})
+	leftovers = Item.from_dict("Leftovers", {"name": "Leftovers"})
+	battle.set_item(attacker, choice_band)
+	battle.set_item(defender, leftovers)
+	move = BattleMove(
+		name="Trick",
+		raw={"category": "Status", "onHit": "Trick.onHit"},
+	)
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert getattr(attacker.item, "name", None) == "Leftovers"
+	assert getattr(defender.item, "name", None) == "Choice Band"
+
+
+def test_harvest_restores_consumed_berry_with_battle_helper():
+	load_modules()
+	from pokemon.dex.entities import Ability, Item
+
+	battle, attacker, _ = build_battle()
+	ability = Ability.from_dict("Harvest", {"name": "Harvest", "onResidual": "Harvest.onResidual"})
+	berry = Item.from_dict(
+		"Sitrus Berry",
+		{"name": "Sitrus Berry", "onEat": "Sitrusberry.onEat", "onTryEatItem": "Sitrusberry.onTryEatItem"},
+	)
+	attacker.ability = ability
+	battle.set_item(attacker, berry)
+
+	assert battle.eat_item(attacker, force=True) is True
+	assert attacker.item is None
+
+	ability.call("onResidual", pokemon=attacker)
+
+	assert getattr(attacker.item, "name", None) == "Sitrus Berry"
+	assert attacker.consumed_berry is None
+
+
+def test_pickup_recovers_last_used_side_item():
+	load_modules()
+	from pokemon.dex.entities import Ability, Item
+
+	battle, attacker, _ = build_battle()
+	pickup_user = attacker
+	pickup_user.ability = Ability.from_dict("Pickup", {"name": "Pickup", "onResidual": "Pickup.onResidual"})
+	berry = Item.from_dict(
+		"Aguav Berry",
+		{"name": "Aguav Berry", "onEat": "Aguavberry.onEat", "onTryEatItem": "Aguavberry.onTryEatItem"},
+	)
+	battle.set_item(pickup_user, berry)
+
+	assert battle.eat_item(pickup_user, force=True) is True
+	assert pickup_user.item is None
+
+	pickup_user.ability.call("onResidual", pokemon=pickup_user)
+
+	assert getattr(pickup_user.item, "name", None) == "Aguav Berry"
+	assert getattr(pickup_user.side, "used_items", []) == []
 
 
 def test_trainer_item_action_supports_potion():

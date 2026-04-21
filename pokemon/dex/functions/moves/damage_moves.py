@@ -263,20 +263,9 @@ class Bellydrum:
 class Bestow:
 	def onHit(self, user, target, battle):
 		"""Give the user's held item to the target if possible."""
-		item = getattr(user, "item", None) or getattr(user, "held_item", None)
-		if not item or getattr(target, "item", None) or getattr(target, "held_item", None):
-			return False
-		if hasattr(target, "set_item"):
-			target.set_item(item)
-		else:
-			setattr(target, "item", item)
-			setattr(target, "held_item", item)
-		if hasattr(user, "set_item"):
-			user.set_item(None)
-		else:
-			setattr(user, "item", None)
-			setattr(user, "held_item", None)
-		return True
+		if battle and hasattr(battle, "move_item"):
+			return bool(battle.move_item(user, target, effect="move:bestow"))
+		return False
 
 
 class Bide:
@@ -424,13 +413,8 @@ class Brine:
 class Bugbite:
 	def onHit(self, user, target, battle):
 		"""Consume the target's berry if it has one."""
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if item and isinstance(item, str) and "berry" in item.lower():
-			if hasattr(target, "set_item"):
-				target.set_item(None)
-			else:
-				setattr(target, "item", None)
-				setattr(target, "held_item", None)
+		if battle and hasattr(battle, "eat_berry"):
+			battle.eat_berry(user, target, effect="move:bugbite")
 		return True
 
 
@@ -779,23 +763,11 @@ class Covet:
 	def onAfterHit(self, *args, **kwargs):
 		user = args[0] if args else None
 		target = args[1] if len(args) > 1 else None
+		battle = args[2] if len(args) > 2 else kwargs.get("battle") or getattr(user, "battle", None)
 		if not user or not target:
 			return True
-		if getattr(user, "item", None) or getattr(user, "held_item", None):
-			return True
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if not item:
-			return True
-		if hasattr(target, "set_item"):
-			target.set_item(None)
-		else:
-			setattr(target, "item", None)
-			setattr(target, "held_item", None)
-		if hasattr(user, "set_item"):
-			user.set_item(item)
-		else:
-			setattr(user, "item", item)
-			setattr(user, "held_item", item)
+		if battle and hasattr(battle, "steal_item"):
+			battle.steal_item(user, target, effect="move:covet")
 		return True
 
 
@@ -1639,7 +1611,10 @@ class Fling:
 
 	def onUpdate(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
-		if user and hasattr(user, "set_item"):
+		battle = kwargs.get("battle") or getattr(user, "battle", None)
+		if battle and hasattr(battle, "remove_item"):
+			battle.remove_item(user, source=user, effect="move:fling", used=True)
+		elif user and hasattr(user, "set_item"):
 			user.set_item(None)
 		elif user:
 			setattr(user, "item", None)
@@ -3174,16 +3149,13 @@ class Kingsshield:
 
 class Knockoff:
 	def onAfterHit(self, *args, **kwargs):
-		target = args[0] if args else kwargs.get("target")
-		source = args[1] if len(args) > 1 else kwargs.get("source")
+		target = kwargs.get("target") or (args[0] if args else None)
+		source = kwargs.get("source") or (args[1] if len(args) > 1 else None)
+		battle = args[2] if len(args) > 2 else kwargs.get("battle") or getattr(target, "battle", None)
 		if source and getattr(source, "hp", 0) <= 0:
 			return True
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if item:
-			if hasattr(target, "set_item"):
-				target.set_item(None)
-			else:
-				setattr(target, "item", None)
+		if battle and hasattr(battle, "remove_item"):
+			battle.remove_item(target, source=source, effect="move:knockoff")
 		return True
 
 	def onBasePower(self, *args, **kwargs):
@@ -4354,19 +4326,8 @@ class Pikapapow:
 class Pluck:
 	def onHit(self, user, target, battle):
 		"""Eat the target's berry if it has one."""
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if item and isinstance(item, str) and "berry" in item.lower():
-			if hasattr(user, "item", None) and not getattr(user, "item", None):
-				if hasattr(user, "set_item"):
-					user.set_item(item)
-				else:
-					setattr(user, "item", item)
-					setattr(user, "held_item", item)
-			if hasattr(target, "set_item"):
-				target.set_item(None)
-			else:
-				setattr(target, "item", None)
-				setattr(target, "held_item", None)
+		if battle and hasattr(battle, "eat_berry"):
+			battle.eat_berry(user, target, effect="move:pluck")
 		return True
 
 
@@ -4863,7 +4824,10 @@ class Recycle:
 			item = getattr(user, "berry_consumed", None)
 		if not item:
 			return False
-		if hasattr(user, "set_item"):
+		if battle and hasattr(battle, "set_item"):
+			if not battle.set_item(user, item, source=user, effect="move:recycle"):
+				return False
+		elif hasattr(user, "set_item"):
 			user.set_item(item)
 		else:
 			setattr(user, "item", item)
@@ -6118,21 +6082,10 @@ class Swallow:
 class Switcheroo:
 	def onHit(self, *args, **kwargs):
 		user, target = args[0], args[1]
-		my_item = getattr(user, "item", None) or getattr(user, "held_item", None)
-		your_item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if my_item is None and your_item is None:
-			return False
-		if hasattr(user, "set_item"):
-			user.set_item(your_item)
-		else:
-			setattr(user, "item", your_item)
-			setattr(user, "held_item", your_item)
-		if hasattr(target, "set_item"):
-			target.set_item(my_item)
-		else:
-			setattr(target, "item", my_item)
-			setattr(target, "held_item", my_item)
-		return True
+		battle = args[2] if len(args) > 2 else kwargs.get("battle") or getattr(user, "battle", None)
+		if battle and hasattr(battle, "swap_items"):
+			return bool(battle.swap_items(user, target, effect="move:switcheroo"))
+		return False
 
 	def onTryImmunity(self, *args, **kwargs):
 		target = args[0] if args else kwargs.get("target")
@@ -6435,23 +6388,11 @@ class Thief:
 	def onAfterHit(self, *args, **kwargs):
 		user = args[0] if args else None
 		target = args[1] if len(args) > 1 else None
+		battle = args[2] if len(args) > 2 else kwargs.get("battle") or getattr(user, "battle", None)
 		if not user or not target:
 			return True
-		if getattr(user, "item", None) or getattr(user, "held_item", None):
-			return True
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if not item:
-			return True
-		if hasattr(target, "set_item"):
-			target.set_item(None)
-		else:
-			setattr(target, "item", None)
-			setattr(target, "held_item", None)
-		if hasattr(user, "set_item"):
-			user.set_item(item)
-		else:
-			setattr(user, "item", item)
-			setattr(user, "held_item", item)
+		if battle and hasattr(battle, "steal_item"):
+			battle.steal_item(user, target, effect="move:thief")
 		return True
 
 
@@ -6679,21 +6620,9 @@ class Triattack:
 class Trick:
 	def onHit(self, user, target, battle):
 		"""Swap held items with the target."""
-		my_item = getattr(user, "item", None) or getattr(user, "held_item", None)
-		your_item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if my_item is None and your_item is None:
-			return False
-		if hasattr(user, "set_item"):
-			user.set_item(your_item)
-		else:
-			setattr(user, "item", your_item)
-			setattr(user, "held_item", your_item)
-		if hasattr(target, "set_item"):
-			target.set_item(my_item)
-		else:
-			setattr(target, "item", my_item)
-			setattr(target, "held_item", my_item)
-		return True
+		if battle and hasattr(battle, "swap_items"):
+			return bool(battle.swap_items(user, target, effect="move:trick"))
+		return False
 
 	def onTryImmunity(self, *args, **kwargs):
 		target = args[0] if args else kwargs.get("target")

@@ -113,7 +113,11 @@ class Pokemon:
         self.consumed_berry = False
         self.last_item = None
         self.last_consumed_item = None
+        self.last_consumed_item_obj = None
         self.last_removed_item = None
+        self.last_used_item = None
+        self.berry_consumed = None
+        self.consumed_item = None
         self.knocked_off = False
         self.choice_locked_move = None
         self.boosts: Dict[str, int] = {

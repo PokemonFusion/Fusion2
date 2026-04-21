@@ -594,8 +594,10 @@ class BattleMove:
     onTryHitSide: Optional[Callable] = None
     onTryHitField: Optional[Callable] = None
     onMoveFail: Optional[Callable] = None
+    onAfterHit: Optional[Callable] = None
     onAfterMoveSecondary: Optional[Callable] = None
     onAfterMoveSecondarySelf: Optional[Callable] = None
+    onUpdate: Optional[Callable] = None
     priorityChargeCallback: Optional[Callable] = None
     beforeMoveCallback: Optional[Callable] = None
     basePowerCallback: Optional[Callable] = None
@@ -1820,12 +1822,183 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if hasattr(pokemon, "held_item"):
             pokemon.held_item = ""
 
+    def _remember_side_item(self, pokemon, item) -> None:
+        """Record that ``item`` left play for side-based pickup effects."""
+
+        if not pokemon or not item:
+            return
+        side = getattr(pokemon, "side", None)
+        if not side:
+            return
+        used = getattr(side, "used_items", None)
+        if not isinstance(used, list):
+            used = []
+            try:
+                side.used_items = used
+            except Exception:
+                return
+        used.append(item)
+
+    def _notify_after_use_item(self, pokemon, item, *, source=None, effect=None) -> None:
+        """Trigger ability callbacks that react to item consumption or use."""
+
+        if not pokemon or not item:
+            return
+        ability = _resolve_ability(getattr(pokemon, "ability", None))
+        if ability and hasattr(ability, "call"):
+            try:
+                ability.call("onAfterUseItem", item=item, pokemon=pokemon, source=source, effect=effect, battle=self)
+            except Exception:
+                pass
+        participant = self.participant_for(pokemon)
+        if not participant:
+            return
+        for ally in getattr(participant, "active", []) or []:
+            if ally is pokemon:
+                continue
+            ally_ability = _resolve_ability(getattr(ally, "ability", None))
+            if not ally_ability or not hasattr(ally_ability, "call"):
+                continue
+            try:
+                ally_ability.call("onAllyAfterUseItem", item=item, source=pokemon, pokemon=ally, effect=effect, battle=self)
+            except Exception:
+                continue
+
+    def _pokemon_has_item(self, pokemon) -> bool:
+        """Return whether ``pokemon`` is currently holding an item."""
+
+        return bool(self._holder_item(pokemon))
+
+    def can_set_item(self, pokemon, item) -> bool:
+        """Return whether ``pokemon`` can receive ``item`` right now."""
+
+        if pokemon is None:
+            return False
+        if item is None:
+            return True
+        if self._pokemon_has_item(pokemon):
+            return False
+        return True
+
+    def remove_item(self, pokemon, *, source=None, effect=None, used: bool = False):
+        """Remove and return a held item, recording battle metadata."""
+
+        item_obj = self.take_item(pokemon, source=source, effect=effect)
+        if not item_obj:
+            return None
+        item_name = getattr(item_obj, "name", str(item_obj))
+        pokemon.last_used_item = item_obj
+        if used:
+            self._remember_side_item(pokemon, item_obj)
+            self._notify_after_use_item(pokemon, item_obj, source=source, effect=effect)
+        else:
+            pokemon.last_removed_item = item_name
+        return item_obj
+
+    def move_item(self, source_pokemon, target_pokemon, *, effect=None, source=None) -> bool:
+        """Transfer ``source_pokemon``'s held item to ``target_pokemon``."""
+
+        if not source_pokemon or not target_pokemon or source_pokemon is target_pokemon:
+            return False
+        if self._pokemon_has_item(target_pokemon):
+            return False
+        item_obj = self.take_item(source_pokemon, source=source or target_pokemon, effect=effect)
+        if not item_obj:
+            return False
+        if not self.set_item(target_pokemon, item_obj, source=source_pokemon, effect=effect):
+            self.set_item(source_pokemon, item_obj, source=source, effect=effect)
+            return False
+        return True
+
+    def swap_items(self, first, second, *, effect=None) -> bool:
+        """Swap held items between two Pokemon when both transfers are legal."""
+
+        if not first or not second or first is second:
+            return False
+        first_item = self._holder_item(first)
+        second_item = self._holder_item(second)
+        if first_item is None and second_item is None:
+            return False
+        if first_item is not None:
+            allowed = first_item.call("onTakeItem", item=first_item, pokemon=first, source=second, effect=effect, battle=self)
+            if allowed is False:
+                return False
+        if second_item is not None:
+            allowed = second_item.call("onTakeItem", item=second_item, pokemon=second, source=first, effect=effect, battle=self)
+            if allowed is False:
+                return False
+        first_ability = _resolve_ability(getattr(first, "ability", None))
+        second_ability = _resolve_ability(getattr(second, "ability", None))
+        if first_item is not None and first_ability and hasattr(first_ability, "call"):
+            if first_ability.call("onTakeItem", item=first_item, pokemon=first, source=second, effect=effect, battle=self) is False:
+                return False
+        if second_item is not None and second_ability and hasattr(second_ability, "call"):
+            if second_ability.call("onTakeItem", item=second_item, pokemon=second, source=first, effect=effect, battle=self) is False:
+                return False
+        self._clear_item(first)
+        self._clear_item(second)
+        restored = []
+        if second_item is not None and self.set_item(first, second_item, source=second, effect=effect):
+            restored.append(("first", second_item))
+        elif second_item is not None:
+            self.set_item(first, first_item, source=first, effect=effect)
+            self.set_item(second, second_item, source=second, effect=effect)
+            return False
+        if first_item is not None and self.set_item(second, first_item, source=first, effect=effect):
+            restored.append(("second", first_item))
+        elif first_item is not None:
+            self._clear_item(first)
+            self._clear_item(second)
+            self.set_item(first, first_item, source=first, effect=effect)
+            self.set_item(second, second_item, source=second, effect=effect)
+            return False
+        return bool(restored)
+
+    def steal_item(self, thief, target, *, effect=None) -> bool:
+        """Move ``target``'s held item to ``thief`` if theft is legal."""
+
+        if not thief or not target or self._pokemon_has_item(thief):
+            return False
+        item_obj = self.take_item(target, source=thief, effect=effect)
+        if not item_obj:
+            return False
+        if not self.set_item(thief, item_obj, source=target, effect=effect):
+            self.set_item(target, item_obj, source=target, effect=effect)
+            return False
+        return True
+
+    def eat_berry(self, eater, target, *, effect=None) -> bool:
+        """Have ``eater`` consume ``target``'s berry using item hooks."""
+
+        item_obj = self._holder_item(target)
+        if not item_obj:
+            return False
+        item_name = getattr(item_obj, "name", str(item_obj))
+        if "berry" not in _normalize_key(item_name):
+            return False
+        removed = self.take_item(target, source=eater, effect=effect)
+        if not removed:
+            return False
+        removed.call("onEat", pokemon=eater, source=target, effect=effect, battle=self)
+        eater.last_item = item_name
+        eater.last_consumed_item = item_name
+        eater.last_consumed_item_obj = removed
+        eater.last_used_item = removed
+        eater.berry_consumed = removed
+        eater.consumed_item = removed
+        self._notify_after_use_item(eater, removed, source=target, effect=effect)
+        return True
+
     def use_item(self, pokemon, item=None, *, source=None, effect=None) -> bool:
         """Run generic held-item use gating without consuming the item."""
 
         item_obj = self._coerce_item(item) or self._holder_item(pokemon)
         if not item_obj:
             return False
+        ability = _resolve_ability(getattr(pokemon, "ability", None))
+        if ability and hasattr(ability, "call"):
+            if ability.call("onUseItem", item=item_obj, pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+                return False
         if item_obj.call("onUseItem", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
             return False
         if item_obj.call("onUse", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
@@ -1841,17 +2014,38 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if not force:
             if self.use_item(pokemon, item_obj, source=source, effect=effect) is False:
                 return False
+            for part in self.participants:
+                for foe in getattr(part, "active", []) or []:
+                    if foe is pokemon:
+                        continue
+                    ability = _resolve_ability(getattr(foe, "ability", None))
+                    if ability and hasattr(ability, "call"):
+                        if ability.call("onFoeTryEatItem", item=item_obj, pokemon=pokemon, source=foe, effect=effect, battle=self) is False:
+                            return False
             if item_obj.call("onTryEatItem", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
                 return False
+            ability = _resolve_ability(getattr(pokemon, "ability", None))
+            if ability and hasattr(ability, "call"):
+                if ability.call("onTryEatItem", item=item_obj, pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+                    return False
             if item_obj.call("onEatItem", pokemon=pokemon, source=source, effect=effect, battle=self) is False:
                 return False
+            if ability and hasattr(ability, "call"):
+                if ability.call("onEatItem", item=item_obj, pokemon=pokemon, source=source, effect=effect, battle=self) is False:
+                    return False
         item_name = getattr(item_obj, "name", str(item_obj))
         item_obj.call("onEat", pokemon=pokemon, source=source, effect=effect, battle=self)
         pokemon.last_item = item_name
         pokemon.last_consumed_item = item_name
+        pokemon.last_consumed_item_obj = item_obj
+        pokemon.last_used_item = item_obj
+        pokemon.consumed_item = item_obj
         if "berry" in _normalize_key(item_name):
-            pokemon.consumed_berry = True
+            pokemon.consumed_berry = item_obj
+            pokemon.berry_consumed = item_obj
         self._clear_item(pokemon)
+        self._remember_side_item(pokemon, item_obj)
+        self._notify_after_use_item(pokemon, item_obj, source=source, effect=effect)
         return True
 
     def take_item(self, pokemon, *, source=None, effect=None):
@@ -1871,15 +2065,23 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         item_name = getattr(item_obj, "name", str(item_obj))
         pokemon.last_item = item_name
         pokemon.last_removed_item = item_name
-        pokemon.knocked_off = True if _normalize_key(getattr(effect, "name", effect)) == "knockoff" else getattr(pokemon, "knocked_off", False)
+        effect_key = _normalize_key(getattr(effect, "name", effect))
+        pokemon.knocked_off = (
+            True if effect_key.endswith("knockoff") else getattr(pokemon, "knocked_off", False)
+        )
         self._clear_item(pokemon)
         return item_obj
 
     def set_item(self, pokemon, item, *, source=None, effect=None) -> bool:
         """Assign ``item`` as the held item for ``pokemon`` and trigger start hooks."""
 
+        if item is None:
+            self._clear_item(pokemon)
+            return True
         item_obj = self._coerce_item(item)
         if not item_obj:
+            return False
+        if self._pokemon_has_item(pokemon):
             return False
         pokemon.item = item_obj
         if hasattr(pokemon, "held_item"):
@@ -2006,8 +2208,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 "onTryHitSide",
                 "onTryHitField",
                 "onMoveFail",
+                "onAfterHit",
                 "onAfterMoveSecondary",
                 "onAfterMoveSecondarySelf",
+                "onUpdate",
                 "priorityChargeCallback",
                 "beforeMoveCallback",
                 "basePowerCallback",
@@ -2388,6 +2592,28 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 self.log_action(
                     f"{user_name} used {action.move.name} on {target_name} but it had no effect!"
                 )
+
+        if action.move.onAfterHit:
+            invoke_callback(
+                action.move.onAfterHit,
+                user,
+                target,
+                battle=self,
+                source=user,
+                target=target,
+                move=action.move,
+            )
+
+        # Compatibility hook for moves whose runtime data still stores
+        # post-resolution cleanup under ``onUpdate`` (for example Fling).
+        if action.move.onUpdate:
+            invoke_callback(
+                action.move.onUpdate,
+                user,
+                target,
+                battle=self,
+                move=action.move,
+            )
 
         if action.move.onAfterMove:
             invoke_callback(action.move.onAfterMove, user, target, battle=self)
