@@ -593,6 +593,8 @@ class BattleMove:
     onTryHit: Optional[Callable] = None
     onTryHitSide: Optional[Callable] = None
     onTryHitField: Optional[Callable] = None
+    onHitSide: Optional[Callable] = None
+    onHitField: Optional[Callable] = None
     onMoveFail: Optional[Callable] = None
     onAfterHit: Optional[Callable] = None
     onAfterMoveSecondary: Optional[Callable] = None
@@ -1214,6 +1216,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         self.type = battle_type
         self.participants = participants
+        self.sides = [getattr(part, "side", None) for part in participants]
         self.turn_count = 0
         self.battle_over = False
         self.dispatcher = EventDispatcher(allow_arity_fallback=False)
@@ -1237,6 +1240,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # tests or restored battles) make sure they are marked as having
         # participated so they receive rewards appropriately.
         for part in self.participants:
+            side = getattr(part, "side", None)
+            if side is not None:
+                if not hasattr(side, "active"):
+                    setattr(side, "active", getattr(part, "active", []))
+                if not hasattr(side, "volatiles"):
+                    setattr(side, "volatiles", {})
+                if not hasattr(side, "used_items"):
+                    setattr(side, "used_items", [])
             for poke in getattr(part, "active", []) or []:
                 if hasattr(part, "record_participation"):
                     part.record_participation(poke)
@@ -1485,6 +1496,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if part:
             self._log_switch_out(part, pokemon)
         self.dispatcher.dispatch("switch_out", pokemon=pokemon, battle=self)
+        self._clear_choice_lock(pokemon)
         vols = list(getattr(pokemon, "volatiles", {}).keys())
         for vol in vols:
             pokemon.volatiles[vol] = False
@@ -1814,9 +1826,48 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
         return item
 
+    def _choice_item_key(self, pokemon) -> Optional[str]:
+        """Return the normalized Choice item key held by ``pokemon``."""
+
+        item = self._holder_item(pokemon)
+        if not item:
+            return None
+        item_name = getattr(item, "name", str(item))
+        item_key = _normalize_key(item_name)
+        if str(item_key).lower() in {"choiceband", "choicescarf", "choicespecs"}:
+            return str(item_key).lower()
+        return None
+
+    def _clear_choice_lock(self, pokemon) -> None:
+        """Clear any active Choice-item move lock from ``pokemon``."""
+
+        if not pokemon:
+            return
+        pokemon.choice_locked_move = None
+        volatiles = getattr(pokemon, "volatiles", None)
+        if isinstance(volatiles, dict):
+            volatiles.pop("choicelock", None)
+
+    def _set_choice_lock(self, pokemon, move) -> None:
+        """Lock ``pokemon`` into ``move`` when holding a Choice item."""
+
+        if not pokemon:
+            return
+        if not self._choice_item_key(pokemon):
+            self._clear_choice_lock(pokemon)
+            return
+        move_key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
+        move_key = str(move_key).lower()
+        if not move_key or move_key == "struggle":
+            return
+        pokemon.choice_locked_move = move_key
+        pokemon.volatiles = getattr(pokemon, "volatiles", {})
+        pokemon.volatiles["choicelock"] = True
+
     def _clear_item(self, pokemon) -> None:
         """Remove the held item from ``pokemon`` without extra checks."""
 
+        self._clear_choice_lock(pokemon)
         if hasattr(pokemon, "item"):
             pokemon.item = None
         if hasattr(pokemon, "held_item"):
@@ -2078,6 +2129,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if item is None:
             self._clear_item(pokemon)
             return True
+        self._clear_choice_lock(pokemon)
         item_obj = self._coerce_item(item)
         if not item_obj:
             return False
@@ -2207,6 +2259,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 "onTryHit",
                 "onTryHitSide",
                 "onTryHitField",
+                "onHitSide",
+                "onHitField",
                 "onMoveFail",
                 "onAfterHit",
                 "onAfterMoveSecondary",
@@ -2240,6 +2294,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         if action.move.pp is not None and action.move.pp <= 0:
             return
+        selected_move_key = getattr(action.move, "key", None) or _normalize_key(
+            getattr(action.move, "name", "")
+        )
+        selected_move_key = str(selected_move_key).lower() if selected_move_key else None
+        locked_move_key = getattr(user, "choice_locked_move", None)
+        if locked_move_key and self._choice_item_key(user):
+            if selected_move_key and selected_move_key != locked_move_key:
+                locked_move_name = str(locked_move_key).replace("-", " ").title()
+                self.log_action(
+                    f"{getattr(user, 'name', 'Pokemon')} is locked into {locked_move_name}!"
+                )
+                return
+        elif locked_move_key:
+            self._clear_choice_lock(user)
         if self.status_prevents_move(user):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
             return
@@ -2360,6 +2428,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             apply_boost(target, {}, source=user, effect=action.move)
 
         self.deduct_pp(user, action.move)
+        self._set_choice_lock(user, action.move)
         if action.move.onModifyMove:
             invoke_callback(action.move.onModifyMove, action.move, user, target, battle=self)
         self.dispatcher.dispatch(
@@ -2592,6 +2661,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 self.log_action(
                     f"{user_name} used {action.move.name} on {target_name} but it had no effect!"
                 )
+
+        if action.move.onHitSide:
+            invoke_callback(action.move.onHitSide, user, battle=self)
+
+        if action.move.onHitField:
+            invoke_callback(action.move.onHitField, user, battle=self)
 
         if action.move.onAfterHit:
             invoke_callback(

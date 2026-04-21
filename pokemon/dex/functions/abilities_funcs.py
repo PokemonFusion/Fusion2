@@ -1237,7 +1237,7 @@ class Hadronengine:
 
 class Harvest:
 	def onResidual(self, pokemon=None):
-		if not pokemon or getattr(pokemon, "item", None):
+		if not pokemon or getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None):
 			return
 		berry = getattr(pokemon, "consumed_berry", None)
 		if not berry:
@@ -1251,7 +1251,9 @@ class Harvest:
 					pokemon.berry_consumed = None
 			else:
 				pokemon.item = berry
+				pokemon.held_item = getattr(berry, "name", str(berry))
 				pokemon.consumed_berry = None
+				pokemon.berry_consumed = None
 
 
 class Healer:
@@ -2060,7 +2062,7 @@ class Pickpocket:
 
 class Pickup:
 	def onResidual(self, pokemon=None):
-		if pokemon and not getattr(pokemon, "item", None):
+		if pokemon and not getattr(pokemon, "item", None) and not getattr(pokemon, "held_item", None):
 			side = getattr(pokemon, "side", None)
 			used = getattr(side, "used_items", []) if side else []
 			if used:
@@ -2071,6 +2073,8 @@ class Pickup:
 						used.pop()
 				else:
 					pokemon.item = item
+					pokemon.held_item = getattr(item, "name", str(item))
+					used.pop()
 
 
 class Pixilate:

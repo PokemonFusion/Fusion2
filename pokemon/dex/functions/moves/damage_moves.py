@@ -3,6 +3,54 @@ from random import choice, random
 from pokemon.utils.boosts import apply_boost
 
 
+def _item_name(item):
+	if item is None:
+		return ""
+	return getattr(item, "name", str(item))
+
+
+def _is_berry(item):
+	return "berry" in _item_name(item).lower()
+
+
+def _iter_other_active_pokemon(battle, user):
+	if not battle:
+		return []
+	active = []
+	for participant in getattr(battle, "participants", []) or []:
+		for pokemon in getattr(participant, "active", []) or []:
+			if pokemon is None or pokemon is user or getattr(pokemon, "hp", 0) <= 0:
+				continue
+			active.append(pokemon)
+	return active
+
+
+def _iter_opposing_active_pokemon(battle, user):
+	if not battle:
+		return []
+	user_participant = None
+	if hasattr(battle, "participant_for"):
+		try:
+			user_participant = battle.participant_for(user)
+		except Exception:
+			user_participant = None
+	foes = []
+	for participant in getattr(battle, "participants", []) or []:
+		if participant is user_participant:
+			continue
+		if (
+			user_participant is not None
+			and getattr(user_participant, "team", None) is not None
+			and getattr(participant, "team", None) == getattr(user_participant, "team", None)
+		):
+			continue
+		for pokemon in getattr(participant, "active", []) or []:
+			if pokemon is None or getattr(pokemon, "hp", 0) <= 0:
+				continue
+			foes.append(pokemon)
+	return foes
+
+
 class Acrobatics:
 	def basePowerCallback(self, user, target, move):
 		"""Double power if the user holds no item."""
@@ -687,16 +735,25 @@ class Coreenforcer:
 
 class Corrosivegas:
 	def onHit(self, user, target, battle):
-		"""Remove the target's held item if possible."""
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if not item:
-			return False
-		if hasattr(target, "set_item"):
-			target.set_item(None)
-		else:
-			setattr(target, "item", None)
-			setattr(target, "held_item", None)
-		return True
+		"""Remove held items from the other active Pokemon on the field."""
+		removed_any = False
+		targets = _iter_other_active_pokemon(battle, user) or ([target] if target else [])
+		for mon in targets:
+			item = getattr(mon, "item", None) or getattr(mon, "held_item", None)
+			if not item:
+				continue
+			if battle and hasattr(battle, "remove_item"):
+				removed_any = bool(
+					battle.remove_item(mon, source=user, effect="move:corrosivegas")
+				) or removed_any
+			elif hasattr(mon, "set_item"):
+				mon.set_item(None)
+				removed_any = True
+			else:
+				setattr(mon, "item", None)
+				setattr(mon, "held_item", None)
+				removed_any = True
+		return removed_any
 
 
 class Counter:
@@ -744,7 +801,7 @@ class Counter:
 
 
 class Courtchange:
-	def onHitField(self, user, battle):
+	def onHit(self, user, target, battle):
 		"""Swap the side conditions between the two players."""
 		side1 = getattr(battle, "sides", [None, None])[0]
 		side2 = getattr(battle, "sides", [None, None])[1]
@@ -1609,7 +1666,7 @@ class Fling:
 			move.power = getattr(item, "fling_power", getattr(move, "power", 0))
 		return True
 
-	def onUpdate(self, *args, **kwargs):
+	def onAfterHit(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
 		battle = kwargs.get("battle") or getattr(user, "battle", None)
 		if battle and hasattr(battle, "remove_item"):
@@ -1620,6 +1677,10 @@ class Fling:
 			setattr(user, "item", None)
 			setattr(user, "held_item", None)
 		return True
+
+	def onUpdate(self, *args, **kwargs):
+		"""Backward-compatible alias for older move data."""
+		return self.onAfterHit(*args, **kwargs)
 
 
 class Floralhealing:
@@ -1632,8 +1693,8 @@ class Floralhealing:
 
 
 class Flowershield:
-	def onHitField(self, user, battle):
-		"""Raise Defense of all Grass-type Pokémon on the field."""
+	def onHit(self, user, target, battle):
+		"""Raise Defense of all Grass-type PokÃ©mon on the field."""
 		for side in getattr(battle, "sides", []):
 			for mon in getattr(side, "active", []):
 				types = [t.lower() for t in getattr(mon, "types", [])]
@@ -2653,7 +2714,7 @@ class Hardpress:
 
 class Haze:
 	def onHitField(self, user, battle):
-		"""Remove all stat changes from all active Pokémon."""
+		"""Remove all stat changes from all active PokÃ©mon."""
 		for side in getattr(battle, "sides", []):
 			for mon in getattr(side, "active", []):
 				if hasattr(mon, "boosts"):
@@ -2664,7 +2725,7 @@ class Haze:
 
 class Healbell:
 	def onHit(self, user, target, battle):
-		"""Cure status of all Pokémon on the user's side."""
+		"""Cure status of all PokÃ©mon on the user's side."""
 		party = getattr(user, "party", [user])
 		for mon in party:
 			if hasattr(mon, "setStatus"):
@@ -2996,14 +3057,19 @@ class Imprison:
 
 class Incinerate:
 	def onHit(self, user, target, battle):
-		"""Destroy the target's berry if it holds one."""
-		item = getattr(target, "item", None) or getattr(target, "held_item", None)
-		if item and isinstance(item, str) and "berry" in item.lower():
-			if hasattr(target, "set_item"):
-				target.set_item(None)
+		"""Destroy held berries for all opposing active Pokemon."""
+		targets = _iter_opposing_active_pokemon(battle, user) or ([target] if target else [])
+		for mon in targets:
+			item = getattr(mon, "item", None) or getattr(mon, "held_item", None)
+			if not _is_berry(item):
+				continue
+			if battle and hasattr(battle, "remove_item"):
+				battle.remove_item(mon, source=user, effect="move:incinerate")
+			elif hasattr(mon, "set_item"):
+				mon.set_item(None)
 			else:
-				setattr(target, "item", None)
-				setattr(target, "held_item", None)
+				setattr(mon, "item", None)
+				setattr(mon, "held_item", None)
 		return True
 
 
@@ -4253,7 +4319,7 @@ class Perishsong:
 		return True
 
 	def onHitField(self, user, battle):
-		"""All active Pokémon faint in three turns."""
+		"""All active PokÃ©mon faint in three turns."""
 		for side in getattr(battle, "sides", []):
 			for mon in getattr(side, "active", []):
 				if hasattr(mon, "volatiles"):
@@ -4561,7 +4627,7 @@ class Psychicterrain:
 		return True
 
 	def onTryHit(self, *args, **kwargs):
-		"""Prevent priority moves from hitting grounded Pokémon."""
+		"""Prevent priority moves from hitting grounded PokÃ©mon."""
 		move = kwargs.get("move")
 		if move and getattr(move, "priority", 0) > 0:
 			target = args[0] if args else None
@@ -5967,10 +6033,14 @@ class Stuffcheeks:
 
 	def onHit(self, *args, **kwargs):
 		user = args[0]
+		battle = args[2] if len(args) > 2 else kwargs.get("battle") or getattr(user, "battle", None)
 		item = getattr(user, "item", None) or getattr(user, "held_item", None)
-		if not item or "berry" not in str(item).lower():
+		if not item or not _is_berry(item):
 			return False
-		if hasattr(user, "set_item"):
+		if battle and hasattr(battle, "eat_item"):
+			if battle.eat_item(user, source=user, effect="move:stuffcheeks") is False:
+				return False
+		elif hasattr(user, "set_item"):
 			user.set_item(None)
 		else:
 			setattr(user, "item", None)
@@ -6236,19 +6306,24 @@ class Taunt:
 
 
 class Teatime:
-	def onHitField(self, user, battle):
-		"""Force all Pokémon to consume their held Berries."""
-		for side in getattr(battle, "sides", []):
-			for mon in getattr(side, "active", []):
+	def onHit(self, user, target, battle):
+		"""Force all active Pokemon to consume their held Berries."""
+		for participant in getattr(battle, "participants", []) or []:
+			for mon in getattr(participant, "active", []) or []:
 				item = getattr(mon, "item", None) or getattr(mon, "held_item", None)
-				if item and isinstance(item, str) and "berry" in item.lower():
-					if hasattr(mon, "set_item"):
-						mon.set_item(None)
-					else:
-						setattr(mon, "item", None)
-						setattr(mon, "held_item", None)
+				if not _is_berry(item):
+					continue
+				if hasattr(battle, "eat_item"):
+					battle.eat_item(mon, source=user, effect="move:teatime")
+				elif hasattr(mon, "set_item"):
+					mon.set_item(None)
+				else:
+					setattr(mon, "item", None)
+					setattr(mon, "held_item", None)
 		return True
 
+	def onHitField(self, user, battle):
+		return self.onHit(user, None, battle)
 
 class Technoblast:
 	def onModifyType(self, *args, **kwargs):
