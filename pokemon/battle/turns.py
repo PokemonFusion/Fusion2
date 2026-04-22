@@ -243,9 +243,6 @@ class TurnProcessor:
 					if isinstance(charged, (int, float)):
 						priority = charged
 
-			ability = getattr(poke, "ability", None)
-			item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
-
 			if poke:
 				target = None
 				if action.target and action.target.active:
@@ -288,20 +285,15 @@ class TurnProcessor:
 					else:
 						speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
 
-				if ability and hasattr(ability, "call"):
-					try:
-						mod = ability.call("onModifySpe", speed, pokemon=poke)
-						if isinstance(mod, (int, float)):
-							speed = int(mod)
-					except Exception as err:
-						self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
-				if item and hasattr(item, "call"):
-					try:
-						mod = item.call("onModifySpe", speed, pokemon=poke)
-						if isinstance(mod, (int, float)):
-							speed = int(mod)
-					except Exception as err:
-						self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
+				if not isinstance(speed, (int, float)) or speed <= 0:
+					speed = self._get_speed_value(poke)
+
+				try:
+					modified_speed = self.runEvent("ModifySpe", poke, None, None, speed)
+					if isinstance(modified_speed, (int, float)):
+						speed = int(modified_speed)
+				except Exception as err:
+					self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
 			else:
 				speed = 0
 
@@ -427,6 +419,48 @@ class TurnProcessor:
 			from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
 		except Exception:
 			VOLATILE_HANDLERS = {}
+
+		owner = self.participant_for(pokemon)
+		if owner is not None:
+			for part in self.participants:
+				if part is owner or part.has_lost:
+					continue
+				for foe in getattr(part, "active", []):
+					if foe is None:
+						continue
+					holders = []
+					foe_status = getattr(foe, "status", None)
+					status_handler = CONDITION_HANDLERS.get(foe_status)
+					if status_handler is not None:
+						holders.append(status_handler)
+					volatile_handler_iter = None
+					if hasattr(self, "_pokemon_volatile_handlers"):
+						try:
+							volatile_handler_iter = self._pokemon_volatile_handlers(foe)
+						except Exception:
+							volatile_handler_iter = None
+					if volatile_handler_iter is None:
+						volatile_handler_iter = []
+						for vol in list(getattr(foe, "volatiles", {}).keys()):
+							handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
+							if handler is not None:
+								volatile_handler_iter.append((vol, handler))
+					for _, handler in volatile_handler_iter:
+						holders.append(handler)
+					ability = getattr(foe, "ability", None)
+					if ability is not None and hasattr(ability, "call"):
+						holders.append(ability)
+					item = getattr(foe, "item", None) or getattr(foe, "held_item", None)
+					if item is not None and hasattr(item, "call"):
+						holders.append(item)
+					for holder in holders:
+						try:
+							result = self._call_effect_event(holder, "onFoeBeforeMove", foe, battle=self)
+						except Exception as err:
+							self._record_failure(context="before_move_foe", exception=err, pokemon=foe)
+							continue
+						if result is False:
+							return True
 
 		ability = getattr(pokemon, "ability", None)
 		if ability and hasattr(ability, "call"):

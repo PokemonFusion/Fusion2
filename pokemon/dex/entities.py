@@ -26,6 +26,18 @@ def _invoke_raw_callback(
 ):
 	"""Resolve and invoke a raw callback entry when possible."""
 
+	global invoke_callback, resolve_callback_from_modules
+	if invoke_callback is None or resolve_callback_from_modules is None:
+		try:
+			from pokemon.battle.callbacks import invoke_callback as battle_invoke_callback
+			from pokemon.battle.callbacks import (
+				resolve_callback_from_modules as battle_resolve_callback_from_modules,
+			)
+			invoke_callback = battle_invoke_callback
+			resolve_callback_from_modules = battle_resolve_callback_from_modules
+		except Exception:
+			pass
+
 	cb = raw.get(func)
 	if callable(cb):
 		if invoke_callback:
@@ -110,6 +122,12 @@ class Item:
 	mega_stone: Optional[str] = None
 	item_user: List[str] = field(default_factory=list)
 	on_take_item: Any = None
+	onPlate: Optional[str] = None
+	memory_type: Optional[str] = None
+	drive_type: Optional[str] = None
+	natural_type: Optional[str] = None
+	natural_power: Optional[int] = None
+	on_primal: Any = None
 	forced_forme: Optional[str] = None
 	price: Optional[int] = None
 	raw: Dict[str, Any] = field(default_factory=dict)
@@ -127,6 +145,12 @@ class Item:
 			mega_stone=data.get("megaStone"),
 			item_user=data.get("itemUser", []),
 			on_take_item=data.get("onTakeItem"),
+			onPlate=data.get("onPlate"),
+			memory_type=data.get("onMemory"),
+			drive_type=data.get("onDrive"),
+			natural_type=(data.get("naturalGift") or {}).get("type"),
+			natural_power=(data.get("naturalGift") or {}).get("basePower"),
+			on_primal=data.get("onPrimal"),
 			forced_forme=data.get("forcedForme"),
 			price=data.get("price"),
 			raw=data,

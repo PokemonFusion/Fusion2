@@ -104,6 +104,626 @@ def test_move_on_modify_move_runs_before_execution():
 	assert move.raw.get("multihit") == 2
 
 
+def test_move_on_modify_type_uses_plate_item_identity():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle(defender_types=["Grass"])
+	from pokemon.dex.entities import Item
+
+	flame_plate = Item.from_dict("Flame Plate", {"name": "Flame Plate", "onPlate": "Fire"})
+	battle.set_item(attacker, flame_plate)
+	move = BattleMove(
+		name="Judgment",
+		raw={
+			"category": "Special",
+			"basePower": 100,
+			"accuracy": 100,
+			"type": "Normal",
+			"onModifyType": "Judgment.onModifyType",
+		},
+	)
+	start_hp = defender.hp
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert getattr(attacker.item, "onPlate", None) == "Fire"
+	assert move.type == "Fire"
+	assert defender.hp < start_hp
+
+
+def test_multi_attack_uses_memory_item_identity():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle(defender_types=["Dragon"])
+	from pokemon.dex.entities import Item
+
+	fairy_memory = Item.from_dict("Fairy Memory", {"name": "Fairy Memory", "onMemory": "Fairy"})
+	battle.set_item(attacker, fairy_memory)
+	move = BattleMove(
+		name="Multi-Attack",
+		raw={
+			"category": "Physical",
+			"basePower": 120,
+			"accuracy": 100,
+			"type": "Normal",
+			"onModifyType": "Multiattack.onModifyType",
+		},
+	)
+	start_hp = defender.hp
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert getattr(attacker.item, "memory_type", None) == "Fairy"
+	assert move.type == "Fairy"
+	assert defender.hp < start_hp
+
+
+def test_techno_blast_uses_drive_item_identity():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle(defender_types=["Water"])
+	from pokemon.dex.entities import Item
+
+	shock_drive = Item.from_dict("Shock Drive", {"name": "Shock Drive", "onDrive": "Electric"})
+	battle.set_item(attacker, shock_drive)
+	move = BattleMove(
+		name="Techno Blast",
+		raw={
+			"category": "Special",
+			"basePower": 120,
+			"accuracy": 100,
+			"type": "Normal",
+			"onModifyType": "Technoblast.onModifyType",
+		},
+	)
+	start_hp = defender.hp
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert getattr(attacker.item, "drive_type", None) == "Electric"
+	assert move.type == "Electric"
+	assert defender.hp < start_hp
+
+
+def test_natural_gift_uses_item_natural_gift_identity():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle(defender_types=["Ghost"])
+	from pokemon.dex.entities import Item
+
+	belue = Item.from_dict(
+		"Belue Berry",
+		{"name": "Belue Berry", "naturalGift": {"basePower": 100, "type": "Electric"}},
+	)
+	battle.set_item(attacker, belue)
+	move = BattleMove(
+		name="Natural Gift",
+		raw={
+			"category": "Physical",
+			"basePower": 1,
+			"accuracy": 100,
+			"type": "Normal",
+			"onModifyType": "Naturalgift.onModifyType",
+			"onPrepareHit": "Naturalgift.onPrepareHit",
+		},
+	)
+	start_hp = defender.hp
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert getattr(attacker.item, "natural_type", None) == "Electric"
+	assert getattr(attacker.item, "natural_power", None) == 100
+	assert move.type == "Electric"
+	assert move.power == 100
+	assert defender.hp < start_hp
+
+
+def test_red_orb_primal_forme_activates_on_switch_in():
+	load_modules()
+	battle, attacker, _ = build_battle()
+	from pokemon.dex.entities import Item
+
+	attacker.name = "Groudon"
+	red_orb = Item.from_dict(
+		"Red Orb",
+		{"name": "Red Orb", "onPrimal": "Redorb.onPrimal"},
+	)
+	battle.set_item(attacker, red_orb)
+
+	battle.on_enter_battle(attacker)
+
+	assert attacker.name == "Groudon-Primal"
+	assert getattr(attacker, "species", None) == "Groudon-Primal"
+	assert attacker.types == ["Ground", "Fire"]
+	assert getattr(getattr(attacker, "ability", None), "name", attacker.ability) == "Desolate Land"
+
+
+def test_blue_orb_primal_forme_activates_on_switch_in():
+	load_modules()
+	battle, attacker, _ = build_battle()
+	from pokemon.dex.entities import Item
+
+	attacker.name = "Kyogre"
+	blue_orb = Item.from_dict(
+		"Blue Orb",
+		{"name": "Blue Orb", "onPrimal": "Blueorb.onPrimal"},
+	)
+	battle.set_item(attacker, blue_orb)
+
+	battle.on_enter_battle(attacker)
+
+	assert attacker.name == "Kyogre-Primal"
+	assert getattr(attacker, "species", None) == "Kyogre-Primal"
+	assert attacker.types == ["Water"]
+	assert getattr(getattr(attacker, "ability", None), "name", attacker.ability) == "Primordial Sea"
+
+
+def test_forced_forme_item_applies_on_switch_in():
+	load_modules()
+	battle, attacker, _ = build_battle()
+	from pokemon.dex.entities import Item
+
+	attacker.name = "Genesect"
+	burn_drive = Item.from_dict(
+		"Burn Drive",
+		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
+	)
+	battle.set_item(attacker, burn_drive)
+
+	battle.on_enter_battle(attacker)
+
+	assert attacker.name == "Genesect-Burn"
+	assert getattr(attacker, "species", None) == "Genesect-Burn"
+	assert attacker.types == ["Bug", "Steel"]
+	assert getattr(getattr(attacker, "ability", None), "name", attacker.ability) == "Download"
+
+
+def test_set_item_applies_forced_forme_immediately():
+	load_modules()
+	battle, attacker, _ = build_battle()
+	from pokemon.dex.entities import Item
+
+	attacker.name = "Genesect"
+	attacker.species = "Genesect"
+	burn_drive = Item.from_dict(
+		"Burn Drive",
+		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
+	)
+
+	assert battle.set_item(attacker, burn_drive) is True
+	assert attacker.name == "Genesect-Burn"
+	assert getattr(attacker, "species", None) == "Genesect-Burn"
+
+
+def test_take_item_reverts_forced_forme_to_base_species():
+	load_modules()
+	battle, attacker, _ = build_battle()
+	from pokemon.dex.entities import Item
+
+	attacker.name = "Genesect"
+	attacker.species = "Genesect"
+	burn_drive = Item.from_dict(
+		"Burn Drive",
+		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
+	)
+	battle.set_item(attacker, burn_drive)
+
+	removed = battle.take_item(attacker)
+
+	assert getattr(removed, "name", None) == "Burn Drive"
+	assert attacker.name == "Genesect"
+	assert getattr(attacker, "species", None) == "Genesect"
+	assert attacker.types == ["Bug", "Steel"]
+	assert getattr(getattr(attacker, "ability", None), "name", attacker.ability) == "Download"
+
+
+def test_healing_wish_slot_condition_heals_replacement_on_switch():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	battle, attacker, _ = build_battle()
+	reserve = Pokemon("Reserve", level=50, hp=60, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.status = "brn"
+	reserve.battle = battle
+
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	assert battle.add_slot_condition(attacker, "healingwish", {"onSwap": "Healingwish.onSwap"}) is True
+
+	battle.switch_pokemon(participant, reserve, 0)
+
+	assert reserve.hp == reserve.max_hp
+	assert reserve.status == 0
+	assert participant.side.get_slot_condition(0, "healingwish") is None
+
+
+def test_lunar_dance_slot_condition_restores_replacement_pp():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	battle, attacker, _ = build_battle()
+	reserve = Pokemon("Reserve", level=50, hp=40, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.status = "par"
+	reserve.moves = [
+		SimpleNamespace(pp=1, max_pp=8),
+		SimpleNamespace(pp=0, maxpp=5),
+	]
+	reserve.battle = battle
+
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	assert battle.add_slot_condition(attacker, "lunardance", {"onSwap": "Lunardance.onSwap"}) is True
+
+	battle.switch_pokemon(participant, reserve, 0)
+
+	assert reserve.hp == reserve.max_hp
+	assert reserve.status == 0
+	assert reserve.moves[0].pp == 8
+	assert reserve.moves[1].pp == 5
+	assert participant.side.get_slot_condition(0, "lunardance") is None
+
+
+def test_wish_slot_condition_heals_current_occupant_after_duration():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	battle, attacker, _ = build_battle()
+	reserve = Pokemon("Reserve", level=50, hp=50, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.battle = battle
+
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+	attacker.hp = 80
+
+	assert battle.add_slot_condition(
+		attacker,
+		"Wish",
+		{"duration": 2, "onStart": "Wish.onStart", "onEnd": "Wish.onEnd"},
+		source=attacker,
+	) is True
+
+	battle.residual()
+	assert attacker.hp == 80
+	assert participant.side.get_slot_condition(0, "Wish") is not None
+
+	battle.switch_pokemon(participant, reserve, 0)
+	battle.residual()
+
+	assert reserve.hp == 150
+	assert participant.side.get_slot_condition(0, "Wish") is None
+
+
+def test_revival_blessing_revives_first_fainted_ally():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, _ = build_battle()
+	fainted = Pokemon("Fainted Ally", level=50, hp=0, max_hp=200)
+	fainted.base_stats = attacker.base_stats
+	fainted.types = ["Normal"]
+	fainted.boosts = dict(attacker.boosts)
+	fainted.is_fainted = True
+	fainted.battle = battle
+	participant = battle.participants[0]
+	participant.pokemons.append(fainted)
+
+	move = BattleMove(
+		name="Revival Blessing",
+		raw={
+			"category": "Status",
+			"accuracy": True,
+			"target": "self",
+			"slotCondition": "revivalblessing",
+			"condition": {"duration": 1},
+			"onTryHit": "Revivalblessing.onTryHit",
+		},
+	)
+	move.key = "revivalblessing"
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[0],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert fainted.hp == 100
+	assert fainted.is_fainted is False
+	assert participant.side.get_slot_condition(0, "revivalblessing") is None
+
+
+def test_generic_self_switch_move_queues_switch_out():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, defender = build_battle()
+	reserve = Pokemon("Reserve", level=50, hp=200, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.battle = battle
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	move = BattleMove(
+		name="Pivot Hit",
+		raw={
+			"category": "Physical",
+			"basePower": 40,
+			"accuracy": 100,
+			"type": "Bug",
+			"selfSwitch": True,
+		},
+	)
+	move.key = "pivothit"
+	start_hp = defender.hp
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[1],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert defender.hp < start_hp
+	assert attacker.tempvals.get("switch_out") is True
+
+	battle.run_switch()
+
+	assert participant.active[0] is reserve
+
+
+def test_self_switch_copyvolatile_passes_boosts_and_substitute():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, _ = build_battle()
+	reserve = Pokemon("Reserve", level=50, hp=200, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.battle = battle
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	attacker.boosts["attack"] = 2
+	attacker.volatiles["substitute"] = {"hp": 42}
+	move = BattleMove(
+		name="Pass Pivot",
+		raw={
+			"category": "Status",
+			"accuracy": True,
+			"target": "self",
+			"type": "Normal",
+			"selfSwitch": "copyvolatile",
+		},
+	)
+	move.key = "passpivot"
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[0],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert attacker.tempvals.get("switch_out") is True
+	assert attacker.tempvals.get("baton_pass") is True
+
+	battle.run_switch()
+
+	assert participant.active[0] is reserve
+	assert reserve.boosts["attack"] == 2
+	assert reserve.volatiles.get("substitute") == {"hp": 42}
+
+
+def test_shed_tail_passes_fresh_substitute_to_replacement():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, _ = build_battle()
+	reserve = Pokemon("Reserve", level=50, hp=200, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.battle = battle
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	move = BattleMove(
+		name="Shed Tail",
+		raw={
+			"category": "Status",
+			"accuracy": True,
+			"target": "self",
+			"type": "Normal",
+			"selfSwitch": "shedtail",
+			"onTryHit": "Shedtail.onTryHit",
+			"onHit": "Shedtail.onHit",
+		},
+	)
+	move.key = "shedtail"
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[0],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert attacker.hp == 100
+	assert attacker.tempvals.get("switch_out") is True
+	assert attacker.tempvals.get("shedtail_substitute") == {"hp": 50}
+
+	battle.run_switch()
+
+	assert participant.active[0] is reserve
+	assert reserve.volatiles.get("substitute") == {"hp": 50}
+	assert not attacker.volatiles.get("substitute")
+
+
+def test_shed_tail_fails_when_user_already_has_substitute():
+	modules = load_modules()
+	BattleMove = modules["BattleMove"]
+	ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+	battle, attacker, _ = build_battle()
+	attacker.volatiles["substitute"] = {"hp": 40}
+	start_hp = attacker.hp
+
+	move = BattleMove(
+		name="Shed Tail",
+		raw={
+			"category": "Status",
+			"accuracy": True,
+			"target": "self",
+			"type": "Normal",
+			"selfSwitch": "shedtail",
+			"onTryHit": "Shedtail.onTryHit",
+			"onHit": "Shedtail.onHit",
+		},
+	)
+	move.key = "shedtail"
+
+	action = _battle_action(
+		battle.participants[0],
+		ActionType.MOVE,
+		target=battle.participants[0],
+		move=move,
+		pokemon=attacker,
+	)
+	battle.use_move(action)
+
+	assert attacker.hp == start_hp
+	assert attacker.tempvals.get("switch_out") is None
+
+
+def test_emergency_exit_queues_switch_after_crossing_half_hp():
+	modules = load_modules()
+	damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
+	battle, attacker, defender = build_battle(defender_ability=__import__("pokemon.dex.functions.abilities_funcs", fromlist=["Emergencyexit"]).Emergencyexit())
+	defender.hp = 110
+	move = modules["BattleMove"](
+		name="Tackle",
+		power=120,
+		accuracy=100,
+		type="Normal",
+		raw={"category": "Physical", "basePower": 120, "accuracy": 100},
+	)
+	move.key = "tackle"
+
+	damage_mod.apply_damage(attacker, defender, move, battle=battle)
+
+	assert defender.hp <= defender.max_hp // 2
+	assert defender.tempvals.get("switch_out") is True
+
+
+def test_wimp_out_queues_switch_after_damaging_hit():
+	modules = load_modules()
+	damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
+	battle, attacker, defender = build_battle(defender_ability=__import__("pokemon.dex.functions.abilities_funcs", fromlist=["Wimpout"]).Wimpout())
+	move = modules["BattleMove"](
+		name="Tackle",
+		power=60,
+		accuracy=100,
+		type="Normal",
+		raw={"category": "Physical", "basePower": 60, "accuracy": 100},
+	)
+	move.key = "tackle"
+
+	damage_mod.apply_damage(attacker, defender, move, battle=battle)
+
+	assert defender.tempvals.get("switch_out") is True
+
+
+def test_natural_cure_clears_status_on_switch_out():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	battle, attacker, _ = build_battle(attacker_status="brn")
+	attacker.ability = __import__("pokemon.dex.functions.abilities_funcs", fromlist=["Naturalcure"]).Naturalcure()
+	reserve = Pokemon("Reserve", level=50, hp=200, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.battle = battle
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	battle.switch_pokemon(participant, reserve, 0)
+
+	assert attacker.status == 0
+
+
+def test_regenerator_heals_on_switch_out():
+	modules = load_modules()
+	Pokemon = modules["Pokemon"]
+	battle, attacker, _ = build_battle()
+	attacker.ability = __import__("pokemon.dex.functions.abilities_funcs", fromlist=["Regenerator"]).Regenerator()
+	attacker.hp = 90
+	reserve = Pokemon("Reserve", level=50, hp=200, max_hp=200)
+	reserve.base_stats = attacker.base_stats
+	reserve.types = ["Normal"]
+	reserve.boosts = dict(attacker.boosts)
+	reserve.battle = battle
+	participant = battle.participants[0]
+	participant.pokemons.append(reserve)
+
+	battle.switch_pokemon(participant, reserve, 0)
+
+	assert attacker.hp == min(attacker.max_hp, 90 + attacker.max_hp // 3)
+
+
 def test_move_on_move_fail_triggers_crash_damage():
 	modules = load_modules()
 	BattleMove = modules["BattleMove"]

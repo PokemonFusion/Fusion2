@@ -815,6 +815,9 @@ class Courtchange:
 				side1.__dict__[attr], side2.__dict__[attr] = b, a
 		return True
 
+	def onHitField(self, user, battle):
+		return self.onHit(user, None, battle)
+
 
 class Covet:
 	def onAfterHit(self, *args, **kwargs):
@@ -1701,6 +1704,9 @@ class Flowershield:
 				if "grass" in types:
 					apply_boost(mon, {"def": 1})
 		return True
+
+	def onHitField(self, user, battle):
+		return self.onHit(user, None, battle)
 
 
 class Fly:
@@ -2794,11 +2800,22 @@ class Healblock:
 class Healingwish:
 	def onSwap(self, *args, **kwargs):
 		pokemon = args[0] if args else None
-		if pokemon:
+		battle = kwargs.get("battle")
+		if pokemon and not getattr(pokemon, "is_fainted", False):
+			needs_heal = (
+				getattr(pokemon, "hp", 0) < getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+				or bool(getattr(pokemon, "status", 0))
+			)
+			if not needs_heal:
+				return True
 			max_hp = getattr(pokemon, "max_hp", 0)
 			pokemon.hp = max_hp
-			if hasattr(pokemon, "setStatus"):
+			if hasattr(pokemon, "clearStatus"):
+				pokemon.clearStatus(battle=battle, effect="move:healingwish")
+			elif hasattr(pokemon, "setStatus"):
 				pokemon.setStatus(0)
+			if battle and hasattr(battle, "remove_slot_condition"):
+				battle.remove_slot_condition(pokemon, "healingwish")
 		return True
 
 	def onTryHit(self, *args, **kwargs):
@@ -3448,11 +3465,28 @@ class Lunarblessing:
 class Lunardance:
 	def onSwap(self, *args, **kwargs):
 		pokemon = args[0] if args else None
-		if pokemon:
+		battle = kwargs.get("battle")
+		if pokemon and not getattr(pokemon, "is_fainted", False):
+			move_slots = getattr(pokemon, "move_slots", None) or getattr(pokemon, "moves", [])
+			def _max_pp(slot):
+				return getattr(slot, "max_pp", getattr(slot, "maxpp", getattr(slot, "pp", 0)))
+			needs_heal = (
+				getattr(pokemon, "hp", 0) < getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+				or bool(getattr(pokemon, "status", 0))
+				or any(getattr(slot, "pp", 0) < _max_pp(slot) for slot in move_slots)
+			)
+			if not needs_heal:
+				return True
 			max_hp = getattr(pokemon, "max_hp", 0)
 			pokemon.hp = max_hp
-			if hasattr(pokemon, "setStatus"):
+			if hasattr(pokemon, "clearStatus"):
+				pokemon.clearStatus(battle=battle, effect="move:lunardance")
+			elif hasattr(pokemon, "setStatus"):
 				pokemon.setStatus(0)
+			for slot in move_slots:
+				slot.pp = _max_pp(slot)
+			if battle and hasattr(battle, "remove_slot_condition"):
+				battle.remove_slot_condition(pokemon, "lunardance")
 		return True
 
 	def onTryHit(self, *args, **kwargs):
@@ -5052,9 +5086,37 @@ class Reversal:
 
 
 class Revivalblessing:
+	def onStart(self, *args, **kwargs):
+		user = args[0] if args else kwargs.get("target")
+		battle = kwargs.get("battle")
+		if not user:
+			return False
+		participant = battle.participant_for(user) if battle and hasattr(battle, "participant_for") else None
+		party = getattr(participant, "pokemons", None) if participant is not None else None
+		if not party:
+			party = getattr(user, "party", [])
+		for pokemon in party:
+			if pokemon is user:
+				continue
+			if getattr(pokemon, "hp", 0) > 0:
+				continue
+			max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
+			pokemon.hp = max(1, max_hp // 2)
+			pokemon.is_fainted = False
+			if hasattr(pokemon, "status"):
+				pokemon.status = 0
+			if battle and hasattr(battle, "remove_slot_condition"):
+				battle.remove_slot_condition(user, "revivalblessing")
+			return True
+		return False
+
 	def onTryHit(self, user, *args, **kwargs):
 		"""Fail if there are no fainted allies to revive."""
-		party = getattr(user, "party", [])
+		battle = kwargs.get("battle")
+		participant = battle.participant_for(user) if battle and hasattr(battle, "participant_for") else None
+		party = getattr(participant, "pokemons", None) if participant is not None else None
+		if not party:
+			party = getattr(user, "party", [])
 		if not any(getattr(mon, "hp", 0) <= 0 for mon in party):
 			return False
 		return True
@@ -5301,22 +5363,38 @@ class Shadowforce:
 
 class Shedtail:
 	def onHit(self, user, target, battle):
-		"""Create a substitute and switch the user out."""
+		"""Pay HP, queue a switch, and hand a substitute to the replacement."""
 		max_hp = getattr(user, "max_hp", 0)
-		if getattr(user, "hp", 0) <= max_hp // 2:
+		cost = (max_hp + 1) // 2
+		if getattr(user, "hp", 0) <= cost:
 			return False
-		user.hp -= max_hp // 2
-		if hasattr(user, "volatiles"):
-			user.volatiles["substitute"] = True
+		user.hp -= cost
+		sub_hp = max(1, (max_hp + 3) // 4)
 		if hasattr(user, "tempvals"):
 			user.tempvals["switch_out"] = True
+			user.tempvals["skip_before_switch_out"] = True
+			user.tempvals["shedtail_substitute"] = {"hp": sub_hp}
 		return True
 
 	def onTryHit(self, user, *args, **kwargs):
-		"""Fail if the user lacks enough HP to create a substitute."""
+		"""Fail if the user lacks HP, has a substitute, or cannot switch."""
+		battle = kwargs.get("battle")
 		max_hp = getattr(user, "max_hp", 0)
-		if getattr(user, "hp", 0) <= max_hp // 2:
+		cost = (max_hp + 1) // 2
+		if getattr(user, "volatiles", {}).get("substitute"):
 			return False
+		if getattr(user, "hp", 0) <= cost:
+			return False
+		if battle and hasattr(battle, "participant_for"):
+			participant = battle.participant_for(user)
+			if participant is not None:
+				available = [
+					poke
+					for poke in getattr(participant, "pokemons", [])
+					if poke is not user and getattr(poke, "hp", 0) > 0 and poke not in getattr(participant, "active", [])
+				]
+				if not available:
+					return False
 		return True
 
 
@@ -7023,20 +7101,26 @@ class Wildboltstorm:
 class Wish:
 	def onEnd(self, *args, **kwargs):
 		target = args[0] if args else kwargs.get("target")
+		battle = kwargs.get("battle")
+		effect_state = kwargs.get("effect_state") or {}
 		if not target:
 			return False
-		heal = getattr(target, "wish_hp", None)
-		if heal is not None:
-			target.hp = min(getattr(target, "hp", 0) + heal, getattr(target, "max_hp", heal))
-		if hasattr(target, "volatiles"):
-			target.volatiles.pop("wish", None)
+		heal = effect_state.get("hp")
+		if heal:
+			if battle and hasattr(battle, "heal"):
+				battle.heal(target, heal, source=effect_state.get("source"), effect="move:wish")
+			else:
+				target.hp = min(getattr(target, "hp", 0) + heal, getattr(target, "max_hp", heal))
 		return True
 
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["wish"] = 2
-			user.wish_hp = getattr(user, "max_hp", 0) // 2
+		effect_state = kwargs.get("effect_state") or {}
+		source = kwargs.get("source") or (args[1] if len(args) > 1 else None)
+		if user:
+			effect_state["source"] = source or user
+			effect_state["target"] = user
+			effect_state["hp"] = getattr(source or user, "max_hp", 0) // 2
 		return True
 
 

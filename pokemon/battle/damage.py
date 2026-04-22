@@ -47,6 +47,90 @@ except Exception:  # pragma: no cover
         return cb_name if callable(cb_name) else None
 
 
+def _resolve_holder_callback(holder, hook: str, registry=None):
+    """Return a callable hook from a dex entity or plain handler object."""
+
+    if holder is None:
+        return None
+    if hasattr(holder, "call"):
+        return lambda *args, **kwargs: holder.call(hook, *args, **kwargs)
+    callback = getattr(holder, hook, None)
+    if callable(callback):
+        return callback
+    raw = getattr(holder, "raw", None)
+    if isinstance(raw, dict):
+        cb_name = raw.get(hook)
+        resolved = _resolve_callback(cb_name, registry) if registry else None
+        if callable(resolved):
+            return resolved
+    return None
+
+
+def _invoke_damage_callback(callback, dmg, target, attacker, move):
+    """Invoke a damage-style callback with forgiving signatures."""
+
+    try:
+        return callback(dmg, target=target, source=attacker, effect=move)
+    except Exception:
+        for attempt in (
+            lambda: callback(dmg, target, attacker, move),
+            lambda: callback(dmg, target, attacker),
+            lambda: callback(target, dmg, attacker, move),
+            lambda: callback(target, dmg, attacker),
+            lambda: callback(target, dmg),
+            lambda: callback(dmg, target),
+            lambda: callback(dmg),
+        ):
+            try:
+                return attempt()
+            except Exception:
+                continue
+    return None
+
+
+def _apply_pending_damage_hooks(dmg, attacker, target, move, battle, abilities_funcs, items_funcs, moves_funcs):
+    """Apply onAnyDamage/onDamage hooks to a pending damage value."""
+
+    if battle is not None:
+        for part in getattr(battle, "participants", []):
+            for poke in getattr(part, "active", []):
+                ability = getattr(poke, "ability", None)
+                cb = _resolve_holder_callback(ability, "onAnyDamage", abilities_funcs)
+                if callable(cb):
+                    new_dmg = _invoke_damage_callback(cb, dmg, target, attacker, move)
+                    if isinstance(new_dmg, (int, float)):
+                        dmg = int(new_dmg)
+
+    callbacks = []
+
+    ability = getattr(target, "ability", None)
+    cb = _resolve_holder_callback(ability, "onDamage", abilities_funcs)
+    if callable(cb):
+        prio = getattr(getattr(ability, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
+        callbacks.append((prio, cb))
+
+    item = getattr(target, "item", None) or getattr(target, "held_item", None)
+    cb = _resolve_holder_callback(item, "onDamage", items_funcs)
+    if callable(cb):
+        prio = getattr(getattr(item, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
+        callbacks.append((prio, cb))
+
+    if move.raw:
+        cb_name = move.raw.get("onDamage")
+        cb = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
+        if callable(cb):
+            prio = move.raw.get("onDamagePriority", 0)
+            callbacks.append((prio, cb))
+
+    callbacks.sort(key=lambda x: x[0], reverse=True)
+    for _, cb in callbacks:
+        new_dmg = _invoke_damage_callback(cb, dmg, target, attacker, move)
+        if isinstance(new_dmg, (int, float)):
+            dmg = int(new_dmg)
+
+    return dmg
+
+
 try:  # pragma: no cover - default text may not be available in tests
     from ..data.text import DEFAULT_TEXT
 except Exception:  # pragma: no cover
@@ -499,6 +583,19 @@ def damage_calc(
             if new_acc is not None:
                 accuracy = new_acc
 
+        if battle is not None and hasattr(battle, "runEvent"):
+            event_accuracy = battle.runEvent(
+                "Accuracy",
+                target,
+                attacker,
+                move,
+                accuracy,
+            )
+            if event_accuracy is False:
+                accuracy = 0
+            elif event_accuracy is not None and event_accuracy is not True:
+                accuracy = event_accuracy
+
         move.accuracy = accuracy
 
         if not accuracy_check(move, rng=rng):
@@ -516,8 +613,11 @@ def damage_calc(
                 base = getattr(getattr(pokemon, "base_stats", None), stat, 0)
                 return base
 
-        atk_key = "attack" if move.category == "Physical" else "special_attack"
-        def_key = "defense" if move.category == "Physical" else "special_defense"
+        move_category = getattr(move, "category", None)
+        if move_category is None:
+            move_category = getattr(getattr(move, "raw", None), "get", lambda *_: None)("category")
+        atk_key = "attack" if move_category == "Physical" else "special_attack"
+        def_key = "defense" if move_category == "Physical" else "special_defense"
 
         # Compute both ATK & SpA so ability hooks can touch either before selection
         atk_stat = get_modified_stat(attacker, "attack")
@@ -563,6 +663,18 @@ def damage_calc(
         spa_stat = _run_cb(opp_ability, "onSourceModifySpA", spa_stat)
         atk_stat = _run_cb(opp_ability, "onAnyModifyAtk", atk_stat)
         atk_stat = _run_cb(opp_ability, "onAllyModifyAtk", atk_stat)
+
+        if battle is not None and hasattr(battle, "runEvent"):
+            defense_event = "ModifyDef" if def_key == "defense" else "ModifySpD"
+            event_def = battle.runEvent(
+                defense_event,
+                target,
+                attacker,
+                move,
+                def_stat,
+            )
+            if isinstance(event_def, (int, float)):
+                def_stat = int(event_def)
 
         # Select final attacking stat based on move category
         atk_stat = atk_stat if atk_key == "attack" else spa_stat
@@ -742,6 +854,35 @@ def damage_calc(
 
             # Type effectiveness (+ text)
             eff = type_effectiveness(target, move)
+            if battle is not None and hasattr(battle, "runEvent") and getattr(move, "type", None):
+                immunity = battle.runEvent(
+                    "Immunity",
+                    target,
+                    attacker,
+                    move,
+                    move.type,
+                )
+                if immunity is False:
+                    eff = 0
+                elif eff == 0:
+                    negate = battle.runEvent(
+                        "NegateImmunity",
+                        target,
+                        attacker,
+                        move,
+                        move.type,
+                    )
+                    if negate is True:
+                        eff = 1.0
+                event_eff = battle.runEvent(
+                    "Effectiveness",
+                    target,
+                    attacker,
+                    move,
+                    eff,
+                )
+                if isinstance(event_eff, (int, float)):
+                    eff = float(event_eff)
             result.debug.setdefault("type_effectiveness", []).append(eff)
             temp_eff = eff
             if temp_eff > 1:
@@ -793,6 +934,16 @@ def damage_calc(
             else:
                 chance = chances.get(crit_ratio, 1.0)
                 crit = percent_check(chance, rng=rng)
+            if crit and battle is not None and hasattr(battle, "runEvent"):
+                crit_result = battle.runEvent(
+                    "CriticalHit",
+                    target,
+                    attacker,
+                    move,
+                    crit,
+                )
+                if crit_result is False:
+                    crit = False
             if crit:
                 dmg = floor(dmg * 1.5)
                 result.debug.setdefault("critical", []).append(True)
@@ -845,6 +996,18 @@ def damage_calc(
 
     if numhits > 1:
         result.text.append(f"{attacker.name} hit {numhits} times!")
+
+    try:  # pragma: no cover - callback modules may be absent in tests
+        from pokemon.dex.functions import abilities_funcs, items_funcs, moves_funcs  # type: ignore
+    except Exception:  # pragma: no cover
+        abilities_funcs = items_funcs = moves_funcs = None
+
+    damages = result.debug.get("damage", [])
+    if damages:
+        result.debug["damage"] = [
+            _apply_pending_damage_hooks(dmg, attacker, target, move, battle, abilities_funcs, items_funcs, moves_funcs)
+            for dmg in damages
+        ]
     return result
 
 # ----------------------------------------------------------------------
@@ -919,26 +1082,9 @@ def apply_damage(
         abilities_funcs = items_funcs = None
 
     # ------------------------------------------------------------------
-    # Ability, item, and move ``onSourceModifyDamage`` hooks
+    # Move-local ``onSourceModifyDamage`` hooks and scoped damage events
     # ------------------------------------------------------------------
     callbacks = []
-
-    ability = getattr(target, "ability", None)
-    if ability and getattr(ability, "raw", None):
-        cb_name = ability.raw.get("onSourceModifyDamage")
-        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-        if callable(cb):
-            prio = ability.raw.get("onSourceModifyDamagePriority", 0)
-            callbacks.append((prio, cb))
-
-    item = getattr(target, "item", None) or getattr(target, "held_item", None)
-    if item and getattr(item, "raw", None):
-        cb_name = item.raw.get("onSourceModifyDamage")
-        cb = _resolve_callback(cb_name, items_funcs) if items_funcs else None
-        if callable(cb):
-            prio = item.raw.get("onSourceModifyDamagePriority", 0)
-            callbacks.append((prio, cb))
-
     if move.raw:
         cb_name = move.raw.get("onSourceModifyDamage")
         cb = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
@@ -966,6 +1112,19 @@ def apply_damage(
         if isinstance(new_dmg, (int, float)):
             dmg = int(new_dmg)
 
+    if battle is not None and hasattr(battle, "runEvent"):
+        event_dmg = battle.runEvent(
+            "ModifyDamage",
+            target,
+            attacker,
+            move,
+            dmg,
+        )
+        if event_dmg is False:
+            dmg = 0
+        elif isinstance(event_dmg, (int, float)):
+            dmg = int(event_dmg)
+
     # ------------------------------------------------------------------
     # onAnyDamage ability hooks
     # ------------------------------------------------------------------
@@ -978,27 +1137,11 @@ def apply_damage(
         for part in getattr(battle, "participants", []):
             for poke in getattr(part, "active", []):
                 ability = getattr(poke, "ability", None)
-                if ability and getattr(ability, "raw", None):
-                    cb_name = ability.raw.get("onAnyDamage")
-                    cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-                    if callable(cb):
-                        new_dmg = None
-                        try:
-                            new_dmg = cb(dmg, target=target, source=attacker, effect=move)
-                        except Exception:
-                            for attempt in (
-                                lambda: cb(dmg, target, attacker, move),
-                                lambda: cb(dmg, target, attacker),
-                                lambda: cb(dmg, target),
-                                lambda: cb(dmg),
-                            ):
-                                try:
-                                    new_dmg = attempt()
-                                    break
-                                except Exception:
-                                    continue
-                        if isinstance(new_dmg, (int, float)):
-                            dmg = int(new_dmg)
+                cb = _resolve_holder_callback(ability, "onAnyDamage", abilities_funcs)
+                if callable(cb):
+                    new_dmg = _invoke_damage_callback(cb, dmg, target, attacker, move)
+                    if isinstance(new_dmg, (int, float)):
+                        dmg = int(new_dmg)
 
     # Run "onDamage" callbacks from abilities, items, and the move itself
     # before applying the final damage.  These hooks may modify the damage
@@ -1011,20 +1154,16 @@ def apply_damage(
     callbacks = []
 
     ability = getattr(target, "ability", None)
-    if ability and getattr(ability, "raw", None):
-        cb_name = ability.raw.get("onDamage")
-        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-        if callable(cb):
-            prio = ability.raw.get("onDamagePriority", 0)
-            callbacks.append((prio, cb))
+    cb = _resolve_holder_callback(ability, "onDamage", abilities_funcs)
+    if callable(cb):
+        prio = getattr(getattr(ability, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
+        callbacks.append((prio, cb))
 
     item = getattr(target, "item", None) or getattr(target, "held_item", None)
-    if item and getattr(item, "raw", None):
-        cb_name = item.raw.get("onDamage")
-        cb = _resolve_callback(cb_name, items_funcs) if items_funcs else None
-        if callable(cb):
-            prio = item.raw.get("onDamagePriority", 0)
-            callbacks.append((prio, cb))
+    cb = _resolve_holder_callback(item, "onDamage", items_funcs)
+    if callable(cb):
+        prio = getattr(getattr(item, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
+        callbacks.append((prio, cb))
 
     if move.raw:
         cb_name = move.raw.get("onDamage")
@@ -1035,41 +1174,22 @@ def apply_damage(
 
     callbacks.sort(key=lambda x: x[0], reverse=True)
     for _, cb in callbacks:
-        new_dmg = None
-        try:
-            new_dmg = cb(dmg, target=target, source=attacker, effect=move)
-        except Exception:
-            for attempt in (
-                lambda: cb(dmg, target, attacker, move),
-                lambda: cb(dmg, target, attacker),
-                lambda: cb(target, dmg, attacker, move),
-                lambda: cb(target, dmg, attacker),
-                lambda: cb(target, dmg),
-                lambda: cb(dmg, target),
-                lambda: cb(dmg),
-            ):
-                try:
-                    new_dmg = attempt()
-                    break
-                except Exception:
-                    continue
+        new_dmg = _invoke_damage_callback(cb, dmg, target, attacker, move)
         if isinstance(new_dmg, (int, float)):
             dmg = int(new_dmg)
 
     # Invoke the ability's ``onTryEatItem`` hook with no item so abilities
     # implementing this callback execute at least once during tests.
     ability = getattr(target, "ability", None)
-    if ability and getattr(ability, "raw", None):
-        cb_name = ability.raw.get("onTryEatItem")
-        cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-        if callable(cb):
+    cb = _resolve_holder_callback(ability, "onTryEatItem", abilities_funcs)
+    if callable(cb):
+        try:
+            cb(None, pokemon=target)
+        except Exception:
             try:
-                cb(None, pokemon=target)
+                cb(None, target)
             except Exception:
-                try:
-                    cb(None, target)
-                except Exception:
-                    cb(None)
+                cb(None)
 
     if update_hp and hasattr(target, "hp"):
         target.hp = max(0, target.hp - dmg)
@@ -1079,47 +1199,25 @@ def apply_damage(
             except Exception:  # pragma: no cover - simple data containers
                 pass
 
-        # Trigger defensive ability callbacks such as ``onDamagingHit`` or
-        # ``onHit``.  ``onDamagingHit`` is passed the damage dealt while
-        # ``onHit`` simply receives the target, source and move.
+        # Trigger hit-resolution callbacks. ``DamagingHit`` now flows through
+        # the battle event core so source-side effects such as Poison Touch can
+        # react in the same pass as defensive abilities.
         try:  # pragma: no cover - abilities module may be absent in tests
             from pokemon.dex.functions import abilities_funcs  # type: ignore
         except Exception:  # pragma: no cover
             abilities_funcs = None
+        if battle is not None and hasattr(battle, "runEvent"):
+            battle.runEvent("DamagingHit", target, attacker, move, dmg)
         ability = getattr(target, "ability", None)
-        if ability and getattr(ability, "raw", None):
-            cb_name = ability.raw.get("onDamagingHit")
-            cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-            if callable(cb):
+        cb = _resolve_holder_callback(ability, "onHit", abilities_funcs)
+        if callable(cb):
+            try:
+                cb(target=target, source=attacker, move=move)
+            except Exception:
                 try:
-                    cb(dmg, target=target, source=attacker, move=move)
+                    cb(target, attacker, move)
                 except Exception:
-                    try:
-                        cb(dmg, target, attacker, move)
-                    except Exception:
-                        cb(dmg, target, attacker)
-
-            cb_name = ability.raw.get("onHit")
-            cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-            if callable(cb):
-                try:
-                    cb(target=target, source=attacker, move=move)
-                except Exception:
-                    try:
-                        cb(target, attacker, move)
-                    except Exception:
-                        cb(target, attacker)
-
-            cb_name = ability.raw.get("onAfterMoveSecondary")
-            cb = _resolve_callback(cb_name, abilities_funcs) if abilities_funcs else None
-            if callable(cb):
-                try:
-                    cb(target=target, source=attacker, move=move)
-                except Exception:
-                    try:
-                        cb(target, attacker, move)
-                    except Exception:
-                        cb(target, attacker)
+                    cb(target, attacker)
 
         # Trigger emergency switch abilities for both Pokémon. While
         # Emergency Exit and Wimp Out normally activate on the damaged
@@ -1127,12 +1225,30 @@ def apply_damage(
         # callback runs during tests even when the ability is attached to the
         # wrong side.
         for poke in (target, attacker):
-            ability = getattr(poke, "ability", None)
-            if ability and hasattr(ability, "call"):
+            resolved_ability = getattr(poke, "ability", None)
+            if resolved_ability and hasattr(resolved_ability, "call"):
                 try:
-                    ability.call("onEmergencyExit", pokemon=poke)
+                    resolved_ability.call("onEmergencyExit", pokemon=poke)
                 except Exception:
-                    ability.call("onEmergencyExit", poke)
+                    resolved_ability.call("onEmergencyExit", poke)
+            elif resolved_ability is not None:
+                cb = getattr(resolved_ability, "onEmergencyExit", None)
+                if callable(cb):
+                    try:
+                        cb(pokemon=poke)
+                    except Exception:
+                        try:
+                            cb(poke)
+                        except Exception:
+                            cb()
+            tempvals = getattr(poke, "tempvals", None)
+            if tempvals is None:
+                tempvals = {}
+                setattr(poke, "tempvals", tempvals)
+            if getattr(poke, "switch_flag", False) or getattr(poke, "switch_out", False):
+                tempvals["switch_out"] = True
+                setattr(poke, "switch_flag", False)
+                setattr(poke, "switch_out", False)
 
     raw_damages = result.debug.get("damage", [])
     result.debug["damage"] = [dmg]

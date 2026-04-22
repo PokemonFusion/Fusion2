@@ -47,20 +47,33 @@ def apply_boost(
 	"""
 
 	boosts = dict(boosts or {})
+	battle = getattr(pokemon, "battle", None)
 
-	ability = getattr(pokemon, "ability", None)
-	if ability and hasattr(ability, "call"):
-		try:
-			ability.call("onTryBoost", boosts, target=pokemon, source=source, effect=effect)
-			ability.call(
-				"onChangeBoost",
-				boosts,
-				target=pokemon,
-				source=source,
-				effect=effect,
-			)
-		except Exception:  # pragma: no cover - ability callbacks are optional
-			pass
+	if battle is not None and hasattr(battle, "runEvent"):
+		changed = battle.runEvent("ChangeBoost", pokemon, source, effect, dict(boosts))
+		if changed is False:
+			return
+		if isinstance(changed, dict):
+			boosts = dict(changed)
+		tried = battle.runEvent("TryBoost", pokemon, source, effect, dict(boosts))
+		if tried is False:
+			return
+		if isinstance(tried, dict):
+			boosts = dict(tried)
+	else:
+		ability = getattr(pokemon, "ability", None)
+		if ability and hasattr(ability, "call"):
+			try:
+				ability.call("onTryBoost", boosts, target=pokemon, source=source, effect=effect)
+				ability.call(
+					"onChangeBoost",
+					boosts,
+					target=pokemon,
+					source=source,
+					effect=effect,
+				)
+			except Exception:  # pragma: no cover - ability callbacks are optional
+				pass
 
 	current = getattr(pokemon, "boosts", {}) or {}
 	if not isinstance(current, dict):  # pragma: no cover - defensive
@@ -69,26 +82,34 @@ def apply_boost(
 	# normalise existing keys
 	current = {STAT_KEY_MAP.get(k, k): v for k, v in current.items()}
 
+	applied_changes: Dict[str, int] = {}
 	for stat, amount in boosts.items():
 		full = STAT_KEY_MAP.get(stat, stat)
 		cur = current.get(full, 0)
-		current[full] = max(-6, min(6, cur + amount))
+		new_val = max(-6, min(6, cur + amount))
+		current[full] = new_val
+		applied_changes[REVERSE_STAT_KEY_MAP.get(full, full)] = new_val - cur
 
 	pokemon.boosts = current
 
-	# Trigger post-boost ability hooks so abilities can react to the final
-	# stage values.  Errors are ignored as ability callbacks are optional.
-	if ability and hasattr(ability, "call"):
-		try:
-			ability.call(
-				"onAfterEachBoost",
-				boosts,
-				target=pokemon,
-				source=source,
-				effect=effect,
-			)
-		except Exception:  # pragma: no cover - ability callbacks are optional
-			pass
+	if battle is not None and hasattr(battle, "runEvent"):
+		battle.runEvent("AfterEachBoost", pokemon, source, effect, dict(applied_changes))
+		battle.runEvent("AfterBoost", pokemon, source, effect, dict(applied_changes))
+	else:
+		ability = getattr(pokemon, "ability", None)
+		# Trigger post-boost ability hooks so abilities can react to the final
+		# stage values.  Errors are ignored as ability callbacks are optional.
+		if ability and hasattr(ability, "call"):
+			try:
+				ability.call(
+					"onAfterEachBoost",
+					boosts,
+					target=pokemon,
+					source=source,
+					effect=effect,
+				)
+			except Exception:  # pragma: no cover - ability callbacks are optional
+				pass
 
 
 __all__ = ["STAT_KEY_MAP", "REVERSE_STAT_KEY_MAP", "ALL_STATS", "apply_boost"]

@@ -110,6 +110,9 @@ class Pokemon:
         self.tempvals: Dict[str, int] = {}
         # Track volatile status effects such as confusion or curses
         self.volatiles: Dict[str, Any] = {}
+        self.status_state: Dict[str, Any] = {}
+        self.item_state: Dict[str, Any] = {}
+        self.ability_state: Dict[str, Any] = {}
         self.consumed_berry = False
         self.last_item = None
         self.last_consumed_item = None
@@ -264,6 +267,68 @@ class Pokemon:
             pass
         return []
 
+    def _lookup_species_entry(self, species_name: Optional[str] = None) -> Any:
+        """Return a Pokédex entry for ``species_name`` when available."""
+
+        lookup_name = species_name or getattr(self, "species", None) or self.name
+        pdex: Dict[str, Any] = {}
+        try:  # pragma: no cover - data lookup is optional in tests
+            dex_mod = safe_import("pokemon.dex")
+            module_dex = getattr(dex_mod, "POKEDEX", {})
+            load_pokedex = getattr(dex_mod, "load_pokedex", None)
+            abilitydex = getattr(dex_mod, "ABILITYDEX", None)
+            pokedex_path = getattr(dex_mod, "POKEDEX_PATH", None)
+            pdex = module_dex or {}
+            if not pdex and load_pokedex and pokedex_path:
+                pdex = load_pokedex(pokedex_path, abilitydex)  # type: ignore[misc]
+        except Exception:
+            pdex = POKEDEX
+
+        if not pdex:
+            try:  # pragma: no cover - last-resort direct file load
+                dex_root = Path(__file__).resolve().parents[1] / "dex"
+                pokedex_path = dex_root / "pokedex" / "__init__.py"
+                if pokedex_path.exists():
+                    pkg_name = "pokemon.dex"
+                    pkg_snapshot = set(sys.modules)
+                    if pkg_name not in sys.modules:
+                        stub = ModuleType(pkg_name)
+                        stub.__path__ = [str(dex_root)]
+                        sys.modules[pkg_name] = stub
+                    spec = importlib.util.spec_from_file_location(
+                        f"{pkg_name}.pokedex", pokedex_path
+                    )
+                    module = importlib.util.module_from_spec(spec)
+                    sys.modules[spec.name] = module
+                    assert spec and spec.loader
+                    spec.loader.exec_module(module)
+                    pdex = getattr(module, "pokedex", getattr(module, "POKEDEX", {}))
+            except Exception:
+                pdex = {}
+            finally:
+                if "pkg_snapshot" in locals():
+                    new_modules = set(sys.modules) - pkg_snapshot
+                    for mod_name in new_modules:
+                        if mod_name.startswith("pokemon.dex"):
+                            sys.modules.pop(mod_name, None)
+
+        if not pdex:
+            return None
+
+        normalized = "".join(ch for ch in str(lookup_name).lower() if ch.isalnum())
+        candidates = [
+            lookup_name,
+            str(lookup_name).lower(),
+            str(lookup_name).title(),
+            normalized,
+            normalized.capitalize(),
+        ]
+        for candidate in candidates:
+            entry = pdex.get(candidate)
+            if entry:
+                return entry
+        return None
+
     def getName(self) -> str:
         return self.name
 
@@ -296,9 +361,17 @@ class Pokemon:
         else:
             status_key = status
 
+        if battle_obj and previous_key != status_key and status_key not in {None, "", 0}:
+            run_event = getattr(battle_obj, "runEvent", None)
+            if callable(run_event):
+                result = run_event("SetStatus", self, source, effect, status_key)
+                if result is False or result is None:
+                    return False
+
         if status_key in {None, "", 0}:
             self.status = 0
             self.toxic_counter = 0
+            self.status_state = {}
             if battle_obj and previous_key not in {None, "", 0}:
                 item_effect = effect if isinstance(effect, str) else None
                 battle_obj.announce_status_change(
@@ -312,6 +385,7 @@ class Pokemon:
             return True
 
         self.status = status_key
+        self.status_state = {"id": status_key, "source": source, "effect": effect}
         if status_key == "tox":
             self.toxic_counter = 1
         else:
@@ -333,14 +407,39 @@ class Pokemon:
         }
 
         if handler and hasattr(handler, "onStart"):
-            try:
-                result = handler.onStart(self, **ctx)
-            except TypeError:
-                result = handler.onStart(self, ctx.get("battle"))
+            single_event = getattr(battle_obj, "singleEvent", None)
+            if callable(single_event):
+                def _status_start(*args, **kwargs):
+                    return handler.onStart(self, **ctx)
+
+                result = single_event(
+                    "Start",
+                    handler,
+                    self.status_state,
+                    self,
+                    source,
+                    effect,
+                    callback=_status_start,
+                )
+            else:
+                try:
+                    result = handler.onStart(self, **ctx)
+                except TypeError:
+                    result = handler.onStart(self, ctx.get("battle"))
             if result is False:
                 self.status = previous_status
                 self.toxic_counter = previous_toxic
+                self.status_state = {}
                 return False
+        if battle_obj and status_key not in {None, "", 0}:
+            run_event = getattr(battle_obj, "runEvent", None)
+            if callable(run_event):
+                result = run_event("AfterSetStatus", self, source, effect, status_key)
+                if result is False:
+                    self.status = previous_status
+                    self.toxic_counter = previous_toxic
+                    self.status_state = {}
+                    return False
         if battle_obj and status_key not in {None, "", 0}:
             event = "alreadyStarted" if previous_key == status_key else "start"
             battle_obj.announce_status_change(
@@ -351,6 +450,128 @@ class Pokemon:
                 effect=effect,
             )
         return True
+
+    def trySetStatus(self, status: str | int, *, source=None, battle=None, effect=None) -> bool:
+        """Attempt to set a major status only if the Pokemon is currently healthy."""
+
+        if getattr(self, "status", 0) not in {None, "", 0}:
+            return False
+        return self.setStatus(status, source=source, battle=battle, effect=effect)
+
+    def clearStatus(self, *, battle=None, effect=None) -> bool:
+        """Clear the current major status."""
+
+        return self.setStatus(0, battle=battle, effect=effect)
+
+    def addVolatile(self, status: str, source=None, battle=None, effect=None) -> bool:
+        """Add a volatile condition using the active battle runtime when available."""
+
+        battle_obj = battle or getattr(self, "battle", None)
+        if battle_obj and hasattr(battle_obj, "add_volatile"):
+            return bool(
+                battle_obj.add_volatile(
+                    self,
+                    status,
+                    source=source,
+                    effect=effect,
+                )
+            )
+        self.volatiles.setdefault(status, True)
+        return True
+
+    def removeVolatile(self, status: str, *, battle=None) -> bool:
+        """Remove a volatile condition using the active battle runtime when available."""
+
+        battle_obj = battle or getattr(self, "battle", None)
+        if battle_obj and hasattr(battle_obj, "remove_volatile"):
+            return bool(battle_obj.remove_volatile(self, status))
+        return self.volatiles.pop(status, None) is not None
+
+    def setAbility(
+        self,
+        ability,
+        source=None,
+        battle=None,
+        is_from_forme_change: bool = False,
+        is_transform: bool = False,
+    ):
+        """Assign a battle ability using the active battle runtime when available."""
+
+        battle_obj = battle or getattr(self, "battle", None)
+        if battle_obj and hasattr(battle_obj, "set_ability"):
+            return battle_obj.set_ability(
+                self,
+                ability,
+                source=source,
+                is_from_forme_change=is_from_forme_change,
+                is_transform=is_transform,
+            )
+        old = getattr(self, "ability", None)
+        self.ability = ability
+        self.ability_state = {"id": getattr(ability, "name", ability)}
+        return old
+
+    def formeChange(self, new_forme, *, battle=None, source=None) -> bool:
+        """Apply a lightweight battle-time forme change."""
+
+        if not new_forme:
+            return False
+
+        battle_obj = battle or getattr(self, "battle", None)
+        entry = self._lookup_species_entry(str(new_forme))
+
+        self.species = str(new_forme)
+        self.name = str(new_forme)
+
+        if entry:
+            types = getattr(entry, "types", None)
+            if types is None and isinstance(entry, dict):
+                types = entry.get("types")
+            if types:
+                self.types = [str(t).title() for t in types if t]
+
+            base_stats = getattr(entry, "baseStats", None)
+            if base_stats is None and isinstance(entry, dict):
+                base_stats = entry.get("baseStats")
+            if isinstance(base_stats, dict):
+                try:
+                    StatsCls = safe_import("pokemon.dex.entities").Stats
+                except Exception:  # pragma: no cover - Stats class optional
+                    from types import SimpleNamespace as StatsCls  # type: ignore
+                self.base_stats = StatsCls(**base_stats)
+
+            abilities = getattr(entry, "abilities", None)
+            if abilities is None and isinstance(entry, dict):
+                abilities = entry.get("abilities")
+            if isinstance(abilities, dict):
+                next_ability = abilities.get("0") or abilities.get(0)
+                if next_ability:
+                    self.setAbility(
+                        next_ability,
+                        source=source,
+                        battle=battle_obj,
+                        is_from_forme_change=True,
+                    )
+
+        return True
+
+    def queue_primal(self, *, battle=None, source=None) -> bool:
+        """Queue or immediately apply a primal forme change."""
+
+        battle_obj = battle or getattr(self, "battle", None)
+        item = getattr(self, "item", None) or getattr(self, "held_item", None)
+        if item and hasattr(item, "call"):
+            try:
+                item.call("onPrimal", pokemon=self)
+                return True
+            except Exception:
+                pass
+        if battle_obj is not None:
+            tempvals = getattr(self, "tempvals", None)
+            if isinstance(tempvals, dict):
+                tempvals["queued_primal"] = True
+            return True
+        return False
 
     def to_dict(self) -> Dict:
         """Return a serialisable representation of this Pokémon."""

@@ -1856,8 +1856,11 @@ class Naturalcure:
 			pokemon.natural_cure = True
 
 	def onSwitchOut(self, pokemon=None):
-		if pokemon and getattr(pokemon, "natural_cure", False):
-			pokemon.setStatus(0)
+		if pokemon and getattr(pokemon, "status", 0):
+			if hasattr(pokemon, "clearStatus"):
+				pokemon.clearStatus()
+			else:
+				pokemon.setStatus(0)
 			pokemon.natural_cure = False
 
 
