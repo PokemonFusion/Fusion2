@@ -255,6 +255,22 @@ def _get_item_text_entry(name, details):
 	return None
 
 
+def get_item_description(name, details=None):
+	"""Return the best available item description from dex or text data."""
+
+	if details is None:
+		_, details = get_item_by_name(name)
+	if not details:
+		return "No description available."
+
+	description = _get(details, "desc") or _get(details, "shortDesc")
+	if not description:
+		text_entry = _get_item_text_entry(name, details)
+		if text_entry:
+			description = text_entry.get("desc") or text_entry.get("shortDesc")
+	return description or "No description available."
+
+
 def format_item_details(name, details):
 	"""Return a formatted description of an item."""
 
@@ -304,11 +320,9 @@ def format_item_details(name, details):
 		lines.append(f"Tags: {', '.join(tags)}")
 
 	text_entry = _get_item_text_entry(name, details)
-	description = _get(details, "desc")
-	if not description and text_entry:
-		description = text_entry.get("desc") or text_entry.get("shortDesc")
+	description = get_item_description(name, details)
 
-	if description:
+	if description and description != "No description available.":
 		if lines[-1] != "":
 			lines.append("")
 		lines.append(description)

@@ -23,8 +23,8 @@ class CmdBattleInspect(Command):
     in.  Output is formatted as JSON for readability.
     """
 
-    key = "+battleinspect"
-    aliases = ["battleinspect"]
+    key = "@battleinspect"
+    aliases = ["+battleinspect", "battleinspect"]
     locks = "cmd:perm(Wizards)"
     help_category = "Admin"
 

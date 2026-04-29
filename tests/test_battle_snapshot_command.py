@@ -1,4 +1,4 @@
-"""Tests for the +battlecheck administrative command."""
+"""Tests for the @battlecheck administrative command."""
 
 import importlib
 import sys
@@ -187,4 +187,4 @@ def test_battle_snapshot_requires_argument(snapshot_env):
     cmd.func()
 
     assert caller.messages
-    assert caller.messages[0].startswith("Usage: +battlecheck")
+    assert caller.messages[0].startswith("Usage: @battlecheck")

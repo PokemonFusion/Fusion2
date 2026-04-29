@@ -57,18 +57,19 @@ class CmdAddPokemonToUser(Command):
 	Add a Pokémon to the user
 
 	Usage:
-	    addpokemontouser <name> <level> <type>
+	    @addpokemontouser <name> <level> <type>
 
 	Adds a Pokémon to the user's active Pokémon list.
 	"""
 
-	key = "addpokemontouser"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@addpokemontouser"
+	aliases = ["addpokemontouser"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):
 		if not self.args:
-			self.caller.msg("Usage: addpokemontouser <name> <level> <type>")
+			self.caller.msg("Usage: @addpokemontouser <name> <level> <type>")
 			return
 		try:
 			name, level, type_ = self.args.split()
@@ -76,7 +77,7 @@ class CmdAddPokemonToUser(Command):
 			self.caller.add_pokemon_to_user(name, level, type_)
 			self.caller.msg(f"Added {name} (Level {level}, Type: {type_}) to your active Pokémon.")
 		except ValueError:
-			self.caller.msg("Usage: addpokemontouser <name> <level> <type>")
+			self.caller.msg("Usage: @addpokemontouser <name> <level> <type>")
 
 
 class CmdAddPokemonToStorage(Command):
@@ -84,18 +85,19 @@ class CmdAddPokemonToStorage(Command):
 	Add a Pokémon to the storage
 
 	Usage:
-	    addpokemontostorage <name> <level> <type>
+	    @addpokemontostorage <name> <level> <type>
 
 	Adds a Pokémon to the user's storage.
 	"""
 
-	key = "addpokemontostorage"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@addpokemontostorage"
+	aliases = ["addpokemontostorage"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):
 		if not self.args:
-			self.caller.msg("Usage: addpokemontostorage <name> <level> <type>")
+			self.caller.msg("Usage: @addpokemontostorage <name> <level> <type>")
 			return
 		try:
 			name, level, type_ = self.args.split()
@@ -103,7 +105,7 @@ class CmdAddPokemonToStorage(Command):
 			self.caller.add_pokemon_to_storage(name, level, type_)
 			self.caller.msg(f"Added {name} (Level {level}, Type: {type_}) to your storage.")
 		except ValueError:
-			self.caller.msg("Usage: addpokemontostorage <name> <level> <type>")
+			self.caller.msg("Usage: @addpokemontostorage <name> <level> <type>")
 
 
 class CmdGetPokemonDetails(Command):
@@ -136,21 +138,22 @@ class CmdUseMove(Command):
 	"""Use a Pokémon move in a simple battle simulation.
 
 	Usage:
-	  usemove <move> <attacker> <target>
+	  @usemove <move> <attacker> <target>
 	"""
 
-	key = "usemove"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@usemove"
+	aliases = ["usemove"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):
 		if not self.args:
-			self.caller.msg("Usage: usemove <move> <attacker> <target>")
+			self.caller.msg("Usage: @usemove <move> <attacker> <target>")
 			return
 		try:
 			move_name, attacker_name, target_name = self.args.split()
 		except ValueError:
-			self.caller.msg("Usage: usemove <move> <attacker> <target>")
+			self.caller.msg("Usage: @usemove <move> <attacker> <target>")
 			return
 
 		inst = getattr(self.caller.ndb, "battle_instance", None)
@@ -294,10 +297,11 @@ class CmdAdminHeal(Command):
 	"""Heal another player's Pokémon party.
 
 	Usage:
-	  +adminheal [<player>]
+	  @adminheal [<player>]
 	"""
 
-	key = "+adminheal"
+	key = "@adminheal"
+	aliases = ["+adminheal"]
 	locks = "cmd:perm(Wizards)"
 	help_category = "Admin"
 

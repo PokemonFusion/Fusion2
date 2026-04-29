@@ -11,17 +11,18 @@ class CmdDebugMoveData(Command):
 	"""Display resolved move data for debugging.
 
 	Usage:
-	  +debug/movedata <move>
+	  @debug/movedata <move>
 	"""
 
-	key = "+debug/movedata"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@debug/movedata"
+	aliases = ["+debug/movedata"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):  # type: ignore[override]
 		name = (self.args or "").strip()
 		if not name:
-			self.caller.msg("Usage: +debug/movedata <move>")
+			self.caller.msg("Usage: @debug/movedata <move>")
 			return
 
 		move_obj = BattleMove(name)

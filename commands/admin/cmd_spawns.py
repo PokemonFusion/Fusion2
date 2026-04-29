@@ -11,10 +11,11 @@ class CmdSpawns(Command):
 	"""Open a menu to edit the current room's spawn table.
 
 	Usage:
-	  +spawns
+	  @spawns
 	"""
 
-	key = "+spawns"
+	key = "@spawns"
+	aliases = ["+spawns"]
 	locks = "cmd:perm(Wizards)"
 	help_category = "Admin"
 

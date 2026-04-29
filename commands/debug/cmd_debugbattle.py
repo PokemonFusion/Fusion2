@@ -9,16 +9,17 @@ class CmdDebugBattle(Command):
 	"""Toggle debug output for an active battle.
 
 	Usage:
-	  +debug/battle <character or battle id>
+	  @debug/battle <character or battle id>
 	"""
 
-	key = "+debug/battle"
+	key = "@debug/battle"
+	aliases = ["+debug/battle"]
 	locks = "cmd:perm(Builder)"
 	help_category = "Pokemon"
 
 	def func(self):  # type: ignore[override]
 		if not self.args:
-			self.caller.msg("Usage: +debug/battle <character or battle id>")
+			self.caller.msg("Usage: @debug/battle <character or battle id>")
 			return
 		arg = self.args.strip()
 		inst = None

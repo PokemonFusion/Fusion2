@@ -17,7 +17,7 @@ def _parse_spawn_spec(spec: str) -> dict:
 
 	parts = [part.strip() for part in (spec or "").split(",") if part.strip()]
 	if not parts:
-		raise ValueError("Usage: +testspawn <species>[, level][, wild|trainer]")
+		raise ValueError("Usage: @testspawn <species>[, level][, wild|trainer]")
 	species = parts[0]
 	level = 5
 	kind = "wild"
@@ -33,11 +33,12 @@ class CmdTestSpawn(Command):
 	"""Store or clear the current room's debug opponent configuration.
 
 	Usage:
-	  +testspawn <species>[, level][, wild|trainer]
-	  +testspawn/clear
+	  @testspawn <species>[, level][, wild|trainer]
+	  @testspawn/clear
 	"""
 
-	key = "+testspawn"
+	key = "@testspawn"
+	aliases = ["+testspawn"]
 	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
@@ -73,19 +74,19 @@ class CmdStartTestBattle(Command):
 	"""Start a generated debug battle for a character.
 
 	Usage:
-	  +testbattle/start <character>
-	  +testbattle/start <character>=<species>[, level][, wild|trainer]
+	  @testbattle/start <character>
+	  @testbattle/start <character>=<species>[, level][, wild|trainer]
 	"""
 
-	key = "+testbattle/start"
-	aliases = ["+starttestbattle"]
+	key = "@testbattle/start"
+	aliases = ["+testbattle/start", "@starttestbattle", "+starttestbattle"]
 	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def func(self):
 		if not self.args:
 			self.caller.msg(
-				"Usage: +testbattle/start <character>[=<species>[, level][, wild|trainer]]"
+				"Usage: @testbattle/start <character>[=<species>[, level][, wild|trainer]]"
 			)
 			return
 
@@ -112,7 +113,7 @@ class CmdStartTestBattle(Command):
 			payload = getattr(payload, "test_battle_spawn", None)
 			if not payload:
 				self.caller.msg(
-					"No room test spawn configured. Use +testspawn or provide an explicit species."
+					"No room test spawn configured. Use @testspawn or provide an explicit species."
 				)
 				return
 		if not is_known_species(payload["species"]):

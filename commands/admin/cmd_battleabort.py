@@ -15,7 +15,8 @@ class CmdBattleAbort(Command):
           +battleabort <battle id> <player>
         """
 
-        key = "+battleabort"
+        key = "@battleabort"
+        aliases = ["+battleabort"]
         locks = "cmd:perm(Wizards)"
         help_category = "Admin"
 

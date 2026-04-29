@@ -34,10 +34,17 @@ class CmdInventory(Command):
 			return
 
 		lines = ["Your Inventory:"]
+		from pokemon.middleware import get_item_by_name, get_item_description
+
 		for entry in entries:
-			data = ITEMDEX.get(entry.item_name, {})
-			desc = data.get("desc", "No description available.")
-			lines.append(f"{entry.item_name.title()} x{entry.quantity} - {desc}")
+			item_name, data = get_item_by_name(entry.item_name)
+			item_name = item_name or entry.item_name
+			desc = get_item_description(item_name, data)
+			display = getattr(data, "name", None) or (
+				data.get("name") if isinstance(data, dict) else None
+			)
+			display = display or str(item_name).title()
+			lines.append(f"{display} x{entry.quantity} - {desc}")
 		self.caller.msg("\n".join(lines))
 
 
@@ -45,25 +52,26 @@ class CmdAddItem(Command):
 	"""Add an item to your inventory.
 
 	Usage:
-	  additem <item> <amount>
+	  @additem <item> <amount>
 	"""
 
-	key = "additem"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@additem"
+	aliases = ["additem"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):
 		if not require_no_battle_lock(self.caller):
 			return
 		parts = self.args.split()
 		if len(parts) != 2:
-			self.caller.msg("Usage: additem <item> <amount>")
+			self.caller.msg("Usage: @additem <item> <amount>")
 			return
 		item = parts[0]
 		try:
 			qty = int(parts[1])
 		except ValueError:
-			self.caller.msg("Usage: additem <item> <amount>")
+			self.caller.msg("Usage: @additem <item> <amount>")
 			return
 		trainer = getattr(self.caller, "trainer", None)
 		if not trainer:
@@ -77,10 +85,11 @@ class CmdGiveItem(Command):
 	"""Give an item to another player (admin-only).
 
 	Usage:
-	  +giveitem <player> = <item>:<amount>
+	  @giveitem <player> = <item>:<amount>
 	"""
 
-	key = "+giveitem"
+	key = "@giveitem"
+	aliases = ["+giveitem"]
 	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
@@ -103,7 +112,7 @@ class CmdGiveItem(Command):
 		if not require_no_battle_lock(self.caller):
 			return
 		if not all([self.target_name, self.item_name]):
-			self.caller.msg("Usage: +giveitem <player> = <item>:<amount>")
+			self.caller.msg("Usage: @giveitem <player> = <item>:<amount>")
 			return
 		if self.amount_error:
 			self.caller.msg("Amount must be a number.")

@@ -18,7 +18,7 @@ class CmdLogUsage(Command):
 	"""
 
 	key = "@logusage"
-	locks = "cmd:all()"
+	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def parse(self):

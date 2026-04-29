@@ -11,12 +11,13 @@ class CmdTestMenuEnhanced(Command):
 	Launch the EnhancedEvMenu sanity-check.
 
 	Usage:
-	    testmenu+enh
-	    testmenu+enh persistent
+	    @testmenu/enh
+	    @testmenu/enh persistent
 	"""
 
-	key = "testmenu+enh"
-	locks = "cmd:all()"
+	key = "@testmenu/enh"
+	aliases = ["testmenu+enh"]
+	locks = "cmd:perm(Builder)"
 
 	def func(self):
 		persistent = "persistent" in (self.args or "").lower()

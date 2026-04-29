@@ -337,16 +337,17 @@ class CmdAbortBattle(Command):
     """Force end an ongoing battle.
 
     Usage:
-      +abortbattle <character or battle id>
+      @abortbattle <character or battle id>
     """
 
-    key = "+abortbattle"
+    key = "@abortbattle"
+    aliases = ["+abortbattle"]
     locks = "cmd:perm(Wizards)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +abortbattle <character or battle id>")
+            self.caller.msg("Usage: @abortbattle <character or battle id>")
             return
         arg = self.args.strip()
         inst = None
@@ -374,16 +375,17 @@ class CmdRestoreBattle(Command):
     """Restore a saved battle in the current room for debugging.
 
     Usage:
-      +restorebattle <battle_id>
+      @restorebattle <battle_id>
     """
 
-    key = "+restorebattle"
+    key = "@restorebattle"
+    aliases = ["+restorebattle"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +restorebattle <battle_id>")
+            self.caller.msg("Usage: @restorebattle <battle_id>")
             return
 
         arg = self.args.strip()
@@ -403,16 +405,17 @@ class CmdBattleInfo(Command):
     """Display stored battle data for debugging.
 
     Usage:
-      +battleinfo <character or battle id>
+      @battleinfo <character or battle id>
     """
 
-    key = "+battleinfo"
+    key = "@battleinfo"
+    aliases = ["+battleinfo"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +battleinfo <character or battle id>")
+            self.caller.msg("Usage: @battleinfo <character or battle id>")
             return
 
         inst, room, bid, target = _resolve_battle_context(self.args)
@@ -449,16 +452,17 @@ class CmdBattleSnapshot(Command):
     """Display stored and live battle values for comparison.
 
     Usage:
-      +battlecheck <character or battle id>
+      @battlecheck <character or battle id>
     """
 
-    key = "+battlecheck"
+    key = "@battlecheck"
+    aliases = ["+battlecheck"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +battlecheck <character or battle id>")
+            self.caller.msg("Usage: @battlecheck <character or battle id>")
             return
 
         inst, room, bid, target = _resolve_battle_context(self.args)
@@ -477,13 +481,14 @@ class CmdBattleSnapshot(Command):
 class CmdRetryTurn(Command):
     """Retry the current turn of a battle."""
 
-    key = "+retryturn"
+    key = "@retryturn"
+    aliases = ["+retryturn"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +retryturn <character or battle id>")
+            self.caller.msg("Usage: @retryturn <character or battle id>")
             return
 
         arg = self.args.strip()
@@ -512,13 +517,13 @@ class CmdToggleDamageNumbers(Command):
     """Toggle exact damage number announcements for a battle.
 
     Usage:
-      +damage/toggle [<character or battle id>]
+      @damage/toggle [<character or battle id>]
 
     Without an argument the caller's active battle will be toggled.
     """
 
-    key = "+damage/toggle"
-    aliases = ["+damagenumbers", "+damageexact"]
+    key = "@damage/toggle"
+    aliases = ["+damage/toggle", "@damagenumbers", "+damagenumbers", "@damageexact", "+damageexact"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
@@ -562,8 +567,8 @@ class CmdToggleDamageNumbers(Command):
 class CmdUiPreview(Command):
     """Admin: preview the battle UI with mock data."""
 
-    key = "+ui/preview"
-    aliases = ["+uiprev"]
+    key = "@ui/preview"
+    aliases = ["+ui/preview", "@uiprev", "+uiprev"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
