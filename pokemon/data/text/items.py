@@ -1078,9 +1078,7 @@ ITEMS_TEXT = {   'abilityshield': {   'name': 'Ability Shield',
     'crucibellite': {   'name': 'Crucibellite',
                         'shortDesc': 'If held by a Crucibelle, this item allows it to Mega Evolve in battle.'},
     'vilevial': {   'name': 'Vile Vial',
-                    'shortDesc': 'If held by a Venomicon, its Poison- and Flying-type attacks have 1.2x power.'}}
-
-ITEMS_TEXT.update({
+                    'shortDesc': 'If held by a Venomicon, its Poison- and Flying-type attacks have 1.2x power.'},
     'luckyegg': {'name': 'Lucky Egg', 'shortDesc': 'Holder gains 1.5x experience from battle.'},
     'potion': {'name': 'Potion', 'shortDesc': 'Restores 20 HP to one Pokemon.'},
     'superpotion': {'name': 'Super Potion', 'shortDesc': 'Restores 60 HP to one Pokemon.'},
@@ -1117,4 +1115,4 @@ ITEMS_TEXT.update({
     'revivalherb': {'name': 'Revival Herb', 'shortDesc': 'Bitter herb that revives one fainted Pokemon with full HP.'},
     'abilitycapsule': {'name': 'Ability Capsule', 'shortDesc': 'Switches one Pokemon between its regular Abilities.'},
     'abilitypatch': {'name': 'Ability Patch', 'shortDesc': 'Changes one Pokemon\'s Ability to its Hidden Ability.'},
-})
+}
