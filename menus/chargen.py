@@ -137,6 +137,7 @@ def _build_owned_pokemon(
             instance.ivs.speed,
         ],
         evs=[0, 0, 0, 0, 0, 0],
+        active_move_names=list(getattr(instance, "moves", []) or []),
     )
 
 

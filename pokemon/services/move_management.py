@@ -85,6 +85,275 @@ def _get_move_pp_from_dex(movedex, move_name: str):
 	return "", None
 
 
+def _move_display_name(move_name: str) -> str:
+	"""Return the best display name for a move key or name."""
+
+	raw = str(move_name or "").strip()
+	if not raw:
+		return ""
+
+	movedex = _get_movedex()
+	matched_key, _base_pp = _get_move_pp_from_dex(movedex, raw)
+	entry = movedex.get(matched_key) if matched_key else None
+	name = getattr(entry, "name", None)
+	if name is None and isinstance(entry, dict):
+		name = entry.get("name")
+	if name:
+		return str(name)
+	return raw.replace("_", " ").replace("-", " ").title()
+
+
+def _pokemon_level(pokemon) -> int:
+	"""Return the current level for ``pokemon`` without assuming model shape."""
+
+	try:
+		level = getattr(pokemon, "computed_level")
+	except Exception:
+		level = None
+	if level is None:
+		level = getattr(pokemon, "level", 1)
+	try:
+		return max(1, int(level or 1))
+	except (TypeError, ValueError):
+		return 1
+
+
+def _relation_items(relation, *, order_by: str | None = None) -> list:
+	"""Return a relation/list as plain items, optionally ordered."""
+
+	if relation is None:
+		return []
+	try:
+		items = relation.all()
+	except AttributeError:
+		items = relation
+	if order_by and hasattr(items, "order_by"):
+		try:
+			items = items.order_by(order_by)
+		except TypeError:
+			items = items.order_by(order_by)
+	try:
+		return list(items)
+	except TypeError:
+		return []
+
+
+def _move_norms(moves) -> set[str]:
+	"""Return normalized names for move-like objects or strings."""
+
+	norms: set[str] = set()
+	for move in moves or []:
+		name = getattr(move, "name", move)
+		if name:
+			norms.add(normalize_move_key(str(name)))
+	return norms
+
+
+def _active_moveset_slot_names(pokemon) -> list[str]:
+	"""Return active moveset slot names for ``pokemon``."""
+
+	active_slots = getattr(pokemon, "activemoveslot_set", None)
+	if active_slots is not None:
+		slots = _relation_items(active_slots, order_by="slot")
+		names = [getattr(getattr(slot, "move", None), "name", "") for slot in slots]
+		return [name for name in names if name]
+
+	active_ms = getattr(pokemon, "active_moveset", None)
+	if active_ms is not None:
+		slots = _relation_items(getattr(active_ms, "slots", None), order_by="slot")
+		names = [getattr(getattr(slot, "move", None), "name", "") for slot in slots]
+		return [name for name in names if name]
+	return []
+
+
+def _clear_moveset_slots(moveset) -> None:
+	"""Remove all slots from ``moveset`` across Django and test doubles."""
+
+	slots = getattr(moveset, "slots", None)
+	if slots is None:
+		return
+	try:
+		slots.all().delete()
+		return
+	except AttributeError:
+		pass
+	deleter = getattr(slots, "delete", None)
+	if callable(deleter):
+		deleter()
+		return
+	clearer = getattr(slots, "clear", None)
+	if callable(clearer):
+		clearer()
+
+
+def _save_pokemon(pokemon, *, update_fields: list[str] | None = None) -> None:
+	"""Persist ``pokemon`` when possible."""
+
+	saver = getattr(pokemon, "save", None)
+	if not callable(saver):
+		return
+	try:
+		if update_fields:
+			saver(update_fields=update_fields)
+		else:
+			saver()
+	except TypeError:
+		saver()
+
+
+def level_up_move_names_for_pokemon(pokemon) -> list[str]:
+	"""Return all level-up moves available at ``pokemon``'s current level."""
+
+	species = getattr(pokemon, "species", getattr(pokemon, "name", "")) or ""
+	level = _pokemon_level(pokemon)
+
+	try:
+		from pokemon.middleware import get_moveset_by_name
+
+		_, moveset = get_moveset_by_name(species)
+	except Exception:
+		moveset = None
+
+	if moveset:
+		level_moves = [
+			(int(lvl), str(move))
+			for lvl, move in moveset.get("level-up", [])
+			if int(lvl) <= level
+		]
+		level_moves.sort(key=lambda row: row[0])
+		moves: list[str] = []
+		seen: set[str] = set()
+		for _lvl, move in level_moves:
+			norm = normalize_move_key(move)
+			if norm in seen:
+				continue
+			seen.add(norm)
+			moves.append(move)
+		return moves
+
+	try:
+		from pokemon.data.generation import get_valid_moves
+
+		moves = get_valid_moves(str(species), level)
+	except Exception:
+		moves = []
+
+	ordered: list[str] = []
+	seen: set[str] = set()
+	for move in reversed(list(moves or [])):
+		norm = normalize_move_key(str(move))
+		if norm in seen:
+			continue
+		seen.add(norm)
+		ordered.append(str(move))
+	return ordered
+
+
+def default_active_move_names_for_pokemon(pokemon) -> list[str]:
+	"""Return the default generated active moves for ``pokemon``."""
+
+	species = getattr(pokemon, "species", getattr(pokemon, "name", "")) or ""
+	level = _pokemon_level(pokemon)
+	try:
+		from pokemon.data.generation import choose_wild_moves
+
+		moves = choose_wild_moves(str(species), level)
+	except Exception:
+		moves = []
+	if not moves:
+		level_moves = level_up_move_names_for_pokemon(pokemon)
+		moves = level_moves[-4:]
+	if not moves:
+		moves = ["Tackle"]
+	return list(moves[:4])
+
+
+def initialize_generated_moveset(
+	pokemon,
+	*,
+	active_move_names: list[str] | tuple[str, ...] | None = None,
+	replace_active: bool = True,
+) -> dict:
+	"""Initialize learned moves and the active moveset for generated PokÃ©mon.
+
+	All level-up moves available at the PokÃ©mon's current level are added to
+	``learned_moves``.  The active moveset is then set to ``active_move_names``
+	when provided, otherwise to the generated default active four moves.
+	"""
+
+	if not pokemon:
+		return {"learned": 0, "active": []}
+
+	from pokemon.models.moves import Move
+
+	level_moves = level_up_move_names_for_pokemon(pokemon)
+	raw_active_names = list(active_move_names or default_active_move_names_for_pokemon(pokemon))
+	active_names: list[str] = []
+	active_seen: set[str] = set()
+	for move in raw_active_names:
+		norm = normalize_move_key(str(move))
+		if not norm or norm in active_seen:
+			continue
+		active_seen.add(norm)
+		active_names.append(str(move))
+		if len(active_names) >= 4:
+			break
+	learnable_names = list(level_moves)
+	for move in active_names:
+		if normalize_move_key(move) not in _move_norms(learnable_names):
+			learnable_names.append(move)
+
+	learned_relation = getattr(pokemon, "learned_moves", None)
+	known = _move_norms(_relation_items(learned_relation, order_by="name"))
+	learned_count = 0
+	for move_name in learnable_names:
+		display_name = _move_display_name(move_name)
+		if not display_name:
+			continue
+		norm = normalize_move_key(display_name)
+		if norm in known:
+			continue
+		move_obj, _created = Move.objects.get_or_create(name=display_name)
+		if learned_relation is not None:
+			learned_relation.add(move_obj)
+		known.add(norm)
+		learned_count += 1
+
+	current_active = _active_moveset_slot_names(pokemon)
+	if current_active and not replace_active:
+		return {"learned": learned_count, "active": current_active}
+
+	movesets = getattr(pokemon, "movesets", None)
+	if movesets is None:
+		return {"learned": learned_count, "active": active_names}
+
+	if hasattr(movesets, "get_or_create"):
+		active_ms, _created = movesets.get_or_create(index=0)
+	else:
+		active_ms = None
+		for candidate in _relation_items(movesets):
+			if getattr(candidate, "index", None) == 0:
+				active_ms = candidate
+				break
+		if active_ms is None and hasattr(movesets, "create"):
+			active_ms = movesets.create(index=0)
+	if active_ms is None:
+		return {"learned": learned_count, "active": active_names}
+
+	pokemon.active_moveset = active_ms
+	_clear_moveset_slots(active_ms)
+	for slot, move_name in enumerate(active_names, start=1):
+		display_name = _move_display_name(move_name)
+		if not display_name:
+			continue
+		move_obj, _created = Move.objects.get_or_create(name=display_name)
+		active_ms.slots.create(move=move_obj, slot=slot)
+
+	_save_pokemon(pokemon, update_fields=["active_moveset"])
+	apply_active_moveset(pokemon)
+	return {"learned": learned_count, "active": [_move_display_name(move) for move in active_names]}
+
+
 def apply_current_pp(pokemon) -> int:
 	"""Compute and apply ``current_pp`` for all active move slots.
 
@@ -220,6 +489,7 @@ def apply_active_moveset(pokemon) -> None:
 			if SlotModel is not None:
 				pending.append(
 					SlotModel(
+						pokemon=pokemon,
 						move=move,
 						slot=getattr(slot, "slot", 0),
 						current_pp=None,
@@ -259,8 +529,86 @@ def apply_active_moveset(pokemon) -> None:
 		_apply()
 
 
+def backfill_owned_pokemon_movesets(
+	*,
+	queryset=None,
+	dry_run: bool = True,
+	replace_active: bool = False,
+	limit: int | None = None,
+) -> dict:
+	"""Backfill learned moves and generated active movesets for owned PokÃ©mon."""
+
+	if queryset is None:
+		from pokemon.models.core import OwnedPokemon
+
+		queryset = OwnedPokemon.objects.all()
+
+	try:
+		queryset = queryset.select_related("active_moveset").prefetch_related(
+			"learned_moves",
+			"movesets__slots__move",
+			"activemoveslot_set__move",
+		)
+	except AttributeError:
+		pass
+
+	if limit is not None:
+		queryset = queryset[: max(0, int(limit))]
+
+	summary = {
+		"checked": 0,
+		"would_update": 0,
+		"updated": 0,
+		"skipped": 0,
+		"errors": [],
+	}
+
+	try:
+		iterator = queryset.iterator(chunk_size=100)
+	except AttributeError:
+		iterator = iter(queryset)
+
+	for pokemon in iterator:
+		summary["checked"] += 1
+		try:
+			level_moves = level_up_move_names_for_pokemon(pokemon)
+			desired_active = default_active_move_names_for_pokemon(pokemon)
+			learned_norms = _move_norms(_relation_items(getattr(pokemon, "learned_moves", None), order_by="name"))
+			missing_learned = [
+				move for move in level_moves if normalize_move_key(move) not in learned_norms
+			]
+			current_active = _active_moveset_slot_names(pokemon)
+			should_replace_active = replace_active or not current_active
+			active_changed = should_replace_active and _move_norms(current_active) != _move_norms(desired_active)
+			needs_update = bool(missing_learned or active_changed)
+
+			if not needs_update:
+				summary["skipped"] += 1
+				continue
+			if dry_run:
+				summary["would_update"] += 1
+				continue
+
+			initialize_generated_moveset(
+				pokemon,
+				active_move_names=desired_active,
+				replace_active=should_replace_active,
+			)
+			summary["updated"] += 1
+		except Exception as err:
+			identifier = getattr(pokemon, "unique_id", getattr(pokemon, "id", "?"))
+			summary["errors"].append(f"{identifier}: {err}")
+			logger.warning("Failed to backfill moveset for %s", identifier, exc_info=True)
+
+	return summary
+
+
 __all__ = [
 	"learn_level_up_moves",
+	"initialize_generated_moveset",
+	"level_up_move_names_for_pokemon",
+	"default_active_move_names_for_pokemon",
+	"backfill_owned_pokemon_movesets",
 	"apply_active_moveset",
 	"apply_current_pp",
 	"normalize_move_key",

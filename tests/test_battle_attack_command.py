@@ -248,6 +248,29 @@ class DummyCaller:
 		self.msgs.append(text)
 
 
+def test_battleattack_menu_switch_parses_with_or_without_space():
+	orig_evennia, orig_battle, orig_bi, orig_engine, orig_shared, orig_ui, orig_ui_move = setup_modules()
+	cmd_mod = load_cmd_module()
+
+	try:
+		attached = cmd_mod.CmdBattleAttack()
+		attached.args = ""
+		attached.switches = ["menu"]
+		attached.parse()
+
+		spaced = cmd_mod.CmdBattleAttack()
+		spaced.args = "/menu"
+		spaced.switches = []
+		spaced.parse()
+
+		assert attached.switch_menu is True
+		assert spaced.switch_menu is True
+		assert attached.move_name == spaced.move_name == ""
+		assert attached.target_token == spaced.target_token == ""
+	finally:
+		restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_shared, orig_ui, orig_ui_move)
+
+
 def test_battleattack_lists_moves_and_targets():
 	orig_evennia, orig_battle, orig_bi, orig_engine, orig_shared, orig_ui, orig_ui_move = setup_modules()
 	cmd_mod = load_cmd_module()

@@ -129,6 +129,9 @@ def finalize_wild_capture(
 		source = encounter or target_poke
 		held_item = getattr(source, "item", None) or getattr(source, "held_item", None)
 		held_name = getattr(held_item, "name", held_item)
+		move_names = list(getattr(source, "move_names", None) or [])
+		if not move_names:
+			move_names = [getattr(move, "name", move) for move in getattr(source, "moves", []) or []]
 		dbpoke = create_owned_pokemon(
 			getattr(source, "species", None) or getattr(source, "name", ""),
 			trainer,
@@ -139,6 +142,7 @@ def finalize_wild_capture(
 			ivs=list(getattr(source, "ivs", []) or []),
 			evs=list(getattr(source, "evs", []) or []),
 			held_item=str(held_name or ""),
+			active_move_names=move_names,
 		)
 
 		dbpoke.trainer = trainer

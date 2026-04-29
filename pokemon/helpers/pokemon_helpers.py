@@ -8,7 +8,7 @@ them.  Support for caching can be reintroduced later if needed.
 """
 
 from pokemon.data.generation import generate_pokemon
-from pokemon.services.move_management import learn_level_up_moves
+from pokemon.services.move_management import initialize_generated_moveset, learn_level_up_moves
 from pokemon.utils.boosts import STAT_KEY_MAP
 
 
@@ -141,6 +141,7 @@ def create_owned_pokemon(
 	nature: str = "",
 	ivs: list[int] | None = None,
 	evs: list[int] | None = None,
+	active_move_names: list[str] | None = None,
 	**extra_fields,
 ):
 	"""Create and initialize an :class:`OwnedPokemon` instance.
@@ -185,9 +186,16 @@ def create_owned_pokemon(
 	)
 
 	pokemon.set_level(level)
-	pokemon.heal()
 	try:
-		learn_level_up_moves(pokemon)
+		initialize_generated_moveset(
+			pokemon,
+			active_move_names=active_move_names,
+			replace_active=True,
+		)
 	except Exception:  # pragma: no cover - helper optional in tests
-		pass
+		try:
+			learn_level_up_moves(pokemon)
+		except Exception:
+			pass
+	pokemon.heal()
 	return pokemon

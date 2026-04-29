@@ -111,6 +111,7 @@ def node_level(caller, raw_input=None, **kwargs):
 				instance.ivs.speed,
 			],
 			evs=[0, 0, 0, 0, 0, 0],
+			active_move_names=list(getattr(instance, "moves", []) or []),
 		)
 		target.storage.add_active_pokemon(pokemon)
 		caller.msg(f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}.")

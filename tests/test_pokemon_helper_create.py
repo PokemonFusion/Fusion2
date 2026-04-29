@@ -38,14 +38,15 @@ def test_create_owned_pokemon_initializes_model(monkeypatch):
 	fake_models_pkg.__path__ = []
 	monkeypatch.setitem(sys.modules, "pokemon.models", fake_models_pkg)
 
-	# patch move management service to confirm it is invoked
+	# patch move management service to confirm generated moves are initialized
 	called = []
 	service_mod = types.ModuleType("pokemon.services.move_management")
 
-	def fake_learn(poke, *a, **k):
-		called.append(poke)
+	def fake_initialize(poke, *a, **k):
+		called.append((poke, k))
 
-	service_mod.learn_level_up_moves = fake_learn
+	service_mod.initialize_generated_moveset = fake_initialize
+	service_mod.learn_level_up_moves = lambda *a, **k: None
 	services_pkg = types.ModuleType("pokemon.services")
 	services_pkg.move_management = service_mod
 	monkeypatch.setitem(sys.modules, "pokemon.services.move_management", service_mod)
@@ -63,11 +64,18 @@ def test_create_owned_pokemon_initializes_model(monkeypatch):
 	monkeypatch.delitem(sys.modules, "pokemon.helpers.pokemon_helpers", raising=False)
 	from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 
-	mon = create_owned_pokemon("Pikachu", trainer="Ash", level=5, gender="M")
+	mon = create_owned_pokemon(
+		"Pikachu",
+		trainer="Ash",
+		level=5,
+		gender="M",
+		active_move_names=["thundershock"],
+	)
 	assert OwnedPokemon.objects.kwargs["trainer"] == "Ash"
 	assert mon.level == 5
 	assert mon.healed
-	assert called and called[0] is mon
+	assert called and called[0][0] is mon
+	assert called[0][1]["active_move_names"] == ["thundershock"]
 
 
 def test_create_owned_pokemon_strips_legacy_temp_flags(monkeypatch):
@@ -101,6 +109,7 @@ def test_create_owned_pokemon_strips_legacy_temp_flags(monkeypatch):
 	monkeypatch.setitem(sys.modules, "pokemon.models", fake_models_pkg)
 
 	service_mod = types.ModuleType("pokemon.services.move_management")
+	service_mod.initialize_generated_moveset = lambda *a, **k: None
 	service_mod.learn_level_up_moves = lambda *a, **k: None
 	services_pkg = types.ModuleType("pokemon.services")
 	services_pkg.move_management = service_mod

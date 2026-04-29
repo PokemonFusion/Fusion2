@@ -85,10 +85,6 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
 
     move_names = getattr(model, "moves", None) or []
     slots = getattr(model, "activemoveslot_set", None)
-    if slots is None:
-        active_ms = getattr(model, "active_moveset", None)
-        if active_ms is not None:
-            slots = getattr(active_ms, "slots", None)
     if not move_names and slots is not None:
         try:
             iterable = slots.all().order_by("slot")
@@ -98,6 +94,19 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
             except AttributeError:
                 iterable = slots
         move_names = [getattr(s.move, "name", "") for s in iterable]
+    if not move_names:
+        active_ms = getattr(model, "active_moveset", None)
+        if active_ms is not None:
+            slots = getattr(active_ms, "slots", None)
+            if slots is not None:
+                try:
+                    iterable = slots.all().order_by("slot")
+                except AttributeError:
+                    try:
+                        iterable = slots.order_by("slot")
+                    except AttributeError:
+                        iterable = slots
+                move_names = [getattr(s.move, "name", "") for s in iterable]
     if not move_names:
         if hasattr(model, "learned_moves"):
             try:
@@ -188,6 +197,7 @@ def grant_generated_pokemon(
         ],
         evs=[0, 0, 0, 0, 0, 0],
         held_item=item or "",
+        active_move_names=list(getattr(instance, "moves", []) or []),
     )
 
     if item and hasattr(pokemon, "held_item"):

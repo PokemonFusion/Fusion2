@@ -54,6 +54,7 @@ def test_helper_never_creates_temp_owned_rows(monkeypatch):
 	monkeypatch.setitem(sys.modules, "pokemon.models", fake_models_pkg)
 
 	service_mod = types.ModuleType("pokemon.services.move_management")
+	service_mod.initialize_generated_moveset = lambda *a, **k: None
 	service_mod.learn_level_up_moves = lambda *a, **k: None
 	services_pkg = types.ModuleType("pokemon.services")
 	services_pkg.move_management = service_mod
