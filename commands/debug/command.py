@@ -6,7 +6,7 @@ def heal_party(char):
 	storage = getattr(char, "storage", None)
 	if not storage:
 		return
-	party = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
+	party = storage.get_party()
 	for mon in party:
 		if hasattr(mon, "heal"):
 			mon.heal()

@@ -169,6 +169,8 @@ def create_owned_pokemon(
 
 	ivs = ivs if ivs is not None else [0, 0, 0, 0, 0, 0]
 	evs = evs if evs is not None else [0, 0, 0, 0, 0, 0]
+	for legacy_flag in ("ai_trainer", "is_wild", "is_battle_instance", "is_template"):
+		extra_fields.pop(legacy_flag, None)
 
 	pokemon = OwnedPokemon.objects.create(
 		trainer=trainer,

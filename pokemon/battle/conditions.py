@@ -193,18 +193,20 @@ class ConditionHelpers:
 					side,
 					source,
 				)
-		cb = _resolve_callback(cb_name, moves_funcs)
-		if not callable(cb) and isinstance(cb_name, str):
-			# Fallback: explicitly resolve from the moves module in sys.modules.
-			mod = sys.modules.get("pokemon.dex.functions.moves_funcs")
-			if mod:
-				try:
-					cls_name, func_name = cb_name.split(".", 1)
-					cls = getattr(mod, cls_name, None)
-					if cls:
-						cb = getattr(cls(), func_name, None)
-				except Exception:
-					cb = None
+		cb = None
+		if not handler:
+			cb = _resolve_callback(cb_name, moves_funcs)
+			if not callable(cb) and isinstance(cb_name, str):
+				# Fallback: explicitly resolve from the moves module in sys.modules.
+				mod = sys.modules.get("pokemon.dex.functions.moves_funcs")
+				if mod:
+					try:
+						cls_name, func_name = cb_name.split(".", 1)
+						cls = getattr(mod, cls_name, None)
+						if cls:
+							cb = getattr(cls(), func_name, None)
+					except Exception:
+						cb = None
 
 		if callable(cb):
 			try:
@@ -214,7 +216,7 @@ class ConditionHelpers:
 					cb(side)
 				except Exception:
 					cb()
-		elif isinstance(cb_name, str) and cb_name.endswith("onSideStart"):
+		elif not handler and isinstance(cb_name, str) and cb_name.endswith("onSideStart"):
 			# As a last resort, mark the side as started so tests using
 			# lightweight stubs can observe that the callback would have run.
 			side.started = getattr(side, "started", 0) + 1

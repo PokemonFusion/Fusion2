@@ -7,7 +7,18 @@ def node_start(caller, raw_input=None, **kwargs):
 	if not target:
 		caller.msg("No target specified.")
 		return None, None
-	if target.storage.active_pokemon.count() >= 6:
+	storage = target.storage
+	if hasattr(storage, "active_pokemon_count"):
+		active_count = storage.active_pokemon_count()
+	else:
+		active = getattr(storage, "active_pokemon", None)
+		if hasattr(active, "count"):
+			active_count = active.count()
+		elif hasattr(active, "all"):
+			active_count = len(list(active.all()))
+		else:
+			active_count = len(list(active or []))
+	if active_count >= 6:
 		caller.msg(f"{target.key}'s party is full.")
 		return None, None
 	menu = getattr(caller.ndb, "_evmenu", None)

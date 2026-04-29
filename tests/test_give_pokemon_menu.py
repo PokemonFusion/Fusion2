@@ -12,6 +12,7 @@ orig_generation = sys.modules.get("pokemon.data.generation")
 orig_helpers = sys.modules.get("pokemon.helpers.pokemon_helpers")
 fake_pokedex = types.ModuleType("pokemon.dex")
 fake_pokedex.POKEDEX = {"Pikachu": {}}
+fake_pokedex.MOVEDEX = {}
 sys.modules["pokemon.dex"] = fake_pokedex
 
 fake_generation = types.ModuleType("pokemon.data.generation")
@@ -102,6 +103,8 @@ class DummyCaller:
 
 
 def test_target_preserved_across_nodes():
+	sys.modules["pokemon.data.generation"] = fake_generation
+	sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers
 	caller = DummyCaller()
 	target = DummyTarget()
 	text, opts = menu.node_start(caller, target=target)

@@ -25,6 +25,21 @@ try:  # pragma: no cover - optional in lightweight test harnesses
 except Exception:  # pragma: no cover - fallback to empty mapping
     _MOVEDEX = {}
 
+
+def _current_movedex():
+    """Return the loaded move dex, retrying if import-time stubs were empty."""
+
+    global _MOVEDEX
+    if not _MOVEDEX:
+        try:
+            from pokemon.dex import MOVEDEX as movedex
+
+            if movedex:
+                _MOVEDEX = movedex
+        except Exception:
+            pass
+    return _MOVEDEX
+
 if TYPE_CHECKING:  # pragma: no cover
     from ..dex import Move, Pokemon
 else:  # pragma: no cover - runtime placeholders
@@ -163,11 +178,16 @@ def _notify_admins(message: str) -> None:
 
     try:
         session_module = safe_import("evennia.server.sessionhandler")
-    except ModuleNotFoundError:  # pragma: no cover - Evennia not installed
+    except Exception:  # pragma: no cover - Evennia may be absent or unconfigured
+        logger.debug("Unable to import Evennia session handler for admin notification", exc_info=True)
         return
-    handler = getattr(session_module, "SESSIONS", None) or getattr(
-        session_module, "SESSION_HANDLER", None
-    )
+    try:
+        handler = getattr(session_module, "SESSIONS", None) or getattr(
+            session_module, "SESSION_HANDLER", None
+        )
+    except Exception:  # pragma: no cover - defensive for lazy settings/proxies
+        logger.debug("Unable to inspect Evennia session handler for admin notification", exc_info=True)
+        return
     if handler is None:
         return
 
@@ -264,7 +284,8 @@ def _get_movedex_entry(move_name: Optional[str], move_key: Optional[str]):
     before falling back to a case-insensitive scan of the mapping.
     """
 
-    if not _MOVEDEX:
+    movedex = _current_movedex()
+    if not movedex:
         return None
 
     raw_name = str(move_name or "")
@@ -286,7 +307,7 @@ def _get_movedex_entry(move_name: Optional[str], move_key: Optional[str]):
             capitalized,
         )
     ):
-        entry = _MOVEDEX.get(candidate)
+        entry = movedex.get(candidate)
         if entry is not None:
             return entry
 
@@ -294,7 +315,7 @@ def _get_movedex_entry(move_name: Optional[str], move_key: Optional[str]):
         return None
 
     lower_name = raw_name.lower()
-    for key, entry in _MOVEDEX.items():
+    for key, entry in movedex.items():
         key_str = str(key)
         if key_str.lower() == lower_name or _normalize_key(key_str) == normalized:
             return entry
@@ -729,7 +750,7 @@ def damage_calc(
         if power in (None, 0):
             if not move_key:
                 _report_dict_issue("Move key unavailable for MOVEDEX lookup", move_name, move_key)
-            elif not _MOVEDEX:
+            elif not _current_movedex():
                 _report_dict_issue("MOVEDEX unavailable for power lookup", move_name, move_key)
             else:
                 dex_entry = _get_movedex_entry(move_name, move_key)
@@ -1085,6 +1106,22 @@ def apply_damage(
     # Move-local ``onSourceModifyDamage`` hooks and scoped damage events
     # ------------------------------------------------------------------
     callbacks = []
+    ability = getattr(target, "ability", None)
+    cb = _resolve_holder_callback(ability, "onSourceModifyDamage", abilities_funcs)
+    if callable(cb):
+        prio = getattr(getattr(ability, "raw", {}), "get", lambda *_: 0)(
+            "onSourceModifyDamagePriority", 0
+        )
+        callbacks.append((prio, cb))
+
+    item = getattr(target, "item", None) or getattr(target, "held_item", None)
+    cb = _resolve_holder_callback(item, "onSourceModifyDamage", items_funcs)
+    if callable(cb):
+        prio = getattr(getattr(item, "raw", {}), "get", lambda *_: 0)(
+            "onSourceModifyDamagePriority", 0
+        )
+        callbacks.append((prio, cb))
+
     if move.raw:
         cb_name = move.raw.get("onSourceModifyDamage")
         cb = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
@@ -1196,8 +1233,24 @@ def apply_damage(
         if dmg > 0:
             try:
                 target.tempvals["took_damage"] = True
+                target.tempvals["last_damaged_by"] = {
+                    "source": attacker,
+                    "move": move,
+                    "damage": int(dmg),
+                }
             except Exception:  # pragma: no cover - simple data containers
                 pass
+            if battle is not None and hasattr(battle, "dispatcher"):
+                try:
+                    battle.dispatcher.dispatch("update", pokemon=target, battle=battle)
+                except Exception:
+                    pass
+            item = getattr(battle, "_holder_item", lambda pokemon: getattr(pokemon, "item", None))(target)
+            if item is not None and hasattr(item, "call"):
+                try:
+                    item.call("onUpdate", pokemon=target, battle=battle)
+                except Exception:
+                    pass
 
         # Trigger hit-resolution callbacks. ``DamagingHit`` now flows through
         # the battle event core so source-side effects such as Poison Touch can

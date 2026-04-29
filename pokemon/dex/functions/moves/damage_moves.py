@@ -9,6 +9,13 @@ def _item_name(item):
 	return getattr(item, "name", str(item))
 
 
+def _effect_id(effect):
+	if effect is None:
+		return ""
+	value = getattr(effect, "id", None) or getattr(effect, "name", None) or effect
+	return str(value).replace(" ", "").lower()
+
+
 def _is_berry(item):
 	return "berry" in _item_name(item).lower()
 
@@ -611,8 +618,9 @@ class Clangoroussoul:
 	def onHit(self, user, target, battle):
 		"""Lose 1/3 of the user's maximum HP.
 
-		Stat boosts are handled in :py:meth:`onTryHit`; this method only
-		applies the HP deduction after those boosts have been applied.
+		Stat boosts are handled by the move's raw ``boosts`` data; this
+		method only applies the HP deduction after those boosts have been
+		applied.
 		"""
 		max_hp = getattr(user, "max_hp", 0)
 		if getattr(user, "hp", 0) <= max_hp // 3:
@@ -630,14 +638,7 @@ class Clangoroussoul:
 		return True
 
 	def onTryHit(self, user, *args, **kwargs):
-		"""Apply the stat boosts before HP reduction.
-
-		This ensures the move mirrors the in-game behaviour where the
-		user is boosted prior to losing HP.  The HP loss itself is handled
-		in :py:meth:`onHit`.
-		"""
-		boosts = {stat: 1 for stat in ["atk", "def", "spa", "spd", "spe"]}
-		apply_boost(user, boosts)
+		"""Allow the hit once :py:meth:`onTry` has validated available HP."""
 		return True
 
 
@@ -813,6 +814,9 @@ class Courtchange:
 			b = getattr(side2, attr, None)
 			if a is not None and b is not None:
 				side1.__dict__[attr], side2.__dict__[attr] = b, a
+		for side in (side1, side2):
+			if hasattr(side, "sync_hazard_conditions"):
+				side.sync_hazard_conditions()
 		return True
 
 	def onHitField(self, user, battle):
@@ -929,6 +933,16 @@ class Defog:
 	def onHit(self, user, target, battle):
 		"""Lower the target's evasion by one stage."""
 		apply_boost(target, {"evasion": -1})
+		for side in getattr(battle, "sides", []) or []:
+			if not side:
+				continue
+			if hasattr(side, "clear_hazard"):
+				for hazard in ("spikes", "stealthrock", "toxicspikes", "stickyweb"):
+					side.clear_hazard(hazard)
+			else:
+				for hazard in ("spikes", "stealthrock", "toxicspikes", "stickyweb"):
+					getattr(side, "hazards", {}).pop(hazard, None)
+					getattr(side, "conditions", {}).pop(hazard, None)
 		return True
 
 
@@ -1959,8 +1973,7 @@ class Gastroacid:
 
 	def onTryHit(self, target, source, move):
 		"""Fail if the target's ability cannot be suppressed."""
-		item = getattr(target, "item", "").lower()
-		if item == "abilityshield":
+		if _effect_id(getattr(target, "item", None)) == "abilityshield":
 			return None
 		return True
 
@@ -1972,7 +1985,7 @@ class Gearup:
 		if not side:
 			return False
 		for mon in getattr(side, "active", []):
-			ability = getattr(mon, "ability", "").lower()
+			ability = _effect_id(getattr(mon, "ability", None))
 			if ability in {"plus", "minus"}:
 				apply_boost(mon, {"atk": 1, "spa": 1})
 		return True
@@ -2009,7 +2022,7 @@ class Geomancy:
 			return True
 
 		# First activation: apply the boosts immediately and mark the charge
-		from pokemon.battle.utils import apply_boost
+		from pokemon.utils.boosts import apply_boost
 
 		apply_boost(user, {"spa": 2, "spd": 2, "spe": 2})
 		vol["geomancy"] = True
@@ -2564,7 +2577,7 @@ class Gravapple:
 class Gravity:
 	def durationCallback(self, *args, **kwargs):
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		if getattr(source, "ability", "").lower() == "persistent":
+		if _effect_id(getattr(source, "ability", None)) == "persistent":
 			return 7
 		return 5
 
@@ -2745,7 +2758,7 @@ class Healblock:
 		effect = args[2] if len(args) > 2 else kwargs.get("effect")
 		if getattr(effect, "name", "") == "Psychic Noise":
 			return 2
-		if getattr(source, "ability", "").lower() == "persistent":
+		if _effect_id(getattr(source, "ability", None)) == "persistent":
 			return 7
 		return 5
 
@@ -3523,7 +3536,7 @@ class Magicpowder:
 class Magicroom:
 	def durationCallback(self, *args, **kwargs):
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		if getattr(source, "ability", "").lower() == "persistent":
+		if _effect_id(getattr(source, "ability", None)) == "persistent":
 			return 7
 		return 5
 
@@ -3554,7 +3567,7 @@ class Magneticflux:
 		if not side:
 			return False
 		for mon in getattr(side, "active", []):
-			ability = getattr(mon, "ability", "").lower()
+			ability = _effect_id(getattr(mon, "ability", None))
 			if ability in {"plus", "minus"}:
 				apply_boost(mon, {"def": 1, "spd": 1})
 		return True
@@ -4888,10 +4901,13 @@ class Rapidspin:
 		user = args[0] if args else kwargs.get("user")
 		if user:
 			side = getattr(user, "side", None)
-			if side and hasattr(side, "hazards"):
+			if side and hasattr(side, "clear_hazard"):
+				for h in ("spikes", "stealthrock", "toxicspikes", "stickyweb"):
+					side.clear_hazard(h)
+			elif side and hasattr(side, "hazards"):
 				for h in ("spikes", "stealthrock", "toxicspikes", "stickyweb"):
 					side.hazards.pop(h, None)
-			apply_boost(user, {"spe": 1})
+					getattr(side, "conditions", {}).pop(h, None)
 		return True
 
 	def onAfterSubDamage(self, *args, **kwargs):
@@ -5507,11 +5523,10 @@ class Simplebeam:
 
 	def onTryHit(self, target, source, move):
 		"""Fail if the target already has Simple or is protected."""
-		ability = getattr(target, "ability", "").lower()
+		ability = _effect_id(getattr(target, "ability", None))
 		if ability == "simple":
 			return False
-		item = getattr(target, "item", "").lower()
-		if item == "abilityshield":
+		if _effect_id(getattr(target, "item", None)) == "abilityshield":
 			return False
 		return True
 
@@ -5545,9 +5560,9 @@ class Skillswap:
 	def onTryHit(self, target, source, move):
 		"""Fail if either ability cannot be swapped."""
 		banned = {"illusion", "multitype", "comatose"}
-		if getattr(source, "ability", "").lower() in banned:
+		if _effect_id(getattr(source, "ability", None)) in banned:
 			return False
-		if getattr(target, "ability", "").lower() in banned:
+		if _effect_id(getattr(target, "ability", None)) in banned:
 			return False
 		return True
 
@@ -5618,10 +5633,20 @@ class Skydrop:
 
 	def onModifyMove(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
-		target = args[2] if len(args) > 2 else kwargs.get("target")
-		if target and hasattr(target, "volatiles") and move:
-			target.volatiles["skydrop"] = True
+		source = args[1] if len(args) > 1 else kwargs.get("source") or kwargs.get("user")
+		if not move:
+			return
+		if source and getattr(source, "volatiles", {}).get("skydrop"):
 			move.is_sky_drop = True
+			return
+		move.accuracy = True
+		flags = getattr(move, "flags", None)
+		if isinstance(flags, dict):
+			flags.pop("contact", None)
+		if isinstance(getattr(move, "raw", None), dict):
+			raw_flags = move.raw.get("flags")
+			if isinstance(raw_flags, dict):
+				raw_flags.pop("contact", None)
 
 	def onMoveFail(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
@@ -5644,8 +5669,6 @@ class Skydrop:
 			return False
 		if battle and getattr(getattr(battle, "field", None), "pseudo_weather", {}).get("Gravity"):
 			return False
-		if user and getattr(user, "volatiles", {}).get("skydrop"):
-			return False
 		return True
 
 	def onTryHit(self, target, source, move):
@@ -5666,8 +5689,9 @@ class Sleeptalk:
 		if not moves:
 			return False
 		move = choice(moves)
-		if hasattr(move, "onHit"):
-			move.onHit(user, target, battle)
+		on_hit = getattr(move, "onHit", None)
+		if callable(on_hit):
+			on_hit(user, target, battle)
 		return True
 
 	def onTry(self, *args, **kwargs):
@@ -5962,6 +5986,7 @@ class Stealthrock:
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
 		if item and str(item).lower() == "heavydutyboots":
 			return True
+		from pokemon.battle.damage import type_effectiveness
 		eff = type_effectiveness(pokemon, type("Move", (), {"type": "Rock"}))
 		dmg = int(getattr(pokemon, "max_hp", 0) * eff / 8)
 		pokemon.hp = max(0, getattr(pokemon, "hp", 0) - dmg)
@@ -6169,8 +6194,13 @@ class Substitute:
 
 	def onTryPrimaryHit(self, *args, **kwargs):
 		target = args[0] if args else None
+		move = args[2] if len(args) > 2 else kwargs.get("move")
 		if target and getattr(target, "volatiles", {}).get("substitute"):
-			return False
+			category = getattr(move, "category", None)
+			if category is None and move is not None:
+				category = getattr(move, "raw", {}).get("category")
+			if str(category or "").lower() == "status":
+				return False
 		return True
 
 
@@ -6704,11 +6734,15 @@ class Toxicspikes:
 		types = [t.lower() for t in getattr(pokemon, "types", [])]
 		if "poison" in types:
 			if side and layers:
-				side.hazards["toxicspikes"] = 0
+				if hasattr(side, "clear_hazard"):
+					side.clear_hazard("toxicspikes")
+				else:
+					side.hazards["toxicspikes"] = 0
+					getattr(side, "conditions", {}).pop("toxicspikes", None)
 			return True
 		status = "tox" if layers > 1 else "psn"
 		if hasattr(pokemon, "setStatus"):
-			pokemon.setStatus(status)
+			pokemon.setStatus(status, source=None)
 		return True
 
 	def onSideRestart(self, *args, **kwargs):
@@ -6719,21 +6753,32 @@ class Toxicspikes:
 		side = args[0] if args else kwargs.get("side")
 		if side and hasattr(side, "hazards"):
 			layers = side.hazards.get("toxicspikes", 0)
-			side.hazards["toxicspikes"] = min(layers + 1, 2)
+			new_layers = min(layers + 1, 2)
+			if hasattr(side, "set_hazard"):
+				side.set_hazard("toxicspikes", new_layers)
+			else:
+				side.hazards["toxicspikes"] = new_layers
 		return True
 
 
 class Transform:
 	def onHit(self, user, target, battle):
 		"""Copy the target's appearance and stats, storing originals."""
+		def _copy_stat_container(value):
+			if isinstance(value, dict):
+				return dict(value)
+			if hasattr(value, "__dict__"):
+				return value.__class__(**value.__dict__)
+			return value
+
 		backup = user.tempvals.get("transform_backup")
 		if backup is None:
 			backup = {}
 			for attr in ("species", "stats", "base_stats", "types", "moves", "ability"):
 				if hasattr(user, attr):
 					val = getattr(user, attr)
-					if attr in {"stats", "base_stats"} and hasattr(val, "__dict__"):
-						backup[attr] = val.__class__(**val.__dict__)
+					if attr in {"stats", "base_stats"}:
+						backup[attr] = _copy_stat_container(val)
 					elif attr == "moves":
 						backup[attr] = [m for m in val]
 					else:
@@ -6744,9 +6789,9 @@ class Transform:
 		if hasattr(target, "species"):
 			user.species = target.species
 		if hasattr(target, "stats"):
-			user.stats = target.stats.__class__(**target.stats.__dict__)
+			user.stats = _copy_stat_container(target.stats)
 		if hasattr(target, "base_stats"):
-			user.base_stats = target.base_stats.__class__(**target.base_stats.__dict__)
+			user.base_stats = _copy_stat_container(target.base_stats)
 		if hasattr(target, "types"):
 			user.types = list(target.types)
 		if hasattr(target, "moves"):
@@ -6798,7 +6843,7 @@ class Trickortreat:
 class Trickroom:
 	def durationCallback(self, *args, **kwargs):
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		if getattr(source, "ability", "").lower() == "persistent":
+		if _effect_id(getattr(source, "ability", None)) == "persistent":
 			return 7
 		return 5
 
@@ -7127,7 +7172,7 @@ class Wish:
 class Wonderroom:
 	def durationCallback(self, *args, **kwargs):
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		if getattr(source, "ability", "").lower() == "persistent":
+		if _effect_id(getattr(source, "ability", None)) == "persistent":
 			return 7
 		return 5
 
@@ -7164,16 +7209,15 @@ class Worryseed:
 
 	def onTryHit(self, target, source, move):
 		"""Fail if the target already has Insomnia or is protected."""
-		if getattr(target, "ability", "").lower() == "insomnia":
+		if _effect_id(getattr(target, "ability", None)) == "insomnia":
 			return False
-		item = getattr(target, "item", "").lower()
-		if item == "abilityshield":
+		if _effect_id(getattr(target, "item", None)) == "abilityshield":
 			return False
 		return True
 
 	def onTryImmunity(self, *args, **kwargs):
 		target = args[0] if args else kwargs.get("target")
-		return not (getattr(target, "ability", "").lower() == "insomnia")
+		return not (_effect_id(getattr(target, "ability", None)) == "insomnia")
 
 
 class Wringout:

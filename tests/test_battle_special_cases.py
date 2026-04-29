@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT)
 
 # Setup minimal battle package
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 utils_stub = types.ModuleType("pokemon.battle.utils")
 utils_stub.get_modified_stat = lambda p, s: getattr(p.base_stats, s, 0)
 utils_stub.apply_boost = lambda *a, **k: None
@@ -27,7 +27,7 @@ Stats = ent_mod.Stats
 
 # Stub dex package
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {}
 pokemon_dex.Move = ent_mod.Move
@@ -36,7 +36,7 @@ sys.modules["pokemon.dex"] = pokemon_dex
 
 # Data stub
 data_stub = types.ModuleType("pokemon.data")
-data_stub.__path__ = []
+data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 data_stub.TYPE_CHART = {}
 sys.modules["pokemon.data"] = data_stub
 

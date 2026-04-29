@@ -112,7 +112,10 @@ def test_missing_move_data_logs_and_notifies_admins(monkeypatch, caplog):
 
         messages = [record.message for record in caplog.records]
         assert any("Move raw data missing basePower" in msg for msg in messages)
-        assert any("MOVEDEX unavailable for power lookup" in msg for msg in messages)
+        assert any(
+                "MOVEDEX unavailable for power lookup" in msg or "MOVEDEX missing entry" in msg
+                for msg in messages
+        )
         assert len(notifications) >= 2
 
 

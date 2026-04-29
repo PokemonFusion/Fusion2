@@ -222,6 +222,8 @@ class TurnProcessor:
 			move = action.move
 			base_priority = action.priority
 			priority = base_priority
+			if action.action_type is ActionType.SWITCH and priority == 0:
+				priority = 6
 			if move is not None:
 				cb = getattr(move, "priorityChargeCallback", None)
 				if cb is None:
@@ -408,9 +410,14 @@ class TurnProcessor:
 
 		return priority
 
-	def status_prevents_move(self, pokemon) -> bool:
+	def status_prevents_move(self, pokemon, move=None) -> bool:
 		"""Return True if the Pokemon cannot act due to status."""
 		status = getattr(pokemon, "status", None)
+		move_raw = getattr(move, "raw", {}) or {}
+		sleep_usable = bool(
+			getattr(move, "sleepUsable", False)
+			or (isinstance(move_raw, dict) and move_raw.get("sleepUsable"))
+		)
 		try:
 			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 		except Exception:
@@ -465,7 +472,7 @@ class TurnProcessor:
 		ability = getattr(pokemon, "ability", None)
 		if ability and hasattr(ability, "call"):
 			try:
-				res = ability.call("onBeforeMove", pokemon=pokemon, battle=self)
+				res = ability.call("onBeforeMove", pokemon=pokemon, move=move, battle=self)
 				if res is False:
 					return True
 			except Exception as err:
@@ -474,7 +481,7 @@ class TurnProcessor:
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
 		if item and hasattr(item, "call"):
 			try:
-				res = item.call("onBeforeMove", pokemon=pokemon, battle=self)
+				res = item.call("onBeforeMove", pokemon=pokemon, move=move, battle=self)
 				if res is False:
 					return True
 			except Exception as err:
@@ -482,9 +489,25 @@ class TurnProcessor:
 
 		handler = CONDITION_HANDLERS.get(status)
 		if handler and hasattr(handler, "onBeforeMove"):
-			result = handler.onBeforeMove(pokemon, battle=self)
+			marker = object()
+			previous_sleep_permission = getattr(pokemon, "can_use_while_asleep", marker)
+			if status == "slp" and sleep_usable:
+				pokemon.can_use_while_asleep = lambda: True
+			try:
+				result = handler.onBeforeMove(pokemon, move, battle=self)
+			finally:
+				if status == "slp" and sleep_usable:
+					if previous_sleep_permission is marker:
+						try:
+							delattr(pokemon, "can_use_while_asleep")
+						except AttributeError:
+							pass
+					else:
+						pokemon.can_use_while_asleep = previous_sleep_permission
 			if result is False:
 				return True
+		if status == "slp" and sleep_usable:
+			return False
 
 		volatiles = getattr(pokemon, "volatiles", {})
 		if "flinch" in volatiles:
@@ -494,9 +517,9 @@ class TurnProcessor:
 			handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
 			if handler and hasattr(handler, "onBeforeMove"):
 				try:
-					result = handler.onBeforeMove(pokemon, battle=self)
+					result = handler.onBeforeMove(pokemon, move, battle=self)
 				except Exception:
-					result = handler.onBeforeMove(pokemon)
+					result = handler.onBeforeMove(pokemon, move)
 				if result is False:
 					return True
 
@@ -542,7 +565,7 @@ class TurnProcessor:
 
 	def modify_stat_stage(self, pokemon, stat: str, delta: int) -> None:
 		"""Modify ``pokemon`` stat stage by ``delta``."""
-		from pokemon.battle.utils import apply_boost
+		from pokemon.utils.boosts import apply_boost
 
 		apply_boost(pokemon, {stat: delta})
 
@@ -757,9 +780,15 @@ class TurnProcessor:
 				if self.attempt_flee(action):
 					break
 				continue
+			if action_type is ActionType.SWITCH:
+				new_pokemon = getattr(action, "pokemon", None)
+				if new_pokemon is None:
+					continue
+				self.perform_switch_action(action.actor, new_pokemon)
+				continue
 			if action_type is ActionType.MOVE and action.move:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
-				if self.status_prevents_move(actor_poke):
+				if self.status_prevents_move(actor_poke, getattr(action, "move", None)):
 					continue
 				self.use_move(action)
 				if actor_poke is not None:
@@ -883,41 +912,30 @@ class TurnProcessor:
 
 			caught = getattr(outcome, "caught", bool(outcome))
 			if caught:
+				try:
+					from pokemon.services.capture import finalize_wild_capture
+
+					capture_owner = player if getattr(player, "storage", None) is not None else action.actor
+					battle_context = getattr(capture_owner, "ndb", None)
+					battle_context = getattr(battle_context, "battle_instance", None)
+					placement = finalize_wild_capture(
+						target_poke=target_poke,
+						player=capture_owner,
+						trainer=trainer,
+						battle_context=battle_context,
+						ball_name=action.item,
+					)
+				except Exception as err:
+					self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
+					if hasattr(self, "log_action"):
+						self.log_action("The capture could not be finalized.")
+					return
+
 				if hasattr(self, "log_action"):
 					self.log_action(f"Gotcha! {pokemon_name} was caught!")
 				target.active.remove(target_poke)
 				if target_poke in target.pokemons:
 					target.pokemons.remove(target_poke)
-				if getattr(target_poke, "model_id", None) is not None:
-					try:
-						from pokemon.models.core import OwnedPokemon
-
-						dbpoke = OwnedPokemon.objects.get(unique_id=target_poke.model_id)
-						if hasattr(action.actor, "trainer"):
-							dbpoke.trainer = action.actor.trainer
-						dbpoke.current_hp = target_poke.hp
-						dbpoke.is_wild = False
-						dbpoke.ai_trainer = None
-						if hasattr(dbpoke, "save"):
-							dbpoke.save()
-						if hasattr(action.actor, "storage") and hasattr(action.actor.storage, "stored_pokemon"):
-							try:
-								action.actor.storage.stored_pokemon.add(dbpoke)
-							except Exception as err:
-								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-					except Exception as err:
-						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-				elif hasattr(action.actor, "add_pokemon_to_storage"):
-					try:
-						poke_types = getattr(target_poke, "types", [])
-						type_ = ", ".join(poke_types) if isinstance(poke_types, list) else str(poke_types)
-						action.actor.add_pokemon_to_storage(
-							getattr(target_poke, "name", ""),
-							getattr(target_poke, "level", 1),
-							type_,
-						)
-					except Exception as err:
-						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				species_id = getattr(target_poke, "species", None) or getattr(target_poke, "name", None)
 				if trainer and species_id is not None:
@@ -941,56 +959,16 @@ class TurnProcessor:
 							except Exception as err:
 								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
-				held_item = getattr(target_poke, "item", None) or getattr(target_poke, "held_item", None)
-				held_name = None
-				if held_item:
-					held_name = getattr(held_item, "name", None)
-					if not held_name:
-						held_name = str(held_item)
-					if hasattr(target_poke, "item"):
-						try:
-							target_poke.item = None
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-					if hasattr(target_poke, "held_item"):
-						try:
-							target_poke.held_item = ""
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-				if held_name:
-					recipient = None
-					if trainer and hasattr(trainer, "add_item"):
-						recipient = trainer
-					elif hasattr(action.actor, "add_item"):
-						recipient = action.actor
-					elif player and hasattr(player, "add_item"):
-						recipient = player
-					if recipient:
-						try:
-							recipient.add_item(held_name, 1)
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-
-				storage = getattr(action.actor, "storage", None)
-				party_full = False
-				if storage and hasattr(storage, "get_party"):
-					try:
-						party = storage.get_party()
-						party_count = len(list(party)) if party is not None else 0
-					except Exception:
-						party_count = 6
-					party_full = party_count >= 6
-
 				if player is not None and hasattr(player, "ndb"):
 					pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
-					pending.append({"species": pokemon_name, "to_storage": party_full})
+					pending.append({"species": pokemon_name, "to_storage": placement.placement == "storage"})
 					try:
 						player.ndb.pending_caught_pokemon = pending
 					except Exception as err:
 						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				if hasattr(self, "log_action"):
-					if party_full:
+					if placement.placement == "storage":
 						self.log_action(f"{pokemon_name} was sent to your storage!")
 					else:
 						self.log_action(f"Would you like to give {pokemon_name} a nickname?")

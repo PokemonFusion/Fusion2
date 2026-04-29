@@ -10,7 +10,7 @@ def setup_env():
 	sys.path.insert(0, ROOT)
 	# stub battle package and utils
 	pkg_battle = types.ModuleType("pokemon.battle")
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	utils_stub = types.ModuleType("pokemon.battle.utils")
 	utils_stub.get_modified_stat = lambda p, s: getattr(p.base_stats, s, 0)
 	utils_stub.apply_boost = lambda *a, **k: None
@@ -27,7 +27,7 @@ def setup_env():
 
 	# minimal dex package
 	pokemon_dex = types.ModuleType("pokemon.dex")
-	pokemon_dex.__path__ = []
+	pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 	pokemon_dex.entities = ent_mod
 	pokemon_dex.MOVEDEX = {}
 	pokemon_dex.Move = ent_mod.Move
@@ -36,14 +36,14 @@ def setup_env():
 
 	# root package
 	pkg_root = types.ModuleType("pokemon")
-	pkg_root.__path__ = []
+	pkg_root.__path__ = [os.path.join(ROOT, "pokemon")]
 	pkg_root.dex = pokemon_dex
 	pkg_root.battle = pkg_battle
 	sys.modules["pokemon"] = pkg_root
 
 	# data stub
 	data_stub = types.ModuleType("pokemon.data")
-	data_stub.__path__ = []
+	data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 	data_stub.TYPE_CHART = {}
 	sys.modules["pokemon.data"] = data_stub
 
@@ -120,8 +120,7 @@ def test_ability_and_item_modify_priority():
 	a1 = Action(p1, ActionType.MOVE, p2, user.moves[0], user.moves[0].priority)
 	a2 = Action(p2, ActionType.MOVE, p1, opp.moves[0], opp.moves[0].priority)
 
-	battle = Battle.__new__(Battle)
-	battle.field = bd_mod.Field()
+	battle = Battle(eng_mod.BattleType.WILD, [p1, p2])
 	ordered = battle.order_actions([a1, a2])
 	teardown_env()
 	assert ordered[0] is a1
@@ -154,8 +153,7 @@ def test_quash_forces_last():
 	a1 = Action(p1, ActionType.MOVE, p2, user.moves[0], user.moves[0].priority)
 	a2 = Action(p2, ActionType.MOVE, p1, opp.moves[0], opp.moves[0].priority)
 
-	battle = Battle.__new__(Battle)
-	battle.field = bd_mod.Field()
+	battle = Battle(eng_mod.BattleType.WILD, [p1, p2])
 	ordered = battle.order_actions([a1, a2])
 	teardown_env()
 	assert ordered[-1] is a2
@@ -187,8 +185,7 @@ def test_trick_room_reverses_speed():
 	a1 = Action(p1, ActionType.MOVE, p2, fast.moves[0], 0)
 	a2 = Action(p2, ActionType.MOVE, p1, slow.moves[0], 0)
 
-	battle = Battle.__new__(Battle)
-	battle.field = bd_mod.Field()
+	battle = Battle(eng_mod.BattleType.WILD, [p1, p2])
 	battle.field.add_pseudo_weather("trickroom", {"duration": 5})
 	ordered = battle.order_actions([a1, a2])
 	teardown_env()

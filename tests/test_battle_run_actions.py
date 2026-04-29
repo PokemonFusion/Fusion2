@@ -79,6 +79,24 @@ def test_run_blocked_by_arena_trap():
         assert any("trapped" in msg.lower() for msg in messages)
 
 
+def test_switch_action_uses_selected_pokemon():
+        lead = SimplePokemon("Lead", speed=80)
+        bench = SimplePokemon("Bench", speed=70)
+        opponent_poke = SimplePokemon("Opponent", speed=50)
+        player = BattleParticipant("Player", [lead, bench])
+        opponent = BattleParticipant("Wild", [opponent_poke])
+        player.active = [lead]
+        opponent.active = [opponent_poke]
+        battle = Battle(BattleType.WILD, [player, opponent])
+
+        action = Action(player, ActionType.SWITCH, pokemon=bench, target=bench, priority=6)
+
+        with patch.object(battle, "perform_switch_action") as switch:
+                battle.execute_actions([action])
+
+        switch.assert_called_once_with(player, bench)
+
+
 def test_run_away_overrides_trap():
         runner = SimplePokemon("Runner", speed=20, ability="Run Away")
         trapper = SimplePokemon("Trapper", speed=100, ability="Arena Trap")

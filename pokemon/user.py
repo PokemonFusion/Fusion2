@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
 from evennia import DefaultCharacter
@@ -14,6 +14,7 @@ from pokemon.helpers.party_helpers import (
     has_usable_pokemon as _has_usable_party,
 )
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+from pokemon.models.storage import move_to_box, move_to_party
 from utils.inventory import Inventory, InventoryMixin
 
 from .data.generation import generate_pokemon
@@ -67,12 +68,11 @@ class User(DefaultCharacter, InventoryMixin):
 
     def add_pokemon_to_storage(self, name, level, type_, data=None):
         pokemon = self._create_owned_pokemon(name, level, data)
-        self.storage.stored_pokemon.add(pokemon)
+        box = self.get_box(1)
+        move_to_box(pokemon, self.storage, box)
 
     def show_pokemon_on_user(self):
-        party = (
-            self.storage.get_party() if hasattr(self.storage, "get_party") else list(self.storage.active_pokemon.all())
-        )
+        party = self.storage.get_party()
         return "\n".join(
             f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}" for pokemon in party
         )
@@ -80,7 +80,7 @@ class User(DefaultCharacter, InventoryMixin):
     def show_pokemon_in_storage(self):
         return "\n".join(
             f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}"
-            for pokemon in self.storage.stored_pokemon.all()
+            for pokemon in self.storage.get_stored_pokemon()
         )
 
     def at_object_creation(self):
@@ -144,7 +144,7 @@ class User(DefaultCharacter, InventoryMixin):
     def choose_starter(self, species_name: str) -> str:
         """Give the player their first Pokémon."""
 
-        if self.storage.active_pokemon.exists():
+        if self.storage.has_party_pokemon():
             return "You already have your starter."
 
         species = POKEDEX.get(species_name.lower())
@@ -187,11 +187,9 @@ class User(DefaultCharacter, InventoryMixin):
         if not pokemon:
             return "No such Pokémon."
 
-        if pokemon in self.storage.active_pokemon.all():
-            self.storage.remove_active_pokemon(pokemon)
-        self.storage.stored_pokemon.add(pokemon)
         box = self.get_box(box_index)
-        box.pokemon.add(pokemon)
+        with transaction.atomic():
+            move_to_box(pokemon, self.storage, box)
         display = pokemon.nickname or pokemon.species
         return f"{display} was deposited in {box.name}."
 
@@ -200,17 +198,16 @@ class User(DefaultCharacter, InventoryMixin):
         if not pokemon:
             return "No such Pokémon."
         box = self.get_box(box_index)
-        if pokemon not in box.pokemon.all():
+        if pokemon not in box.get_pokemon():
             return "That Pokémon is not in that box."
-        box.pokemon.remove(pokemon)
-        self.storage.stored_pokemon.remove(pokemon)
-        self.storage.add_active_pokemon(pokemon)
+        with transaction.atomic():
+            move_to_party(pokemon, self.storage)
         display = pokemon.nickname or pokemon.species
         return f"{display} was withdrawn from {box.name}."
 
     def show_box(self, box_index: int) -> str:
         box = self.get_box(box_index)
-        mons = box.pokemon.all()
+        mons = box.get_pokemon()
         if not mons:
             return f"{box.name} is empty."
         return "\n".join(str(p) for p in mons)

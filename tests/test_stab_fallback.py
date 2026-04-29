@@ -50,14 +50,14 @@ if "typeclasses.rooms" not in sys.modules:
 
 # Setup minimal package hierarchy with stubs
 pkg_root = types.ModuleType("pokemon")
-pkg_root.__path__ = []
+pkg_root.__path__ = [os.path.join(ROOT, "pokemon")]
 
 utils_stub = types.ModuleType("pokemon.battle.utils")
 utils_stub.get_modified_stat = lambda p, s: getattr(p.base_stats, s, 0)
 utils_stub.apply_boost = lambda *a, **k: None
 
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.__spec__ = importlib.util.spec_from_loader("pokemon.battle", loader=None, is_package=True)
 pkg_battle.utils = utils_stub
 pkg_root.battle = pkg_battle
@@ -77,7 +77,7 @@ Move = ent_mod.Move
 PokemonData = ent_mod.Pokemon
 
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.Move = Move
 pokemon_dex.Pokemon = PokemonData
@@ -88,7 +88,7 @@ sys.modules["pokemon.dex"] = pokemon_dex
 
 # Minimal TYPE_CHART for effectiveness (not used here)
 data_stub = types.ModuleType("pokemon.data")
-data_stub.__path__ = []
+data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 data_stub.TYPE_CHART = {}
 sys.modules["pokemon.data"] = data_stub
 

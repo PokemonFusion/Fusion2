@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 from types import SimpleNamespace
 
+from pokemon.services.encounters import delete_encounter_by_ref
+from pokemon.services.pokemon_refs import parse_pokemon_ref
 from utils.safe_import import safe_import
 
 from .actions import ActionType
@@ -199,7 +201,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.ndb = type("NDB", (), {})()
         self.ndb.watchers_live = set()
         self.ndb.rng = self.rng
-        self.temp_pokemon_ids: List[int] = []
+        self.temp_pokemon_ids: List[str] = []
 
         log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
         self.persist_debug_record(event="session_initialized")
@@ -689,8 +691,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             FusionRoom = None  # type: ignore[assignment]
         try:
             if FusionRoom and not isinstance(room, FusionRoom):
-                log_info("Room is not a FusionRoom; skipping restore")
-                return None
+                log_info("Room is not a FusionRoom; attempting restore from room-like storage")
         except Exception as err:
             log_err(f"Room type check failed: {err}")
         storage = BattleDataWrapper(room, battle_id)
@@ -805,17 +806,18 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if not move_names:
                     model_id = getattr(poke, "model_id", None)
                     if model_id:
+                        ref_kind, ref_identifier = parse_pokemon_ref(model_id)
                         try:
                             OwnedPokemon = safe_import("pokemon.models.core").OwnedPokemon  # type: ignore[attr-defined]
                         except Exception:
                             OwnedPokemon = None
-                        if OwnedPokemon:
+                        if ref_kind == "owned" and ref_identifier and OwnedPokemon:
                             owned = None
                             try:
-                                owned = OwnedPokemon.objects.filter(unique_id=model_id).first()
+                                owned = OwnedPokemon.objects.filter(unique_id=ref_identifier).first()
                             except Exception:
                                 try:
-                                    owned = OwnedPokemon.objects.get(unique_id=model_id)
+                                    owned = OwnedPokemon.objects.get(unique_id=ref_identifier)
                                 except Exception:
                                     owned = None
                             if owned is not None:
@@ -1244,11 +1246,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         encounters that override health when constructing temporary teams.
         """
         log_info(f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})")
-        party = (
-            trainer.storage.get_party()
-            if hasattr(trainer.storage, "get_party")
-            else list(trainer.storage.active_pokemon.all())
-        )
+        party = trainer.storage.get_party()
         pokemons: List[Pokemon] = []
         for poke in party:
             battle_poke = build_battle_pokemon_from_model(poke, full_heal=full_heal)
@@ -1415,8 +1413,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 model_id = getattr(poke, "model_id", None)
                 if not model_id:
                     continue
+                ref_kind, ref_identifier = parse_pokemon_ref(model_id)
+                if ref_kind != "owned" or not ref_identifier:
+                    continue
 
-                mon = lookup.get(str(model_id))
+                mon = lookup.get(str(ref_identifier))
                 if not mon:
                     continue
 
@@ -1462,18 +1463,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             OwnedPokemon = None
         for pid in getattr(self, "temp_pokemon_ids", []):
             try:
-                if OwnedPokemon:
-                    poke = OwnedPokemon.objects.get(unique_id=pid)
-                    poke.delete_if_wild()
+                delete_encounter_by_ref(pid)
             except Exception as err:
                 log_warn("Battle cleanup encountered an error", exc_info=True)
                 if "PYTEST_CURRENT_TEST" in __import__("os").environ:
                     raise
-        if OwnedPokemon:
-            OwnedPokemon.objects.filter(
-                is_battle_instance=True,
-                battleslot__fainted=True,
-            ).delete()
         self.temp_pokemon_ids.clear()
         if self.room:
             if hasattr(self.room.ndb, "battle_instances"):

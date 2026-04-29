@@ -416,6 +416,9 @@ def _apply_move_damage(
                             battle_move.power,
                             attacker=user,
                             defender=target,
+                            user=user,
+                            pokemon=user,
+                            target=target,
                             move=battle_move,
                         )
                     except Exception:
@@ -489,6 +492,7 @@ def _apply_move_damage(
             pp=None,
             raw=raw,
         )
+        setattr(move, "flags", dict(raw.get("flags", {}) or {}))
     except TypeError:  # pragma: no cover - fallback for simple stubs
         move = Move(battle_move.name)
         setattr(move, "type", battle_move.type)
@@ -497,6 +501,7 @@ def _apply_move_damage(
         setattr(move, "accuracy", battle_move.accuracy)
         setattr(move, "pp", None)
         setattr(move, "raw", raw)
+        setattr(move, "flags", dict(raw.get("flags", {}) or {}))
 
     if battle_move.basePowerCallback:
         try:
@@ -600,8 +605,25 @@ class BattleSide:
     used_items: List[Any] = field(default_factory=list)
     sideConditions: Dict[str, Dict] = field(default_factory=dict)
     slot_conditions: Dict[int, Dict[str, Dict[str, Any]]] = field(default_factory=dict)
+    HAZARD_TO_CONDITION = {
+        "rocks": "stealthrock",
+        "spikes": "spikes",
+        "toxicspikes": "toxicspikes",
+        "stickyweb": "stickyweb",
+        "steelsurge": "gmaxsteelsurge",
+    }
+    CONDITION_TO_HAZARD = {value: key for key, value in HAZARD_TO_CONDITION.items()}
 
     def __post_init__(self) -> None:
+        self.sideConditions = self.conditions
+
+    @property
+    def side_conditions(self) -> Dict[str, Dict]:
+        return self.conditions
+
+    @side_conditions.setter
+    def side_conditions(self, value: Optional[Dict[str, Dict]]) -> None:
+        self.conditions = value or {}
         self.sideConditions = self.conditions
 
     def add_side_condition(self, name: str, state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -614,6 +636,35 @@ class BattleSide:
         removed = self.conditions.pop(name, None) is not None
         self.sideConditions = self.conditions
         return removed
+
+    def set_hazard(self, name: str, value: Any = True, state: Optional[Dict[str, Any]] = None) -> None:
+        store_key = self.CONDITION_TO_HAZARD.get(name, name)
+        condition_key = self.HAZARD_TO_CONDITION.get(store_key, store_key)
+        self.hazards[store_key] = value
+        if value:
+            self.conditions[condition_key] = dict(state or self.conditions.get(condition_key) or {})
+        else:
+            self.conditions.pop(condition_key, None)
+            self.conditions.pop(store_key, None)
+        self.sideConditions = self.conditions
+
+    def clear_hazard(self, name: str) -> bool:
+        store_key = self.CONDITION_TO_HAZARD.get(name, name)
+        condition_key = self.HAZARD_TO_CONDITION.get(store_key, store_key)
+        removed = self.hazards.pop(store_key, None) is not None
+        removed = self.conditions.pop(condition_key, None) is not None or removed
+        removed = self.conditions.pop(store_key, None) is not None or removed
+        self.sideConditions = self.conditions
+        return removed
+
+    def sync_hazard_conditions(self) -> None:
+        for store_key, condition_key in self.HAZARD_TO_CONDITION.items():
+            if self.hazards.get(store_key):
+                self.conditions.setdefault(condition_key, {})
+            else:
+                self.conditions.pop(condition_key, None)
+                self.conditions.pop(store_key, None)
+        self.sideConditions = self.conditions
 
     def add_slot_condition(
         self,
@@ -695,6 +746,9 @@ class BattleMove:
             if isinstance(self.raw, dict):
                 raw_flags = self.raw.get("flags", {}) or {}
             self.flags = dict(raw_flags)
+        if not hasattr(self, "category") or getattr(self, "category", None) is None:
+            raw_category = self.raw.get("category") if isinstance(self.raw, dict) else None
+            self.category = raw_category or ("Status" if not self.power else "Physical")
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect.
@@ -708,6 +762,11 @@ class BattleMove:
         """
 
         DEFAULT_TEXT = _get_default_text()
+        raw_flags = self.raw.get("flags", {}) if self.raw else {}
+        bypasses_substitute = bool(
+            (self.raw.get("bypassSub") if self.raw else None)
+            or raw_flags.get("bypasssub")
+        )
 
         if battle and hasattr(battle, "log_action"):
             default_messages = DEFAULT_TEXT.get("default", {})
@@ -783,7 +842,7 @@ class BattleMove:
         else:
             boosts = self.raw.get("boosts") if self.raw else None
             if boosts:
-                from pokemon.battle.utils import apply_boost
+                from pokemon.utils.boosts import apply_boost
 
                 affected = user if is_self_target(self.raw.get("target")) else target
                 if affected is not None:
@@ -797,7 +856,7 @@ class BattleMove:
                 dmg_list = result.debug.get("damage", [])
                 if isinstance(dmg_list, list):
                     damage = sum(dmg_list)
-            if damage <= 0 and pre_hp is not None:
+            if pre_hp is not None:
                 damage = max(0, pre_hp - getattr(target, "hp", pre_hp))
             if damage > 0:
                 frac = drain[0] / drain[1]
@@ -876,7 +935,7 @@ class BattleMove:
         # here to avoid applying the same boost twice (e.g. Acid Armor).
         boosts = self.raw.get("boosts") if self.raw else None
         if boosts and category != "status":
-            from pokemon.battle.utils import apply_boost
+            from pokemon.utils.boosts import apply_boost
 
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected:
@@ -902,6 +961,12 @@ class BattleMove:
         if status:
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected is not None:
+                if (
+                    affected is not user
+                    and getattr(affected, "volatiles", {}).get("substitute")
+                    and not bypasses_substitute
+                ):
+                    return
                 battle.apply_status_condition(
                     affected,
                     status,
@@ -917,7 +982,7 @@ class BattleMove:
         secondaries.extend(self.raw.get("secondaries", [])) if self.raw else None
         if secondaries:
             from pokemon.battle.damage import percent_check
-            from pokemon.battle.utils import apply_boost
+            from pokemon.utils.boosts import apply_boost
 
             ability_source = _resolve_ability(getattr(user, "ability", None))
             ability_target = _resolve_ability(getattr(target, "ability", None))
@@ -982,6 +1047,8 @@ class BattleMove:
                         dmg_list = result.debug.get("damage", [])
                         if isinstance(dmg_list, list):
                             dmg = sum(dmg_list)
+                    if pre_hp is not None:
+                        dmg = max(0, pre_hp - getattr(target, "hp", pre_hp))
                     if dmg > 0:
                         frac = sec["drain"][0] / sec["drain"][1]
                         heal_amt = max(1, int(dmg * frac))
@@ -1308,11 +1375,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         for part in self.participants:
             side = getattr(part, "side", None)
             if side is not None:
+                setattr(side, "pokemons", getattr(part, "pokemons", []))
                 setattr(side, "active", getattr(part, "active", []))
                 if not hasattr(side, "volatiles"):
                     setattr(side, "volatiles", {})
                 if not hasattr(side, "used_items"):
                     setattr(side, "used_items", [])
+                if not hasattr(side, "side_conditions"):
+                    setattr(side, "side_conditions", getattr(side, "conditions", {}))
             for poke in getattr(part, "active", []) or []:
                 if hasattr(part, "record_participation"):
                     part.record_participation(poke)
@@ -1321,6 +1391,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     poke.ability_state = self.init_effect_state(getattr(poke, "ability", None), target=poke)
                 if (getattr(poke, "item", None) or getattr(poke, "held_item", None)) and not getattr(poke, "item_state", None):
                     poke.item_state = self.init_effect_state(getattr(poke, "item", None) or getattr(poke, "held_item", None), target=poke)
+        for part in self.participants:
+            side = getattr(part, "side", None)
+            if side is None:
+                continue
+            foe = self.opponent_of(part)
+            setattr(side, "foe", getattr(foe, "side", None) if foe else None)
 
     def init_effect_state(
         self,
@@ -1879,16 +1955,23 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         )
         if message:
             self.log_action(message)
+        initial_sends = []
         for participant in self.participants:
+            for poke in getattr(participant, "pokemons", []) or []:
+                setattr(poke, "battle", self)
+                setattr(poke, "side", getattr(participant, "side", None))
+                setattr(poke, "party", list(getattr(participant, "pokemons", []) or []))
             if participant.active:
                 continue
             for poke in participant.pokemons:
                 if getattr(poke, "hp", 1) > 0:
                     participant.active.append(poke)
-                    self.on_enter_battle(poke)
-                    self._log_switch_in(participant, poke)
+                    initial_sends.append((participant, poke))
                     if len(participant.active) >= getattr(participant, "max_active", 1):
                         break
+        for participant, poke in initial_sends:
+            self.on_enter_battle(poke)
+            self._log_switch_in(participant, poke)
 
     def send_out_pokemon(self, pokemon, slot: int = 0) -> None:
         """Place ``pokemon`` into the active slot for its participant."""
@@ -1939,7 +2022,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         participant.active[slot] = new_pokemon
         self.on_enter_battle(new_pokemon, source=current)
         self._log_switch_in(participant, new_pokemon)
-        self.apply_entry_hazards(new_pokemon)
 
     def participant_for(self, pokemon) -> Optional[BattleParticipant]:
         """Return the participant owning ``pokemon`` if any."""
@@ -1994,7 +2076,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Battle event hooks
     # ------------------------------------------------------------------
 
-    def _register_callbacks(self, data: Dict[str, Any], pokemon) -> None:
+    def _register_callbacks(self, data: Dict[str, Any], pokemon, *, registry: Any = None) -> None:
         """Register typed callbacks from ability or item data at startup."""
         event_map = {
             "onPreStart": "pre_start",
@@ -2011,7 +2093,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         owner_name = getattr(pokemon, "name", getattr(pokemon, "species", "pokemon"))
         for key, event in event_map.items():
             registered_key = f"{id(self)}:{id(pokemon)}:{key}"
-            cb = CALLBACK_REGISTRY.register(registered_key, data.get(key))
+            cb = CALLBACK_REGISTRY.register(registered_key, data.get(key), registry=registry)
             if not callable(cb):
                 continue
 
@@ -2035,12 +2117,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def register_handlers(self, pokemon) -> None:
         """Register ability and item callbacks for ``pokemon``."""
         ability = _resolve_ability(getattr(pokemon, "ability", None))
+        try:
+            ability_registry = safe_import("pokemon.dex.functions.abilities_funcs")
+        except Exception:
+            ability_registry = None
         if ability and isinstance(getattr(ability, "raw", None), dict):
-            self._register_callbacks(ability.raw, pokemon)
+            self._register_callbacks(ability.raw, pokemon, registry=ability_registry)
 
         item = self._holder_item(pokemon)
+        try:
+            item_registry = safe_import("pokemon.dex.functions.items_funcs")
+        except Exception:
+            item_registry = None
         if item and isinstance(getattr(item, "raw", None), dict):
-            self._register_callbacks(item.raw, pokemon)
+            self._register_callbacks(item.raw, pokemon, registry=item_registry)
 
     def _apply_item_forme_effects(self, pokemon, *, source=None) -> None:
         """Apply held-item forme changes that take effect on battle entry."""
@@ -2359,9 +2449,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         if (
                             act
                             and act.action_type is ActionType.MOVE
-                            and getattr(getattr(act, "move", None), "key", "")
-                            == "pursuit"
                         ):
+                            move = getattr(act, "move", None)
+                            move_key = getattr(move, "key", None) or _normalize_key(
+                                getattr(move, "name", "")
+                            )
+                            if str(move_key).lower() != "pursuit":
+                                continue
                             target_check = (
                                 act.target.active[0]
                                 if act.target and act.target.active
@@ -2732,19 +2826,33 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Return whether ``move`` is currently disabled for ``pokemon``."""
         if not pokemon or not move:
             return False
+        if getattr(move, "disabled", False):
+            return True
         move_key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
         move_key = str(move_key).lower()
         for holder, relation in self._move_control_holders(pokemon, include_foes=True):
             hook = "onFoeDisableMove" if relation == "foe" else "onDisableMove"
             result = self._invoke_move_control(holder, hook, pokemon, move, move_key)
+            if getattr(move, "disabled", False):
+                return True
+            holder_name = str(getattr(getattr(holder, "__class__", None), "__name__", "")).lower()
             if result is True:
                 return True
             if hasattr(result, "name"):
                 key = getattr(result, "key", None) or _normalize_key(getattr(result, "name", ""))
-                if str(key).lower() != move_key:
+                result_key = str(key).lower()
+                if holder_name == "disable":
+                    if result_key == move_key:
+                        return True
+                elif result_key != move_key:
                     return True
-            elif isinstance(result, str) and result and str(result).lower() != move_key:
-                return True
+            elif isinstance(result, str) and result:
+                result_key = str(result).lower()
+                if holder_name == "disable":
+                    if result_key == move_key:
+                        return True
+                elif result_key != move_key:
+                    return True
         return False
 
     def _modify_move_target(self, user, target, move):
@@ -3518,7 +3626,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if self._is_move_disabled(user, action.move):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} can't use {action.move.name}!")
             return
-        if self.status_prevents_move(user):
+        if self.status_prevents_move(user, action.move):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
             return
         if action.move.beforeMoveCallback:
@@ -3537,7 +3645,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             opponents = self.opponents_of(action.actor)
             target_part = opponents[0] if opponents else None
         target = None
-        if target_part and target_part.active:
+        if is_self_target(action.move.raw.get("target")):
+            target_part = action.actor
+            target = user
+        elif target_part and target_part.active:
             candidate = target_part.active[0]
             if getattr(candidate, "hp", 0) > 0:
                 target = candidate
@@ -3628,6 +3739,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             apply_boost(target, {}, source=user, effect=action.move)
 
         self.deduct_pp(user, action.move)
+        try:
+            user.last_move = action.move
+        except Exception:
+            pass
         if not self._passes_stall_move(user, action.move):
             try:
                 user.tempvals["moved"] = True
@@ -3727,7 +3842,31 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             return
 
         sub = getattr(target, "volatiles", {}).get("substitute")
-        if target is not user and sub and not action.move.raw.get("bypassSub"):
+        move_flags = getattr(action.move, "flags", None) or action.move.raw.get("flags", {})
+        bypasses_substitute = bool(
+            action.move.raw.get("bypassSub") or move_flags.get("bypasssub")
+        )
+        move_category = (
+            getattr(action.move, "category", None)
+            or action.move.raw.get("category")
+            or ""
+        )
+        if (
+            target is not user
+            and sub
+            and not bypasses_substitute
+            and str(move_category).lower() == "status"
+        ):
+            try:
+                user.tempvals["moved"] = True
+            except Exception:
+                pass
+            self._notify_move_aborted(user, target, action.move)
+            self.log_action(
+                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+            )
+            return
+        if target is not user and sub and not bypasses_substitute:
             Move = _get_move_class()
 
             from .damage import apply_damage
@@ -3739,7 +3878,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 name=action.move.name,
                 num=0,
                 type=action.move.type,
-                category="Physical",
+                category=getattr(
+                    action.move,
+                    "category",
+                    raw.get("category", "Physical"),
+                ),
                 power=action.move.power,
                 accuracy=action.move.accuracy,
                 pp=None,
@@ -3767,6 +3910,21 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     target.tempvals["took_damage"] = True
                 except Exception:
                     pass
+                drain = action.move.raw.get("drain")
+                if drain:
+                    frac = drain[0] / drain[1]
+                    heal_amt = max(1, int(dmg * frac))
+                    self.heal(user, heal_amt, source=target, effect=action.move)
+                recoil = action.move.raw.get("recoil")
+                if recoil:
+                    frac = recoil[0] / recoil[1]
+                    user.hp = max(0, user.hp - int(dmg * frac))
+                    self.log_action(
+                        DEFAULT_TEXT["recoil"]["damage"].replace(
+                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                        )
+                    )
+                self._queue_self_switch(user, action.move)
             try:
                 user.tempvals["moved"] = True
             except Exception:

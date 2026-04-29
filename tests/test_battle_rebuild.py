@@ -572,7 +572,7 @@ def test_pokemon_control_restored_after_reload():
 	inst = BattleSession(p1, p2)
 	inst.start_pvp()
 
-	assert inst.state.pokemon_control == {"uid1": "1", "uid2": "2"}
+	assert inst.state.pokemon_control == {"owned:uid1": "1", "owned:uid2": "2"}
 
 	# clear ndb refs simulating reload
 	p1.ndb.battle_instance = None
@@ -588,7 +588,7 @@ def test_pokemon_control_restored_after_reload():
 	finally:
 		bi_mod.search_object = orig_search
 
-	assert restored.state.pokemon_control == {"uid1": "1", "uid2": "2"}
+	assert restored.state.pokemon_control == {"owned:uid1": "1", "owned:uid2": "2"}
 
 
 def test_multiple_battles_saved_in_room():

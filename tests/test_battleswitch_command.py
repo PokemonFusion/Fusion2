@@ -51,6 +51,7 @@ def setup_modules():
 		target: object = None
 		move: object = None
 		priority: int = 0
+		pokemon: object = None
 
 	battle_mod.Action = Action
 	battle_mod.ActionType = ActionType
@@ -166,6 +167,7 @@ def test_battleswitch_prompts_when_no_arg():
 
 	restore_modules(orig_evennia, orig_battle)
 	assert isinstance(player.pending_action, cmd_mod.Action)
+	assert player.pending_action.pokemon is poke2
 	assert player.pending_action.target is poke2
 	assert player.pending_action.priority == 6
 	assert inst.ran is False
@@ -192,6 +194,7 @@ def test_battleswitch_queues_action_and_runs_turn():
 
 	restore_modules(orig_evennia, orig_battle)
 	assert isinstance(player.pending_action, cmd_mod.Action)
+	assert player.pending_action.pokemon is poke2
 	assert player.pending_action.target is poke2
 	assert player.pending_action.priority == 6
 	assert inst.ran is False
@@ -218,4 +221,5 @@ def test_battleswitch_persists_declare_via_queue_switch():
 
 	restore_modules(orig_evennia, orig_battle)
 	assert isinstance(player.pending_action, cmd_mod.Action)
+	assert player.pending_action.pokemon is poke2
 	assert inst.queued == [2]

@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT)
 
 # Minimal pokemon.battle package stub
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 sys.modules["pokemon.battle"] = pkg_battle
 
 # Load entity dataclasses
@@ -23,7 +23,7 @@ Ability = ent_mod.Ability
 
 # Minimal pokemon.dex stub
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {}
 pokemon_dex.Move = ent_mod.Move
@@ -32,7 +32,7 @@ sys.modules["pokemon.dex"] = pokemon_dex
 
 # Minimal pokemon.data stub
 data_stub = types.ModuleType("pokemon.data")
-data_stub.__path__ = []
+data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 data_stub.TYPE_CHART = {}
 sys.modules["pokemon.data"] = data_stub
 

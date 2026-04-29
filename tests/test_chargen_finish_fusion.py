@@ -34,7 +34,9 @@ def test_finish_fusion_stores_level_and_exp():
 
     try:
         sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon"].__path__ = [os.path.join(ROOT, "pokemon")]
         sys.modules["pokemon.data"] = types.ModuleType("pokemon.data")
+        sys.modules["pokemon.data"].__path__ = [os.path.join(ROOT, "pokemon", "data")]
         fake_generation = types.ModuleType("pokemon.data.generation")
         fake_generation.NATURES = {}
         fake_generation.generate_pokemon = lambda *args, **kwargs: None
@@ -47,6 +49,7 @@ def test_finish_fusion_stores_level_and_exp():
         fake_dex.POKEDEX = {}
         sys.modules["pokemon.dex"] = fake_dex
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
         fake_helpers.create_owned_pokemon = lambda *args, **kwargs: None
         sys.modules["pokemon.helpers.pokemon_helpers"] = fake_helpers

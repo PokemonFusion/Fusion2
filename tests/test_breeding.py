@@ -25,7 +25,7 @@ PokemonInstance = gen_mod.PokemonInstance
 
 # Build minimal pokedex
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.POKEDEX = {
 	"ditto": ent_mod.Pokemon(name="Ditto", num=132, egg_groups=["Ditto"], raw={}),

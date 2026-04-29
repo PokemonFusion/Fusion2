@@ -3,6 +3,8 @@ import os
 import sys
 import types
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 
 def load_magnetrise():
 	"""Dynamically load the Magnetrise move with minimal stubs."""
@@ -11,15 +13,15 @@ def load_magnetrise():
 	utils_stub.get_modified_stat = lambda *_: 0
 
 	pkg_battle = types.ModuleType("pokemon.battle")
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	pkg_battle.utils = utils_stub
 
 	pkg_root = types.ModuleType("pokemon")
-	pkg_root.__path__ = []
+	pkg_root.__path__ = [os.path.join(ROOT, "pokemon")]
 	pkg_root.battle = pkg_battle
 
 	data_stub = types.ModuleType("pokemon.data")
-	data_stub.__path__ = []
+	data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 	data_stub.TYPE_CHART = {}
 
 	sys.modules.update(

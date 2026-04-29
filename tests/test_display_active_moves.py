@@ -3,6 +3,8 @@ import os
 import sys
 import types
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 # Stub minimal pokemon.models.stats before importing display utilities
 _real_stats = sys.modules.get("pokemon.models.stats")
 _real_dex = sys.modules.get("pokemon.dex")
@@ -31,6 +33,7 @@ evennia_evtable.EvTable = _EvTable
 evennia_utils = types.ModuleType("evennia.utils")
 evennia_utils.evtable = evennia_evtable
 evennia_utils.ansi = types.SimpleNamespace(parse_ansi=lambda text: text)
+evennia_utils.utils = types.SimpleNamespace(strip_ansi=lambda text: text)
 evennia_mod = types.ModuleType("evennia")
 evennia_mod.utils = evennia_utils
 sys.modules["evennia"] = evennia_mod
@@ -39,7 +42,7 @@ sys.modules["evennia.utils.evtable"] = evennia_evtable
 
 # Stub pokemon.dex with minimal MOVEDEX entries for PP lookup
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.POKEDEX = {}
 pokemon_dex.MOVEDEX = {
 	"tackle": types.SimpleNamespace(pp=35),

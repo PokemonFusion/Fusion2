@@ -63,7 +63,7 @@ def invoke_callback(callback, *args, **kwargs):
 	if kwargs:
 		attempts.append((args, kwargs))
 		try:
-			sig = inspect.signature(callback)
+			sig = inspect.signature(getattr(callback, "func", callback))
 		except (TypeError, ValueError):
 			sig = None
 		if sig is not None:

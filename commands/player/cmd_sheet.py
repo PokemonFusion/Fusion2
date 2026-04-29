@@ -204,10 +204,7 @@ class CmdSheetPokemon(Command):
         caller = self.caller
 
         # Get party; normalize to a fixed-size list (6) with None for empties
-        if hasattr(caller.storage, "get_party"):
-            party = list(caller.storage.get_party()) or []
-        else:
-            party = list(caller.storage.active_pokemon.all())
+        party = list(caller.storage.get_party()) or []
 
         if len(party) < 6:
             party = party + [None] * (6 - len(party))
@@ -222,9 +219,18 @@ class CmdSheetPokemon(Command):
             stats = getattr(caller.db, "stats", None)
             stats = stats.copy() if isinstance(stats, dict) else {}
             try:
-                search = list(caller.storage.active_pokemon.all())
+                search = list(caller.storage.get_party())
             except Exception:
                 search = []
+            if not search:
+                active = getattr(caller.storage, "active_pokemon", None)
+                try:
+                    search = list(active.all())
+                except Exception:
+                    try:
+                        search = list(active or [])
+                    except Exception:
+                        search = []
             fused = None
             if fusion_id:
                 fused = next(

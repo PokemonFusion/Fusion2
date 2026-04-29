@@ -12,7 +12,7 @@ import types
 pkg_battle = sys.modules.get("pokemon.battle")
 if pkg_battle is None:
 	pkg_battle = types.ModuleType("pokemon.battle")
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	sys.modules["pokemon.battle"] = pkg_battle
 
 # Load capture module and attach to package

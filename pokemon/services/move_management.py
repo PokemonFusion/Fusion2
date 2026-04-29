@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 from typing import Iterable
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
@@ -102,7 +103,14 @@ def apply_current_pp(pokemon) -> int:
 			for boost in iterable:
 				move_name = getattr(getattr(boost, "move", None), "name", "")
 				if move_name:
-					bonuses[normalize_move_key(move_name)] = int(getattr(boost, "bonus_pp", 0) or 0)
+					bonus = int(getattr(boost, "bonus_pp", 0) or 0)
+					for key in {
+						normalize_move_key(move_name),
+						_fallback_normalize_key(move_name),
+						str(move_name or "").lower(),
+					}:
+						if key:
+							bonuses[key] = bonus
 
 	slots = getattr(pokemon, "activemoveslot_set", None)
 	if slots is None:
@@ -246,7 +254,7 @@ def apply_active_moveset(pokemon) -> None:
 	try:
 		with transaction.atomic():
 			_apply()
-	except transaction.TransactionManagementError:
+	except (transaction.TransactionManagementError, ImproperlyConfigured):
 		logger.debug("Transaction unavailable; applying active moveset without atomic block.", exc_info=True)
 		_apply()
 

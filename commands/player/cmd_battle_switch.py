@@ -80,6 +80,7 @@ class CmdBattleSwitch(Command):
 					caller.msg(f"{poke.name} has fainted and cannot battle.")
 					return True
 				action = Action(participant, ActionType.SWITCH, priority=6)
+				action.pokemon = poke
 				action.target = poke
 				participant.pending_action = action
 				caller.msg(f"You prepare to switch to {poke.name}.")
@@ -115,6 +116,7 @@ class CmdBattleSwitch(Command):
 			self.caller.msg(f"{pokemon.name} has fainted and cannot battle.")
 			return
 		action = Action(participant, ActionType.SWITCH, priority=6)
+		action.pokemon = pokemon
 		action.target = pokemon
 		participant.pending_action = action
 		self.caller.msg(f"You prepare to switch to {pokemon.name}.")

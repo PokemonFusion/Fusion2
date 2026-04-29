@@ -17,12 +17,21 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Optional
 
+from pokemon.services.pokemon_refs import parse_pokemon_ref
 from utils.safe_import import safe_import
 
 try:
     POKEDEX = safe_import("pokemon.dex").POKEDEX  # type: ignore[attr-defined]
 except (ModuleNotFoundError, AttributeError):  # pragma: no cover - optional in tests
     POKEDEX = {}
+
+
+class SpeciesName(str):
+    """String species value that also supports Showdown-style ``.name`` access."""
+
+    @property
+    def name(self) -> str:
+        return str(self)
 
 
 @dataclass
@@ -75,6 +84,38 @@ class Pokemon:
     inferred from the Pokédex using the Pokémon's species name.
     """
 
+    @property
+    def species(self) -> SpeciesName:
+        return self._species
+
+    @species.setter
+    def species(self, value) -> None:
+        self._species = SpeciesName(value or "")
+
+    @property
+    def base_species(self) -> SpeciesName:
+        return self._base_species
+
+    @base_species.setter
+    def base_species(self, value) -> None:
+        self._base_species = SpeciesName(value or "")
+
+    @property
+    def abilityState(self) -> Dict[str, Any]:
+        return self.ability_state
+
+    @abilityState.setter
+    def abilityState(self, value) -> None:
+        self.ability_state = value if isinstance(value, dict) else {}
+
+    @property
+    def isActive(self) -> bool:
+        side = getattr(self, "side", None)
+        active = getattr(side, "active", None)
+        if active is None:
+            return getattr(self, "hp", 0) > 0
+        return self in active and getattr(self, "hp", 0) > 0
+
     def __init__(
         self,
         name: str,
@@ -94,6 +135,8 @@ class Pokemon:
         types: Optional[List[str]] = None,
     ):
         self.name = name
+        self.species = name
+        self.base_species = name
         self.level = level
         self.hp = hp
         self.max_hp = max_hp if max_hp is not None else hp
@@ -167,6 +210,7 @@ class Pokemon:
         # exist.  Use the explicitly supplied types if provided; otherwise fall
         # back to a Pokédex lookup based on the Pokémon's species name.
         self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
+        self.stats = self._battle_stats()
 
     def eat_item(self, *args, **kwargs):
         """Delegate held-item consumption to the active battle when available."""
@@ -200,6 +244,141 @@ class Pokemon:
             return battle.set_item(self, item, *args, **kwargs)
         self.item = item
         return True
+
+    def foes(self):
+        """Return active opposing Pokemon when attached to a battle."""
+
+        battle = getattr(self, "battle", None)
+        if not battle or not hasattr(battle, "participant_for"):
+            return []
+        participant = battle.participant_for(self)
+        if not participant:
+            return []
+        foes = []
+        for opponent in battle.opponents_of(participant):
+            foes.extend(list(getattr(opponent, "active", []) or []))
+        return [poke for poke in foes if poke is not None and getattr(poke, "hp", 0) > 0]
+
+    def allies(self):
+        """Return allied active Pokemon excluding ``self`` when in battle."""
+
+        battle = getattr(self, "battle", None)
+        if not battle or not hasattr(battle, "participant_for"):
+            return []
+        participant = battle.participant_for(self)
+        if not participant:
+            return []
+        return [
+            poke
+            for poke in list(getattr(participant, "active", []) or [])
+            if poke is not self and getattr(poke, "hp", 0) > 0
+        ]
+
+    def is_ally(self, other) -> bool:
+        """Return whether ``other`` is on this Pokemon's side."""
+
+        if other is self:
+            return True
+        if other is None:
+            return False
+        my_side = getattr(self, "side", None)
+        other_side = getattr(other, "side", None)
+        if my_side is not None and other_side is not None:
+            return my_side is other_side
+        battle = getattr(self, "battle", None) or getattr(other, "battle", None)
+        if battle and hasattr(battle, "participant_for"):
+            try:
+                my_part = battle.participant_for(self)
+                other_part = battle.participant_for(other)
+            except Exception:
+                return False
+            if my_part is None or other_part is None:
+                return False
+            return my_part is other_part or (
+                getattr(my_part, "team", None) is not None
+                and getattr(my_part, "team", None) == getattr(other_part, "team", None)
+            )
+        return False
+
+    def isAdjacent(self, other) -> bool:
+        """Minimal adjacency check for the current single-position engine."""
+
+        return other is not None
+
+    def hasType(self, typ: str) -> bool:
+        """Return whether this Pokemon currently has ``typ``."""
+
+        needle = str(typ).lower()
+        return any(str(current).lower() == needle for current in getattr(self, "types", []) or [])
+
+    def setType(self, typ) -> bool:
+        """Set this Pokemon's active battle type or types."""
+
+        if not typ:
+            return False
+        if isinstance(typ, (list, tuple, set)):
+            new_types = [str(value).title() for value in typ if value]
+        else:
+            new_types = [str(typ).title()]
+        if not new_types:
+            return False
+        self.types = new_types
+        return True
+
+    def runImmunity(self, typ=None, *args, **kwargs) -> bool:
+        """Compatibility hook for callbacks that ask whether a type can affect us."""
+
+        return True
+
+    def effective_weather(self) -> str:
+        """Return the active field weather in the Showdown callback shape."""
+
+        battle = getattr(self, "battle", None)
+        field = getattr(battle, "field", None)
+        weather = getattr(field, "weather", None) or getattr(self, "weather", None)
+        return str(weather).lower() if weather else ""
+
+    def _battle_stats(self) -> Dict[str, int]:
+        return {
+            stat: self.getStat(stat, True, True)
+            for stat in ("hp", "atk", "def", "spa", "spd", "spe")
+        }
+
+    def getStat(self, stat: str, unboosted: bool = False, unmodified: bool = False) -> int:
+        """Return a battle stat using the names expected by dex callbacks."""
+
+        key = {
+            "attack": "atk",
+            "defense": "def",
+            "special_attack": "spa",
+            "special_defense": "spd",
+            "speed": "spe",
+        }.get(str(stat), str(stat))
+        stat_attr = "def_" if key == "def" else key
+
+        stats_obj = getattr(self, "base_stats", None)
+        value = None
+        if isinstance(stats_obj, dict):
+            value = stats_obj.get(key, stats_obj.get(stat_attr))
+        elif stats_obj is not None:
+            value = getattr(stats_obj, stat_attr, getattr(stats_obj, key, None))
+        if value is None:
+            value = getattr(self, key, None)
+        if value is None and key == "hp":
+            value = getattr(self, "max_hp", getattr(self, "hp", 0))
+        try:
+            value = int(value)
+        except (TypeError, ValueError):
+            value = 0
+
+        if key != "hp" and not unboosted and not unmodified:
+            stage = int(getattr(self, "boosts", {}).get(key, 0) or 0)
+            stage = max(-6, min(6, stage))
+            if stage >= 0:
+                value = int(value * (2 + stage) / 2)
+            else:
+                value = int(value * 2 / (2 - stage))
+        return value
 
     def _lookup_species_types(self) -> List[str]:
         """Return this Pokémon's types inferred from the Pokédex.
@@ -695,14 +874,19 @@ class Pokemon:
         gender = data.get("gender", "N")
         slots = None
         if model_id:
+            ref_kind, ref_identifier = parse_pokemon_ref(model_id)
             try:
-                OwnedPokemon = safe_import("pokemon.models").OwnedPokemon  # type: ignore[attr-defined]
+                OwnedPokemon = safe_import("pokemon.models.core").OwnedPokemon  # type: ignore[attr-defined]
             except Exception:  # pragma: no cover - DB not available in tests
                 OwnedPokemon = None
+            try:
+                EncounterPokemon = safe_import("pokemon.models.core").EncounterPokemon  # type: ignore[attr-defined]
+            except Exception:  # pragma: no cover - DB not available in tests
+                EncounterPokemon = None
 
-            if OwnedPokemon:
+            if ref_kind == "owned" and OwnedPokemon:
                 try:
-                    poke = OwnedPokemon.objects.get(unique_id=model_id)
+                    poke = OwnedPokemon.objects.get(unique_id=ref_identifier)
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
@@ -735,6 +919,24 @@ class Pokemon:
                             ][:4]
                         else:
                             move_names = ["Tackle"]
+                        moves = [Move(name=m) for m in move_names]
+                except Exception:
+                    pass
+            elif ref_kind == "encounter" and EncounterPokemon:
+                try:
+                    poke = EncounterPokemon.objects.get(encounter_id=ref_identifier)
+                    name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
+                    level = getattr(poke, "level", 1)
+                    ability = getattr(poke, "ability", ability)
+                    item = getattr(poke, "held_item", item)
+                    ivs = getattr(poke, "ivs", ivs)
+                    evs = getattr(poke, "evs", evs)
+                    nature = getattr(poke, "nature", nature)
+                    gender = getattr(poke, "gender", gender)
+                    if max_hp is None:
+                        max_hp = getattr(poke, "current_hp", None)
+                    if not moves:
+                        move_names = list(getattr(poke, "move_names", []) or [])[:4]
                         moves = [Move(name=m) for m in move_names]
                 except Exception:
                     pass

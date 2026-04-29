@@ -29,7 +29,7 @@ def setup_env():
 
 	# Minimal pokemon.battle package
 	pkg_battle = types.ModuleType("pokemon.battle")
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	pkg_battle.utils = utils_mod
 	sys.modules["pokemon.battle"] = pkg_battle
 
@@ -42,7 +42,7 @@ def setup_env():
 
 	# Minimal pokemon.dex package
 	pokemon_dex = types.ModuleType("pokemon.dex")
-	pokemon_dex.__path__ = []
+	pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 	pokemon_dex.entities = ent_mod
 	pokemon_dex.MOVEDEX = {}
 	sys.modules["pokemon.dex"] = pokemon_dex

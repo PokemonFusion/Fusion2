@@ -61,6 +61,8 @@ class BattleParticipant:
 
                 battle_side_cls = getattr(safe_import("pokemon.battle.engine"), "BattleSide")
                 self.side = battle_side_cls()
+                setattr(self.side, "pokemons", self.pokemons)
+                setattr(self.side, "active", self.active)
                 self.player = player
                 self.trainer = getattr(player, "trainer", None)
                 self.max_active = max_active

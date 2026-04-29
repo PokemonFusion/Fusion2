@@ -3,6 +3,48 @@ from random import random
 from pokemon.dex.functions.moves_funcs import type_effectiveness
 
 
+def _clear_holder_item(pokemon):
+	"""Remove a held item while keeping lightweight test doubles compatible."""
+
+	if not pokemon:
+		return False
+	if hasattr(pokemon, "item"):
+		pokemon.item = None
+	if hasattr(pokemon, "held_item"):
+		pokemon.held_item = ""
+	return True
+
+
+def _remove_battle_item(pokemon, *, source=None, effect=None, used=False):
+	"""Remove ``pokemon``'s held item via the battle engine when possible."""
+
+	if not pokemon:
+		return False
+	battle = getattr(pokemon, "battle", None)
+	if battle and hasattr(battle, "remove_item"):
+		return bool(battle.remove_item(pokemon, source=source, effect=effect, used=used))
+	return _clear_holder_item(pokemon)
+
+
+def _consume_type_resist_berry(damage, *, berry_type, target=None, source=None, move=None):
+	"""Apply a one-shot resist berry reduction for super-effective hits only."""
+
+	if not target or not move or move.type != berry_type:
+		return damage
+	if type_effectiveness(target, move) <= 1:
+		return damage
+	_remove_battle_item(target, source=source, effect=move, used=True)
+	return int(damage * 0.5)
+
+
+def _current_field_terrain(pokemon):
+	"""Return the active field terrain key for ``pokemon``'s battle, if any."""
+
+	battle = getattr(pokemon, "battle", None)
+	field = getattr(battle, "field", None)
+	return getattr(field, "terrain", None)
+
+
 class Abilityshield:
 	def onSetAbility(self, ability=None, target=None, source=None, effect=None):
 		"""Prevent ability-changing effects from abilities other than Trace."""
@@ -35,8 +77,7 @@ class Absorbbulb:
 		if move and move.type == "Water" and target:
 			if hasattr(target, "boosts"):
 				target.boosts["spa"] = target.boosts.get("spa", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+			_remove_battle_item(target, source=source, effect=move, used=True)
 
 
 class Adamantcrystal:
@@ -105,8 +146,7 @@ class Aguavberry:
 
 class Airballoon:
 	def _pop(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
+		_remove_battle_item(pokemon, used=True)
 		if pokemon and hasattr(pokemon, "volatiles"):
 			pokemon.volatiles.pop("airballoon", None)
 
@@ -203,9 +243,9 @@ class Babiriberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Steel" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Steel", target=target, source=source, move=move
+		)
 
 
 class Banettite:
@@ -243,8 +283,7 @@ class Berryjuice:
 	def onUpdate(self, pokemon=None):
 		if pokemon and pokemon.hp <= pokemon.max_hp // 2:
 			pokemon.hp = min(pokemon.hp + 20, pokemon.max_hp)
-			if hasattr(pokemon, "item"):
-				pokemon.item = None
+			_remove_battle_item(pokemon, used=True)
 
 
 class Berserkgene:
@@ -299,7 +338,7 @@ class Blacksludge:
 	def onResidual(self, pokemon=None):
 		if not pokemon:
 			return
-		if getattr(pokemon, "types", [None])[0] == "Poison":
+		if "Poison" in set(getattr(pokemon, "types", []) or []):
 			pokemon.hp = min(pokemon.hp + pokemon.max_hp // 16, pokemon.max_hp)
 		else:
 			pokemon.hp = max(pokemon.hp - pokemon.max_hp // 8, 0)
@@ -430,8 +469,7 @@ class Cellbattery:
 		if move and move.type == "Electric" and target:
 			if hasattr(target, "boosts"):
 				target.boosts["atk"] = target.boosts.get("atk", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+			_remove_battle_item(target, source=source, effect=move, used=True)
 
 
 class Charcoal:
@@ -464,9 +502,9 @@ class Chartiberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Rock" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Rock", target=target, source=source, move=move
+		)
 
 
 class Cheriberry:
@@ -504,9 +542,9 @@ class Chilanberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Normal" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Normal", target=target, source=source, move=move
+		)
 
 
 class Chilldrive:
@@ -571,9 +609,9 @@ class Chopleberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Fighting" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Fighting", target=target, source=source, move=move
+		)
 
 
 class Clearamulet:
@@ -593,9 +631,9 @@ class Cobaberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Flying" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Flying", target=target, source=source, move=move
+		)
 
 
 class Colburberry:
@@ -603,9 +641,9 @@ class Colburberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Dark" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Dark", target=target, source=source, move=move
+		)
 
 
 class Cornerstonemask:
@@ -824,11 +862,10 @@ class Electricseed:
 	def _activate(self, pokemon):
 		if pokemon and hasattr(pokemon, "boosts"):
 			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
-		if pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
+		_remove_battle_item(pokemon, used=True)
 
 	def onStart(self, pokemon=None):
-		terrain = getattr(getattr(pokemon, "battle", None), "terrain", None)
+		terrain = _current_field_terrain(pokemon)
 		if terrain == "electricterrain":
 			self._activate(pokemon)
 
@@ -1025,8 +1062,7 @@ class Focusband:
 class Focussash:
 	def onDamage(self, damage, target=None, source=None, effect=None):
 		if target and damage >= target.hp and target.hp == target.max_hp:
-			if hasattr(target, "item"):
-				target.item = None
+			_remove_battle_item(target, source=source, effect=effect, used=True)
 			return target.hp - 1
 		return damage
 
@@ -1141,11 +1177,10 @@ class Grassyseed:
 	def _activate(self, pokemon=None):
 		if pokemon and hasattr(pokemon, "boosts"):
 			pokemon.boosts["def"] = pokemon.boosts.get("def", 0) + 1
-		if pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
+		_remove_battle_item(pokemon, used=True)
 
 	def onStart(self, pokemon=None):
-		terrain = getattr(getattr(pokemon, "battle", None), "terrain", None)
+		terrain = _current_field_terrain(pokemon)
 		if terrain == "grassyterrain":
 			self._activate(pokemon)
 
@@ -1207,9 +1242,9 @@ class Habanberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Dragon" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Dragon", target=target, source=source, move=move
+		)
 
 
 class Hardstone:
@@ -1379,9 +1414,9 @@ class Kasibberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Ghost" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Ghost", target=target, source=source, move=move
+		)
 
 
 class Kebiaberry:
@@ -1389,9 +1424,9 @@ class Kebiaberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Poison" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Poison", target=target, source=source, move=move
+		)
 
 
 class Keeberry:
@@ -1583,8 +1618,7 @@ class Luminousmoss:
 		if move and move.type == "Water" and target:
 			if hasattr(target, "boosts"):
 				target.boosts["spd"] = target.boosts.get("spd", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+			_remove_battle_item(target, source=source, effect=move, used=True)
 
 
 class Lustrousglobe:
@@ -1877,11 +1911,10 @@ class Mistyseed:
 	def _activate(self, pokemon=None):
 		if pokemon and hasattr(pokemon, "boosts"):
 			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
-		if pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
+		_remove_battle_item(pokemon, used=True)
 
 	def onStart(self, pokemon=None):
-		terrain = getattr(getattr(pokemon, "battle", None), "terrain", None)
+		terrain = _current_field_terrain(pokemon)
 		if terrain == "mistyterrain":
 			self._activate(pokemon)
 
@@ -1943,9 +1976,9 @@ class Occaberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Fire" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Fire", target=target, source=source, move=move
+		)
 
 
 class Oddincense:
@@ -1974,9 +2007,9 @@ class Passhoberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Water" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Water", target=target, source=source, move=move
+		)
 
 
 class Payapaberry:
@@ -1984,9 +2017,9 @@ class Payapaberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Psychic" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Psychic", target=target, source=source, move=move
+		)
 
 
 class Pechaberry:
@@ -2844,11 +2877,10 @@ class Psychicseed:
 	def _activate(self, pokemon=None):
 		if pokemon and hasattr(pokemon, "boosts"):
 			pokemon.boosts["spd"] = pokemon.boosts.get("spd", 0) + 1
-		if pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
+		_remove_battle_item(pokemon, used=True)
 
 	def onStart(self, pokemon=None):
-		terrain = getattr(getattr(pokemon, "battle", None), "terrain", None)
+		terrain = _current_field_terrain(pokemon)
 		if terrain == "psychicterrain":
 			self._activate(pokemon)
 
@@ -2940,9 +2972,9 @@ class Rindoberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Grass" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Grass", target=target, source=source, move=move
+		)
 
 
 class Rockgem:
@@ -2982,11 +3014,12 @@ class Roomservice:
 	def _activate(self, pokemon=None):
 		if pokemon and hasattr(pokemon, "boosts"):
 			pokemon.boosts["spe"] = pokemon.boosts.get("spe", 0) - 1
-		if pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
+		_remove_battle_item(pokemon, used=True)
 
 	def onAnyPseudoWeatherChange(self, pokemon=None):
-		pseudo = getattr(getattr(pokemon, "battle", None), "pseudo_weather", {})
+		battle = getattr(pokemon, "battle", None)
+		field = getattr(battle, "field", None)
+		pseudo = getattr(field, "pseudo_weather", {})
 		if "trickroom" in pseudo:
 			self._activate(pokemon)
 
@@ -3006,9 +3039,9 @@ class Roseliberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Fairy" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Fairy", target=target, source=source, move=move
+		)
 
 
 class Rowapberry:
@@ -3157,9 +3190,9 @@ class Shucaberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Ground" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Ground", target=target, source=source, move=move
+		)
 
 
 class Silkscarf:
@@ -3219,8 +3252,7 @@ class Snowball:
 		if move and move.type == "Ice" and target:
 			if hasattr(target, "boosts"):
 				target.boosts["atk"] = target.boosts.get("atk", 0) + 1
-			if hasattr(target, "item"):
-				target.item = None
+			_remove_battle_item(target, source=source, effect=move, used=True)
 
 
 class Softsand:
@@ -3358,9 +3390,9 @@ class Tangaberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Bug" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Bug", target=target, source=source, move=move
+		)
 
 
 class Thickclub:
@@ -3456,9 +3488,9 @@ class Wacanberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Electric" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Electric", target=target, source=source, move=move
+		)
 
 
 class Watergem:
@@ -3489,7 +3521,7 @@ class Waveincense:
 
 class Weaknesspolicy:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if target and move and type_effectiveness(target, move) > 1:
+		if target and move and getattr(target, "hp", 0) > 0 and type_effectiveness(target, move) > 1:
 			if hasattr(target, "boosts"):
 				target.boosts["atk"] = min(target.boosts.get("atk", 0) + 2, 6)
 				target.boosts["spa"] = min(target.boosts.get("spa", 0) + 2, 6)
@@ -3560,9 +3592,9 @@ class Yacheberry:
 		return
 
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and move.type == "Ice" and target:
-			return int(damage * 0.5)
-		return damage
+		return _consume_type_resist_berry(
+			damage, berry_type="Ice", target=target, source=source, move=move
+		)
 
 
 class Zapplate:

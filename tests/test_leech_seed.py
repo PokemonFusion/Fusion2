@@ -10,7 +10,7 @@ pkg_battle = types.ModuleType("pokemon.battle")
 utils_stub = types.ModuleType("pokemon.battle.utils")
 utils_stub.apply_boost = lambda *a, **k: None
 pkg_battle.utils = utils_stub
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 sys.modules["pokemon.battle"] = pkg_battle
 sys.modules["pokemon.battle.utils"] = utils_stub
 

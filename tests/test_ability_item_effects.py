@@ -14,7 +14,7 @@ def load_modules():
 	utils_spec.loader.exec_module(utils_mod)
 
 	pkg_battle = types.ModuleType("pokemon.battle")
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	pkg_battle.utils = utils_mod
 	sys.modules["pokemon.battle.utils"] = utils_mod
 	sys.modules["pokemon.battle"] = pkg_battle

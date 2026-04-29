@@ -60,6 +60,8 @@ class Aftermath:
 
 		if source is None or move is None:
 			return
+		if getattr(target, "hp", 1) > 0:
+			return
 		if getattr(move, "flags", {}).get("contact"):
 			recoil = getattr(source, "max_hp", 0) // 4
 			if hasattr(source, "hp"):
@@ -711,7 +713,7 @@ class Desolateland:
 
 
 class Disguise:
-	def onCriticalHit(self, target=None, source=None, move=None):
+	def onCriticalHit(self, crit=None, target=None, source=None, move=None):
 		if target and target.species.name.lower().startswith("mimikyu"):
 			if not target.volatiles.get("substitute"):
 				return False
@@ -1352,7 +1354,7 @@ class Icebody:
 
 
 class Iceface:
-	def onCriticalHit(self, target=None, source=None, move=None):
+	def onCriticalHit(self, crit=None, target=None, source=None, move=None):
 		if getattr(target, "abilityState", {}).get("iceface_intact"):
 			return False
 
@@ -1675,7 +1677,19 @@ class Magicguard:
 class Magician:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
 		battle = getattr(source, "battle", None)
-		if battle and source and target and move and hasattr(battle, "steal_item"):
+		last_damaged = getattr(target, "tempvals", {}).get("last_damaged_by", {}) if target else {}
+		recorded_move = last_damaged.get("move")
+		recorded_key = getattr(recorded_move, "key", None) or getattr(recorded_move, "id", None) or getattr(recorded_move, "name", None)
+		move_key = getattr(move, "key", None) or getattr(move, "id", None) or getattr(move, "name", None)
+		if (
+			battle
+			and source
+			and target
+			and move
+			and hasattr(battle, "steal_item")
+			and last_damaged.get("source") is source
+			and str(recorded_key or "").lower() == str(move_key or "").lower()
+		):
 			battle.steal_item(source, target, effect=getattr(move, "name", "ability:magician"))
 
 
@@ -2059,7 +2073,24 @@ class Perishbody:
 class Pickpocket:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
 		battle = getattr(target, "battle", None)
-		if battle and target and source and move and move.flags.get("contact") and hasattr(battle, "steal_item"):
+		last_damaged = getattr(target, "tempvals", {}).get("last_damaged_by", {}) if target else {}
+		recorded_move = last_damaged.get("move")
+		recorded_key = getattr(recorded_move, "key", None) or getattr(recorded_move, "id", None) or getattr(recorded_move, "name", None)
+		move_key = getattr(move, "key", None) or getattr(move, "id", None) or getattr(move, "name", None)
+		if (
+			battle
+			and target
+			and source
+			and move
+			and move.flags.get("contact")
+			and not getattr(target, "item", None)
+			and not getattr(target, "switchFlag", False)
+			and not getattr(target, "forceSwitchFlag", False)
+			and getattr(source, "switchFlag", None) is not True
+			and hasattr(battle, "steal_item")
+			and last_damaged.get("source") is source
+			and str(recorded_key or "").lower() == str(move_key or "").lower()
+		):
 			battle.steal_item(target, source, effect=getattr(move, "name", "ability:pickpocket"))
 
 
@@ -2136,7 +2167,7 @@ class Poisonpuppeteer:
 
 
 class Poisontouch:
-	def onSourceDamagingHit(self, target=None, source=None, move=None):
+	def onSourceDamagingHit(self, damage=None, target=None, source=None, move=None):
 		if move and move.flags.get("contact") and target and random() < 0.3:
 			if not getattr(target, "status", None):
 				target.setStatus("psn")

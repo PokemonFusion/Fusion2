@@ -148,7 +148,7 @@ class CmdChargenInfo(Command):
 			lines.append(f"  Fusion ability: {char.db.fusion_ability}")
 		storage = getattr(char, "storage", None)
 		if storage:
-			mons = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
+			mons = storage.get_party()
 			if mons:
 				lines.append("  Active Pokémon:")
 				for mon in mons:

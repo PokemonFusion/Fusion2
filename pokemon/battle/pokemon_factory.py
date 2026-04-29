@@ -1,26 +1,21 @@
 from __future__ import annotations
 
-"""Helpers for creating battle-ready :class:`~pokemon.battle.battledata.Pokemon`.
+"""Helpers for creating battle-ready :class:`~pokemon.battle.battledata.Pokemon`."""
 
-This module centralises logic used to build temporary Pokémon used by the
-battle engine. It is separated from ``battleinstance`` to keep that module
-focused on session management.
-"""
-
+from types import SimpleNamespace
 from typing import List
 
 from pokemon.helpers.pokemon_spawn import get_spawn
+from pokemon.services.encounters import create_encounter_pokemon, encounter_ref
+from pokemon.services.pokemon_refs import build_owned_ref
 
 from ..data.generation import generate_pokemon
 from .battledata import Move, Pokemon
 
 
 def _stat_list(source) -> List[int]:
-	"""Return a 6-length list of stats from ``source``.
+	"""Return a 6-length list of stats from ``source``."""
 
-	``source`` may be ``None``, an object with stat attributes or an existing
-	list. Missing values default to ``0``.
-	"""
 	if isinstance(source, list):
 		return [int(x) for x in source[:6]] + [0] * (6 - len(source[:6]))
 	if source is None:
@@ -70,8 +65,19 @@ def _calc_stats_from_model(poke):
 			return calculate_stats(name, level, ivs, evs, nature)
 		raise Exception
 	except Exception:
-		inst = generate_pokemon(name, level=level)
-		st = getattr(inst, "stats", inst)
+		try:
+			inst = generate_pokemon(name, level=level)
+			st = getattr(inst, "stats", inst)
+		except Exception:
+			current_hp = getattr(poke, "max_hp", getattr(poke, "current_hp", 1))
+			return {
+				"hp": current_hp,
+				"atk": 0,
+				"def": 0,
+				"spa": 0,
+				"spd": 0,
+				"spe": 0,
+			}
 		return {
 			"hp": getattr(st, "hp", 100),
 			"atk": getattr(st, "atk", 0),
@@ -88,62 +94,56 @@ def create_battle_pokemon(
 	*,
 	trainer: object | None = None,
 	is_wild: bool = False,
+	template_key: str = "",
+	move_names: list[str] | None = None,
 ) -> Pokemon:
 	"""Return a ``Pokemon`` battle object for the given species/level."""
 
-	try:
-		from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-	except Exception:  # pragma: no cover - optional in tests
-		create_owned_pokemon = None
-
 	inst = generate_pokemon(species, level=level)
-	move_names = getattr(inst, "moves", []) or ["Flail"]
+	move_names = list(move_names or getattr(inst, "moves", []) or ["Flail"])
 	moves = [Move(name=m) for m in move_names]
 
 	ivs_list = _stat_list(getattr(inst, "ivs", None))
 	evs_list = _stat_list(getattr(inst, "evs", None))
 	nature = getattr(inst, "nature", "Hardy")
+	max_hp = getattr(inst.stats, "hp", level)
 
-	db_obj = None
-	if create_owned_pokemon:
-		try:
-			db_obj = create_owned_pokemon(
-				inst.species.name,
-				None,
-				inst.level,
-				gender=getattr(inst, "gender", "N"),
-				nature=nature,
-				ability=getattr(inst, "ability", ""),
-				ivs=ivs_list,
-				evs=evs_list,
-				ai_trainer=trainer,
-				is_wild=is_wild,
-			)
-		except Exception:
-			db_obj = None
-
-	identifier = None
-	if db_obj:
-		identifier = getattr(db_obj, "unique_id", getattr(db_obj, "model_id", None))
-	model_id = str(identifier) if identifier else None
+	try:
+		encounter = create_encounter_pokemon(
+			species=inst.species.name,
+			level=inst.level,
+			source_kind="wild" if is_wild else "npc",
+			gender=getattr(inst, "gender", "N"),
+			nature=nature,
+			ability=getattr(inst, "ability", ""),
+			ivs=ivs_list,
+			evs=evs_list,
+			current_hp=max_hp,
+			move_names=move_names,
+			npc_trainer=trainer if not is_wild else None,
+			template_key=template_key,
+		)
+	except Exception:
+		encounter = SimpleNamespace(current_hp=max_hp, held_item="", encounter_id=None)
 
 	return Pokemon(
 		name=inst.species.name,
 		level=inst.level,
-		hp=getattr(db_obj, "current_hp", getattr(inst.stats, "hp", level)),
-		max_hp=getattr(inst.stats, "hp", level),
+		hp=encounter.current_hp,
+		max_hp=max_hp,
 		moves=moves,
 		ability=getattr(inst, "ability", None),
 		ivs=ivs_list,
 		evs=evs_list,
 		nature=nature,
-		model_id=model_id,
+		model_id=encounter_ref(encounter),
 		gender=getattr(inst, "gender", "N"),
+		item=getattr(encounter, "held_item", ""),
 	)
 
 
 def generate_wild_pokemon(location=None) -> Pokemon:
-	"""Generate a wild Pokémon based on the supplied location."""
+	"""Generate a wild Pokemon based on the supplied location."""
 
 	inst = get_spawn(location) if location else None
 	if not inst:
@@ -157,9 +157,13 @@ def generate_wild_pokemon(location=None) -> Pokemon:
 
 
 def generate_trainer_pokemon(trainer=None) -> Pokemon:
-	"""Return a simple trainer-owned Charmander."""
+	"""Return a simple trainer-owned Charmander encounter."""
 
 	return create_battle_pokemon("Charmander", 5, trainer=trainer, is_wild=False)
+
+
+def owned_model_ref(model) -> str | None:
+	return build_owned_ref(getattr(model, "unique_id", getattr(model, "model_id", None)))
 
 
 __all__ = [
@@ -167,4 +171,5 @@ __all__ = [
 	"generate_wild_pokemon",
 	"generate_trainer_pokemon",
 	"_calc_stats_from_model",
+	"owned_model_ref",
 ]

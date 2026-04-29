@@ -28,8 +28,8 @@ class CmdListPokemon(Command):
 		if not storage:
 			self.caller.msg("Target has no Pokémon storage.")
 			return
-		party = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
-		stored = list(storage.stored_pokemon.all())
+		party = storage.get_party()
+		stored = storage.get_stored_pokemon()
 		lines = [f"Pokémon for {target.key}:"]
 		if party:
 			lines.append(" Active party:")

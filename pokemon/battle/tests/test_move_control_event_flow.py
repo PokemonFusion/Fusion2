@@ -115,6 +115,74 @@ def test_taunt_disables_status_moves():
     assert defender.boosts == start_boosts
 
 
+def test_disable_uses_last_move_to_block_immediate_followup():
+    modules = load_modules()
+    BattleMove = modules["BattleMove"]
+    ActionType = __import__("pokemon.battle.actions", fromlist=["ActionType"]).ActionType
+    battle, attacker, defender = build_battle()
+
+    tackle = BattleMove(
+        name="Tackle",
+        power=40,
+        accuracy=100,
+        type="Normal",
+        raw={"category": "Physical", "basePower": 40, "accuracy": 100},
+    )
+    tackle.key = "tackle"
+    tackle.id = "tackle"
+    disable = BattleMove(
+        name="Disable",
+        power=0,
+        accuracy=100,
+        type="Normal",
+        raw={
+            "category": "Status",
+            "accuracy": 100,
+            "basePower": 0,
+            "onTryHit": "Disable.onTryHit",
+            "onHit": "Disable.onHit",
+        },
+    )
+    disable.key = "disable"
+    disable.id = "disable"
+    attacker.moves = [disable]
+    defender.moves = [tackle]
+
+    first = _battle_action(
+        battle.participants[1],
+        ActionType.MOVE,
+        target=battle.participants[0],
+        move=tackle,
+        pokemon=defender,
+    )
+    battle.use_move(first)
+
+    assert defender.last_move is tackle
+
+    disable_action = _battle_action(
+        battle.participants[0],
+        ActionType.MOVE,
+        target=battle.participants[1],
+        move=disable,
+        pokemon=attacker,
+    )
+    battle.use_move(disable_action)
+
+    assert getattr(defender, "volatiles", {}).get("disable") is tackle
+    start_hp = attacker.hp
+
+    blocked = _battle_action(
+        battle.participants[1],
+        ActionType.MOVE,
+        target=battle.participants[0],
+        move=tackle,
+        pokemon=defender,
+    )
+    battle.use_move(blocked)
+
+    assert attacker.hp == start_hp
+
+
 def test_stalling_move_fails_when_stall_roll_misses(monkeypatch):
     modules = load_modules()
     BattleMove = modules["BattleMove"]

@@ -170,6 +170,28 @@ def _get_spawn_stub(loc):
 spawn_mod.get_spawn = _get_spawn_stub
 sys.modules["pokemon.helpers.pokemon_spawn"] = spawn_mod
 
+# Stub persistence helpers used by pokemon_factory so this unit test does not
+# need the Django model layer.
+services_pkg = types.ModuleType("pokemon.services")
+services_pkg.__path__ = [os.path.join(ROOT, "pokemon", "services")]
+encounters_mod = types.ModuleType("pokemon.services.encounters")
+encounters_mod.create_encounter_pokemon = lambda **kwargs: types.SimpleNamespace(
+	current_hp=kwargs.get("current_hp", 1),
+	held_item="",
+	unique_id="encounter-1",
+)
+encounters_mod.encounter_ref = lambda encounter: getattr(encounter, "unique_id", "encounter-1")
+encounters_mod.delete_encounter_by_ref = lambda ref: None
+refs_mod = types.ModuleType("pokemon.services.pokemon_refs")
+refs_mod.build_owned_ref = lambda value: f"owned:{value}" if value else None
+refs_mod.build_encounter_ref = lambda value: f"encounter:{value}" if value else None
+refs_mod.parse_pokemon_ref = lambda value: tuple(str(value).split(":", 1)) if value and ":" in str(value) else ("owned", value)
+refs_mod.is_owned_ref = lambda value: refs_mod.parse_pokemon_ref(value)[0] == "owned"
+refs_mod.is_encounter_ref = lambda value: refs_mod.parse_pokemon_ref(value)[0] == "encounter"
+sys.modules["pokemon.services"] = services_pkg
+sys.modules["pokemon.services.encounters"] = encounters_mod
+sys.modules["pokemon.services.pokemon_refs"] = refs_mod
+
 # Minimal battle.engine stubs
 engine_mod = types.ModuleType("pokemon.battle.engine")
 
@@ -191,9 +213,10 @@ class BattleParticipant:
 
 
 class Battle:
-	def __init__(self, battle_type, parts):
+	def __init__(self, battle_type, parts, **kwargs):
 		self.type = battle_type
 		self.participants = parts
+		self.rng = kwargs.get("rng")
 
 	def run_turn(self):
 		pass
@@ -202,6 +225,7 @@ class Battle:
 engine_mod.BattleType = BattleType
 engine_mod.BattleParticipant = BattleParticipant
 engine_mod.Battle = Battle
+engine_mod._normalize_key = lambda value: str(value).replace(" ", "").replace("-", "").replace("'", "").lower()
 sys.modules["pokemon.battle.engine"] = engine_mod
 
 # Load battledata and state modules from real files
@@ -210,6 +234,15 @@ bd_spec = importlib.util.spec_from_file_location("pokemon.battle.battledata", bd
 bd_mod = importlib.util.module_from_spec(bd_spec)
 sys.modules[bd_spec.name] = bd_mod
 bd_spec.loader.exec_module(bd_mod)
+
+pokemon_utils_mod = types.ModuleType("utils.pokemon_utils")
+pokemon_utils_mod.build_battle_pokemon_from_model = lambda poke, full_heal=False: bd_mod.Pokemon(
+	getattr(poke, "name", "Pikachu"),
+	level=getattr(poke, "level", 5),
+	hp=100,
+	max_hp=100,
+)
+sys.modules["utils.pokemon_utils"] = pokemon_utils_mod
 
 st_path = os.path.join(ROOT, "pokemon", "battle", "state.py")
 st_spec = importlib.util.spec_from_file_location("pokemon.battle.state", st_path)
@@ -257,6 +290,9 @@ class DummyPoke:
 class DummyStorage:
 	def __init__(self):
 		self.active_pokemon = types.SimpleNamespace(all=lambda: [DummyPoke()])
+
+	def get_party(self):
+		return [DummyPoke()]
 
 
 class DummyRoom:

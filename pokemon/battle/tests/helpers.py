@@ -148,6 +148,43 @@ def physical_move(name: str = "Tackle", power: int = 70, move_type: str = "Norma
         return move
 
 
+def battle_move(
+        name: str = "Tackle",
+        power: int = 70,
+        move_type: str = "Normal",
+        category: str = "Physical",
+        *,
+        accuracy: int | float | bool = 100,
+        priority: int = 0,
+        flags: dict | None = None,
+        raw: dict | None = None,
+):
+        """Return a fully initialized ``BattleMove`` for engine-level tests."""
+
+        modules = load_modules()
+        BattleMove = modules["BattleMove"]
+        move_raw = {
+                "name": name,
+                "basePower": power,
+                "type": move_type,
+                "category": category,
+                "accuracy": accuracy,
+                "priority": priority,
+                "flags": dict(flags or {}),
+        }
+        if raw:
+                move_raw.update(raw)
+        return BattleMove(
+                name=name,
+                key=name.lower(),
+                power=power,
+                type=move_type,
+                accuracy=accuracy,
+                priority=priority,
+                raw=move_raw,
+        )
+
+
 def run_damage(attacker, defender, move):
         modules = load_modules()
         damage_calc = modules["damage_calc"]
