@@ -8,6 +8,7 @@ sys.path.insert(0, ROOT)
 
 orig_evennia = sys.modules.get("evennia")
 orig_battleinstance = sys.modules.get("pokemon.battle.battleinstance")
+orig_dex = sys.modules.get("pokemon.dex")
 
 fake_evennia = types.ModuleType("evennia")
 fake_evennia.Command = type("Command", (), {"parse": lambda self: None})
@@ -78,6 +79,33 @@ def test_testspawn_sets_room_payload():
 	}
 
 
+def test_testspawn_unknown_species_reports_suggestion():
+	fake_dex = types.ModuleType("pokemon.dex")
+	fake_dex.POKEDEX = {
+		"squirtle": types.SimpleNamespace(name="Squirtle"),
+		"wartortle": types.SimpleNamespace(name="Wartortle"),
+	}
+	sys.modules["pokemon.dex"] = fake_dex
+	cmd = cmd_mod.CmdTestSpawn()
+	caller = DummyCaller()
+	cmd.caller = caller
+	cmd.args = "Squirtel, 12, trainer"
+	cmd.switches = []
+
+	try:
+		cmd.parse()
+		cmd.func()
+	finally:
+		if orig_dex is not None:
+			sys.modules["pokemon.dex"] = orig_dex
+		else:
+			sys.modules.pop("pokemon.dex", None)
+
+	assert not hasattr(caller.location.db, "test_battle_spawn")
+	assert "Species 'Squirtel' was not found in the Pokedex." in caller.messages[-1]
+	assert "Did you mean Squirtle?" in caller.messages[-1]
+
+
 def test_starttestbattle_uses_room_payload():
 	session_calls.clear()
 	cmd = cmd_mod.CmdStartTestBattle()
@@ -112,3 +140,7 @@ def teardown_module():
 		sys.modules["pokemon.battle.battleinstance"] = orig_battleinstance
 	else:
 		sys.modules.pop("pokemon.battle.battleinstance", None)
+	if orig_dex is not None:
+		sys.modules["pokemon.dex"] = orig_dex
+	else:
+		sys.modules.pop("pokemon.dex", None)

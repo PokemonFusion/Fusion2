@@ -1,5 +1,7 @@
 from evennia import Command
 
+from utils.dex_suggestions import move_not_found_message, pokemon_not_found_message
+
 
 def heal_party(char):
 	"""Heal all active Pokemon for the given character."""
@@ -164,13 +166,22 @@ class CmdUseMove(Command):
 		# MOVEDEX keys are stored in lowercase
 		movedata = MOVEDEX.get(move_name.lower())
 		if not movedata:
-			self.caller.msg(f"Unknown move '{move_name}'.")
+			self.caller.msg(
+				move_not_found_message(move_name, f"Unknown move '{move_name}'.")
+			)
 			return
 
 		attacker = POKEDEX.get(attacker_name.lower())
 		target = POKEDEX.get(target_name.lower())
-		if not attacker or not target:
-			self.caller.msg("Unknown attacker or target Pokémon name.")
+		if not attacker:
+			self.caller.msg(
+				pokemon_not_found_message(attacker_name, "Unknown attacker Pokemon name.")
+			)
+			return
+		if not target:
+			self.caller.msg(
+				pokemon_not_found_message(target_name, "Unknown target Pokemon name.")
+			)
 			return
 
 		move = Move.from_dict(move_name.capitalize(), movedata)

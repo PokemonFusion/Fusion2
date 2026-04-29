@@ -5,6 +5,11 @@ from __future__ import annotations
 from evennia import Command
 
 from pokemon.battle.battleinstance import BattleSession
+from utils.dex_suggestions import (
+	is_known_species,
+	is_species_not_found_error,
+	species_not_found_message,
+)
 
 
 def _parse_spawn_spec(spec: str) -> dict:
@@ -54,6 +59,9 @@ class CmdTestSpawn(Command):
 			payload = _parse_spawn_spec(self.args)
 		except ValueError as err:
 			self.caller.msg(str(err))
+			return
+		if not is_known_species(payload["species"]):
+			self.caller.msg(species_not_found_message(payload["species"]))
 			return
 		room.db.test_battle_spawn = payload
 		self.caller.msg(
@@ -107,13 +115,22 @@ class CmdStartTestBattle(Command):
 					"No room test spawn configured. Use +testspawn or provide an explicit species."
 				)
 				return
+		if not is_known_species(payload["species"]):
+			self.caller.msg(species_not_found_message(payload["species"]))
+			return
 
 		session = BattleSession(target)
-		session.start_test_battle(
-			species=payload["species"],
-			level=int(payload.get("level", 5)),
-			opponent_kind=str(payload.get("kind", "wild")),
-		)
+		try:
+			session.start_test_battle(
+				species=payload["species"],
+				level=int(payload.get("level", 5)),
+				opponent_kind=str(payload.get("kind", "wild")),
+			)
+		except ValueError as err:
+			if is_species_not_found_error(err):
+				self.caller.msg(species_not_found_message(payload["species"]))
+				return
+			raise
 		self.caller.msg(
 			f"Started debug battle #{session.battle_id} for {target.key} against "
 			f"{payload['species']} Lv{payload.get('level', 5)} ({payload.get('kind', 'wild')})."

@@ -1,4 +1,8 @@
-from pokemon.dex import POKEDEX
+from utils.dex_suggestions import (
+	is_known_species,
+	is_species_not_found_error,
+	species_not_found_message,
+)
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -36,8 +40,8 @@ def node_start(caller, raw_input=None, **kwargs):
 			],
 		)
 	name = raw_input.strip()
-	if name.lower() not in POKEDEX and name.title() not in POKEDEX:
-		caller.msg("Unknown species. Try again.")
+	if not is_known_species(name):
+		caller.msg(f"{species_not_found_message(name)} Try again.")
 		return node_start(caller, target=target)
 
 	caller.ndb.givepoke = {"species": name}
@@ -76,11 +80,21 @@ def node_level(caller, raw_input=None, **kwargs):
 		from utils.pokemon_utils import grant_generated_pokemon
 
 		pokemon = grant_generated_pokemon(target, species, level, caller=caller)
-	except Exception:
+	except Exception as err:
+		if is_species_not_found_error(err):
+			caller.msg(species_not_found_message(species))
+			return node_start(caller, target=target)
 		from pokemon.data.generation import generate_pokemon
 		from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 
-		instance = generate_pokemon(species, level=level)
+		try:
+			instance = generate_pokemon(species, level=level)
+		except ValueError as gen_err:
+			if is_species_not_found_error(gen_err):
+				caller.msg(species_not_found_message(species))
+			else:
+				caller.msg(str(gen_err))
+			return node_start(caller, target=target)
 		pokemon = create_owned_pokemon(
 			instance.species.name,
 			target.trainer,

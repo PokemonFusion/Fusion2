@@ -23,6 +23,7 @@ from pokemon.battle.battleinstance import (
         generate_trainer_pokemon,
 )
 from pokemon.helpers.party_helpers import has_usable_pokemon
+from utils.dex_suggestions import is_species_not_found_error, species_not_found_message
 
 
 class HuntSystem:
@@ -187,7 +188,12 @@ class HuntSystem:
 		if self.spawn_callback:
 			self.spawn_callback(hunter, result)
 
-		poke = create_battle_pokemon(selected_name, level, is_wild=True)
+		try:
+			poke = create_battle_pokemon(selected_name, level, is_wild=True)
+		except ValueError as err:
+			if is_species_not_found_error(err):
+				return species_not_found_message(selected_name)
+			raise
 		intro_text = f"A wild {poke.name} appears!"
 		self._start_battle_with_selection(hunter, poke, BattleType.WILD, intro_text)
 		self._deduct_training_points(hunter, tp_cost)
@@ -237,7 +243,12 @@ class HuntSystem:
 		if self.spawn_callback:
 			self.spawn_callback(hunter, result)
 
-		poke = create_battle_pokemon(name, level, is_wild=True)
+		try:
+			poke = create_battle_pokemon(name, level, is_wild=True)
+		except ValueError as err:
+			if is_species_not_found_error(err):
+				return species_not_found_message(name)
+			raise
 		intro_text = f"A wild {poke.name} appears!"
 		self._start_battle_with_selection(hunter, poke, BattleType.WILD, intro_text)
 

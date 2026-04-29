@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.conf import settings
 from evennia import Command
 
+from utils.dex_suggestions import is_known_species, species_not_found_message
 from world.hunt_system import HuntSystem
 
 
@@ -70,6 +71,9 @@ class CmdCustomHunt(Command):
 			level = int(parts[1])
 		except ValueError:
 			self.caller.msg("Level must be a number.")
+			return
+		if not is_known_species(name):
+			self.caller.msg(species_not_found_message(name))
 			return
 
 		system = HuntSystem(self.caller.location)

@@ -137,6 +137,16 @@ def test_invalid_level_keeps_target():
 	assert option.get("goto")[1].get("target") is target
 
 
+def test_unknown_species_suggests_match_and_keeps_target():
+	caller = DummyCaller()
+	target = DummyTarget()
+	text, opts = menu.node_start(caller, raw_input="Pikachuu", target=target)
+	assert "Species 'Pikachuu' was not found in the Pokedex." in caller.msgs[-1]
+	assert "Did you mean Pikachu?" in caller.msgs[-1]
+	option = opts[0]
+	assert option.get("goto")[1].get("target") is target
+
+
 def teardown_module():
 	if orig_pokedex is not None:
 		sys.modules["pokemon.dex"] = orig_pokedex

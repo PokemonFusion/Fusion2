@@ -6,6 +6,7 @@ evolution mechanics.
 
 from evennia import Command
 
+from utils.dex_suggestions import item_not_found_message, suggest_name
 from utils.locks import require_no_battle_lock
 
 
@@ -86,7 +87,11 @@ class CmdTeachMove(Command):
 
 		valid = [m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)]
 		if self.move_name.lower() not in valid:
-			self.caller.msg(f"{pokemon.name} cannot learn {self.move_name}.")
+			message = f"{pokemon.name} cannot learn {self.move_name}."
+			suggestion = suggest_name(self.move_name, valid)
+			if suggestion:
+				message += f" Did you mean {suggestion}?"
+			self.caller.msg(message)
 			return
 		if pokemon.learned_moves.filter(name__iexact=self.move_name).exists():
 			self.caller.msg(f"{pokemon.name} already knows {self.move_name}.")
@@ -184,7 +189,9 @@ class CmdEvolvePokemon(Command):
 			return
 
 		if item and not self.caller.has_item(item):
-			self.caller.msg(f"You do not have a {item}.")
+			self.caller.msg(
+				item_not_found_message(item, f"You do not have a {item}.")
+			)
 			return
 
 		from pokemon.data.evolution import attempt_evolution

@@ -4,6 +4,7 @@ from evennia import Command
 
 from pokemon.battle.engine import BattleMove, _normalize_key
 from pokemon.dex import MOVEDEX
+from utils.dex_suggestions import move_not_found_message
 
 
 class CmdDebugMoveData(Command):
@@ -27,7 +28,7 @@ class CmdDebugMoveData(Command):
 		key = getattr(move_obj, "key", _normalize_key(name))
 		dex_move = MOVEDEX.get(key)
 		if not dex_move:
-			self.caller.msg("Move not found.")
+			self.caller.msg(move_not_found_message(name, "Move not found."))
 			return
 
 		raw = getattr(dex_move, "raw", {}) or {}

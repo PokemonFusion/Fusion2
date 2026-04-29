@@ -12,6 +12,7 @@ menu_calls = []
 orig_evennia = sys.modules.get("evennia")
 orig_enhanced = sys.modules.get("utils.enhanced_evmenu")
 orig_pokemon_utils = sys.modules.get("utils.pokemon_utils")
+orig_dex = sys.modules.get("pokemon.dex")
 
 fake_evennia = types.ModuleType("evennia")
 fake_evennia.Command = type("Command", (), {})
@@ -42,6 +43,8 @@ fake_pokemon_utils = types.ModuleType("utils.pokemon_utils")
 
 
 def fake_grant_generated_pokemon(target, species, level, *, caller=None, item=None):
+	if species == "Squirtel":
+		raise ValueError(f"Species '{species}' not found in Pokedex")
 	grant_calls.append(
 		{
 			"target": target,
@@ -180,8 +183,44 @@ def test_quick_grant_uses_generated_helper():
 	assert call["caller"] is caller
 
 
+def test_quick_grant_unknown_species_reports_suggestion():
+	menu_calls.clear()
+	search_calls.clear()
+	grant_calls.clear()
+	fake_dex = types.ModuleType("pokemon.dex")
+	fake_dex.POKEDEX = {
+		"squirtle": types.SimpleNamespace(name="Squirtle"),
+		"wartortle": types.SimpleNamespace(name="Wartortle"),
+	}
+	sys.modules["pokemon.dex"] = fake_dex
+	cmd = cmd_mod.CmdGivePokemon()
+	caller = DummyCaller()
+	target = DummyChar("Trg")
+	fake_search_object.return_value = [target]
+	cmd.caller = caller
+	cmd.args = "Trg=Squirtel, 12"
+
+	try:
+		cmd.func()
+	finally:
+		if orig_dex is not None:
+			sys.modules["pokemon.dex"] = orig_dex
+		else:
+			sys.modules.pop("pokemon.dex", None)
+
+	assert not menu_calls
+	assert not grant_calls
+	assert caller.msgs
+	assert "Species 'Squirtel' was not found in the Pokedex." in caller.msgs[-1]
+	assert "Did you mean Squirtle?" in caller.msgs[-1]
+
+
 def teardown_module():
 	if orig_pokemon_utils is not None:
 		sys.modules["utils.pokemon_utils"] = orig_pokemon_utils
 	else:
 		sys.modules.pop("utils.pokemon_utils", None)
+	if orig_dex is not None:
+		sys.modules["pokemon.dex"] = orig_dex
+	else:
+		sys.modules.pop("pokemon.dex", None)

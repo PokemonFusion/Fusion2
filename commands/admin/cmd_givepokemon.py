@@ -1,6 +1,7 @@
 from evennia import Command
 
 import menus.give_pokemon as give_pokemon
+from utils.dex_suggestions import is_species_not_found_error, species_not_found_message
 from utils.enhanced_evmenu import EnhancedEvMenu
 
 
@@ -47,7 +48,13 @@ class CmdGivePokemon(Command):
 				return
 			from utils.pokemon_utils import grant_generated_pokemon
 
-			grant_generated_pokemon(target, species, max(1, level), caller=self.caller)
+			try:
+				grant_generated_pokemon(target, species, max(1, level), caller=self.caller)
+			except ValueError as err:
+				if is_species_not_found_error(err):
+					self.caller.msg(species_not_found_message(species))
+				else:
+					self.caller.msg(str(err))
 			return
 
 		EnhancedEvMenu(
