@@ -1,0 +1,194 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block titleblock %}Home{% endblock %}
+
+{% block header_ext %}{% endblock %}
+
+{% block content %}
+<section class="fusion-hero" aria-labelledby="fusion-hero-title">
+  <div class="fusion-hero-copy">
+    <p class="fusion-kicker">Evennia-powered online RPG</p>
+    <h1 id="fusion-hero-title">Begin your <span>fusion</span>&nbsp;journey.</h1>
+    <p class="fusion-lede">
+      Collect and train companions, explore routes, meet other trainers, and battle
+      strategically in a persistent online world.
+    </p>
+
+    <div class="fusion-actions" aria-label="Primary actions">
+      {% if webclient_enabled %}
+      <a class="btn btn-fusion-primary" href="{% url 'webclient:index' %}">Play in Browser</a>
+      {% endif %}
+
+      {% if not account and register_enabled %}
+      <a class="btn btn-fusion-secondary" href="{% url 'register' %}">Create Account</a>
+      {% elif account %}
+      <a class="btn btn-fusion-secondary" href="{% url 'my-sheet' %}">View My Sheet</a>
+      {% else %}
+      <a class="btn btn-fusion-secondary" href="{% url 'help' %}">Read the Guide</a>
+      {% endif %}
+    </div>
+
+    <div class="fusion-hero-meta" aria-label="Server summary">
+      <span class="fusion-status is-online">Server Online</span>
+      <span>
+        {% if num_accounts_connected == 0 or num_accounts_connected == 'no one' %}
+          Quiet right now
+        {% elif num_accounts_connected == 1 %}
+          1 trainer online
+        {% else %}
+          {{ num_accounts_connected }} trainers online
+        {% endif %}
+      </span>
+      <span>{{ num_accounts_registered }} registered account{{ num_accounts_registered|pluralize }}</span>
+      <span>{{ num_exits }} mapped exit{{ num_exits|pluralize }}</span>
+    </div>
+  </div>
+
+  <aside class="fusion-terminal" aria-label="Webclient preview">
+    <div class="fusion-terminal-top">
+      <span class="fusion-terminal-title">Fusion2 Webclient</span>
+      <span class="fusion-terminal-state">connected</span>
+    </div>
+    <div class="fusion-terminal-body">
+<pre><span class="term-muted">&gt; look</span>
+Training Yard
+Morning light cuts across a field of practice rings.
+Three trainers compare notes near the fusion lab.
+
+<span class="term-accent">A scout waves you over.</span>
+"New routes opened beyond Copper Ridge."
+
+<span class="term-muted">&gt; party</span>
+Slot 1  Emberling   Lv 12  <span class="type-inline type-fire">FIRE</span>
+Slot 2  Mosskite    Lv 10  <span class="type-inline type-grass">GRASS</span>
+Slot 3  Voltrill    Lv 09  <span class="type-inline type-spark">SPARK</span>
+
+<span class="term-muted">&gt;</span></pre>
+    </div>
+    <div class="fusion-terminal-footer">
+      <span class="term-muted">&gt;</span>
+      <span>Ready for your next command</span>
+    </div>
+  </aside>
+</section>
+
+<section class="fusion-dashboard" aria-label="Game dashboard">
+  <article class="fusion-stat-card">
+    <span class="fusion-stat-icon icon-status" aria-hidden="true"></span>
+    <span class="fusion-stat-label">Server Status</span>
+    <strong>Online</strong>
+    <p>The world is ready.</p>
+  </article>
+
+  <article class="fusion-stat-card">
+    <span class="fusion-stat-icon icon-trainers" aria-hidden="true"></span>
+    <span class="fusion-stat-label">Trainers Online</span>
+    <strong>{% if num_accounts_connected == 0 or num_accounts_connected == 'no one' %}0{% else %}{{ num_accounts_connected }}{% endif %}</strong>
+    <p>
+      {% if num_accounts_connected == 0 or num_accounts_connected == 'no one' %}
+        No active trainer right now.
+      {% else %}
+        Connected right now.
+      {% endif %}
+    </p>
+  </article>
+
+  <article class="fusion-stat-card">
+    <span class="fusion-stat-icon icon-world" aria-hidden="true"></span>
+    <span class="fusion-stat-label">World</span>
+    <strong>{{ num_exits }}</strong>
+    <p>Mapped exit{{ num_exits|pluralize }} across {{ num_rooms }} room{{ num_rooms|pluralize }}.</p>
+  </article>
+
+  <article class="fusion-stat-card">
+    <span class="fusion-stat-icon icon-character" aria-hidden="true"></span>
+    <span class="fusion-stat-label">Characters</span>
+    <strong>{{ num_characters }}</strong>
+    <p>Created by trainers.</p>
+  </article>
+
+  <article class="fusion-stat-card">
+    <span class="fusion-stat-icon icon-accounts" aria-hidden="true"></span>
+    <span class="fusion-stat-label">Accounts</span>
+    <strong>{{ num_accounts_registered }}</strong>
+    <p>Registered total.</p>
+  </article>
+</section>
+
+<section class="fusion-lower-grid" aria-label="World details">
+  <div class="fusion-panel fusion-notes">
+    <div class="fusion-section-heading">
+      <p class="fusion-kicker">Recent World News</p>
+      <h2>Development Server Notes</h2>
+    </div>
+    <p>
+      Fusion 2 is actively evolving. Expect balance passes, route updates, and
+      trainer-facing improvements while the test server takes shape.
+    </p>
+    <ul class="fusion-news-list">
+      <li>Browser play is the primary way to jump into the world.</li>
+      <li>Character sheets expose roster and trainer progress from the website.</li>
+      <li>Builder tools remain available for staff through the Room Editor.</li>
+    </ul>
+  </div>
+
+  <div class="fusion-play-section" aria-labelledby="fusion-play-title">
+    <div class="fusion-section-heading">
+      <p class="fusion-kicker">How It Plays</p>
+      <h2 id="fusion-play-title">A text RPG built for steady adventure</h2>
+    </div>
+    <div class="fusion-feature-grid">
+      <article class="fusion-feature-card">
+        <img src="{% static 'website/images/fusion2/icon-route.svg' %}" alt="" width="44" height="44">
+        <h3>Explore Routes</h3>
+        <p>Venture through towns, routes, and wild areas full of discovery.</p>
+      </article>
+      <article class="fusion-feature-card">
+        <img src="{% static 'website/images/fusion2/icon-team.svg' %}" alt="" width="44" height="44">
+        <h3>Train Your Team</h3>
+        <p>Train, fuse, and level up your companions to build your strategy.</p>
+      </article>
+      <article class="fusion-feature-card">
+        <img src="{% static 'website/images/fusion2/icon-battle.svg' %}" alt="" width="44" height="44">
+        <h3>Battle Strategically</h3>
+        <p>Use moves, items, and team synergy to outthink your opponents.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="fusion-connect-section" aria-label="Connection details">
+  <div class="fusion-panel fusion-connect">
+    <div class="fusion-section-heading">
+      <p class="fusion-kicker">Connection</p>
+      <h2>Other ways to connect</h2>
+    </div>
+    {% if telnet_enabled or telnet_ssl_enabled or ssh_enabled %}
+      {% if telnet_enabled %}
+      <p class="fusion-connection-line">
+        <strong>Telnet</strong>
+        <span>{{ server_hostname }}:
+        {% for port in telnet_ports %}{% if not forloop.first %}, {% endif %}{{ port }}{% endfor %}</span>
+      </p>
+      {% endif %}
+      {% if telnet_ssl_enabled %}
+      <p class="fusion-connection-line">
+        <strong>Telnet SSL</strong>
+        <span>{{ server_hostname }}:
+        {% for port in telnet_ssl_ports %}{% if not forloop.first %}, {% endif %}{{ port }}{% endfor %}</span>
+      </p>
+      {% endif %}
+      {% if ssh_enabled %}
+      <p class="fusion-connection-line">
+        <strong>SSH</strong>
+        <span>{{ server_hostname }}:
+        {% for port in ssh_ports %}{% if not forloop.first %}, {% endif %}{{ port }}{% endfor %}</span>
+      </p>
+      {% endif %}
+    {% else %}
+      <p>Browser play is currently the supported public connection path.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

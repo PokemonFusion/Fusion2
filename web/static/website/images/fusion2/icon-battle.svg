@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Battle Strategically Icon</title>
+  <desc id="desc">Original crossed training batons icon.</desc>
+  <circle cx="64" cy="64" r="58" fill="#F8E4D6"/>
+  <path d="M36 22l54 74" stroke="#853925" stroke-width="9" stroke-linecap="round"/>
+  <path d="M90 22L36 96" stroke="#B64B30" stroke-width="9" stroke-linecap="round"/>
+  <path d="M31 100l16-16M97 100 81 84" stroke="#3E3029" stroke-width="8" stroke-linecap="round"/>
+  <path d="M47 46 36 57M81 46l11 11" stroke="#F4C06B" stroke-width="5" stroke-linecap="round"/>
+</svg>
