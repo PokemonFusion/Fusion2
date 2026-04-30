@@ -66,10 +66,34 @@ def setup_module():
 	evennia_mod = types.ModuleType("evennia")
 	utils_pkg = types.ModuleType("evennia.utils")
 	utils_mod = types.ModuleType("evennia.utils.utils")
-	utils_mod.format_grid = lambda elements, width=78, sep="  ", line_prefix="", verbatim_elements=None: [
-		" ".join(elements)
-	]
-	utils_mod.pad = lambda text, width=78, fillchar="-": text
+	utils_mod.format_grid_calls = []
+	utils_mod.pad_calls = []
+
+	def format_grid(elements, width=78, sep="  ", line_prefix="", verbatim_elements=None):
+		utils_mod.format_grid_calls.append(width)
+		row = []
+		rows = []
+		row_len = 0
+		for element in elements:
+			element_len = len(element)
+			next_len = row_len + len(sep) + element_len if row else element_len
+			if row and next_len > width:
+				rows.append(line_prefix + sep.join(row))
+				row = [element]
+				row_len = element_len
+			else:
+				row.append(element)
+				row_len = next_len
+		if row:
+			rows.append(line_prefix + sep.join(row))
+		return rows
+
+	def pad(text, width=78, fillchar="-"):
+		utils_mod.pad_calls.append(width)
+		return text + fillchar * max(0, width - len(text))
+
+	utils_mod.format_grid = format_grid
+	utils_mod.pad = pad
 	utils_pkg.utils = utils_mod
 	evennia_mod.utils = utils_pkg
 	sys.modules["evennia"] = evennia_mod
@@ -148,3 +172,43 @@ def test_help_category_lists_subgroups():
 	assert "Dex" in output
 	assert "attack" not in output
 	assert "pokedex" not in output
+
+
+def test_help_index_width_is_capped_for_wide_clients():
+	cmd_mod = load_cmd_module()
+	utils_mod = sys.modules["evennia.utils.utils"]
+	utils_mod.format_grid_calls.clear()
+	utils_mod.pad_calls.clear()
+
+	class WideHelp(cmd_mod.CmdHelp):
+		def client_width(self):
+			return 180
+
+	cmd = WideHelp()
+	output = cmd.format_help_index(
+		{
+			"Pokemon": [
+				"+battlewatch",
+				"+battle/watch",
+				"+expshare",
+				"+heal",
+				"+hunt",
+				"+learn",
+				"+leave",
+				"+move",
+				"+moveset",
+				"+pokestore",
+				"+sheet/pokemon",
+				"+showbattle",
+			],
+		},
+		{},
+		click_topics=False,
+	)
+	lines = output.splitlines()
+	assert max(len(line) for line in lines) <= cmd_mod.HELP_INDEX_WIDTH
+	assert "Commands" + "-" * (cmd_mod.HELP_INDEX_WIDTH - len("Commands")) in output
+	assert any(width == cmd_mod.HELP_INDEX_WIDTH for width in utils_mod.pad_calls)
+	assert all(width <= cmd_mod.HELP_INDEX_WIDTH for width in utils_mod.format_grid_calls)
+	assert "+sheet/pokemon" in output
+	assert len(lines) > 3

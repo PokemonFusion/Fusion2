@@ -12,6 +12,9 @@ from evennia.commands.default.help import (
 from evennia.utils.utils import format_grid, pad
 
 
+HELP_INDEX_WIDTH = 78
+
+
 class CmdHelp(DefaultCmdHelp):
 	"""Help command supporting hierarchical categories."""
 
@@ -115,6 +118,10 @@ class CmdHelp(DefaultCmdHelp):
 		node = tree.setdefault(head, {})
 		self._add_to_tree(node, rest, topics)
 
+	def _help_index_width(self):
+		"""Cap index width so wide NAWS clients don't stretch the command list."""
+		return min(self.client_width(), HELP_INDEX_WIDTH)
+
 	def format_help_index(self, cmd_help_dict=None, db_help_dict=None, title_lone_category=False, click_topics=True):
 		cmd_tree: dict[str, dict] = {}
 		db_tree: dict[str, dict] = {}
@@ -123,7 +130,7 @@ class CmdHelp(DefaultCmdHelp):
 		for cat, topics in (db_help_dict or {}).items():
 			self._add_to_tree(db_tree, [p.strip() for p in cat.split("/") if p.strip()], topics)
 
-		width = self.client_width()
+		width = self._help_index_width()
 
 		def render(tree, indent=0):
 			lines = []
