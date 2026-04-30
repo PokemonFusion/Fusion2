@@ -1,0 +1,553 @@
+:root {
+  --fusion-bg: #f7efe1;
+  --fusion-bg-deep: #efe3d1;
+  --fusion-surface: #fff9ee;
+  --fusion-surface-strong: #fffdf7;
+  --fusion-ink: #2d2824;
+  --fusion-muted: #776b61;
+  --fusion-line: #e4d6c3;
+  --fusion-red: #c95732;
+  --fusion-red-dark: #9c3c28;
+  --fusion-teal: #0b5e62;
+  --fusion-teal-dark: #084f52;
+  --fusion-mint: #ddf2ef;
+  --fusion-yellow: #d99a31;
+  --fusion-terminal: #101b18;
+  --fusion-terminal-soft: #17251f;
+  --fusion-terminal-line: #263b35;
+  --fusion-focus: #d99a31;
+  --shadow-soft: 0 16px 36px rgba(71, 49, 33, .11);
+}
+
+html,
+body {
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  background:
+    linear-gradient(rgba(201, 84, 54, .026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 138, 132, .024) 1px, transparent 1px),
+    radial-gradient(circle at 18% 8%, rgba(217, 154, 49, .12), transparent 26%),
+    linear-gradient(180deg, var(--fusion-bg), var(--fusion-bg-deep));
+  background-size: 56px 56px, 56px 56px, 980px 560px, 100% 100%;
+  color: #d9eadc;
+  font-family: "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
+  font-size: 1rem;
+  letter-spacing: 0;
+  line-height: 1.45;
+  overflow: hidden;
+}
+
+body,
+button,
+textarea {
+  letter-spacing: 0;
+}
+
+button,
+textarea {
+  font-family: inherit;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--fusion-focus);
+  outline-offset: 2px;
+}
+
+#clientwrapper,
+.fusion-client-shell {
+  height: 100%;
+}
+
+.fusion-client-shell {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  padding: .75rem;
+}
+
+.fusion-client-topbar {
+  align-items: center;
+  background:
+    linear-gradient(90deg, rgba(217, 154, 49, .16), transparent 38%),
+    linear-gradient(180deg, #fff9ee, #f2e6d4);
+  border: 1px solid rgba(45, 40, 36, .10);
+  border-radius: 8px 8px 0 0;
+  box-shadow: var(--shadow-soft);
+  color: var(--fusion-ink);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: .62rem .8rem;
+}
+
+.fusion-client-brand {
+  align-items: center;
+  color: var(--fusion-ink);
+  display: inline-flex;
+  gap: .65rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.fusion-client-brand:hover,
+.fusion-client-brand:focus {
+  color: var(--fusion-teal-dark);
+  text-decoration: none;
+}
+
+.fusion-client-brand img {
+  flex: 0 0 auto;
+  height: 34px;
+  width: 34px;
+}
+
+.fusion-client-brand strong,
+.fusion-client-brand small {
+  display: block;
+  line-height: 1.15;
+}
+
+.fusion-client-brand strong {
+  font-family: "Nunito", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.fusion-client-brand small {
+  color: var(--fusion-muted);
+  font-family: "Nunito", system-ui, sans-serif;
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.fusion-client-status {
+  align-items: center;
+  background: rgba(255, 253, 247, .82);
+  border: 1px solid var(--fusion-line);
+  border-radius: 8px;
+  color: var(--fusion-muted);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: "Nunito", system-ui, sans-serif;
+  font-size: .84rem;
+  font-weight: 900;
+  gap: .45rem;
+  min-height: 34px;
+  padding: .24rem .44rem .24rem .55rem;
+  text-transform: uppercase;
+}
+
+.fusion-status-light {
+  background: var(--fusion-yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(217, 154, 49, .16);
+  display: inline-block;
+  height: .62rem;
+  width: .62rem;
+}
+
+.fusion-client-status[data-state="connected"] {
+  color: var(--fusion-teal-dark);
+}
+
+.fusion-client-status[data-state="connected"] .fusion-status-light {
+  background: var(--fusion-teal);
+  box-shadow: 0 0 0 4px rgba(11, 94, 98, .13);
+}
+
+.fusion-client-status[data-state="disconnected"],
+.fusion-client-status[data-state="error"] {
+  color: var(--fusion-red-dark);
+}
+
+.fusion-client-status[data-state="disconnected"] .fusion-status-light,
+.fusion-client-status[data-state="error"] .fusion-status-light {
+  background: var(--fusion-red);
+  box-shadow: 0 0 0 4px rgba(201, 84, 54, .14);
+}
+
+.fusion-reconnect-button {
+  background: var(--fusion-yellow);
+  border: 1px solid rgba(45, 40, 36, .12);
+  border-radius: 6px;
+  color: #2d251c;
+  cursor: pointer;
+  font-family: "Nunito", system-ui, sans-serif;
+  font-size: .78rem;
+  font-weight: 900;
+  margin-left: .15rem;
+  padding: .28rem .52rem;
+}
+
+.fusion-command-bar {
+  align-items: center;
+  background: rgba(255, 249, 238, .88);
+  border: 1px solid rgba(45, 40, 36, .10);
+  border-top: 0;
+  display: flex;
+  gap: .45rem;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: .48rem .62rem;
+}
+
+.fusion-command-list {
+  display: flex;
+  gap: .45rem;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.fusion-command-button {
+  background: #fffdf7;
+  border: 1px solid var(--fusion-line);
+  border-radius: 8px;
+  color: var(--fusion-ink);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: "Nunito", system-ui, sans-serif;
+  font-size: .86rem;
+  font-weight: 900;
+  line-height: 1;
+  min-height: 34px;
+  padding: .55rem .72rem;
+}
+
+.fusion-command-button:hover,
+.fusion-command-button:focus {
+  background: #fff3d4;
+  border-color: #e4c877;
+}
+
+.fusion-client-stage {
+  background: var(--fusion-terminal);
+  border: 1px solid rgba(45, 40, 36, .18);
+  border-radius: 0 0 8px 8px;
+  box-shadow: var(--shadow-soft);
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+#toolbar {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: .35rem;
+  position: static !important;
+  z-index: 1;
+}
+
+#optionsbutton,
+#splitbutton,
+#panebutton,
+#undobutton {
+  background: rgba(255, 249, 238, .92);
+  border: 1px solid var(--fusion-line);
+  border-radius: 8px;
+  color: var(--fusion-teal-dark);
+  font-size: 1.15rem;
+  height: 2.1rem;
+  line-height: 1;
+  width: 2.1rem;
+}
+
+#main,
+#main-sub {
+  background: var(--fusion-terminal);
+}
+
+#messagewindow,
+.content {
+  background: var(--fusion-terminal);
+  color: #d9eadc;
+  overflow-wrap: break-word;
+  scrollbar-color: #405b51 #0c1211;
+  scrollbar-width: thin;
+}
+
+#messagewindow::-webkit-scrollbar,
+.content::-webkit-scrollbar {
+  width: 10px;
+}
+
+#messagewindow::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-track {
+  background: #0c1211;
+}
+
+#messagewindow::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb {
+  background: #405b51;
+  border-radius: 999px;
+}
+
+.out {
+  background: transparent;
+  color: #d9eadc;
+  padding: .08rem .1rem;
+  white-space: pre-wrap;
+}
+
+.inp {
+  color: #87a39b;
+}
+
+.sys {
+  color: #a9ebd8;
+}
+
+.err {
+  color: #ff9b87;
+  font-weight: 700;
+}
+
+.prompt {
+  background: #0c1211;
+  border-bottom: 1px solid var(--fusion-terminal-line);
+  color: var(--fusion-yellow);
+  min-height: 1.5rem;
+  overflow: hidden;
+  padding: .1rem .55rem;
+}
+
+.inputwrap {
+  background: #0c1211;
+  border-top: 1px solid var(--fusion-terminal-line);
+}
+
+.inputfieldwrapper {
+  align-items: stretch;
+  background: #0c1211;
+  display: flex;
+  height: calc(100% - 1.5rem);
+}
+
+.inputfield,
+#inputfield,
+#inputsizer {
+  background: #0c1211;
+  border: 0;
+  color: #fff8ea;
+  font-size: 1rem;
+  line-height: 1.45;
+  min-height: 100%;
+  padding: .65rem .75rem;
+  resize: none;
+}
+
+.inputfield:focus,
+#inputfield:focus {
+  background: #101b18;
+  color: #fff8ea;
+  box-shadow: inset 0 0 0 2px rgba(217, 154, 49, .65);
+}
+
+.inputsend,
+#inputsend {
+  background: var(--fusion-red);
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  flex: 0 0 3rem;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.inputsend:hover,
+.inputsend:focus,
+#inputsend:hover,
+#inputsend:focus {
+  background: var(--fusion-red-dark);
+}
+
+.lm_goldenlayout,
+.lm_content {
+  background: var(--fusion-terminal);
+}
+
+.lm_header {
+  background: var(--fusion-terminal-soft);
+}
+
+.lm_header .lm_tab {
+  align-items: center;
+  background: #20342d;
+  border-color: var(--fusion-terminal-line);
+  border-radius: 6px 6px 0 0;
+  box-sizing: border-box;
+  color: #d9eadc;
+  display: inline-flex;
+  gap: .24rem;
+  height: 1.7rem;
+  margin-right: .45rem;
+  min-width: 12rem;
+  overflow: hidden;
+  padding: .18rem .42rem .16rem;
+}
+
+.lm_header .lm_tab.lm_active {
+  background: #0c1211;
+  color: #fff8ea;
+}
+
+.lm_header .lm_tab > .lm_title {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.lm_header .lm_tab > .lm_title:not([style]) {
+  color: #fff8ea;
+  flex: 1 1 auto;
+  font-size: .84rem;
+  font-weight: 800;
+  justify-content: flex-start;
+  min-width: 4.5rem;
+  overflow: hidden;
+  padding: 0 .3rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lm_header .lm_tab > .lm_title[style] {
+  background: rgba(255, 249, 238, .08);
+  border: 1px solid rgba(217, 234, 220, .18);
+  border-radius: 4px;
+  color: #d9eadc;
+  flex: 0 0 1.18rem;
+  font-size: .74rem !important;
+  height: 1.18rem;
+  opacity: .86;
+  padding: 0 !important;
+  width: 1.18rem !important;
+}
+
+.lm_header .lm_tab > .lm_title[style]:hover {
+  background: rgba(217, 154, 49, .18);
+  border-color: rgba(217, 154, 49, .45);
+  color: #fff8ea;
+}
+
+.lm_header .lm_tab #optionsbutton.lm_title {
+  display: none !important;
+}
+
+.lm_splitter {
+  background: var(--fusion-terminal-line);
+}
+
+.lm_controls .lm_close,
+.lm_controls .lm_maximise,
+.lm_controls .lm_popout {
+  opacity: .72;
+}
+
+.dialog {
+  background: #17251f;
+  border: 1px solid var(--fusion-terminal-line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+  color: #d9eadc;
+}
+
+#optionsdialog,
+#helpdialog {
+  max-width: calc(100vw - 2rem);
+}
+
+.dialogcontent,
+#helpdialog .dialogcontent {
+  background: #101b18;
+  color: #d9eadc;
+}
+
+.type-inline,
+.type-chip {
+  border-radius: 6px;
+  color: #fff;
+  display: inline-block;
+  font-weight: 900;
+  line-height: 1;
+  padding: .18rem .36rem;
+  text-transform: lowercase;
+}
+
+.type-fire { background: #d86637; }
+.type-water { background: #4d7fc9; }
+.type-electric,
+.type-spark { background: #e2b72f; color: #2a241c; }
+.type-grass { background: #5f9d48; }
+.type-ice { background: #78bdbb; color: #162522; }
+.type-fighting { background: #a94138; }
+.type-poison { background: #8f5190; }
+.type-ground { background: #c79d4c; color: #2a241c; }
+.type-flying { background: #8d7ac9; }
+.type-psychic { background: #cf5f83; }
+.type-bug { background: #8b9f32; color: #202215; }
+.type-rock { background: #9b8540; }
+.type-ghost { background: #64507f; }
+.type-dragon { background: #6958c8; }
+.type-dark { background: #594b40; }
+.type-steel { background: #9092a5; color: #17191f; }
+.type-fairy { background: #cf87a4; color: #261721; }
+
+@media screen and (max-width: 720px) {
+  body {
+    font-size: .92rem;
+    line-height: 1.38;
+  }
+
+  .fusion-client-shell {
+    padding: .45rem;
+  }
+
+  .fusion-client-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .55rem;
+    min-height: 0;
+  }
+
+  .fusion-client-status {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+
+  .fusion-command-bar {
+    gap: .35rem;
+    min-height: 44px;
+    padding: .4rem;
+  }
+
+  .fusion-command-list {
+    gap: .35rem;
+  }
+
+  .fusion-command-button {
+    font-size: .8rem;
+    min-height: 32px;
+    padding: .48rem .58rem;
+  }
+
+  #toolbar {
+    position: static !important;
+  }
+
+  .inputfield,
+  #inputfield {
+    font-size: .92rem;
+  }
+}

@@ -30,7 +30,7 @@
     </div>
 
     <div class="fusion-hero-meta" aria-label="Server summary">
-      <span class="fusion-status is-online">Server Online</span>
+      <span class="fusion-status status-{{ site_status_class }}">{{ site_status_label }}</span>
       <span>
         {% if num_accounts_connected == 0 or num_accounts_connected == 'no one' %}
           Quiet right now
@@ -74,11 +74,11 @@ Slot 3  Voltrill    Lv 09  <span class="type-inline type-spark">SPARK</span>
 </section>
 
 <section class="fusion-dashboard" aria-label="Game dashboard">
-  <article class="fusion-stat-card">
+  <article class="fusion-stat-card fusion-play-status-card status-{{ site_status_class }}">
     <span class="fusion-stat-icon icon-status" aria-hidden="true"></span>
-    <span class="fusion-stat-label">Server Status</span>
-    <strong>Online</strong>
-    <p>The world is ready.</p>
+    <span class="fusion-stat-label">Play Status</span>
+    <strong>{{ site_status_label }}</strong>
+    <p>{{ site_status_message }}</p>
   </article>
 
   <article class="fusion-stat-card">
