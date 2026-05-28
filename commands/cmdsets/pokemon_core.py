@@ -35,6 +35,7 @@ from commands.player.cmd_party import (
         CmdDepositPokemon,
         CmdSetHoldItem,
         CmdShowBox,
+        CmdSwapPokemon,
         CmdWithdrawPokemon,
 )
 from commands.player.cmd_sheet import CmdSheet, CmdSheetPokemon
@@ -58,6 +59,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdChooseStarter,
 			CmdDepositPokemon,
 			CmdWithdrawPokemon,
+			CmdSwapPokemon,
 			CmdShowBox,
 			CmdSetHoldItem,
 			CmdSheet,

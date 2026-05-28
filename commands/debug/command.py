@@ -1,6 +1,126 @@
+import logging
+
 from evennia import Command
 
+try:  # pragma: no cover - Evennia may be stubbed in tests
+	from evennia.utils import logger as evennia_logger
+except Exception:  # pragma: no cover
+	evennia_logger = None
+
 from utils.dex_suggestions import move_not_found_message, pokemon_not_found_message
+
+
+log = logging.getLogger(__name__)
+
+
+def _db_bool(obj, attr, default=False):
+	"""Return a boolean persistent db attribute from an Evennia-ish object."""
+	db = getattr(obj, "db", None)
+	if db is None:
+		return default
+	try:
+		return bool(getattr(db, attr))
+	except Exception:
+		return default
+
+
+def _set_db_bool(obj, attr, value):
+	"""Set a boolean persistent db attribute on an Evennia-ish object."""
+	db = getattr(obj, "db", None)
+	if db is not None:
+		setattr(db, attr, bool(value))
+
+
+def _attribute_bool(obj, attr, default=False):
+	"""Return a boolean AttributeHandler value from an Evennia-ish object."""
+	attributes = getattr(obj, "attributes", None)
+	get = getattr(attributes, "get", None)
+	if not callable(get):
+		return default
+	try:
+		return bool(get(attr, default=default))
+	except TypeError:
+		try:
+			return bool(get(attr))
+		except Exception:
+			return default
+	except Exception:
+		return default
+
+
+def _html_flagged(obj):
+	"""Return whether a recipient has opted into HTML-targeted emits."""
+	return (
+		_db_bool(obj, "html")
+		or _db_bool(obj, "html_enabled")
+		or _attribute_bool(obj, "html")
+		or _attribute_bool(obj, "html_enabled")
+	)
+
+
+def _spoof_identity(caller):
+	"""Return the MUX-style NOSPOOF identity string for an emitter."""
+	name = getattr(caller, "key", None) or getattr(caller, "name", None) or str(caller)
+	dbref = getattr(caller, "id", None)
+	return f"{name}(#{dbref})" if dbref is not None else str(name)
+
+
+def _is_room(obj):
+	"""Best-effort room check that works in Evennia and lightweight tests."""
+	if not obj:
+		return False
+	is_typeclass = getattr(obj, "is_typeclass", None)
+	if callable(is_typeclass):
+		for path in (
+			"typeclasses.rooms.FusionRoom",
+			"typeclasses.rooms.Room",
+			"evennia.objects.objects.DefaultRoom",
+		):
+			try:
+				if is_typeclass(path, inherit=True):
+					return True
+			except TypeError:
+				if is_typeclass(path):
+					return True
+			except Exception:
+				continue
+	return obj.__class__.__name__.lower().endswith("room")
+
+
+def _outer_room(obj):
+	"""Walk outward from an object/container until a room is found."""
+	current = obj
+	seen = set()
+	while current and id(current) not in seen:
+		seen.add(id(current))
+		if _is_room(current):
+			return current
+		current = getattr(current, "location", None)
+	return obj
+
+
+def _emit_to_location(caller, location, message, html_only=False):
+	"""Emit to a location, showing attribution only to NOSPOOF recipients."""
+	if not location:
+		caller.msg("You have no location to spoof from.")
+		return
+
+	identity = _spoof_identity(caller)
+	attributed = f"[{identity}] {message}"
+	for receiver in list(getattr(location, "contents", []) or []):
+		if html_only and not _html_flagged(receiver):
+			continue
+		msg = getattr(receiver, "msg", None)
+		if not callable(msg):
+			continue
+		msg(attributed if _db_bool(receiver, "nospoof") else message)
+
+	room_name = getattr(location, "key", None) or getattr(location, "name", None) or location
+	audit = f"SPOOF {identity} in {room_name}: {message}"
+	if evennia_logger and hasattr(evennia_logger, "log_info"):
+		evennia_logger.log_info(audit)
+	else:
+		log.info(audit)
 
 
 def heal_party(char):
@@ -231,7 +351,7 @@ class CmdSpoof(Command):
 
 	Usage:
 	    spoof <message>
-	    @emit <message>
+	    @emit[/here|/room] <message>
 	"""
 
 	key = "spoof"
@@ -240,7 +360,7 @@ class CmdSpoof(Command):
 	help_category = "General"
 
 	def func(self):
-		"""Send the raw message to the room."""
+		"""Send the raw message, with attribution for NOSPOOF recipients."""
 		message = self.args.strip()
 		if not message:
 			self.caller.msg("Usage: spoof <message>")
@@ -249,7 +369,53 @@ class CmdSpoof(Command):
 		if not location:
 			self.caller.msg("You have no location to spoof from.")
 			return
-		location.msg_contents(message)
+		switches = {switch.lower() for switch in getattr(self, "switches", [])}
+		html_only = "html" in switches
+		targets = []
+		if not (switches & {"here", "room"}) or "here" in switches:
+			targets.append(location)
+		if "room" in switches:
+			targets.append(_outer_room(location))
+
+		seen = set()
+		for target in targets:
+			if id(target) in seen:
+				continue
+			seen.add(id(target))
+			_emit_to_location(self.caller, target, message, html_only=html_only)
+
+
+class CmdNoSpoof(Command):
+	"""Toggle whether raw emits show their source.
+
+	Usage:
+	  nospoof
+	  nospoof on
+	  nospoof off
+	"""
+
+	key = "nospoof"
+	aliases = ["@nospoof", "+nospoof"]
+	locks = "cmd:all()"
+	help_category = "General"
+
+	def func(self):
+		"""Toggle or set the caller's NOSPOOF preference."""
+		arg = (self.args or "").strip().lower()
+		current = _db_bool(self.caller, "nospoof")
+		if not arg:
+			new_value = not current
+		elif arg in {"on", "yes", "true", "1"}:
+			new_value = True
+		elif arg in {"off", "no", "false", "0"}:
+			new_value = False
+		else:
+			self.caller.msg("Usage: nospoof [on|off]")
+			return
+
+		_set_db_bool(self.caller, "nospoof", new_value)
+		status = "ON" if new_value else "OFF"
+		self.caller.msg(f"NOSPOOF is now {status}.")
 
 
 class CmdExpShare(Command):

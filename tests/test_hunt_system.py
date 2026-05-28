@@ -50,6 +50,7 @@ if "pokemon.battle.battleinstance" not in sys.modules:
 	sys.modules["pokemon.battle.battleinstance"] = battle_mod
 
 from world.hunt_system import HuntSystem
+from utils.pokemon_config import RARITY_WEIGHTS
 
 
 class DummyDB(types.SimpleNamespace):
@@ -138,3 +139,49 @@ def test_hunt_requires_conscious_pokemon():
 	hunter.storage = FaintedStorage()
 	msg = hs.perform_hunt(hunter)
 	assert msg == "You don't have any Pokémon able to battle."
+
+
+def test_hunt_chart_accepts_rarity_weights(monkeypatch):
+	room = DummyRoom()
+	room.db.encounter_rate = 100
+	room.db.hunt_chart = [
+		{"name": "Rattata", "rarity": "rare", "min_level": 5, "max_level": 5},
+		{"name": "Pidgey", "weight": 7, "min_level": 5, "max_level": 5},
+	]
+	hs = HuntSystem(room)
+	hunter = DummyHunter()
+	hunter.location = room
+	captured = {}
+
+	def fake_choices(entries, weights, k):
+		captured["weights"] = weights
+		return [entries[0]]
+
+	monkeypatch.setattr("world.hunt_system.random.choices", fake_choices)
+	monkeypatch.setattr("world.hunt_system.random.randint", lambda low, high: low)
+
+	msg = hs._resolve_wild_encounter(hunter, 0)
+
+	assert msg == "A wild Rattata (Lv 5) appeared!"
+	assert captured["weights"] == [RARITY_WEIGHTS["rare"], 7]
+
+
+def test_hunt_falls_back_to_spawn_table(monkeypatch):
+	room = DummyRoom()
+	room.db.encounter_rate = 100
+	room.db.hunt_chart = []
+	room.db.spawn_table = [{"species": "Pidgey", "rarity": "uncommon", "tiers": ["T2"]}]
+	captured = {}
+	hs = HuntSystem(room, spawn_callback=lambda hunter, data: captured.update(data))
+	hunter = DummyHunter()
+	hunter.location = room
+
+	monkeypatch.setattr("world.hunt_system.random.choices", lambda entries, weights, k: [entries[0]])
+	monkeypatch.setattr("world.hunt_system.random.randint", lambda low, high: low)
+
+	msg = hs._resolve_wild_encounter(hunter, 0)
+
+	assert msg == "A wild Pidgey (Lv 10) appeared!"
+	assert captured["data"]["weight"] == RARITY_WEIGHTS["uncommon"]
+	assert captured["data"]["min_level"] == 10
+	assert captured["data"]["max_level"] == 25

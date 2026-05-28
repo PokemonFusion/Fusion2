@@ -24,6 +24,7 @@ from pokemon.battle.battleinstance import (
 )
 from pokemon.helpers.party_helpers import has_usable_pokemon
 from utils.dex_suggestions import is_species_not_found_error, species_not_found_message
+from utils.pokemon_config import RARITY_WEIGHTS, TIERS
 
 
 class HuntSystem:
@@ -104,9 +105,45 @@ class HuntSystem:
 			return "You found a mysterious item!"  # placeholder
 		return None
 
+	def _as_list(self, value) -> List[str]:
+		if not value:
+			return ["any"]
+		if builtins.isinstance(value, str):
+			return [value]
+		return list(value)
+
+	def _normalize_spawn_entry(self, entry: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+		name = entry.get("name") or entry.get("species")
+		if not name:
+			return None
+
+		normalized = dict(entry)
+		normalized["name"] = name
+		normalized["time"] = self._as_list(normalized.get("time", ["any"]))
+		normalized["weather"] = self._as_list(normalized.get("weather", ["any"]))
+		if "weight" not in normalized:
+			normalized["weight"] = RARITY_WEIGHTS.get(str(normalized.get("rarity", "common")).lower(), 1)
+
+		if "min_level" not in normalized or "max_level" not in normalized:
+			tiers = [tier for tier in self._as_list(normalized.get("tiers", ["T1"])) if tier in TIERS]
+			if not tiers:
+				tiers = ["T1"]
+			lows = [TIERS[tier][0] for tier in tiers]
+			highs = [TIERS[tier][1] for tier in tiers]
+			normalized.setdefault("min_level", min(lows))
+			normalized.setdefault("max_level", max(highs))
+		return normalized
+
+	def _get_spawn_chart(self) -> List[Dict[str, Any]]:
+		chart = getattr(self.room.db, "hunt_chart", None) or []
+		if not chart:
+			chart = getattr(self.room.db, "spawn_table", None) or []
+		normalized = [self._normalize_spawn_entry(entry) for entry in chart]
+		return [entry for entry in normalized if entry is not None]
+
 	def _build_spawn_index(self) -> None:
 		"""Precompute spawn entries grouped by time of day and weather."""
-		chart = self.room.db.hunt_chart or []
+		chart = self._get_spawn_chart()
 		index: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
 		for entry in chart:
 			times = entry.get("time", ["any"])
@@ -122,7 +159,7 @@ class HuntSystem:
 
 	def _get_valid_entries(self, time_of_day: str, weather: str) -> List[Dict[str, Any]]:
 		"""Return spawn entries valid for the given time and weather."""
-		chart = self.room.db.hunt_chart or []
+		chart = self._get_spawn_chart()
 		if self._spawn_chart_cache != chart:
 			self._build_spawn_index()
 		valid: List[Dict[str, Any]] = []

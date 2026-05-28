@@ -21,12 +21,18 @@ if not settings.configured:
 class DummyOwnedPokemon:
 	"""Minimal OwnedPokemon stand-in for type lookup and template tests."""
 
-	def __init__(self, species, level=1, nickname="", data=None):
+	def __init__(self, species, level=1, nickname="", data=None, party_slot=None):
 		self.species = species
 		self.level = level
 		self.nickname = nickname
 		self.data = data or {}
 		self._types_override = None
+		self.party_slot = party_slot
+		self.ability = ""
+		self.held_item = ""
+		self.gender = ""
+		self.is_shiny = False
+		self.status = ""
 
 	@property
 	def name(self) -> str:
@@ -59,21 +65,41 @@ class DummyOwnedPokemon:
 			return [str(p).title() for p in t_from_json if p]
 		return []
 
+	@property
+	def primary_type(self) -> str | None:
+		return self.types[0] if self.types else None
 
-def render_character_sheet(pokemon_list: list[DummyOwnedPokemon]) -> str:
+	@property
+	def in_party(self) -> bool:
+		return self.party_slot is not None
+
+
+def render_character_sheet(pokemon_list: list[DummyOwnedPokemon], *, characters=None) -> str:
 	tpl_path = os.path.join(ROOT, "web", "templates", "website", "character_sheet.html")
 	tpl_str = open(tpl_path).read().replace('{% extends "website/base.html" %}', "")
 	engine = Engine()
+	party = [mon for mon in pokemon_list if mon.in_party]
+	boxed = [mon for mon in pokemon_list if not mon.in_party]
 	return engine.from_string(tpl_str).render(
 		Context(
 			{
-				"characters": [
+				"webclient_enabled": True,
+				"characters": characters
+				if characters is not None
+				else [
 					{
 						"character": types.SimpleNamespace(key="Test"),
-						"trainer": None,
+						"trainer": types.SimpleNamespace(trainer_number=7, money=1200),
 						"pokemon": pokemon_list,
+						"party": party,
+						"boxed": boxed,
+						"inventory": [types.SimpleNamespace(item_name="potion", quantity=2)],
+						"badges": [types.SimpleNamespace(name="Boulder Badge", region="Kanto")],
+						"seen_count": 3,
+						"caught_count": 2,
+						"total_pokemon": len(pokemon_list),
 					}
-				]
+				],
 			}
 		)
 	)
@@ -84,12 +110,41 @@ def test_types_and_template_rendering():
 
 	globals()["POKEDEX"] = importlib.import_module("pokemon.dex").POKEDEX
 	assert "Pikachu" in POKEDEX
-	mon = DummyOwnedPokemon("Pikachu", level=5)
+	mon = DummyOwnedPokemon("Pikachu", level=5, party_slot=1)
 	assert mon.types == ["Electric"]
 
 	missing = DummyOwnedPokemon("Unknownmon")
 	assert missing.types == []
 
 	rendered = render_character_sheet([mon, missing])
+	assert "Player Hub" in rendered
+	assert "Party" in rendered
+	assert "Boxed Roster" in rendered
+	assert "Potion" in rendered
+	assert "Boulder Badge" in rendered
 	assert '<span class="type-chip type-electric">Electric</span>' in rendered
 	assert '<span class="type-chip type-unknown">Unknown</span>' in rendered
+
+
+def test_player_hub_empty_states_render():
+	rendered = render_character_sheet([], characters=[])
+	assert "No Characters Found" in rendered
+	assert "Create or connect a character in-game" in rendered
+
+	no_trainer = {
+		"character": types.SimpleNamespace(key="NoTrainer"),
+		"trainer": None,
+		"pokemon": [],
+		"party": [],
+		"boxed": [],
+		"inventory": [],
+		"badges": [],
+		"seen_count": 0,
+		"caught_count": 0,
+		"total_pokemon": 0,
+	}
+	rendered = render_character_sheet([], characters=[no_trainer])
+	assert "No trainer record yet" in rendered
+	assert "No party Pokemon found." in rendered
+	assert "No inventory items found." in rendered
+	assert "No badges earned yet." in rendered

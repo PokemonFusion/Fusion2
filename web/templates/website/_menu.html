@@ -22,11 +22,11 @@
       {% block navbar_left %}
       <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'characters' %}">Characters</a></li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'my-sheet' %}">My Sheet</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'my-sheet' %}">Player Hub</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'help' %}">Guide</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'channels' %}">Community</a></li>
       {% if webclient_enabled %}
-      <li class="nav-item"><a class="nav-link btn btn-sm btn-nav-play ml-md-2" href="{% url 'webclient:index' %}">Play Online</a></li>
+      <li class="nav-item"><a class="nav-link btn btn-sm btn-nav-play ml-md-2" href="{% url 'webclient:index' %}">Play in Browser</a></li>
       {% endif %}
       {% if user.is_staff %}
         <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>

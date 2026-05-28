@@ -8,14 +8,15 @@
 {% endblock %}
 
 {% block content %}
+<form class="d-none" aria-hidden="true">{% csrf_token %}</form>
 <div class="page-title mb-3">
   <h1 class="h3 mb-0">Edit Room: {{ room.db_key }} <span class="text-muted">#{{ room.id }}</span></h1>
-  <small class="text-muted">Builder tools → Room Editor</small>
+  <small class="text-muted">Builder tools - Room Editor</small>
   <hr class="mt-2 mb-3"/>
 </div>
 {% if not has_incoming %}
     <div class="alert alert-warning">
-      ⚠️ This room has no incoming exits. Players cannot reach it unless another room links here.
+      <strong>Warning:</strong> This room has no incoming exits. Players cannot reach it unless another room links here.
     </div>
 {% endif %}
 <div class="card card-admin">
@@ -24,11 +25,9 @@
       <div class="form-grid">
         {{ form.as_p }}
       </div>
-      <div class="d-flex gap-2 mt-2 sticky-actions">
-          <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save</button>
-          <button class="btn btn-outline-secondary" type="button" id="preview-desc">
-            <i class="bi bi-eye"></i> Preview Description
-          </button>
+      <div class="roomeditor-actions mt-2 sticky-actions">
+          <button class="btn btn-primary" type="submit">Save</button>
+          <button class="btn btn-outline-secondary" type="button" id="preview-desc">Preview Description</button>
       </div>
     </form>
   </div>
@@ -38,39 +37,36 @@
     <div class="card-body" id="desc-preview-body"></div>
 </div>
 <hr/>
-<h2>Exits</h2>
-<button class="btn btn-sm btn-success" data-action="modal-new-exit" data-room="{{ room.id }}">
-  <i class="bi bi-plus-lg"></i> Add Exit
-</button>
+<div class="roomeditor-section-heading">
+  <h2>Exits</h2>
+  <button class="btn btn-sm btn-success" type="button" data-action="modal-new-exit" data-room="{{ room.id }}">Add Exit</button>
+</div>
 <div id="exit-list" class="mt-2">
     {% for ex in exits %}
         {% include "roomeditor/_exit_row.html" with ex=ex %}
     {% empty %}
-        <div class="text-muted">No exits yet.</div>
+        <div class="text-muted" data-empty-state="exits">No exits yet.</div>
     {% endfor %}
 </div>
 
-<!-- Modal host -->
-<div class="modal" tabindex="-1" id="modalHost">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal" tabindex="-1" id="modalHost" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Exit</h5>
-                <!-- support both BS4 and BS5 -->
-                <button type="button" class="close d-inline-flex align-items-center" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" data-close-modal>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-close-modal>
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal" data-close-modal>Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-close-modal>Close</button>
             </div>
         </div>
     </div>
 </div>
 <script src="{% static 'roomeditor/roomeditor.js' %}"></script>
 <script>
-  // Ensure desc field is hooked for live ANSI preview
   (function(){
     const desc = document.querySelector('textarea[name="desc"]');
     if (desc && !desc.hasAttribute('data-role')) {

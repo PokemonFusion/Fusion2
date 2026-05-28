@@ -1,5 +1,5 @@
 :root {
---poke-accent: #e83e8c; /* reuse your site accent if different */
+--poke-accent: #e83e8c;
 --poke-accent-2: #ffcc00;
 }
 .card-admin .card-header {
@@ -7,9 +7,30 @@ background: linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,0));
 }
 .page-title .h3 { font-weight: 600; }
 .table-admin tbody tr:hover { background: rgba(0,0,0,.02); }
-.badge.bg-warning { border: 1px solid rgba(0,0,0,.08); }
+.badge-warning { border: 1px solid rgba(0,0,0,.08); }
+.roomeditor-header {
+gap: 1rem;
+}
+.roomeditor-actions {
+align-items: center;
+display: flex;
+gap: .5rem;
+}
+.roomeditor-actions .form-control {
+min-width: 12rem;
+}
+.roomeditor-section-heading,
+.roomeditor-exit-row {
+align-items: center;
+display: flex;
+gap: 1rem;
+justify-content: space-between;
+}
+.roomeditor-section-heading h2 {
+margin: 0;
+}
 .sticky-actions {
-position: sticky; bottom: 0; background: var(--bs-body-bg);
+position: sticky; bottom: 0; background: var(--fusion-surface-strong, #fff);
 padding-top: .25rem; padding-bottom: .25rem;
 border-top: 1px solid rgba(0,0,0,.05);
 }
@@ -35,12 +56,24 @@ width: 100%;
 @media (max-width: 768px) {
 .form-grid > p { grid-template-columns: 1fr; }
 .form-grid > p > label { margin-bottom: .25rem; }
+.roomeditor-header,
+.roomeditor-section-heading,
+.roomeditor-exit-row {
+align-items: stretch;
+flex-direction: column;
 }
-/* compact inputs inside modals */
+.roomeditor-actions {
+align-items: stretch;
+flex-direction: column;
+width: 100%;
+}
+.roomeditor-actions .form-control {
+min-width: 0;
+}
+}
 .modal input, .modal select { min-height: 2.25rem; }
 .modal textarea { min-height: 8rem; }
 .form-grid > p > input[type="text"],
 .form-grid > p > input[type="number"],
 .form-grid > p > select { max-width: 28rem; }
 .form-grid > p > textarea { max-width: 44rem; }
-

@@ -8,74 +8,72 @@
 {% endblock %}
 
 {% block content %}
-<div class="row g-3">
+<form class="d-none" aria-hidden="true">{% csrf_token %}</form>
+<div class="row">
   <div class="col">
     <div class="card card-admin">
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-center roomeditor-header">
         <div class="page-title">
           <h1 class="h3 mb-0">Rooms</h1>
-          <small class="text-muted">Builder tools → Room Editor</small>
+          <small class="text-muted">Builder tools - Room Editor</small>
         </div>
-        <div class="d-flex gap-2">
+        <div class="roomeditor-actions">
           <input id="room-filter" class="form-control form-control-sm" placeholder="Filter by name / id">
-          <button class="btn btn-sm btn-success" data-action="modal-new-room">
-            <i class="bi bi-plus-lg"></i> Add Room
-          </button>
+          <button class="btn btn-sm btn-success" type="button" data-action="modal-new-room">Add Room</button>
         </div>
       </div>
       <div class="card-body">
-        <table class="table table-hover align-middle table-admin">
-          <thead>
-            <tr>
-              <th style="width:80px">ID</th>
-              <th style="width:260px">Name</th>
-              <th>Description</th>
-              <th style="width:220px">Class</th>
-              <th style="width:200px"></th>
-            </tr>
-          </thead>
-          <tbody id="room-table-body">
-          {% for room in rooms %}
-            {% include "roomeditor/_room_row.html" with room=room dangling_ids=dangling_ids %}
-          {% empty %}
-            <tr class="text-muted"><td colspan="5">No rooms found.</td></tr>
-          {% endfor %}
-          </tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle table-admin">
+            <thead>
+              <tr>
+                <th style="width:80px">ID</th>
+                <th style="width:260px">Name</th>
+                <th>Description</th>
+                <th style="width:220px">Class</th>
+                <th style="width:220px"></th>
+              </tr>
+            </thead>
+            <tbody id="room-table-body">
+            {% for room in rooms %}
+              {% include "roomeditor/_room_row.html" with room=room dangling_ids=dangling_ids %}
+            {% empty %}
+              <tr class="text-muted" data-empty-state="rooms"><td colspan="5">No rooms found.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal" tabindex="-1" id="modalHost">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal" tabindex="-1" id="modalHost" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Room</h5>
-        <!-- support both BS4 and BS5 -->
-        <button type="button" class="close d-inline-flex align-items-center" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" data-close-modal>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-close-modal>
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body" id="modalBody"></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal" data-close-modal>Close</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-close-modal>Close</button>
       </div>
     </div>
   </div>
 </div>
 <script src="{% static 'roomeditor/roomeditor.js' %}"></script>
 <script>
-  // lightweight client filter for table
   (function(){
-    const f = document.getElementById('room-filter');
-    const rows = document.querySelectorAll('#room-table-body tr[data-room-id]');
-    if (!f) return;
-    f.addEventListener('input', () => {
-      const q = f.value.toLowerCase().trim();
-      rows.forEach(r => {
-        const txt = r.innerText.toLowerCase();
-        r.style.display = txt.includes(q) ? '' : 'none';
+    const filter = document.getElementById('room-filter');
+    if (!filter) return;
+    filter.addEventListener('input', () => {
+      const query = filter.value.toLowerCase().trim();
+      document.querySelectorAll('#room-table-body tr[data-room-id]').forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
       });
     });
   })();

@@ -1,6 +1,8 @@
 # Tabs are intentional.
 from __future__ import annotations
 
+from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -11,24 +13,24 @@ try:
 except Exception:
 	def parse_html(text, strip_ansi=False):
 		return text
-from django.db import transaction
 
 from utils.build_utils import reverse_dir
 
+from ..auth import builder_required
 from ..forms import ExitForm, RoomForm
 from ..utils.locks import compose_exit_default, compose_room_default
 
-try:
-	from evennia import DefaultExit
-except Exception:
-	class DefaultExit:
-		path = ""
 
-try:
-	from evennia import DefaultRoom
-except Exception:
-	class DefaultRoom:
-		path = "typeclasses.rooms.Room"
+def _room_typeclass_path() -> str:
+	"""Return the configured room typeclass path."""
+
+	return getattr(settings, "BASE_ROOM_TYPECLASS", "typeclasses.rooms.Room")
+
+
+def _exit_typeclass_path() -> str:
+	"""Return the configured exit typeclass path."""
+
+	return getattr(settings, "BASE_EXIT_TYPECLASS", "typeclasses.exits.Exit")
 
 
 def _room_qs():
@@ -39,6 +41,7 @@ def _exit_qs():
 	"""Queryset for exit objects."""
 	return ObjectDB.objects.filter(db_typeclass_path__icontains=".exits.")
 
+@builder_required
 def room_list(request: HttpRequest):
 	"""Display a list of rooms available for editing."""
 	rooms = _room_qs().order_by("db_key")
@@ -50,6 +53,7 @@ def room_list(request: HttpRequest):
 		{"rooms": rooms, "dangling_ids": dangling_ids},
 	)
 
+@builder_required
 def room_new(request: HttpRequest):
 	"""Create a new room."""
 	if request.method == "POST":
@@ -57,7 +61,7 @@ def room_new(request: HttpRequest):
 		if form.is_valid():
 			data = getattr(form, "cleaned_data", form.data)
 			room = ObjectDB.objects.create(
-				typeclass_path=DefaultRoom.path,
+				db_typeclass_path=_room_typeclass_path(),
 				db_key=data.get("db_key", ""),
 				db_location=data.get("db_location") or None,
 				db_lock_storage=data.get("db_lock_storage") or "",
@@ -82,6 +86,7 @@ def room_new(request: HttpRequest):
 		form = RoomForm()
 	return render(request, "roomeditor/_room_form.html", {"form": form})
 
+@builder_required
 def room_edit(request: HttpRequest, pk: int):
 	"""Edit an existing room."""
 	room = get_object_or_404(_room_qs(), pk=pk)
@@ -108,6 +113,7 @@ def room_edit(request: HttpRequest, pk: int):
 		},
 	)
 
+@builder_required
 @require_POST
 def room_delete(request: HttpRequest, pk: int):
 	"""Delete a room."""
@@ -117,6 +123,7 @@ def room_delete(request: HttpRequest, pk: int):
 		return JsonResponse({"ok": True})
 	return redirect("roomeditor:room-list")
 
+@builder_required
 @require_POST
 def ansi_preview(request: HttpRequest):
 	"""Return ANSI text rendered to HTML."""
@@ -124,6 +131,7 @@ def ansi_preview(request: HttpRequest):
 	html = parse_html(text, strip_ansi=False)
 	return JsonResponse({"html": html})
 
+@builder_required
 def exit_new(request: HttpRequest, room_pk: int):
 	"""Create a new exit from a room."""
 	room = get_object_or_404(_room_qs(), pk=room_pk)
@@ -132,7 +140,7 @@ def exit_new(request: HttpRequest, room_pk: int):
 		if form.is_valid():
 			with transaction.atomic():
 				ex = ObjectDB.objects.create(
-					typeclass_path=DefaultExit.path,
+					db_typeclass_path=_exit_typeclass_path(),
 					db_key=form.cleaned_data["key"],
 					db_location=room,
 					db_destination=form.cleaned_data["destination"],
@@ -156,7 +164,7 @@ def exit_new(request: HttpRequest, room_pk: int):
 					rkey = reverse_dir(form.cleaned_data["key"])
 					if rkey:
 						rev_obj = ObjectDB.objects.create(
-							typeclass_path=DefaultExit.path,
+							db_typeclass_path=_exit_typeclass_path(),
 							db_key=rkey,
 							db_location=form.cleaned_data["destination"],
 							db_destination=room,
@@ -184,6 +192,7 @@ def exit_new(request: HttpRequest, room_pk: int):
 		form = ExitForm()
 	return render(request, "roomeditor/_exit_form.html", {"form": form, "room": room})
 
+@builder_required
 def exit_edit(request: HttpRequest, pk: int):
 	"""Edit an existing exit."""
 	ex = get_object_or_404(_exit_qs(), pk=pk)
@@ -223,6 +232,7 @@ def exit_edit(request: HttpRequest, pk: int):
 		form = ExitForm(initial=initial)
 	return render(request, "roomeditor/_exit_form.html", {"form": form, "exit": ex})
 
+@builder_required
 @require_POST
 def exit_delete(request: HttpRequest, pk: int):
 	"""Delete an exit."""
@@ -233,6 +243,7 @@ def exit_delete(request: HttpRequest, pk: int):
 		return JsonResponse({"ok": True})
 	return redirect("roomeditor:room_edit", pk=room_pk)
 
+@builder_required
 def room_search_api(request: HttpRequest):
 	"""Return rooms matching a query for autocomplete."""
 	q = (request.GET.get("q") or "").strip()
@@ -241,5 +252,3 @@ def room_search_api(request: HttpRequest):
 		qs = _room_qs().filter(db_key__icontains=q).order_by("db_key")[:20]
 		results = [{"id": r.id, "text": f"{r.key} (#{r.id})"} for r in qs]
 	return JsonResponse({"results": results})
-
-room_edit.__wrapped__ = room_edit

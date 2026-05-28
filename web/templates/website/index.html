@@ -23,7 +23,7 @@
       {% if not account and register_enabled %}
       <a class="btn btn-fusion-secondary" href="{% url 'register' %}">Create Account</a>
       {% elif account %}
-      <a class="btn btn-fusion-secondary" href="{% url 'my-sheet' %}">View My Sheet</a>
+      <a class="btn btn-fusion-secondary" href="{% url 'my-sheet' %}">Open Player Hub</a>
       {% else %}
       <a class="btn btn-fusion-secondary" href="{% url 'help' %}">Read the Guide</a>
       {% endif %}
@@ -128,7 +128,7 @@ Slot 3  Voltrill    Lv 09  <span class="type-inline type-spark">SPARK</span>
     </p>
     <ul class="fusion-news-list">
       <li>Browser play is the primary way to jump into the world.</li>
-      <li>Character sheets expose roster and trainer progress from the website.</li>
+      <li>The Player Hub exposes roster, inventory, badges, and trainer progress from the website.</li>
       <li>Builder tools remain available for staff through the Room Editor.</li>
     </ul>
   </div>

@@ -63,6 +63,35 @@ class CmdWithdrawPokemon(Command):
 		self.caller.msg(self.caller.withdraw_pokemon(pid, box))
 
 
+class CmdSwapPokemon(Command):
+	"""Swap a boxed Pokemon with one in your active party.
+
+	Usage:
+	  swap <pokemon_id> <party_slot> [box]
+	"""
+
+	key = "swap"
+	aliases = ["pokemonswap", "boxswap"]
+	locks = "cmd:all()"
+	help_category = "Pokemon"
+
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		parts = self.args.split()
+		if len(parts) < 2:
+			self.caller.msg("Usage: swap <pokemon_id> <party_slot> [box]")
+			return
+		pid = parts[0]
+		try:
+			slot = int(parts[1])
+			box = int(parts[2]) if len(parts) > 2 else 1
+		except ValueError:
+			self.caller.msg("Usage: swap <pokemon_id> <party_slot> [box]")
+			return
+		self.caller.msg(self.caller.swap_pokemon(pid, slot, box))
+
+
 class CmdShowBox(Command):
 	"""Show the contents of a storage box.
 

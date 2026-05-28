@@ -22,6 +22,7 @@
     <!-- Optional local overrides -->
     <link rel="stylesheet" type="text/css" href="{% static "website/css/custom.css" %}">
 
+    {% block extra_css %}{% endblock %}
     {% block header_ext %}{% endblock %}
 
     <title>{{game_name}} - {% if flatpage %}{{flatpage.title}}{% else %}{% block titleblock %}{{page_title}}{% endblock %}{% endif %}</title>

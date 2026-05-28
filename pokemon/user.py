@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
@@ -14,7 +15,7 @@ from pokemon.helpers.party_helpers import (
     has_usable_pokemon as _has_usable_party,
 )
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-from pokemon.models.storage import move_to_box, move_to_party
+from pokemon.models.storage import PokemonPlacement, move_to_box, move_to_party
 from utils.inventory import Inventory, InventoryMixin
 
 from .data.generation import generate_pokemon
@@ -187,7 +188,12 @@ class User(Character, InventoryMixin):
         if not pokemon:
             return "No such Pokémon."
 
-        box = self.get_box(box_index)
+        if not self._pokemon_is_in_party(pokemon):
+            return "That Pokemon is not in your party."
+        try:
+            box = self.get_box(box_index)
+        except ValueError:
+            return "Invalid box number."
         with transaction.atomic():
             move_to_box(pokemon, self.storage, box)
         display = pokemon.nickname or pokemon.species
@@ -197,16 +203,52 @@ class User(Character, InventoryMixin):
         pokemon = self.get_pokemon_by_id(pokemon_id)
         if not pokemon:
             return "No such Pokémon."
-        box = self.get_box(box_index)
+        try:
+            box = self.get_box(box_index)
+        except ValueError:
+            return "Invalid box number."
         if pokemon not in box.get_pokemon():
             return "That Pokémon is not in that box."
+        if self.storage.active_pokemon_count() >= 6:
+            return "Your party is full. Use swap <pokemon_id> <party_slot> [box] to swap with a party Pokemon."
         with transaction.atomic():
             move_to_party(pokemon, self.storage)
         display = pokemon.nickname or pokemon.species
         return f"{display} was withdrawn from {box.name}."
 
+    def swap_pokemon(self, pokemon_id: str, party_slot: int, box_index: int = 1) -> str:
+        """Swap a boxed Pokemon into a party slot."""
+
+        if party_slot < 1 or party_slot > 6:
+            return "Party slot must be between 1 and 6."
+
+        pokemon = self.get_pokemon_by_id(pokemon_id)
+        if not pokemon:
+            return "No such Pokemon."
+        try:
+            box = self.get_box(box_index)
+        except ValueError:
+            return "Invalid box number."
+        if pokemon not in box.get_pokemon():
+            return "That Pokemon is not in that box."
+
+        party_pokemon = self.get_active_pokemon_by_slot(party_slot)
+        with transaction.atomic():
+            if party_pokemon:
+                move_to_box(party_pokemon, self.storage, box)
+            move_to_party(pokemon, self.storage, party_slot)
+
+        display = pokemon.nickname or pokemon.species
+        if not party_pokemon:
+            return f"{display} was withdrawn to party slot {party_slot}."
+        party_display = party_pokemon.nickname or party_pokemon.species
+        return f"{display} was swapped into slot {party_slot}; {party_display} was sent to {box.name}."
+
     def show_box(self, box_index: int) -> str:
-        box = self.get_box(box_index)
+        try:
+            box = self.get_box(box_index)
+        except ValueError:
+            return "Invalid box number."
         mons = box.get_pokemon()
         if not mons:
             return f"{box.name} is empty."
@@ -215,9 +257,18 @@ class User(Character, InventoryMixin):
     def get_pokemon_by_id(self, pokemon_id):
         OwnedPokemon = apps.get_model("pokemon", "OwnedPokemon")
         try:
-            return OwnedPokemon.objects.get(unique_id=pokemon_id)
-        except OwnedPokemon.DoesNotExist:
+            pokemon = OwnedPokemon.objects.filter(unique_id=pokemon_id, trainer=self.trainer).first()
+            if pokemon:
+                return pokemon
+            return OwnedPokemon.objects.filter(unique_id=pokemon_id, placement__storage=self.storage).first()
+        except (OwnedPokemon.DoesNotExist, ValidationError, ValueError):
             return None
+
+    def _pokemon_is_in_party(self, pokemon) -> bool:
+        return self.storage.placements.filter(
+            pokemon=pokemon,
+            location_type=PokemonPlacement.LocationType.PARTY,
+        ).exists()
 
     def get_active_pokemon_by_slot(self, slot: int):
         """Return the active Pokémon at the given slot (1-6)."""

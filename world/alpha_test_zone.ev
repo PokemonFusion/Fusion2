@@ -1,10 +1,10 @@
 #
 # Alpha test zone batch commands.
 #
-# Run from a staff/building character in the room that should link to the
-# alpha hub:
+# Run once from a Developer/superuser building character in the room that
+# should link to the alpha hub:
 #
-#   @batchprocess world.alpha_test_zone
+#   batchcommands alpha_test_zone
 #
 # This file intentionally uses normal Evennia build commands. Run it once per
 # database; rerunning will create duplicate rooms/exits with the same names.
