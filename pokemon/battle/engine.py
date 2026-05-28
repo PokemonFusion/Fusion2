@@ -36,6 +36,7 @@ corresponding methods simply ``pass`` for now.
 
 from __future__ import annotations
 
+import copy
 import importlib
 import math
 import random
@@ -160,6 +161,8 @@ def _get_move_class():
                 self.pp = pp
                 self.raw = raw or {}
                 self.basePowerCallback = None
+                self.damageCallback = None
+                self.onBasePower = None
 
         return _FallbackMove
 
@@ -274,6 +277,56 @@ def _resolve_ability(ability):
     return ability
 
 
+def _effect_key(effect) -> str:
+    """Return a normalized key for an ability, item, move, or raw value."""
+
+    if effect is None:
+        return ""
+    value = getattr(effect, "id", None) or getattr(effect, "key", None) or getattr(effect, "name", None) or effect
+    return _normalize_key(str(value)).lower()
+
+
+def _ability_try_hit_blocks(target, source, move, battle) -> bool:
+    """Return whether the target's ``onTryHit`` ability blocks ``move``.
+
+    Several immunity abilities in the dex use Showdown's ``onTryHit`` hook and
+    either return ``False`` or mark the target's ``immune`` state while
+    returning ``None``.  Treat both forms as a blocked hit, but only when the
+    immunity marker changed during this callback so stale state from an earlier
+    interaction does not block unrelated moves.
+    """
+
+    if target is None or move is None:
+        return False
+    ability = _resolve_ability(getattr(target, "ability", None))
+    raw = getattr(ability, "raw", {}) or {}
+    if not ability or not raw.get("onTryHit"):
+        return False
+
+    before_immune = getattr(target, "immune", None)
+    try:
+        if hasattr(ability, "call"):
+            result = ability.call("onTryHit", target, source, move, battle=battle)
+        else:
+            try:
+                from pokemon.dex.functions import abilities_funcs  # type: ignore
+            except Exception:  # pragma: no cover - optional in light-weight stubs
+                abilities_funcs = None
+            callback = (
+                _resolve_callback(raw.get("onTryHit"), abilities_funcs)
+                if abilities_funcs
+                else None
+            )
+            result = invoke_callback(callback, target, source, move, battle=battle)
+    except Exception:
+        return False
+
+    after_immune = getattr(target, "immune", None)
+    if result is False:
+        return True
+    return bool(result is None and after_immune and after_immune != before_immune)
+
+
 def _apply_move_damage(
     user, target, battle_move: "BattleMove", battle, *, spread: bool = False
 ):
@@ -321,6 +374,16 @@ def _apply_move_damage(
     # triggered (and to allow them to tweak move attributes), we invoke the
     # relevant handlers here before building the temporary :class:`Move`
     # used for damage computation.
+
+    user_ability = _resolve_ability(getattr(user, "ability", None))
+    if user_ability and hasattr(user_ability, "call"):
+        try:
+            user_ability.call("onModifyMove", battle_move, user=user, target=target, battle=battle)
+        except Exception:
+            try:
+                user_ability.call("onModifyMove", battle_move)
+            except Exception:
+                pass
 
     for owner in (user, target):
         ability = _resolve_ability(getattr(owner, "ability", None))
@@ -473,6 +536,10 @@ def _apply_move_damage(
     raw = dict(battle_move.raw)
     if battle_move.basePowerCallback:
         raw["basePowerCallback"] = battle_move.basePowerCallback
+    if battle_move.damageCallback:
+        raw["damageCallback"] = battle_move.damageCallback
+    if battle_move.onBasePower:
+        raw["onBasePower"] = battle_move.onBasePower
 
     # Default to ``Physical`` but allow the move's category to be provided via
     # ``raw`` so special moves can correctly reference SpA/SpD instead of
@@ -503,13 +570,23 @@ def _apply_move_damage(
         setattr(move, "raw", raw)
         setattr(move, "flags", dict(raw.get("flags", {}) or {}))
 
+    for attr in ("sourceEffect", "hit", "pp", "pledge_combo"):
+        if attr in raw:
+            setattr(move, attr, raw[attr])
+        elif hasattr(battle_move, attr):
+            setattr(move, attr, getattr(battle_move, attr))
+
     if battle_move.basePowerCallback:
         try:
             move.basePowerCallback = battle_move.basePowerCallback
-            # Allow callback to set up move data before damage calculation
-            battle_move.basePowerCallback(user, target, move)
         except Exception:
             move.basePowerCallback = None
+
+    if battle_move.damageCallback:
+        move.damageCallback = battle_move.damageCallback
+
+    if battle_move.onBasePower:
+        move.onBasePower = battle_move.onBasePower
 
     result = apply_damage(user, target, move, battle=battle, spread=spread)
 
@@ -731,6 +808,8 @@ class BattleMove:
     priorityChargeCallback: Optional[Callable] = None
     beforeMoveCallback: Optional[Callable] = None
     basePowerCallback: Optional[Callable] = None
+    damageCallback: Optional[Callable] = None
+    onBasePower: Optional[Callable] = None
     type: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
     pp: Optional[int] = None
@@ -788,6 +867,8 @@ class BattleMove:
             result = invoke_callback(self.onTry, user, target, self, battle=battle)
             if result is False:
                 return
+        if target is not user and _ability_try_hit_blocks(target, user, self, battle):
+            return
         if self.onHit:
             handled = invoke_callback(self.onHit, user, target, battle=battle)
             if handled is not True:
@@ -804,38 +885,6 @@ class BattleMove:
             if battle and hasattr(battle, "runEvent"):
                 if battle.runEvent("TryPrimaryHit", target, user, self) is False:
                     return
-
-            # Trigger defensive ability hooks prior to applying damage.  This
-            # allows abilities with ``onTryHit`` callbacks (e.g. Bulletproof,
-            # Overcoat) to react to incoming moves even when the simplified
-            # battle engine does not model full immunity logic.  The callbacks
-            # are invoked for both the target and the attacker to cover
-            # abilities on either side.  Return values are intentionally
-            # ignored; abilities can still communicate effects through state
-            # changes such as setting ``pokemon.immune``.
-
-            try:  # pragma: no cover - optional in light-weight test stubs
-                from pokemon.dex.functions import abilities_funcs  # type: ignore
-            except Exception:  # pragma: no cover
-                abilities_funcs = None
-
-            for poke, other in ((target, user), (user, target)):
-                ability = _resolve_ability(getattr(poke, "ability", None))
-                if ability and getattr(ability, "raw", None):
-                    cb_name = ability.raw.get("onTryHit")
-                    cb = (
-                        _resolve_callback(cb_name, abilities_funcs)
-                        if abilities_funcs
-                        else None
-                    )
-                    if callable(cb):
-                        try:
-                            cb(pokemon=poke, source=other, move=self)
-                        except Exception:
-                            try:
-                                cb(poke, other, self)
-                            except Exception:
-                                cb(poke, other)
 
             pre_hp = getattr(target, "hp", None)
             result = _apply_move_damage(user, target, self, battle)
@@ -909,6 +958,18 @@ class BattleMove:
                         )
                     )
 
+        weather = self.raw.get("weather") if self.raw else None
+        if weather and battle:
+            battle.setWeather(weather, source=user)
+
+        terrain = self.raw.get("terrain") if self.raw else None
+        if terrain and battle:
+            battle.setTerrain(terrain, source=user)
+
+        pseudo_weather = self.raw.get("pseudoWeather") if self.raw else None
+        if pseudo_weather and battle:
+            battle.add_pseudo_weather(pseudo_weather, source=user)
+
         # Handle side conditions set by this move
         side_cond = self.raw.get("sideCondition") if self.raw else None
         if side_cond:
@@ -974,6 +1035,12 @@ class BattleMove:
                     effect=self,
                 )
 
+        self_effect = self.raw.get("self") if self.raw else None
+        if isinstance(self_effect, dict) and self_effect.get("onHit"):
+            cb = _resolve_callback(self_effect.get("onHit"), moves_funcs)
+            if callable(cb):
+                invoke_callback(cb, user, target, battle=battle)
+
         # Apply secondary effects such as additional boosts or status changes
         secondaries: List[Dict[str, Any]] = []
         sec = self.raw.get("secondary") if self.raw else None
@@ -1012,11 +1079,10 @@ class BattleMove:
 
             for sec in modified:
                 chance = sec.get("chance", 100)
-                if chance < 100 and os.environ.get("PYTEST_CURRENT_TEST"):
-                    # Force deterministic behaviour in unit tests by ensuring
-                    # secondary effects always occur.
-                    chance = 100
-                if not percent_check(chance / 100.0):
+                if not percent_check(
+                    chance / 100.0,
+                    rng=getattr(battle, "rng", None),
+                ):
                     continue
 
                 if sec.get("onHit"):
@@ -1430,6 +1496,145 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if isinstance(state, dict):
             state.clear()
 
+    def _ability_flags(self, ability) -> Dict[str, Any]:
+        """Return raw dex flags for ``ability`` when available."""
+
+        resolved = _resolve_ability(ability) or ability
+        raw = getattr(resolved, "raw", None)
+        if isinstance(raw, Mapping):
+            flags = raw.get("flags")
+            if isinstance(flags, Mapping):
+                return dict(flags)
+        entry = ABILITYDEX.get(_effect_key(resolved))
+        raw = getattr(entry, "raw", None)
+        if isinstance(raw, Mapping) and isinstance(raw.get("flags"), Mapping):
+            return dict(raw["flags"])
+        return {}
+
+    def _move_ignores_target_ability(self, source, target, move) -> bool:
+        """Return whether ``move`` should bypass target ability effects."""
+
+        if getattr(move, "ignore_ability", False) or getattr(move, "ignoreAbility", False):
+            return True
+        raw = getattr(move, "raw", {}) or {}
+        if raw.get("ignoreAbility"):
+            return True
+        source_ability = _effect_key(_resolve_ability(getattr(source, "ability", None)) or getattr(source, "ability", None))
+        if source_ability in {"moldbreaker", "teravolt", "turboblaze"}:
+            return True
+        if getattr(target, "volatiles", {}).get("gastroacid"):
+            return True
+        return False
+
+    def _metadata_immunity(self, eventid: str, target, source, effect, relayVar):
+        """Handle metadata-only ability immunity rules not represented by callbacks."""
+
+        if eventid != "Immunity" or target is None:
+            return None
+        move_type = _normalize_key(relayVar or getattr(effect, "type", None)).lower()
+        if move_type != "ground":
+            return None
+        ability = _resolve_ability(getattr(target, "ability", None)) or getattr(target, "ability", None)
+        if _effect_key(ability) != "levitate":
+            return None
+        if self._move_ignores_target_ability(source, target, effect):
+            return None
+        field = getattr(self, "field", None)
+        if getattr(field, "pseudo_weather", {}).get("gravity"):
+            return None
+        item_key = _effect_key(getattr(target, "item", None) or getattr(target, "held_item", None))
+        if item_key == "ironball":
+            return None
+        volatiles = getattr(target, "volatiles", {}) or {}
+        if volatiles.get("ingrain") or volatiles.get("smackdown"):
+            return None
+        target.immune = "Levitate"
+        return False
+
+    def _ability_item_type(self, pokemon) -> Optional[str]:
+        """Return the type granted by Multitype/RKS System's held item."""
+
+        ability_key = _effect_key(_resolve_ability(getattr(pokemon, "ability", None)) or getattr(pokemon, "ability", None))
+        item = self._holder_item(pokemon)
+        raw = getattr(item, "raw", {}) or {}
+        if ability_key == "multitype" and raw.get("onPlate"):
+            return str(raw["onPlate"]).title()
+        if ability_key == "rkssystem" and raw.get("onMemory"):
+            return str(raw["onMemory"]).title()
+        return None
+
+    def _apply_ability_item_type(self, pokemon) -> None:
+        """Apply Multitype/RKS System item-driven typing on entry."""
+
+        granted_type = self._ability_item_type(pokemon)
+        if not granted_type:
+            return
+        if hasattr(pokemon, "setType"):
+            try:
+                pokemon.setType(granted_type)
+                return
+            except Exception:
+                pass
+        pokemon.types = [granted_type]
+
+    def _assign_post_battle_item(self, pokemon, item) -> bool:
+        """Assign an item after battle, tolerating item names absent from ITEMDEX."""
+
+        if not pokemon or not item or self._pokemon_has_item(pokemon):
+            return False
+        if self.set_item(pokemon, item):
+            return True
+        pokemon.item = item
+        if hasattr(pokemon, "held_item"):
+            pokemon.held_item = getattr(item, "name", str(item))
+        return True
+
+    def _honey_gather_chance(self, pokemon) -> int:
+        """Return Honey Gather's level-tier percentage chance."""
+
+        level = max(1, int(getattr(pokemon, "level", 1) or 1))
+        return min(50, ((level - 1) // 10 + 1) * 5)
+
+    def resolve_post_battle_abilities(self, *, caught: bool = False, thrown_ball: str | None = None) -> None:
+        """Resolve deterministic post-battle ability item effects."""
+
+        rng = getattr(self, "rng", random)
+        for participant in getattr(self, "participants", []) or []:
+            for pokemon in getattr(participant, "pokemons", []) or []:
+                ability_key = _effect_key(_resolve_ability(getattr(pokemon, "ability", None)) or getattr(pokemon, "ability", None))
+                if ability_key == "ballfetch":
+                    if thrown_ball and not caught:
+                        self._assign_post_battle_item(pokemon, thrown_ball)
+                elif ability_key == "honeygather":
+                    chance = self._honey_gather_chance(pokemon) / 100.0
+                    if rng.random() < chance:
+                        self._assign_post_battle_item(pokemon, "Honey")
+
+    def _trigger_dancer_copy(self, user, target, move) -> None:
+        """Let active Dancer holders copy a dance-flag move once."""
+
+        if getattr(move, "_dancer_copy", False):
+            return
+        flags = getattr(move, "flags", None) or (getattr(move, "raw", {}) or {}).get("flags", {})
+        if not isinstance(flags, Mapping) or not flags.get("dance"):
+            return
+        for participant in getattr(self, "participants", []) or []:
+            for dancer in getattr(participant, "active", []) or []:
+                if dancer is None or dancer is user or getattr(dancer, "hp", 0) <= 0:
+                    continue
+                ability_key = _effect_key(_resolve_ability(getattr(dancer, "ability", None)) or getattr(dancer, "ability", None))
+                if ability_key != "dancer":
+                    continue
+                copied = copy.deepcopy(move)
+                setattr(copied, "_dancer_copy", True)
+                copied_target = dancer if is_self_target((getattr(copied, "raw", {}) or {}).get("target")) else target
+                if copied_target is None:
+                    copied_target = dancer
+                try:
+                    copied.execute(dancer, copied_target, self)
+                except Exception as err:
+                    self._record_failure(context="dancer_copy", exception=err, pokemon=dancer, event=getattr(move, "name", None))
+
     def _event_hook_name(self, eventid: str) -> str:
         return f"on{eventid}"
 
@@ -1725,11 +1930,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     ) -> Any:
         """Run a simplified Showdown-style scoped event."""
 
+        metadata_result = self._metadata_immunity(eventid, target, source, effect, relayVar)
+        if metadata_result is False:
+            return False
+
         base_hook = self._event_hook_name(eventid)
         relay = relayVar
         relay_kw_name = None
         relay_positional = True
-        if eventid in {"UseItem", "TryEatItem", "EatItem", "TakeItem"}:
+        item_event = eventid in {"UseItem", "TryEatItem", "EatItem", "TakeItem"}
+        if item_event:
             relay_kw_name = "item"
             relay_positional = False
         elif eventid in {"SetStatus", "AfterSetStatus"}:
@@ -1774,11 +1984,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     call_kwargs["relayVar"] = relay
                     if relay_kw_name:
                         call_kwargs[relay_kw_name] = relay
-                    call_args = (
-                        (relay, target, source, effect)
-                        if relay_positional
-                        else (target, source, effect)
-                    )
+                    if item_event:
+                        call_kwargs["pokemon"] = target
+                        call_kwargs["source"] = source
+                        call_kwargs["effect"] = effect
+                        call_args = ()
+                    else:
+                        call_args = (
+                            (relay, target, source, effect)
+                            if relay_positional
+                            else (target, source, effect)
+                        )
                 result = None
                 for hook in hooks:
                     hook_args = call_args
@@ -2264,6 +2480,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if part and hasattr(part, "record_participation"):
             part.record_participation(pokemon)
         self._apply_item_forme_effects(pokemon, source=source)
+        self._apply_ability_item_type(pokemon)
         self.register_handlers(pokemon)
         self.dispatcher.dispatch("pre_start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
@@ -3582,6 +3799,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 "priorityChargeCallback",
                 "beforeMoveCallback",
                 "basePowerCallback",
+                "damageCallback",
+                "onBasePower",
             ):
                 if getattr(action.move, attr, None) is None:
                     cb_name = raw.get(attr)
@@ -4082,6 +4301,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if action.move.onAfterMove:
             invoke_callback(action.move.onAfterMove, user, target, battle=self)
         self.runEvent("AfterMove", user, target, action.move)
+        self._trigger_dancer_copy(user, target, action.move)
         self._queue_self_switch(user, action.move)
 
         self.dispatcher.dispatch(
@@ -4094,6 +4314,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.hp = 0
         try:
             user.tempvals["moved"] = True
+        except Exception:
+            pass
+        try:
+            self.last_move = action.move
         except Exception:
             pass
 

@@ -36,3 +36,6 @@ An item callback existing in `pokemon/dex/functions/items_funcs.py` is not enoug
 
 - the battle engine can reach its runtime hook through normal combat flow, and
 - there is a battle-level test that proves the trigger, effect, and one-shot state handling work.
+
+Use the offline battle testing workflow in [offline-battle-testing.md](offline-battle-testing.md)
+for targeted held-item outcome tests and exhaustive item smoke checks.

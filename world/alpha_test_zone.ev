@@ -1,0 +1,142 @@
+#
+# Alpha test zone batch commands.
+#
+# Run from a staff/building character in the room that should link to the
+# alpha hub:
+#
+#   @batchprocess world.alpha_test_zone
+#
+# This file intentionally uses normal Evennia build commands. Run it once per
+# database; rerunning will create duplicate rooms/exits with the same names.
+#
+
+@dig/teleport Alpha Test Hub;alpha hub;hub:typeclasses.rooms.FusionRoom = alpha test;alpha, back;out
+#
+@desc Alpha Test Hub = A compact staging room for alpha testers. Clear signs point toward controlled route rooms, a recovery station, and storage access. The area is intentionally artificial so testers can move quickly between core systems.
+#
+@set Alpha Test Hub/is_pokemon_center = True
+#
+@set Alpha Test Hub/allow_hunting = False
+#
+@set Alpha Test Hub/noitem = True
+#
+
+@dig Alpha Recovery Room;recovery;center:typeclasses.rooms.FusionRoom = recovery;center;north;n, hub;south;s
+#
+@desc Alpha Recovery Room = A clean recovery bay with bright tile, simple benches, and storage terminals along the wall. This room is flagged as a Pokemon Center for healing and storage command testing.
+#
+@set Alpha Recovery Room/is_pokemon_center = True
+#
+@set Alpha Recovery Room/allow_hunting = False
+#
+@set Alpha Recovery Room/noitem = True
+#
+@teleport Alpha Recovery Room
+#
+@create/drop Alpha Ball Dispenser:typeclasses.vendors.PokeballVendor
+#
+@desc Alpha Ball Dispenser = A temporary alpha-test vending machine. It dispenses basic Pokeballs so testers can exercise capture flow without staff intervention.
+#
+@set Alpha Ball Dispenser/dispense_item = pokeball
+#
+@set Alpha Ball Dispenser/dispense_quantity = 5
+#
+@set Alpha Ball Dispenser/stock = None
+#
+@teleport Alpha Test Hub
+#
+
+@dig Alpha Route 1 - Low Grass;low grass;route1:typeclasses.rooms.FusionRoom = low grass;west;w, hub;east;e
+#
+@desc Alpha Route 1 - Low Grass = Short grass grows in neat patches beside the hub. Encounters here are low-level and intentionally simple for first-pass hunting, battle, and capture testing.
+#
+@set Alpha Route 1 - Low Grass/allow_hunting = True
+#
+@set Alpha Route 1 - Low Grass/encounter_rate = 100
+#
+@set Alpha Route 1 - Low Grass/npc_chance = 0
+#
+@set Alpha Route 1 - Low Grass/itemfinder_rate = 0
+#
+@set Alpha Route 1 - Low Grass/tp_cost = 0
+#
+@set Alpha Route 1 - Low Grass/weather = clear
+#
+@set Alpha Route 1 - Low Grass/hunt_chart = [{"name": "Rattata", "weight": 30, "min_level": 3, "max_level": 5}, {"name": "Pidgey", "weight": 25, "min_level": 3, "max_level": 5}, {"name": "Caterpie", "weight": 20, "min_level": 2, "max_level": 4}, {"name": "Weedle", "weight": 20, "min_level": 2, "max_level": 4}, {"name": "Zigzagoon", "weight": 5, "min_level": 4, "max_level": 5}]
+#
+
+@dig Alpha Route 2 - Capture Meadow;capture meadow;route2:typeclasses.rooms.FusionRoom = capture meadow;south;s, hub;north;n
+#
+@desc Alpha Route 2 - Capture Meadow = A quiet meadow tuned for capture testing. The local Pokemon are deliberately basic so testers can verify ball use, caught placement, party overflow, and storage behavior.
+#
+@set Alpha Route 2 - Capture Meadow/allow_hunting = True
+#
+@set Alpha Route 2 - Capture Meadow/encounter_rate = 100
+#
+@set Alpha Route 2 - Capture Meadow/npc_chance = 0
+#
+@set Alpha Route 2 - Capture Meadow/itemfinder_rate = 0
+#
+@set Alpha Route 2 - Capture Meadow/tp_cost = 0
+#
+@set Alpha Route 2 - Capture Meadow/weather = clear
+#
+@set Alpha Route 2 - Capture Meadow/hunt_chart = [{"name": "Magikarp", "weight": 35, "min_level": 2, "max_level": 4}, {"name": "Caterpie", "weight": 25, "min_level": 2, "max_level": 4}, {"name": "Pidgey", "weight": 20, "min_level": 3, "max_level": 5}, {"name": "Rattata", "weight": 20, "min_level": 3, "max_level": 5}]
+#
+
+@dig Alpha Route 3 - Battle Yard;battle yard;route3:typeclasses.rooms.FusionRoom = battle yard;east;e, hub;west;w
+#
+@desc Alpha Route 3 - Battle Yard = Practice lanes and marked circles make this a controlled battle test area. The chart mixes common early Pokemon with varied typings for basic move, accuracy, and fainting checks.
+#
+@set Alpha Route 3 - Battle Yard/allow_hunting = True
+#
+@set Alpha Route 3 - Battle Yard/encounter_rate = 100
+#
+@set Alpha Route 3 - Battle Yard/npc_chance = 10
+#
+@set Alpha Route 3 - Battle Yard/itemfinder_rate = 0
+#
+@set Alpha Route 3 - Battle Yard/tp_cost = 0
+#
+@set Alpha Route 3 - Battle Yard/weather = clear
+#
+@set Alpha Route 3 - Battle Yard/hunt_chart = [{"name": "Nidoran-F", "weight": 20, "min_level": 5, "max_level": 8}, {"name": "Nidoran-M", "weight": 20, "min_level": 5, "max_level": 8}, {"name": "Machop", "weight": 15, "min_level": 5, "max_level": 8}, {"name": "Geodude", "weight": 15, "min_level": 5, "max_level": 8}, {"name": "Oddish", "weight": 15, "min_level": 5, "max_level": 8}, {"name": "Poliwag", "weight": 15, "min_level": 5, "max_level": 8}]
+#
+
+@dig Alpha Route 4 - Weather Brook;weather brook;route4:typeclasses.rooms.FusionRoom = weather brook;northeast;ne, hub;southwest;sw
+#
+@desc Alpha Route 4 - Weather Brook = Rain beads on stones beside a narrow brook. This room is for checking room weather, water-heavy encounters, and display behavior under non-clear conditions.
+#
+@set Alpha Route 4 - Weather Brook/allow_hunting = True
+#
+@set Alpha Route 4 - Weather Brook/encounter_rate = 100
+#
+@set Alpha Route 4 - Weather Brook/npc_chance = 0
+#
+@set Alpha Route 4 - Weather Brook/itemfinder_rate = 0
+#
+@set Alpha Route 4 - Weather Brook/tp_cost = 0
+#
+@set Alpha Route 4 - Weather Brook/weather = rain
+#
+@set Alpha Route 4 - Weather Brook/hunt_chart = [{"name": "Poliwag", "weight": 35, "min_level": 4, "max_level": 7}, {"name": "Psyduck", "weight": 25, "min_level": 4, "max_level": 7}, {"name": "Wooper", "weight": 20, "min_level": 4, "max_level": 7}, {"name": "Lotad", "weight": 15, "min_level": 4, "max_level": 7}, {"name": "Magikarp", "weight": 5, "min_level": 3, "max_level": 5}]
+#
+
+@dig Alpha Route 5 - Rare Patch;rare patch;route5:typeclasses.rooms.FusionRoom = rare patch;northwest;nw, hub;southeast;se
+#
+@desc Alpha Route 5 - Rare Patch = A fenced patch with warning stakes and controlled rare spawns. Use this area for checking rare encounter messaging and capture/storage edge cases, not for normal progression balance.
+#
+@set Alpha Route 5 - Rare Patch/allow_hunting = True
+#
+@set Alpha Route 5 - Rare Patch/encounter_rate = 100
+#
+@set Alpha Route 5 - Rare Patch/npc_chance = 0
+#
+@set Alpha Route 5 - Rare Patch/itemfinder_rate = 0
+#
+@set Alpha Route 5 - Rare Patch/tp_cost = 0
+#
+@set Alpha Route 5 - Rare Patch/weather = clear
+#
+@set Alpha Route 5 - Rare Patch/hunt_chart = [{"name": "Eevee", "weight": 10, "min_level": 5, "max_level": 8}, {"name": "Pikachu", "weight": 10, "min_level": 5, "max_level": 8}, {"name": "Abra", "weight": 10, "min_level": 5, "max_level": 8}, {"name": "Dratini", "weight": 5, "min_level": 5, "max_level": 7}, {"name": "Rattata", "weight": 65, "min_level": 4, "max_level": 6}]
+#

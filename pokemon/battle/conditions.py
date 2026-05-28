@@ -151,6 +151,53 @@ class ConditionHelpers:
 			except Exception:
 				return
 
+	def _persistent_adjusted_duration(self, effect_key: str, duration: Any, source=None) -> Any:
+		"""Apply Persistent's +2 turn duration rule for eligible effects."""
+
+		default_durations = {
+			"gravity": 5,
+			"healblock": 5,
+			"magicroom": 5,
+			"safeguard": 5,
+			"tailwind": 4,
+			"trickroom": 5,
+			"wonderroom": 5,
+		}
+		key = _normalize_effect_name(effect_key)
+		if key not in default_durations:
+			return duration
+		if duration is None:
+			duration = default_durations[key]
+		try:
+			duration_int = int(duration)
+		except (TypeError, ValueError):
+			return duration
+		ability = getattr(source, "ability", None)
+		ability_name = getattr(ability, "id", None) or getattr(ability, "key", None) or getattr(ability, "name", None) or ability
+		if _normalize_effect_name(ability_name) != "persistent":
+			return duration_int
+		minimum = default_durations[key] + 2
+		if duration_int >= minimum:
+			return duration_int
+		return duration_int + 2
+
+	def _effect_duration(self, effect_key: str, handler, source=None, *, effect: Dict[str, Any] | None = None, moves_funcs=None) -> Any:
+		"""Resolve an effect duration callback and apply Persistent when needed."""
+
+		duration = None
+		dur_cb = getattr(handler, "durationCallback", None) if handler else None
+		if not callable(dur_cb) and effect:
+			dur_cb = _resolve_callback(effect.get("durationCallback"), moves_funcs)
+		if callable(dur_cb):
+			try:
+				duration = dur_cb(source=source)
+			except Exception:
+				try:
+					duration = dur_cb(source)
+				except Exception:
+					duration = dur_cb()
+		return self._persistent_adjusted_duration(effect_key, duration, source)
+
 	# ------------------------------------------------------------------
 	# Side conditions
 	# ------------------------------------------------------------------
@@ -168,10 +215,17 @@ class ConditionHelpers:
 		side = participant.side
 		current = side.conditions.get(name)
 		handler = self._lookup_effect(name)
+		effect_state = effect.copy()
+		if "duration" not in effect_state:
+			duration = self._effect_duration(name, handler, source, effect=effect_state, moves_funcs=moves_funcs)
+			if duration is not None:
+				effect_state["duration"] = duration
+		else:
+			effect_state["duration"] = self._persistent_adjusted_duration(name, effect_state.get("duration"), source)
 		if current is None:
 			state = side.add_side_condition(
 				name,
-				effect.copy() if hasattr(side, "add_side_condition") else effect.copy(),
+				effect_state.copy() if hasattr(side, "add_side_condition") else effect_state.copy(),
 			)
 			cb_name = effect.get("onSideStart")
 			if handler:
@@ -262,11 +316,18 @@ class ConditionHelpers:
 
 		current = getattr(side, "slot_conditions", {}).get(slot, {}).get(name)
 		handler = self._lookup_effect(name)
+		effect_state = effect.copy()
+		if "duration" not in effect_state:
+			duration = self._effect_duration(name, handler, source, effect=effect_state)
+			if duration is not None:
+				effect_state["duration"] = duration
+		else:
+			effect_state["duration"] = self._persistent_adjusted_duration(name, effect_state.get("duration"), source)
 		if current is None:
 			state = side.add_slot_condition(
 				slot,
 				name,
-				effect.copy() if hasattr(side, "add_slot_condition") else effect.copy(),
+				effect_state.copy() if hasattr(side, "add_slot_condition") else effect_state.copy(),
 			)
 			if isinstance(state, dict):
 				state.setdefault("target", pokemon)
@@ -372,15 +433,9 @@ class ConditionHelpers:
 						return False
 
 		effect: Dict[str, Any] = {}
-		dur_cb = getattr(handler, "durationCallback", None)
-		if callable(dur_cb):
-			try:
-				effect["duration"] = dur_cb(source=source)
-			except Exception:
-				try:
-					effect["duration"] = dur_cb(source)
-				except Exception:
-					effect["duration"] = dur_cb()
+		duration = self._effect_duration(effect_key, handler, source)
+		if duration is not None:
+			effect["duration"] = duration
 		self.field.add_pseudo_weather(effect_key, effect)
 		if hasattr(handler, "onFieldStart"):
 			try:
@@ -436,15 +491,9 @@ class ConditionHelpers:
 		if not handler:
 			return False
 		effect = {}
-		dur_cb = getattr(handler, "durationCallback", None)
-		if callable(dur_cb):
-			try:
-				effect["duration"] = dur_cb(source=source)
-			except Exception:
-				try:
-					effect["duration"] = dur_cb(source)
-				except Exception:
-					effect["duration"] = dur_cb()
+		duration = self._effect_duration(effect_key, handler, source)
+		if duration is not None:
+			effect["duration"] = duration
 		self.field.add_pseudo_weather(effect_key, effect)
 		if hasattr(handler, "onFieldStart"):
 			try:
@@ -503,15 +552,9 @@ class ConditionHelpers:
 			return bool(result is not False)
 
 		effect: Dict[str, Any] = {}
-		dur_cb = getattr(handler, "durationCallback", None)
-		if callable(dur_cb):
-			try:
-				effect["duration"] = dur_cb(source=source)
-			except Exception:
-				try:
-					effect["duration"] = dur_cb(source)
-				except Exception:
-					effect["duration"] = dur_cb()
+		duration = self._effect_duration(effect_key, handler, source)
+		if duration is not None:
+			effect["duration"] = duration
 		state = getattr(self, "init_effect_state", lambda *args, **kwargs: {})(handler, target=self.field, source=source)
 		state.update(effect)
 		self.field.pseudo_weather[effect_key] = state

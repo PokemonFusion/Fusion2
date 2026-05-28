@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, cast
+from typing import Any, List, Mapping, Optional, cast
 
 from utils.safe_import import safe_import
 
@@ -18,6 +18,122 @@ logger = logging.getLogger("battle")
 
 class TurnProcessor:
 	"""Mixin supplying turn and action execution logic."""
+
+	def _entry_raw(self, entry: Any) -> Mapping[str, Any]:
+		"""Return a dex entry's raw mapping when available."""
+
+		raw = getattr(entry, "raw", None)
+		if isinstance(raw, Mapping):
+			return raw
+		if isinstance(entry, Mapping):
+			return entry
+		return {}
+
+	def _pokemon_base_name(self, pokemon) -> str:
+		"""Return the stable base species name used for form eligibility."""
+
+		return str(
+			getattr(pokemon, "base_species", None)
+			or getattr(pokemon, "species", None)
+			or getattr(pokemon, "name", "")
+			or ""
+		)
+
+	def _pokemon_move_keys(self, pokemon) -> set[str]:
+		"""Return normalized move names known by ``pokemon``."""
+
+		keys: set[str] = set()
+		for move in getattr(pokemon, "moves", []) or []:
+			name = getattr(move, "name", move)
+			key = getattr(move, "key", None) or _normalize_key(name)
+			if key:
+				keys.add(str(key))
+				keys.add(str(key).lower())
+			normalized_name = _normalize_key(name)
+			if normalized_name:
+				keys.add(normalized_name)
+				keys.add(normalized_name.lower())
+		return keys
+
+	def _mega_target_from_held_item(self, pokemon) -> tuple[str | None, str | None]:
+		"""Resolve a held Mega Stone into its target forme or a failure reason."""
+
+		holder_item = getattr(self, "_holder_item", lambda _pokemon: None)(pokemon)
+		if not holder_item:
+			return None, "no_mega_stone"
+
+		raw = self._entry_raw(holder_item)
+		mega_stone = getattr(holder_item, "mega_stone", None) or raw.get("megaStone")
+		mega_evolves = getattr(holder_item, "mega_evolves", None) or raw.get("megaEvolves")
+		if not mega_stone:
+			return None, "no_mega_stone"
+
+		base_name = self._pokemon_base_name(pokemon)
+		if _normalize_key(mega_evolves) != _normalize_key(base_name):
+			return None, "wrong_mega_stone"
+		return str(mega_stone), None
+
+	def _mega_target_from_required_move(self, pokemon) -> tuple[str | None, str | None]:
+		"""Resolve move-triggered Mega forms such as Rayquaza."""
+
+		try:
+			pokedex = getattr(safe_import("pokemon.dex"), "POKEDEX", {})
+		except Exception:
+			pokedex = {}
+		base_name = self._pokemon_base_name(pokemon)
+		move_keys = self._pokemon_move_keys(pokemon)
+		missing_required_move = False
+		for entry in pokedex.values():
+			raw = self._entry_raw(entry)
+			forme = str(raw.get("forme") or "")
+			if not forme.startswith("Mega"):
+				continue
+			if _normalize_key(raw.get("baseSpecies")) != _normalize_key(base_name):
+				continue
+			required_move = raw.get("requiredMove")
+			if not required_move:
+				continue
+			required_key = _normalize_key(required_move)
+			if required_key in move_keys or required_key.lower() in move_keys:
+				return str(raw.get("name") or getattr(entry, "name", "")), None
+			missing_required_move = True
+		if missing_required_move:
+			return None, "missing_required_move"
+		return None, "no_mega_forme"
+
+	def _mega_evolution_target(self, pokemon) -> tuple[str | None, str | None]:
+		"""Return the target Mega forme and a reason when blocked."""
+
+		if not pokemon:
+			return None, "no_pokemon"
+		current_name = str(getattr(pokemon, "species", None) or getattr(pokemon, "name", "") or "")
+		if getattr(pokemon, "mega_evolved", False) or "mega" in _normalize_key(current_name):
+			return None, "already_mega_evolved"
+
+		participant = self.participant_for(pokemon) if hasattr(self, "participant_for") else None
+		if participant is not None:
+			side = getattr(participant, "side", None)
+			if getattr(participant, "mega_evolved", False) or getattr(side, "mega_evolved", False):
+				return None, "side_already_mega_evolved"
+			for party_member in getattr(participant, "pokemons", []) or []:
+				if party_member is not pokemon and getattr(party_member, "mega_evolved", False):
+					return None, "side_already_mega_evolved"
+
+		item_target, item_reason = self._mega_target_from_held_item(pokemon)
+		if item_target:
+			return item_target, None
+		move_target, move_reason = self._mega_target_from_required_move(pokemon)
+		if move_target:
+			return move_target, None
+		if item_reason == "wrong_mega_stone":
+			return None, item_reason
+		return None, move_reason or item_reason or "no_mega_forme"
+
+	def can_mega_evolve(self, pokemon) -> bool:
+		"""Return whether ``pokemon`` can Mega Evolve now."""
+
+		target, _reason = self._mega_evolution_target(pokemon)
+		return bool(target)
 
 	def _record_failure(
 		self,
@@ -548,7 +664,8 @@ class TurnProcessor:
 				turns = rng.randint(1, 3)
 				pokemon.tempvals["slp_turns"] = turns
 			if turns > 0:
-				turns -= 1
+				decrement = 2 if self._ability_key(getattr(pokemon, "ability", None)) == "earlybird" else 1
+				turns = max(0, turns - decrement)
 				pokemon.tempvals["slp_turns"] = turns
 				if turns == 0:
 					pokemon.status = 0
@@ -706,7 +823,12 @@ class TurnProcessor:
 					if not foe:
 						continue
 					opp_ability_key = self._ability_key(getattr(foe, "ability", None))
-					if opp_ability_key in trap_abilities:
+					magnet_pull_traps = (
+						opp_ability_key == "magnetpull"
+						and hasattr(pokemon, "hasType")
+						and pokemon.hasType("Steel")
+					)
+					if opp_ability_key in trap_abilities or magnet_pull_traps:
 						trapped = True
 						trapper_name = getattr(getattr(foe, "ability", None), "name", None)
 						if not trapper_name:
@@ -1076,9 +1198,34 @@ class TurnProcessor:
 		"""Use an item during battle."""
 		self.execute_item(action)
 
-	def perform_mega_evolution(self, pokemon) -> None:
-		"""Placeholder for Mega Evolution mechanics."""
+	def perform_mega_evolution(self, pokemon) -> bool:
+		"""Mega Evolve ``pokemon`` if its item or move eligibility allows it."""
+
+		target_forme, reason = self._mega_evolution_target(pokemon)
+		if not target_forme:
+			setattr(pokemon, "mega_evolution_failed_reason", reason or "no_mega_forme")
+			setattr(pokemon, "last_mega_evolution_result", False)
+			return False
+
+		if not hasattr(pokemon, "formeChange") or not pokemon.formeChange(target_forme, battle=self, source=pokemon):
+			setattr(pokemon, "mega_evolution_failed_reason", "forme_change_failed")
+			setattr(pokemon, "last_mega_evolution_result", False)
+			return False
+
+		participant = self.participant_for(pokemon) if hasattr(self, "participant_for") else None
+		if participant is not None:
+			setattr(participant, "mega_evolved", True)
+			side = getattr(participant, "side", None)
+			if side is not None:
+				setattr(side, "mega_evolved", True)
 		setattr(pokemon, "mega_evolved", True)
+		setattr(pokemon, "mega_evolution_forme", target_forme)
+		setattr(pokemon, "last_mega_evolution_result", True)
+		if hasattr(self, "register_handlers"):
+			self.register_handlers(pokemon)
+		if hasattr(self, "log_action"):
+			self.log_action(f"{getattr(pokemon, 'name', 'Pokemon')} Mega Evolved!")
+		return True
 
 	def perform_tera_change(self, pokemon, tera_type: str) -> None:
 		"""Placeholder for Terastallization mechanics."""

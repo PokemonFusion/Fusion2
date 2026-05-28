@@ -186,10 +186,13 @@ class Armortail:
 	def onFoeTryMove(self, target=None, source=None, move=None):
 		if not move or not source:
 			return
+		raw = getattr(move, "raw", {}) or {}
+		move_target = getattr(move, "target", None) or raw.get("target")
+		move_id = getattr(move, "id", None) or raw.get("id") or getattr(move, "key", "")
 		target_all_exceptions = {"perishsong", "flowershield", "rototiller"}
-		if move.target in {"foeSide"} or (move.target == "all" and move.id not in target_all_exceptions):
+		if move_target in {"foeSide"} or (move_target == "all" and move_id not in target_all_exceptions):
 			return
-		if move.priority > 0 and (source.is_ally(target) or move.target == "all"):
+		if move.priority > 0 and (not source.is_ally(target) or move_target == "all"):
 			if hasattr(source, "tempvals"):
 				source.tempvals["cant_move"] = "armortail"
 			return False
@@ -292,7 +295,9 @@ class Battlebond:
 			and source
 			and not getattr(source, "transformed", False)
 		):
-			if getattr(source, "species", {}).get("name", "").lower() == "greninjabond" and source.hp > 0:
+			species = getattr(source, "species", "")
+			species_name = species.get("name", "") if hasattr(species, "get") else getattr(species, "name", species)
+			if str(species_name).lower() == "greninjabond" and source.hp > 0:
 				apply_boost(source, {"atk": 1, "spa": 1, "spe": 1})
 				source.abilityState = getattr(source, "abilityState", {})
 				source.abilityState["battleBondTriggered"] = True
@@ -793,8 +798,7 @@ class Dryskin:
 		if move and move.type == "Water" and target:
 			heal = target.max_hp // 4
 			target.hp = min(target.max_hp, target.hp + heal)
-			if hasattr(target, "immune"):
-				target.immune = "Dry Skin"
+			target.immune = "Dry Skin"
 			return None
 
 	def onWeather(self, pokemon=None):
@@ -812,8 +816,7 @@ class Eartheater:
 		if move and move.type == "Ground" and target:
 			heal = target.max_hp // 4
 			target.hp = min(target.max_hp, target.hp + heal)
-			if hasattr(target, "immune"):
-				target.immune = "Earth Eater"
+			target.immune = "Earth Eater"
 			return None
 
 
@@ -953,8 +956,7 @@ class Flashfire:
 		if move and move.type == "Fire" and target:
 			target.abilityState = getattr(target, "abilityState", {})
 			target.abilityState["flashfire"] = True
-			if hasattr(target, "immune"):
-				target.immune = "Flash Fire"
+			target.immune = "Flash Fire"
 			return None
 
 
@@ -1128,7 +1130,7 @@ class Gluttony:
 class Goodasgold:
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.category == "Status" and target is not source:
-			if hasattr(target, "immune"):
+			if target:
 				target.immune = "Good as Gold"
 			return False
 
@@ -1443,7 +1445,7 @@ class Illusion:
 class Immunity:
 	def onSetStatus(self, status, target=None, source=None, effect=None):
 		if status in {"psn", "tox"}:
-			if target and hasattr(target, "immune"):
+			if target:
 				target.immune = "Immunity"
 			return False
 
@@ -1510,7 +1512,7 @@ class Innerfocus:
 class Insomnia:
 	def onSetStatus(self, status, target=None, source=None, effect=None):
 		if status == "slp":
-			if target and hasattr(target, "immune"):
+			if target:
 				target.immune = "Insomnia"
 			return False
 
@@ -1610,15 +1612,14 @@ class Lightningrod:
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.type == "Electric" and target:
 			apply_boost(target, {"spa": 1})
-			if hasattr(target, "immune"):
-				target.immune = "Lightning Rod"
+			target.immune = "Lightning Rod"
 			return None
 
 
 class Limber:
 	def onSetStatus(self, status, target=None, source=None, effect=None):
 		if status == "par":
-			if target and hasattr(target, "immune"):
+			if target:
 				target.immune = "Limber"
 			return False
 
@@ -1656,13 +1657,13 @@ class Longreach:
 class Magicbounce:
 	def onAllyTryHitSide(self, target=None, source=None, move=None):
 		if move and move.category == "Status" and source is not target:
-			if target and hasattr(target, "immune"):
+			if target:
 				target.immune = "Magic Bounce"
 			return False
 
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.category == "Status" and source is not target:
-			if target and hasattr(target, "immune"):
+			if target:
 				target.immune = "Magic Bounce"
 			return False
 
@@ -1814,8 +1815,7 @@ class Motordrive:
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.type == "Electric" and target:
 			apply_boost(target, {"spe": 1})
-			if hasattr(target, "immune"):
-				target.immune = "Motor Drive"
+			target.immune = "Motor Drive"
 			return None
 
 
@@ -1829,8 +1829,7 @@ class Mountaineer:
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.type == "Rock" and not getattr(target, "mountaineer_used", False):
 			target.mountaineer_used = True
-			if hasattr(target, "immune"):
-				target.immune = "Mountaineer"
+			target.immune = "Mountaineer"
 			return False
 
 
@@ -2183,7 +2182,9 @@ class Powerconstruct:
 class Powerofalchemy:
 	def onAllyFaint(self, target=None, source=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and target and target.ability not in {"powerofalchemy", "receiver", "trace"}:
+		ability = getattr(target, "ability", None)
+		ability_id = getattr(ability, "name", ability)
+		if holder and target and str(ability_id).lower().replace(" ", "") not in {"powerofalchemy", "receiver", "trace"}:
 			holder.ability = target.ability
 
 
@@ -2464,7 +2465,9 @@ class Rebound:
 class Receiver:
 	def onAllyFaint(self, target=None, source=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and target and target.ability not in {"powerofalchemy", "receiver", "trace"}:
+		ability = getattr(target, "ability", None)
+		ability_id = getattr(ability, "name", ability)
+		if holder and target and str(ability_id).lower().replace(" ", "") not in {"powerofalchemy", "receiver", "trace"}:
 			holder.ability = target.ability
 
 

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
-from evennia import DefaultCharacter
+from typeclasses.characters import Character
 
 from pokemon.helpers.party_helpers import (
     get_active_party as _get_active_party,
@@ -47,7 +47,7 @@ if TYPE_CHECKING:  # pragma: no cover - type checking only
     from .models import GymBadge, StorageBox, Trainer, UserStorage
 
 
-class User(DefaultCharacter, InventoryMixin):
+class User(Character, InventoryMixin):
     def _create_owned_pokemon(self, name, level, data=None):
         """Create and return a fully initialized ``OwnedPokemon``."""
         data = data or {}

@@ -1,6 +1,26 @@
+import copy
+import re
 from random import choice, random
 
+from pokemon.data import TYPE_CHART
 from pokemon.utils.boosts import apply_boost
+
+
+def type_effectiveness(target, move):
+	"""Return the type effectiveness multiplier for move callbacks."""
+	if not move or not getattr(move, "type", None):
+		return 1.0
+	chart = TYPE_CHART.get(str(move.type).capitalize(), {})
+	eff = 1.0
+	for typ in getattr(target, "types", []) or []:
+		val = chart.get(str(typ).capitalize(), 0)
+		if val == 1:
+			eff *= 2
+		elif val == 2:
+			eff *= 0.5
+		elif val == 3:
+			eff *= 0
+	return eff
 
 
 def _item_name(item):
@@ -14,6 +34,128 @@ def _effect_id(effect):
 		return ""
 	value = getattr(effect, "id", None) or getattr(effect, "name", None) or effect
 	return str(value).replace(" ", "").lower()
+
+
+def _normalize_key(value):
+	return re.sub(r"[^a-z0-9]+", "", str(value or "").lower())
+
+
+def _battle_move_from_name(name):
+	try:
+		from pokemon import dex
+		from pokemon.battle.engine import BattleMove
+	except Exception:
+		return None
+	entry = getattr(dex, "MOVEDEX", {}).get(_normalize_key(name))
+	if not entry:
+		return None
+	raw = copy.deepcopy(getattr(entry, "raw", {}) or {})
+	display_name = raw.get("name") or getattr(entry, "name", name)
+	return BattleMove(
+		name=display_name,
+		key=_normalize_key(display_name),
+		power=int(raw.get("basePower", getattr(entry, "power", 0)) or 0),
+		accuracy=raw.get("accuracy", getattr(entry, "accuracy", 100)),
+		priority=int(raw.get("priority", 0) or 0),
+		type=raw.get("type", getattr(entry, "type", None)),
+		raw=raw,
+		pp=raw.get("pp", getattr(entry, "pp", None)),
+	)
+
+
+def _execute_called_move(called_move, user, target, battle=None, *, power_multiplier=1.0):
+	"""Execute a nested called move used by copy/random move callbacks."""
+	if called_move is None:
+		return False
+	move = _battle_move_from_name(called_move) if isinstance(called_move, str) else called_move
+	if move is None:
+		return False
+	if power_multiplier != 1.0:
+		move = copy.deepcopy(move)
+		power = getattr(move, "power", 0) or 0
+		if power:
+			move.power = int(power * power_multiplier)
+		raw = dict(getattr(move, "raw", {}) or {})
+		if raw.get("basePower"):
+			raw["basePower"] = int(raw["basePower"] * power_multiplier)
+		move.raw = raw
+	name = getattr(move, "name", str(called_move))
+	if user and hasattr(user, "tempvals"):
+		user.tempvals["called_move"] = name
+	called = None
+	before_called_count = 0
+	if battle is not None:
+		called = getattr(battle, "called_moves", None)
+		if called is None:
+			called = []
+			setattr(battle, "called_moves", called)
+		before_called_count = len(called)
+	if hasattr(move, "execute"):
+		move.execute(user, target, battle)
+		result = True
+	else:
+		on_hit = getattr(move, "onHit", None)
+		result = on_hit(user, target, battle) if callable(on_hit) else False
+	if called is not None and len(called) == before_called_count:
+		called.append(name)
+	return result
+
+
+def _ability_flags(ability):
+	ability_id = _effect_id(ability)
+	raw = getattr(ability, "raw", None)
+	if isinstance(raw, dict) and isinstance(raw.get("flags"), dict):
+		return raw["flags"]
+	try:
+		from pokemon import dex
+
+		entry = getattr(dex, "ABILITYDEX", {}).get(ability_id)
+		raw = getattr(entry, "raw", None)
+		if isinstance(raw, dict) and isinstance(raw.get("flags"), dict):
+			return raw["flags"]
+	except Exception:
+		pass
+	return {}
+
+
+def _has_ability_flag(ability, flag):
+	return bool(_ability_flags(ability).get(flag))
+
+
+def _ability_change_blocked(target, *flags):
+	if _effect_id(getattr(target, "item", None)) == "abilityshield":
+		return True
+	ability = getattr(target, "ability", None)
+	return any(_has_ability_flag(ability, flag) for flag in flags)
+
+
+def _boost_value(boosts, stat):
+	aliases = {
+		"atk": ("atk", "attack"),
+		"def": ("def", "defense"),
+		"spa": ("spa", "special_attack"),
+		"spd": ("spd", "special_defense"),
+		"spe": ("spe", "speed"),
+	}.get(stat, (stat,))
+	for key in aliases:
+		if key in boosts:
+			return boosts.get(key, 0)
+	return 0
+
+
+def _set_boost_value(boosts, stat, value):
+	aliases = {
+		"atk": ("atk", "attack"),
+		"def": ("def", "defense"),
+		"spa": ("spa", "special_attack"),
+		"spd": ("spd", "special_defense"),
+		"spe": ("spe", "speed"),
+	}.get(stat, (stat,))
+	for key in aliases:
+		if key in boosts:
+			boosts[key] = value
+			return
+	boosts[aliases[0]] = value
 
 
 def _is_berry(item):
@@ -713,11 +855,9 @@ class Copycat:
 	def onHit(self, user, target, battle):
 		"""Use the last move that was successfully used in battle."""
 		move = getattr(battle, "last_move", None)
-		if not move or getattr(move, "name", "").lower() == "copycat":
+		if not move or _normalize_key(getattr(move, "name", "")) == "copycat":
 			return False
-		if hasattr(move, "onHit"):
-			move.onHit(user, target, battle)
-		return True
+		return bool(_execute_called_move(move, user, target, battle))
 
 
 class Coreenforcer:
@@ -1432,6 +1572,8 @@ class Entrainment:
 		ability = getattr(user, "ability", None)
 		if not ability:
 			return False
+		if _ability_change_blocked(target, "noentrain", "cantsuppress"):
+			return False
 		setattr(target, "ability", ability)
 		return True
 
@@ -1440,6 +1582,8 @@ class Entrainment:
 		if target is source:
 			return False
 		if getattr(target, "ability", None) == getattr(source, "ability", None):
+			return False
+		if _ability_change_blocked(target, "noentrain", "cantsuppress"):
 			return False
 		return True
 
@@ -1680,7 +1824,12 @@ class Fling:
 		if not item:
 			return False
 		if move:
-			move.power = getattr(item, "fling_power", getattr(move, "power", 0))
+			item_raw = getattr(item, "raw", {}) or {}
+			fling = item_raw.get("fling", {}) if isinstance(item_raw, dict) else {}
+			power = getattr(item, "fling_power", None)
+			if power is None and isinstance(fling, dict):
+				power = fling.get("basePower")
+			move.power = int(power if power is not None else getattr(move, "power", 0) or 0)
 		return True
 
 	def onAfterHit(self, *args, **kwargs):
@@ -1975,6 +2124,8 @@ class Gastroacid:
 		"""Fail if the target's ability cannot be suppressed."""
 		if _effect_id(getattr(target, "item", None)) == "abilityshield":
 			return None
+		if _ability_change_blocked(target, "cantsuppress"):
+			return False
 		return True
 
 
@@ -2607,7 +2758,8 @@ class Gravity:
 		field = args[0] if args else kwargs.get("field")
 		if field:
 			vol = getattr(field, "pseudo_weather", {})
-			vol["gravity"] = True
+			if not isinstance(vol.get("gravity"), dict):
+				vol["gravity"] = {}
 			field.pseudo_weather = vol
 		return True
 
@@ -2698,10 +2850,12 @@ class Guardswap:
 	def onHit(self, user, target, battle):
 		"""Swap Defense and Sp. Def stat boosts."""
 		for stat in ["def", "spd"]:
-			user_boost = getattr(user, "boosts", {}).get(stat, 0)
-			target_boost = getattr(target, "boosts", {}).get(stat, 0)
-			user.boosts[stat] = target_boost
-			target.boosts[stat] = user_boost
+			user_boosts = getattr(user, "boosts", {})
+			target_boosts = getattr(target, "boosts", {})
+			user_boost = _boost_value(user_boosts, stat)
+			target_boost = _boost_value(target_boosts, stat)
+			_set_boost_value(user_boosts, stat, target_boost)
+			_set_boost_value(target_boosts, stat, user_boost)
 		return True
 
 
@@ -3141,9 +3295,11 @@ class Instruct:
 	def onHit(self, user, target, battle):
 		"""Force the target to repeat its last used move."""
 		move = getattr(target, "last_move", None)
-		if move and hasattr(move, "onHit"):
-			move.onHit(target, target, battle)
-		return True
+		if not move:
+			return False
+		if _normalize_key(getattr(move, "name", "")) == "instruct":
+			return False
+		return bool(_execute_called_move(move, target, target, battle))
 
 
 class Iondeluge:
@@ -3610,9 +3766,14 @@ class Magnetrise:
 class Magnitude:
 	def onModifyMove(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
+		battle = kwargs.get("battle")
+		if len(args) > 3:
+			battle = args[3] or battle
 		import random as _r
 
-		level, power = _r.choice([(4, 10), (5, 30), (6, 50), (7, 70), (8, 90), (9, 110), (10, 150)])
+		choices = [(4, 10), (5, 30), (6, 50), (7, 70), (8, 90), (9, 110), (10, 150)]
+		rng = getattr(battle, "rng", None)
+		level, power = rng.choice(choices) if rng and hasattr(rng, "choice") else _r.choice(choices)
 		if move:
 			move.magnitude = level
 			move.power = power
@@ -3825,11 +3986,17 @@ class Mefirst:
 		return int(power * 1.5)
 
 	def onTryHit(self, *args, **kwargs):
-		"""Fail if the target hasn't chosen a move."""
+		"""Use the target's chosen move first at boosted power."""
 		target = args[0] if args else None
-		if not getattr(target, "last_move", None):
+		source = args[1] if len(args) > 1 else kwargs.get("source")
+		battle = kwargs.get("battle")
+		move = getattr(target, "last_move", None)
+		if not source or not move:
 			return False
-		return True
+		raw = getattr(move, "raw", {}) or {}
+		if str(raw.get("category", getattr(move, "category", ""))).lower() == "status":
+			return False
+		return bool(_execute_called_move(move, source, target, battle, power_multiplier=1.5))
 
 
 class Metalburst:
@@ -3881,9 +4048,7 @@ class Metronome:
 		if not pool:
 			return False
 		move = choice(pool)
-		if hasattr(move, "onHit"):
-			move.onHit(user, target, battle)
-		return True
+		return bool(_execute_called_move(move, user, target, battle))
 
 
 class Mimic:
@@ -4006,11 +4171,16 @@ class Mirrorcoat:
 
 class Mirrormove:
 	def onTryHit(self, *args, **kwargs):
-		"""Fail if the target hasn't used a move yet."""
+		"""Use the last move used by the target."""
 		target = args[0] if args else None
-		if not getattr(target, "last_move", None):
+		source = args[1] if len(args) > 1 else kwargs.get("source")
+		battle = kwargs.get("battle")
+		move = getattr(target, "last_move", None)
+		if not source or not move:
 			return False
-		return True
+		if _normalize_key(getattr(move, "name", "")) == "mirrormove":
+			return False
+		return bool(_execute_called_move(move, source, target, battle))
 
 
 class Mist:
@@ -4195,8 +4365,24 @@ class Naturalgift:
 
 class Naturepower:
 	def onTryHit(self, *args, **kwargs):
-		"""Choose a move based on terrain; always succeeds here."""
-		return True
+		"""Choose and use a move based on the active terrain."""
+		target = args[0] if args else None
+		source = args[1] if len(args) > 1 else kwargs.get("source")
+		battle = kwargs.get("battle")
+		if not source:
+			return False
+		override = getattr(battle, "nature_power_move", None) if battle else None
+		if override is not None:
+			return bool(_execute_called_move(override, source, target, battle))
+		field = getattr(battle, "field", None)
+		terrain = getattr(field, "terrain", None) if field else None
+		called = {
+			"electricterrain": "Thunderbolt",
+			"grassyterrain": "Energy Ball",
+			"mistyterrain": "Moonblast",
+			"psychicterrain": "Psychic",
+		}.get(_normalize_key(terrain), "Tri Attack")
+		return bool(_execute_called_move(called, source, target, battle))
 
 
 class Naturesmadness:
@@ -4535,10 +4721,12 @@ class Powerswap:
 	def onHit(self, user, target, battle):
 		"""Swap Attack and Sp. Atk stat boosts."""
 		for stat in ["atk", "spa"]:
-			u_boost = getattr(user, "boosts", {}).get(stat, 0)
-			t_boost = getattr(target, "boosts", {}).get(stat, 0)
-			user.boosts[stat] = t_boost
-			target.boosts[stat] = u_boost
+			user_boosts = getattr(user, "boosts", {})
+			target_boosts = getattr(target, "boosts", {})
+			u_boost = _boost_value(user_boosts, stat)
+			t_boost = _boost_value(target_boosts, stat)
+			_set_boost_value(user_boosts, stat, t_boost)
+			_set_boost_value(target_boosts, stat, u_boost)
 		return True
 
 
@@ -5029,11 +5217,13 @@ class Rest:
 		max_hp = getattr(user, "max_hp", getattr(user, "hp", 0))
 		user.hp = max_hp
 		if hasattr(user, "setStatus"):
+			user.setStatus(0, battle=battle, effect="move:rest")
 			user.setStatus(
 				"slp",
-					battle=battle,
-					source=user,
-					effect="move:rest",
+				battle=battle,
+				source=user,
+				effect="move:rest",
+				bypass_protection=True,
 			)
 		return True
 
@@ -5155,12 +5345,16 @@ class Roleplay:
 		ability = getattr(target, "ability", None)
 		if ability is None:
 			return False
+		if _has_ability_flag(ability, "failroleplay"):
+			return False
 		setattr(user, "ability", ability)
 		return True
 
 	def onTryHit(self, target, source, move):
 		"""Fail if the abilities are the same or cannot be copied."""
 		if getattr(target, "ability", None) == getattr(source, "ability", None):
+			return False
+		if _has_ability_flag(getattr(target, "ability", None), "failroleplay"):
 			return False
 		return True
 
@@ -5517,6 +5711,8 @@ class Silktrap:
 class Simplebeam:
 	def onHit(self, user, target, battle):
 		"""Change the target's ability to Simple."""
+		if _ability_change_blocked(target, "noentrain", "cantsuppress"):
+			return False
 		if hasattr(target, "__dict__"):
 			target.ability = "Simple"
 		return True
@@ -5526,7 +5722,7 @@ class Simplebeam:
 		ability = _effect_id(getattr(target, "ability", None))
 		if ability == "simple":
 			return False
-		if _effect_id(getattr(target, "item", None)) == "abilityshield":
+		if _ability_change_blocked(target, "noentrain", "cantsuppress"):
 			return False
 		return True
 
@@ -5551,6 +5747,10 @@ class Sketch:
 class Skillswap:
 	def onHit(self, user, target, battle):
 		"""Swap abilities between user and target."""
+		if _has_ability_flag(getattr(user, "ability", None), "failskillswap"):
+			return False
+		if _has_ability_flag(getattr(target, "ability", None), "failskillswap"):
+			return False
 		u_abil = getattr(user, "ability", None)
 		t_abil = getattr(target, "ability", None)
 		setattr(user, "ability", t_abil)
@@ -5563,6 +5763,10 @@ class Skillswap:
 		if _effect_id(getattr(source, "ability", None)) in banned:
 			return False
 		if _effect_id(getattr(target, "ability", None)) in banned:
+			return False
+		if _has_ability_flag(getattr(source, "ability", None), "failskillswap"):
+			return False
+		if _has_ability_flag(getattr(target, "ability", None), "failskillswap"):
 			return False
 		return True
 
@@ -5689,10 +5893,7 @@ class Sleeptalk:
 		if not moves:
 			return False
 		move = choice(moves)
-		on_hit = getattr(move, "onHit", None)
-		if callable(on_hit):
-			on_hit(user, target, battle)
-		return True
+		return bool(_execute_called_move(move, user, target, battle))
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
@@ -6113,7 +6314,11 @@ class Storedpower:
 class Strengthsap:
 	def onHit(self, user, target, battle):
 		"""Heal the user based on target's Attack and lower its Attack."""
-		atk = getattr(target, "stats", {}).get("atk", getattr(target, "atk", 0))
+		stats = getattr(target, "stats", None) or getattr(target, "base_stats", None)
+		if isinstance(stats, dict):
+			atk = stats.get("atk", stats.get("attack", getattr(target, "atk", 0)))
+		else:
+			atk = getattr(stats, "attack", getattr(stats, "atk", getattr(target, "atk", 0)))
 		max_hp = getattr(user, "max_hp", 0)
 		heal = min(atk, max_hp - getattr(user, "hp", 0))
 		user.hp = getattr(user, "hp", 0) + heal
@@ -7204,6 +7409,8 @@ class Wonderroom:
 class Worryseed:
 	def onHit(self, user, target, battle):
 		"""Replace the target's ability with Insomnia."""
+		if _ability_change_blocked(target, "noentrain", "cantsuppress"):
+			return False
 		setattr(target, "ability", "insomnia")
 		return True
 
@@ -7211,7 +7418,7 @@ class Worryseed:
 		"""Fail if the target already has Insomnia or is protected."""
 		if _effect_id(getattr(target, "ability", None)) == "insomnia":
 			return False
-		if _effect_id(getattr(target, "item", None)) == "abilityshield":
+		if _ability_change_blocked(target, "noentrain", "cantsuppress"):
 			return False
 		return True
 

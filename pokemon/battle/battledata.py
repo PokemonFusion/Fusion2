@@ -710,6 +710,21 @@ class Pokemon:
                 self.types = [str(t).title() for t in types if t]
 
             base_stats = getattr(entry, "baseStats", None)
+            if base_stats is None:
+                raw = getattr(entry, "raw", None)
+                if isinstance(raw, dict):
+                    base_stats = raw.get("baseStats")
+            if base_stats is None:
+                stats = getattr(entry, "base_stats", None)
+                if stats is not None:
+                    base_stats = {
+                        "hp": getattr(stats, "hp", 0),
+                        "attack": getattr(stats, "attack", getattr(stats, "atk", 0)),
+                        "defense": getattr(stats, "defense", getattr(stats, "def_", 0)),
+                        "special_attack": getattr(stats, "special_attack", getattr(stats, "spa", 0)),
+                        "special_defense": getattr(stats, "special_defense", getattr(stats, "spd", 0)),
+                        "speed": getattr(stats, "speed", getattr(stats, "spe", 0)),
+                    }
             if base_stats is None and isinstance(entry, dict):
                 base_stats = entry.get("baseStats")
             if isinstance(base_stats, dict):

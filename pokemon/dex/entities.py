@@ -50,6 +50,13 @@ def _invoke_raw_callback(
 	else:
 		resolved = None
 	if callable(resolved):
+		effect_state = kwargs.get("effect_state")
+		owner = getattr(resolved, "__self__", None)
+		if effect_state is not None and owner is not None:
+			try:
+				setattr(owner, "effect_state", effect_state)
+			except Exception:
+				pass
 		if invoke_callback:
 			return invoke_callback(resolved, *args, **kwargs)
 		return resolved(*args, **kwargs)

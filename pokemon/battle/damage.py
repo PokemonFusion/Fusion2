@@ -103,6 +103,23 @@ def _invoke_damage_callback(callback, dmg, target, attacker, move):
     return None
 
 
+def _invoke_move_damage_callback(callback, attacker, target, move, battle):
+    """Invoke a move-local ``damageCallback`` with forgiving signatures."""
+
+    for attempt in (
+        lambda: callback(attacker, target, move, battle=battle),
+        lambda: callback(attacker, target, move),
+        lambda: callback(attacker, target),
+        lambda: callback(attacker),
+        lambda: callback(user=attacker, target=target, move=move, battle=battle),
+    ):
+        try:
+            return attempt()
+        except Exception:
+            continue
+    return None
+
+
 def _apply_pending_damage_hooks(dmg, attacker, target, move, battle, abilities_funcs, items_funcs, moves_funcs):
     """Apply onAnyDamage/onDamage hooks to a pending damage value."""
 
@@ -509,7 +526,12 @@ def damage_calc(
     elif multihit is not None:
         numhits = multihit
 
-    for _ in range(numhits):
+    for hit_number in range(1, int(numhits) + 1):
+        try:
+            setattr(move, "hit", hit_number)
+        except Exception:
+            pass
+
         # Pre-move dynamic power hook (Move instance API)
         if hasattr(move, "basePowerCallback") and callable(move.basePowerCallback):
             try:
@@ -622,6 +644,91 @@ def damage_calc(
         if not accuracy_check(move, rng=rng):
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
             continue
+
+        fixed_damage = None
+        if getattr(move, "raw", None) and "damage" in move.raw:
+            raw_damage = move.raw.get("damage")
+            if raw_damage == "level":
+                fixed_damage = int(getattr(attacker, "level", getattr(attacker, "num", 1)) or 1)
+            elif isinstance(raw_damage, (int, float)):
+                fixed_damage = int(raw_damage)
+
+        if fixed_damage is not None:
+            level = getattr(attacker, "level", getattr(attacker, "num", 1))
+            eff = type_effectiveness(target, move)
+            if battle is not None and hasattr(battle, "runEvent") and getattr(move, "type", None):
+                immunity = battle.runEvent(
+                    "Immunity",
+                    target,
+                    attacker,
+                    move,
+                    move.type,
+                )
+                if immunity is False:
+                    eff = 0
+                elif eff == 0:
+                    negate = battle.runEvent(
+                        "NegateImmunity",
+                        target,
+                        attacker,
+                        move,
+                        move.type,
+                    )
+                    if negate is True:
+                        eff = 1.0
+                event_eff = battle.runEvent(
+                    "Effectiveness",
+                    target,
+                    attacker,
+                    move,
+                    eff,
+                )
+                if isinstance(event_eff, (int, float)):
+                    eff = float(event_eff)
+            result.debug.setdefault("level", []).append(level)
+            result.debug.setdefault("power", []).append(int(getattr(move, "power", 0) or 0))
+            result.debug.setdefault("attack", []).append(0)
+            result.debug.setdefault("defense", []).append(0)
+            result.debug.setdefault("rand", []).append(1.0)
+            result.debug.setdefault("stab", []).append(1.0)
+            result.debug.setdefault("type_effectiveness", []).append(eff)
+            result.debug.setdefault("critical", []).append(False)
+            if eff == 0:
+                result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+                result.debug.setdefault("damage", []).append(0)
+            else:
+                result.debug.setdefault("damage", []).append(max(0, fixed_damage))
+            continue
+
+        damage_callback = getattr(move, "damageCallback", None)
+        if not callable(damage_callback) and getattr(move, "raw", None):
+            try:
+                from pokemon.dex.functions import moves_funcs  # type: ignore
+            except Exception:  # pragma: no cover - optional in lightweight tests
+                moves_funcs = None
+            cb_name = move.raw.get("damageCallback")
+            damage_callback = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
+        if callable(damage_callback):
+            callback_damage = _invoke_move_damage_callback(
+                damage_callback,
+                attacker,
+                target,
+                move,
+                battle,
+            )
+            if isinstance(callback_damage, (int, float)):
+                fixed_damage = max(0, int(callback_damage))
+                level = getattr(attacker, "level", getattr(attacker, "num", 1))
+                result.debug.setdefault("level", []).append(level)
+                result.debug.setdefault("power", []).append(int(getattr(move, "power", 0) or 0))
+                result.debug.setdefault("attack", []).append(0)
+                result.debug.setdefault("defense", []).append(0)
+                result.debug.setdefault("rand", []).append(1.0)
+                result.debug.setdefault("stab", []).append(1.0)
+                result.debug.setdefault("type_effectiveness", []).append(1.0)
+                result.debug.setdefault("critical", []).append(False)
+                result.debug.setdefault("damage", []).append(fixed_damage)
+                continue
 
         # ------------------------------------------------------------------
         # Stat gathering + callbacks
@@ -810,6 +917,26 @@ def damage_calc(
                         power = int(new_power)
                 except Exception:
                     pass
+
+        on_base_power = getattr(move, "onBasePower", None)
+        if not callable(on_base_power) and getattr(move, "raw", None):
+            try:  # pragma: no cover - callback modules may be absent in tests
+                from pokemon.dex.functions import moves_funcs  # type: ignore
+            except Exception:  # pragma: no cover
+                moves_funcs = None
+            cb_name = move.raw.get("onBasePower")
+            on_base_power = _resolve_callback(cb_name, moves_funcs) if moves_funcs else None
+        if callable(on_base_power):
+            try:
+                new_power = on_base_power(attacker, target, move, battle=battle)
+            except Exception:
+                try:
+                    new_power = on_base_power(attacker, target, move)
+                except Exception:
+                    new_power = None
+            if isinstance(new_power, (int, float)):
+                power = int(new_power)
+                move.power = int(new_power)
 
         # ------------------------------------------------------------------
         # Fast-path for non-damaging moves
@@ -1303,7 +1430,8 @@ def apply_damage(
                 setattr(poke, "switch_flag", False)
                 setattr(poke, "switch_out", False)
 
-    raw_damages = result.debug.get("damage", [])
+    raw_damages = list(result.debug.get("damage", []))
+    result.debug["per_hit_damage"] = raw_damages
     result.debug["damage"] = [dmg]
 
     phrase = damage_phrase(target, dmg)

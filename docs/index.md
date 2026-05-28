@@ -35,6 +35,10 @@
 - `docs/` - project documentation and reference materials
 
 See [code-map.md](code-map.md) for more details on the codebase layout.
+See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
+battle validation workflow.
+See [battle-coverage-report.md](battle-coverage-report.md) for the current
+offline battle proof coverage inventory.
 
 ## Battle HP Display
 

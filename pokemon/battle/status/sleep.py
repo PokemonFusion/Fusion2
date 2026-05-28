@@ -34,6 +34,12 @@ def _active_uproar(battle) -> bool:
 	return False
 
 
+def _ability_key(pokemon) -> str:
+	ability = getattr(pokemon, 'ability', None)
+	value = getattr(ability, 'id', None) or getattr(ability, 'key', None) or getattr(ability, 'name', None) or ability
+	return str(value or '').replace(' ', '').replace('-', '').lower()
+
+
 def _terrain_blocks_sleep(pokemon, battle) -> bool:
         field = None
         if battle:
@@ -104,7 +110,19 @@ class Sleep(StatusCondition):
 					event="end",
 				)
 			return True
-		pokemon.tempvals['sleep_turns'] = turns - 1
+		early_bird = _ability_key(pokemon) == 'earlybird'
+		decrement = 2 if early_bird else 1
+		if early_bird and turns <= decrement:
+			pokemon.tempvals.pop('sleep_turns', None)
+			pokemon.status = 0
+			if battle:
+				battle.announce_status_change(
+					pokemon,
+					self.name,
+					event="end",
+				)
+			return True
+		pokemon.tempvals['sleep_turns'] = max(0, turns - decrement)
 		can_act = getattr(pokemon, 'can_use_while_asleep', None)
 		if callable(can_act) and can_act():
 			return True

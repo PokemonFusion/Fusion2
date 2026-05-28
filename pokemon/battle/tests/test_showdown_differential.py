@@ -8,6 +8,8 @@ import pytest
 
 from .differential import run_fusion_scenario, run_showdown_scenario
 
+pytestmark = pytest.mark.showdown
+
 
 def _normalize_for_scenario(scenario, snapshots):
     normalized = json.loads(json.dumps(snapshots))
@@ -121,6 +123,81 @@ SCENARIOS = [
         },
         "turns": [
             {"p1": "move willowisp", "p2": "move recover"},
+        ],
+    },
+    {
+        "name": "nuzzle-secondary-paralysis",
+        "ignore_hp_sides": ["p2"],
+        "p1": {
+            "team": [
+                {
+                    "species": "Pikachu",
+                    "ability": "Static",
+                    "moves": ["nuzzle"],
+                }
+            ]
+        },
+        "p2": {
+            "team": [
+                {
+                    "species": "Snorlax",
+                    "ability": "Immunity",
+                    "moves": ["splash"],
+                }
+            ]
+        },
+        "turns": [
+            {"p1": "move nuzzle", "p2": "move splash"},
+        ],
+    },
+    {
+        "name": "acrobatics-callback-base-power",
+        "ignore_hp": True,
+        "p1": {
+            "team": [
+                {
+                    "species": "Hawlucha",
+                    "ability": "Unburden",
+                    "moves": ["acrobatics"],
+                }
+            ]
+        },
+        "p2": {
+            "team": [
+                {
+                    "species": "Snorlax",
+                    "ability": "Immunity",
+                    "moves": ["splash"],
+                }
+            ]
+        },
+        "turns": [
+            {"p1": "move acrobatics", "p2": "move splash"},
+        ],
+    },
+    {
+        "name": "triple-axel-multihit-callback",
+        "ignore_hp": True,
+        "p1": {
+            "team": [
+                {
+                    "species": "Weavile",
+                    "ability": "Pressure",
+                    "moves": ["tripleaxel"],
+                }
+            ]
+        },
+        "p2": {
+            "team": [
+                {
+                    "species": "Bulbasaur",
+                    "ability": "Overgrow",
+                    "moves": ["splash"],
+                }
+            ]
+        },
+        "turns": [
+            {"p1": "move tripleaxel", "p2": "move splash"},
         ],
     },
     {

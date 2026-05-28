@@ -62,7 +62,7 @@ class Moveset(models.Model):
 				name="unique_moveset_index",
 			),
 			models.CheckConstraint(
-				check=models.Q(index__gte=0, index__lte=3),
+				condition=models.Q(index__gte=0, index__lte=3),
 				name="moveset_index_range",
 			),
 		]
@@ -91,7 +91,7 @@ class MovesetSlot(models.Model):
 				name="unique_moveset_slot",
 			),
 			models.CheckConstraint(
-				check=models.Q(slot__gte=1, slot__lte=4),
+				condition=models.Q(slot__gte=1, slot__lte=4),
 				name="movesetslot_slot_range",
 			),
 		]
