@@ -67,9 +67,10 @@ textarea {
 }
 
 .fusion-client-shell {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   padding: .75rem;
+  position: relative;
 }
 
 .fusion-client-topbar {
@@ -82,10 +83,11 @@ textarea {
   box-shadow: var(--shadow-soft);
   color: var(--fusion-ink);
   display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  min-height: 58px;
-  padding: .62rem .8rem;
+  gap: .75rem;
+  justify-content: flex-start;
+  min-height: 54px;
+  padding: .48rem .62rem;
+  position: relative;
 }
 
 .fusion-client-brand {
@@ -145,6 +147,15 @@ textarea {
   text-transform: uppercase;
 }
 
+.fusion-client-controls {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: .45rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
 .fusion-status-light {
   background: var(--fusion-yellow);
   border-radius: 50%;
@@ -189,14 +200,14 @@ textarea {
 
 .fusion-command-bar {
   align-items: center;
-  background: rgba(255, 249, 238, .88);
-  border: 1px solid rgba(45, 40, 36, .10);
-  border-top: 0;
+  background: transparent;
+  border: 0;
   display: flex;
-  gap: .45rem;
-  justify-content: space-between;
-  min-height: 48px;
-  padding: .48rem .62rem;
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
 }
 
 .fusion-command-list {
@@ -217,8 +228,8 @@ textarea {
   font-size: .86rem;
   font-weight: 900;
   line-height: 1;
-  min-height: 34px;
-  padding: .55rem .72rem;
+  min-height: 32px;
+  padding: .48rem .66rem;
 }
 
 .fusion-command-button:hover,
@@ -230,11 +241,29 @@ textarea {
 .fusion-client-stage {
   background: var(--fusion-terminal);
   border: 1px solid rgba(45, 40, 36, .18);
+  border-top: 0;
   border-radius: 0 0 8px 8px;
   box-shadow: var(--shadow-soft);
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
   position: relative;
+}
+
+.fusion-client-shell > .fusion-command-bar {
+  left: 13.5rem;
+  position: absolute;
+  right: 10rem;
+  top: 1.25rem;
+  z-index: 2;
+}
+
+.fusion-client-topbar > .fusion-client-status {
+  margin-left: auto;
+}
+
+.fusion-client-shell > .fusion-command-bar #toolbar {
+  margin-left: auto;
 }
 
 #toolbar {
@@ -244,6 +273,10 @@ textarea {
   gap: .35rem;
   position: static !important;
   z-index: 1;
+}
+
+#toolbar:empty {
+  display: none;
 }
 
 #optionsbutton,
@@ -515,21 +548,30 @@ textarea {
   }
 
   .fusion-client-topbar {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
     gap: .55rem;
     min-height: 0;
   }
 
+  .fusion-client-controls {
+    margin-left: auto;
+  }
+
   .fusion-client-status {
-    align-self: stretch;
     justify-content: space-between;
   }
 
   .fusion-command-bar {
+    flex-basis: 100%;
     gap: .35rem;
-    min-height: 44px;
-    padding: .4rem;
+    order: 3;
+  }
+
+  .fusion-client-shell > .fusion-command-bar {
+    left: .9rem;
+    right: .9rem;
+    top: 4.25rem;
   }
 
   .fusion-command-list {

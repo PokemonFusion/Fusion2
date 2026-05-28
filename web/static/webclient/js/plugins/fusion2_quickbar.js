@@ -42,6 +42,33 @@ let fusion2Quickbar = (function () {
         input.focus();
     };
 
+    var compactHeader = function () {
+        var topbar = $(".fusion-client-topbar");
+        var commandBar = $(".fusion-command-bar");
+        var status = $("#fusion-connection-status");
+        var toolbar = $("#toolbar");
+        var controls = $(".fusion-client-controls");
+
+        if (!topbar.length || !commandBar.length) {
+            return;
+        }
+
+        if (!controls.length) {
+            controls = $("<div>", { class: "fusion-client-controls" });
+            topbar.append(controls);
+        }
+
+        if (!$.contains(topbar[0], commandBar[0])) {
+            commandBar.insertBefore(controls);
+        }
+        if (status.length && !$.contains(controls[0], status[0])) {
+            controls.prepend(status);
+        }
+        if (toolbar.length && !$.contains(controls[0], toolbar[0])) {
+            controls.append(toolbar);
+        }
+    };
+
     var reconnect = function () {
         if (!window.Evennia || reconnecting) {
             return;
@@ -96,6 +123,7 @@ let fusion2Quickbar = (function () {
     };
 
     var init = function () {
+        compactHeader();
         bindControls();
         interceptDisconnectedConfirm();
         setStatus("connecting", "connecting");

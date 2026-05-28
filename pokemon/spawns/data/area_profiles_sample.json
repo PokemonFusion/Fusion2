@@ -1,0 +1,76 @@
+{
+  "areas": [
+    {
+      "area_key": "route_1",
+      "entries": [
+        {
+          "species_id": "019",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "020",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "016",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "017",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "025",
+          "enabled": true,
+          "frequency_overrides_by_band": {
+            "1": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "area_key": "forest_test",
+      "entries": [
+        {
+          "species_id": "010",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "011",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "012",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "001",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        },
+        {
+          "species_id": "479F",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        }
+      ]
+    },
+    {
+      "area_key": "special_test",
+      "entries": [
+        {
+          "species_id": "144",
+          "enabled": true,
+          "frequency_overrides_by_band": {}
+        }
+      ]
+    }
+  ]
+}
