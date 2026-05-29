@@ -181,10 +181,22 @@ def test_compare_room_spawns_uses_adapter_and_live_interpretation():
     assert comparison.frequency_differences[0].new == ("frequent",)
 
 
+def test_compare_room_spawns_handles_stringified_hunt_chart():
+    room = DummyRoom(
+        hunt_chart='[{"name": "Rattata", "weight": 30, "min_level": 3, "max_level": 5}]',
+    )
+
+    comparison = compare_room_spawns(room)
+
+    assert comparison.live_entry_count == 1
+    assert comparison.new_entry_count == 1
+    assert comparison.species_in_both == ("Rattata",)
+
+
 def test_live_helper_rejects_malformed_live_data():
     room = DummyRoom(hunt_chart="bad")
 
-    with pytest.raises(SpawnCompareError, match="must be a list"):
+    with pytest.raises(SpawnCompareError, match="string must contain"):
         live_spawn_entries_from_room(room)
 
 

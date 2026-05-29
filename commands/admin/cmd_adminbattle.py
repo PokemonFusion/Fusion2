@@ -9,7 +9,7 @@ from evennia import Command, search_object
 
 from pokemon.battle.battleinstance import BattleSession
 from pokemon.battle.handler import battle_handler
-from pokemon.battle.interface import display_battle_interface
+from pokemon.battle.interface import display_battle_interface, get_battle_ui_style, get_battle_ui_width
 from pokemon.battle.storage import BattleDataWrapper
 from utils.battle_display import render_move_gui
 
@@ -598,6 +598,8 @@ class CmdUiPreview(Command):
             state,
             viewer_team=self.viewer_team,
             waiting_on=self.waiting_on,
+            style=get_battle_ui_style(caller),
+            total_width=get_battle_ui_width(caller),
         )
         caller.msg(ui)
         view_team = self.viewer_team or "A"

@@ -139,6 +139,18 @@ def test_full_sample_legacy_chart_audits_correctly():
     assert "Level range extends outside PF2 band levels." in by_species["Rattata"].warnings
 
 
+def test_stringified_legacy_chart_audits_correctly():
+    audit = audit_legacy_hunt_chart(
+        '[{"name": "Rattata", "weight": 65, "min_level": 4, "max_level": 6}]',
+        area_key="Alpha Route 1 - Low Grass",
+    )
+
+    assert len(audit.entries) == 1
+    assert audit.entries[0].species_id == "Rattata"
+    assert audit.entries[0].recommended_frequency == "frequent"
+    assert audit.entries[0].recommended_bands == [1]
+
+
 def test_formatter_includes_key_recommendations():
     audit = audit_legacy_hunt_chart(
         [{"name": "Rattata", "weight": 65, "min_level": 4, "max_level": 6}],
@@ -153,13 +165,19 @@ def test_formatter_includes_key_recommendations():
 
 
 def test_non_list_chart_returns_chart_warning():
-    audit = audit_legacy_hunt_chart("bad", area_key="route-alpha")
+    audit = audit_legacy_hunt_chart(42, area_key="route-alpha")
 
     assert audit == LegacyHuntChartAudit(
         area_key="route-alpha",
         entries=[],
-        warnings=["Legacy hunt_chart data must be a list of entry dictionaries."],
+        warnings=["Spawn data must be a list of entry dictionaries."],
     )
+
+
+def test_malformed_string_chart_returns_chart_warning():
+    audit = audit_legacy_hunt_chart("bad", area_key="route-alpha")
+
+    assert audit.warnings == ["Spawn data string must contain a list of entry dictionaries."]
 
 
 def test_formatter_truncates_large_charts():
@@ -194,6 +212,14 @@ def test_command_requires_location(monkeypatch):
     cmd.func()
 
     assert cmd.caller.messages == ["You must be in a room to preview legacy spawn migration."]
+
+
+def test_command_accepts_admin_only_migrate_and_migration_aliases(monkeypatch):
+    cmd_mod = import_spawnmigratepreview_command(monkeypatch)
+    cmd = cmd_mod.CmdSpawnMigratePreview()
+
+    assert cmd.key == "@spawnmigratepreview"
+    assert cmd.aliases == ["@spawnmigrationpreview"]
 
 
 def test_command_reads_room_hunt_chart_without_writing(monkeypatch):

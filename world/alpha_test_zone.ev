@@ -62,7 +62,7 @@
 #
 @set Alpha Route 1 - Low Grass/weather = clear
 #
-@set Alpha Route 1 - Low Grass/hunt_chart = [{"name": "Rattata", "weight": 30, "min_level": 3, "max_level": 5}, {"name": "Pidgey", "weight": 25, "min_level": 3, "max_level": 5}, {"name": "Caterpie", "weight": 20, "min_level": 2, "max_level": 4}, {"name": "Weedle", "weight": 20, "min_level": 2, "max_level": 4}, {"name": "Zigzagoon", "weight": 5, "min_level": 4, "max_level": 5}]
+@set Alpha Route 1 - Low Grass/hunt_chart = [{"name": "Rattata", "weight": 30, "min_level": 5, "max_level": 5, "frequency": "common", "tiers": [1]}, {"name": "Pidgey", "weight": 25, "min_level": 5, "max_level": 5, "frequency": "uncommon", "tiers": [1]}, {"name": "Caterpie", "weight": 20, "min_level": 5, "max_level": 5, "frequency": "uncommon", "tiers": [1]}, {"name": "Weedle", "weight": 20, "min_level": 5, "max_level": 5, "frequency": "uncommon", "tiers": [1]}, {"name": "Zigzagoon", "weight": 5, "min_level": 5, "max_level": 5, "frequency": "rare", "tiers": [1]}]
 #
 
 @dig Alpha Route 2 - Capture Meadow;capture meadow;route2:typeclasses.rooms.FusionRoom = capture meadow;south;s, hub;north;n
@@ -81,7 +81,7 @@
 #
 @set Alpha Route 2 - Capture Meadow/weather = clear
 #
-@set Alpha Route 2 - Capture Meadow/hunt_chart = [{"name": "Magikarp", "weight": 35, "min_level": 2, "max_level": 4}, {"name": "Caterpie", "weight": 25, "min_level": 2, "max_level": 4}, {"name": "Pidgey", "weight": 20, "min_level": 3, "max_level": 5}, {"name": "Rattata", "weight": 20, "min_level": 3, "max_level": 5}]
+@set Alpha Route 2 - Capture Meadow/hunt_chart = [{"name": "Magikarp", "weight": 35, "min_level": 5, "max_level": 5, "frequency": "common", "tiers": [1]}, {"name": "Caterpie", "weight": 25, "min_level": 5, "max_level": 5, "frequency": "uncommon", "tiers": [1]}, {"name": "Pidgey", "weight": 20, "min_level": 5, "max_level": 5, "frequency": "uncommon", "tiers": [1]}, {"name": "Rattata", "weight": 20, "min_level": 5, "max_level": 5, "frequency": "uncommon", "tiers": [1]}]
 #
 
 @dig Alpha Route 3 - Battle Yard;battle yard;route3:typeclasses.rooms.FusionRoom = battle yard;east;e, hub;west;w
@@ -100,7 +100,7 @@
 #
 @set Alpha Route 3 - Battle Yard/weather = clear
 #
-@set Alpha Route 3 - Battle Yard/hunt_chart = [{"name": "Nidoran-F", "weight": 20, "min_level": 5, "max_level": 8}, {"name": "Nidoran-M", "weight": 20, "min_level": 5, "max_level": 8}, {"name": "Machop", "weight": 15, "min_level": 5, "max_level": 8}, {"name": "Geodude", "weight": 15, "min_level": 5, "max_level": 8}, {"name": "Oddish", "weight": 15, "min_level": 5, "max_level": 8}, {"name": "Poliwag", "weight": 15, "min_level": 5, "max_level": 8}]
+@set Alpha Route 3 - Battle Yard/hunt_chart = [{"name": "Nidoran-F", "weight": 20, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Nidoran-M", "weight": 20, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Machop", "weight": 15, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Geodude", "weight": 15, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Oddish", "weight": 15, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Poliwag", "weight": 15, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}]
 #
 
 @dig Alpha Route 4 - Weather Brook;weather brook;route4:typeclasses.rooms.FusionRoom = weather brook;northeast;ne, hub;southwest;sw
@@ -119,7 +119,7 @@
 #
 @set Alpha Route 4 - Weather Brook/weather = rain
 #
-@set Alpha Route 4 - Weather Brook/hunt_chart = [{"name": "Poliwag", "weight": 35, "min_level": 4, "max_level": 7}, {"name": "Psyduck", "weight": 25, "min_level": 4, "max_level": 7}, {"name": "Wooper", "weight": 20, "min_level": 4, "max_level": 7}, {"name": "Lotad", "weight": 15, "min_level": 4, "max_level": 7}, {"name": "Magikarp", "weight": 5, "min_level": 3, "max_level": 5}]
+@set Alpha Route 4 - Weather Brook/hunt_chart = [{"name": "Poliwag", "weight": 35, "min_level": 5, "max_level": 7, "frequency": "common", "tiers": [1]}, {"name": "Psyduck", "weight": 25, "min_level": 5, "max_level": 7, "frequency": "uncommon", "tiers": [1]}, {"name": "Wooper", "weight": 20, "min_level": 5, "max_level": 7, "frequency": "uncommon", "tiers": [1]}, {"name": "Lotad", "weight": 15, "min_level": 5, "max_level": 7, "frequency": "uncommon", "tiers": [1]}, {"name": "Magikarp", "weight": 5, "min_level": 5, "max_level": 5, "frequency": "rare", "tiers": [1]}]
 #
 
 @dig Alpha Route 5 - Rare Patch;rare patch;route5:typeclasses.rooms.FusionRoom = rare patch;northwest;nw, hub;southeast;se
@@ -138,5 +138,5 @@
 #
 @set Alpha Route 5 - Rare Patch/weather = clear
 #
-@set Alpha Route 5 - Rare Patch/hunt_chart = [{"name": "Eevee", "weight": 10, "min_level": 5, "max_level": 8}, {"name": "Pikachu", "weight": 10, "min_level": 5, "max_level": 8}, {"name": "Abra", "weight": 10, "min_level": 5, "max_level": 8}, {"name": "Dratini", "weight": 5, "min_level": 5, "max_level": 7}, {"name": "Rattata", "weight": 65, "min_level": 4, "max_level": 6}]
+@set Alpha Route 5 - Rare Patch/hunt_chart = [{"name": "Eevee", "weight": 10, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Pikachu", "weight": 10, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Abra", "weight": 10, "min_level": 5, "max_level": 8, "frequency": "uncommon", "tiers": [1]}, {"name": "Dratini", "weight": 5, "min_level": 5, "max_level": 7, "frequency": "rare", "tiers": [1]}, {"name": "Rattata", "weight": 65, "min_level": 5, "max_level": 6, "frequency": "frequent", "tiers": [1]}]
 #

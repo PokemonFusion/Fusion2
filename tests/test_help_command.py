@@ -155,6 +155,75 @@ def test_help_subcategory_lookup():
 	assert "attack" in cmd.last_msg
 
 
+def test_help_command_topic_uses_get_help():
+	cmd_mod = load_cmd_module()
+
+	class Entry:
+		key = "who"
+		help_category = "General"
+		aliases = []
+
+		def get_help(self, caller, cmdset):
+			assert cmdset == "cmdset"
+			return "who help text"
+
+	entry = Entry()
+	FakeBaseHelp.default_cmd = {"who": entry}
+	FakeBaseHelp.default_db = {}
+	FakeBaseHelp.default_file = {}
+	cmd = cmd_mod.CmdHelp()
+	cmd.caller = object()
+	cmd.cmdset = "cmdset"
+	cmd.args = "who"
+	cmd.parse()
+	cmd.func()
+	assert "who help text" in cmd.last_msg
+
+
+def test_help_command_alias_lookup_uses_command_aliases():
+	cmd_mod = load_cmd_module()
+
+	class Entry:
+		key = "goooc"
+		help_category = "General"
+		aliases = ["gooc"]
+		_keyaliases = ("goooc", "gooc")
+
+		def get_help(self, caller, cmdset):
+			return "out-of-character help"
+
+	entry = Entry()
+	FakeBaseHelp.default_cmd = {"goooc": entry}
+	FakeBaseHelp.default_db = {}
+	FakeBaseHelp.default_file = {}
+	cmd = cmd_mod.CmdHelp()
+	cmd.caller = object()
+	cmd.cmdset = object()
+	cmd.args = "gooc"
+	cmd.parse()
+	cmd.func()
+	assert "out-of-character help" in cmd.last_msg
+
+
+def test_help_entry_alias_lookup():
+	cmd_mod = load_cmd_module()
+	entry = types.SimpleNamespace(
+		key="evennia",
+		help_category="General",
+		aliases=["ev"],
+		entrytext="file help text",
+	)
+	FakeBaseHelp.default_cmd = {}
+	FakeBaseHelp.default_db = {}
+	FakeBaseHelp.default_file = {"evennia": entry}
+	cmd = cmd_mod.CmdHelp()
+	cmd.caller = object()
+	cmd.args = "ev"
+	cmd.parse()
+	cmd.func()
+	assert "file help text" in cmd.last_msg
+
+
 def test_help_category_lists_subgroups():
 	cmd_mod = load_cmd_module()
 	entry1 = types.SimpleNamespace(help_category="Pokemon/Battle", entrytext="atk")
@@ -212,3 +281,18 @@ def test_help_index_width_is_capped_for_wide_clients():
 	assert all(width <= cmd_mod.HELP_INDEX_WIDTH for width in utils_mod.format_grid_calls)
 	assert "+sheet/pokemon" in output
 	assert len(lines) > 3
+
+
+def test_help_entry_width_is_capped_for_wide_clients():
+	cmd_mod = load_cmd_module()
+
+	class WideHelp(cmd_mod.CmdHelp):
+		def client_width(self):
+			return 180
+
+	cmd = WideHelp()
+	output = cmd.format_help_entry(topic="+hunt", help_text="Attempt to encounter a wild Pokemon.")
+	separator = "|C" + "-" * cmd_mod.HELP_INDEX_WIDTH + "|n"
+	assert output.splitlines()[0] == separator
+	assert output.splitlines()[-1] == separator
+	assert "|C" + "-" * (cmd_mod.HELP_INDEX_WIDTH + 1) not in output

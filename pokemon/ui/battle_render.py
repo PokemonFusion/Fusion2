@@ -1,5 +1,9 @@
-"""Battle UI renderer: ANSI-safe, width-aware two-column layout with captains/wild title,
-HP bars, status badges, party pips, adaptive name/meta row, and a clean footer."""
+"""Battle UI renderers for the text battle HUD.
+
+The module keeps the original boxed renderer as the legacy style and adds a
+classic-modern renderer inspired by the old MU* display.  Both styles use
+Evennia pipe-ANSI markup and measure visible width after stripping those tags.
+"""
 
 from pokemon.ui.box_utils import render_box
 from utils.battle_display import strip_ansi
@@ -16,8 +20,24 @@ THEME = {
 	"bad": "|r",
 	"dim": "|n",
 	"gender_m": "|C",  # bright cyan
-	"gender_f": "|m",  # magenta
+	"gender_f": "|M",  # bright magenta
 	"gender_n": "|x",  # dim/grey
+}
+
+BATTLE_UI_STYLE_LEGACY = "legacy"
+BATTLE_UI_STYLE_CLASSIC_MODERN = "classic_modern"
+DEFAULT_BATTLE_UI_STYLE = BATTLE_UI_STYLE_LEGACY
+BATTLE_UI_STYLES = (BATTLE_UI_STYLE_LEGACY, BATTLE_UI_STYLE_CLASSIC_MODERN)
+_STYLE_ALIASES = {
+	"": DEFAULT_BATTLE_UI_STYLE,
+	"current": BATTLE_UI_STYLE_LEGACY,
+	"default": BATTLE_UI_STYLE_LEGACY,
+	"boxed": BATTLE_UI_STYLE_LEGACY,
+	"legacy": BATTLE_UI_STYLE_LEGACY,
+	"classic": BATTLE_UI_STYLE_CLASSIC_MODERN,
+	"classic-modern": BATTLE_UI_STYLE_CLASSIC_MODERN,
+	"classic_modern": BATTLE_UI_STYLE_CLASSIC_MODERN,
+	"modern": BATTLE_UI_STYLE_CLASSIC_MODERN,
 }
 
 # ---------------- ANSI-safe helpers ----------------
@@ -25,6 +45,16 @@ THEME = {
 
 def ansi_len(s: str) -> int:
 	return len(strip_ansi(s or ""))
+
+
+def normalize_battle_ui_style(style: str | None, default: str | None = DEFAULT_BATTLE_UI_STYLE) -> str | None:
+	"""Return a supported battle UI style name or ``default`` for unknown input."""
+
+	key = str(style or "").strip().lower().replace(" ", "_")
+	key = key.replace("-", "_")
+	if key in _STYLE_ALIASES:
+		return _STYLE_ALIASES[key]
+	return default
 
 
 def rpad(s: str, width: int, fill: str = " ") -> str:
@@ -57,6 +87,19 @@ def ellipsize(text: str, width: int) -> str:
 	return vis[: width - 1].rstrip() + "…"
 
 
+def ellipsize_ascii(text: str, width: int) -> str:
+	"""Shorten raw text to ``width`` visible chars using an ASCII marker."""
+
+	if width <= 0:
+		return ""
+	vis = str(text or "")
+	if len(vis) <= width:
+		return vis
+	if width <= 3:
+		return vis[:width]
+	return vis[: width - 3].rstrip() + "..."
+
+
 # ---------------- Badges / chips ----------------
 
 
@@ -72,16 +115,17 @@ def status_badge(mon) -> str:
 	return ""
 
 
-def gender_chip(mon) -> str:
-	"""Return colored gender symbol: ♂, ♀, or – for genderless/unknown."""
+def gender_chip(mon, *, ascii_symbols: bool = False) -> str:
+	"""Return a colored gender marker."""
+
 	g = getattr(mon, "gender", None)
 	if isinstance(g, str):
 		g = g.strip().upper()
 	if g in ("M", "MALE", "♂"):
-		return f"{THEME['gender_m']}♂|n"
+		return f"{THEME['gender_m']}{'M' if ascii_symbols else '♂'}|n"
 	if g in ("F", "FEMALE", "♀"):
-		return f"{THEME['gender_f']}♀|n"
-	return f"{THEME['gender_n']}–|n"
+		return f"{THEME['gender_f']}{'F' if ascii_symbols else '♀'}|n"
+	return f"{THEME['gender_n']}{'-' if ascii_symbols else '–'}|n"
 
 
 def display_name(mon) -> str:
@@ -93,26 +137,29 @@ def display_name(mon) -> str:
 	return species or nick or "?"
 
 
-def party_pips(trainer, max_team: int = 6) -> str:
-	"""Return party summary: filled ● for healthy/alive, ◐ for low HP, × for fainted, up to 6."""
+def party_pips(trainer, max_team: int = 6, *, ascii_symbols: bool = False) -> str:
+	"""Return a compact team summary up to ``max_team`` slots."""
+
 	team = list(getattr(trainer, "team", []))[:max_team]
 	out = []
 	for mon in team:
 		if not mon:
-			out.append("·")
+			out.append("|x.|n" if ascii_symbols else "·")
 			continue
 		hp, mx = getattr(mon, "hp", 0), getattr(mon, "max_hp", 0)
 		if mx <= 0 or hp <= 0:
-			out.append("|r×|n")
+			out.append("|rX|n" if ascii_symbols else "|r×|n")
+		elif status_badge(mon):
+			out.append("|yS|n" if ascii_symbols else "|y◐|n")
 		else:
 			p = 100 * hp // mx if mx else 0
 			if p <= 25:
-				out.append("|y◐|n")
+				out.append("|yO|n" if ascii_symbols else "|y◐|n")
 			else:
-				out.append("|g●|n")
+				out.append("|gO|n" if ascii_symbols else "|g●|n")
 	# pad to max_team with faint dots
 	while len(out) < max_team:
-		out.append("·")
+		out.append("|x.|n" if ascii_symbols else "·")
 	return " ".join(out)
 
 
@@ -126,6 +173,18 @@ def hp_bar(cur: int, maxhp: int, width: int = 28) -> str:
 	empty = width - filled
 	color = THEME["ok"] if ratio > 0.5 else THEME["warn"] if ratio > 0.2 else THEME["bad"]
 	return f"{color}{'█' * filled}{' ' * empty}|n"
+
+
+def hp_bar_ascii(cur: int, maxhp: int, width: int = 20) -> str:
+	"""Return an ASCII HP bar using conservative foreground colors."""
+
+	cur = max(0, min(cur, maxhp))
+	ratio = 0.0 if maxhp <= 0 else cur / maxhp
+	filled = int(round(width * ratio))
+	filled = max(0, min(width, filled))
+	empty = width - filled
+	color = THEME["ok"] if ratio > 0.5 else THEME["warn"] if ratio > 0.2 else THEME["bad"]
+	return f"{color}{'|' * filled}|n|x{'-' * empty}|n"
 
 
 def fmt_hp_line(mon, colw: int, show_abs: bool = True) -> str:
@@ -240,7 +299,7 @@ def render_trainer_block(trainer, colw: int, *, show_abs: bool = True) -> list[s
 # ---------------- Main render ----------------
 
 
-def render_battle_ui(state, viewer, total_width: int = 78, waiting_on=None) -> str:
+def render_legacy_battle_ui(state, viewer, total_width: int = 78, waiting_on=None) -> str:
 	"""
 	Render the battle UI for `viewer`.
 	- Two balanced columns (viewer left).
@@ -299,3 +358,217 @@ def render_battle_ui(state, viewer, total_width: int = 78, waiting_on=None) -> s
 		wait_line = rpad(f" Waiting on {name}...", inner)
 
 	return render_box(title, inner, rows, footer=footer, waiting=wait_line)
+
+
+# ---------------- Classic-modern renderer ----------------
+
+
+def _classic_width(total_width: int | None) -> int:
+	"""Clamp the classic renderer to widths that behave well in MUD clients."""
+
+	try:
+		width = int(total_width or 78)
+	except (TypeError, ValueError):
+		width = 78
+	return max(60, min(width, 80))
+
+
+def _classic_rule(label: str, width: int, char: str = "=") -> str:
+	"""Return a centered ASCII divider."""
+
+	clean = ellipsize_ascii(label.strip(), max(0, width - 4))
+	if not clean:
+		return char * width
+	text = f" {clean} "
+	fill = max(0, width - len(text))
+	left = fill // 2
+	right = fill - left
+	return (char * left) + text + (char * right)
+
+
+def _classic_turn_line(turn: int | str, width: int) -> str:
+	"""Return the top turn marker."""
+
+	prefix = f"== Turn {turn} "
+	if len(prefix) >= width:
+		return ellipsize_ascii(prefix.rstrip(), width)
+	return prefix + ("=" * (width - len(prefix)))
+
+
+def _classic_state_value(value, fallback: str = "-") -> str:
+	"""Return a compact display value for weather/field names."""
+
+	if value in (None, ""):
+		return fallback
+	text = str(value).replace("_", " ").strip()
+	if not text:
+		return fallback
+	return text[:1].upper() + text[1:]
+
+
+def _battle_turn(state) -> int | str:
+	"""Return the best available battle turn/round number."""
+
+	return getattr(state, "round_no", getattr(state, "turn", getattr(state, "round", 1))) or 1
+
+
+def _classic_field_cell(label: str, value, width: int) -> str:
+	"""Return a padded ``Label: value`` cell."""
+
+	prefix = f"{THEME['label']}{label}|n: "
+	value_width = max(0, width - ansi_len(prefix))
+	text = prefix + ellipsize_ascii(_classic_state_value(value), value_width)
+	return rpad(text, width)
+
+
+def _classic_info_row(state, width: int) -> str:
+	"""Return the weather/field/round row with ASCII separators."""
+
+	round_width = 10
+	if width < 68:
+		round_width = 9
+	remaining = max(20, width - 10 - round_width)
+	weather_width = remaining // 2
+	field_width = remaining - weather_width
+	weather = getattr(state, "weather", getattr(state, "roomweather", "-")) or "-"
+	field = getattr(state, "field", "-") or "-"
+	turn = _battle_turn(state)
+	weather_cell = _classic_field_cell("Weather", weather, weather_width)
+	field_cell = _classic_field_cell("Field", field, field_width)
+	round_cell = _classic_field_cell("Round", turn, round_width)
+	return f"| {weather_cell} | {field_cell} | {round_cell} |"
+
+
+def _classic_is_wild_side(trainer, side: str, state) -> bool:
+	"""Return whether ``trainer`` should be labeled as the wild side."""
+
+	encounter = str(getattr(state, "encounter_kind", "") or "").lower()
+	if encounter == "wild" and side == "B":
+		return True
+	return bool(getattr(trainer, "is_wild", False))
+
+
+def _classic_section_label(trainer, side: str, state) -> str:
+	"""Return the section label for a team block."""
+
+	if _classic_is_wild_side(trainer, side, state):
+		return "WILD Pokemon"
+	return f"Team {side}"
+
+
+def _classic_trainer_name(trainer, width: int) -> str:
+	"""Return the trainer name line."""
+
+	name = getattr(trainer, "name", getattr(trainer, "key", "?"))
+	return f"{THEME['title']}{ellipsize_ascii(name, width)}|n"
+
+
+def fmt_hp_line_classic(mon, width: int, show_abs: bool = True) -> str:
+	"""Return an ASCII HP line that fits within ``width`` visible columns."""
+
+	hp = int(getattr(mon, "hp", 0) or 0)
+	mx = int(getattr(mon, "max_hp", 0) or 0)
+	pct = 0 if mx <= 0 else int(round(100 * hp / mx))
+	prefix = f"{THEME['label']}HP|n: "
+	right = f"{hp}/{mx} {pct}%" if show_abs else f"{pct}%"
+	available = width - ansi_len(prefix) - 1 - len(right)
+	if available >= 8:
+		bar_width = min(20, available)
+		return rpad(f"{prefix}{hp_bar_ascii(hp, mx, bar_width)} {right}", width)
+	percent_only = f"{prefix}{right}"
+	if ansi_len(percent_only) <= width:
+		return rpad(percent_only, width)
+	return rpad(ellipsize_ascii(strip_ansi(percent_only), width), width)
+
+
+def _classic_pokemon_line(index: int, mon, width: int, *, show_abs: bool) -> str:
+	"""Return a single compact active Pokemon row."""
+
+	name_width = 26 if width >= 74 else 21
+	level_width = 11 if width >= 74 else 9
+	hp_width = max(20, width - name_width - level_width)
+
+	prefix = f"{index} "
+	gchip = gender_chip(mon)
+	name_room = max(4, name_width - len(prefix) - ansi_len(gchip) - 1)
+	name = ellipsize_ascii(display_name(mon), name_room)
+	name_field = rpad(f"{prefix}{name} {gchip}", name_width)
+
+	level = getattr(mon, "level", None)
+	status = status_badge(mon)
+	level_text = f"Lv {level}" if level is not None else ""
+	if status:
+		level_text = f"{level_text} {status}".strip()
+	level_field = rpad(level_text, level_width)
+	line = name_field + level_field + fmt_hp_line_classic(mon, hp_width, show_abs=show_abs)
+	if ansi_len(line) <= width:
+		return line
+
+	hp_width = max(18, width - name_width - level_width)
+	line = name_field + level_field + fmt_hp_line_classic(mon, hp_width, show_abs=show_abs)
+	return rpad(line, width)
+
+
+def render_classic_trainer_block(trainer, width: int, *, show_abs: bool) -> list[str]:
+	"""Return the classic-modern lines for one side."""
+
+	lines: list[str] = []
+	lines.append(_classic_trainer_name(trainer, width))
+	mon = getattr(trainer, "active_pokemon", None)
+	if mon:
+		lines.append(_classic_pokemon_line(1, mon, width, show_abs=show_abs))
+	else:
+		lines.append(rpad("1 (No active Pokemon)", width))
+	lines.append(f"{THEME['label']}Team|n: {party_pips(trainer, ascii_symbols=True)}")
+	return [line if ansi_len(line) <= width else ellipsize_ascii(strip_ansi(line), width) for line in lines]
+
+
+def render_classic_modern_battle_ui(
+	state,
+	viewer,
+	total_width: int = 78,
+	waiting_on=None,
+) -> str:
+	"""Render a compact ASCII battle HUD inspired by the legacy MU* display."""
+
+	width = _classic_width(total_width)
+	my_side = state.get_side(viewer)
+	if my_side == "B":
+		sides = ("B", "A")
+	else:
+		sides = ("A", "B")
+
+	lines: list[str] = [_classic_turn_line(_battle_turn(state), width)]
+	for idx, side in enumerate(sides):
+		trainer = state.get_trainer(side)
+		if trainer is None:
+			continue
+		lines.append(_classic_rule(_classic_section_label(trainer, side, state), width))
+		lines.extend(render_classic_trainer_block(trainer, width, show_abs=(my_side == side)))
+		if idx == 0:
+			lines.append(_classic_info_row(state, width))
+
+	if waiting_on:
+		name = getattr(waiting_on, "name", str(waiting_on))
+		lines.append(ellipsize_ascii(f"Waiting on {name}...", width))
+
+	return "\n".join(line if ansi_len(line) <= width else ellipsize_ascii(strip_ansi(line), width) for line in lines)
+
+
+def render_battle_ui(
+	state,
+	viewer,
+	total_width: int = 78,
+	waiting_on=None,
+	style: str | None = None,
+) -> str:
+	"""Render the selected battle UI style."""
+
+	if normalize_battle_ui_style(style) == BATTLE_UI_STYLE_CLASSIC_MODERN:
+		return render_classic_modern_battle_ui(
+			state,
+			viewer,
+			total_width=total_width,
+			waiting_on=waiting_on,
+		)
+	return render_legacy_battle_ui(state, viewer, total_width=total_width, waiting_on=waiting_on)

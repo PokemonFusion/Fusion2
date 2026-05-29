@@ -56,7 +56,7 @@ class FusionRoom(Room):
 	# -------- Layout configuration --------
 	WIDTH_DEFAULT = 78
 	PAD_LEFT = 2
-	UI_DEFAULT_MODE = "fancy"  # fancy | simple | sr
+	UI_DEFAULT_MODE = "fancy"  # fancy | simple | boxed | sr
 	# Theme (color) configuration
 	UI_DEFAULT_THEME = "green"  # name of theme
 	THEMES = {
@@ -186,13 +186,13 @@ class FusionRoom(Room):
 			cur_len = self._ansi_len(cur)
 			for w in words:
 				add = w if cur.strip() == "" else " " + w
-				if cur_len + self._ansi_len(add) > width:
-					lines.append(cur)
+				if cur_len > indent and cur_len + self._ansi_len(add) > width:
+					lines.append(cur.rstrip())
 					cur = pad + w
 				else:
 					cur += add
 				cur_len = self._ansi_len(cur)
-			lines.append(cur)
+			lines.append(cur.rstrip())
 		return "\n".join(lines)
 
 	def _rule(self, looker, width: int, char: str = "─") -> str:
@@ -218,10 +218,10 @@ class FusionRoom(Room):
 	def _ui_mode(self, looker) -> str:
 		"""
 		Player preference for look rendering.
-		Store per-player via:   <player>.db.ui_mode = "fancy"|"simple"|"sr"
+		Store per-player via:   <player>.db.ui_mode = "fancy"|"simple"|"boxed"|"sr"
 		"""
 		mode = getattr(looker.db, "ui_mode", None)
-		if mode in ("fancy", "simple", "sr"):
+		if mode in ("fancy", "simple", "boxed", "sr"):
 			return mode
 		return self.UI_DEFAULT_MODE
 
@@ -237,6 +237,50 @@ class FusionRoom(Room):
 		colored = re.sub(r"\(([^)]*)\)", repl, name)
 		return f"|c{colored}|n"
 
+	def _section_divider(self, looker, label: str, width: int) -> str:
+		"""Classic MU* divider with a left-aligned section label."""
+		prefix = f"---- {label} "
+		fill = max(4, width - len(prefix))
+		return f"{self._tc(looker, 'primary')}{prefix}{'-' * fill}|n"
+
+	def _format_columns(self, entries, width: int, indent: int = 0, gap: int = 3):
+		"""Format ANSI entries into compact width-aware columns."""
+		cells = []
+		for entry in entries:
+			if entry is None:
+				continue
+			cell = str(entry)
+			if cell:
+				cells.append(cell)
+		if not cells:
+			return []
+
+		pad = " " * indent
+		sep = " " * gap
+		lines = []
+		current = pad
+		current_len = indent
+		max_cell_width = max(1, width - indent)
+
+		for cell in cells:
+			if self._ansi_len(cell) > max_cell_width:
+				cell = self._truncate_ansi(cell, max_cell_width)
+			cell_len = self._ansi_len(cell)
+			if current_len == indent:
+				current += cell
+				current_len += cell_len
+			elif current_len + gap + cell_len <= width:
+				current += sep + cell
+				current_len += gap + cell_len
+			else:
+				lines.append(current.rstrip())
+				current = pad + cell
+				current_len = indent + cell_len
+
+		if current.strip():
+			lines.append(current.rstrip())
+		return lines
+
 	# ------------------------------------------------------------------
 	# Look/appearance helpers
 	# ------------------------------------------------------------------
@@ -249,11 +293,7 @@ class FusionRoom(Room):
 		ui_mode = self._ui_mode(looker)
 
 		width = min(self._term_width(looker), self.WIDTH_DEFAULT)
-		# Visual style per mode
-		if ui_mode == "fancy":
-			rule = self._rule(looker, width, char="─")
-		else:
-			rule = self._rule(looker, width, char="-")
+		rule = self._rule(looker, width, char="-")
 
 		# Title (room name), builder sees dbref.
 		title = f"{self._tc(looker, 'primary')}|h{self.key}|n" + (
@@ -262,10 +302,11 @@ class FusionRoom(Room):
 
 		# Description (wrapped, ANSI-safe)
 		desc = self.db.desc or self.default_description
-		desc_wrapped = self._wrap_ansi(desc, width, indent=self.PAD_LEFT)
+		desc_indent = self.PAD_LEFT if ui_mode == "boxed" else 0
+		desc_wrapped = self._wrap_ansi(desc, width, indent=desc_indent)
 
-		# Fancy gets a boxed header; others just the title line
-		if ui_mode == "fancy":
+		# Boxed mode keeps the previous full-frame header for A/B testing.
+		if ui_mode == "boxed":
 			header = self._title_box(looker, title, width)
 			output = [header, "", desc_wrapped]
 		else:
@@ -274,13 +315,14 @@ class FusionRoom(Room):
 		# Weather (only if not 'clear')
 		weather = (self.get_weather() or "").lower()
 		if weather and weather != "clear":
-			output.append(self._wrap_ansi(f"|wIt's {weather} here.|n", width, indent=self.PAD_LEFT))
+			output.append(self._wrap_ansi(f"|wIt's {weather} here.|n", width, indent=desc_indent))
 
 		exits = self.filter_visible(self.contents_get(content_type="exit"), looker, **kwargs)
 		prioritized = [ex for ex in exits if ex.db.priority is not None]
 		unprioritized = [ex for ex in exits if ex.db.priority is None]
 		prioritized.sort(key=lambda e: e.db.priority)
-		exit_lines = []
+		exit_box_lines = []
+		exit_entries = []
 		for ex in prioritized + unprioritized:
 			if ex.db.dark and not is_builder:
 				continue
@@ -292,8 +334,12 @@ class FusionRoom(Room):
 				flags.append("|mDark|n")
 			flag_str = f" [{' '.join(flags)}]" if flags else ""
 			id_str = f"|y(#{ex.id})|n" if is_builder else ""
+			detail = None
+			if id_str or flag_str:
+				detail = " ".join(part for part in (name, id_str, flag_str.strip()) if part)
+			exit_entries.append((name, detail))
 
-			# align: [name.................][id/flags]
+			# Legacy boxed mode keeps the previous aligned metadata behavior.
 			reserve = max(10, self._ansi_len(id_str + flag_str) + 1)
 			name_width = max(10, width - self.PAD_LEFT - reserve)
 			shown = name
@@ -301,7 +347,7 @@ class FusionRoom(Room):
 				# basic truncation; ANSI-safe (might cut mid-sequence only if name inserts codes outside color wrapper)
 				shown = self._truncate_ansi(name, name_width)
 			spaces = " " * max(1, width - self.PAD_LEFT - self._ansi_len(shown) - self._ansi_len(id_str + flag_str))
-			exit_lines.append(" " * self.PAD_LEFT + f"{shown}{spaces}{id_str}{flag_str}")
+			exit_box_lines.append(" " * self.PAD_LEFT + f"{shown}{spaces}{id_str}{flag_str}")
 
 		characters = self.filter_visible(self.contents_get(content_type="character"), looker, **kwargs)
 		players = [c for c in characters if c.has_account and not c.attributes.get("npc")]
@@ -364,11 +410,11 @@ class FusionRoom(Room):
 
 		# ----- Render sections depending on ui_mode -----
 		box = []
-		if ui_mode in ("fancy", "simple"):
-			# Decorative headings
+		if ui_mode == "boxed":
+			# Legacy decorative headings
 			box.extend([rule, f"{self._tc(looker, 'primary')}  :Exits:|n"])
-			if exit_lines:
-				box.extend(exit_lines)
+			if exit_box_lines:
+				box.extend(exit_box_lines)
 			else:
 				box.append(" " * self.PAD_LEFT + "|xNone|n")
 			box.append(rule)
@@ -386,10 +432,10 @@ class FusionRoom(Room):
 				box.append(f"{self._tc(looker, 'primary')}  :Non-Player Characters:|n")
 				box.append(self._wrap_ansi(", ".join(npc_names), width, indent=self.PAD_LEFT))
 				box.append(rule)
-		else:
+		elif ui_mode == "sr":
 			# Screen reader: no boxes, one item per line, explicit labels, minimal punctuation
 			box.append("Exits:")
-			if exit_lines:
+			if exit_entries:
 				# Rebuild exit lines without spacing tricks; one-per-line
 				for ex in prioritized + unprioritized:
 					if ex.db.dark and not is_builder:
@@ -421,11 +467,46 @@ class FusionRoom(Room):
 				for n in npcs:
 					meta = f" #{n.id}" if is_builder else ""
 					box.append(f"- {n.key}{meta}")
+		else:
+			def _append_section(label, lines, show_empty=False):
+				box.append("")
+				box.append(self._section_divider(looker, label, width))
+				if lines:
+					box.extend(lines)
+				elif show_empty:
+					box.append("|xNone|n")
 
-		if self.db.is_item_store:
-			box.append("|yThere is a store here, use +store/list to see its contents.|n")
-		if self.db.is_pokemon_center:
-			box.append("|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
+			def _format_exit_entries(entries):
+				lines = []
+				pending_cells = []
+				for cell, detail in entries:
+					if detail:
+						if pending_cells:
+							lines.extend(self._format_columns(pending_cells, width))
+							pending_cells = []
+						lines.append(detail)
+					else:
+						pending_cells.append(cell)
+				if pending_cells:
+					lines.extend(self._format_columns(pending_cells, width))
+				return lines
+
+			_append_section("Exits", _format_exit_entries(exit_entries), show_empty=True)
+			_append_section("Items", self._format_columns(item_names, width), show_empty=True)
+			if player_names:
+				_append_section("Players", self._format_columns(player_names, width))
+			if npc_names:
+				_append_section("NPCs", self._format_columns(npc_names, width))
+
+		notices = []
+		if getattr(self.db, "is_item_store", False) or getattr(self.db, "is_item_shop", False):
+			notices.append("|yThere is a store here. Use +store/list to see its contents.|n")
+		if getattr(self.db, "is_pokemon_center", False):
+			notices.append("|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
+		if notices:
+			box.append("")
+			for notice in notices:
+				box.extend(self._wrap_ansi(notice, width).splitlines())
 
 		# Finalize output
 		output.append("\n".join(box))

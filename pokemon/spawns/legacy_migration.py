@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
-from .adapters import SpawnAdapterError, normalize_band, normalize_frequency
+from .adapters import SpawnAdapterError, coerce_spawn_data_entries, normalize_band, normalize_frequency
 from .constants import SPAWN_BANDS, SpawnFrequency
 
 
@@ -74,11 +74,13 @@ def audit_legacy_hunt_chart(data, area_key: str = "unknown") -> LegacyHuntChartA
             entries=[],
             warnings=["No legacy hunt_chart data found."],
         )
-    if not isinstance(data, list):
+    try:
+        data = coerce_spawn_data_entries(data)
+    except SpawnAdapterError as exc:
         return LegacyHuntChartAudit(
             area_key=normalized_area_key,
             entries=[],
-            warnings=["Legacy hunt_chart data must be a list of entry dictionaries."],
+            warnings=[str(exc)],
         )
     if not data:
         chart_warnings.append("No legacy hunt_chart entries found.")

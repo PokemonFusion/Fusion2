@@ -91,7 +91,7 @@ class CmdGOOOC(DefaultCmdOOC):
     """
 
     key = "goooc"
-    aliases = ["unpuppet"]
+    aliases = ["gooc", "unpuppet"]
     help_category = "General"
 
 

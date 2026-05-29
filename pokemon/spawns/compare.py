@@ -9,7 +9,7 @@ from typing import Any
 
 from utils.pokemon_config import TIERS as LIVE_TIERS
 
-from .adapters import spawn_chart_from_room
+from .adapters import SpawnAdapterError, coerce_spawn_data_entries, spawn_chart_from_room
 from .preview import format_species_group
 from .schema import SpawnChart, SpawnEntry
 
@@ -74,8 +74,10 @@ def detect_spawn_source(room: Any) -> str:
 def live_spawn_entries_from_room(room: Any) -> list[ComparableSpawnEntry]:
     db = getattr(room, "db", None)
     data = getattr(db, "hunt_chart", None) or getattr(db, "spawn_table", None) or []
-    if not isinstance(data, list):
-        raise SpawnCompareError("Live spawn data must be a list of entry dictionaries.")
+    try:
+        data = coerce_spawn_data_entries(data)
+    except SpawnAdapterError as exc:
+        raise SpawnCompareError(str(exc)) from exc
 
     entries: list[ComparableSpawnEntry] = []
     for raw_entry in data:

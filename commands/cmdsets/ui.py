@@ -2,6 +2,7 @@
 
 from evennia import CmdSet
 
+from commands.player.cmd_battleuistyle import CmdBattleUiStyle
 from commands.player.cmd_uimode import CmdUiMode
 from commands.player.cmd_uitheme import CmdUiTheme
 
@@ -13,5 +14,6 @@ class UiCmdSet(CmdSet):
 
 	def at_cmdset_creation(self):
 		"""Populate the cmdset."""
+		self.add(CmdBattleUiStyle())
 		self.add(CmdUiMode())
 		self.add(CmdUiTheme())

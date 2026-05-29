@@ -1,3 +1,4 @@
+from collections import UserDict, UserList
 import types
 from dataclasses import fields
 
@@ -5,6 +6,7 @@ import pytest
 
 from pokemon.spawns.adapters import (
     SpawnAdapterError,
+    coerce_spawn_data_entries,
     normalize_band,
     normalize_frequency,
     normalize_species_id,
@@ -50,6 +52,29 @@ def test_converts_representative_hunt_chart_shape():
         ("Pidgey", "common", 1, True),
         ("Oddish", "common", 1, True),
     ]
+
+
+def test_converts_stringified_hunt_chart_shape_from_batchcommands():
+    chart = spawn_chart_from_hunt_chart(
+        '[{"name": "Rattata", "weight": 30, "min_level": 3, "max_level": 5}]',
+        area_key="route-string",
+    )
+
+    assert entry_tuples(chart) == [("Rattata", "common", 1, True)]
+
+
+def test_converts_python_literal_stringified_spawn_data():
+    entries = coerce_spawn_data_entries("[{'name': 'Pidgey', 'weight': 25}]")
+
+    assert entries == [{"name": "Pidgey", "weight": 25}]
+
+
+def test_converts_evennia_style_list_and_mapping_wrappers():
+    entries = coerce_spawn_data_entries(
+        UserList([UserDict({"name": "Rattata", "weight": 30})])
+    )
+
+    assert entries == [{"name": "Rattata", "weight": 30}]
 
 
 def test_converts_representative_spawn_table_shape():

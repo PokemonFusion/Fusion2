@@ -81,3 +81,21 @@ def test_display_interface_wild_title_uses_species():
 	out = display_battle_interface(t_a, wild_shell, st, viewer_team="A")
 	assert "Wild Oddish" in out
 	assert "???" not in out
+
+
+def test_display_interface_uses_battle_ui_style_preference():
+	mon_a = DummyMon("Pika", 15, 20)
+	mon_b = DummyMon("Bulba", 30, 60)
+	t_a = DummyTrainer("Ash", mon_a)
+	t_b = DummyTrainer("Gary", mon_b)
+	t_a.db = types.SimpleNamespace(battle_ui_style="classic_modern")
+	t_a.ndb = types.SimpleNamespace(cols=80)
+	st = BattleState()
+
+	out = display_battle_interface(t_a, t_b, st, viewer_team="A")
+	clean = iface.render_battle_ui.__globals__["strip_ansi"](out)
+
+	assert clean.startswith("== Turn 1 ")
+	assert "Team A" in clean
+	assert "┌" not in clean
+	assert max(len(line) for line in clean.splitlines()) <= 78

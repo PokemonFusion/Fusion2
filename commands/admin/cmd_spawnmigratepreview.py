@@ -12,10 +12,11 @@ class CmdSpawnMigratePreview(Command):
 
     Usage:
       @spawnmigratepreview
+      @spawnmigrationpreview
     """
 
     key = "@spawnmigratepreview"
-    aliases = ["+spawnmigratepreview", "+spawn/migratepreview"]
+    aliases = ["@spawnmigrationpreview"]
     locks = "cmd:perm(Wizards)"
     help_category = "Admin"
 

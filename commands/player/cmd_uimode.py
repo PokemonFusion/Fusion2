@@ -5,7 +5,7 @@ class CmdUiMode(Command):
 	"""Change how room descriptions are displayed.
 
 	Usage:
-	  +uimode <fancy|simple|screenreader>
+	  +uimode <fancy|simple|boxed|screenreader>
 
 	Switch between different visual modes for room descriptions.
 	"""
@@ -22,6 +22,7 @@ class CmdUiMode(Command):
 			pretty = {
 				"fancy": "fancy",
 				"simple": "simple",
+				"boxed": "boxed",
 				"sr": "screenreader",
 			}.get(current, current)
 			caller.msg(f"Current UI mode: {pretty}.")
@@ -30,13 +31,14 @@ class CmdUiMode(Command):
 		mapping = {
 			"fancy": "fancy",
 			"simple": "simple",
+			"boxed": "boxed",
 			"screen": "sr",
 			"screenreader": "sr",
 			"sr": "sr",
 		}
 		mode = mapping.get(arg)
 		if not mode:
-			caller.msg("Usage: +uimode <fancy|simple|screenreader>")
+			caller.msg("Usage: +uimode <fancy|simple|boxed|screenreader>")
 			return
 		caller.db.ui_mode = mode
 		pretty = "screenreader" if mode == "sr" else mode

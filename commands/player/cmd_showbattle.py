@@ -16,15 +16,13 @@ except Exception:
 		return []
 
 
-from pokemon.battle.interface import display_battle_interface
+from pokemon.battle.interface import display_battle_interface, get_battle_ui_style, get_battle_ui_width
 
 
 class CmdShowBattle(Command):
 	"""Show your current battle or another character's battle.
 
-	Usage:
-	  +showbattle
-	  +showbattle <character>
+	Usage: +showbattle [character]
 	"""
 
 	key = "+showbattle"
@@ -58,5 +56,7 @@ class CmdShowBattle(Command):
 			inst.captainB,
 			inst.state,
 			viewer_team=viewer_team,
+			style=get_battle_ui_style(self.caller),
+			total_width=get_battle_ui_width(self.caller),
 		)
 		self.caller.msg(ui)

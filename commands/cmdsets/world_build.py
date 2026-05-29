@@ -2,6 +2,8 @@
 
 from evennia import CmdSet
 
+from commands.admin.cmd_alphaspawnapply import CmdAlphaSpawnApply
+from commands.admin.cmd_alphaspawndiff import CmdAlphaSpawnDiff
 from commands.admin.cmd_editroom import CmdEditRoom
 from commands.admin.cmd_roomwizard import CmdRoomWizard
 from commands.admin.cmd_spawncompare import CmdSpawnCompare
@@ -32,6 +34,8 @@ class WorldBuildCmdSet(CmdSet):
 			CmdEditRoom,
 			CmdValidate,
 			CmdSpawns,
+			CmdAlphaSpawnDiff,
+			CmdAlphaSpawnApply,
 			CmdSpawnMigratePreview,
 			CmdSpawnPreview,
 			CmdSpawnRollTest,

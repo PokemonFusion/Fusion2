@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import ast
+import json
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import Any
 
 from .constants import FREQUENCIES, SpawnFrequency
@@ -143,20 +145,46 @@ def _bands_from_entry(entry: dict[str, Any]) -> list[int]:
     return [1]
 
 
-def _entries_from_data(data: Any) -> list[dict[str, Any]]:
+def coerce_spawn_data_entries(data: Any) -> list[dict[str, Any]]:
     if data is None:
         return []
+    if isinstance(data, str):
+        data = _parse_stringified_spawn_data(data)
+    elif isinstance(data, Mapping):
+        raise SpawnAdapterError("Spawn data must be a list of entry dictionaries.")
+    elif not isinstance(data, list):
+        if isinstance(data, Iterable):
+            data = list(data)
+        else:
+            raise SpawnAdapterError("Spawn data must be a list of entry dictionaries.")
+    entries = []
     if not isinstance(data, list):
         raise SpawnAdapterError("Spawn data must be a list of entry dictionaries.")
     for entry in data:
+        if isinstance(entry, Mapping):
+            entries.append(dict(entry))
+            continue
         if not isinstance(entry, dict):
             raise SpawnAdapterError("Spawn data entries must be dictionaries.")
-    return data
+        entries.append(entry)
+    return entries
+
+
+def _parse_stringified_spawn_data(data: str) -> Any:
+    text = data.strip()
+    if not text:
+        return []
+    for parser in (json.loads, ast.literal_eval):
+        try:
+            return parser(text)
+        except (ValueError, SyntaxError):
+            continue
+    raise SpawnAdapterError("Spawn data string must contain a list of entry dictionaries.")
 
 
 def _spawn_entries_from_data(data: Any) -> list[SpawnEntry]:
     spawn_entries: list[SpawnEntry] = []
-    for raw_entry in _entries_from_data(data):
+    for raw_entry in coerce_spawn_data_entries(data):
         species_id = normalize_species_id(raw_entry.get("species") or raw_entry.get("name"))
         frequency = normalize_frequency(raw_entry.get("frequency", raw_entry.get("rarity")))
         enabled = _normalize_enabled(raw_entry)
