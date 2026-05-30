@@ -22,13 +22,6 @@ class CmdBattleItem(Command):
 
     Usage:
       +battle/item <item>
-
-    Examples:
-      +item Potion
-      +battle/item Poke Ball
-
-    Notes:
-      This queues an item as your battle action. Field-use items use +use.
     """
 
     key = "+battle/item"

@@ -16,14 +16,6 @@ class CmdBattleConcede(Command):
     Usage:
       +battle/concede
       +concede
-
-    Examples:
-      +concede
-      +concede yes
-
-    Notes:
-      The bare command asks for confirmation. Use +concede yes to confirm in
-      one command.
     """
 
     key = "+battle/concede"

@@ -10,14 +10,6 @@ class CmdGOIC(DefaultCmdIC):
     Usage:
       goic
       goic <character or number>
-
-    Examples:
-      goic
-      goic 1
-      goic Ash
-
-    Notes:
-      Use charcreate first if your account has no characters.
     """
 
     key = "goic"
@@ -77,12 +69,14 @@ class CmdGOIC(DefaultCmdIC):
                 account.puppet_object(session, new_character)
                 account.db._last_puppet = new_character
                 logger.log_sec(
-                    f"Puppet Success: (Caller: {account}, Target: {new_character}, IP: {self.session.address})."
+                    f"Puppet Success: (Caller: {account}, Target: {new_character}, IP:"
+                    f" {self.session.address})."
                 )
             except RuntimeError as exc:
                 self.msg(f"|rYou cannot become |C{new_character.name}|n: {exc}")
                 logger.log_sec(
-                    f"Puppet Failed: %s (Caller: {account}, Target: {new_character}, IP: {self.session.address})."
+                    f"Puppet Failed: %s (Caller: {account}, Target: {new_character}, IP:"
+                    f" {self.session.address})."
                 )
             return
 
@@ -94,12 +88,6 @@ class CmdGOOOC(DefaultCmdOOC):
 
     Usage:
       goooc
-
-    Examples:
-      goooc
-
-    Notes:
-      The aliases gooc and unpuppet also work.
     """
 
     key = "goooc"
@@ -113,13 +101,6 @@ class CmdOOC(Command):
     Usage:
       ooc <message>
       ooc :<pose>
-
-    Examples:
-      ooc Hello!
-      ooc :waves.
-
-    Notes:
-      OOC speech is sent to your current room.
     """
 
     key = "ooc"

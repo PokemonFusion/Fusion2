@@ -23,13 +23,6 @@ class CmdBattleSwitch(Command):
 
 	Usage:
 	  +battle/switch <slot>
-
-	Examples:
-	  +switch 2
-	  +battle/switch 4
-
-	Notes:
-	  With no slot, the command opens a prompt listing available Pokemon.
 	"""
 
 	key = "+battle/switch"

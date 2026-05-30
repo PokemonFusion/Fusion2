@@ -12,11 +12,7 @@ from commands.player.cmd_battle_switch import CmdBattleSwitch
 from commands.player.cmd_effects import CmdEffects, CmdEffectsAdminReveal
 from commands.player.cmd_showbattle import CmdShowBattle
 from commands.player.cmd_watch import CmdUnwatch, CmdWatch
-from commands.player.cmd_watchbattle import (
-    CmdBattleList,
-    CmdUnwatchBattle,
-    CmdWatchBattle,
-)
+from commands.player.cmd_watchbattle import CmdUnwatchBattle, CmdWatchBattle
 
 
 class BattleCmdSet(CmdSet):
@@ -34,7 +30,6 @@ class BattleCmdSet(CmdSet):
             CmdBattleFlee,
             CmdWatchBattle,
             CmdUnwatchBattle,
-            CmdBattleList,
             CmdShowBattle,
             CmdEffects,
             CmdEffectsAdminReveal,

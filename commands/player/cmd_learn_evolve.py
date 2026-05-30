@@ -11,224 +11,197 @@ from utils.locks import require_no_battle_lock
 
 
 class CmdChooseMoveset(Command):
-    """Select which stored moveset a Pokemon should use.
+	"""Select which stored moveset a Pokémon should use.
 
-    Usage:
-      +moves/use <slot>=<set#>
+	Usage:
+	  +moveset <slot>=<set#>
+	"""
 
-    Examples:
-      +moves/use 1=2
+	key = "+moveset"
+	locks = "cmd:all()"
+	help_category = "Pokemon"
 
-    Notes:
-      Use +movesets at a Pokemon Center to manage saved movesets.
-    """
+	def parse(self):
+		if "=" not in self.args:
+			self.slot = self.index = None
+			return
+		left, right = [p.strip() for p in self.args.split("=", 1)]
+		try:
+			self.slot = int(left)
+			self.index = int(right) - 1
+		except ValueError:
+			self.slot = self.index = None
 
-    key = "+moves/use"
-    aliases = ["+moveset"]
-    locks = "cmd:all()"
-    help_category = "Pokemon"
-
-    def parse(self):
-        if "=" not in self.args:
-            self.slot = self.index = None
-            return
-        left, right = [p.strip() for p in self.args.split("=", 1)]
-        try:
-            self.slot = int(left)
-            self.index = int(right) - 1
-        except ValueError:
-            self.slot = self.index = None
-
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        if self.slot is None or self.index is None:
-            self.caller.msg("Usage: +moves/use <slot>=<set#>")
-            return
-        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
-        if not pokemon:
-            self.caller.msg("No Pokémon in that slot.")
-            return
-        sets = list(pokemon.movesets.order_by("index"))
-        if self.index < 0 or self.index >= len(sets):
-            self.caller.msg("Invalid moveset number.")
-            return
-        pokemon.swap_moveset(self.index)
-        self.caller.msg(f"{pokemon.name} is now using moveset {self.index + 1}.")
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		if self.slot is None or self.index is None:
+			self.caller.msg("Usage: +moveset <slot>=<set#>")
+			return
+		pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+		if not pokemon:
+			self.caller.msg("No Pokémon in that slot.")
+			return
+		sets = list(pokemon.movesets.order_by("index"))
+		if self.index < 0 or self.index >= len(sets):
+			self.caller.msg("Invalid moveset number.")
+			return
+		pokemon.swap_moveset(self.index)
+		self.caller.msg(f"{pokemon.name} is now using moveset {self.index + 1}.")
 
 
 class CmdTeachMove(Command):
-    """Teach a valid move to one of your active Pokemon.
+	"""Teach a move to one of your active Pokémon.
 
-    Usage:
-      +teach <slot>=<move>
+	Usage:
+	  +move <slot>=<move>
+	"""
 
-    Examples:
-      +teach 1=Thunderbolt
+	key = "+move"
+	locks = "cmd:all()"
+	help_category = "Pokemon"
 
-    Notes:
-      This checks whether the Pokemon can learn the move at its current level.
-    """
+	def parse(self):
+		if "=" not in self.args:
+			self.slot = None
+			self.move_name = ""
+			return
+		left, right = [p.strip() for p in self.args.split("=", 1)]
+		try:
+			self.slot = int(left)
+		except ValueError:
+			self.slot = None
+		self.move_name = right.strip()
 
-    key = "+teach"
-    aliases = ["+move"]
-    locks = "cmd:all()"
-    help_category = "Pokemon"
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		if self.slot is None or not self.move_name:
+			self.caller.msg("Usage: +move <slot>=<move>")
+			return
+		pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+		if not pokemon:
+			self.caller.msg("No Pokémon in that slot.")
+			return
+		from pokemon.data.generation import get_valid_moves
 
-    def parse(self):
-        if "=" not in self.args:
-            self.slot = None
-            self.move_name = ""
-            return
-        left, right = [p.strip() for p in self.args.split("=", 1)]
-        try:
-            self.slot = int(left)
-        except ValueError:
-            self.slot = None
-        self.move_name = right.strip()
+		valid = [m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)]
+		if self.move_name.lower() not in valid:
+			message = f"{pokemon.name} cannot learn {self.move_name}."
+			suggestion = suggest_name(self.move_name, valid)
+			if suggestion:
+				message += f" Did you mean {suggestion}?"
+			self.caller.msg(message)
+			return
+		if pokemon.learned_moves.filter(name__iexact=self.move_name).exists():
+			self.caller.msg(f"{pokemon.name} already knows {self.move_name}.")
+			return
 
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        if self.slot is None or not self.move_name:
-            self.caller.msg("Usage: +teach <slot>=<move>")
-            return
-        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
-        if not pokemon:
-            self.caller.msg("No Pokémon in that slot.")
-            return
-        from pokemon.data.generation import get_valid_moves
+		from pokemon.utils.move_learning import learn_move
 
-        valid = [m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)]
-        if self.move_name.lower() not in valid:
-            message = f"{pokemon.name} cannot learn {self.move_name}."
-            suggestion = suggest_name(self.move_name, valid)
-            if suggestion:
-                message += f" Did you mean {suggestion}?"
-            self.caller.msg(message)
-            return
-        if pokemon.learned_moves.filter(name__iexact=self.move_name).exists():
-            self.caller.msg(f"{pokemon.name} already knows {self.move_name}.")
-            return
-
-        from pokemon.utils.move_learning import learn_move
-
-        learn_move(pokemon, self.move_name, caller=self.caller, prompt=True)
+		learn_move(pokemon, self.move_name, caller=self.caller, prompt=True)
 
 
 class CmdLearn(Command):
-    """Learn pending level-up moves for a Pokemon.
+	"""Learn level-up moves for a Pokémon.
 
-    Usage:
-      +learn <slot>
+	Usage:
+	  +learn <slot>
+	"""
 
-    Examples:
-      +learn
-      +learn 2
+	key = "+learn"
+	locks = "cmd:all()"
+	help_category = "Pokemon"
 
-    Notes:
-      With no slot, the command lists party Pokemon with available moves.
-    """
+	def parse(self):
+		try:
+			self.slot = int(self.args.strip())
+		except (TypeError, ValueError):
+			self.slot = None
 
-    key = "+learn"
-    locks = "cmd:all()"
-    help_category = "Pokemon"
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		from pokemon.utils.move_learning import get_learnable_levelup_moves
 
-    def parse(self):
-        try:
-            self.slot = int(self.args.strip())
-        except (TypeError, ValueError):
-            self.slot = None
+		if self.slot is None:
+			lines = []
+			for idx in range(1, 7):
+				poke = self.caller.get_active_pokemon_by_slot(idx)
+				if not poke:
+					continue
+				moves, _ = get_learnable_levelup_moves(poke)
+				if moves:
+					lines.append(f"Slot {idx}: {poke.name} ({len(moves)} move{'s' if len(moves) != 1 else ''})")
+			if lines:
+				self.caller.msg("Pokémon with moves to learn:\n" + "\n".join(lines))
+			else:
+				self.caller.msg("None of your Pokémon have moves to learn.")
+			return
 
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        from pokemon.utils.move_learning import get_learnable_levelup_moves
+		pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
+		if not pokemon:
+			self.caller.msg("No Pokémon in that slot.")
+			return
 
-        if self.slot is None:
-            lines = []
-            for idx in range(1, 7):
-                poke = self.caller.get_active_pokemon_by_slot(idx)
-                if not poke:
-                    continue
-                moves, _ = get_learnable_levelup_moves(poke)
-                if moves:
-                    lines.append(f"Slot {idx}: {poke.name} ({len(moves)} move{'s' if len(moves) != 1 else ''})")
-            if lines:
-                self.caller.msg("Pokémon with moves to learn:\n" + "\n".join(lines))
-            else:
-                self.caller.msg("None of your Pokémon have moves to learn.")
-            return
+		moves, level_map = get_learnable_levelup_moves(pokemon)
+		if not moves:
+			self.caller.msg(f"{pokemon.name} has no moves to learn.")
+			return
 
-        pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
-        if not pokemon:
-            self.caller.msg("No Pokémon in that slot.")
-            return
+		from menus import learn_new_moves as learn_menu
+		from utils.enhanced_evmenu import EnhancedEvMenu
 
-        moves, level_map = get_learnable_levelup_moves(pokemon)
-        if not moves:
-            self.caller.msg(f"{pokemon.name} has no moves to learn.")
-            return
-
-        from menus import learn_new_moves as learn_menu
-        from utils.enhanced_evmenu import EnhancedEvMenu
-
-        EnhancedEvMenu(
-            self.caller,
-            learn_menu,
-            startnode="node_start",
-            start_kwargs={"pokemon": pokemon, "moves": moves, "level_map": level_map},
-            cmd_on_exit=None,
-        )
+		EnhancedEvMenu(
+			self.caller,
+			learn_menu,
+			startnode="node_start",
+			start_kwargs={"pokemon": pokemon, "moves": moves, "level_map": level_map},
+			cmd_on_exit=None,
+		)
 
 
 class CmdEvolvePokemon(Command):
-    """Evolve one of your Pokemon if possible.
+	"""Evolve one of your Pokémon if possible.
 
-    Usage:
-      +evolve <pokemon_id> [item]
+	Usage:
+	  evolve <pokemon_id> [item]
+	"""
 
-    Examples:
-      +evolve abc123
-      +evolve abc123 Fire Stone
+	key = "evolve"
+	locks = "cmd:all()"
+	help_category = "Pokemon"
 
-    Notes:
-      Some Pokemon need an item or other evolution condition.
-    """
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		"""Attempt to evolve one of the player's Pokémon."""
+		parts = self.args.split()
+		if not parts:
+			self.caller.msg("Usage: evolve <pokemon_id> [item]")
+			return
 
-    key = "+evolve"
-    aliases = ["evolve"]
-    locks = "cmd:all()"
-    help_category = "Pokemon"
+		pid = parts[0]
+		item = parts[1] if len(parts) > 1 else None
+		pokemon = self.caller.get_pokemon_by_id(pid)
+		if not pokemon:
+			self.caller.msg("No such Pokémon.")
+			return
 
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        """Attempt to evolve one of the player's Pokémon."""
-        parts = self.args.split()
-        if not parts:
-            self.caller.msg("Usage: +evolve <pokemon_id> [item]")
-            return
+		if item and not self.caller.has_item(item):
+			self.caller.msg(
+				item_not_found_message(item, f"You do not have a {item}.")
+			)
+			return
 
-        pid = parts[0]
-        item = parts[1] if len(parts) > 1 else None
-        pokemon = self.caller.get_pokemon_by_id(pid)
-        if not pokemon:
-            self.caller.msg("No such Pokémon.")
-            return
+		from pokemon.data.evolution import attempt_evolution
 
-        if item and not self.caller.has_item(item):
-            self.caller.msg(item_not_found_message(item, f"You do not have a {item}."))
-            return
+		new_species = attempt_evolution(pokemon, item=item)
+		if not new_species:
+			self.caller.msg("It doesn't seem to be able to evolve right now.")
+			return
 
-        from pokemon.data.evolution import attempt_evolution
-
-        new_species = attempt_evolution(pokemon, item=item)
-        if not new_species:
-            self.caller.msg("It doesn't seem to be able to evolve right now.")
-            return
-
-        if item:
-            self.caller.trainer.remove_item(item)
-        pokemon.save()
-        self.caller.msg(f"{pokemon.name} evolved into {new_species}!")
+		if item:
+			self.caller.trainer.remove_item(item)
+		pokemon.save()
+		self.caller.msg(f"{pokemon.name} evolved into {new_species}!")

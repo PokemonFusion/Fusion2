@@ -14,13 +14,6 @@ class CmdLook(Command):
         look
         look <obj>
         look *<account>
-
-    Examples:
-        look
-        look Nurse Joy
-
-    Notes:
-        The aliases l and ls also work.
     """
 
     key = "look"

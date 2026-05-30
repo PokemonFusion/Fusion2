@@ -12,248 +12,237 @@ from utils.locks import require_no_battle_lock
 
 
 class CmdInventory(Command):
-    """Show items in your inventory.
+	"""Show items in your inventory.
 
-    Usage:
-      +inventory
+	Usage:
+	  +inventory
+	"""
 
-    Examples:
-      +inventory
+	key = "+inventory"
+	locks = "cmd:all()"
+	help_category = "Inventory"
 
-    Notes:
-      Use +use for field-use items and +battle/item for battle items.
-    """
+	def func(self):
+		trainer = getattr(self.caller, "trainer", None)
+		if not trainer:
+			self.caller.msg("You have no trainer record.")
+			return
 
-    key = "+inventory"
-    aliases = ["inventory"]
-    locks = "cmd:all()"
-    help_category = "Inventory"
+		entries = trainer.list_inventory()
+		if not entries:
+			self.caller.msg("Your inventory is empty.")
+			return
 
-    def func(self):
-        trainer = getattr(self.caller, "trainer", None)
-        if not trainer:
-            self.caller.msg("You have no trainer record.")
-            return
+		lines = ["Your Inventory:"]
+		from pokemon.middleware import get_item_by_name, get_item_description
 
-        entries = trainer.list_inventory()
-        if not entries:
-            self.caller.msg("Your inventory is empty.")
-            return
-
-        lines = ["Your Inventory:"]
-        from pokemon.middleware import get_item_by_name, get_item_description
-
-        for entry in entries:
-            item_name, data = get_item_by_name(entry.item_name)
-            item_name = item_name or entry.item_name
-            desc = get_item_description(item_name, data)
-            display = getattr(data, "name", None) or (data.get("name") if isinstance(data, dict) else None)
-            display = display or str(item_name).title()
-            lines.append(f"{display} x{entry.quantity} - {desc}")
-        self.caller.msg("\n".join(lines))
+		for entry in entries:
+			item_name, data = get_item_by_name(entry.item_name)
+			item_name = item_name or entry.item_name
+			desc = get_item_description(item_name, data)
+			display = getattr(data, "name", None) or (
+				data.get("name") if isinstance(data, dict) else None
+			)
+			display = display or str(item_name).title()
+			lines.append(f"{display} x{entry.quantity} - {desc}")
+		self.caller.msg("\n".join(lines))
 
 
 class CmdAddItem(Command):
-    """Add an item to your inventory.
+	"""Add an item to your inventory.
 
-    Usage:
-      @additem <item> <amount>
-    """
+	Usage:
+	  @additem <item> <amount>
+	"""
 
-    key = "@additem"
-    aliases = ["additem"]
-    locks = "cmd:perm(Builder)"
-    help_category = "Admin"
+	key = "@additem"
+	aliases = ["additem"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        parts = self.args.split()
-        if len(parts) != 2:
-            self.caller.msg("Usage: @additem <item> <amount>")
-            return
-        item = parts[0]
-        try:
-            qty = int(parts[1])
-        except ValueError:
-            self.caller.msg("Usage: @additem <item> <amount>")
-            return
-        trainer = getattr(self.caller, "trainer", None)
-        if not trainer:
-            self.caller.msg("You have no trainer record.")
-            return
-        trainer.add_item(item, qty)
-        self.caller.msg(f"Added {qty} x {item}.")
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		parts = self.args.split()
+		if len(parts) != 2:
+			self.caller.msg("Usage: @additem <item> <amount>")
+			return
+		item = parts[0]
+		try:
+			qty = int(parts[1])
+		except ValueError:
+			self.caller.msg("Usage: @additem <item> <amount>")
+			return
+		trainer = getattr(self.caller, "trainer", None)
+		if not trainer:
+			self.caller.msg("You have no trainer record.")
+			return
+		trainer.add_item(item, qty)
+		self.caller.msg(f"Added {qty} x {item}.")
 
 
 class CmdGiveItem(Command):
-    """Give an item to another player (admin-only).
+	"""Give an item to another player (admin-only).
 
-    Usage:
-      @giveitem <player> = <item>:<amount>
-    """
+	Usage:
+	  @giveitem <player> = <item>:<amount>
+	"""
 
-    key = "@giveitem"
-    aliases = ["+giveitem"]
-    locks = "cmd:perm(Builder)"
-    help_category = "Admin"
+	key = "@giveitem"
+	aliases = ["+giveitem"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
-    def parse(self):
-        self.amount_error = False
-        parts = self.args.split("=")
-        if len(parts) != 2:
-            self.target_name = self.item_name = self.amount = None
-            return
-        self.target_name = parts[0].strip()
-        item_part = parts[1].strip().split(":")
-        self.item_name = item_part[0].strip().lower()
-        try:
-            self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
-        except ValueError:
-            self.amount = None
-            self.amount_error = True
+	def parse(self):
+		self.amount_error = False
+		parts = self.args.split("=")
+		if len(parts) != 2:
+			self.target_name = self.item_name = self.amount = None
+			return
+		self.target_name = parts[0].strip()
+		item_part = parts[1].strip().split(":")
+		self.item_name = item_part[0].strip().lower()
+		try:
+			self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
+		except ValueError:
+			self.amount = None
+			self.amount_error = True
 
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        if not all([self.target_name, self.item_name]):
-            self.caller.msg("Usage: @giveitem <player> = <item>:<amount>")
-            return
-        if self.amount_error:
-            self.caller.msg("Amount must be a number.")
-            return
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		if not all([self.target_name, self.item_name]):
+			self.caller.msg("Usage: @giveitem <player> = <item>:<amount>")
+			return
+		if self.amount_error:
+			self.caller.msg("Amount must be a number.")
+			return
 
-        target = self.caller.search(self.target_name)
-        if not target or not hasattr(target, "trainer"):
-            self.caller.msg("Player not found or has no trainer record.")
-            return
-        if not require_no_battle_lock(target):
-            return
+		target = self.caller.search(self.target_name)
+		if not target or not hasattr(target, "trainer"):
+			self.caller.msg("Player not found or has no trainer record.")
+			return
+		if not require_no_battle_lock(target):
+			return
 
-        if self.item_name not in ITEMDEX:
-            self.caller.msg(
-                item_not_found_message(
-                    self.item_name,
-                    f"Item '{self.item_name}' not found in ITEMDEX.",
-                )
-            )
-            return
+		if self.item_name not in ITEMDEX:
+			self.caller.msg(
+				item_not_found_message(
+					self.item_name,
+					f"Item '{self.item_name}' not found in ITEMDEX.",
+				)
+			)
+			return
 
-        target.trainer.add_item(self.item_name, self.amount)
-        self.caller.msg(f"Gave {self.amount} x {self.item_name} to {target.key}.")
+		target.trainer.add_item(self.item_name, self.amount)
+		self.caller.msg(f"Gave {self.amount} x {self.item_name} to {target.key}.")
 
 
 class CmdUseItem(Command):
-    """Use an item outside of battle.
+	"""Use an item outside of battle.
 
-    Usage:
-      +use <item>
-      +use <slot>=<item>
+	Usage:
+	  +useitem <item>
+	  +useitem <slot>=<item>
+	"""
 
-    Examples:
-      +use Potion
-      +use 2=PP Up
+	key = "+useitem"
+	locks = "cmd:all()"
+	help_category = "Inventory"
 
-    Notes:
-      Battle items use +battle/item while a battle is waiting for your action.
-    """
+	def func(self):
+		if not require_no_battle_lock(self.caller):
+			return
+		args = self.args.strip()
+		trainer = getattr(self.caller, "trainer", None)
 
-    key = "+use"
-    aliases = ["+useitem"]
-    locks = "cmd:all()"
-    help_category = "Inventory"
+		if not trainer:
+			self.caller.msg("You have no trainer record.")
+			return
 
-    def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        args = self.args.strip()
-        trainer = getattr(self.caller, "trainer", None)
+		pending = getattr(self.caller.ndb, "pending_pp_item", None)
 
-        if not trainer:
-            self.caller.msg("You have no trainer record.")
-            return
+		if pending:
+			move_sel = args.strip()
+			if not move_sel:
+				self.caller.msg("Please specify which move to apply the item to.")
+				return
+			pokemon = pending["pokemon"]
+			item = pending["item"]
+			slots = list(pokemon.activemoveslot_set.order_by("slot"))
+			move_name = None
+			if move_sel.isdigit():
+				idx = int(move_sel) - 1
+				if 0 <= idx < len(slots):
+					move_name = slots[idx].move.name
+			else:
+				for s in slots:
+					if s.move.name.lower() == move_sel.lower():
+						move_name = s.move.name
+						break
+			if not move_name:
+				self.caller.msg("Invalid move selection.")
+				return
+			if item == "ppup":
+				applied = pokemon.apply_pp_up(move_name)
+				fail_msg = "That move's PP can't be raised any further."
+			else:
+				applied = pokemon.apply_pp_max(move_name)
+				fail_msg = "That move already has maximum PP."
+			if not applied:
+				self.caller.msg(fail_msg)
+				self.caller.ndb.pending_pp_item = None
+				return
+			trainer.remove_item(item)
+			self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
+			self.caller.ndb.pending_pp_item = None
+			return
 
-        pending = getattr(self.caller.ndb, "pending_pp_item", None)
+		if not args:
+			self.caller.msg("Usage: +useitem <item> or +useitem <slot>=<item>")
+			return
 
-        if pending:
-            move_sel = args.strip()
-            if not move_sel:
-                self.caller.msg("Please specify which move to apply the item to.")
-                return
-            pokemon = pending["pokemon"]
-            item = pending["item"]
-            slots = list(pokemon.activemoveslot_set.order_by("slot"))
-            move_name = None
-            if move_sel.isdigit():
-                idx = int(move_sel) - 1
-                if 0 <= idx < len(slots):
-                    move_name = slots[idx].move.name
-            else:
-                for s in slots:
-                    if s.move.name.lower() == move_sel.lower():
-                        move_name = s.move.name
-                        break
-            if not move_name:
-                self.caller.msg("Invalid move selection.")
-                return
-            if item == "ppup":
-                applied = pokemon.apply_pp_up(move_name)
-                fail_msg = "That move's PP can't be raised any further."
-            else:
-                applied = pokemon.apply_pp_max(move_name)
-                fail_msg = "That move already has maximum PP."
-            if not applied:
-                self.caller.msg(fail_msg)
-                self.caller.ndb.pending_pp_item = None
-                return
-            trainer.remove_item(item)
-            self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
-            self.caller.ndb.pending_pp_item = None
-            return
+		slot = None
+		item_name = args
+		if "=" in args:
+			left, right = [p.strip() for p in args.split("=", 1)]
+			try:
+				slot = int(left)
+			except ValueError:
+				self.caller.msg("Invalid slot number.")
+				return
+			item_name = right
 
-        if not args:
-            self.caller.msg("Usage: +use <item> or +use <slot>=<item>")
-            return
+		item_name = item_name.lower()
 
-        slot = None
-        item_name = args
-        if "=" in args:
-            left, right = [p.strip() for p in args.split("=", 1)]
-            try:
-                slot = int(left)
-            except ValueError:
-                self.caller.msg("Invalid slot number.")
-                return
-            item_name = right
+		if item_name not in ITEMDEX:
+			self.caller.msg(
+				item_not_found_message(item_name, f"No such item '{item_name}' exists.")
+			)
+			return
 
-        item_name = item_name.lower()
+		if slot is not None and item_name in {"ppup", "ppmax", "pp max"}:
+			pokemon = self.caller.get_active_pokemon_by_slot(slot)
+			if not pokemon:
+				self.caller.msg("No Pokémon in that slot.")
+				return
+			slots = list(pokemon.activemoveslot_set.order_by("slot"))
+			if not slots:
+				self.caller.msg("That Pokémon knows no moves.")
+				return
+			self.caller.ndb.pending_pp_item = {"pokemon": pokemon, "item": item_name.replace(" ", "")}
+			lines = ["Choose a move to increase PP:"]
+			for s in slots:
+				max_pp = pokemon.get_max_pp(s.move.name)
+				lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
+			lines.append("Use +useitem <move name or number> to select.")
+			self.caller.msg("\n".join(lines))
+			return
 
-        if item_name not in ITEMDEX:
-            self.caller.msg(item_not_found_message(item_name, f"No such item '{item_name}' exists."))
-            return
+		success = trainer.remove_item(item_name)
+		if not success:
+			self.caller.msg(f"You don't have any {item_name} to use.")
+			return
 
-        if slot is not None and item_name in {"ppup", "ppmax", "pp max"}:
-            pokemon = self.caller.get_active_pokemon_by_slot(slot)
-            if not pokemon:
-                self.caller.msg("No Pokémon in that slot.")
-                return
-            slots = list(pokemon.activemoveslot_set.order_by("slot"))
-            if not slots:
-                self.caller.msg("That Pokémon knows no moves.")
-                return
-            self.caller.ndb.pending_pp_item = {"pokemon": pokemon, "item": item_name.replace(" ", "")}
-            lines = ["Choose a move to increase PP:"]
-            for s in slots:
-                max_pp = pokemon.get_max_pp(s.move.name)
-                lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
-            lines.append("Use +use <move name or number> to select.")
-            self.caller.msg("\n".join(lines))
-            return
-
-        success = trainer.remove_item(item_name)
-        if not success:
-            self.caller.msg(f"You don't have any {item_name} to use.")
-            return
-
-        # Placeholder for other item effects
-        self.caller.msg(f"You used one {item_name}.")
+		# Placeholder for other item effects
+		self.caller.msg(f"You used one {item_name}.")

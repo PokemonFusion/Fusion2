@@ -5,47 +5,41 @@ from evennia.utils.evtable import EvTable
 
 
 class CmdGlance(Command):
-    """Show a brief overview of online characters in the room.
+	"""Show a brief overview of online characters in the room.
 
-    Usage:
-      +glance
+	Usage:
+	  +glance
+	"""
 
-    Examples:
-      +glance
+	key = "+glance"
+	locks = "cmd:all()"
+	help_category = "General"
 
-    Notes:
-      This is a quick scan; use look <character> for a full description.
-    """
+	def func(self):
+		caller = self.caller
+		location = caller.location
+		if not location:
+			caller.msg("You have no location to glance at.")
+			return
 
-    key = "+glance"
-    locks = "cmd:all()"
-    help_category = "General"
+		chars = []
+		for obj in location.contents:
+			if not obj.is_typeclass(DefaultCharacter, exact=False):
+				continue
+			if not obj.sessions.all():
+				continue
+			chars.append(obj)
 
-    def func(self):
-        caller = self.caller
-        location = caller.location
-        if not location:
-            caller.msg("You have no location to glance at.")
-            return
+		if not chars:
+			caller.msg("No online characters here.")
+			return
 
-        chars = []
-        for obj in location.contents:
-            if not obj.is_typeclass(DefaultCharacter, exact=False):
-                continue
-            if not obj.sessions.all():
-                continue
-            chars.append(obj)
+		table = EvTable("Name", "Gender", "Species", "Idle")
+		for char in chars:
+			gender = char.db.gender or "Unknown"
+			species = char.db.fusion_species or "Human"
+			idle = char.idle_time
+			idle_str = utils.time_format(idle, 1) if idle is not None else "0s"
+			table.add_row(char.key, gender, species, idle_str)
 
-        if not chars:
-            caller.msg("No online characters here.")
-            return
-
-        table = EvTable("Name", "Gender", "Species", "Idle")
-        for char in chars:
-            gender = char.db.gender or "Unknown"
-            species = char.db.fusion_species or "Human"
-            idle = char.idle_time
-            idle_str = utils.time_format(idle, 1) if idle is not None else "0s"
-            table.add_row(char.key, gender, species, idle_str)
-
-        caller.msg(str(table))
+		caller.msg(str(table))
