@@ -58,7 +58,10 @@ try:
 except ImportError:
     print("secret_settings.py file not found or failed to import.")
 
-# Optional third-party apps. None at this time.
+# Django contrib apps needed by local models.
+INSTALLED_APPS += (
+    "django.contrib.postgres",
+)
 
 # Local apps
 INSTALLED_APPS += (
