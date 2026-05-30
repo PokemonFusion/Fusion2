@@ -212,6 +212,9 @@ class TurnProcessor:
 					self.register_handlers(poke)
 					self.dispatcher.dispatch("pre_start", pokemon=poke, battle=self)
 					self.dispatcher.dispatch("start", pokemon=poke, battle=self)
+					reveal_entry_ability = getattr(self, "reveal_entry_ability", None)
+					if callable(reveal_entry_ability):
+						reveal_entry_ability(poke)
 					self.dispatcher.dispatch("switch_in", pokemon=poke, battle=self)
 			self._apply_misc_callbacks()
 		for part in self.participants:

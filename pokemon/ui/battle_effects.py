@@ -13,6 +13,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from pokemon.battle.battledata import _caller_is_admin
+
 # Reuse existing ANSI-safe helpers and theme
 from pokemon.ui.battle_render import (
 	THEME,
@@ -344,6 +346,7 @@ class EffectsAdapter:
 		self.viewer = viewer
 		self.state = getattr(session, "state", session)
 		logic = getattr(session, "logic", None)
+		self.data = getattr(logic, "data", None) or getattr(session, "data", None)
 		self.battle = getattr(session, "battle", None) or getattr(logic, "battle", None)
 		self.field = (
 			getattr(self.battle, "field", None)
@@ -375,6 +378,46 @@ class EffectsAdapter:
 		if c in getattr(self.session, "teamB", []) or c == getattr(self.session, "captainB", None):
 			return "B"
 		return "W"
+
+	def _reveal_source(self):
+		for source in (self.data, self.battle, self.session):
+			if source is not None and hasattr(source, "get_revealed_ability_for_viewer"):
+				return source
+		return None
+
+	def _admin_reveal_enabled(self) -> bool:
+		if self.data is not None:
+			return bool(getattr(self.data, "admin_ability_reveal", True))
+		if self.battle is not None:
+			return bool(getattr(self.battle, "admin_ability_reveal", True))
+		getter = getattr(self.session, "get_admin_ability_reveal", None)
+		if callable(getter):
+			return bool(getter())
+		return True
+
+	def ability_display(self, mon, pokemon_side: str, owns_pokemon: bool) -> str:
+		"""Return the ability text visible to this viewer."""
+
+		actual = _pokemon_ability_name(mon)
+		if owns_pokemon:
+			return actual or "None"
+
+		viewer_role = self.viewer_role()
+		revealed = None
+		source = self._reveal_source()
+		if source is not None:
+			getter = getattr(source, "get_revealed_ability_for_viewer", None)
+			if callable(getter):
+				try:
+					revealed = getter(viewer_role, mon, pokemon_side=pokemon_side)
+				except TypeError:
+					revealed = getter(viewer_role, mon)
+		if revealed:
+			return str(revealed)
+
+		if actual and self._admin_reveal_enabled() and _caller_is_admin(self.viewer):
+			return f"{actual} [admin]"
+		return "Unknown"
 
 	def monA(self):
 		return getattr(getattr(self.session, "captainA", None), "active_pokemon", None)
@@ -556,9 +599,9 @@ def render_effects_panel(
 	if not brief:
 		rows.append(rpad("─ On-Field Pokémon " + ("─" * max(0, inner - 20)), inner))
 		role = ad.viewer_role()
-		for mon, self_side in (
-			(ad.monA(), role in ("A", "W") and focus != "opp" or focus == "me" and role == "A"),
-			(ad.monB(), role in ("B", "W") and focus != "me" or focus == "opp" and role in ("A", "B")),
+		for mon, pokemon_side, self_side in (
+			(ad.monA(), "A", role in ("A", "W") and focus != "opp" or focus == "me" and role == "A"),
+			(ad.monB(), "B", role in ("B", "W") and focus != "me" or focus == "opp" and role in ("A", "B")),
 		):
 			if not mon:
 				continue
@@ -581,9 +624,9 @@ def render_effects_panel(
 			# HP
 			rows.append(rpad(fmt_hp_line(mon, inner, show_abs=self_side if role != "W" else self_side), inner))
 			# Item/Ability with reveal
-			is_self = (role == "A" and mon is ad.monA()) or (role == "B" and mon is ad.monB())
+			is_self = role == pokemon_side
 			item = _reveal(_pokemon_item_name(mon), bool(getattr(mon, "item_revealed", False)), is_self)
-			abil = _reveal(_pokemon_ability_name(mon), bool(getattr(mon, "ability_revealed", False)), is_self)
+			abil = ad.ability_display(mon, pokemon_side, is_self)
 			rows.append(rpad(f"Item: {item}   Ability: {abil}", inner))
 			# Stages
 			rows.append(rpad(f"Stages: {_stages_line(getattr(mon, 'boosts', {}))}", inner))

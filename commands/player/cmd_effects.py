@@ -14,6 +14,16 @@ def _battles_in_room(room):
 	return [s for s in REGISTRY.all() if getattr(s, "room", None) == room]
 
 
+def _current_battle_for_caller(caller):
+	inst = getattr(getattr(caller, "ndb", None), "battle_instance", None)
+	if inst and getattr(inst, "room", None) == getattr(caller, "location", None):
+		return inst
+	in_room = _battles_in_room(getattr(caller, "location", None))
+	if len(in_room) == 1:
+		return in_room[0]
+	return None
+
+
 def _session_title(s):
 	a = getattr(getattr(s, "captainA", None), "name", "?")
 	b = getattr(getattr(s, "captainB", None), "name", "?")
@@ -177,3 +187,66 @@ class CmdEffects(Command):
 			focus=self.flags["focus"],
 		)
 		caller.msg(panel)
+
+
+class CmdEffectsAdminReveal(Command):
+	"""Toggle admin-only ability reveal for the current battle.
+
+	Usage:
+	  +effects/adminreveal
+	  +effects/adminreveal on
+	  +effects/adminreveal off
+	  +effects/adminreveal toggle
+	"""
+
+	key = "+effects/adminreveal"
+	aliases = ["+effects/adminreveal"]
+	locks = "cmd:perm(Wizards)"
+	help_category = "Admin"
+
+	def func(self):
+		caller = self.caller
+		inst = _current_battle_for_caller(caller)
+		if not inst:
+			in_room = _battles_in_room(getattr(caller, "location", None))
+			if len(in_room) > 1:
+				caller.msg("Multiple battles are active here. Join the battle you want to change first.")
+			else:
+				caller.msg("No active battle found in this room.")
+			return
+
+		arg = (self.args or "").strip().lower()
+		current = True
+		getter = getattr(inst, "get_admin_ability_reveal", None)
+		if callable(getter):
+			current = bool(getter())
+		else:
+			data = getattr(getattr(inst, "logic", None), "data", None)
+			current = bool(getattr(data, "admin_ability_reveal", True))
+
+		if arg in {"", "toggle"}:
+			enabled = not current
+		elif arg in {"on", "enable", "enabled", "true", "yes"}:
+			enabled = True
+		elif arg in {"off", "disable", "disabled", "false", "no"}:
+			enabled = False
+		else:
+			caller.msg("Usage: +effects/adminreveal [on|off|toggle]")
+			return
+
+		setter = getattr(inst, "set_admin_ability_reveal", None)
+		if callable(setter):
+			setter(enabled)
+		else:
+			data = getattr(getattr(inst, "logic", None), "data", None)
+			if data is not None:
+				data.admin_ability_reveal = bool(enabled)
+			battle = getattr(getattr(inst, "logic", None), "battle", None) or getattr(inst, "battle", None)
+			if battle is not None:
+				setattr(battle, "admin_ability_reveal", bool(enabled))
+			storage = getattr(inst, "storage", None)
+			if storage is not None and data is not None:
+				storage.set("data", data.to_dict())
+
+		state = "ON" if enabled else "OFF"
+		caller.msg(f"Admin ability reveal for this battle is now {state}.")
