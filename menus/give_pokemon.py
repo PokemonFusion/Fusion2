@@ -1,6 +1,8 @@
-from pokemon.data.generation import generate_pokemon
-from pokemon.dex import POKEDEX
-from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+from utils.dex_suggestions import (
+	is_known_species,
+	is_species_not_found_error,
+	species_not_found_message,
+)
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -9,7 +11,18 @@ def node_start(caller, raw_input=None, **kwargs):
 	if not target:
 		caller.msg("No target specified.")
 		return None, None
-	if target.storage.active_pokemon.count() >= 6:
+	storage = target.storage
+	if hasattr(storage, "active_pokemon_count"):
+		active_count = storage.active_pokemon_count()
+	else:
+		active = getattr(storage, "active_pokemon", None)
+		if hasattr(active, "count"):
+			active_count = active.count()
+		elif hasattr(active, "all"):
+			active_count = len(list(active.all()))
+		else:
+			active_count = len(list(active or []))
+	if active_count >= 6:
 		caller.msg(f"{target.key}'s party is full.")
 		return None, None
 	menu = getattr(caller.ndb, "_evmenu", None)
@@ -27,8 +40,8 @@ def node_start(caller, raw_input=None, **kwargs):
 			],
 		)
 	name = raw_input.strip()
-	if name.lower() not in POKEDEX and name.title() not in POKEDEX:
-		caller.msg("Unknown species. Try again.")
+	if not is_known_species(name):
+		caller.msg(f"{species_not_found_message(name)} Try again.")
 		return node_start(caller, target=target)
 
 	caller.ndb.givepoke = {"species": name}
@@ -63,27 +76,46 @@ def node_level(caller, raw_input=None, **kwargs):
 	if level < 1:
 		level = 1
 	species = caller.ndb.givepoke.get("species")
-	instance = generate_pokemon(species, level=level)
-	pokemon = create_owned_pokemon(
-		instance.species.name,
-		target.trainer,
-		instance.level,
-		gender=instance.gender,
-		nature=instance.nature,
-		ability=instance.ability,
-		ivs=[
-			instance.ivs.hp,
-			instance.ivs.attack,
-			instance.ivs.defense,
-			instance.ivs.special_attack,
-			instance.ivs.special_defense,
-			instance.ivs.speed,
-		],
-		evs=[0, 0, 0, 0, 0, 0],
-	)
-	target.storage.add_active_pokemon(pokemon)
-	caller.msg(f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}.")
-	if target != caller:
-		target.msg(f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}.")
+	try:
+		from utils.pokemon_utils import grant_generated_pokemon
+
+		pokemon = grant_generated_pokemon(target, species, level, caller=caller)
+	except Exception as err:
+		if is_species_not_found_error(err):
+			caller.msg(species_not_found_message(species))
+			return node_start(caller, target=target)
+		from pokemon.data.generation import generate_pokemon
+		from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+
+		try:
+			instance = generate_pokemon(species, level=level)
+		except ValueError as gen_err:
+			if is_species_not_found_error(gen_err):
+				caller.msg(species_not_found_message(species))
+			else:
+				caller.msg(str(gen_err))
+			return node_start(caller, target=target)
+		pokemon = create_owned_pokemon(
+			instance.species.name,
+			target.trainer,
+			instance.level,
+			gender=instance.gender,
+			nature=instance.nature,
+			ability=instance.ability,
+			ivs=[
+				instance.ivs.hp,
+				instance.ivs.attack,
+				instance.ivs.defense,
+				instance.ivs.special_attack,
+				instance.ivs.special_defense,
+				instance.ivs.speed,
+			],
+			evs=[0, 0, 0, 0, 0, 0],
+			active_move_names=list(getattr(instance, "moves", []) or []),
+		)
+		target.storage.add_active_pokemon(pokemon)
+		caller.msg(f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}.")
+		if target != caller:
+			target.msg(f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}.")
 	del caller.ndb.givepoke
 	return None, None

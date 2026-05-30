@@ -68,6 +68,14 @@ def ensure_model_modules_loaded(*, require_ready: bool = False) -> bool:
 # manually when needed.
 ensure_model_modules_loaded()
 
+try:  # pragma: no cover - best-effort model re-exports for runtime helpers
+    from .core import EncounterPokemon, OwnedPokemon, Pokemon, SpeciesEntry  # noqa: F401
+    from .moves import Move  # noqa: F401
+    from .storage import ActivePokemonSlot, PokemonPlacement, StorageBox, UserStorage  # noqa: F401
+    from .trainer import InventoryEntry, NPCPokemonTemplate, NPCTrainer, Trainer  # noqa: F401
+except Exception:
+    pass
+
 
 # Safe, pure-Python utilities can be imported here in the future. Keep
 # Django/Evennia-dependent imports inside their respective modules.

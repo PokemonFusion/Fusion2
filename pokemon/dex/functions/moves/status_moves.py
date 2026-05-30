@@ -29,7 +29,8 @@ class Acupressure:
 		viable = [s for s in stats if getattr(target, "boosts", {}).get(s, 0) < 6]
 		if not viable:
 			return False
-		stat = choice(viable)
+		rng = getattr(battle, "rng", None)
+		stat = rng.choice(viable) if rng and hasattr(rng, "choice") else choice(viable)
 		apply_boost(target, {stat: 2})
 		return True
 
@@ -122,10 +123,16 @@ class Assist:
 		moves = [m for m in moves if getattr(m, "name", "").lower() != "assist"]
 		if not moves:
 			return False
-		move = choice(moves)
+		rng = getattr(battle, "rng", None)
+		move = rng.choice(moves) if rng and hasattr(rng, "choice") else choice(moves)
+		if user and hasattr(user, "tempvals"):
+			user.tempvals["called_move"] = getattr(move, "name", str(move))
+		if hasattr(move, "execute"):
+			move.execute(user, target, battle)
+			return True
 		if hasattr(move, "onHit"):
-			move.onHit(user, target, battle)
-		return True
+			return bool(move.onHit(user, target, battle))
+		return False
 
 
 class Attract:

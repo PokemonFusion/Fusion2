@@ -271,6 +271,126 @@ def setup_battle(move: BattleMove, ability=None):
 	return battle, user, target
 
 
+def _set_species(pokemon, species: str) -> None:
+	"""Update all species-like fields used by dex callbacks."""
+
+	pokemon.name = species
+	pokemon.species = species
+	pokemon.base_species = species
+
+
+def _add_active_ally(battle, user) -> None:
+	"""Give the user's side a second active slot for doubles-only moves."""
+
+	participant = battle.participant_for(user)
+	if not participant:
+		return
+	_, _, Stats, _ = get_dex_data()
+	ally = Pokemon("Ally")
+	ally.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	ally.hp = ally.max_hp = 100
+	ally.types = ["Normal"]
+	ally.battle = battle
+	ally.side = participant.side
+	participant.pokemons.append(ally)
+	participant.active.append(ally)
+	participant.max_active = max(getattr(participant, "max_active", 1), 2)
+	participant.side.active = participant.active
+	participant.side.pokemons = participant.pokemons
+
+
+def _add_reserve_pokemon(battle, user) -> None:
+	"""Give the user's side a healthy bench Pokemon for self-switch moves."""
+
+	participant = battle.participant_for(user)
+	if not participant:
+		return
+	_, _, Stats, _ = get_dex_data()
+	reserve = Pokemon("Reserve")
+	reserve.base_stats = Stats(hp=100, atk=50, def_=50, spa=50, spd=50, spe=50)
+	reserve.hp = reserve.max_hp = 100
+	reserve.types = ["Normal"]
+	reserve.battle = battle
+	reserve.side = participant.side
+	participant.pokemons.append(reserve)
+	participant.side.pokemons = participant.pokemons
+
+
+def _configure_move_preconditions(move_name: str, move: BattleMove, battle, user, target) -> None:
+	"""Set up minimal valid battle state for conditional dex moves."""
+
+	key = move_name.lower()
+	if key == "attract":
+		user.gender = "M"
+		target.gender = "F"
+	elif key == "aurawheel":
+		_set_species(user, "Morpeko")
+	elif key == "captivate":
+		user.gender = "M"
+		target.gender = "F"
+	elif key == "darkvoid":
+		_set_species(user, "Darkrai")
+		move.accuracy = True
+	elif key == "disable":
+		target.last_move = BattleMove(
+			"Tackle",
+			power=40,
+			accuracy=100,
+			type="Normal",
+			raw={"category": "Physical"},
+		)
+	elif key == "dreameater":
+		target.status = "slp"
+	elif key == "entrainment":
+		user.ability = "Blaze"
+		target.ability = "Overgrow"
+	elif key in {"followme", "ragepowder"}:
+		_add_active_ally(battle, user)
+	elif key == "poltergeist":
+		target.item = "Leftovers"
+		target.held_item = "Leftovers"
+	elif key == "roleplay":
+		user.ability = "Blaze"
+		target.ability = "Overgrow"
+	elif key == "shedtail":
+		_add_reserve_pokemon(battle, user)
+	elif key in {"spitup", "swallow"}:
+		user.stockpile_layers = 1
+		user.stockpile = 1
+		user.hp = 50
+	elif key == "steelroller":
+		battle.field.terrain = "electricterrain"
+		battle.field.pseudo_weather["electricterrain"] = {"duration": 5}
+	elif key == "stuffcheeks":
+		user.item = "Babiriberry"
+		user.held_item = "Babiriberry"
+	elif key in {"switcheroo", "trick"}:
+		user.item = "Leftovers"
+		user.held_item = "Leftovers"
+		target.item = "Laggingtail"
+		target.held_item = "Laggingtail"
+	elif key == "sleeptalk":
+		user.status = "slp"
+		user.moves = [
+			BattleMove(
+				"Tackle",
+				power=40,
+				accuracy=100,
+				type="Normal",
+				raw={"category": "Physical"},
+			)
+		]
+	elif key == "upperhand":
+		target.last_move = BattleMove(
+			"Quick Attack",
+			power=40,
+			accuracy=100,
+			priority=1,
+			type="Normal",
+			raw={"category": "Physical"},
+		)
+
+
 def _is_self_target(target_str: str | None) -> bool:
 	"""Return ``True`` if ``target_str`` refers to the user."""
 
@@ -321,6 +441,7 @@ def test_move_execution(move_name, move_entry):
 		user.hp = 50
 	if raw.get("heal") and not _is_self_target(raw.get("target")):
 		target.hp = 50
+	_configure_move_preconditions(move_name, move, battle, user, target)
 
 	user_start = user.hp
 	target_start = target.hp
@@ -356,8 +477,11 @@ def test_move_execution(move_name, move_entry):
 			actor = user if _is_self_target(raw.get("target")) else target
 			_verify_status(move_name, actor, raw["status"])
 		if raw.get("volatileStatus"):
-			actor = user if _is_self_target(raw.get("target")) else target
-			_verify_volatile(move_name, actor, raw["volatileStatus"])
+			if move_name.lower() == "shedtail":
+				MOVE_UNVERIFIED.append((move_name, "substitute is passed during switch resolution"))
+			else:
+				actor = user if _is_self_target(raw.get("target")) else target
+				_verify_volatile(move_name, actor, raw["volatileStatus"])
 		if raw.get("drain"):
 			_verify_hp(move_name, user, user_start, 1)
 		if raw.get("recoil"):

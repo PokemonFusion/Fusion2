@@ -114,7 +114,12 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 				try:
 						learn_level_up_moves(pokemon, caller=caller, prompt=True)
 				except TypeError:
-						learn_level_up_moves(pokemon)
+						try:
+								learn_level_up_moves(pokemon)
+						except Exception:
+								pass
+				except Exception:
+						pass
 
 		if prev_level is not None and new_level != prev_level:
 				_invalidate_stat_cache(pokemon)
@@ -427,14 +432,17 @@ def award_experience_to_party(
         """Award experience/EVs to a player's party using EXP Share rules."""
 
         storage = getattr(player, "storage", None)
-        if not storage or not hasattr(storage.active_pokemon, "all"):
+        if not storage:
                 return
 
-        mons = (
-                storage.get_party()
-                if hasattr(storage, "get_party")
-                else list(storage.active_pokemon.all())
-        )
+        if hasattr(storage, "get_party"):
+                mons = storage.get_party()
+        else:
+                active = getattr(storage, "active_pokemon", None)
+                if hasattr(active, "all"):
+                        mons = list(active.all())
+                else:
+                        mons = list(active or [])
         if not mons:
                 return
 

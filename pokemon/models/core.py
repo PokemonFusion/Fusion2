@@ -155,17 +155,6 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		blank=True,
 		db_index=True,
 	)
-	is_wild = models.BooleanField(default=False, db_index=True)
-	ai_trainer = models.ForeignKey(
-		"NPCTrainer",
-		on_delete=models.SET_NULL,
-		null=True,
-		blank=True,
-		db_index=True,
-		related_name="wild_or_ai_pokemon",
-	)
-	is_template = models.BooleanField(default=False, db_index=True)
-	is_battle_instance = models.BooleanField(default=False, db_index=True)
 	nickname = models.CharField(max_length=50, blank=True)
 	is_shiny = models.BooleanField(default=False, db_index=True)
 	met_location = models.CharField(max_length=100, blank=True)
@@ -405,6 +394,51 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		except (AttributeError, TypeError):
 			logger.debug("Unable to persist PP boost state.", exc_info=True)
 		return True
+
+
+def _owned_pokemon_delete_if_wild_legacy(self) -> bool:
+	"""Legacy compatibility shim for pre-encounter cleanup callers."""
+
+	return False
+
+
+OwnedPokemon.delete_if_wild = _owned_pokemon_delete_if_wild_legacy
+
+
+class EncounterPokemon(BasePokemon):
+	"""Ephemeral battle-scoped Pokemon used for wild and NPC encounters."""
+
+	class SourceKind(models.TextChoices):
+		WILD = "wild", "Wild"
+		NPC = "npc", "NPC"
+
+	encounter_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
+	source_kind = models.CharField(max_length=10, choices=SourceKind.choices, db_index=True)
+	npc_trainer = models.ForeignKey(
+		"NPCTrainer",
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		db_index=True,
+		related_name="encounter_pokemon",
+	)
+	template_key = models.CharField(max_length=100, blank=True)
+	current_hp = models.PositiveIntegerField(default=0)
+	status = models.CharField(max_length=20, blank=True)
+	move_names = models.JSONField(default=list, blank=True)
+	move_pp = models.JSONField(default=list, blank=True)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+	def __str__(self):
+		return f"{self.species} encounter ({self.encounter_id})"
+
+	@property
+	def name(self) -> str:
+		return self.species
+
+	@property
+	def active_moves(self):
+		return list(self.move_names or [])
 
 
 class BattleSlot(SharedMemoryModel):

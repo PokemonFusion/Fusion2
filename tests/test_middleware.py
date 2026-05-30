@@ -8,7 +8,7 @@ sys.path.insert(0, ROOT)
 
 # Minimal pokemon.dex stub
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.MOVEDEX = {
 	"tackle": types.SimpleNamespace(
 		name="Tackle",
@@ -28,6 +28,7 @@ pokemon_dex.MOVEDEX = {
 	),
 }
 pokemon_dex.POKEDEX = {"bulbasaur": types.SimpleNamespace(num=1, name="Bulbasaur", types=["Grass"])}
+pokemon_dex.ITEMDEX = {}
 entities_path = os.path.join(ROOT, "pokemon", "dex", "entities.py")
 ent_spec = importlib.util.spec_from_file_location("pokemon.dex.entities", entities_path)
 ent_mod = importlib.util.module_from_spec(ent_spec)

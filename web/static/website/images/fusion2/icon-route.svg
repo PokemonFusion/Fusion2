@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Explore Routes Icon</title>
+  <desc id="desc">Original signpost and trail icon.</desc>
+  <circle cx="64" cy="64" r="58" fill="#E5F4E7"/>
+  <path d="M64 101V29" stroke="#74624D" stroke-width="7" stroke-linecap="round"/>
+  <path d="M39 31h54l10 10-10 10H39Z" fill="#C79E5F" stroke="#4C3D31" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M86 56H32L22 66l10 10h54Z" fill="#E4C176" stroke="#4C3D31" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M25 102c17-21 32-22 47-4 11-16 24-21 41-5" fill="none" stroke="#789D72" stroke-width="5" stroke-linecap="round"/>
+  <path d="M45 89c10-14 24-14 37 1" fill="none" stroke="#9FB88A" stroke-width="4" stroke-linecap="round"/>
+</svg>

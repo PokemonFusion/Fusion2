@@ -19,12 +19,13 @@ class CmdTestMenu(Command):
 	Launch a stock EvMenu sanity-check.
 
 	Usage:
-	    testmenu
-	    testmenu persistent
+	    @testmenu
+	    @testmenu persistent
 	"""
 
-	key = "testmenu"
-	locks = "cmd:all()"
+	key = "@testmenu"
+	aliases = ["testmenu"]
+	locks = "cmd:perm(Builder)"
 
 	def func(self):
 		persistent = "persistent" in self.args.lower()

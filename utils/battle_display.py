@@ -44,7 +44,14 @@ def render_move_gui(
 	return _render(slots, pp_overrides=pp_overrides, total_width=total_width)
 
 
-def render_battle_ui(state, viewer, total_width: int = 100, waiting_on=None) -> str:
+def render_battle_ui(
+	state,
+	viewer,
+	total_width: int = 100,
+	waiting_on=None,
+	style: str | None = None,
+	ascii_symbols: bool | None = None,
+) -> str:
 	"""Proxy to :func:`pokemon.ui.battle_render.render_battle_ui`.
 
 	Parameters mirror :func:`pokemon.ui.battle_render.render_battle_ui` with
@@ -54,7 +61,14 @@ def render_battle_ui(state, viewer, total_width: int = 100, waiting_on=None) -> 
 
 	from pokemon.ui.battle_render import render_battle_ui as _render
 
-	return _render(state, viewer, total_width=total_width, waiting_on=waiting_on)
+	return _render(
+		state,
+		viewer,
+		total_width=total_width,
+		waiting_on=waiting_on,
+		style=style,
+		ascii_symbols=ascii_symbols,
+	)
 
 
 __all__ = [

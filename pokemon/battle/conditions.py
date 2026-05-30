@@ -151,6 +151,53 @@ class ConditionHelpers:
 			except Exception:
 				return
 
+	def _persistent_adjusted_duration(self, effect_key: str, duration: Any, source=None) -> Any:
+		"""Apply Persistent's +2 turn duration rule for eligible effects."""
+
+		default_durations = {
+			"gravity": 5,
+			"healblock": 5,
+			"magicroom": 5,
+			"safeguard": 5,
+			"tailwind": 4,
+			"trickroom": 5,
+			"wonderroom": 5,
+		}
+		key = _normalize_effect_name(effect_key)
+		if key not in default_durations:
+			return duration
+		if duration is None:
+			duration = default_durations[key]
+		try:
+			duration_int = int(duration)
+		except (TypeError, ValueError):
+			return duration
+		ability = getattr(source, "ability", None)
+		ability_name = getattr(ability, "id", None) or getattr(ability, "key", None) or getattr(ability, "name", None) or ability
+		if _normalize_effect_name(ability_name) != "persistent":
+			return duration_int
+		minimum = default_durations[key] + 2
+		if duration_int >= minimum:
+			return duration_int
+		return duration_int + 2
+
+	def _effect_duration(self, effect_key: str, handler, source=None, *, effect: Dict[str, Any] | None = None, moves_funcs=None) -> Any:
+		"""Resolve an effect duration callback and apply Persistent when needed."""
+
+		duration = None
+		dur_cb = getattr(handler, "durationCallback", None) if handler else None
+		if not callable(dur_cb) and effect:
+			dur_cb = _resolve_callback(effect.get("durationCallback"), moves_funcs)
+		if callable(dur_cb):
+			try:
+				duration = dur_cb(source=source)
+			except Exception:
+				try:
+					duration = dur_cb(source)
+				except Exception:
+					duration = dur_cb()
+		return self._persistent_adjusted_duration(effect_key, duration, source)
+
 	# ------------------------------------------------------------------
 	# Side conditions
 	# ------------------------------------------------------------------
@@ -162,28 +209,58 @@ class ConditionHelpers:
 		source=None,
 		*,
 		moves_funcs=None,
-	) -> None:
+	) -> bool:
 		"""Apply a side condition to ``participant``."""
 
 		side = participant.side
 		current = side.conditions.get(name)
-		if current is None:
-			side.conditions[name] = effect.copy()
-			cb_name = effect.get("onSideStart")
+		handler = self._lookup_effect(name)
+		effect_state = effect.copy()
+		if "duration" not in effect_state:
+			duration = self._effect_duration(name, handler, source, effect=effect_state, moves_funcs=moves_funcs)
+			if duration is not None:
+				effect_state["duration"] = duration
 		else:
+			effect_state["duration"] = self._persistent_adjusted_duration(name, effect_state.get("duration"), source)
+		if current is None:
+			state = side.add_side_condition(
+				name,
+				effect_state.copy() if hasattr(side, "add_side_condition") else effect_state.copy(),
+			)
+			cb_name = effect.get("onSideStart")
+			if handler:
+				self.singleEvent(
+					"SideStart",
+					handler,
+					state,
+					side,
+					source,
+				)
+		else:
+			state = current
 			cb_name = effect.get("onSideRestart")
-		cb = _resolve_callback(cb_name, moves_funcs)
-		if not callable(cb) and isinstance(cb_name, str):
-			# Fallback: explicitly resolve from the moves module in sys.modules.
-			mod = sys.modules.get("pokemon.dex.functions.moves_funcs")
-			if mod:
-				try:
-					cls_name, func_name = cb_name.split(".", 1)
-					cls = getattr(mod, cls_name, None)
-					if cls:
-						cb = getattr(cls(), func_name, None)
-				except Exception:
-					cb = None
+			if handler:
+				self.singleEvent(
+					"SideRestart",
+					handler,
+					state if isinstance(state, dict) else {},
+					side,
+					source,
+				)
+		cb = None
+		if not handler:
+			cb = _resolve_callback(cb_name, moves_funcs)
+			if not callable(cb) and isinstance(cb_name, str):
+				# Fallback: explicitly resolve from the moves module in sys.modules.
+				mod = sys.modules.get("pokemon.dex.functions.moves_funcs")
+				if mod:
+					try:
+						cls_name, func_name = cb_name.split(".", 1)
+						cls = getattr(mod, cls_name, None)
+						if cls:
+							cb = getattr(cls(), func_name, None)
+					except Exception:
+						cb = None
 
 		if callable(cb):
 			try:
@@ -193,10 +270,103 @@ class ConditionHelpers:
 					cb(side)
 				except Exception:
 					cb()
-		elif isinstance(cb_name, str) and cb_name.endswith("onSideStart"):
+		elif not handler and isinstance(cb_name, str) and cb_name.endswith("onSideStart"):
 			# As a last resort, mark the side as started so tests using
 			# lightweight stubs can observe that the callback would have run.
 			side.started = getattr(side, "started", 0) + 1
+
+		run_event = getattr(self, "runEvent", None)
+		if callable(run_event):
+			for ally in getattr(participant, "active", []) or []:
+				run_event("SideConditionStart", ally, source, effect, name)
+		return True
+
+	def remove_side_condition(self, participant, name: str) -> bool:
+		"""Remove a side condition from ``participant`` running end hooks."""
+
+		side = getattr(participant, "side", None)
+		if not side:
+			return False
+		state = getattr(side, "conditions", {}).get(name)
+		if state is None:
+			return False
+		handler = self._lookup_effect(name)
+		if handler:
+			self.singleEvent(
+				"SideEnd",
+				handler,
+				state if isinstance(state, dict) else {},
+				side,
+			)
+		if hasattr(side, "remove_side_condition"):
+			return bool(side.remove_side_condition(name))
+		return side.conditions.pop(name, None) is not None
+
+	def add_slot_condition(self, pokemon, name: str, effect: Dict, source=None) -> bool:
+		"""Apply a slot condition to ``pokemon``'s active slot."""
+
+		participant = self.participant_for(pokemon)
+		side = getattr(participant, "side", None) if participant else None
+		if participant is None or side is None:
+			return False
+		try:
+			slot = list(getattr(participant, "active", [])).index(pokemon)
+		except ValueError:
+			return False
+
+		current = getattr(side, "slot_conditions", {}).get(slot, {}).get(name)
+		handler = self._lookup_effect(name)
+		effect_state = effect.copy()
+		if "duration" not in effect_state:
+			duration = self._effect_duration(name, handler, source, effect=effect_state)
+			if duration is not None:
+				effect_state["duration"] = duration
+		else:
+			effect_state["duration"] = self._persistent_adjusted_duration(name, effect_state.get("duration"), source)
+		if current is None:
+			state = side.add_slot_condition(
+				slot,
+				name,
+				effect_state.copy() if hasattr(side, "add_slot_condition") else effect_state.copy(),
+			)
+			if isinstance(state, dict):
+				state.setdefault("target", pokemon)
+				state.setdefault("source", source)
+			if handler:
+				self.singleEvent("Start", handler, state, pokemon, source)
+		else:
+			state = current
+			if isinstance(state, dict):
+				state["target"] = pokemon
+				state.setdefault("source", source)
+			if handler:
+				self.singleEvent("Restart", handler, state if isinstance(state, dict) else {}, pokemon, source)
+		return True
+
+	def remove_slot_condition(self, pokemon, name: str) -> bool:
+		"""Remove a slot condition from ``pokemon``'s active slot."""
+
+		participant = self.participant_for(pokemon)
+		side = getattr(participant, "side", None) if participant else None
+		if participant is None or side is None:
+			return False
+		try:
+			slot = list(getattr(participant, "active", [])).index(pokemon)
+		except ValueError:
+			return False
+		state = getattr(side, "slot_conditions", {}).get(slot, {}).get(name)
+		if state is None:
+			return False
+		handler = self._lookup_effect(name)
+		if handler:
+			self.singleEvent("End", handler, state if isinstance(state, dict) else {}, pokemon)
+		if hasattr(side, "remove_slot_condition"):
+			return bool(side.remove_slot_condition(slot, name))
+		bucket = getattr(side, "slot_conditions", {}).get(slot, {})
+		removed = bucket.pop(name, None) is not None
+		if not bucket:
+			getattr(side, "slot_conditions", {}).pop(slot, None)
+		return removed
 
 	# ------------------------------------------------------------------
 	# Field condition helpers
@@ -263,15 +433,9 @@ class ConditionHelpers:
 						return False
 
 		effect: Dict[str, Any] = {}
-		dur_cb = getattr(handler, "durationCallback", None)
-		if callable(dur_cb):
-			try:
-				effect["duration"] = dur_cb(source=source)
-			except Exception:
-				try:
-					effect["duration"] = dur_cb(source)
-				except Exception:
-					effect["duration"] = dur_cb()
+		duration = self._effect_duration(effect_key, handler, source)
+		if duration is not None:
+			effect["duration"] = duration
 		self.field.add_pseudo_weather(effect_key, effect)
 		if hasattr(handler, "onFieldStart"):
 			try:
@@ -280,9 +444,16 @@ class ConditionHelpers:
 				handler.onFieldStart(self.field)
 		self.field.weather = effect_key
 		self.field.weather_handler = handler
-		self.field.weather_state = {"source": source}
+		self.field.weather_state = getattr(self, "init_effect_state", lambda *args, **kwargs: {"source": source})(
+			handler,
+			target=self.field,
+			source=source,
+		)
 		self.weather_state = self.field.weather_state
 		self.log_field_event(effect_key, "start", pokemon=source, field=self.field)
+		each_event = getattr(self, "eachEvent", None)
+		if callable(each_event):
+			each_event("WeatherChange", handler)
 
 		for participant in self.participants:
 			for pokemon in getattr(participant, "active", []):
@@ -309,6 +480,9 @@ class ConditionHelpers:
 		self.weather_state = self.field.weather_state
 		if name_key:
 			self.log_field_event(name_key, "end", field=self.field)
+			each_event = getattr(self, "eachEvent", None)
+			if callable(each_event):
+				each_event("WeatherChange")
 
 	def setTerrain(self, name: str, source=None) -> bool:
 		"""Start a terrain effect on the field."""
@@ -317,15 +491,9 @@ class ConditionHelpers:
 		if not handler:
 			return False
 		effect = {}
-		dur_cb = getattr(handler, "durationCallback", None)
-		if callable(dur_cb):
-			try:
-				effect["duration"] = dur_cb(source=source)
-			except Exception:
-				try:
-					effect["duration"] = dur_cb(source)
-				except Exception:
-					effect["duration"] = dur_cb()
+		duration = self._effect_duration(effect_key, handler, source)
+		if duration is not None:
+			effect["duration"] = duration
 		self.field.add_pseudo_weather(effect_key, effect)
 		if hasattr(handler, "onFieldStart"):
 			try:
@@ -334,8 +502,15 @@ class ConditionHelpers:
 				handler.onFieldStart(self.field)
 		self.field.terrain = effect_key
 		self.field.terrain_handler = handler
-		self.field.terrain_state = {"source": source}
+		self.field.terrain_state = getattr(self, "init_effect_state", lambda *args, **kwargs: {"source": source})(
+			handler,
+			target=self.field,
+			source=source,
+		)
 		self.log_field_event(effect_key, "start", pokemon=source, field=self.field)
+		each_event = getattr(self, "eachEvent", None)
+		if callable(each_event):
+			each_event("TerrainChange", handler)
 		return True
 
 	def clearTerrain(self) -> None:
@@ -354,6 +529,64 @@ class ConditionHelpers:
 		self.field.terrain_handler = None
 		if name_key:
 			self.log_field_event(name_key, "end", field=self.field)
+			each_event = getattr(self, "eachEvent", None)
+			if callable(each_event):
+				each_event("TerrainChange")
+
+	def add_pseudo_weather(self, name: str, source=None) -> bool:
+		"""Add a pseudo-weather effect to the field with start/restart events."""
+
+		effect_key = _normalize_effect_name(name)
+		handler = self._lookup_effect(name) or self._lookup_effect(effect_key)
+		if not handler:
+			return False
+		state = self.field.get_pseudo_weather(effect_key)
+		if state is not None:
+			result = self.singleEvent(
+				"FieldRestart",
+				handler,
+				state if isinstance(state, dict) else {},
+				self.field,
+				source,
+			)
+			return bool(result is not False)
+
+		effect: Dict[str, Any] = {}
+		duration = self._effect_duration(effect_key, handler, source)
+		if duration is not None:
+			effect["duration"] = duration
+		state = getattr(self, "init_effect_state", lambda *args, **kwargs: {})(handler, target=self.field, source=source)
+		state.update(effect)
+		self.field.pseudo_weather[effect_key] = state
+		result = self.singleEvent("FieldStart", handler, state, self.field, source)
+		if result is False:
+			self.field.pseudo_weather.pop(effect_key, None)
+			return False
+		run_event = getattr(self, "runEvent", None)
+		if callable(run_event):
+			run_event("PseudoWeatherChange", source, source, handler)
+		return True
+
+	def remove_pseudo_weather(self, name: str) -> bool:
+		"""Remove a pseudo-weather effect from the field."""
+
+		effect_key = _normalize_effect_name(name)
+		state = self.field.get_pseudo_weather(effect_key)
+		if state is None:
+			return False
+		handler = self._lookup_effect(name) or self._lookup_effect(effect_key)
+		if handler:
+			self.singleEvent(
+				"FieldEnd",
+				handler,
+				state if isinstance(state, dict) else {},
+				self.field,
+			)
+		self.field.remove_pseudo_weather(effect_key)
+		run_event = getattr(self, "runEvent", None)
+		if callable(run_event):
+			run_event("PseudoWeatherChange", None, None, handler or effect_key)
+		return True
 
 	def apply_entry_hazards(self, pokemon) -> None:
 		"""Apply entry hazard effects to ``pokemon`` if present."""
@@ -471,6 +704,11 @@ class ConditionHelpers:
 		bypass_protection: bool = False,
 	) -> bool:
 		"""Inflict a major status condition on ``pokemon``."""
+		run_event = getattr(self, "runEvent", None)
+		if callable(run_event):
+			result = run_event("SetStatus", pokemon, source, effect, condition)
+			if result is False or result is None:
+				return False
 		if hasattr(pokemon, "setStatus"):
 			return bool(
 				pokemon.setStatus(
@@ -503,6 +741,10 @@ class ConditionHelpers:
 
 	def apply_volatile_status(self, pokemon, condition: str) -> None:
 		"""Apply a volatile status to ``pokemon``."""
+		add_volatile = getattr(self, "add_volatile", None)
+		if callable(add_volatile):
+			add_volatile(pokemon, condition)
+			return
 		try:
 			from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
 		except Exception:  # pragma: no cover - handler lookup optional

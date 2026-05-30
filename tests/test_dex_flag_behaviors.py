@@ -76,6 +76,8 @@ def test_heal_moves_restore_hp(move_name: str) -> None:
 
 	user.hp = 50
 	target.hp = 100
+	if move_name.lower() == "dreameater":
+		target.status = "slp"
 
 	p1 = BattleParticipant("P1", [user], is_ai=False)
 	p2 = BattleParticipant("P2", [target], is_ai=False)

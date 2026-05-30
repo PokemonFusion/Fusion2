@@ -7,6 +7,7 @@ viewing items, adding new ones, giving them to others and using them.
 from evennia import Command
 
 from pokemon.dex import ITEMDEX
+from utils.dex_suggestions import item_not_found_message
 from utils.locks import require_no_battle_lock
 
 
@@ -33,10 +34,17 @@ class CmdInventory(Command):
 			return
 
 		lines = ["Your Inventory:"]
+		from pokemon.middleware import get_item_by_name, get_item_description
+
 		for entry in entries:
-			data = ITEMDEX.get(entry.item_name, {})
-			desc = data.get("desc", "No description available.")
-			lines.append(f"{entry.item_name.title()} x{entry.quantity} - {desc}")
+			item_name, data = get_item_by_name(entry.item_name)
+			item_name = item_name or entry.item_name
+			desc = get_item_description(item_name, data)
+			display = getattr(data, "name", None) or (
+				data.get("name") if isinstance(data, dict) else None
+			)
+			display = display or str(item_name).title()
+			lines.append(f"{display} x{entry.quantity} - {desc}")
 		self.caller.msg("\n".join(lines))
 
 
@@ -44,25 +52,26 @@ class CmdAddItem(Command):
 	"""Add an item to your inventory.
 
 	Usage:
-	  additem <item> <amount>
+	  @additem <item> <amount>
 	"""
 
-	key = "additem"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@additem"
+	aliases = ["additem"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):
 		if not require_no_battle_lock(self.caller):
 			return
 		parts = self.args.split()
 		if len(parts) != 2:
-			self.caller.msg("Usage: additem <item> <amount>")
+			self.caller.msg("Usage: @additem <item> <amount>")
 			return
 		item = parts[0]
 		try:
 			qty = int(parts[1])
 		except ValueError:
-			self.caller.msg("Usage: additem <item> <amount>")
+			self.caller.msg("Usage: @additem <item> <amount>")
 			return
 		trainer = getattr(self.caller, "trainer", None)
 		if not trainer:
@@ -76,14 +85,16 @@ class CmdGiveItem(Command):
 	"""Give an item to another player (admin-only).
 
 	Usage:
-	  +giveitem <player> = <item>:<amount>
+	  @giveitem <player> = <item>:<amount>
 	"""
 
-	key = "+giveitem"
+	key = "@giveitem"
+	aliases = ["+giveitem"]
 	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def parse(self):
+		self.amount_error = False
 		parts = self.args.split("=")
 		if len(parts) != 2:
 			self.target_name = self.item_name = self.amount = None
@@ -91,13 +102,20 @@ class CmdGiveItem(Command):
 		self.target_name = parts[0].strip()
 		item_part = parts[1].strip().split(":")
 		self.item_name = item_part[0].strip().lower()
-		self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
+		try:
+			self.amount = int(item_part[1].strip()) if len(item_part) > 1 else 1
+		except ValueError:
+			self.amount = None
+			self.amount_error = True
 
 	def func(self):
 		if not require_no_battle_lock(self.caller):
 			return
 		if not all([self.target_name, self.item_name]):
-			self.caller.msg("Usage: +giveitem <player> = <item>:<amount>")
+			self.caller.msg("Usage: @giveitem <player> = <item>:<amount>")
+			return
+		if self.amount_error:
+			self.caller.msg("Amount must be a number.")
 			return
 
 		target = self.caller.search(self.target_name)
@@ -108,7 +126,12 @@ class CmdGiveItem(Command):
 			return
 
 		if self.item_name not in ITEMDEX:
-			self.caller.msg(f"Item '{self.item_name}' not found in ITEMDEX.")
+			self.caller.msg(
+				item_not_found_message(
+					self.item_name,
+					f"Item '{self.item_name}' not found in ITEMDEX.",
+				)
+			)
 			return
 
 		target.trainer.add_item(self.item_name, self.amount)
@@ -193,7 +216,9 @@ class CmdUseItem(Command):
 		item_name = item_name.lower()
 
 		if item_name not in ITEMDEX:
-			self.caller.msg(f"No such item '{item_name}' exists.")
+			self.caller.msg(
+				item_not_found_message(item_name, f"No such item '{item_name}' exists.")
+			)
 			return
 
 		if slot is not None and item_name in {"ppup", "ppmax", "pp max"}:

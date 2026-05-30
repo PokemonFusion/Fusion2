@@ -1,9 +1,9 @@
 """Shared battle utilities used across modules."""
+
 from __future__ import annotations
 
 import re
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
-
 
 _NORMALIZED_DEX_IDS: dict[int, dict[str, int]] = {}
 
@@ -46,6 +46,26 @@ def get_raw(entry: Any) -> dict[str, Any]:
         return dict(entry)
 
     return {}
+
+
+def detached_mapping(value: Any) -> dict[str, Any]:
+    """Return ``value`` as a plain dict detached from persistence wrappers."""
+
+    if value is None:
+        return {}
+    if isinstance(value, Mapping):
+        return dict(value)
+    try:
+        return dict(value)
+    except (TypeError, ValueError):
+        return {}
+
+
+def reset_tempvals(pokemon: Any) -> None:
+    """Replace a Pokemon's temporary battle flags with a plain empty dict."""
+
+    if hasattr(pokemon, "tempvals"):
+        setattr(pokemon, "tempvals", {})
 
 
 def get_pp(entry: Any) -> Optional[int]:

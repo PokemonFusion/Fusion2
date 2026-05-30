@@ -114,6 +114,21 @@ class ActionQueue:
 		# Persist only the (compacted) state on input to avoid duplicating
 		# turndata snapshots.
 		self.storage.set("state", self._compact_state_for_persist(self.logic.state.to_dict()))
+		try:
+			self.storage.set("last_action", state)
+		except Exception:
+			pass
+		record_hook = getattr(self, "persist_debug_record", None)
+		if callable(record_hook):
+			try:
+				record_hook(
+					event="action_queued",
+					position=pos_name,
+					pokemon=pokemon_name,
+					action=state,
+				)
+			except Exception:
+				pass
 		log_info(f"Saved {save_desc} for {pokemon_name} at {pos_name} to room state")
 		self.maybe_run_turn(actor=caller)
 

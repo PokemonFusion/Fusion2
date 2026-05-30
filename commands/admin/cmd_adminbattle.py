@@ -9,7 +9,7 @@ from evennia import Command, search_object
 
 from pokemon.battle.battleinstance import BattleSession
 from pokemon.battle.handler import battle_handler
-from pokemon.battle.interface import display_battle_interface
+from pokemon.battle.interface import display_battle_interface, get_battle_ui_style, get_battle_ui_width
 from pokemon.battle.storage import BattleDataWrapper
 from utils.battle_display import render_move_gui
 
@@ -208,7 +208,7 @@ def _room_snapshot(room, battle_id: int) -> Dict[str, Any]:
 
     storage = BattleDataWrapper(room, battle_id)
     stored: Dict[str, Any] = {}
-    for part in ("data", "state", "trainers", "temp_pokemon_ids", "logic"):
+    for part in ("data", "state", "trainers", "temp_pokemon_ids", "logic", "debug", "last_action"):
         value = storage.get(part)
         if value is not None:
             stored[part] = value
@@ -293,6 +293,18 @@ def _session_snapshot(inst) -> Dict[str, Any]:
             if team_info:
                 summary["logic_team"] = team_info
 
+    if state is not None:
+        summary["debug"] = bool(getattr(state, "debug", False))
+
+    if battle is not None:
+        summary["show_damage_numbers"] = bool(
+            getattr(battle, "show_damage_numbers", False)
+        )
+
+    debug_record = getattr(getattr(inst, "storage", None), "get", lambda *_: None)("debug")
+    if debug_record:
+        summary["debug_record"] = debug_record
+
     return _strip_empty(summary)
 
 
@@ -325,16 +337,17 @@ class CmdAbortBattle(Command):
     """Force end an ongoing battle.
 
     Usage:
-      +abortbattle <character or battle id>
+      @abortbattle <character or battle id>
     """
 
-    key = "+abortbattle"
+    key = "@abortbattle"
+    aliases = ["+abortbattle"]
     locks = "cmd:perm(Wizards)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +abortbattle <character or battle id>")
+            self.caller.msg("Usage: @abortbattle <character or battle id>")
             return
         arg = self.args.strip()
         inst = None
@@ -362,16 +375,17 @@ class CmdRestoreBattle(Command):
     """Restore a saved battle in the current room for debugging.
 
     Usage:
-      +restorebattle <battle_id>
+      @restorebattle <battle_id>
     """
 
-    key = "+restorebattle"
-    locks = "cmd:perm(Wizards)"
+    key = "@restorebattle"
+    aliases = ["+restorebattle"]
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +restorebattle <battle_id>")
+            self.caller.msg("Usage: @restorebattle <battle_id>")
             return
 
         arg = self.args.strip()
@@ -391,16 +405,17 @@ class CmdBattleInfo(Command):
     """Display stored battle data for debugging.
 
     Usage:
-      +battleinfo <character or battle id>
+      @battleinfo <character or battle id>
     """
 
-    key = "+battleinfo"
-    locks = "cmd:perm(Wizards)"
+    key = "@battleinfo"
+    aliases = ["+battleinfo"]
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +battleinfo <character or battle id>")
+            self.caller.msg("Usage: @battleinfo <character or battle id>")
             return
 
         inst, room, bid, target = _resolve_battle_context(self.args)
@@ -417,6 +432,8 @@ class CmdBattleInfo(Command):
             "state": storage.get("state"),
             "trainers": storage.get("trainers"),
             "temp_pokemon_ids": storage.get("temp_pokemon_ids"),
+            "debug": storage.get("debug"),
+            "last_action": storage.get("last_action"),
         }
 
         lines = [f"Battle {bid} info:"]
@@ -435,16 +452,17 @@ class CmdBattleSnapshot(Command):
     """Display stored and live battle values for comparison.
 
     Usage:
-      +battlecheck <character or battle id>
+      @battlecheck <character or battle id>
     """
 
-    key = "+battlecheck"
-    locks = "cmd:perm(Wizards)"
+    key = "@battlecheck"
+    aliases = ["+battlecheck"]
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +battlecheck <character or battle id>")
+            self.caller.msg("Usage: @battlecheck <character or battle id>")
             return
 
         inst, room, bid, target = _resolve_battle_context(self.args)
@@ -463,13 +481,14 @@ class CmdBattleSnapshot(Command):
 class CmdRetryTurn(Command):
     """Retry the current turn of a battle."""
 
-    key = "+retryturn"
-    locks = "cmd:perm(Wizards)"
+    key = "@retryturn"
+    aliases = ["+retryturn"]
+    locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
     def func(self):
         if not self.args:
-            self.caller.msg("Usage: +retryturn <character or battle id>")
+            self.caller.msg("Usage: @retryturn <character or battle id>")
             return
 
         arg = self.args.strip()
@@ -498,13 +517,13 @@ class CmdToggleDamageNumbers(Command):
     """Toggle exact damage number announcements for a battle.
 
     Usage:
-      +damage/toggle [<character or battle id>]
+      @damage/toggle [<character or battle id>]
 
     Without an argument the caller's active battle will be toggled.
     """
 
-    key = "+damage/toggle"
-    aliases = ["+damagenumbers", "+damageexact"]
+    key = "@damage/toggle"
+    aliases = ["+damage/toggle", "@damagenumbers", "+damagenumbers", "@damageexact", "+damageexact"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
@@ -548,8 +567,8 @@ class CmdToggleDamageNumbers(Command):
 class CmdUiPreview(Command):
     """Admin: preview the battle UI with mock data."""
 
-    key = "+ui/preview"
-    aliases = ["+uiprev"]
+    key = "@ui/preview"
+    aliases = ["+ui/preview", "@uiprev", "+uiprev"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
 
@@ -579,6 +598,8 @@ class CmdUiPreview(Command):
             state,
             viewer_team=self.viewer_team,
             waiting_on=self.waiting_on,
+            style=get_battle_ui_style(caller),
+            total_width=get_battle_ui_width(caller),
         )
         caller.msg(ui)
         view_team = self.viewer_team or "A"

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, cast
+from typing import Any, List, Mapping, Optional, cast
 
 from utils.safe_import import safe_import
 
@@ -18,6 +18,122 @@ logger = logging.getLogger("battle")
 
 class TurnProcessor:
 	"""Mixin supplying turn and action execution logic."""
+
+	def _entry_raw(self, entry: Any) -> Mapping[str, Any]:
+		"""Return a dex entry's raw mapping when available."""
+
+		raw = getattr(entry, "raw", None)
+		if isinstance(raw, Mapping):
+			return raw
+		if isinstance(entry, Mapping):
+			return entry
+		return {}
+
+	def _pokemon_base_name(self, pokemon) -> str:
+		"""Return the stable base species name used for form eligibility."""
+
+		return str(
+			getattr(pokemon, "base_species", None)
+			or getattr(pokemon, "species", None)
+			or getattr(pokemon, "name", "")
+			or ""
+		)
+
+	def _pokemon_move_keys(self, pokemon) -> set[str]:
+		"""Return normalized move names known by ``pokemon``."""
+
+		keys: set[str] = set()
+		for move in getattr(pokemon, "moves", []) or []:
+			name = getattr(move, "name", move)
+			key = getattr(move, "key", None) or _normalize_key(name)
+			if key:
+				keys.add(str(key))
+				keys.add(str(key).lower())
+			normalized_name = _normalize_key(name)
+			if normalized_name:
+				keys.add(normalized_name)
+				keys.add(normalized_name.lower())
+		return keys
+
+	def _mega_target_from_held_item(self, pokemon) -> tuple[str | None, str | None]:
+		"""Resolve a held Mega Stone into its target forme or a failure reason."""
+
+		holder_item = getattr(self, "_holder_item", lambda _pokemon: None)(pokemon)
+		if not holder_item:
+			return None, "no_mega_stone"
+
+		raw = self._entry_raw(holder_item)
+		mega_stone = getattr(holder_item, "mega_stone", None) or raw.get("megaStone")
+		mega_evolves = getattr(holder_item, "mega_evolves", None) or raw.get("megaEvolves")
+		if not mega_stone:
+			return None, "no_mega_stone"
+
+		base_name = self._pokemon_base_name(pokemon)
+		if _normalize_key(mega_evolves) != _normalize_key(base_name):
+			return None, "wrong_mega_stone"
+		return str(mega_stone), None
+
+	def _mega_target_from_required_move(self, pokemon) -> tuple[str | None, str | None]:
+		"""Resolve move-triggered Mega forms such as Rayquaza."""
+
+		try:
+			pokedex = getattr(safe_import("pokemon.dex"), "POKEDEX", {})
+		except Exception:
+			pokedex = {}
+		base_name = self._pokemon_base_name(pokemon)
+		move_keys = self._pokemon_move_keys(pokemon)
+		missing_required_move = False
+		for entry in pokedex.values():
+			raw = self._entry_raw(entry)
+			forme = str(raw.get("forme") or "")
+			if not forme.startswith("Mega"):
+				continue
+			if _normalize_key(raw.get("baseSpecies")) != _normalize_key(base_name):
+				continue
+			required_move = raw.get("requiredMove")
+			if not required_move:
+				continue
+			required_key = _normalize_key(required_move)
+			if required_key in move_keys or required_key.lower() in move_keys:
+				return str(raw.get("name") or getattr(entry, "name", "")), None
+			missing_required_move = True
+		if missing_required_move:
+			return None, "missing_required_move"
+		return None, "no_mega_forme"
+
+	def _mega_evolution_target(self, pokemon) -> tuple[str | None, str | None]:
+		"""Return the target Mega forme and a reason when blocked."""
+
+		if not pokemon:
+			return None, "no_pokemon"
+		current_name = str(getattr(pokemon, "species", None) or getattr(pokemon, "name", "") or "")
+		if getattr(pokemon, "mega_evolved", False) or "mega" in _normalize_key(current_name):
+			return None, "already_mega_evolved"
+
+		participant = self.participant_for(pokemon) if hasattr(self, "participant_for") else None
+		if participant is not None:
+			side = getattr(participant, "side", None)
+			if getattr(participant, "mega_evolved", False) or getattr(side, "mega_evolved", False):
+				return None, "side_already_mega_evolved"
+			for party_member in getattr(participant, "pokemons", []) or []:
+				if party_member is not pokemon and getattr(party_member, "mega_evolved", False):
+					return None, "side_already_mega_evolved"
+
+		item_target, item_reason = self._mega_target_from_held_item(pokemon)
+		if item_target:
+			return item_target, None
+		move_target, move_reason = self._mega_target_from_required_move(pokemon)
+		if move_target:
+			return move_target, None
+		if item_reason == "wrong_mega_stone":
+			return None, item_reason
+		return None, move_reason or item_reason or "no_mega_forme"
+
+	def can_mega_evolve(self, pokemon) -> bool:
+		"""Return whether ``pokemon`` can Mega Evolve now."""
+
+		target, _reason = self._mega_evolution_target(pokemon)
+		return bool(target)
 
 	def _record_failure(
 		self,
@@ -206,6 +322,14 @@ class TurnProcessor:
 			from pokemon.battle import utils
 		except Exception:
 			utils = None
+		try:
+			from pokemon.battle.callbacks import invoke_callback
+		except Exception:
+			invoke_callback = None
+		try:
+			from pokemon.dex import MOVEDEX
+		except Exception:
+			MOVEDEX = {}
 
 		trick_room = bool(self.field.get_pseudo_weather("trickroom"))
 
@@ -214,9 +338,28 @@ class TurnProcessor:
 			move = action.move
 			base_priority = action.priority
 			priority = base_priority
-
-			ability = getattr(poke, "ability", None)
-			item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
+			if action.action_type is ActionType.SWITCH and priority == 0:
+				priority = 6
+			if move is not None:
+				cb = getattr(move, "priorityChargeCallback", None)
+				if cb is None:
+					move_key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
+					entry = MOVEDEX.get(move_key)
+					raw = getattr(entry, "raw", None) or getattr(move, "raw", {})
+					cb_name = raw.get("priorityChargeCallback") if isinstance(raw, dict) else None
+					try:
+						from pokemon.dex.functions.moves_funcs import __dict__ as moves_registry
+					except Exception:
+						moves_registry = None
+					if cb_name and moves_registry:
+						from .callbacks import _resolve_callback
+						cb = _resolve_callback(cb_name, registry=safe_import("pokemon.dex.functions.moves_funcs"))
+						if callable(cb):
+							setattr(move, "priorityChargeCallback", cb)
+				if callable(cb) and poke is not None and invoke_callback is not None:
+					charged = invoke_callback(cb, poke, target=None, move=move, battle=self)
+					if isinstance(charged, (int, float)):
+						priority = charged
 
 			if poke:
 				target = None
@@ -260,20 +403,15 @@ class TurnProcessor:
 					else:
 						speed = getattr(getattr(poke, "base_stats", None), "speed", 0)
 
-				if ability and hasattr(ability, "call"):
-					try:
-						mod = ability.call("onModifySpe", speed, pokemon=poke)
-						if isinstance(mod, (int, float)):
-							speed = int(mod)
-					except Exception as err:
-						self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
-				if item and hasattr(item, "call"):
-					try:
-						mod = item.call("onModifySpe", speed, pokemon=poke)
-						if isinstance(mod, (int, float)):
-							speed = int(mod)
-					except Exception as err:
-						self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
+				if not isinstance(speed, (int, float)) or speed <= 0:
+					speed = self._get_speed_value(poke)
+
+				try:
+					modified_speed = self.runEvent("ModifySpe", poke, None, None, speed)
+					if isinstance(modified_speed, (int, float)):
+						speed = int(modified_speed)
+				except Exception as err:
+					self._record_failure(context="speed_modifier", exception=err, pokemon=poke)
 			else:
 				speed = 0
 
@@ -388,9 +526,14 @@ class TurnProcessor:
 
 		return priority
 
-	def status_prevents_move(self, pokemon) -> bool:
+	def status_prevents_move(self, pokemon, move=None) -> bool:
 		"""Return True if the Pokemon cannot act due to status."""
 		status = getattr(pokemon, "status", None)
+		move_raw = getattr(move, "raw", {}) or {}
+		sleep_usable = bool(
+			getattr(move, "sleepUsable", False)
+			or (isinstance(move_raw, dict) and move_raw.get("sleepUsable"))
+		)
 		try:
 			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 		except Exception:
@@ -400,10 +543,52 @@ class TurnProcessor:
 		except Exception:
 			VOLATILE_HANDLERS = {}
 
+		owner = self.participant_for(pokemon)
+		if owner is not None:
+			for part in self.participants:
+				if part is owner or part.has_lost:
+					continue
+				for foe in getattr(part, "active", []):
+					if foe is None:
+						continue
+					holders = []
+					foe_status = getattr(foe, "status", None)
+					status_handler = CONDITION_HANDLERS.get(foe_status)
+					if status_handler is not None:
+						holders.append(status_handler)
+					volatile_handler_iter = None
+					if hasattr(self, "_pokemon_volatile_handlers"):
+						try:
+							volatile_handler_iter = self._pokemon_volatile_handlers(foe)
+						except Exception:
+							volatile_handler_iter = None
+					if volatile_handler_iter is None:
+						volatile_handler_iter = []
+						for vol in list(getattr(foe, "volatiles", {}).keys()):
+							handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
+							if handler is not None:
+								volatile_handler_iter.append((vol, handler))
+					for _, handler in volatile_handler_iter:
+						holders.append(handler)
+					ability = getattr(foe, "ability", None)
+					if ability is not None and hasattr(ability, "call"):
+						holders.append(ability)
+					item = getattr(foe, "item", None) or getattr(foe, "held_item", None)
+					if item is not None and hasattr(item, "call"):
+						holders.append(item)
+					for holder in holders:
+						try:
+							result = self._call_effect_event(holder, "onFoeBeforeMove", foe, battle=self)
+						except Exception as err:
+							self._record_failure(context="before_move_foe", exception=err, pokemon=foe)
+							continue
+						if result is False:
+							return True
+
 		ability = getattr(pokemon, "ability", None)
 		if ability and hasattr(ability, "call"):
 			try:
-				res = ability.call("onBeforeMove", pokemon=pokemon, battle=self)
+				res = ability.call("onBeforeMove", pokemon=pokemon, move=move, battle=self)
 				if res is False:
 					return True
 			except Exception as err:
@@ -412,7 +597,7 @@ class TurnProcessor:
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
 		if item and hasattr(item, "call"):
 			try:
-				res = item.call("onBeforeMove", pokemon=pokemon, battle=self)
+				res = item.call("onBeforeMove", pokemon=pokemon, move=move, battle=self)
 				if res is False:
 					return True
 			except Exception as err:
@@ -420,9 +605,25 @@ class TurnProcessor:
 
 		handler = CONDITION_HANDLERS.get(status)
 		if handler and hasattr(handler, "onBeforeMove"):
-			result = handler.onBeforeMove(pokemon, battle=self)
+			marker = object()
+			previous_sleep_permission = getattr(pokemon, "can_use_while_asleep", marker)
+			if status == "slp" and sleep_usable:
+				pokemon.can_use_while_asleep = lambda: True
+			try:
+				result = handler.onBeforeMove(pokemon, move, battle=self)
+			finally:
+				if status == "slp" and sleep_usable:
+					if previous_sleep_permission is marker:
+						try:
+							delattr(pokemon, "can_use_while_asleep")
+						except AttributeError:
+							pass
+					else:
+						pokemon.can_use_while_asleep = previous_sleep_permission
 			if result is False:
 				return True
+		if status == "slp" and sleep_usable:
+			return False
 
 		volatiles = getattr(pokemon, "volatiles", {})
 		if "flinch" in volatiles:
@@ -432,9 +633,9 @@ class TurnProcessor:
 			handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
 			if handler and hasattr(handler, "onBeforeMove"):
 				try:
-					result = handler.onBeforeMove(pokemon, battle=self)
+					result = handler.onBeforeMove(pokemon, move, battle=self)
 				except Exception:
-					result = handler.onBeforeMove(pokemon)
+					result = handler.onBeforeMove(pokemon, move)
 				if result is False:
 					return True
 
@@ -463,7 +664,8 @@ class TurnProcessor:
 				turns = rng.randint(1, 3)
 				pokemon.tempvals["slp_turns"] = turns
 			if turns > 0:
-				turns -= 1
+				decrement = 2 if self._ability_key(getattr(pokemon, "ability", None)) == "earlybird" else 1
+				turns = max(0, turns - decrement)
 				pokemon.tempvals["slp_turns"] = turns
 				if turns == 0:
 					pokemon.status = 0
@@ -480,7 +682,7 @@ class TurnProcessor:
 
 	def modify_stat_stage(self, pokemon, stat: str, delta: int) -> None:
 		"""Modify ``pokemon`` stat stage by ``delta``."""
-		from pokemon.battle.utils import apply_boost
+		from pokemon.utils.boosts import apply_boost
 
 		apply_boost(pokemon, {stat: delta})
 
@@ -621,7 +823,12 @@ class TurnProcessor:
 					if not foe:
 						continue
 					opp_ability_key = self._ability_key(getattr(foe, "ability", None))
-					if opp_ability_key in trap_abilities:
+					magnet_pull_traps = (
+						opp_ability_key == "magnetpull"
+						and hasattr(pokemon, "hasType")
+						and pokemon.hasType("Steel")
+					)
+					if opp_ability_key in trap_abilities or magnet_pull_traps:
 						trapped = True
 						trapper_name = getattr(getattr(foe, "ability", None), "name", None)
 						if not trapper_name:
@@ -695,9 +902,15 @@ class TurnProcessor:
 				if self.attempt_flee(action):
 					break
 				continue
+			if action_type is ActionType.SWITCH:
+				new_pokemon = getattr(action, "pokemon", None)
+				if new_pokemon is None:
+					continue
+				self.perform_switch_action(action.actor, new_pokemon)
+				continue
 			if action_type is ActionType.MOVE and action.move:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
-				if self.status_prevents_move(actor_poke):
+				if self.status_prevents_move(actor_poke, getattr(action, "move", None)):
 					continue
 				self.use_move(action)
 				if actor_poke is not None:
@@ -725,14 +938,18 @@ class TurnProcessor:
 		from .engine import BattleType, _normalize_key
 
 		item_name = action.item.lower()
+		item_key = _normalize_key(item_name).lower()
 		target = action.target
-		if target not in self.participants or target.has_lost or not target.active:
-			opponents = self.opponents_of(action.actor)
-			target = opponents[0] if opponents else None
+		if item_key.endswith("ball"):
+			if target not in self.participants or target.has_lost or not target.active:
+				opponents = self.opponents_of(action.actor)
+				target = opponents[0] if opponents else None
+		else:
+			if target not in self.participants or target.has_lost or not target.active:
+				target = action.actor if getattr(action.actor, "active", None) else None
 		if not target or not target.active:
 			return
 
-		item_key = _normalize_key(item_name)
 		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
 			target_poke = target.active[0]
 			try:
@@ -817,41 +1034,30 @@ class TurnProcessor:
 
 			caught = getattr(outcome, "caught", bool(outcome))
 			if caught:
+				try:
+					from pokemon.services.capture import finalize_wild_capture
+
+					capture_owner = player if getattr(player, "storage", None) is not None else action.actor
+					battle_context = getattr(capture_owner, "ndb", None)
+					battle_context = getattr(battle_context, "battle_instance", None)
+					placement = finalize_wild_capture(
+						target_poke=target_poke,
+						player=capture_owner,
+						trainer=trainer,
+						battle_context=battle_context,
+						ball_name=action.item,
+					)
+				except Exception as err:
+					self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
+					if hasattr(self, "log_action"):
+						self.log_action("The capture could not be finalized.")
+					return
+
 				if hasattr(self, "log_action"):
 					self.log_action(f"Gotcha! {pokemon_name} was caught!")
 				target.active.remove(target_poke)
 				if target_poke in target.pokemons:
 					target.pokemons.remove(target_poke)
-				if getattr(target_poke, "model_id", None) is not None:
-					try:
-						from pokemon.models.core import OwnedPokemon
-
-						dbpoke = OwnedPokemon.objects.get(unique_id=target_poke.model_id)
-						if hasattr(action.actor, "trainer"):
-							dbpoke.trainer = action.actor.trainer
-						dbpoke.current_hp = target_poke.hp
-						dbpoke.is_wild = False
-						dbpoke.ai_trainer = None
-						if hasattr(dbpoke, "save"):
-							dbpoke.save()
-						if hasattr(action.actor, "storage") and hasattr(action.actor.storage, "stored_pokemon"):
-							try:
-								action.actor.storage.stored_pokemon.add(dbpoke)
-							except Exception as err:
-								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-					except Exception as err:
-						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-				elif hasattr(action.actor, "add_pokemon_to_storage"):
-					try:
-						poke_types = getattr(target_poke, "types", [])
-						type_ = ", ".join(poke_types) if isinstance(poke_types, list) else str(poke_types)
-						action.actor.add_pokemon_to_storage(
-							getattr(target_poke, "name", ""),
-							getattr(target_poke, "level", 1),
-							type_,
-						)
-					except Exception as err:
-						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				species_id = getattr(target_poke, "species", None) or getattr(target_poke, "name", None)
 				if trainer and species_id is not None:
@@ -875,56 +1081,16 @@ class TurnProcessor:
 							except Exception as err:
 								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
-				held_item = getattr(target_poke, "item", None) or getattr(target_poke, "held_item", None)
-				held_name = None
-				if held_item:
-					held_name = getattr(held_item, "name", None)
-					if not held_name:
-						held_name = str(held_item)
-					if hasattr(target_poke, "item"):
-						try:
-							target_poke.item = None
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-					if hasattr(target_poke, "held_item"):
-						try:
-							target_poke.held_item = ""
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-				if held_name:
-					recipient = None
-					if trainer and hasattr(trainer, "add_item"):
-						recipient = trainer
-					elif hasattr(action.actor, "add_item"):
-						recipient = action.actor
-					elif player and hasattr(player, "add_item"):
-						recipient = player
-					if recipient:
-						try:
-							recipient.add_item(held_name, 1)
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-
-				storage = getattr(action.actor, "storage", None)
-				party_full = False
-				if storage and hasattr(storage, "get_party"):
-					try:
-						party = storage.get_party()
-						party_count = len(list(party)) if party is not None else 0
-					except Exception:
-						party_count = 6
-					party_full = party_count >= 6
-
 				if player is not None and hasattr(player, "ndb"):
 					pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
-					pending.append({"species": pokemon_name, "to_storage": party_full})
+					pending.append({"species": pokemon_name, "to_storage": placement.placement == "storage"})
 					try:
 						player.ndb.pending_caught_pokemon = pending
 					except Exception as err:
 						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				if hasattr(self, "log_action"):
-					if party_full:
+					if placement.placement == "storage":
 						self.log_action(f"{pokemon_name} was sent to your storage!")
 					else:
 						self.log_action(f"Would you like to give {pokemon_name} a nickname?")
@@ -947,6 +1113,82 @@ class TurnProcessor:
 							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 				if hasattr(self, "log_action"):
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
+			return
+
+		target_poke = target.active[0]
+		checker = getattr(action.actor, "has_item", None)
+		if callable(checker):
+			try:
+				if not checker(action.item, 1):
+					return
+			except TypeError:
+				if not checker(action.item):
+					return
+
+		used = False
+		healing_items = {
+			"potion": 20,
+			"superpotion": 60,
+			"hyperpotion": 120,
+			"maxpotion": None,
+		}
+		status_items = {
+			"antidote": {"psn", "tox"},
+			"burnheal": {"brn"},
+			"iceheal": {"frz"},
+			"awakening": {"slp"},
+			"paralyzeheal": {"par"},
+			"fullheal": {"brn", "psn", "tox", "frz", "slp", "par"},
+			"fullrestore": {"brn", "psn", "tox", "frz", "slp", "par"},
+		}
+
+		if item_key in healing_items:
+			max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
+			if 0 < getattr(target_poke, "hp", 0) < max_hp:
+				amount = healing_items[item_key]
+				target_poke.hp = max_hp if amount is None else min(max_hp, getattr(target_poke, "hp", 0) + amount)
+				used = True
+
+		if item_key == "fullrestore" and getattr(target_poke, "status", 0):
+			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
+		elif item_key in status_items and getattr(target_poke, "status", 0) in status_items[item_key]:
+			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
+
+		if item_key == "revive" and getattr(target_poke, "hp", 0) <= 0:
+			max_hp = getattr(target_poke, "max_hp", 1)
+			target_poke.hp = max(1, max_hp // 2)
+			target_poke.is_fainted = False
+			used = True
+		elif item_key == "maxrevive" and getattr(target_poke, "hp", 0) <= 0:
+			max_hp = getattr(target_poke, "max_hp", 1)
+			target_poke.hp = max_hp
+			target_poke.is_fainted = False
+			used = True
+
+		if item_key == "ether":
+			for move in getattr(target_poke, "moves", []) or []:
+				pp = getattr(move, "pp", None)
+				if pp is None:
+					continue
+				move.pp = pp + 10
+				used = True
+				break
+
+		if not used:
+			if hasattr(self, "log_action"):
+				self.log_action(f"But {action.item} had no effect!")
+			return
+
+		remove_item = getattr(action.actor, "remove_item", None)
+		if callable(remove_item):
+			try:
+				remove_item(action.item)
+			except Exception as err:
+				self._record_failure(context="trainer_item", exception=err, pokemon=target_poke)
+		if hasattr(self, "log_action"):
+			self.log_action(
+				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {getattr(target_poke, 'name', 'Pokemon')}!"
+			)
 
 	def perform_move_action(self, action: Action) -> None:
 		"""Execute a move action."""
@@ -956,9 +1198,34 @@ class TurnProcessor:
 		"""Use an item during battle."""
 		self.execute_item(action)
 
-	def perform_mega_evolution(self, pokemon) -> None:
-		"""Placeholder for Mega Evolution mechanics."""
+	def perform_mega_evolution(self, pokemon) -> bool:
+		"""Mega Evolve ``pokemon`` if its item or move eligibility allows it."""
+
+		target_forme, reason = self._mega_evolution_target(pokemon)
+		if not target_forme:
+			setattr(pokemon, "mega_evolution_failed_reason", reason or "no_mega_forme")
+			setattr(pokemon, "last_mega_evolution_result", False)
+			return False
+
+		if not hasattr(pokemon, "formeChange") or not pokemon.formeChange(target_forme, battle=self, source=pokemon):
+			setattr(pokemon, "mega_evolution_failed_reason", "forme_change_failed")
+			setattr(pokemon, "last_mega_evolution_result", False)
+			return False
+
+		participant = self.participant_for(pokemon) if hasattr(self, "participant_for") else None
+		if participant is not None:
+			setattr(participant, "mega_evolved", True)
+			side = getattr(participant, "side", None)
+			if side is not None:
+				setattr(side, "mega_evolved", True)
 		setattr(pokemon, "mega_evolved", True)
+		setattr(pokemon, "mega_evolution_forme", target_forme)
+		setattr(pokemon, "last_mega_evolution_result", True)
+		if hasattr(self, "register_handlers"):
+			self.register_handlers(pokemon)
+		if hasattr(self, "log_action"):
+			self.log_action(f"{getattr(pokemon, 'name', 'Pokemon')} Mega Evolved!")
+		return True
 
 	def perform_tera_change(self, pokemon, tera_type: str) -> None:
 		"""Placeholder for Terastallization mechanics."""

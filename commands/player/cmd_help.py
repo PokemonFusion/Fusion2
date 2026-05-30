@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from itertools import chain
+from textwrap import dedent
 
 from evennia.commands.default.help import (
 	DEFAULT_HELP_CATEGORY,
@@ -10,6 +11,15 @@ from evennia.commands.default.help import (
 	CmdHelp as DefaultCmdHelp,
 )
 from evennia.utils.utils import format_grid, pad
+
+try:
+	from evennia.help.utils import parse_entry_for_subcategories
+except ImportError:  # pragma: no cover - used by lightweight unit-test stubs
+	def parse_entry_for_subcategories(entry):
+		return {None: entry}
+
+
+HELP_INDEX_WIDTH = 78
 
 
 class CmdHelp(DefaultCmdHelp):
@@ -54,6 +64,7 @@ class CmdHelp(DefaultCmdHelp):
 		cmd_help, db_help, file_help = self.collect_topics(caller, mode="query")
 		file_db = {**file_help, **db_help}
 		all_topics = {**file_db, **cmd_help}
+		topic_lookup = self._build_topic_lookup(all_topics)
 		category_map = {topic.help_category.lower(): topic.help_category for topic in all_topics.values()}
 		categories = set(category_map.keys())
 
@@ -61,7 +72,7 @@ class CmdHelp(DefaultCmdHelp):
 		for i in range(len(query_parts), 0, -1):
 			candidate = "/".join(query_parts[:i])
 			if (
-				candidate in all_topics
+				candidate in topic_lookup
 				or candidate in categories
 				or any(cat.startswith(candidate + "/") for cat in categories)
 			):
@@ -73,10 +84,10 @@ class CmdHelp(DefaultCmdHelp):
 			self.msg_help(f"No help entry found for '{'/'.join(query_parts)}'")
 			return
 
-		if candidate_topic in all_topics:
-			entry = all_topics[candidate_topic]
-			text = getattr(entry, "entrytext", "")
-			self.msg_help(self.format_help_entry(topic=candidate_topic, help_text=text))
+		if candidate_topic in topic_lookup:
+			topic_key = topic_lookup[candidate_topic]
+			entry = all_topics[topic_key]
+			self.msg_help(self._format_topic_entry(topic_key, entry, remaining))
 			return
 
 		# it's a category
@@ -115,6 +126,131 @@ class CmdHelp(DefaultCmdHelp):
 		node = tree.setdefault(head, {})
 		self._add_to_tree(node, rest, topics)
 
+	def _entry_aliases(self, entry):
+		aliases = getattr(entry, "aliases", [])
+		if not aliases:
+			return []
+		if isinstance(aliases, str):
+			return [aliases]
+		if hasattr(aliases, "all"):
+			aliases = aliases.all()
+		return list(aliases)
+
+	def _build_topic_lookup(self, all_topics):
+		lookup = {}
+		for key, entry in all_topics.items():
+			lookup[str(key).lower()] = key
+			for alias in getattr(entry, "_keyaliases", ()) or self._entry_aliases(entry):
+				lookup[str(alias).lower()] = key
+		return lookup
+
+	def _entry_help_text(self, entry):
+		get_help = getattr(entry, "get_help", None)
+		if callable(get_help):
+			return get_help(self.caller, self.cmdset)
+		return getattr(entry, "entrytext", "")
+
+	def _format_topic_entry(self, topic_key, entry, subtopics):
+		topic = getattr(entry, "key", topic_key)
+		help_text = self._entry_help_text(entry) or ""
+		aliases = self._entry_aliases(entry)
+
+		subtopic_map = parse_entry_for_subcategories(help_text)
+		help_text = subtopic_map[None]
+		subtopic_index = [subtopic for subtopic in subtopic_map if subtopic is not None]
+
+		for subtopic_query in subtopics:
+			if subtopic_query not in subtopic_map:
+				match = next(
+					(key for key in subtopic_map if key and key.startswith(subtopic_query)),
+					None,
+				)
+				if match is None:
+					match = next(
+						(key for key in subtopic_map if key and subtopic_query in key),
+						None,
+					)
+				if match is None:
+					checked_topic = topic + f"{self.subtopic_separator_char}{subtopic_query}"
+					return self.format_help_entry(
+						topic=topic,
+						help_text=f"No help entry found for '{checked_topic}'",
+						subtopics=subtopic_index,
+						click_topics=self.clickable_topics,
+					)
+				subtopic_query = match
+
+			subtopic_map = subtopic_map[subtopic_query]
+			subtopic_index = [subtopic for subtopic in subtopic_map if subtopic is not None]
+			topic = topic + f"{self.subtopic_separator_char}{subtopic_query}"
+
+		if subtopics:
+			help_text = subtopic_map[None]
+			aliases = None
+
+		return self.format_help_entry(
+			topic=topic,
+			help_text=help_text,
+			aliases=aliases,
+			subtopics=subtopic_index,
+			click_topics=self.clickable_topics,
+		)
+
+	def _help_index_width(self):
+		"""Cap index width so wide NAWS clients don't stretch the command list."""
+		return min(self.client_width(), HELP_INDEX_WIDTH)
+
+	def format_help_entry(
+		self,
+		topic="",
+		help_text="",
+		aliases=None,
+		suggested=None,
+		subtopics=None,
+		click_topics=True,
+	):
+		"""Format a single help topic with the same capped width as the index."""
+		width = self._help_index_width()
+		separator = "|C" + "-" * width + "|n"
+		start = f"{separator}\n"
+		title = f"|CHelp for |w{topic}|n" if topic else "|rNo help found|n"
+
+		if aliases:
+			aliases = " |C(aliases: {}|C)|n".format("|C,|n ".join(f"|w{ali}|n" for ali in aliases))
+		else:
+			aliases = ""
+
+		help_text = "\n" + dedent(help_text.strip("\n")) if help_text else ""
+
+		if subtopics:
+			if click_topics:
+				subtopics = [
+					f"|lchelp {topic}/{subtop}|lt|w{topic}/{subtop}|n|le" for subtop in subtopics
+				]
+			else:
+				subtopics = [f"|w{topic}/{subtop}|n" for subtop in subtopics]
+			subtopics = "\n|CSubtopics:|n\n  {}".format(
+				"\n  ".join(format_grid(subtopics, width=width, line_prefix=self.index_topic_clr))
+			)
+		else:
+			subtopics = ""
+
+		if suggested:
+			suggested = sorted(suggested)
+			if click_topics:
+				suggested = [f"|lchelp {sug}|lt|w{sug}|n|le" for sug in suggested]
+			else:
+				suggested = [f"|w{sug}|n" for sug in suggested]
+			suggested = "\n|COther topic suggestions:|n\n{}".format(
+				"\n  ".join(format_grid(suggested, width=width, line_prefix=self.index_topic_clr))
+			)
+		else:
+			suggested = ""
+
+		end = start
+		partorder = (start, title + aliases, help_text, subtopics, suggested, end)
+		return "\n".join(part.rstrip() for part in partorder if part)
+
 	def format_help_index(self, cmd_help_dict=None, db_help_dict=None, title_lone_category=False, click_topics=True):
 		cmd_tree: dict[str, dict] = {}
 		db_tree: dict[str, dict] = {}
@@ -123,7 +259,7 @@ class CmdHelp(DefaultCmdHelp):
 		for cat, topics in (db_help_dict or {}).items():
 			self._add_to_tree(db_tree, [p.strip() for p in cat.split("/") if p.strip()], topics)
 
-		width = self.client_width()
+		width = self._help_index_width()
 
 		def render(tree, indent=0):
 			lines = []

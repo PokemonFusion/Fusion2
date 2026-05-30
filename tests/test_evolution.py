@@ -14,7 +14,7 @@ sys.modules[ent_spec.name] = ent_mod
 ent_spec.loader.exec_module(ent_mod)
 
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.POKEDEX = {
 	"Bulbasaur": ent_mod.Pokemon(

@@ -80,7 +80,11 @@ class CmdBattleItem(Command):
         )
         participant.pending_action = action
 
-        if not self.caller.remove_item(item_name):
+        remove_item = getattr(self.caller, "remove_item", None)
+        if not callable(remove_item):
+            remove_item = getattr(getattr(self.caller, "trainer", None), "remove_item", None)
+        removed = remove_item(item_name) if callable(remove_item) else True
+        if removed is False:
             self.caller.msg(f"You fumble with your {item_name} and fail to ready it.")
             participant.pending_action = None
             return

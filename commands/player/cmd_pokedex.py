@@ -19,6 +19,12 @@ from pokemon.middleware import (
 	get_pokemon_by_name,
 	get_pokemon_by_number,
 )
+from utils.dex_suggestions import (
+	item_not_found_message,
+	learnset_not_found_message,
+	move_not_found_message,
+	pokemon_not_found_message,
+)
 
 
 class CmdPokedexSearch(Command):
@@ -128,7 +134,9 @@ class CmdPokedexSearch(Command):
 		if name and details:
 			self.caller.msg(format_pokemon_details(name, details))
 		else:
-			self.caller.msg("No Pokémon found with that name or number.")
+			self.caller.msg(
+				pokemon_not_found_message(args, "No Pokémon found with that name or number.")
+			)
 
 
 class CmdPokedexAll(CmdPokedexSearch):
@@ -172,7 +180,7 @@ class CmdMovedexSearch(Command):
 		if name and details:
 			self.caller.msg(format_move_details(name, details))
 		else:
-			self.caller.msg("No move found with that name.")
+			self.caller.msg(move_not_found_message(args, "No move found with that name."))
 
 
 class CmdItemdexSearch(Command):
@@ -200,7 +208,7 @@ class CmdItemdexSearch(Command):
 		if name and details:
 			self.caller.msg(format_item_details(name, details))
 		else:
-			self.caller.msg("No item found with that name.")
+			self.caller.msg(item_not_found_message(args, "No item found with that name."))
 
 
 class CmdMovesetSearch(Command):
@@ -225,7 +233,9 @@ class CmdMovesetSearch(Command):
 		if name and moveset:
 			self.caller.msg(format_moveset(name, moveset))
 		else:
-			self.caller.msg("No moveset found for that Pokémon.")
+			self.caller.msg(
+				learnset_not_found_message(args, "No moveset found for that Pokémon.")
+			)
 
 
 class CmdPokedexNumber(Command):

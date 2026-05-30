@@ -22,6 +22,7 @@
     <!-- Optional local overrides -->
     <link rel="stylesheet" type="text/css" href="{% static "website/css/custom.css" %}">
 
+    {% block extra_css %}{% endblock %}
     {% block header_ext %}{% endblock %}
 
     <title>{{game_name}} - {% if flatpage %}{{flatpage.title}}{% else %}{% block titleblock %}{{page_title}}{% endblock %}{% endif %}</title>
@@ -47,9 +48,18 @@
 
     <footer class="footer">
       {% block footer %}
-      <div class="container"><div class="row justify-content-center">
-        <span class="text-white">Powered by <a class="text-white font-weight-bold" href="https://evennia.com">Evennia</a>.</span>
-      </div></div>
+      <div class="container fusion-footer-content">
+        <p>
+          Powered by <a class="font-weight-bold" href="https://evennia.com">Evennia</a>.
+        </p>
+        <p>
+          Built with <a class="font-weight-bold" href="https://evennia.com">Evennia</a> &mdash; the open-source MUD/MU* engine.
+        </p>
+        <p>
+          A fan-made, non-commercial project inspired by monster-collecting adventures.
+          Not affiliated with or endorsed by any official IP holder.
+        </p>
+      </div>
       {% endblock %}
     </footer>
 

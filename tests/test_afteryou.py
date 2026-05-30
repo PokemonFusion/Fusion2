@@ -18,7 +18,7 @@ def apply_boost(pokemon, boosts):
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.utils = utils_stub
 sys.modules["pokemon.battle"] = pkg_battle
 sys.modules["pokemon.battle.utils"] = utils_stub
@@ -32,7 +32,7 @@ ent_spec.loader.exec_module(ent_mod)
 
 # Build minimal pokemon.dex
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {
 	"tackle": types.SimpleNamespace(

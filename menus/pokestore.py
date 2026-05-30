@@ -1,25 +1,22 @@
-"""Menu nodes and helpers for the Pokémon storage system."""
+"""Menu nodes and helpers for the Pokemon storage system."""
 
 
 def _get_boxes(caller):
-        storage = caller.storage
-        return list(storage.boxes.all().order_by("id"))
+	storage = caller.storage
+	return list(storage.boxes.all().order_by("id"))
 
 
 def _get_party(caller):
-        """Return the caller's party."""
-        storage = caller.storage
-        if hasattr(storage, "get_party"):
-                return storage.get_party()
-        return list(storage.active_pokemon.all())
+	"""Return the caller's party."""
+	return caller.storage.get_party()
 
 
 def node_start(caller, raw_input=None, **kwargs):
 	boxes = _get_boxes(caller)
 	if raw_input is None:
-		lines = ["|wPokémon Storage|n"]
+		lines = ["|wPokemon Storage|n"]
 		for i, box in enumerate(boxes, 1):
-			lines.append(f"  {i}. {box.name} ({box.pokemon.count()})")
+			lines.append(f"  {i}. {box.name} ({len(box.get_pokemon())})")
 		lines.append("D. Deposit from party")
 		lines.append("Q. Quit")
 		return "\n".join(lines), [{"key": "_default", "goto": "node_start"}]
@@ -42,12 +39,14 @@ def node_box(caller, raw_input=None, **kwargs):
 	boxes = _get_boxes(caller)
 	idx = kwargs.get("box_index", 0)
 	box = boxes[idx]
-	mons = list(box.pokemon.all())
+	mons = list(box.get_pokemon())
 	if raw_input is None:
 		lines = [f"|w{box.name}|n"]
 		for i, mon in enumerate(mons, 1):
 			disp = mon.nickname or mon.species
 			lines.append(f"  {i}. {disp}")
+		if len(_get_party(caller)) >= 6:
+			lines.append("Select a Pokemon to swap with your party.")
 		lines.append("B. Back")
 		return "\n".join(lines), [{"key": "_default", "goto": "node_box"}]
 
@@ -58,6 +57,9 @@ def node_box(caller, raw_input=None, **kwargs):
 		i = int(cmd) - 1
 		if 0 <= i < len(mons):
 			mon = mons[i]
+			if len(_get_party(caller)) >= 6:
+				kwargs["poke_id"] = mon.unique_id
+				return node_choose_party_slot(caller, **kwargs)
 			caller.msg(caller.withdraw_pokemon(mon.unique_id, idx + 1))
 			return node_box(caller, **kwargs)
 	caller.msg("Invalid choice.")
@@ -67,12 +69,12 @@ def node_box(caller, raw_input=None, **kwargs):
 def node_deposit(caller, raw_input=None, **kwargs):
 	party = _get_party(caller)
 	if raw_input is None:
-                lines = ["Select a Pokémon to deposit:"]
-                for i, mon in enumerate(party, 1):
-                        disp = mon.nickname or mon.species
-                        lines.append(f"  {i}. {disp}")
-                lines.append("B. Back")
-                return "\n".join(lines), [{"key": "_default", "goto": "node_deposit"}]
+		lines = ["Select a Pokemon to deposit:"]
+		for i, mon in enumerate(party, 1):
+			disp = mon.nickname or mon.species
+			lines.append(f"  {i}. {disp}")
+		lines.append("B. Back")
+		return "\n".join(lines), [{"key": "_default", "goto": "node_deposit"}]
 
 	cmd = raw_input.strip().lower()
 	if cmd == "b":
@@ -106,3 +108,27 @@ def node_choose_box(caller, raw_input=None, **kwargs):
 			return node_start(caller)
 	caller.msg("Invalid choice.")
 	return node_choose_box(caller, **kwargs)
+
+
+def node_choose_party_slot(caller, raw_input=None, **kwargs):
+	party = _get_party(caller)
+	box_index = kwargs.get("box_index", 0)
+	if raw_input is None:
+		lines = ["Swap with which party slot?"]
+		for i, mon in enumerate(party, 1):
+			disp = mon.nickname or mon.species
+			lines.append(f"  {i}. {disp}")
+		lines.append("B. Back")
+		return "\n".join(lines), [{"key": "_default", "goto": "node_choose_party_slot"}]
+
+	cmd = raw_input.strip().lower()
+	if cmd == "b":
+		return node_box(caller, **kwargs)
+	if cmd.isdigit():
+		i = int(cmd)
+		if 1 <= i <= len(party):
+			pid = kwargs.get("poke_id")
+			caller.msg(caller.swap_pokemon(pid, i, box_index + 1))
+			return node_box(caller, **kwargs)
+	caller.msg("Invalid choice.")
+	return node_choose_party_slot(caller, **kwargs)

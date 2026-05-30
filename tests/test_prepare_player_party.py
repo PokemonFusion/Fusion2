@@ -128,6 +128,49 @@ def test_prepare_party_uses_moveset_when_no_slots():
 	assert hasattr(party[0], "activemoveslot_set")
 
 
+def test_prepare_party_uses_moveset_when_active_slots_empty():
+	bi = load_module()
+	bi._calc_stats_from_model = lambda poke: {"hp": 30}
+
+	class FakeSlot:
+		def __init__(self, name, slot):
+			self.move = types.SimpleNamespace(name=name)
+			self.slot = slot
+
+	class FakeQS(list):
+		def all(self):
+			return self
+
+		def order_by(self, field):
+			return self
+
+	class FakeMoveset:
+		def __init__(self):
+			self.slots = FakeQS([FakeSlot("ember", 1), FakeSlot("scratch", 2)])
+
+	class FakePoke:
+		def __init__(self):
+			self.name = "Charmander"
+			self.level = 5
+			self.current_hp = 30
+			self.activemoveslot_set = FakeQS()
+			self.active_moveset = FakeMoveset()
+			self.ability = None
+			self.ivs = [0, 0, 0, 0, 0, 0]
+			self.evs = [0, 0, 0, 0, 0, 0]
+			self.nature = "Hardy"
+
+	class FakeStorage:
+		def get_party(self):
+			return [FakePoke()]
+
+	trainer = types.SimpleNamespace(key="Ash", storage=FakeStorage())
+	session = object.__new__(bi.BattleSession)
+
+	party = bi.BattleSession._prepare_player_party(session, trainer)
+	assert [m.name for m in party[0].moves] == ["ember", "scratch"]
+
+
 def test_prepare_party_preserves_model_hp_when_current_missing():
 	"""Pokémon without ``current_hp`` should retain their battle HP value."""
 

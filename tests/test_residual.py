@@ -14,7 +14,7 @@ if ROOT not in sys.path:
 # Provide a lightweight ``pokemon.battle`` package namespace so the engine
 # modules can be imported without the full Evennia environment.
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []  # type: ignore[attr-defined]
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]  # type: ignore[attr-defined]
 sys.modules.setdefault("pokemon.battle", pkg_battle)
 
 # Load battledata module

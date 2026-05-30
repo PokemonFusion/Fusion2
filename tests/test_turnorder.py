@@ -8,7 +8,7 @@ sys.path.insert(0, ROOT)
 
 # Minimal package structure for pokemon.battle
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 sys.modules["pokemon.battle"] = pkg_battle
 
 bd_path = os.path.join(ROOT, "pokemon", "battle", "battledata.py")

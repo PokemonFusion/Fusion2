@@ -23,9 +23,12 @@ several more options for customizing the Guest account system.
 """
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 from evennia.utils.utils import is_iter
+
+from utils.site_status import get_login_block_message, is_login_blocked
 
 
 class Account(DefaultAccount):
@@ -52,6 +55,24 @@ class Account(DefaultAccount):
 {footer}
 --------------------------------------------------------------------
     """.strip()
+
+    @classmethod
+    def authenticate(cls, username, password, ip="", **kwargs):
+        """Authenticate accounts while respecting the public play status."""
+
+        account, errors = super().authenticate(username, password, ip=ip, **kwargs)
+        if account and is_login_blocked(account):
+            return None, [_("|r%s|n") % get_login_block_message()]
+        return account, errors
+
+    def at_pre_login(self, **kwargs):
+        """Hook retained for login lifecycle customization.
+
+        Maintenance-mode rejection happens in ``authenticate`` so users receive
+        a normal login error instead of an uncaught session-handler exception.
+        """
+
+        super().at_pre_login(**kwargs)
 
     def at_look(self, target=None, session=None, **kwargs):
         """Return the account's OOC appearance with numbered characters."""

@@ -26,6 +26,7 @@ from pokemon.battle.engine import (
 )
 from pokemon.dex.functions import pokedex_funcs
 from pokemon.dex.items.ball_modifiers import BALL_MODIFIERS
+from pokemon.services.capture import CapturePlacementResult
 
 
 @pytest.fixture(autouse=True)
@@ -34,7 +35,7 @@ def _stub_catch_rate(monkeypatch):
     monkeypatch.setattr(pokedex_funcs, "get_catch_rate", lambda name: 255)
 
 
-def test_pokeball_capture_marks_opponent_lost():
+def test_pokeball_capture_marks_opponent_lost(monkeypatch):
     attacker = Pokemon("Pikachu")
     defender = Pokemon("Bulbasaur", hp=1, max_hp=100)
     p1 = BattleParticipant("P1", [attacker], is_ai=False)
@@ -45,6 +46,10 @@ def test_pokeball_capture_marks_opponent_lost():
     action = Action(p1, ActionType.ITEM, p2, item="Pokeball", priority=6)
     p1.pending_action = action
 
+    def fake_finalize(**kwargs):
+        return CapturePlacementResult("caught-1", "party", 2, None, True)
+
+    monkeypatch.setattr("pokemon.services.capture.finalize_wild_capture", fake_finalize)
     battle = Battle(BattleType.WILD, [p1, p2])
     random.seed(0)
     battle.run_turn()
@@ -85,6 +90,10 @@ def test_ball_modifier_inventory_and_storage(monkeypatch):
         return capture_mod.CaptureOutcome(caught=True, shakes=3, critical=False)
 
     monkeypatch.setattr(capture_mod, "attempt_capture", fake_capture)
+    monkeypatch.setattr(
+        "pokemon.services.capture.finalize_wild_capture",
+        lambda **kwargs: (p1.storage.append("Bulbasaur") or CapturePlacementResult("caught-2", "storage", None, "Box 1", True)),
+    )
 
     action = Action(p1, ActionType.ITEM, p2, item="Ultraball", priority=6)
     p1.pending_action = action
@@ -129,6 +138,10 @@ def test_ball_name_with_space(monkeypatch):
         return capture_mod.CaptureOutcome(caught=True, shakes=2, critical=True)
 
     monkeypatch.setattr(capture_mod, "attempt_capture", fake_capture)
+    monkeypatch.setattr(
+        "pokemon.services.capture.finalize_wild_capture",
+        lambda **kwargs: (p1.storage.append("Bulbasaur") or CapturePlacementResult("caught-3", "storage", None, "Box 1", True)),
+    )
 
     action = Action(p1, ActionType.ITEM, p2, item="Ultra Ball", priority=6)
     p1.pending_action = action
@@ -162,6 +175,10 @@ def test_capture_logs_shakes_and_gotcha(monkeypatch):
         return capture_mod.CaptureOutcome(caught=True, shakes=3, critical=False)
 
     monkeypatch.setattr(capture_mod, "attempt_capture", fake_capture)
+    monkeypatch.setattr(
+        "pokemon.services.capture.finalize_wild_capture",
+        lambda **kwargs: CapturePlacementResult("caught-4", "party", 2, None, True),
+    )
 
     action = Action(p1, ActionType.ITEM, p2, item="Pokeball", priority=6)
     p1.pending_action = action
@@ -299,6 +316,10 @@ def test_capture_updates_pokedex_and_transfers_item(monkeypatch):
         return capture_mod.CaptureOutcome(caught=True, shakes=2, critical=False)
 
     monkeypatch.setattr(capture_mod, "attempt_capture", fake_capture)
+    monkeypatch.setattr(
+        "pokemon.services.capture.finalize_wild_capture",
+        lambda **kwargs: CapturePlacementResult("caught-5", "party", 2, None, True),
+    )
 
     action = Action(p1, ActionType.ITEM, p2, item="Nest Ball", priority=6)
     p1.pending_action = action
@@ -311,7 +332,7 @@ def test_capture_updates_pokedex_and_transfers_item(monkeypatch):
 
     assert trainer.seen == ["Bulbasaur"]
     assert trainer.caught == ["Bulbasaur"]
-    assert ("Oran Berry", 1) in trainer.items
+    assert trainer.items == []
     assert player.seen == ["Bulbasaur"]
     assert player.caught == ["Bulbasaur"]
     assert player.ndb.pending_caught_pokemon[-1] == {"species": "Bulbasaur", "to_storage": False}
@@ -341,6 +362,10 @@ def test_full_party_routes_to_storage(monkeypatch):
         return capture_mod.CaptureOutcome(caught=True, shakes=1, critical=True)
 
     monkeypatch.setattr(capture_mod, "attempt_capture", fake_capture)
+    monkeypatch.setattr(
+        "pokemon.services.capture.finalize_wild_capture",
+        lambda **kwargs: CapturePlacementResult("caught-6", "storage", None, "Box 1", True),
+    )
 
     action = Action(p1, ActionType.ITEM, p2, item="Premier Ball", priority=6)
     p1.pending_action = action

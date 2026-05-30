@@ -1,15 +1,10 @@
-<form id="exit-form" method="post" action="" class="needs-validation" novalidate>
+<form id="exit-form" method="post"
+    action="{% if exit %}{% url 'roomeditor:exit_edit' exit.id %}{% elif room %}{% url 'roomeditor:exit_new' room.id %}{% endif %}"
+    {% if exit %}data-exit="{{ exit.id }}"{% endif %}
+    class="needs-validation" novalidate>
     {% csrf_token %}
     {{ form.as_p }}
-    <div class="d-flex gap-2 mt-2">
-        <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save</button>
+    <div class="roomeditor-actions mt-2">
+        <button class="btn btn-primary" type="submit">Save</button>
     </div>
 </form>
-<script>
-// Enhance destination select with a basic text filter w/o heavy libs.
-(function(){
-    const sel = document.querySelector('select[data-role="destination-select"]');
-    if (!sel) return;
-    // Minimal: no client filter; rely on server search endpoint via roomeditor.js autocomplete.
-})();
-</script>

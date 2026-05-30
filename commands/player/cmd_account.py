@@ -2,6 +2,7 @@ from django.conf import settings
 from evennia import Command, search_account
 from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
 
+from pokemon.models.storage import move_to_box
 from utils.locks import require_no_battle_lock
 
 
@@ -19,9 +20,7 @@ class CmdCharCreate(DefaultCmdCharCreate):
 		account = self.account
 		max_chars = settings.MAX_NR_CHARACTERS
 		if max_chars is not None and len(account.characters) >= max_chars:
-			self.msg(
-				f"You already have the maximum number of characters ({max_chars})."
-			)
+			self.msg(f"You already have the maximum number of characters ({max_chars}).")
 			return
 		if not self.args:
 			self.msg("Usage: charcreate <name>")
@@ -39,6 +38,7 @@ class CmdCharCreate(DefaultCmdCharCreate):
 			f"Created new character {new_character.key}. Use |wgoic {new_character.key}|n to enter"
 			" the game as this character."
 		)
+
 
 class CmdAlts(Command):
 	"""List all characters for an account.
@@ -65,7 +65,7 @@ class CmdAlts(Command):
 
 
 class CmdTradePokemon(Command):
-	"""Trade a Pokémon with another character.
+	"""Trade a Pokemon with another character.
 
 	Usage:
 	  tradepokemon <pokemon_id>=<character>
@@ -92,16 +92,15 @@ class CmdTradePokemon(Command):
 			return
 		pokemon = self.caller.get_pokemon_by_id(pid)
 		if not pokemon:
-			self.caller.msg("No such Pokémon.")
+			self.caller.msg("No such Pokemon.")
 			return
-		if pokemon in self.caller.storage.active_pokemon.all():
+		if pokemon in self.caller.storage.get_party():
 			self.caller.storage.remove_active_pokemon(pokemon)
 			target.storage.add_active_pokemon(pokemon)
-		elif pokemon in self.caller.storage.stored_pokemon.all():
-			self.caller.storage.stored_pokemon.remove(pokemon)
-			target.storage.stored_pokemon.add(pokemon)
+		elif pokemon in self.caller.storage.get_stored_pokemon():
+			move_to_box(pokemon, target.storage, target.get_box(1))
 		else:
-			self.caller.msg("You don't have that Pokémon.")
+			self.caller.msg("You don't have that Pokemon.")
 			return
 		name = pokemon.nickname or pokemon.species
 		self.caller.msg(f"You traded {name} to {target.key}.")

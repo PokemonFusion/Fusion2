@@ -33,8 +33,9 @@ except Exception:  # pragma: no cover - fallback when package missing
 
 from django.utils.translation import gettext as _
 
-from utils.pokedex import DexTrackerMixin
 from pokemon.battle.interface import format_turn_banner
+from utils.locks import require_no_battle_lock
+from utils.pokedex import DexTrackerMixin
 
 
 class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
@@ -42,31 +43,99 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 
 	def at_init(self):
 		super().at_init()
-		bid = self.db.battle_id
-		if bid is not None and not getattr(self.ndb, "battle_instance", None):
-			room = self.location
-			bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
-			if isinstance(bmap, dict):
-				inst = bmap.get(bid)
-				if inst:
-					self.ndb.battle_instance = inst
+		self._restore_battle_instance()
+
+	def _restore_battle_instance(self):
+		"""Attach the active battle session to this character if one exists."""
+
+		ndb = getattr(self, "ndb", None)
+		if ndb and getattr(ndb, "battle_instance", None):
+			return ndb.battle_instance
+
+		try:
+			from pokemon.battle.battleinstance import BattleSession
+		except Exception:
+			return None
+
+		try:
+			return BattleSession.ensure_for_player(self)
+		except Exception:
+			return None
+
+	def _battle_waiting_on(self, inst):
+		"""Return the first non-AI Pokemon still needing an action."""
+
+		data = getattr(inst, "data", None)
+		if not data:
+			return None
+		positions = getattr(getattr(data, "turndata", None), "positions", {}) or {}
+		state = getattr(inst, "state", None)
+		declared = getattr(state, "declare", {}) or {}
+		battle = getattr(inst, "battle", None)
+
+		for pos_name, pos in positions.items():
+			has_action = False
+			try:
+				has_action = bool(pos.getAction())
+			except Exception:
+				has_action = False
+			if has_action or pos_name in declared:
+				continue
+			pokemon = getattr(pos, "pokemon", None)
+			if not pokemon:
+				continue
+			participant = None
+			if battle and hasattr(battle, "participant_for"):
+				try:
+					participant = battle.participant_for(pokemon)
+				except Exception:
+					participant = None
+			if participant is not None and getattr(participant, "is_ai", False):
+				continue
+			return pokemon
+		return None
+
+	def _send_battle_recap(self, inst) -> None:
+		"""Send a login recap for the battle this character is in."""
+
+		if not getattr(inst, "state", None) or not getattr(inst, "captainA", None):
+			return
+
+		waiting_on = self._battle_waiting_on(inst)
+		try:
+			self.msg("|wYou are still in battle.|n")
+		except Exception:
+			pass
+
+		try:
+			from pokemon.battle.interface import send_interface_to
+
+			send_interface_to(inst, self, waiting_on=waiting_on)
+		except Exception:
+			try:
+				from pokemon.battle.interface import display_battle_interface
+
+				viewer_team = None
+				if self in getattr(inst, "teamA", []):
+					viewer_team = "A"
+				elif self in getattr(inst, "teamB", []):
+					viewer_team = "B"
+				ui = display_battle_interface(
+					inst.captainA,
+					inst.captainB,
+					inst.state,
+					viewer_team=viewer_team,
+					waiting_on=waiting_on,
+				)
+				self.msg(ui)
+			except Exception:
+				pass
 
 	def at_post_puppet(self):
 		super().at_post_puppet()
-		bid = self.db.battle_id
-		if bid is not None and not getattr(self.ndb, "battle_instance", None):
-			room = self.location
-			bmap = getattr(getattr(room, "ndb", None), "battle_instances", None)
-			if isinstance(bmap, dict):
-				inst = bmap.get(bid)
-				if inst:
-					self.ndb.battle_instance = inst
-		inst = getattr(self.ndb, "battle_instance", None)
+		inst = self._restore_battle_instance()
 		if inst:
-			try:
-				self.execute_cmd("+showbattle")
-			except Exception:
-				pass
+			self._send_battle_recap(inst)
 
 			if self in getattr(inst, "trainers", []):
 				battle = getattr(inst, "battle", None)
@@ -91,17 +160,11 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 	def at_pre_move(self, destination, **kwargs):
 		"""Prevent leaving while hosting a PVP request or during battles."""
 		db = getattr(self, "db", None)
-		if db and getattr(db, "pvp_locked", False):
+		if db is not None and getattr(db, "pvp_locked", False):
 		        self.msg("|rYou can't leave while waiting for a PVP battle.|n")
 		        return False
 
-		if db and hasattr(db, "battle_lock"):
-		        self.msg("You cannot do that during battle.")
-		        return False
-
-		ndb = getattr(self, "ndb", None)
-		if ndb and getattr(ndb, "battle_instance", None):
-		        self.msg("You cannot do that during battle.")
+		if not require_no_battle_lock(self):
 		        return False
 
 		return super().at_pre_move(destination, **kwargs)

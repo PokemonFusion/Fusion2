@@ -21,7 +21,7 @@ def test_ai_move_choice_logged():
 	orig_pdex = sys.modules.get("pokemon.dex")
 	orig_entities = sys.modules.get("pokemon.dex.entities")
 	pdex = types.ModuleType("pokemon.dex")
-	pdex.__path__ = []
+	pdex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 	pdex.MOVEDEX = {}
 	sys.modules["pokemon.dex"] = pdex
 

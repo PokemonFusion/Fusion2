@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" role="img" aria-labelledby="title desc">
+  <title id="title">Route Sign Illustration</title>
+  <desc id="desc">Original pale route sign and hillside line illustration.</desc>
+  <g fill="none" stroke="#9A8267" stroke-linecap="round" stroke-linejoin="round" opacity="0.32">
+    <path d="M4 255c58-20 111-24 158-12 47 11 81 5 120-16 39-21 79-20 135-2" stroke-width="4"/>
+    <path d="M67 225 147 96l73 126M147 96l35 58 26-22" stroke-width="3"/>
+    <path d="M219 221 297 121l58 98M297 121l25 43 20-18" stroke-width="3"/>
+    <path d="M72 263c17-19 35-23 55-7M213 255c18-22 38-27 64-8M308 252c13-16 31-18 53-5" stroke-width="4"/>
+    <path d="M56 116v163" stroke-width="8"/>
+    <path d="M31 115h93l15 14-15 14H31Z" stroke-width="5"/>
+    <path d="M109 154H19L5 168l14 14h90Z" stroke-width="5"/>
+    <path d="M43 51c10-14 30-11 35 4 14-5 29 4 31 18 16-4 32 4 37 20M301 58c12-12 31-9 37 7 12-5 28 0 36 13" stroke-width="3"/>
+  </g>
+</svg>

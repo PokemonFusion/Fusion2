@@ -16,10 +16,11 @@ class TestEffectsCmdSet(CmdSet):
 
 
 class CmdToggleTestEffects(Command):
-	"""+toggletesteffects
+	"""@toggletesteffects
 	Attach or detach the test effects cmdset (adds +effects for testing)."""
 
-	key = "+toggletesteffects"
+	key = "@toggletesteffects"
+	aliases = ["+toggletesteffects"]
 	locks = "cmd:perm(Builder) or perm(Admin)"
 
 	def func(self):

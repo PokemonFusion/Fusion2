@@ -98,13 +98,13 @@ class CmdToggleTest(Command):
 			from ..cmdsets.devtest import DevTestCmdSet
 
 			self.caller.cmdset.add(DevTestCmdSet)
-			self.caller.msg("|gAdded DevTest cmdset. Use +testbattle ...|n")
+			self.caller.msg("|gAdded DevTest cmdset. Use @testbattle ...|n")
 
 
 class CmdTestBattle(Command):
 	"""
-	+testbattle [--random] [--level=<int>] [--ability=<name>] [--item=<name>] [--seed=<int>] [--vs-hp=<int>]
-	+testbattle <move1> <move2> <move3> <move4>
+	@testbattle [--random] [--level=<int>] [--ability=<name>] [--item=<name>] [--seed=<int>] [--vs-hp=<int>]
+	@testbattle <move1> <move2> <move3> <move4>
 
 	Spin up an ephemeral battle with:
 	- Your side: a custom TestMon with either the four moves you specify or random picks
@@ -120,8 +120,8 @@ class CmdTestBattle(Command):
 	--vs-hp=500        Override PunchBag HP (default 600).
 	"""
 
-	key = "+testbattle"
-	aliases = ["testbattle"]
+	key = "@testbattle"
+	aliases = ["+testbattle", "testbattle"]
 	locks = "cmd:perm(Builder)"
 	help_category = "Dev/Test"
 
@@ -165,7 +165,7 @@ class CmdTestBattle(Command):
 			moves = self.args_list[:4]
 			if len(moves) != 4:
 				return caller.msg(
-					"|yUsage:|n +testbattle <move1> <move2> <move3> <move4>  or  +testbattle --random [flags]"
+					"|yUsage:|n @testbattle <move1> <move2> <move3> <move4>  or  @testbattle --random [flags]"
 				)
 
 		try:

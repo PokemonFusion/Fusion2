@@ -1,66 +1,174 @@
 {% extends "website/base.html" %}
 
-{% block titleblock %}My Character Sheet{% endblock %}
+{% block titleblock %}Player Hub{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col">
-    <div class="card">
-      <div class="card-body">
-        <h1 class="card-title">My Characters</h1>
-        <hr />
-        {% for entry in characters %}
-          <h2 class="mb-2">{{ entry.character.key }}</h2>
-          {% if entry.trainer %}
-            <p><strong>Money:</strong> {{ entry.trainer.money }}</p>
-          {% endif %}
-
-          <p class="mb-1"><strong>Pokémon:</strong></p>
-
-          {% if entry.pokemon %}
-            <ul class="list-unstyled">
-              {% for mon in entry.pokemon %}
-                <li class="mb-2">
-                  {% if mon.primary_type %}
-                  <span class="type-dot type-{{ mon.primary_type|lower }}"></span>
-                  {% elif mon.types %}
-                  <span class="type-dot type-{{ mon.types.0|lower }}"></span>
-                  {% else %}
-                  <span class="type-dot type-unknown"></span>
-                  {% endif %}
-                  <strong>{{ mon.nickname|default:mon.species }}</strong> — Lv {{ mon.level }}
-
-                  {% if mon.in_party %}
-                    <span class="badge badge-success ml-1">Party {{ mon.party_slot }}</span>
-                  {% endif %}
-
-                  {% if mon.types %}
-                    {% for t in mon.types %}
-                      <span class="type-chip type-{{ t|lower }}">{{ t }}</span>
-                    {% endfor %}
-                  {% else %}
-                    <span class="type-chip type-unknown">Unknown</span>
-                  {% endif %}
-
-                  <small class="text-muted d-block mt-1">
-                    {% if mon.ability %}Ability: {{ mon.ability }}{% endif %}
-                    {% if mon.held_item %}{% if mon.ability %} • {% endif %}Item: {{ mon.held_item }}{% endif %}
-                    {% if mon.gender %}{% if mon.ability or mon.held_item %} • {% endif %}{{ mon.gender }}{% endif %}
-                    {% if mon.is_shiny %}{% if mon.ability or mon.held_item or mon.gender %} • {% endif %}★ Shiny{% endif %}
-                    {% if mon.status %}{% if mon.ability or mon.held_item or mon.gender or mon.is_shiny %} • {% endif %}Status: {{ mon.status }}{% endif %}
-                  </small>
-                </li>
-
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p>No Pokémon found.</p>
-          {% endif %}
-
-          {% if not forloop.last %}<hr />{% endif %}
-        {% endfor %}
-      </div>
+<section class="player-hub" aria-labelledby="player-hub-title">
+  <header class="player-hub-header">
+    <div>
+      <p class="fusion-kicker">Trainer tools</p>
+      <h1 id="player-hub-title">Player Hub</h1>
+      <p class="player-hub-lede">
+        Review your characters, party, boxed Pokemon, inventory, and badges before jumping back into the world.
+      </p>
     </div>
+    <div class="player-hub-actions">
+      {% if webclient_enabled %}
+      <a class="btn btn-fusion-primary" href="{% url 'webclient:index' %}">Play in Browser</a>
+      {% endif %}
+      <a class="btn btn-fusion-secondary" href="{% url 'help' %}">Open Guide</a>
+    </div>
+  </header>
+
+  {% if characters %}
+    {% for entry in characters %}
+    <article class="player-character-panel">
+      <header class="player-character-heading">
+        <div>
+          <h2>{{ entry.character.key|default:entry.character }}</h2>
+          {% if entry.trainer %}
+          <span>Trainer #{{ entry.trainer.trainer_number }}</span>
+          {% else %}
+          <span>No trainer record yet</span>
+          {% endif %}
+        </div>
+        {% if entry.trainer %}
+        <strong>${{ entry.trainer.money }}</strong>
+        {% endif %}
+      </header>
+
+      <div class="player-summary-grid" aria-label="Trainer summary">
+        <div>
+          <span>Party</span>
+          <strong>{{ entry.party|length }}/6</strong>
+        </div>
+        <div>
+          <span>Pokemon</span>
+          <strong>{{ entry.total_pokemon }}</strong>
+        </div>
+        <div>
+          <span>Seen</span>
+          <strong>{{ entry.seen_count }}</strong>
+        </div>
+        <div>
+          <span>Caught</span>
+          <strong>{{ entry.caught_count }}</strong>
+        </div>
+      </div>
+
+      {% if not entry.trainer %}
+      <p class="player-hub-empty">
+        This character does not have trainer data yet. Enter the game to finish setup.
+      </p>
+      {% endif %}
+
+      <div class="player-hub-grid">
+        <section class="player-hub-section" aria-labelledby="party-{{ forloop.counter }}">
+          <h3 id="party-{{ forloop.counter }}">Party</h3>
+          {% if entry.party %}
+          <ol class="player-pokemon-list player-party-list">
+            {% for mon in entry.party %}
+            <li>
+              <span class="player-party-slot">{{ mon.party_slot|default:forloop.counter }}</span>
+              <div>
+                <strong>{{ mon.nickname|default:mon.species }}</strong>
+                <span>Lv {{ mon.level }}</span>
+                {% if mon.types %}
+                  {% for t in mon.types %}
+                  <span class="type-chip type-{{ t|lower }}">{{ t }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="type-chip type-unknown">Unknown</span>
+                {% endif %}
+                <small>
+                  {% if mon.ability %}Ability: {{ mon.ability }}{% endif %}
+                  {% if mon.held_item %}{% if mon.ability %} | {% endif %}Item: {{ mon.held_item }}{% endif %}
+                  {% if mon.gender %}{% if mon.ability or mon.held_item %} | {% endif %}{{ mon.gender }}{% endif %}
+                  {% if mon.is_shiny %}{% if mon.ability or mon.held_item or mon.gender %} | {% endif %}Shiny{% endif %}
+                  {% if mon.status %}{% if mon.ability or mon.held_item or mon.gender or mon.is_shiny %} | {% endif %}Status: {{ mon.status }}{% endif %}
+                </small>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="player-hub-empty">No party Pokemon found.</p>
+          {% endif %}
+        </section>
+
+        <section class="player-hub-section" aria-labelledby="boxed-{{ forloop.counter }}">
+          <h3 id="boxed-{{ forloop.counter }}">Boxed Roster</h3>
+          {% if entry.boxed %}
+          <ul class="player-pokemon-list">
+            {% for mon in entry.boxed %}
+            <li>
+              {% if mon.primary_type %}
+              <span class="type-dot type-{{ mon.primary_type|lower }}"></span>
+              {% elif mon.types %}
+              <span class="type-dot type-{{ mon.types.0|lower }}"></span>
+              {% else %}
+              <span class="type-dot type-unknown"></span>
+              {% endif %}
+              <div>
+                <strong>{{ mon.nickname|default:mon.species }}</strong>
+                <span>Lv {{ mon.level }}</span>
+                {% if mon.types %}
+                  {% for t in mon.types %}
+                  <span class="type-chip type-{{ t|lower }}">{{ t }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="type-chip type-unknown">Unknown</span>
+                {% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% elif entry.total_pokemon %}
+          <p class="player-hub-empty">All known Pokemon are currently in the party.</p>
+          {% else %}
+          <p class="player-hub-empty">No boxed Pokemon found.</p>
+          {% endif %}
+        </section>
+
+        <section class="player-hub-section" aria-labelledby="inventory-{{ forloop.counter }}">
+          <h3 id="inventory-{{ forloop.counter }}">Inventory</h3>
+          {% if entry.inventory %}
+          <ul class="player-simple-list">
+            {% for item in entry.inventory %}
+            <li>
+              <span>{{ item.item_name|title }}</span>
+              <strong>x{{ item.quantity }}</strong>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="player-hub-empty">No inventory items found.</p>
+          {% endif %}
+        </section>
+
+        <section class="player-hub-section" aria-labelledby="badges-{{ forloop.counter }}">
+          <h3 id="badges-{{ forloop.counter }}">Badges</h3>
+          {% if entry.badges %}
+          <ul class="player-simple-list">
+            {% for badge in entry.badges %}
+            <li>
+              <span>{{ badge.name }}</span>
+              {% if badge.region %}<strong>{{ badge.region }}</strong>{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="player-hub-empty">No badges earned yet.</p>
+          {% endif %}
+        </section>
+      </div>
+    </article>
+    {% endfor %}
+  {% else %}
+  <div class="player-character-panel">
+    <h2>No Characters Found</h2>
+    <p class="player-hub-empty">Create or connect a character in-game to populate this hub.</p>
   </div>
-</div>
+  {% endif %}
+</section>
 {% endblock %}

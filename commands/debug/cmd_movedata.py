@@ -4,30 +4,32 @@ from evennia import Command
 
 from pokemon.battle.engine import BattleMove, _normalize_key
 from pokemon.dex import MOVEDEX
+from utils.dex_suggestions import move_not_found_message
 
 
 class CmdDebugMoveData(Command):
 	"""Display resolved move data for debugging.
 
 	Usage:
-	  +debug/movedata <move>
+	  @debug/movedata <move>
 	"""
 
-	key = "+debug/movedata"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+	key = "@debug/movedata"
+	aliases = ["+debug/movedata"]
+	locks = "cmd:perm(Builder)"
+	help_category = "Admin"
 
 	def func(self):  # type: ignore[override]
 		name = (self.args or "").strip()
 		if not name:
-			self.caller.msg("Usage: +debug/movedata <move>")
+			self.caller.msg("Usage: @debug/movedata <move>")
 			return
 
 		move_obj = BattleMove(name)
 		key = getattr(move_obj, "key", _normalize_key(name))
 		dex_move = MOVEDEX.get(key)
 		if not dex_move:
-			self.caller.msg("Move not found.")
+			self.caller.msg(move_not_found_message(name, "Move not found."))
 			return
 
 		raw = getattr(dex_move, "raw", {}) or {}

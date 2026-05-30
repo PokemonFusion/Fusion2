@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Train Your Team Icon</title>
+  <desc id="desc">Original backpack icon representing trainer preparation.</desc>
+  <circle cx="64" cy="64" r="58" fill="#DDF2EF"/>
+  <path d="M42 50c0-18 9-30 22-30s22 12 22 30" fill="none" stroke="#11635F" stroke-width="7" stroke-linecap="round"/>
+  <rect x="34" y="43" width="60" height="74" rx="14" fill="#4C9A8F" stroke="#113F3D" stroke-width="5"/>
+  <rect x="44" y="55" width="40" height="27" rx="8" fill="#A6D7CC" stroke="#113F3D" stroke-width="4"/>
+  <path d="M34 83h60" stroke="#113F3D" stroke-width="5"/>
+  <path d="M50 100h28" stroke="#F5E6CB" stroke-width="5" stroke-linecap="round"/>
+  <path d="M30 64c-9 8-9 29 0 38M98 64c9 8 9 29 0 38" fill="none" stroke="#113F3D" stroke-width="5" stroke-linecap="round"/>
+</svg>

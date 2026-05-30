@@ -12,7 +12,12 @@ except ModuleNotFoundError:  # pragma: no cover - dex may be unavailable in test
         MOVEDEX = {}
 
 try:
-        from ._shared import _normalize_key, ensure_movedex_aliases, get_raw  # type: ignore[attr-defined]
+        from ._shared import (  # type: ignore[attr-defined]
+                _normalize_key,
+                ensure_movedex_aliases,
+                get_raw,
+                reset_tempvals,
+        )
 except Exception:  # pragma: no cover - fallback when helper unavailable
 
         def _normalize_key(name: str) -> str:  # type: ignore[misc]
@@ -23,6 +28,10 @@ except Exception:  # pragma: no cover - fallback when helper unavailable
 
         def get_raw(entry):  # type: ignore[misc]
                 return getattr(entry, "raw", {}) if entry else {}
+
+        def reset_tempvals(pokemon):  # type: ignore[misc]
+                if hasattr(pokemon, "tempvals"):
+                        pokemon.tempvals = {}
 
 ensure_movedex_aliases(MOVEDEX)
 from .battledata import TurnInit
@@ -35,7 +44,7 @@ class _Priority:
 	priorities: List[int] = []
 
 	def __init__(self, turndata: TurnInit, pokemon, rng: RandomSource):
-		pokemon.tempvals.clear()
+		reset_tempvals(pokemon)
 		if turndata.switch is not None:
 			self.priority = 6
 		elif turndata.run is not None:

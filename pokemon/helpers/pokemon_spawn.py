@@ -5,7 +5,10 @@ from __future__ import annotations
 import random
 from typing import Dict, List, Optional
 
-from evennia import DefaultRoom
+try:  # pragma: no cover - tests often provide a minimal Evennia stub
+	from evennia import DefaultRoom
+except Exception:  # pragma: no cover
+	DefaultRoom = object
 
 from pokemon.data.generation import PokemonInstance, generate_pokemon
 from utils.pokemon_config import RARITY_WEIGHTS, TIERS

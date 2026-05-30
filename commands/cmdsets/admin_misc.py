@@ -2,10 +2,16 @@
 
 from evennia import CmdSet
 
-from commands.admin.cmd_adminpokemon import CmdListPokemon, CmdPokemonInfo, CmdRemovePokemon
+from commands.admin.cmd_adminpokemon import (
+	CmdBackfillPokemonMovesets,
+	CmdListPokemon,
+	CmdPokemonInfo,
+	CmdRemovePokemon,
+)
 from commands.admin.cmd_fixfusion import CmdFixFusion
 from commands.admin.cmd_gitpull import CmdGitPull
 from commands.admin.cmd_givepokemon import CmdGivePokemon
+from commands.admin.cmd_sitestatus import CmdSiteStatus
 from commands.debug.cmd_logusage import CmdLogUsage, CmdMarkVerified
 
 
@@ -20,9 +26,11 @@ class AdminMiscCmdSet(CmdSet):
 			CmdGivePokemon,
 			CmdListPokemon,
 			CmdRemovePokemon,
+			CmdBackfillPokemonMovesets,
                         CmdPokemonInfo,
                         CmdFixFusion,
                         CmdGitPull,
+                        CmdSiteStatus,
                         CmdLogUsage,
                         CmdMarkVerified,
                 ):

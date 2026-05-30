@@ -193,9 +193,164 @@ def test_return_appearance_includes_items_section():
                 looker.check_permstring = check_permstring
 
                 appearance = room.return_appearance(looker)
-                assert ":Items:" in appearance
+                assert "---- Items" in rooms.strip_ansi(appearance)
                 assert "Potion" in rooms.strip_ansi(appearance)
                 assert "Ether" in rooms.strip_ansi(appearance)
+
+
+def test_return_appearance_uses_classic_modern_layout_and_hotkeys():
+        with load_rooms_module() as rooms:
+                FusionRoom = rooms.FusionRoom
+                room = FusionRoom()
+                room.key = "Temporary Pokemon Center"
+                room.id = 42
+                room.default_description = "A default description."
+                room.db = DummyDB(
+                        desc="This room is a temporary pokemon center, no thrills, just a room to be a pokemon center.",
+                        weather="clear",
+                        is_item_store=False,
+                        is_item_shop=False,
+                        is_pokemon_center=True,
+                )
+
+                exits = [
+                        types.SimpleNamespace(
+                                key="(H)unting (G)round",
+                                id=301,
+                                db=DummyDB(priority=1, dark=False),
+                                access=lambda *_args, **_kwargs: True,
+                        ),
+                        types.SimpleNamespace(
+                                key="(O)ut",
+                                id=302,
+                                db=DummyDB(priority=2, dark=False),
+                                access=lambda *_args, **_kwargs: True,
+                        ),
+                        types.SimpleNamespace(
+                                key="(S)ecret",
+                                id=303,
+                                db=DummyDB(priority=3, dark=True),
+                                access=lambda *_args, **_kwargs: True,
+                        ),
+                ]
+                items = [
+                        types.SimpleNamespace(
+                                key="Ball-O-Matic",
+                                id=401,
+                                db=DummyDB(dark=False),
+                                get_display_name=lambda looker=None, **kwargs: "|gBall-O-Matic|n",
+                        )
+                ]
+
+                def fake_contents_get(content_type=None, **_kwargs):
+                        if content_type == "exit":
+                                return exits
+                        if content_type == "character":
+                                return []
+                        if content_type == "object":
+                                return items
+                        return []
+
+                room.contents_get = fake_contents_get
+                room.filter_visible = lambda objects, *_args, **_kwargs: objects
+
+                looker = types.SimpleNamespace()
+                looker.key = "Yang"
+                looker.id = 7
+                looker.db = DummyDB(ui_mode="fancy", ui_theme="green")
+                looker.ndb = DummyDB(cols=80)
+                looker.has_account = True
+                looker.attributes = DummyDB(npc=False)
+                looker.check_permstring = lambda _perm: False
+
+                appearance = room.return_appearance(looker)
+                plain = rooms.strip_ansi(appearance)
+
+                assert plain.startswith("Temporary Pokemon Center\n\nThis room is")
+                assert "---- Exits " in plain
+                assert "---- Items " in plain
+                assert "---- Players " in plain
+                assert "Ball-O-Matic" in plain
+                assert "Yang" in plain
+                assert "(H)unting (G)round" in plain
+                assert "(O)ut" in plain
+                assert "(S)ecret" not in plain
+                assert "#42" not in plain
+                assert "#301" not in plain
+                assert ":Exits:" not in plain
+                assert "|c(|wH|c)unting |c(|wG|c)round|n" in appearance
+                assert "|c(|wO|c)ut|n" in appearance
+                assert "There is a Pokemon center here. Use +pokestore to access your Pokemon storage." in plain
+                assert all(len(line) <= 78 for line in plain.splitlines())
+
+
+def test_return_appearance_preserves_builder_metadata_in_classic_layout():
+        with load_rooms_module() as rooms:
+                FusionRoom = rooms.FusionRoom
+                room = FusionRoom()
+                room.key = "Temporary Pokemon Center"
+                room.id = 42
+                room.default_description = "A default description."
+                room.db = DummyDB(
+                        desc="A staff-visible test room.",
+                        weather="clear",
+                        is_item_store=False,
+                        is_item_shop=True,
+                        is_pokemon_center=False,
+                )
+
+                exits = [
+                        types.SimpleNamespace(
+                                key="(O)ut",
+                                id=302,
+                                db=DummyDB(priority=None, dark=False),
+                                access=lambda *_args, **_kwargs: True,
+                        ),
+                        types.SimpleNamespace(
+                                key="(S)ecret",
+                                id=303,
+                                db=DummyDB(priority=None, dark=True),
+                                access=lambda *_args, **_kwargs: True,
+                        ),
+                ]
+                items = [
+                        types.SimpleNamespace(
+                                key="Ball-O-Matic",
+                                id=401,
+                                db=DummyDB(dark=True),
+                                get_display_name=lambda looker=None, **kwargs: "|gBall-O-Matic|n",
+                        )
+                ]
+
+                def fake_contents_get(content_type=None, **_kwargs):
+                        if content_type == "exit":
+                                return exits
+                        if content_type == "character":
+                                return []
+                        if content_type == "object":
+                                return items
+                        return []
+
+                room.contents_get = fake_contents_get
+                room.filter_visible = lambda objects, *_args, **_kwargs: objects
+
+                looker = types.SimpleNamespace()
+                looker.key = "Builder"
+                looker.id = 7
+                looker.db = DummyDB(ui_mode="fancy", ui_theme="green")
+                looker.ndb = DummyDB(cols=80)
+                looker.has_account = True
+                looker.attributes = DummyDB(npc=False)
+                looker.check_permstring = lambda _perm: True
+
+                appearance = room.return_appearance(looker)
+                plain = rooms.strip_ansi(appearance)
+
+                assert "Temporary Pokemon Center (#42)" in plain
+                assert "(O)ut (#302)" in plain
+                assert "(S)ecret (#303) [Dark]" in plain
+                assert "Ball-O-Matic (#401) (Dark)" in plain
+                assert "There is a store here. Use +store/list to see its contents." in plain
 
 
 def test_return_appearance_items_in_sr_mode_are_plain_text():

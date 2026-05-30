@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="pokemonfusion",
             constraint=models.CheckConstraint(
-                check=Q(parent_a__lt=F("parent_b")),
+                condition=Q(parent_a__lt=F("parent_b")),
                 name="ordered_fusion_parents",
             ),
         ),

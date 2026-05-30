@@ -24,7 +24,7 @@ def setup_modules():
 	}
 
 	pkg_battle = types.ModuleType("pokemon.battle")
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	utils_stub = types.ModuleType("pokemon.battle.utils")
 	utils_stub.apply_boost = lambda *args, **kwargs: None
 	pkg_battle.utils = utils_stub
@@ -40,7 +40,7 @@ def setup_modules():
 	Ability = ent_mod.Ability
 
 	pokemon_dex = types.ModuleType("pokemon.dex")
-	pokemon_dex.__path__ = []
+	pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 	pokemon_dex.entities = ent_mod
 	pokemon_dex.MOVEDEX = {}
 	pokemon_dex.Move = ent_mod.Move
@@ -48,7 +48,7 @@ def setup_modules():
 	sys.modules["pokemon.dex"] = pokemon_dex
 
 	data_stub = types.ModuleType("pokemon.data")
-	data_stub.__path__ = []
+	data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 	data_stub.TYPE_CHART = {}
 	sys.modules["pokemon.data"] = data_stub
 

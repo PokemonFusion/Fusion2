@@ -49,9 +49,10 @@ class CmdBattleAttack(Command):
     help_category = "Pokemon/Battle"
 
     def parse(self):
-        self.switch_menu = False
-        raw = self.args or ""
-        if raw.startswith("/menu"):
+        switches = {switch.lower() for switch in getattr(self, "switches", [])}
+        self.switch_menu = "menu" in switches
+        raw = (self.args or "").strip()
+        if raw.lower().startswith("/menu"):
             self.switch_menu = True
             raw = raw[len("/menu") :].strip()
         parts = raw.split()

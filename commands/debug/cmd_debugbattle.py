@@ -9,16 +9,17 @@ class CmdDebugBattle(Command):
 	"""Toggle debug output for an active battle.
 
 	Usage:
-	  +debug/battle <character or battle id>
+	  @debug/battle <character or battle id>
 	"""
 
-	key = "+debug/battle"
-	locks = "cmd:all()"
+	key = "@debug/battle"
+	aliases = ["+debug/battle"]
+	locks = "cmd:perm(Builder)"
 	help_category = "Pokemon"
 
 	def func(self):  # type: ignore[override]
 		if not self.args:
-			self.caller.msg("Usage: +debug/battle <character or battle id>")
+			self.caller.msg("Usage: @debug/battle <character or battle id>")
 			return
 		arg = self.args.strip()
 		inst = None
@@ -38,10 +39,19 @@ class CmdDebugBattle(Command):
 		state.debug = not getattr(state, "debug", False)
 		if inst.battle:
 			inst.battle.debug = state.debug
+			inst.battle.fail_fast_errors = state.debug
 		try:
-			inst.storage.set("state", state.to_dict())
+			compact = getattr(inst, "_compact_state_for_persist", None)
+			payload = compact(state.to_dict()) if callable(compact) else state.to_dict()
+			inst.storage.set("state", payload)
 		except Exception:
 			pass
 		status = "enabled" if state.debug else "disabled"
+		debug_hook = getattr(inst, "persist_debug_record", None)
+		if callable(debug_hook):
+			try:
+				debug_hook(event="debug_toggled", enabled=state.debug)
+			except Exception:
+				pass
 		inst.notify(f"[DEBUG] Battle debug {status} by {getattr(self.caller, 'key', self.caller)}.")
 		self.caller.msg(f"Battle debug {status}.")

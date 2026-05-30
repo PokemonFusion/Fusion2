@@ -79,6 +79,24 @@ def test_run_blocked_by_arena_trap():
         assert any("trapped" in msg.lower() for msg in messages)
 
 
+def test_switch_action_uses_selected_pokemon():
+        lead = SimplePokemon("Lead", speed=80)
+        bench = SimplePokemon("Bench", speed=70)
+        opponent_poke = SimplePokemon("Opponent", speed=50)
+        player = BattleParticipant("Player", [lead, bench])
+        opponent = BattleParticipant("Wild", [opponent_poke])
+        player.active = [lead]
+        opponent.active = [opponent_poke]
+        battle = Battle(BattleType.WILD, [player, opponent])
+
+        action = Action(player, ActionType.SWITCH, pokemon=bench, target=bench, priority=6)
+
+        with patch.object(battle, "perform_switch_action") as switch:
+                battle.execute_actions([action])
+
+        switch.assert_called_once_with(player, bench)
+
+
 def test_run_away_overrides_trap():
         runner = SimplePokemon("Runner", speed=20, ability="Run Away")
         trapper = SimplePokemon("Trapper", speed=100, ability="Arena Trap")
@@ -144,6 +162,12 @@ def _make_session(battle, *, end_expected):
         session.end = end
         session.msg = lambda *a, **kw: None
         session.notify = lambda *a, **kw: None
+        session.debug_events = []
+
+        def persist_debug_record(**kwargs):
+                session.debug_events.append(kwargs)
+
+        session.persist_debug_record = persist_debug_record
         return session
 
 
@@ -165,6 +189,113 @@ def test_battle_session_prompts_after_failed_flee():
         assert session.ended is False
         assert session.prompt_called is True
         assert session._persisted is True
+
+
+class _ExplodingBattle(_DummyBattle):
+        def run_turn(self):
+                raise RuntimeError("boom")
+
+
+def test_battle_session_records_turn_error_debug():
+        battle = _ExplodingBattle(end_after=False)
+        session = _make_session(battle, end_expected=False)
+
+        session.run_turn()
+
+        assert "error" in session.turn_state
+        assert any(event.get("event") == "turn_error" for event in session.debug_events)
+        assert "boom" in session.turn_state["error"]
+
+
+class _DummyPosition:
+        def __init__(self, pokemon):
+                self.pokemon = pokemon
+                self.cleared = False
+
+        def removeDeclare(self):
+                self.cleared = True
+
+
+class _DummyTeam:
+        def __init__(self, pokemons):
+                self.pokemons = pokemons
+
+        def returnlist(self):
+                return self.pokemons
+
+
+def test_battle_session_syncs_switched_active_pokemon_before_prompt():
+        lead = SimplePokemon("Charmander", speed=65)
+        bench = SimplePokemon("Pikachu", speed=90)
+        foe = SimplePokemon("Rattata", speed=72)
+        player = types.SimpleNamespace(
+                name="Player",
+                team="A",
+                player=None,
+                pokemons=[lead, bench],
+                active=[lead],
+        )
+        opponent = types.SimpleNamespace(
+                name="Wild",
+                team="B",
+                player=None,
+                pokemons=[foe],
+                active=[foe],
+        )
+
+        class _SwitchingBattle:
+                def __init__(self):
+                        self.turn_count = 1
+                        self.participants = [player, opponent]
+                        self.battle_over = False
+
+                def run_turn(self):
+                        self.turn_count += 1
+                        player.active[0] = bench
+
+                def check_win_conditions(self):
+                        return None
+
+        session = BattleSession.__new__(BattleSession)
+        state = types.SimpleNamespace(
+                turn=1,
+                declare={"A1": {"switch": 2}, "B1": {"move": "quickattack"}},
+                positions={"A1": 1, "B1": 3},
+                teams={"A": [1, 2], "B": [3]},
+        )
+        pos_a = _DummyPosition(lead)
+        pos_b = _DummyPosition(foe)
+        data = types.SimpleNamespace(
+                battle=types.SimpleNamespace(turn=1),
+                teams={"A": _DummyTeam([lead, bench]), "B": _DummyTeam([foe])},
+                turndata=types.SimpleNamespace(positions={"A1": pos_a, "B1": pos_b}),
+        )
+        session.logic = types.SimpleNamespace(battle=_SwitchingBattle(), state=state, data=data)
+        captain_a = types.SimpleNamespace(active_pokemon=lead)
+        captain_b = types.SimpleNamespace(active_pokemon=foe)
+        session.teamA = [captain_a]
+        session.teamB = [captain_b]
+        session.trainers = []
+        session.battle_id = 1
+        session.turn_state = {}
+        session._set_player_control = lambda value: None
+        session._notify_turn_banner = lambda *a, **kw: None
+        session._persist_turn_state = lambda: None
+        session.msg = lambda *a, **kw: None
+        session.notify = lambda *a, **kw: None
+        session.debug_events = []
+        session.persist_debug_record = lambda **kwargs: session.debug_events.append(kwargs)
+        session.prompt_called = False
+        session.prompt_next_turn = lambda: setattr(session, "prompt_called", True)
+
+        session.run_turn()
+
+        assert captain_a.active_pokemon is bench
+        assert pos_a.pokemon is bench
+        assert state.positions["A1"] == 2
+        assert state.declare == {}
+        assert pos_a.cleared is True
+        assert session.prompt_called is True
 
 
 def test_run_move_invokes_flee_action():

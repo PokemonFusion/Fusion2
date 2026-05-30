@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT)
 
 def test_on_exit_called_when_auto_learn():
 	pokemon_pkg = types.ModuleType("pokemon")
-	pokemon_pkg.__path__ = []
+	pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
 	utils_pkg = types.ModuleType("pokemon.utils")
 	enhanced_mod = types.ModuleType("utils.enhanced_evmenu")
 	enhanced_mod.EnhancedEvMenu = object

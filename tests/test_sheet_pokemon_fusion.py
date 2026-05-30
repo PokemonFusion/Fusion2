@@ -28,6 +28,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
         "evennia": sys.modules.get("evennia"),
         "pokemon": sys.modules.get("pokemon"),
         "pokemon.helpers": sys.modules.get("pokemon.helpers"),
+        "pokemon.helpers.party_helpers": sys.modules.get("pokemon.helpers.party_helpers"),
         "pokemon.helpers.pokemon_helpers": sys.modules.get("pokemon.helpers.pokemon_helpers"),
         "pokemon.models": sys.modules.get("pokemon.models"),
         "pokemon.models.stats": sys.modules.get("pokemon.models.stats"),
@@ -44,7 +45,12 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
         sys.modules["evennia"] = fake_evennia
 
         sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon"].__path__ = [os.path.join(ROOT, "pokemon")]
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
+        fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
+        fake_party_helpers.get_active_party = lambda caller: []
+        sys.modules["pokemon.helpers.party_helpers"] = fake_party_helpers
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
         store = {}
 
@@ -155,6 +161,7 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
         "evennia": sys.modules.get("evennia"),
         "pokemon": sys.modules.get("pokemon"),
         "pokemon.helpers": sys.modules.get("pokemon.helpers"),
+        "pokemon.helpers.party_helpers": sys.modules.get("pokemon.helpers.party_helpers"),
         "pokemon.helpers.pokemon_helpers": sys.modules.get("pokemon.helpers.pokemon_helpers"),
         "pokemon.models": sys.modules.get("pokemon.models"),
         "pokemon.models.stats": sys.modules.get("pokemon.models.stats"),
@@ -173,7 +180,12 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
         sys.modules["evennia"] = fake_evennia
 
         sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon"].__path__ = [os.path.join(ROOT, "pokemon")]
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
+        fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
+        fake_party_helpers.get_active_party = lambda caller: []
+        sys.modules["pokemon.helpers.party_helpers"] = fake_party_helpers
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
 
         def fake_get_stats(mon):
@@ -281,6 +293,7 @@ def test_sheet_pokemon_fusion_slot_computes_stats_without_cache():
         "evennia": sys.modules.get("evennia"),
         "pokemon": sys.modules.get("pokemon"),
         "pokemon.helpers": sys.modules.get("pokemon.helpers"),
+        "pokemon.helpers.party_helpers": sys.modules.get("pokemon.helpers.party_helpers"),
         "pokemon.helpers.pokemon_helpers": sys.modules.get("pokemon.helpers.pokemon_helpers"),
         "pokemon.models": sys.modules.get("pokemon.models"),
         "pokemon.models.stats": sys.modules.get("pokemon.models.stats"),
@@ -318,7 +331,12 @@ def test_sheet_pokemon_fusion_slot_computes_stats_without_cache():
         sys.modules["evennia"] = fake_evennia
 
         sys.modules["pokemon"] = types.ModuleType("pokemon")
+        sys.modules["pokemon"].__path__ = [os.path.join(ROOT, "pokemon")]
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
+        sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
+        fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
+        fake_party_helpers.get_active_party = lambda caller: []
+        sys.modules["pokemon.helpers.party_helpers"] = fake_party_helpers
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
 
         def fake_get_stats(mon):

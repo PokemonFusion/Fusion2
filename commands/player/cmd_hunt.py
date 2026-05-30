@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.conf import settings
 from evennia import Command
 
+from utils.dex_suggestions import is_known_species, species_not_found_message
 from world.hunt_system import HuntSystem
 
 
@@ -51,18 +52,18 @@ class CmdCustomHunt(Command):
 	"""Start a hunt with a specified Pokémon and level.
 
 	Usage:
-	  +customhunt <pokemon> <level>
+	  @customhunt <pokemon> <level>
 	"""
 
-	key = "+customhunt"
-	aliases = ["+huntcustom"]
+	key = "@customhunt"
+	aliases = ["+customhunt", "@huntcustom", "+huntcustom"]
 	locks = "cmd:all()" if settings.DEV_MODE else "cmd:perm(Builders)"
 	help_category = "Admin"
 
 	def func(self):
 		parts = self.args.split()
 		if len(parts) != 2:
-			self.caller.msg("Usage: +customhunt <pokemon> <level>")
+			self.caller.msg("Usage: @customhunt <pokemon> <level>")
 			return
 
 		name = parts[0]
@@ -70,6 +71,9 @@ class CmdCustomHunt(Command):
 			level = int(parts[1])
 		except ValueError:
 			self.caller.msg("Level must be a number.")
+			return
+		if not is_known_species(name):
+			self.caller.msg(species_not_found_message(name))
 			return
 
 		system = HuntSystem(self.caller.location)

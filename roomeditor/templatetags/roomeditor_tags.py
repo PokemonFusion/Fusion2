@@ -1,5 +1,7 @@
 from django import template
 
+from roomeditor.auth import has_builder_access
+
 register = template.Library()
 
 
@@ -11,12 +13,7 @@ def is_builder(user):
     server error pages where the user context is missing) and will simply
     return ``False`` in that case.
     """
-    if not getattr(user, "is_authenticated", False):
-        return False
-    check = getattr(user, "check_permstring", None)
-    if check:
-        return getattr(user, "is_superuser", False) or check("Builder") or check("Builders")
-    return getattr(user, "is_superuser", False)
+    return has_builder_access(user)
 
 
 @register.filter(name="class_name")

@@ -17,7 +17,7 @@ def apply_boost(*args, **kwargs):
 
 utils_stub.apply_boost = apply_boost
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.utils = utils_stub
 sys.modules["pokemon.battle"] = pkg_battle
 sys.modules["pokemon.battle.utils"] = utils_stub
@@ -32,7 +32,7 @@ Stats = ent_mod.Stats
 
 # Minimal pokemon.dex package stub
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.entities = ent_mod
 pokemon_dex.MOVEDEX = {}
 pokemon_dex.Move = ent_mod.Move
@@ -41,7 +41,7 @@ sys.modules["pokemon.dex"] = pokemon_dex
 
 # Minimal pokemon.data stub used by damage_calc
 data_stub = types.ModuleType("pokemon.data")
-data_stub.__path__ = []
+data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 data_stub.TYPE_CHART = {}
 sys.modules["pokemon.data"] = data_stub
 

@@ -31,13 +31,13 @@ Echoedvoice = mv_mod.Echoedvoice
 
 # Attach packages
 pkg_battle = types.ModuleType("pokemon.battle")
-pkg_battle.__path__ = []
+pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.engine = eng_mod
 pkg_battle.battledata = bd_mod
 sys.modules["pokemon.battle"] = pkg_battle
 
 data_stub = types.ModuleType("pokemon.data")
-data_stub.__path__ = []
+data_stub.__path__ = [os.path.join(ROOT, "pokemon", "data")]
 data_stub.TYPE_CHART = {}
 sys.modules["pokemon.data"] = data_stub
 
@@ -61,7 +61,7 @@ move_entry = types.SimpleNamespace(
 )
 
 pokemon_dex = types.ModuleType("pokemon.dex")
-pokemon_dex.__path__ = []
+pokemon_dex.__path__ = [os.path.join(ROOT, "pokemon", "dex")]
 pokemon_dex.MOVEDEX = {"echoedvoice": move_entry}
 pokemon_dex.entities = importlib.import_module("pokemon.dex.entities")
 pokemon_dex.Move = pokemon_dex.entities.Move

@@ -1,21 +1,15 @@
 """Views for composing and validating default lockstrings."""
 from __future__ import annotations
 
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 
 from .. import forms
+from ..auth import builder_required
 from ..utils.locks import compose_exit_default, compose_room_default, validate_lockstring
 
 
-def _is_builder(user):
-    """Determine if the user is allowed to edit lock defaults."""
-    return user.is_superuser or user.has_perm("roomeditor.change_lockdefaults")
-
-
-@login_required
-@user_passes_test(_is_builder)
+@builder_required
 def edit_defaults(request: HttpRequest):
     """Compose and preview default lockstrings."""
     if request.method == "POST":
@@ -72,8 +66,7 @@ def edit_defaults(request: HttpRequest):
     )
 
 
-@login_required
-@user_passes_test(_is_builder)
+@builder_required
 def api_validate_lockstring(request: HttpRequest):
     """Validate a lockstring via AJAX."""
     if request.method != "POST":

@@ -21,7 +21,7 @@ def setup_env():
 	pkg_battle = types.ModuleType("pokemon.battle")
 	utils_stub = types.ModuleType("pokemon.battle.utils")
 	pkg_battle.utils = utils_stub
-	pkg_battle.__path__ = []
+	pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 	sys.modules["pokemon.battle"] = pkg_battle
 	sys.modules["pokemon.battle.utils"] = utils_stub
 
@@ -92,7 +92,9 @@ def test_status_move_applies_boost_without_damage(env, monkeypatch):
 		called["boosts"] = boosts
 		pokemon.boosts = boosts
 
-	monkeypatch.setattr(env["utils"], "apply_boost", fake_apply_boost, raising=False)
+	from pokemon.utils import boosts as boost_utils
+
+	monkeypatch.setattr(boost_utils, "apply_boost", fake_apply_boost)
 	dmg_mod = env["damage"]
 	monkeypatch.setattr(dmg_mod.random, "random", lambda: 0.0)
 	monkeypatch.setattr(dmg_mod.random, "randint", lambda a, b: b)

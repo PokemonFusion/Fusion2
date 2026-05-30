@@ -1,9 +1,11 @@
 """Trainer related models such as ``Trainer`` and inventory."""
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from evennia.objects.models import ObjectDB
 
 from .core import SpeciesEntry
+from .validators import validate_evs, validate_ivs
 
 
 def _resolve_species_entry(species: str | int) -> "SpeciesEntry | None":
@@ -149,6 +151,34 @@ class NPCTrainer(models.Model):
 
         def __str__(self):  # pragma: no cover - simple repr
                 return self.name
+
+
+class NPCPokemonTemplate(models.Model):
+        """Reusable template for NPC-owned battle Pokemon."""
+
+        npc_trainer = models.ForeignKey(
+                "NPCTrainer",
+                on_delete=models.CASCADE,
+                related_name="pokemon_templates",
+        )
+        template_key = models.CharField(max_length=100, blank=True)
+        species = models.CharField(max_length=50)
+        level = models.PositiveSmallIntegerField(default=1)
+        ability = models.CharField(max_length=50, blank=True)
+        nature = models.CharField(max_length=20, blank=True)
+        gender = models.CharField(max_length=10, blank=True)
+        ivs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list, validators=[validate_ivs])
+        evs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list, validators=[validate_evs])
+        held_item = models.CharField(max_length=50, blank=True)
+        move_names = models.JSONField(default=list, blank=True)
+        sort_order = models.PositiveSmallIntegerField(default=1, db_index=True)
+
+        class Meta:
+                ordering = ("sort_order", "id")
+
+        def __str__(self):  # pragma: no cover - simple repr
+                label = self.template_key or self.species
+                return f"{self.npc_trainer}: {label}"
 
 
 class InventoryEntry(models.Model):

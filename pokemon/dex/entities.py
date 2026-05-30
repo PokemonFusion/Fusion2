@@ -5,9 +5,62 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 BASE_PATH = Path(__file__).resolve().parents[2]
+
+try:
+	from pokemon.battle.callbacks import invoke_callback, resolve_callback_from_modules
+except Exception:  # pragma: no cover - battle package can be stubbed in tests
+	invoke_callback = None
+	resolve_callback_from_modules = None
+
+
+def _invoke_raw_callback(
+	raw: Dict[str, Any],
+	func: str,
+	*,
+	registry_modules: Union[str, List[str]],
+	args: Tuple[Any, ...],
+	kwargs: Dict[str, Any],
+):
+	"""Resolve and invoke a raw callback entry when possible."""
+
+	global invoke_callback, resolve_callback_from_modules
+	if invoke_callback is None or resolve_callback_from_modules is None:
+		try:
+			from pokemon.battle.callbacks import invoke_callback as battle_invoke_callback
+			from pokemon.battle.callbacks import (
+				resolve_callback_from_modules as battle_resolve_callback_from_modules,
+			)
+			invoke_callback = battle_invoke_callback
+			resolve_callback_from_modules = battle_resolve_callback_from_modules
+		except Exception:
+			pass
+
+	cb = raw.get(func)
+	if callable(cb):
+		if invoke_callback:
+			return invoke_callback(cb, *args, **kwargs)
+		return cb(*args, **kwargs)
+	if not isinstance(cb, str):
+		return None
+	if resolve_callback_from_modules:
+		resolved = resolve_callback_from_modules(cb, registry_modules)
+	else:
+		resolved = None
+	if callable(resolved):
+		effect_state = kwargs.get("effect_state")
+		owner = getattr(resolved, "__self__", None)
+		if effect_state is not None and owner is not None:
+			try:
+				setattr(owner, "effect_state", effect_state)
+			except Exception:
+				pass
+		if invoke_callback:
+			return invoke_callback(resolved, *args, **kwargs)
+		return resolved(*args, **kwargs)
+	return None
 
 
 @dataclass
@@ -30,10 +83,13 @@ class Ability:
 
 	def call(self, func: str, *args, **kwargs):
 		"""Call a stored ability callback if it exists."""
-		cb = self.raw.get(func)
-		if callable(cb):
-			return cb(*args, **kwargs)
-		return None
+		return _invoke_raw_callback(
+			self.raw,
+			func,
+			registry_modules="pokemon.dex.functions.abilities_funcs",
+			args=args,
+			kwargs=kwargs,
+		)
 
 
 @dataclass
@@ -73,6 +129,12 @@ class Item:
 	mega_stone: Optional[str] = None
 	item_user: List[str] = field(default_factory=list)
 	on_take_item: Any = None
+	onPlate: Optional[str] = None
+	memory_type: Optional[str] = None
+	drive_type: Optional[str] = None
+	natural_type: Optional[str] = None
+	natural_power: Optional[int] = None
+	on_primal: Any = None
 	forced_forme: Optional[str] = None
 	price: Optional[int] = None
 	raw: Dict[str, Any] = field(default_factory=dict)
@@ -90,6 +152,12 @@ class Item:
 			mega_stone=data.get("megaStone"),
 			item_user=data.get("itemUser", []),
 			on_take_item=data.get("onTakeItem"),
+			onPlate=data.get("onPlate"),
+			memory_type=data.get("onMemory"),
+			drive_type=data.get("onDrive"),
+			natural_type=(data.get("naturalGift") or {}).get("type"),
+			natural_power=(data.get("naturalGift") or {}).get("basePower"),
+			on_primal=data.get("onPrimal"),
 			forced_forme=data.get("forcedForme"),
 			price=data.get("price"),
 			raw=data,
@@ -97,10 +165,13 @@ class Item:
 
 	def call(self, func: str, *args, **kwargs):
 		"""Call a stored item callback if it exists."""
-		cb = self.raw.get(func)
-		if callable(cb):
-			return cb(*args, **kwargs)
-		return None
+		return _invoke_raw_callback(
+			self.raw,
+			func,
+			registry_modules="pokemon.dex.functions.items_funcs",
+			args=args,
+			kwargs=kwargs,
+		)
 
 
 @dataclass
@@ -120,10 +191,16 @@ class Condition:
 		)
 
 	def call(self, func: str, *args, **kwargs):
-		cb = self.raw.get(func)
-		if callable(cb):
-			return cb(*args, **kwargs)
-		return None
+		return _invoke_raw_callback(
+			self.raw,
+			func,
+			registry_modules=[
+				"pokemon.dex.functions.conditions_funcs",
+				"pokemon.dex.functions.moves_funcs",
+			],
+			args=args,
+			kwargs=kwargs,
+		)
 
 
 @dataclass(init=False)

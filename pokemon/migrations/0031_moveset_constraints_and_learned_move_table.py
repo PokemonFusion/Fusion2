@@ -1,5 +1,5 @@
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 def copy_learned_moves_forwards(apps, schema_editor):
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="moveset",
             constraint=models.CheckConstraint(
-                check=models.Q(index__gte=0, index__lte=3),
+                condition=models.Q(index__gte=0, index__lte=3),
                 name="moveset_index_range",
             ),
         ),
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="movesetslot",
             constraint=models.CheckConstraint(
-                check=models.Q(slot__gte=1, slot__lte=4),
+                condition=models.Q(slot__gte=1, slot__lte=4),
                 name="movesetslot_slot_range",
             ),
         ),

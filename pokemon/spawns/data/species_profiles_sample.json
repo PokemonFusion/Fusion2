@@ -1,0 +1,124 @@
+{
+  "profiles": [
+    {
+      "species_id": "019",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "frequent",
+        "2": "frequent",
+        "3": null,
+        "4": null
+      }
+    },
+    {
+      "species_id": "020",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": null,
+        "2": null,
+        "3": "frequent",
+        "4": "frequent"
+      }
+    },
+    {
+      "species_id": "016",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "common",
+        "2": "common",
+        "3": null,
+        "4": null
+      }
+    },
+    {
+      "species_id": "017",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": null,
+        "2": null,
+        "3": "common",
+        "4": "common"
+      }
+    },
+    {
+      "species_id": "025",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "uncommon",
+        "2": "uncommon",
+        "3": "uncommon",
+        "4": "uncommon"
+      }
+    },
+    {
+      "species_id": "001",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "rare",
+        "2": "rare",
+        "3": null,
+        "4": null
+      }
+    },
+    {
+      "species_id": "002",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": null,
+        "2": null,
+        "3": "rare",
+        "4": "rare"
+      }
+    },
+    {
+      "species_id": "010",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "frequent",
+        "2": "frequent",
+        "3": null,
+        "4": null
+      }
+    },
+    {
+      "species_id": "011",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "common",
+        "2": "common",
+        "3": null,
+        "4": null
+      }
+    },
+    {
+      "species_id": "012",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": null,
+        "2": null,
+        "3": "uncommon",
+        "4": "uncommon"
+      }
+    },
+    {
+      "species_id": "144",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": "special"
+      }
+    },
+    {
+      "species_id": "479F",
+      "enabled": true,
+      "frequencies_by_band": {
+        "1": "rare",
+        "2": "rare",
+        "3": "rare",
+        "4": "rare"
+      }
+    }
+  ]
+}

@@ -4,9 +4,33 @@ from __future__ import annotations
 
 import logging
 
+from pokemon.ui.battle_render import DEFAULT_BATTLE_UI_STYLE, normalize_battle_ui_style
 from utils.battle_display import render_battle_ui
 
 logger = logging.getLogger(__name__)
+
+
+def get_battle_ui_style(target) -> str:
+	"""Return the target's selected battle UI style."""
+
+	db = getattr(target, "db", None)
+	return normalize_battle_ui_style(getattr(db, "battle_ui_style", None))
+
+
+def get_battle_ui_width(target, default: int = 78) -> int:
+	"""Return a conservative battle UI width for ``target``."""
+
+	ndb = getattr(target, "ndb", None)
+	for candidate in (
+		getattr(ndb, "cols", None),
+		getattr(getattr(target, "db", None), "cols", None),
+	):
+		try:
+			if candidate:
+				return max(60, min(int(candidate) - 2, 80))
+		except (TypeError, ValueError):
+			continue
+	return default
 
 
 def format_turn_banner(turn: int, *, closing: bool = False) -> str:
@@ -21,9 +45,8 @@ def format_turn_banner(turn: int, *, closing: bool = False) -> str:
                 artwork points upward, indicating the end of the turn.
         """
 
-        left = "╰" if closing else "╭"
-        right = "╯" if closing else "╮"
-        return f"{left}─ Turn {turn} ─{right}"
+        edge = "-" if closing else "="
+        return f"{edge * 2} Turn {turn} {edge * 2}"
 
 
 # -----------------------------------------------------------------------------
@@ -86,6 +109,8 @@ def display_battle_interface(
 	*,
 	viewer_team: str | None = None,
 	waiting_on=None,
+	style: str | None = None,
+	total_width: int | None = None,
 	) -> str:
 	"""Return a formatted battle interface string using the new renderer.
 	
@@ -98,17 +123,25 @@ def display_battle_interface(
 	Parameters
 	----------
 	captain_a, captain_b:
-	        The trainers heading the A and B sides of the battle.
+		The trainers heading the A and B sides of the battle.
 	battle_state:
-	        Object providing weather, field and round information.
+		Object providing weather, field and round information.
 	viewer_team:
-	        "A", "B" or ``None`` to indicate which side the viewer belongs to
-	        and therefore which side receives absolute HP values. Any other
-	        value is treated as ``None``.
+		"A", "B" or ``None`` to indicate which side the viewer belongs to
+		and therefore which side receives absolute HP values. Any other
+		value is treated as ``None``.
 	waiting_on:
-	        Optional Pokémon instance to indicate which combatant has not yet
-	        selected an action.  When provided a footer line is displayed showing
-	        which Pokémon the system is waiting on.
+		Optional Pokémon instance to indicate which combatant has not yet
+		selected an action.  When provided a footer line is displayed showing
+		which Pokémon the system is waiting on.
+	style:
+		Optional renderer style, currently ``legacy``, ``classic_modern`` or
+		``pf1``.
+		When omitted, the viewer's ``db.battle_ui_style`` preference is used
+		and falls back to ``classic_modern``.
+	total_width:
+		Optional target width.  When omitted, ``target.ndb.cols`` is used if
+		available, capped for ordinary MUD clients.
 	"""
 
 	if viewer_team not in ("A", "B", None):
@@ -152,11 +185,23 @@ def display_battle_interface(
 	viewer = (
 		captain_a if viewer_team == "A" else captain_b if viewer_team == "B" else None
 	)
+	if style is None:
+		style = get_battle_ui_style(viewer) if viewer is not None else DEFAULT_BATTLE_UI_STYLE
+	else:
+		style = normalize_battle_ui_style(style)
+	if total_width is None:
+		total_width = get_battle_ui_width(viewer) if viewer is not None else 78
 	adapter = _StateAdapter(captain_a, captain_b, battle_state)
-	return render_battle_ui(adapter, viewer, total_width=78, waiting_on=waiting_on)
+	return render_battle_ui(
+		adapter,
+		viewer,
+		total_width=total_width,
+		waiting_on=waiting_on,
+		style=style,
+	)
 
 
-def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
+def render_interfaces(captain_a, captain_b, state, *, waiting_on=None, style: str | None = None):
 	"""Return interface strings for both sides and observers.
 
 	This helper centralises construction of the per-side battle UI.  It wraps
@@ -174,6 +219,8 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 		Optional Pokémon instance indicating which combatant has yet to choose
 		an action.  When provided a footer showing the waiting Pokémon will be
 		displayed.
+	style:
+		Optional renderer style to use for all returned interfaces.
 
 	Returns
 	-------
@@ -192,6 +239,7 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 	state,
 	viewer_team="A",
 	waiting_on=waiting_on,
+	style=style,
 	)
 	iface_b = display_battle_interface(
 	captain_a,
@@ -199,6 +247,7 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 	state,
 	viewer_team="B",
 	waiting_on=waiting_on,
+	style=style,
 	)
 	iface_w = display_battle_interface(
 	captain_a,
@@ -206,6 +255,7 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 	state,
 	viewer_team=None,
 	waiting_on=waiting_on,
+	style=style,
 	)
 	return iface_a, iface_b, iface_w
 
@@ -213,15 +263,45 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None):
 def broadcast_interfaces(session, *, waiting_on=None) -> None:
         """Render and send interfaces for ``session`` to all participants."""
 
-        iface_a, iface_b, iface_w = render_interfaces(
-                session.captainA, session.captainB, session.state, waiting_on=waiting_on
-        )
         for t in getattr(session, "teamA", []):
-                session._msg_to(t, iface_a)
+                session._msg_to(
+                        t,
+                        display_battle_interface(
+                                session.captainA,
+                                session.captainB,
+                                session.state,
+                                viewer_team="A",
+                                waiting_on=waiting_on,
+                                style=get_battle_ui_style(t),
+                                total_width=get_battle_ui_width(t),
+                        ),
+                )
         for t in getattr(session, "teamB", []):
-                session._msg_to(t, iface_b)
+                session._msg_to(
+                        t,
+                        display_battle_interface(
+                                session.captainA,
+                                session.captainB,
+                                session.state,
+                                viewer_team="B",
+                                waiting_on=waiting_on,
+                                style=get_battle_ui_style(t),
+                                total_width=get_battle_ui_width(t),
+                        ),
+                )
         for w in getattr(session, "observers", []):
-                session._msg_to(w, iface_w)
+                session._msg_to(
+                        w,
+                        display_battle_interface(
+                                session.captainA,
+                                session.captainB,
+                                session.state,
+                                viewer_team=None,
+                                waiting_on=waiting_on,
+                                style=get_battle_ui_style(w),
+                                total_width=get_battle_ui_width(w),
+                        ),
+                )
 
 
 def send_interface_to(session, target, *, waiting_on=None) -> None:
@@ -230,16 +310,23 @@ def send_interface_to(session, target, *, waiting_on=None) -> None:
         if not target:
                 return
 
-        iface_a, iface_b, iface_w = render_interfaces(
-                session.captainA, session.captainB, session.state, waiting_on=waiting_on
-        )
         if target in getattr(session, "teamA", []):
-                session._msg_to(target, iface_a)
+                viewer_team = "A"
         elif target in getattr(session, "teamB", []):
-                session._msg_to(target, iface_b)
-        elif target in getattr(session, "observers", []):
-                session._msg_to(target, iface_w)
+                viewer_team = "B"
         else:
                 # Default to the observer view for any untracked recipient so the
                 # interface still renders from a neutral perspective.
-                session._msg_to(target, iface_w)
+                viewer_team = None
+        session._msg_to(
+                target,
+                display_battle_interface(
+                        session.captainA,
+                        session.captainB,
+                        session.state,
+                        viewer_team=viewer_team,
+                        waiting_on=waiting_on,
+                        style=get_battle_ui_style(target),
+                        total_width=get_battle_ui_width(target),
+                ),
+        )

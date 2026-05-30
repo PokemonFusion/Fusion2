@@ -97,6 +97,91 @@ class TurnManager:
 			except Exception:
 				log_warn("Failed to persist battle state", exc_info=True)
 
+	def _state_id_for_active_pokemon(self, team: str, pokemon) -> int | None:
+		"""Return the serialised state id for ``pokemon`` on ``team``."""
+
+		state = getattr(self, "state", None)
+		data = getattr(self, "data", None)
+		if not state or not data or not pokemon:
+			return None
+
+		team_ids = list(getattr(state, "teams", {}).get(team, []) or [])
+		team_data = getattr(data, "teams", {}).get(team)
+		if not team_ids or not team_data:
+			return None
+
+		party = [poke for poke in team_data.returnlist() if poke]
+		try:
+			party_index = party.index(pokemon)
+		except ValueError:
+			model_id = getattr(pokemon, "model_id", None)
+			party_index = next(
+				(
+					idx
+					for idx, poke in enumerate(party)
+					if model_id is not None and getattr(poke, "model_id", None) == model_id
+				),
+				-1,
+			)
+
+		if 0 <= party_index < len(team_ids):
+			return team_ids[party_index]
+		return None
+
+	def _sync_active_battle_state(self) -> None:
+		"""Mirror engine active slots into UI and persisted turn data."""
+
+		battle = getattr(self, "battle", None)
+		participants = list(getattr(battle, "participants", []) or [])
+		if not participants:
+			return
+
+		data = getattr(self, "data", None)
+		positions = getattr(getattr(data, "turndata", None), "positions", {}) or {}
+		state = getattr(self, "state", None)
+		team_offsets = {"A": 0, "B": 0}
+
+		for index, participant in enumerate(participants):
+			team = getattr(participant, "team", None)
+			if team not in ("A", "B"):
+				team = "A" if index == 0 else "B" if index == 1 else None
+			if team not in ("A", "B"):
+				continue
+
+			active = list(getattr(participant, "active", []) or [])
+			trainer = getattr(participant, "player", None)
+			if trainer is None:
+				team_members = list(getattr(self, f"team{team}", []) or [])
+				offset = team_offsets[team]
+				if offset < len(team_members):
+					trainer = team_members[offset]
+				team_offsets[team] = offset + 1
+
+			if trainer is not None:
+				try:
+					trainer.active_pokemon = active[0] if active else None
+				except Exception:
+					log_warn("Failed to sync trainer active Pokemon", exc_info=True)
+
+			position_names = sorted(name for name in positions if str(name).startswith(team))
+			if not position_names:
+				position_names = [f"{team}{slot + 1}" for slot in range(len(active))]
+
+			for slot, pos_name in enumerate(position_names):
+				pokemon = active[slot] if slot < len(active) else None
+				pos = positions.get(pos_name)
+				if pos is not None:
+					try:
+						pos.pokemon = pokemon
+					except Exception:
+						log_warn("Failed to sync battle position Pokemon", exc_info=True)
+				if state is not None:
+					state_id = self._state_id_for_active_pokemon(team, pokemon)
+					if state_id is not None:
+						state.positions[pos_name] = state_id
+					elif hasattr(state, "positions"):
+						state.positions.pop(pos_name, None)
+
 	# ------------------------------------------------------------------
 	# Public API
 	# ------------------------------------------------------------------
@@ -123,6 +208,12 @@ class TurnManager:
 			return
 
 		log_info(f"Running turn for battle {self.battle_id}")
+		debug_hook = getattr(self, "persist_debug_record", None)
+		if callable(debug_hook):
+			try:
+				debug_hook(event="turn_started")
+			except Exception:
+				pass
 		self._set_player_control(False)
 		self._notify_turn_banner(upcoming=True)
 		battle_finished = False
@@ -131,12 +222,18 @@ class TurnManager:
 		except Exception:
 			err_txt = traceback.format_exc()
 			self.turn_state["error"] = err_txt
+			if callable(debug_hook):
+				try:
+					debug_hook(event="turn_error", error=err_txt)
+				except Exception:
+					pass
 			log_err(
 				f"Error while running turn for battle {self.battle_id}:\n{err_txt}",
 				exc_info=False,
 			)
 			self.notify(f"Battle error:\n{err_txt}")
 		else:
+			self._sync_active_battle_state()
 			battle = self.battle
 			roster_size = 0
 			winner = None
@@ -158,6 +255,7 @@ class TurnManager:
 				if roster_size <= 0 and not winner:
 					battle_finished = False
 			log_info(f"Finished turn {getattr(self.battle, 'turn_count', '?')} for battle {self.battle_id}")
+			self.turn_state.pop("error", None)
 			if self.state:
 				# Keep the battle state in sync with the engine's turn counter so
 				# interfaces relying on ``state.turn`` reflect the current turn.
@@ -165,6 +263,11 @@ class TurnManager:
 			if self.data and getattr(self.data, "battle", None):
 				self.data.battle.turn = getattr(self.battle, "turn_count", self.data.battle.turn)
 			self._notify_turn_banner()
+			if callable(debug_hook):
+				try:
+					debug_hook(event="turn_finished")
+				except Exception:
+					pass
 			if battle_finished:
 				if hasattr(self, "end"):
 					try:

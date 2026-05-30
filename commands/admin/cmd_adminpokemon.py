@@ -14,7 +14,7 @@ class CmdListPokemon(Command):
 	"""
 
 	key = "@listpokemon"
-	locks = "cmd:perm(Wizards)"
+	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def func(self):
@@ -28,8 +28,8 @@ class CmdListPokemon(Command):
 		if not storage:
 			self.caller.msg("Target has no Pokémon storage.")
 			return
-		party = storage.get_party() if hasattr(storage, "get_party") else list(storage.active_pokemon.all())
-		stored = list(storage.stored_pokemon.all())
+		party = storage.get_party()
+		stored = storage.get_stored_pokemon()
 		lines = [f"Pokémon for {target.key}:"]
 		if party:
 			lines.append(" Active party:")
@@ -83,7 +83,7 @@ class CmdPokemonInfo(Command):
 	"""
 
 	key = "@pokemoninfo"
-	locks = "cmd:perm(Wizards)"
+	locks = "cmd:perm(Builder)"
 	help_category = "Admin"
 
 	def func(self):
@@ -132,4 +132,66 @@ class CmdPokemonInfo(Command):
 			lines.append("Active moves: " + ", ".join(active_moves))
 		else:
 			lines.append("Active moves: (none)")
+		self.caller.msg("\n".join(lines))
+
+
+class CmdBackfillPokemonMovesets(Command):
+	"""Backfill generated level-appropriate movesets.
+
+	Usage:
+	  @backfillmovesets
+	  @backfillmovesets/apply [character|limit]
+	  @backfillmovesets/replace [character|limit]
+	"""
+
+	key = "@backfillmovesets"
+	locks = "cmd:perm(Wizards)"
+	help_category = "Admin"
+
+	def func(self):
+		switches = {switch.lower() for switch in getattr(self, "switches", [])}
+		dry_run = "apply" not in switches and "replace" not in switches
+		replace_active = "replace" in switches
+		args = (self.args or "").strip()
+
+		queryset = OwnedPokemon.objects.all()
+		limit = None
+		target_label = "all owned Pokemon"
+		if args:
+			if args.isdigit():
+				limit = int(args)
+				target_label = f"first {limit} owned Pokemon"
+			else:
+				target = self.caller.search(args, global_search=True)
+				if not target:
+					return
+				trainer = getattr(target, "trainer", None)
+				if not trainer:
+					self.caller.msg("Target has no trainer profile.")
+					return
+				queryset = queryset.filter(trainer=trainer)
+				target_label = f"{target.key}'s Pokemon"
+
+		from pokemon.services.move_management import backfill_owned_pokemon_movesets
+
+		summary = backfill_owned_pokemon_movesets(
+			queryset=queryset,
+			dry_run=dry_run,
+			replace_active=replace_active,
+			limit=limit,
+		)
+		mode = "Dry run" if dry_run else "Backfill"
+		lines = [
+			f"{mode} for {target_label}:",
+			f"  Checked: {summary['checked']}",
+			f"  Would update: {summary['would_update']}",
+			f"  Updated: {summary['updated']}",
+			f"  Skipped: {summary['skipped']}",
+		]
+		if summary["errors"]:
+			lines.append(f"  Errors: {len(summary['errors'])}")
+			lines.extend(f"    {err}" for err in summary["errors"][:5])
+		if dry_run:
+			lines.append("Run @backfillmovesets/apply to fill missing data without replacing active moves.")
+			lines.append("Run @backfillmovesets/replace to rebuild active movesets from generated defaults.")
 		self.caller.msg("\n".join(lines))
