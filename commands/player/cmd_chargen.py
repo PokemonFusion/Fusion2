@@ -11,6 +11,12 @@ class CmdChargen(Command):
 
     Usage:
       chargen
+
+    Examples:
+      chargen
+
+    Notes:
+      Chargen can only be run before your character is validated.
     """
 
     key = "chargen"

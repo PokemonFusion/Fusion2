@@ -22,6 +22,12 @@ class CmdBattleFlee(Command):
 
     Usage:
       +battle/flee
+
+    Examples:
+      +flee
+
+    Notes:
+      Fleeing is intended for wild battles; trainer battles may require +concede.
     """
 
     key = "+battle/flee"
