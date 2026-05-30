@@ -1,0 +1,93 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}
+Guide
+{% endblock %}
+
+{% block content %}
+<section class="guide-page" aria-labelledby="guide-title">
+  <header class="guide-hero-panel">
+    <div>
+      <p class="fusion-kicker">Player Guide</p>
+      <h1 id="guide-title">Start playing without digging through every command.</h1>
+      <p class="guide-lede">
+        Short, practical guides for creating a character, catching Pokemon, managing your party,
+        and handling battles in Fusion 2.
+      </p>
+    </div>
+    <div class="guide-hero-actions">
+      {% if webclient_enabled %}
+      <a class="btn btn-fusion-primary" href="{% url 'webclient:index' %}">Play in Browser</a>
+      {% endif %}
+      <a class="btn btn-fusion-secondary" href="{% url 'my-sheet' %}">Open Player Hub</a>
+    </div>
+  </header>
+
+  <section class="guide-topic-section" aria-labelledby="guide-topic-heading">
+    <div class="guide-section-heading">
+      <h2 id="guide-topic-heading">Recommended Reads</h2>
+      <p>Use these first. Each topic stays focused so new players can find the next command without reading a manual.</p>
+    </div>
+
+    <div class="guide-topic-grid">
+      {% for object in object_list %}
+        {% if object.help_category == "guide" %}
+        <a class="guide-topic-card
+          {% if object.key == 'getting started' %}guide-order-1{% elif object.key == 'core commands' %}guide-order-2{% elif object.key == 'exploring and hunting' %}guide-order-3{% elif object.key == 'battle basics' %}guide-order-4{% elif object.key == 'pokemon and storage' %}guide-order-5{% elif object.key == 'growth and moves' %}guide-order-6{% elif object.key == 'dex reference' %}guide-order-7{% elif object.key == 'pvp and spectating' %}guide-order-8{% endif %}"
+          href="{{ object.web_get_detail_url }}">
+          <span class="guide-topic-number" aria-hidden="true">
+            {% if object.key == "getting started" %}1{% elif object.key == "core commands" %}2{% elif object.key == "exploring and hunting" %}3{% elif object.key == "battle basics" %}4{% elif object.key == "pokemon and storage" %}5{% elif object.key == "growth and moves" %}6{% elif object.key == "dex reference" %}7{% elif object.key == "pvp and spectating" %}8{% else %}*{% endif %}
+          </span>
+          <span class="guide-topic-label">
+            {% if object.key == "getting started" %}First session{% elif object.key == "core commands" %}Everyday commands{% elif object.key == "exploring and hunting" %}Finding wild Pokemon{% elif object.key == "battle basics" %}Turn commands{% elif object.key == "pokemon and storage" %}Party and boxes{% elif object.key == "growth and moves" %}Progression{% elif object.key == "dex reference" %}Lookup tools{% elif object.key == "pvp and spectating" %}Player battles{% else %}Guide topic{% endif %}
+          </span>
+          <strong>{{ object|title }}</strong>
+          <span class="guide-topic-summary">
+            {% if object.key == "getting started" %}Account, character, starter, and first hunt.
+            {% elif object.key == "core commands" %}The commands players type most often.
+            {% elif object.key == "exploring and hunting" %}Movement, room reading, shops, centers, and hunts.
+            {% elif object.key == "battle basics" %}Attack, switch, item, flee, concede, and battle status.
+            {% elif object.key == "pokemon and storage" %}Party slots, boxes, held items, and trading.
+            {% elif object.key == "growth and moves" %}Healing, learning moves, items, and evolution.
+            {% elif object.key == "dex reference" %}Pokemon, move, item, starter, and learnset lookup.
+            {% elif object.key == "pvp and spectating" %}PvP requests and watching active battles.
+            {% else %}Read this guide topic.
+            {% endif %}
+          </span>
+        </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+  {% regroup object_list by web_help_category as category_list %}
+  {% if category_list|length > 1 %}
+  <section class="guide-reference-section" aria-labelledby="guide-reference-heading">
+    <div class="guide-section-heading">
+      <h2 id="guide-reference-heading">Full Help Index</h2>
+      <p>Command help and extra topics are still available when you need exact syntax.</p>
+    </div>
+
+    <div class="guide-reference-list">
+      {% for category in category_list %}
+        {% if category.grouper != "guide" %}
+        <details class="guide-reference-group">
+          <summary>{{ category.list.0.help_category|title }}</summary>
+          <ul>
+            {% for object in category.list %}
+            <li>
+              <a href="{{ object.web_get_detail_url }}">{{ object|title }}</a>
+              {% if object.web_get_admin_url and user.is_staff %}
+              <a class="guide-edit-link" href="{{ object.web_get_admin_url }}">edit</a>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

@@ -26,33 +26,320 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "getting started",
+		"aliases": ["start", "new player", "quickstart", "first steps"],
+		"category": "Guide",
+		"text": """
+Welcome to Pokemon Fusion 2.
+
+This is a text RPG, so most actions are typed as short commands. The browser
+client is the recommended way to play: register, create a character, enter the
+game, then follow the setup prompts.
+
+# First Steps
+
+1. Create an account or log in from the website.
+2. Create a character with:
+   charcreate <name>
+3. Enter the game with:
+   goic <name>
+   goic <number>
+4. Start character setup with:
+   chargen
+5. See starter options with:
+   starterlist
+6. Pick your starter with:
+   choosestarter <pokemon>
+
+# After Setup
+
+Use look to read the room, +sheet to check your trainer, and +hunt in route
+rooms that allow wild encounters. If a battle starts, wait for the battle UI to
+ask for your command before choosing a move, switch, item, or flee action.
+
+# Useful Website Links
+
+Home shows the current play status. Player Hub shows a read-only overview of
+your characters, party, boxed Pokemon, inventory, and badges once you have a
+character.
+		""",
+	},
+	{
+		"key": "core commands",
+		"aliases": ["commands", "command reference", "basics"],
+		"category": "Guide",
+		"text": """
+These are the main everyday commands for regular players.
+
+# Account And Character
+
+charcreate <name>      Create a character on your account.
+goic <name|number>    Enter the game as one of your characters.
+goooc                 Leave your character and return out-of-character.
+
+# Looking And Talking
+
+look                  Look at your current room.
+look <thing>          Look at something nearby.
++glance               See online characters in the room.
+ooc <message>         Speak out-of-character in the room.
+ooc :<pose>           Pose out-of-character.
+help                  Open the in-game help index.
+help <topic>          Read help for a command or guide topic.
+
+# Trainer Display
+
++sheet                Show your trainer card.
+party                 Alias for +sheet.
++sheet/brief          Show a compact trainer card.
++sheet <slot>         Show a party Pokemon by slot.
++sheet/pokemon        List your party Pokemon.
++sheet/pokemon all    Show full sheets for every party Pokemon.
++inventory            Show your item inventory.
+
+# Display Preferences
+
++uimode               Show your current room display mode.
++uimode fancy         Rich room layout.
++uimode simple        Lower-detail room layout.
++uimode boxed         Boxed fallback room layout.
++uimode screenreader  Screen-reader friendly room layout.
++uitheme              Show your current room color theme.
++uitheme <color>      Choose green, blue, red, magenta, cyan, or white.
++battleuistyle        Show or change your battle UI style.
+		""",
+	},
+	{
+		"key": "pokemon and storage",
+		"aliases": ["storage", "party management", "boxes", "pokemon storage"],
+		"category": "Guide",
+		"text": """
+Your active party is what you bring into battles. Extra Pokemon live in storage
+boxes and can be moved around outside battle.
+
+# Viewing Pokemon
+
++sheet/pokemon              List your party.
++sheet/pokemon <slot>       Show one party Pokemon.
++sheet/pokemon/moves <slot> Show a moves-focused sheet.
+showbox <box>               Show a storage box.
+getpokemondetails <id>      Show a Pokemon by its unique id.
+
+# Moving Pokemon
+
+deposit <pokemon_id> [box]              Move a party Pokemon into storage.
+withdraw <pokemon_id> [box]             Move a boxed Pokemon into your party.
+swap <pokemon_id> <party_slot> [box]    Swap a boxed Pokemon with a party slot.
++pokestore                              Open Pokemon storage at a Pokemon Center.
+tradepokemon <pokemon_id>=<character>   Trade a Pokemon to another character.
+
+# Held Items
+
+setholditem <slot>=<item>    Give a party Pokemon a held item from your carried
+                             objects.
+
+Storage commands cannot be used while your character is locked into an active
+battle.
+		""",
+	},
+	{
+		"key": "exploring and hunting",
+		"aliases": ["hunting", "exploration", "wild pokemon", "encounters"],
+		"category": "Guide",
+		"text": """
+Exploration is room based. Read each room, follow exits, and hunt where the
+area supports wild encounters.
+
+# Exploring
+
+look              Read the current room.
+look <thing>      Inspect a character, exit, object, or feature.
++glance           See online characters in the room.
+
+Rooms usually list exits by name. Type an exit name to move through it. Some
+rooms may have highlighted shortcut letters in their exit names.
+
+# Hunting
+
++hunt             Attempt to find a wild Pokemon in the current room.
++leave            Leave a hunting instance if you are inside one.
+
+If a wild Pokemon appears, the game moves you into battle. From there, use
+battle commands such as +attack, +switch, +item, or +flee.
+
+# Shops And Centers
+
++heal             Heal your party at a Pokemon Center.
++pokestore        Open Pokemon storage at a Pokemon Center.
+movesets          Manage saved movesets at a Pokemon Center.
+store             Open an item shop when one is present.
+vend [amount]     Use a nearby vending machine.
+		""",
+	},
+	{
+		"key": "battle basics",
+		"aliases": ["battle", "fighting", "combat", "battle commands"],
+		"category": "Guide",
+		"text": """
+Battles are turn based. When the battle is waiting for you, choose one action.
+If the game says it is not waiting for your command, wait for the next prompt or
+refresh the battle view.
+
+# Main Battle Actions
+
++battle/attack <move> [target]   Use a move.
++attack <move> [target]          Short form of +battle/attack.
++attack /menu                    Open the move menu.
++battle/switch <slot>            Switch to another party Pokemon.
++switch <slot>                   Short form of +battle/switch.
++battle/item <item>              Ready an item for battle.
++item <item>                     Short form of +battle/item.
++battle/flee                     Try to run from a wild battle.
++flee                            Short form of +battle/flee.
++battle/concede                  Forfeit an active battle after confirmation.
++concede yes                     Confirm concession without the prompt.
+
+# Battle Information
+
++showbattle              Redraw your current battle view.
++showbattle <character>  View another character's current battle if visible.
++effects                 Show field, side, status, and active Pokemon effects.
++effects brief           Show a shorter effects panel.
++effects me              Focus the panel on your side.
++effects opp             Focus the panel on the opposing side.
+
+# Spectating
+
++watch <player>               Watch another trainer's active battle.
++unwatch                      Stop watching.
++battlewatch <battle id>      Watch a battle by id.
++battleunwatch <battle id>    Stop watching a battle by id.
+
+For multi-target battles, targets are written as positions such as A1, A2, B1,
+or B2. If there is only one valid target, the game usually chooses it for you.
+		""",
+	},
+	{
+		"key": "growth and moves",
+		"aliases": ["growth", "moves", "progression", "evolution"],
+		"category": "Guide",
+		"text": """
+Pokemon improve through battle rewards, move learning, items, and evolution.
+Most maintenance commands are used outside battle.
+
+# Healing And Experience
+
++heal          Heal your party at a Pokemon Center.
++expshare     Toggle EXP Share for your party.
+
+# Learning Moves
+
++learn                 List Pokemon with level-up moves available.
++learn <slot>          Open the move-learning flow for a party slot.
++move <slot>=<move>    Teach a valid move to a party Pokemon.
++moveset <slot>=<set>  Switch a Pokemon to a saved moveset.
+movesets              Manage saved movesets at a Pokemon Center.
+
+# Items
+
++inventory             Show your inventory.
++useitem <item>        Use an item outside battle.
++useitem <slot>=<item> Use an item on a party slot when supported.
+
+# Evolution
+
+evolve <pokemon_id> [item]    Attempt to evolve a Pokemon. Some evolutions may
+                              need an item or other condition.
+		""",
+	},
+	{
+		"key": "dex reference",
+		"aliases": ["pokedex", "dex", "movedex", "itemdex", "reference"],
+		"category": "Guide",
+		"text": """
+Use the dex commands when you need Pokemon, move, item, or learnset information.
+
+# Pokemon
+
+pokedex <name or number>       Look up a Pokemon.
++dex <name or number>          Alias for pokedex.
++dex                           List the national dex.
++dex/<region>                  List a regional dex.
++dex/<region> <number>         Look up a regional dex number.
++dex/all                       List positive-numbered Pokemon, including forms.
+pokenum <number>               Look up a National Dex number.
+starterlist                    List valid starter Pokemon.
+
+# Moves And Items
+
+movedex <move>       Look up move details.
+mdex <move>          Alias for movedex.
+moveset <pokemon>    Show a Pokemon's learnset.
+learnset <pokemon>   Alias for moveset.
++itemdex <item>      Look up item details.
+itemdex <item>       Alias for +itemdex.
+
+Names do not have to be perfect. Several dex commands will suggest close
+matches when they can.
+		""",
+	},
+	{
+		"key": "pvp and spectating",
+		"aliases": ["pvp", "player battles", "duels", "watching"],
+		"category": "Guide",
+		"text": """
+Player-vs-player battles are started through requests in the same room. Both
+players need usable Pokemon and must not already be in battle.
+
+# PvP Flow
+
++pvp                   Show the PvP command summary.
++pvp/list              List open PvP requests in the room.
++pvp/create            Create an open request.
++pvp/create <password> Create a passworded request.
++pvp/join <player>     Join a request.
++pvp/join <player> <password>
++pvp/start             Start the battle once someone has joined your request.
++pvp/abort             Cancel your request.
+
+# Watching Battles
+
++watch <player>              Watch another trainer's active battle.
++unwatch                     Stop watching.
++battlewatch <battle id>     Watch a battle by id.
++battleunwatch <battle id>   Stop watching a battle by id.
++effects list                List battles you are in or watching.
++effects next                Move your effects focus to the next watched battle.
++effects prev                Move your effects focus to the previous watched battle.
+		""",
+	},
+	{
 		"key": "evennia",
 		"aliases": ["ev"],
 		"category": "General",
 		"locks": "read:perm(Developer)",
 		"text": """
-            Evennia is a MU-game server and framework written in Python. You can read more
-            on https://www.evennia.com.
+Evennia is a MU-game server and framework written in Python. You can read more
+on https://www.evennia.com.
 
-            # subtopics
+# Subtopics
 
-            ## Installation
+## Installation
 
-            You'll find installation instructions on https://www.evennia.com.
+You'll find installation instructions on https://www.evennia.com.
 
-            ## Community
+## Community
 
-            There are many ways to get help and communicate with other devs!
+There are many ways to get help and communicate with other devs.
 
-            ### Discussions
+### Discussions
 
-            The Discussions forum is found at https://github.com/evennia/evennia/discussions.
+The Discussions forum is found at https://github.com/evennia/evennia/discussions.
 
-            ### Discord
+### Discord
 
-            There is also a discord channel for chatting - connect using the
-            following link: https://discord.gg/AJJpcRUhtF
-
-        """,
+There is also a discord channel for chatting:
+https://discord.gg/AJJpcRUhtF
+		""",
 	},
 ]
