@@ -47,9 +47,9 @@ game, then follow the setup prompts.
 4. Start character setup with:
    chargen
 5. See starter options with:
-   starterlist
+   +starters
 6. Pick your starter with:
-   choosestarter <pokemon>
+   +starter <pokemon>
 
 # After Setup
 
@@ -92,9 +92,9 @@ help <topic>          Read help for a command or guide topic.
 +sheet                Show your trainer card.
 party                 Alias for +sheet.
 +sheet/brief          Show a compact trainer card.
-+sheet <slot>         Show a party Pokemon by slot.
-+sheet/pokemon        List your party Pokemon.
-+sheet/pokemon all    Show full sheets for every party Pokemon.
++party                List your party Pokemon.
++party <slot>         Show a party Pokemon by slot.
++party/all            Show full sheets for every party Pokemon.
 +inventory            Show your item inventory.
 
 # Display Preferences
@@ -106,7 +106,7 @@ party                 Alias for +sheet.
 +uimode screenreader  Screen-reader friendly room layout.
 +uitheme              Show your current room color theme.
 +uitheme <color>      Choose green, blue, red, magenta, cyan, or white.
-+battleuistyle        Show or change your battle UI style.
++battleui/style       Show or change your battle UI style.
 		""",
 	},
 	{
@@ -119,24 +119,25 @@ boxes and can be moved around outside battle.
 
 # Viewing Pokemon
 
-+sheet/pokemon              List your party.
-+sheet/pokemon <slot>       Show one party Pokemon.
-+sheet/pokemon/moves <slot> Show a moves-focused sheet.
-showbox <box>               Show a storage box.
-getpokemondetails <id>      Show a Pokemon by its unique id.
++party                       List your party.
++party <slot>                Show one party Pokemon.
++party/moves <slot>          Show a moves-focused sheet.
++box [box]                   Show a storage box.
++box/all                     Show all Pokemon in storage.
++pokemon <id>                Show a Pokemon by its unique id.
 
 # Moving Pokemon
 
-deposit <pokemon_id> [box]              Move a party Pokemon into storage.
-withdraw <pokemon_id> [box]             Move a boxed Pokemon into your party.
-swap <pokemon_id> <party_slot> [box]    Swap a boxed Pokemon with a party slot.
-+pokestore                              Open Pokemon storage at a Pokemon Center.
-tradepokemon <pokemon_id>=<character>   Trade a Pokemon to another character.
++box/deposit <pokemon_id> [box]              Move a party Pokemon into storage.
++box/withdraw <pokemon_id> [box]             Move a boxed Pokemon into your party.
++box/swap <pokemon_id> <party_slot> [box]    Swap a boxed Pokemon with a party slot.
++storage                                      Open Pokemon storage at a Pokemon Center.
++trade <pokemon_id>=<character>               Trade a Pokemon to another character.
 
 # Held Items
 
-setholditem <slot>=<item>    Give a party Pokemon a held item from your carried
-                             objects.
++hold <slot>=<item>    Give a party Pokemon a held item from your carried
+                       objects.
 
 Storage commands cannot be used while your character is locked into an active
 battle.
@@ -162,7 +163,7 @@ rooms may have highlighted shortcut letters in their exit names.
 # Hunting
 
 +hunt             Attempt to find a wild Pokemon in the current room.
-+leave            Leave a hunting instance if you are inside one.
++hunt/leave       Leave a hunting instance if you are inside one.
 
 If a wild Pokemon appears, the game moves you into battle. From there, use
 battle commands such as +attack, +switch, +item, or +flee.
@@ -170,10 +171,10 @@ battle commands such as +attack, +switch, +item, or +flee.
 # Shops And Centers
 
 +heal             Heal your party at a Pokemon Center.
-+pokestore        Open Pokemon storage at a Pokemon Center.
-movesets          Manage saved movesets at a Pokemon Center.
-store             Open an item shop when one is present.
-vend [amount]     Use a nearby vending machine.
++storage          Open Pokemon storage at a Pokemon Center.
++movesets         Manage saved movesets at a Pokemon Center.
++store            Open an item shop when one is present.
++vend [amount]    Use a nearby vending machine.
 		""",
 	},
 	{
@@ -201,19 +202,19 @@ refresh the battle view.
 
 # Battle Information
 
-+showbattle              Redraw your current battle view.
-+showbattle <character>  View another character's current battle if visible.
-+effects                 Show field, side, status, and active Pokemon effects.
-+effects brief           Show a shorter effects panel.
-+effects me              Focus the panel on your side.
-+effects opp             Focus the panel on the opposing side.
++battleui              Redraw your current battle view.
++battleui <character>  View another character's current battle if visible.
++status                Show field, side, status, and active Pokemon effects.
++status brief          Show a shorter effects panel.
++status me             Focus the panel on your side.
++status opp            Focus the panel on the opposing side.
 
 # Spectating
 
 +watch <player>               Watch another trainer's active battle.
 +unwatch                      Stop watching.
-+battlewatch <battle id>      Watch a battle by id.
-+battleunwatch <battle id>    Stop watching a battle by id.
++watch/battle <battle id>     Watch a battle by id.
++watch/stop <battle id>       Stop watching a battle by id.
 
 For multi-target battles, targets are written as positions such as A1, A2, B1,
 or B2. If there is only one valid target, the game usually chooses it for you.
@@ -236,20 +237,20 @@ Most maintenance commands are used outside battle.
 
 +learn                 List Pokemon with level-up moves available.
 +learn <slot>          Open the move-learning flow for a party slot.
-+move <slot>=<move>    Teach a valid move to a party Pokemon.
-+moveset <slot>=<set>  Switch a Pokemon to a saved moveset.
-movesets              Manage saved movesets at a Pokemon Center.
++teach <slot>=<move>   Teach a valid move to a party Pokemon.
++moves/use <slot>=<set> Switch a Pokemon to a saved moveset.
++movesets              Manage saved movesets at a Pokemon Center.
 
 # Items
 
 +inventory             Show your inventory.
-+useitem <item>        Use an item outside battle.
-+useitem <slot>=<item> Use an item on a party slot when supported.
++use <item>            Use an item outside battle.
++use <slot>=<item>     Use an item on a party slot when supported.
 
 # Evolution
 
-evolve <pokemon_id> [item]    Attempt to evolve a Pokemon. Some evolutions may
-                              need an item or other condition.
++evolve <pokemon_id> [item]    Attempt to evolve a Pokemon. Some evolutions may
+                               need an item or other condition.
 		""",
 	},
 	{
@@ -261,23 +262,20 @@ Use the dex commands when you need Pokemon, move, item, or learnset information.
 
 # Pokemon
 
-pokedex <name or number>       Look up a Pokemon.
-+dex <name or number>          Alias for pokedex.
++dex <name or number>          Look up a Pokemon.
 +dex                           List the national dex.
 +dex/<region>                  List a regional dex.
 +dex/<region> <number>         Look up a regional dex number.
 +dex/all                       List positive-numbered Pokemon, including forms.
-pokenum <number>               Look up a National Dex number.
-starterlist                    List valid starter Pokemon.
++dexnum <number>               Look up a National Dex number.
++starters                      List valid starter Pokemon.
 
 # Moves And Items
 
-movedex <move>       Look up move details.
-mdex <move>          Alias for movedex.
-moveset <pokemon>    Show a Pokemon's learnset.
-learnset <pokemon>   Alias for moveset.
++movedex <move>      Look up move details.
++mdex <move>         Alias for +movedex.
++learnset <pokemon>  Show a Pokemon's learnset.
 +itemdex <item>      Look up item details.
-itemdex <item>       Alias for +itemdex.
 
 Names do not have to be perfect. Several dex commands will suggest close
 matches when they can.
@@ -306,11 +304,11 @@ players need usable Pokemon and must not already be in battle.
 
 +watch <player>              Watch another trainer's active battle.
 +unwatch                     Stop watching.
-+battlewatch <battle id>     Watch a battle by id.
-+battleunwatch <battle id>   Stop watching a battle by id.
-+effects list                List battles you are in or watching.
-+effects next                Move your effects focus to the next watched battle.
-+effects prev                Move your effects focus to the previous watched battle.
++watch/battle <battle id>    Watch a battle by id.
++watch/stop <battle id>      Stop watching a battle by id.
++status list                 List battles you are in or watching.
++status next                 Move your status focus to the next watched battle.
++status prev                 Move your status focus to the previous watched battle.
 		""",
 	},
 	{

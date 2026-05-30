@@ -9,12 +9,20 @@ class CmdVend(Command):
     """Dispense Poké Balls from a nearby vending machine.
 
     Usage:
-      vend [vendor]
-      vend [vendor] <amount>
-      vend <amount>
+      +vend [vendor]
+      +vend [vendor] <amount>
+      +vend <amount>
+
+    Examples:
+      +vend
+      +vend 5
+
+    Notes:
+      If more than one vending machine is present, name the one to use.
     """
 
-    key = "vend"
+    key = "+vend"
+    aliases = ["vend"]
     locks = "cmd:all()"
     help_category = "General"
 

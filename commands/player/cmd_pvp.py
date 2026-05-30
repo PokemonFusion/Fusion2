@@ -24,10 +24,16 @@ def _caller_has_usable_pokemon(caller) -> bool:
 
 
 class CmdPvpHelp(Command):
-	"""Show available PVP commands.
+	"""Show available PvP commands.
 
 	Usage:
           +pvp
+
+	Examples:
+	  +pvp
+
+	Notes:
+	  PvP requests are room-local. Both players must be in the same room.
 	"""
 
 	key = "+pvp"
@@ -47,10 +53,16 @@ class CmdPvpHelp(Command):
 
 
 class CmdPvpList(Command):
-	"""List all open PVP requests in the room.
+	"""List all open PvP requests in the room.
 
 	Usage:
 	  +pvp/list
+
+	Examples:
+	  +pvp/list
+
+	Notes:
+	  Only requests in your current room are listed.
 	"""
 
 	key = "+pvp/list"
@@ -72,10 +84,17 @@ class CmdPvpList(Command):
 
 
 class CmdPvpCreate(Command):
-	"""Create a new PVP request.
+	"""Create a new PvP request.
 
 	Usage:
 	  +pvp/create [password]
+
+	Examples:
+	  +pvp/create
+	  +pvp/create sparring
+
+	Notes:
+	  Add a password if you only want a specific player to join.
 	"""
 
 	key = "+pvp/create"
@@ -98,10 +117,17 @@ class CmdPvpCreate(Command):
 
 
 class CmdPvpJoin(Command):
-	"""Join an existing PVP request.
+	"""Join an existing PvP request.
 
 	Usage:
 	  +pvp/join <player> [password]
+
+	Examples:
+	  +pvp/join Ash
+	  +pvp/join Ash sparring
+
+	Notes:
+	  The player name is the host who created the request.
 	"""
 
 	key = "+pvp/join"
@@ -155,10 +181,16 @@ class CmdPvpJoin(Command):
 
 
 class CmdPvpAbort(Command):
-	"""Abort your active PVP request.
+	"""Abort your active PvP request.
 
 	Usage:
 	  +pvp/abort
+
+	Examples:
+	  +pvp/abort
+
+	Notes:
+	  This only cancels your pending room request.
 	"""
 
 	key = "+pvp/abort"
@@ -173,10 +205,16 @@ class CmdPvpAbort(Command):
 
 
 class CmdPvpStart(Command):
-	"""Start a PVP battle.
+	"""Start a PvP battle after another player has joined.
 
 	Usage:
 	  +pvp/start
+
+	Examples:
+	  +pvp/start
+
+	Notes:
+	  The request host starts the battle after an opponent joins.
 	"""
 
 	key = "+pvp/start"

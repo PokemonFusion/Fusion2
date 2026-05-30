@@ -41,6 +41,14 @@ class CmdBattleAttack(Command):
     Usage:
       +battle/attack <move> [target]
       +attack /menu  (interactive menu)
+
+    Examples:
+      +attack Tackle
+      +attack Thunderbolt B1
+      +attack /menu
+
+    Notes:
+      In multi-target battles, target by position such as A1, A2, B1, or B2.
     """
 
     key = "+battle/attack"

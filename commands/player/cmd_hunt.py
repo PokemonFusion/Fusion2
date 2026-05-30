@@ -10,72 +10,85 @@ from world.hunt_system import HuntSystem
 
 
 class CmdHunt(Command):
-	"""Attempt to encounter a wild Pokémon in the current room.
+    """Attempt to encounter a wild Pokemon in the current room.
 
-	Usage:
-	  +hunt
-	"""
+    Usage:
+      +hunt
 
-	key = "+hunt"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+    Examples:
+      +hunt
 
-	def func(self):
-		system = HuntSystem(self.caller.location)
-		result = system.perform_hunt(self.caller)
-		self.caller.msg(result)
+    Notes:
+      Hunting only works in rooms configured with wild encounters.
+    """
+
+    key = "+hunt"
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        system = HuntSystem(self.caller.location)
+        result = system.perform_hunt(self.caller)
+        self.caller.msg(result)
 
 
 class CmdLeaveHunt(Command):
-	"""Leave a hunting instance.
+    """Leave a hunting instance.
 
-	Usage:
-	  +leave
-	"""
+    Usage:
+      +hunt/leave
 
-	key = "+leave"
-	locks = "cmd:all()"
-	help_category = "Pokemon"
+    Examples:
+      +hunt/leave
 
-	def func(self):
-		room = getattr(self.caller.ndb, "hunt_room", None)
-		if not room:
-			self.caller.msg("You are not hunting.")
-			return
-		self.caller.move_to(room.home or self.caller.home, quiet=True)
-		room.delete()
-		del self.caller.ndb.hunt_room
-		self.caller.msg("You stop hunting.")
+    Notes:
+      This returns you from the temporary hunt room to its home room.
+    """
+
+    key = "+hunt/leave"
+    aliases = ["+leave"]
+    locks = "cmd:all()"
+    help_category = "Pokemon"
+
+    def func(self):
+        room = getattr(self.caller.ndb, "hunt_room", None)
+        if not room:
+            self.caller.msg("You are not hunting.")
+            return
+        self.caller.move_to(room.home or self.caller.home, quiet=True)
+        room.delete()
+        del self.caller.ndb.hunt_room
+        self.caller.msg("You stop hunting.")
 
 
 class CmdCustomHunt(Command):
-	"""Start a hunt with a specified Pokémon and level.
+    """Start a hunt with a specified Pokémon and level.
 
-	Usage:
-	  @customhunt <pokemon> <level>
-	"""
+    Usage:
+      @customhunt <pokemon> <level>
+    """
 
-	key = "@customhunt"
-	aliases = ["+customhunt", "@huntcustom", "+huntcustom"]
-	locks = "cmd:all()" if settings.DEV_MODE else "cmd:perm(Builders)"
-	help_category = "Admin"
+    key = "@customhunt"
+    aliases = ["+customhunt", "@huntcustom", "+huntcustom"]
+    locks = "cmd:all()" if settings.DEV_MODE else "cmd:perm(Builders)"
+    help_category = "Admin"
 
-	def func(self):
-		parts = self.args.split()
-		if len(parts) != 2:
-			self.caller.msg("Usage: @customhunt <pokemon> <level>")
-			return
+    def func(self):
+        parts = self.args.split()
+        if len(parts) != 2:
+            self.caller.msg("Usage: @customhunt <pokemon> <level>")
+            return
 
-		name = parts[0]
-		try:
-			level = int(parts[1])
-		except ValueError:
-			self.caller.msg("Level must be a number.")
-			return
-		if not is_known_species(name):
-			self.caller.msg(species_not_found_message(name))
-			return
+        name = parts[0]
+        try:
+            level = int(parts[1])
+        except ValueError:
+            self.caller.msg("Level must be a number.")
+            return
+        if not is_known_species(name):
+            self.caller.msg(species_not_found_message(name))
+            return
 
-		system = HuntSystem(self.caller.location)
-		result = system.perform_fixed_hunt(self.caller, name, level)
-		self.caller.msg(result)
+        system = HuntSystem(self.caller.location)
+        result = system.perform_fixed_hunt(self.caller, name, level)
+        self.caller.msg(result)

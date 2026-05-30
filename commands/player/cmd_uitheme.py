@@ -2,29 +2,34 @@ from evennia import Command
 
 
 class CmdUiTheme(Command):
-	"""Change the color theme used for room descriptions.
+    """Change the color theme used for room descriptions.
 
-	Usage:
-	  +uitheme [green|blue|red|magenta|cyan|white]
+    Usage:
+      +uitheme [green|blue|red|magenta|cyan|white]
 
-	Without an argument, show the current theme.
-	"""
+    Examples:
+      +uitheme
+      +uitheme cyan
 
-	key = "+uitheme"
-	locks = "cmd:all()"
-	help_category = "General"
+    Notes:
+      With no argument, the command shows your current theme.
+    """
 
-	THEMES = {"green", "blue", "red", "magenta", "cyan", "white"}
+    key = "+uitheme"
+    locks = "cmd:all()"
+    help_category = "General"
 
-	def func(self):
-		caller = self.caller
-		arg = (self.args or "").strip().lower()
-		if not arg:
-			current = getattr(caller.db, "ui_theme", "green")
-			caller.msg(f"Current UI theme: {current}.")
-			return
-		if arg not in self.THEMES:
-			caller.msg("Usage: +uitheme <green|blue|red|magenta|cyan|white>")
-			return
-		caller.db.ui_theme = arg
-		caller.msg(f"UI theme set to {arg}.")
+    THEMES = {"green", "blue", "red", "magenta", "cyan", "white"}
+
+    def func(self):
+        caller = self.caller
+        arg = (self.args or "").strip().lower()
+        if not arg:
+            current = getattr(caller.db, "ui_theme", "green")
+            caller.msg(f"Current UI theme: {current}.")
+            return
+        if arg not in self.THEMES:
+            caller.msg("Usage: +uitheme <green|blue|red|magenta|cyan|white>")
+            return
+        caller.db.ui_theme = arg
+        caller.msg(f"UI theme set to {arg}.")

@@ -26,10 +26,18 @@ class CmdSheet(Command):
       +sheet/inv/cat             - grouped inventory view
       +sheet <slot>              - Pokémon sheet for a party slot (if available)
       +sheet/sr or +sheet/nosr   - toggle screen-reader formatting
+
+    Examples:
+      +sheet
+      +sheet/brief
+      +sheet/inv find potion
+
+    Notes:
+      Use +party when you only want the Pokemon in your active party.
     """
 
     key = "+sheet"
-    aliases = ["party"]
+    aliases = ["party", "+trainer"]
     locks = "cmd:all()"
     help_category = "General"
 
@@ -163,21 +171,25 @@ class CmdSheet(Command):
 
 
 class CmdSheetPokemon(Command):
-    """Show info about Pokémon in your party.
+    """Show info about Pokemon in your active party.
 
     Usage:
+      +party [<slot>|all] [/brief|/moves|/full]
       +sheet/pokemon [<slot>|all] [/brief|/moves|/full]
 
     Examples:
-      +sheet/pokemon                (list party w/ one-liners)
-      +sheet/pokemon 1              (full sheet for slot 1)
-      +sheet/pokemon/brief 2        (brief view for slot 2)
-      +sheet/pokemon/moves 3        (moves-focused view for slot 3)
-      +sheet/pokemon/all            (full sheets for all occupied slots)
+      +party                 List your party with one-line summaries.
+      +party 1               Show the full sheet for slot 1.
+      +party/brief 2         Show a brief view for slot 2.
+      +party/moves 3         Show a moves-focused view for slot 3.
+      +party/all             Show full sheets for all occupied slots.
+
+    Notes:
+      Party slots run from 1 to 6.
     """
 
-    key = "+sheet/pokemon"
-    aliases = ["+sheet/pkmn"]
+    key = "+party"
+    aliases = ["+sheet/pokemon", "+sheet/pkmn"]
     locks = "cmd:all()"
     help_category = "Pokemon"
 
@@ -234,11 +246,7 @@ class CmdSheetPokemon(Command):
             fused = None
             if fusion_id:
                 fused = next(
-                    (
-                        mon
-                        for mon in search
-                        if str(getattr(mon, "unique_id", "")) == str(fusion_id)
-                    ),
+                    (mon for mon in search if str(getattr(mon, "unique_id", "")) == str(fusion_id)),
                     None,
                 )
             if not fused and fusion_species:
@@ -254,9 +262,7 @@ class CmdSheetPokemon(Command):
             if fused:
                 fusion_id = fusion_id or getattr(fused, "unique_id", None)
                 if not fusion_species:
-                    fusion_species = getattr(
-                        getattr(fused, "species", None), "name", getattr(fused, "species", None)
-                    )
+                    fusion_species = getattr(getattr(fused, "species", None), "name", getattr(fused, "species", None))
                 if not stats:
                     stats = get_stats(fused) or {}
                 if hp_val is None:
