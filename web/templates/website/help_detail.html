@@ -1,0 +1,56 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}
+Guide - {{ object|title }}
+{% endblock %}
+
+{% block content %}
+<section class="guide-detail-page" aria-labelledby="guide-detail-title">
+  <nav class="guide-breadcrumb" aria-label="Guide breadcrumb">
+    <a href="{% url 'help' %}">Guide</a>
+    {% if object.help_category != "guide" %}
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'help' %}#{{ object.web_help_category }}">{{ object.help_category|title }}</a>
+    {% endif %}
+    <span aria-hidden="true">/</span>
+    <span>{{ object|title }}</span>
+  </nav>
+
+  <header class="guide-detail-header">
+    <p class="fusion-kicker">{{ object.help_category|title }}</p>
+    <h1 id="guide-detail-title">{{ object|title }}</h1>
+  </header>
+
+  <div class="guide-detail-layout">
+    <article class="guide-detail-body-panel">
+      <pre class="guide-entry-body">{{ entry_text }}</pre>
+
+      {% if topic_previous or topic_next %}
+      <nav class="guide-topic-pagination" aria-label="Topic navigation">
+        {% if topic_previous %}
+        <a class="btn btn-fusion-secondary" href="{{ topic_previous.web_get_detail_url }}">Previous: {{ topic_previous|title }}</a>
+        {% endif %}
+        {% if topic_next %}
+        <a class="btn btn-fusion-secondary" href="{{ topic_next.web_get_detail_url }}">Next: {{ topic_next|title }}</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+    </article>
+
+    <aside class="guide-detail-sidebar" aria-labelledby="guide-related-heading">
+      {% if request.user.is_staff and object.web_get_admin_url %}
+      <a class="btn btn-fusion-secondary guide-admin-link" href="{{ object.web_get_admin_url }}">Edit Topic</a>
+      {% endif %}
+
+      <h2 id="guide-related-heading">{{ object.help_category|title }}</h2>
+      <ul>
+        {% for topic in topic_list %}
+        <li>
+          <a href="{{ topic.web_get_detail_url }}" class="{% if topic == object %}active{% endif %}">{{ topic|title }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </div>
+</section>
+{% endblock %}
