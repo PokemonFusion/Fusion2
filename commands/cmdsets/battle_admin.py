@@ -4,6 +4,7 @@ from evennia import CmdSet
 
 from commands.admin.cmd_adminbattle import (
     CmdAbortBattle,
+    CmdBattleCleanup,
     CmdBattleInfo,
     CmdBattleSnapshot,
     CmdRestoreBattle,
@@ -23,6 +24,7 @@ class BattleAdminCmdSet(CmdSet):
         """Populate the cmdset."""
         for cmd in (
             CmdAbortBattle,
+            CmdBattleCleanup,
             CmdRestoreBattle,
             CmdBattleInfo,
             CmdBattleSnapshot,
