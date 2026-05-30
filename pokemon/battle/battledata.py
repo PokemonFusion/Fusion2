@@ -36,6 +36,115 @@ class SpeciesName(str):
         return str(self)
 
 
+_REVEAL_ALL_VIEWERS = "__all__"
+
+
+def _normalize_reveal_viewer(viewer_side_or_id: Any) -> str:
+    """Return a stable key for battle-scoped reveal memory."""
+
+    if viewer_side_or_id is None:
+        return ""
+    key = str(viewer_side_or_id).strip()
+    upper = key.upper()
+    if upper in {"A", "B"}:
+        return upper
+    return key
+
+
+def _ability_display_name(ability: Any) -> Optional[str]:
+    """Return a human-readable ability name without requiring dex imports."""
+
+    if ability is None:
+        return None
+    raw = getattr(ability, "raw", None)
+    if isinstance(raw, dict) and raw.get("name"):
+        return str(raw["name"])
+    if isinstance(ability, dict):
+        value = ability.get("name") or ability.get("id")
+        return str(value) if value else None
+    for attr in ("display_name", "name", "id", "key"):
+        value = getattr(ability, attr, None)
+        if value:
+            return str(value)
+    text = str(ability).strip()
+    return text or None
+
+
+def _caller_is_admin(caller: Any) -> bool:
+    """Best-effort Evennia admin check used by non-command display helpers."""
+
+    if caller is None:
+        return False
+    if bool(getattr(caller, "is_superuser", False) or getattr(caller, "is_staff", False)):
+        return True
+    check_perm = getattr(caller, "check_permstring", None)
+    if callable(check_perm):
+        for permission in ("Wizards", "Admins", "Admin"):
+            try:
+                if check_perm(permission):
+                    return True
+            except Exception:
+                continue
+    permissions = getattr(caller, "permissions", None)
+    checker = getattr(permissions, "check", None)
+    if callable(checker):
+        try:
+            return bool(checker("Wizards") or checker("Admins"))
+        except Exception:
+            return False
+    return False
+
+
+def _pokemon_reveal_key(
+    pokemon: Any,
+    teams: Optional[Dict[str, "Team"]] = None,
+    *,
+    side: Optional[str] = None,
+) -> str:
+    """Return a battle-local key for reveal memory.
+
+    Persistent/model identifiers are preferred. If a battle has only temporary
+    snapshots, fall back to the battle party slot before using a descriptive
+    battle-local key.
+    """
+
+    if pokemon is None:
+        return ""
+
+    for attr in ("model_id", "unique_id", "id"):
+        value = getattr(pokemon, attr, None)
+        if value not in (None, "", "0"):
+            return f"id:{value}"
+
+    side_key = _normalize_reveal_viewer(side)
+    side_keys: List[str] = []
+    if teams:
+        if side_key in teams:
+            side_keys.append(side_key)
+        side_keys.extend(key for key in teams if key not in side_keys)
+
+    for team_key in side_keys:
+        team = teams.get(team_key) if teams else None
+        if not team:
+            continue
+        for index, candidate in enumerate(team.returnlist(), start=1):
+            if candidate is pokemon:
+                return f"{team_key}:slot:{index}"
+        pokemon_model_id = getattr(pokemon, "model_id", None)
+        if pokemon_model_id not in (None, "", "0"):
+            for index, candidate in enumerate(team.returnlist(), start=1):
+                if getattr(candidate, "model_id", None) == pokemon_model_id:
+                    return f"{team_key}:slot:{index}"
+
+    if not side_key:
+        side_obj = getattr(pokemon, "side", None)
+        side_key = _normalize_reveal_viewer(getattr(side_obj, "team", None))
+    name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+    level = getattr(pokemon, "level", "?")
+    max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", "?"))
+    return f"{side_key or '?'}:{name}|{level}|{max_hp}"
+
+
 @dataclass
 class Move:
     """Minimal representation of a Pokémon move.
@@ -1300,6 +1409,112 @@ class BattleData:
         self.battle = Battle()
         self.turndata = TurnData(self.teams)
         self.field = Field()
+        self.revealed_abilities: Dict[str, Dict[str, str]] = {}
+        self.admin_ability_reveal: bool = True
+
+    def _pokemon_reveal_key(self, pokemon: Any, *, side: Optional[str] = None) -> str:
+        return _pokemon_reveal_key(pokemon, self.teams, side=side)
+
+    def reveal_ability_to_viewer(
+        self,
+        viewer_side_or_id: Any,
+        pokemon: Any,
+        ability_name: Optional[str] = None,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> bool:
+        """Remember that ``viewer_side_or_id`` knows ``pokemon``'s ability."""
+
+        viewer_key = _normalize_reveal_viewer(viewer_side_or_id)
+        if not viewer_key:
+            return False
+        pokemon_key = self._pokemon_reveal_key(pokemon, side=pokemon_side)
+        if not pokemon_key:
+            return False
+        ability_text = ability_name or _ability_display_name(
+            getattr(pokemon, "ability", None) or getattr(pokemon, "ability_name", None)
+        )
+        if not ability_text:
+            return False
+        self.revealed_abilities.setdefault(viewer_key, {})[pokemon_key] = ability_text
+        return True
+
+    def reveal_ability_to_side(
+        self,
+        viewer_side_or_id: Any,
+        pokemon: Any,
+        ability_name: Optional[str] = None,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> bool:
+        """Alias for reveal_ability_to_viewer, matching side-based callers."""
+
+        return self.reveal_ability_to_viewer(
+            viewer_side_or_id,
+            pokemon,
+            ability_name,
+            pokemon_side=pokemon_side,
+        )
+
+    def reveal_ability_to_all(
+        self,
+        pokemon: Any,
+        ability_name: Optional[str] = None,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> bool:
+        """Remember that all viewers know ``pokemon``'s ability."""
+
+        return self.reveal_ability_to_viewer(
+            _REVEAL_ALL_VIEWERS,
+            pokemon,
+            ability_name,
+            pokemon_side=pokemon_side,
+        )
+
+    def get_revealed_ability_for_viewer(
+        self,
+        viewer_side_or_id: Any,
+        pokemon: Any,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> Optional[str]:
+        """Return the revealed ability name visible to ``viewer_side_or_id``."""
+
+        pokemon_key = self._pokemon_reveal_key(pokemon, side=pokemon_side)
+        if not pokemon_key:
+            return None
+        viewer_key = _normalize_reveal_viewer(viewer_side_or_id)
+        for key in (viewer_key, _REVEAL_ALL_VIEWERS):
+            if not key:
+                continue
+            ability = self.revealed_abilities.get(key, {}).get(pokemon_key)
+            if ability:
+                return ability
+        return None
+
+    def can_view_ability(
+        self,
+        caller: Any,
+        pokemon: Any,
+        viewer_side_or_id: Any,
+        *,
+        pokemon_side: Optional[str] = None,
+        owns_pokemon: bool = False,
+    ) -> tuple[bool, bool]:
+        """Return ``(visible, admin_only)`` for ability display decisions."""
+
+        if owns_pokemon:
+            return True, False
+        if self.get_revealed_ability_for_viewer(
+            viewer_side_or_id,
+            pokemon,
+            pokemon_side=pokemon_side,
+        ):
+            return True, False
+        if self.admin_ability_reveal and _caller_is_admin(caller):
+            return True, True
+        return False, False
 
     def paydayPayout(self) -> int:
         payout = 0
@@ -1318,6 +1533,12 @@ class BattleData:
             "battle": self.battle.to_dict(),
             "turndata": self.turndata.to_dict(),
             "field": self.field.to_dict(),
+            "revealed_abilities": {
+                str(viewer): {str(pokemon): str(ability) for pokemon, ability in values.items()}
+                for viewer, values in self.revealed_abilities.items()
+                if isinstance(values, dict)
+            },
+            "admin_ability_reveal": bool(self.admin_ability_reveal),
         }
 
     @classmethod
@@ -1328,6 +1549,18 @@ class BattleData:
         obj.battle = Battle.from_dict(data.get("battle", {}))
         obj.turndata = TurnData.from_dict(data.get("turndata", {}))
         obj.field = Field.from_dict(data.get("field", {}))
+        revealed = data.get("revealed_abilities", {}) or {}
+        if isinstance(revealed, dict):
+            obj.revealed_abilities = {
+                str(viewer): {
+                    str(pokemon): str(ability)
+                    for pokemon, ability in values.items()
+                    if ability is not None
+                }
+                for viewer, values in revealed.items()
+                if isinstance(values, dict)
+            }
+        obj.admin_ability_reveal = bool(data.get("admin_ability_reveal", True))
         return obj
 
     def save_to_file(self, filename: str) -> None:

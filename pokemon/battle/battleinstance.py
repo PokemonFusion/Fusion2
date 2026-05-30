@@ -248,6 +248,29 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def battle(self) -> Battle | None:
         return self.logic.battle if self.logic else None
 
+    def set_admin_ability_reveal(self, enabled: bool) -> None:
+        """Set the current battle's admin-only ability reveal flag."""
+
+        if self.data is not None:
+            self.data.admin_ability_reveal = bool(enabled)
+        if self.battle is not None:
+            setter = getattr(self.battle, "set_admin_ability_reveal", None)
+            if callable(setter):
+                setter(bool(enabled))
+            else:
+                setattr(self.battle, "admin_ability_reveal", bool(enabled))
+        if self.data is not None and getattr(self, "storage", None):
+            self.storage.set("data", self.data.to_dict())
+
+    def get_admin_ability_reveal(self) -> bool:
+        """Return the current battle's admin reveal setting."""
+
+        if self.data is not None:
+            return bool(getattr(self.data, "admin_ability_reveal", True))
+        if self.battle is not None:
+            return bool(getattr(self.battle, "admin_ability_reveal", True))
+        return True
+
     # ------------------------------------------------------------
     # Helper utilities
     # ------------------------------------------------------------
@@ -1199,6 +1222,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
+            if self.data and getattr(self, "storage", None):
+                self.storage.set("data", self.data.to_dict())
 
         self.prompt_next_turn()
         battle_handler.register(self)
@@ -1296,6 +1321,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
+            if self.data and getattr(self, "storage", None):
+                self.storage.set("data", self.data.to_dict())
 
         if intro_message:
             self.msg(intro_message)

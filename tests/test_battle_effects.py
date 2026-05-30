@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 
+from pokemon.battle.battledata import BattleData, Pokemon, Team
 from pokemon.ui.battle_effects import render_effects_panel
 from utils.battle_display import strip_ansi
 
@@ -36,6 +37,7 @@ def _mon(
 def _session(player_mon, foe_mon, *, state=None, battle=None):
 	player = SimpleNamespace(name="Spike", active_pokemon=player_mon)
 	foe = SimpleNamespace(name="Wild Pidgey", active_pokemon=foe_mon, is_wild=True)
+	data = BattleData(Team("Spike", [player_mon]), Team("Wild Pidgey", [foe_mon]))
 	return SimpleNamespace(
 		captainA=player,
 		captainB=foe,
@@ -43,6 +45,7 @@ def _session(player_mon, foe_mon, *, state=None, battle=None):
 		teamB=[foe],
 		state=state or SimpleNamespace(turn=2, encounter_kind="wild"),
 		battle=battle,
+		logic=SimpleNamespace(data=data, battle=battle),
 	)
 
 
@@ -96,3 +99,85 @@ def test_effects_panel_reads_battle_field_and_side_conditions() -> None:
 	assert "Tailwind 2t" in clean
 	assert "Hazards: SR" in clean
 	assert "Spikes" in clean and "2" in clean
+
+
+def test_effects_hides_unrevealed_opponent_ability() -> None:
+	player_mon = _mon("Bulbasaur", ability="Overgrow")
+	foe_mon = _mon("Pidgey", ability="Keen Eye")
+	session = _session(player_mon, foe_mon)
+
+	clean = strip_ansi(render_effects_panel(session, session.captainA, total_width=78))
+
+	assert "Item: None   Ability: Overgrow" in clean
+	assert "Item: None   Ability: Unknown" in clean
+	assert "Keen Eye" not in clean
+
+
+def test_effects_shows_revealed_ability_to_matching_side_only() -> None:
+	player_mon = _mon("Bulbasaur", ability="Overgrow")
+	foe_mon = _mon("Pidgey", ability="Keen Eye")
+	session = _session(player_mon, foe_mon)
+	session.logic.data.reveal_ability_to_viewer("A", foe_mon, "Keen Eye", pokemon_side="B")
+
+	clean_a = strip_ansi(render_effects_panel(session, session.captainA, total_width=78))
+	clean_b = strip_ansi(render_effects_panel(session, session.captainB, total_width=78))
+
+	assert "Ability: Keen Eye" in clean_a
+	assert "Ability: Overgrow" not in clean_b
+	assert "Ability: Unknown" in clean_b
+
+
+def test_effects_global_reveal_is_visible_to_other_side() -> None:
+	player_mon = _mon("Bulbasaur", ability="Overgrow")
+	foe_mon = _mon("Pidgey", ability="Keen Eye")
+	session = _session(player_mon, foe_mon)
+	session.logic.data.reveal_ability_to_all(player_mon, "Overgrow", pokemon_side="A")
+
+	clean = strip_ansi(render_effects_panel(session, session.captainB, total_width=78))
+
+	assert "Ability: Overgrow" in clean
+
+
+def test_effects_admin_reveal_can_show_and_hide_hidden_abilities() -> None:
+	player_mon = _mon("Bulbasaur", ability="Overgrow")
+	foe_mon = _mon("Pidgey", ability="Keen Eye")
+	session = _session(player_mon, foe_mon)
+	admin = SimpleNamespace(name="GM", is_superuser=True)
+
+	clean = strip_ansi(render_effects_panel(session, admin, total_width=78))
+	assert "Ability: Keen Eye [admin]" in clean
+
+	session.logic.data.admin_ability_reveal = False
+	clean = strip_ansi(render_effects_panel(session, admin, total_width=78))
+	assert "Keen Eye" not in clean
+	assert "Ability: Unknown" in clean
+
+
+def test_entry_reveal_helper_marks_switch_in_abilities_global() -> None:
+	from pokemon.battle.engine import Battle, BattleParticipant, BattleType
+
+	player_mon = Pokemon("Bulbasaur", ability="Overgrow")
+	foe_mon = Pokemon("Pidgey", ability="Intimidate")
+	data = BattleData(Team("Spike", [player_mon]), Team("Wild Pidgey", [foe_mon]))
+	participant_a = BattleParticipant("Spike", [player_mon], team="A")
+	participant_b = BattleParticipant("Wild Pidgey", [foe_mon], is_ai=True, team="B")
+	battle = Battle(BattleType.WILD, [participant_a, participant_b])
+	battle.bind_reveal_data(data)
+
+	assert battle.reveal_entry_ability(foe_mon) is True
+	assert data.get_revealed_ability_for_viewer("A", foe_mon, pokemon_side="B") == "Intimidate"
+	assert data.get_revealed_ability_for_viewer("B", foe_mon, pokemon_side="B") == "Intimidate"
+
+
+def test_revealed_abilities_survive_battle_data_serialization() -> None:
+	player_mon = Pokemon("Bulbasaur", ability="Overgrow", model_id=101)
+	foe_mon = Pokemon("Pidgey", ability="Keen Eye", model_id=202)
+	data = BattleData(Team("Spike", [player_mon]), Team("Wild Pidgey", [foe_mon]))
+	data.reveal_ability_to_viewer("A", foe_mon, "Keen Eye", pokemon_side="B")
+	data.admin_ability_reveal = False
+
+	restored = BattleData.from_dict(data.to_dict())
+	restored_foe = restored.teams["B"].returnlist()[0]
+
+	assert restored.admin_ability_reveal is False
+	assert restored.get_revealed_ability_for_viewer("A", restored_foe, pokemon_side="B") == "Keen Eye"

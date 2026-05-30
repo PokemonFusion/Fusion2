@@ -127,6 +127,13 @@ from ._shared import (
     get_raw,
     reset_tempvals,
 )
+from .battledata import (
+    _REVEAL_ALL_VIEWERS,
+    _ability_display_name,
+    _caller_is_admin,
+    _normalize_reveal_viewer,
+    _pokemon_reveal_key,
+)
 from .registry import CALLBACK_REGISTRY
 
 ensure_movedex_aliases(MOVEDEX)
@@ -290,6 +297,28 @@ def _effect_key(effect) -> str:
         return ""
     value = getattr(effect, "id", None) or getattr(effect, "key", None) or getattr(effect, "name", None) or effect
     return _normalize_key(str(value)).lower()
+
+
+REVEAL_ON_ENTRY_ABILITIES = {
+    "drizzle",
+    "drought",
+    "electricsurge",
+    "frisk",
+    "grassysurge",
+    "hadronengine",
+    "intimidate",
+    "mistysurge",
+    "moldbreaker",
+    "orichalcumpulse",
+    "pressure",
+    "primordialsea",
+    "psychicsurge",
+    "sandstream",
+    "snowwarning",
+    "teravolt",
+    "trace",
+    "turboblaze",
+}
 
 
 def _ability_try_hit_blocks(target, source, move, battle) -> bool:
@@ -1433,6 +1462,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.fail_fast_errors: bool = battle_debug_fail_fast(self)
         # Toggle to display exact damage numbers alongside descriptive text.
         self.show_damage_numbers: bool = False
+        self.revealed_abilities: Dict[str, Dict[str, str]] = {}
+        self.admin_ability_reveal: bool = True
+        self._reveal_data = None
         self.rng = rng or random
         self._rewards_granted: bool = False
         self._result_logged: bool = False
@@ -1495,6 +1527,158 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             "source": source,
             "sourceEffect": source_effect,
         }
+
+    def bind_reveal_data(self, data: Any) -> None:
+        """Bind live reveal helpers to the serializable BattleData object."""
+
+        self._reveal_data = data
+        self.revealed_abilities = getattr(data, "revealed_abilities", {}) or {}
+        self.admin_ability_reveal = bool(getattr(data, "admin_ability_reveal", True))
+
+    def _reveal_store(self):
+        store = getattr(self, "_reveal_data", None)
+        if store is not None and hasattr(store, "reveal_ability_to_viewer"):
+            return store
+        return self
+
+    def _local_pokemon_reveal_key(self, pokemon, *, side: Optional[str] = None) -> str:
+        teams = getattr(getattr(self, "_reveal_data", None), "teams", None)
+        return _pokemon_reveal_key(pokemon, teams, side=side)
+
+    def reveal_ability_to_viewer(
+        self,
+        viewer_side_or_id: Any,
+        pokemon,
+        ability_name: Optional[str] = None,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> bool:
+        """Remember that a viewer side knows a Pokemon's ability."""
+
+        store = self._reveal_store()
+        if store is not self:
+            changed = store.reveal_ability_to_viewer(
+                viewer_side_or_id,
+                pokemon,
+                ability_name,
+                pokemon_side=pokemon_side,
+            )
+            self.revealed_abilities = getattr(store, "revealed_abilities", {})
+            self.admin_ability_reveal = bool(getattr(store, "admin_ability_reveal", True))
+            return changed
+
+        viewer_key = _normalize_reveal_viewer(viewer_side_or_id)
+        pokemon_key = self._local_pokemon_reveal_key(pokemon, side=pokemon_side)
+        ability_text = ability_name or _ability_display_name(
+            getattr(pokemon, "ability", None) or getattr(pokemon, "ability_name", None)
+        )
+        if not viewer_key or not pokemon_key or not ability_text:
+            return False
+        self.revealed_abilities.setdefault(viewer_key, {})[pokemon_key] = ability_text
+        return True
+
+    def reveal_ability_to_side(
+        self,
+        viewer_side_or_id: Any,
+        pokemon,
+        ability_name: Optional[str] = None,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> bool:
+        return self.reveal_ability_to_viewer(
+            viewer_side_or_id,
+            pokemon,
+            ability_name,
+            pokemon_side=pokemon_side,
+        )
+
+    def reveal_ability_to_all(
+        self,
+        pokemon,
+        ability_name: Optional[str] = None,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> bool:
+        return self.reveal_ability_to_viewer(
+            _REVEAL_ALL_VIEWERS,
+            pokemon,
+            ability_name,
+            pokemon_side=pokemon_side,
+        )
+
+    def get_revealed_ability_for_viewer(
+        self,
+        viewer_side_or_id: Any,
+        pokemon,
+        *,
+        pokemon_side: Optional[str] = None,
+    ) -> Optional[str]:
+        store = self._reveal_store()
+        if store is not self:
+            return store.get_revealed_ability_for_viewer(
+                viewer_side_or_id,
+                pokemon,
+                pokemon_side=pokemon_side,
+            )
+
+        pokemon_key = self._local_pokemon_reveal_key(pokemon, side=pokemon_side)
+        viewer_key = _normalize_reveal_viewer(viewer_side_or_id)
+        for key in (viewer_key, _REVEAL_ALL_VIEWERS):
+            if not key:
+                continue
+            ability = self.revealed_abilities.get(key, {}).get(pokemon_key)
+            if ability:
+                return ability
+        return None
+
+    def can_view_ability(
+        self,
+        caller: Any,
+        pokemon,
+        viewer_side_or_id: Any,
+        *,
+        pokemon_side: Optional[str] = None,
+        owns_pokemon: bool = False,
+    ) -> tuple[bool, bool]:
+        store = self._reveal_store()
+        if store is not self and hasattr(store, "can_view_ability"):
+            return store.can_view_ability(
+                caller,
+                pokemon,
+                viewer_side_or_id,
+                pokemon_side=pokemon_side,
+                owns_pokemon=owns_pokemon,
+            )
+        if owns_pokemon:
+            return True, False
+        if self.get_revealed_ability_for_viewer(
+            viewer_side_or_id,
+            pokemon,
+            pokemon_side=pokemon_side,
+        ):
+            return True, False
+        if self.admin_ability_reveal and _caller_is_admin(caller):
+            return True, True
+        return False, False
+
+    def set_admin_ability_reveal(self, enabled: bool) -> None:
+        """Set the battle-scoped admin reveal flag."""
+
+        self.admin_ability_reveal = bool(enabled)
+        store = getattr(self, "_reveal_data", None)
+        if store is not None:
+            setattr(store, "admin_ability_reveal", self.admin_ability_reveal)
+
+    def reveal_entry_ability(self, pokemon) -> bool:
+        """Reveal abilities whose switch-in/start effect exposes them."""
+
+        ability = _resolve_ability(getattr(pokemon, "ability", None)) or getattr(pokemon, "ability", None)
+        if _effect_key(ability) not in REVEAL_ON_ENTRY_ABILITIES:
+            return False
+        return self.reveal_ability_to_all(
+            pokemon,
+            _ability_display_name(ability),
+        )
 
     def clear_effect_state(self, state: Optional[Dict[str, Any]]) -> None:
         """Clear an effect-state mapping in place."""
@@ -2490,6 +2674,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.register_handlers(pokemon)
         self.dispatcher.dispatch("pre_start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
+        self.reveal_entry_ability(pokemon)
         self.runEvent("SwitchIn", pokemon, source, effect or getattr(self, "effect", None))
         self.dispatcher.dispatch("switch_in", pokemon=pokemon, battle=self)
         self._run_slot_swap_events(pokemon, source=source, effect=effect)
@@ -4679,6 +4864,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if not ability_name:
             return
         ability_text = str(ability_name)
+        self.reveal_ability_to_all(pokemon, ability_text)
         nickname = self._pokemon_nickname(pokemon)
         message = self._format_default_message(
             "abilityActivation",
