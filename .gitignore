@@ -57,3 +57,5 @@ nosetests.xml
 server/evennia.db3-wal
 server/evennia.db3-shm
 move_ability_report.txt
+
+.codex-artifacts
