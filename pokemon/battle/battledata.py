@@ -20,6 +20,8 @@ from typing import Any, Dict, List, Optional
 from pokemon.services.pokemon_refs import parse_pokemon_ref
 from utils.safe_import import safe_import
 
+from ._shared import detached_mapping
+
 try:
     POKEDEX = safe_import("pokemon.dex").POKEDEX  # type: ignore[attr-defined]
 except (ModuleNotFoundError, AttributeError):  # pragma: no cover - optional in tests
@@ -833,7 +835,7 @@ class Pokemon:
             "status": self.status,
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
-            "tempvals": self.tempvals,
+            "tempvals": detached_mapping(self.tempvals),
             "gender": self.gender,
         }
 
@@ -979,18 +981,20 @@ class Pokemon:
         for move, move_data in zip(obj.moves, stored_moves):
             if isinstance(move_data, dict) and "pp" in move_data:
                 setattr(move, "pp", move_data["pp"])
-        obj.tempvals = data.get("tempvals", {})
-        obj.boosts = data.get(
-            "boosts",
-            {
-                "atk": 0,
-                "def": 0,
-                "spa": 0,
-                "spd": 0,
-                "spe": 0,
-                "accuracy": 0,
-                "evasion": 0,
-            },
+        obj.tempvals = detached_mapping(data.get("tempvals", {}))
+        obj.boosts = detached_mapping(
+            data.get(
+                "boosts",
+                {
+                    "atk": 0,
+                    "def": 0,
+                    "spa": 0,
+                    "spd": 0,
+                    "spe": 0,
+                    "accuracy": 0,
+                    "evasion": 0,
+                },
+            )
         )
         return obj
 

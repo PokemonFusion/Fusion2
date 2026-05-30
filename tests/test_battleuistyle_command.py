@@ -47,18 +47,19 @@ def test_battleuistyle_shows_default():
 	cmd.caller = caller
 	cmd.args = ""
 	cmd.func()
-	assert "legacy" in caller.msgs[-1]
 	assert "classic_modern" in caller.msgs[-1]
+	assert "legacy" in caller.msgs[-1]
+	assert "pf1" in caller.msgs[-1]
 
 
 def test_battleuistyle_sets_classic_modern():
 	cmd_mod = load_cmd_module()
-	caller = _caller()
+	caller = _caller("legacy")
 	cmd = cmd_mod.CmdBattleUiStyle()
 	cmd.caller = caller
 	cmd.args = "classic"
 	cmd.func()
-	assert caller.db.battle_ui_style == "classic_modern"
+	assert not hasattr(caller.db, "battle_ui_style")
 	assert caller.msgs[-1] == "Battle UI style set to classic_modern."
 
 
@@ -70,14 +71,26 @@ def test_battleuistyle_invalid():
 	cmd.args = "widebox"
 	cmd.func()
 	assert "Usage" in caller.msgs[-1]
+	assert "pf1" in caller.msgs[-1]
 
 
-def test_battleuistyle_legacy_clears_preference():
+def test_battleuistyle_legacy_sets_preference():
 	cmd_mod = load_cmd_module()
-	caller = _caller("classic_modern")
+	caller = _caller()
 	cmd = cmd_mod.CmdBattleUiStyle()
 	cmd.caller = caller
 	cmd.args = "legacy"
 	cmd.func()
-	assert not hasattr(caller.db, "battle_ui_style")
+	assert caller.db.battle_ui_style == "legacy"
 	assert caller.msgs[-1] == "Battle UI style set to legacy."
+
+
+def test_battleuistyle_pf1_sets_preference():
+	cmd_mod = load_cmd_module()
+	caller = _caller()
+	cmd = cmd_mod.CmdBattleUiStyle()
+	cmd.caller = caller
+	cmd.args = "classic-pf1"
+	cmd.func()
+	assert caller.db.battle_ui_style == "pf1"
+	assert caller.msgs[-1] == "Battle UI style set to pf1."

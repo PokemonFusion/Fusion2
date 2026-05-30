@@ -16,6 +16,8 @@
   --fusion-terminal-soft: #17251f;
   --fusion-terminal-line: #263b35;
   --fusion-focus: #d99a31;
+  --fusion-terminal-font: "Fira Mono", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
+  --fusion-terminal-font-size: 9px;
   --shadow-soft: 0 16px 36px rgba(71, 49, 33, .11);
 }
 
@@ -34,7 +36,7 @@ body {
     linear-gradient(180deg, var(--fusion-bg), var(--fusion-bg-deep));
   background-size: 56px 56px, 56px 56px, 980px 560px, 100% 100%;
   color: #d9eadc;
-  font-family: "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
+  font-family: var(--fusion-terminal-font);
   font-size: 1rem;
   letter-spacing: 0;
   line-height: 1.45;
@@ -302,6 +304,9 @@ textarea {
 .content {
   background: var(--fusion-terminal);
   color: #d9eadc;
+  font-family: var(--fusion-terminal-font);
+  font-size: var(--fusion-terminal-font-size);
+  line-height: 1.45;
   overflow-wrap: break-word;
   scrollbar-color: #405b51 #0c1211;
   scrollbar-width: thin;
@@ -326,6 +331,9 @@ textarea {
 .out {
   background: transparent;
   color: #d9eadc;
+  font-family: var(--fusion-terminal-font);
+  font-size: var(--fusion-terminal-font-size);
+  line-height: 1.45;
   padding: .08rem .1rem;
   white-space: pre-wrap;
 }
@@ -347,6 +355,9 @@ textarea {
   background: #0c1211;
   border-bottom: 1px solid var(--fusion-terminal-line);
   color: var(--fusion-yellow);
+  font-family: var(--fusion-terminal-font);
+  font-size: var(--fusion-terminal-font-size);
+  line-height: 1.45;
   min-height: 1.5rem;
   overflow: hidden;
   padding: .1rem .55rem;
@@ -370,7 +381,8 @@ textarea {
   background: #0c1211;
   border: 0;
   color: #fff8ea;
-  font-size: 1rem;
+  font-family: var(--fusion-terminal-font);
+  font-size: var(--fusion-terminal-font-size);
   line-height: 1.45;
   min-height: 100%;
   padding: .65rem .75rem;
@@ -590,6 +602,6 @@ textarea {
 
   .inputfield,
   #inputfield {
-    font-size: .92rem;
+    font-size: var(--fusion-terminal-font-size);
   }
 }

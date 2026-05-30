@@ -50,6 +50,7 @@ def render_battle_ui(
 	total_width: int = 100,
 	waiting_on=None,
 	style: str | None = None,
+	ascii_symbols: bool | None = None,
 ) -> str:
 	"""Proxy to :func:`pokemon.ui.battle_render.render_battle_ui`.
 
@@ -66,6 +67,7 @@ def render_battle_ui(
 		total_width=total_width,
 		waiting_on=waiting_on,
 		style=style,
+		ascii_symbols=ascii_symbols,
 	)
 
 

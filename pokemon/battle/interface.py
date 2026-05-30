@@ -45,9 +45,8 @@ def format_turn_banner(turn: int, *, closing: bool = False) -> str:
                 artwork points upward, indicating the end of the turn.
         """
 
-        left = "╰" if closing else "╭"
-        right = "╯" if closing else "╮"
-        return f"{left}─ Turn {turn} ─{right}"
+        edge = "-" if closing else "="
+        return f"{edge * 2} Turn {turn} {edge * 2}"
 
 
 # -----------------------------------------------------------------------------
@@ -136,9 +135,10 @@ def display_battle_interface(
 		selected an action.  When provided a footer line is displayed showing
 		which Pokémon the system is waiting on.
 	style:
-		Optional renderer style, currently ``legacy`` or ``classic_modern``.
+		Optional renderer style, currently ``legacy``, ``classic_modern`` or
+		``pf1``.
 		When omitted, the viewer's ``db.battle_ui_style`` preference is used
-		and falls back to ``legacy``.
+		and falls back to ``classic_modern``.
 	total_width:
 		Optional target width.  When omitted, ``target.ndb.cols`` is used if
 		available, capped for ordinary MUD clients.

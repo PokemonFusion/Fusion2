@@ -120,7 +120,13 @@ if "pokemon.battle" not in sys.modules:
     sub.__path__ = [_BASE_PATH]
     sys.modules["pokemon.battle"] = sub
 
-from ._shared import _normalize_key, ensure_movedex_aliases, get_pp, get_raw
+from ._shared import (
+    _normalize_key,
+    ensure_movedex_aliases,
+    get_pp,
+    get_raw,
+    reset_tempvals,
+)
 from .registry import CALLBACK_REGISTRY
 
 ensure_movedex_aliases(MOVEDEX)
@@ -2755,8 +2761,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 continue
             for poke in part.active:
                 # Clear any temporary battle values on switch
-                if hasattr(poke, "tempvals"):
-                    poke.tempvals.clear()
+                reset_tempvals(poke)
             for poke in part.pokemons:
                 if poke not in part.active and getattr(poke, "status", None) == "tox":
                     try:

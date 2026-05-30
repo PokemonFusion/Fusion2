@@ -7,6 +7,18 @@ from enum import Enum
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
+pokemon_pkg = sys.modules.get("pokemon")
+if pokemon_pkg is None:
+	pokemon_pkg = types.ModuleType("pokemon")
+	sys.modules["pokemon"] = pokemon_pkg
+pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
+
+battle_pkg = sys.modules.get("pokemon.battle")
+if battle_pkg is None:
+	battle_pkg = types.ModuleType("pokemon.battle")
+	sys.modules["pokemon.battle"] = battle_pkg
+battle_pkg.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
+
 # Stub evennia.create_object while keeping the real module
 try:
 	import evennia  # type: ignore

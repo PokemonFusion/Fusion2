@@ -21,6 +21,7 @@ from pokemon.ui.battle_render import (
 	gender_chip,
 	rpad,
 	status_badge,
+	viewer_prefers_ascii_symbols,
 )
 from pokemon.ui.box_utils import render_box
 
@@ -242,6 +243,7 @@ def render_effects_panel(
 ) -> str:
 	"""Render the full effects panel. `focus` can be "me" or "opp" to limit Pokémon section."""
 	ad = EffectsAdapter(session, viewer)
+	ascii_symbols = viewer_prefers_ascii_symbols(viewer)
 
 	inner = max(40, total_width - 2)
 
@@ -286,7 +288,15 @@ def render_effects_panel(
 			name_raw = display_name(mon)
 			name_color = f"{THEME['name']}{name_raw}|n"
 			chips = "  ".join(
-				[p for p in (gender_chip(mon), f"Lv{getattr(mon, 'level', '?')}", status_badge(mon)) if p]
+				[
+					p
+					for p in (
+						gender_chip(mon, ascii_symbols=ascii_symbols),
+						f"Lv{getattr(mon, 'level', '?')}",
+						status_badge(mon),
+					)
+					if p
+				]
 			)
 			line1 = name_color if ansi_len(f"{name_color}  {chips}") > inner else f"{name_color}  {chips}"
 			rows.append(rpad(line1, inner))
