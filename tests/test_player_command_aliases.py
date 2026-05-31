@@ -149,7 +149,7 @@ def test_guide_teaches_preferred_command_names():
     text = (ROOT / "world/help_entries.py").read_text(encoding="utf-8")
 
     for command in (
-        "+starter <pokemon>",
+        "+starter",
         "+party <slot>",
         "+box/deposit <pokemon_id> [box]",
         "+storage",
@@ -162,6 +162,7 @@ def test_guide_teaches_preferred_command_names():
         assert command in text
 
     for legacy in (
+        "+starter <pokemon>",
         "choosestarter <pokemon>",
         "\ndeposit <pokemon_id> [box]",
         "+move <slot>=<move>",

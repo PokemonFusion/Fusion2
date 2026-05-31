@@ -48,8 +48,9 @@ game, then follow the setup prompts.
    chargen
 5. See starter options with:
    +starters
-6. Pick your starter with:
-   +starter <pokemon>
+6. Pick your starter inside chargen. If you leave the menu during starter
+   selection, resume it with:
+   +starter
 
 # After Setup
 

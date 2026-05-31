@@ -43,6 +43,8 @@ def test_finish_fusion_stores_level_and_exp():
         sys.modules["pokemon.data.generation"] = fake_generation
         fake_starters = types.ModuleType("pokemon.data.starters")
         fake_starters.STARTER_LOOKUP = {}
+        fake_starters.resolve_starter_key = lambda value: None
+        fake_starters.is_valid_starter_key = lambda key: False
         fake_starters.get_starter_names = lambda: []
         sys.modules["pokemon.data.starters"] = fake_starters
         fake_dex = types.ModuleType("pokemon.dex")

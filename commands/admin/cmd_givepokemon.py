@@ -11,6 +11,10 @@ class CmdGivePokemon(Command):
 	Usage:
 	  @givepokemon <character>
 	  @givepokemon <character>=<species>[, level]
+
+	Notes:
+	  This is a staff-only grant path. It bypasses chargen starter selection
+	  and still validates species through Pokemon generation.
 	"""
 
 	key = "@givepokemon"
@@ -49,6 +53,7 @@ class CmdGivePokemon(Command):
 			from utils.pokemon_utils import grant_generated_pokemon
 
 			try:
+				self.caller.msg("Staff grant: bypassing chargen and validating species through generation.")
 				grant_generated_pokemon(target, species, max(1, level), caller=self.caller)
 			except ValueError as err:
 				if is_species_not_found_error(err):

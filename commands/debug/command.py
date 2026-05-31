@@ -336,16 +336,18 @@ class CmdUseMove(Command):
 
 
 class CmdChooseStarter(Command):
-    """Choose your first Pokemon.
+    """Open or resume starter selection through chargen.
 
     Usage:
-      +starter <pokemon>
+      +starter
 
     Examples:
-      +starter Bulbasaur
+      +starter
 
     Notes:
-      Use +starters to list valid starter choices.
+      Direct +starter <pokemon> creation is deprecated. Starter selection now
+      happens through the chargen menu because it includes ability, nature, and
+      gender choices.
     """
 
     key = "+starter"
@@ -354,11 +356,96 @@ class CmdChooseStarter(Command):
     help_category = "Pokemon"
 
     def func(self):
-        if not self.args:
-            self.caller.msg("Usage: +starter <pokemon>")
+        caller = self.caller
+        requested_species = (self.args or "").strip()
+        if requested_species:
+            from pokemon.data.starters import resolve_starter_key
+
+            if not resolve_starter_key(requested_species):
+                caller.msg("That is not a valid starter species. Use |w+starters|n to list valid starters.")
+            else:
+                caller.msg(
+                    "Direct starter creation with |w+starter <pokemon>|n is deprecated. "
+                    "Use |w+starter|n with no Pokemon name to open or resume chargen starter selection."
+                )
             return
-        result = self.caller.choose_starter(self.args.strip())
-        self.caller.msg(result)
+
+        if _db_bool(caller, "validated", False):
+            caller.msg("You have already completed chargen; starter selection is closed.")
+            return
+
+        if _caller_has_party_pokemon(caller):
+            caller.msg("You already have a starter Pokemon.")
+            return
+
+        target = _starter_menu_target(caller)
+        if target is None:
+            return
+        startnode, raw_input, kwargs = target
+        if startnode == "start":
+            caller.msg("Starting chargen. Starter selection now happens inside this menu.")
+        else:
+            caller.msg("Opening chargen starter selection.")
+
+        from menus import chargen as chargen_menu
+        from utils.enhanced_evmenu import EnhancedEvMenu
+
+        EnhancedEvMenu(
+            caller,
+            chargen_menu,
+            startnode=startnode,
+            startnode_input=(raw_input, kwargs),
+            cmd_on_exit=None,
+            on_abort=lambda menu_caller: menu_caller.msg("Character generation aborted."),
+            numbered_options=False,
+            show_options=False,
+        )
+
+
+def _caller_has_party_pokemon(caller) -> bool:
+    storage = getattr(caller, "storage", None)
+    has_party = getattr(storage, "has_party_pokemon", None)
+    if callable(has_party):
+        return bool(has_party())
+    get_party = getattr(storage, "get_party", None)
+    if callable(get_party):
+        return bool(get_party())
+    return False
+
+
+def _starter_menu_target(caller):
+    data = getattr(getattr(caller, "ndb", None), "chargen", None)
+    if not isinstance(data, dict) or not data:
+        return "start", "", {}
+
+    chargen_type = data.get("type")
+    if chargen_type == "fusion":
+        caller.msg("Fusion chargen does not include a starter Pokemon.")
+        return None
+    if chargen_type != "human":
+        return "start", "", {}
+
+    player_gender = data.get("player_gender")
+    if not player_gender:
+        return "human_gender", "", {}
+
+    favored_type = data.get("favored_type")
+    if not favored_type:
+        return "human_type", "", {"gender": player_gender}
+
+    if not data.get("species_key"):
+        return "starter_species", "", {"type": favored_type}
+
+    if not data.get("ability"):
+        return "starter_ability", "", {}
+
+    if not data.get("nature"):
+        return "starter_nature", "", {}
+
+    if not data.get("starter_gender"):
+        return "starter_gender", data.get("nature", ""), {}
+
+    return "starter_confirm", "", {"gender": data.get("starter_gender")}
 
 
 class CmdSpoof(Command):

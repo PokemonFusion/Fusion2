@@ -9,11 +9,16 @@ from typing import Dict
 
 from pokemon.data.generation import NATURES as NATURES_MAP
 from pokemon.data.generation import generate_pokemon
-from pokemon.data.starters import STARTER_LOOKUP, get_starter_names
+from pokemon.data.starters import (
+    STARTER_LOOKUP,
+    get_starter_names,
+    is_valid_starter_key,
+    resolve_starter_key,
+)
 from pokemon.data.text import ABILITIES_TEXT
 from pokemon.dex import POKEDEX
+from pokemon.helpers.starter_helpers import create_chargen_starter
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-from pokemon.models.storage import ensure_boxes
 from utils.enhanced_evmenu import INVALID_INPUT_MSG
 from utils.fusion import record_fusion
 
@@ -68,6 +73,60 @@ def _invalid(caller):
     """Notify caller of invalid input."""
     # Use our shared, width-safe message from enhanced_evmenu for consistency
     caller.msg(INVALID_INPUT_MSG)
+
+
+def _chargen_data(caller) -> dict:
+    data = getattr(caller.ndb, "chargen", None)
+    if not isinstance(data, dict):
+        data = {}
+        caller.ndb.chargen = data
+    return data
+
+
+def _confirm_choice(caller, field: str, label: str, value: str) -> None:
+    """Tell the player what was accepted, without repeating on redraws."""
+    data = _chargen_data(caller)
+    confirmed = data.setdefault("_confirmed_choices", {})
+    if confirmed.get(field) == value:
+        return
+    confirmed[field] = value
+    caller.msg(f"|gSelected {label}:|n {value}")
+
+
+def _select_chargen_type(caller, raw_input, **kwargs):
+    chargen_type = kwargs["chargen_type"]
+    if chargen_type == "human":
+        caller.ndb.chargen = {"type": "human"}
+        _confirm_choice(caller, "type", "character type", "Human trainer")
+        return "human_gender", {}
+    caller.ndb.chargen = {"type": "fusion"}
+    _confirm_choice(caller, "type", "character type", "Fusion")
+    return "fusion_gender", {}
+
+
+def _select_player_gender(caller, raw_input, **kwargs):
+    gender = kwargs["gender"]
+    next_node = kwargs["next_node"]
+    data = _chargen_data(caller)
+    data["player_gender"] = gender
+    _confirm_choice(caller, "player_gender", "gender", gender)
+    return next_node, {"gender": gender}
+
+
+def _select_favored_type(caller, raw_input, **kwargs):
+    favored_type = kwargs["type"]
+    data = _chargen_data(caller)
+    data["favored_type"] = favored_type
+    _confirm_choice(caller, "favored_type", "favored type", favored_type)
+    return "starter_species", {"type": favored_type}
+
+
+def _select_starter_gender(caller, raw_input, **kwargs):
+    gender = kwargs["gender"]
+    _chargen_data(caller)["starter_gender"] = gender
+    label = {"M": "Male", "F": "Female", "N": "Genderless"}.get(gender, gender)
+    _confirm_choice(caller, "starter_gender", "starter gender", label)
+    return "starter_confirm", {"gender": gender}
 
 
 def format_columns(items, columns=4, indent=2):
@@ -141,12 +200,6 @@ def _build_owned_pokemon(
     )
 
 
-def _add_pokemon_to_storage(char, pokemon) -> None:
-    """Place a Pokémon into the caller's active party."""
-    storage = ensure_boxes(char.storage)
-    storage.add_active_pokemon(pokemon)
-
-
 def _create_starter(
     char,
     species_key: str,
@@ -156,15 +209,11 @@ def _create_starter(
     level: int = 5,
 ):
     """Instantiate and store a starter Pokémon for the player."""
-    normalized = _normalize_species_key(species_key)
-    instance = _generate_instance(normalized, level)
-    if not instance:
-        char.msg(f'|rThat species does not exist|n (input="{species_key}", normalized="{normalized}").')
+    try:
+        return create_chargen_starter(char, species_key, ability, gender, nature, level=level)
+    except ValueError:
+        char.msg(f'|rInvalid starter species.|n (input="{species_key}")')
         return None
-
-    pokemon = _build_owned_pokemon(char, instance, ability, gender, nature, level)
-    _add_pokemon_to_storage(char, pokemon)
-    return pokemon
 
 
 # ────── MENU NODES ─────────────────────────────────────────────────────────────
@@ -178,11 +227,15 @@ def start(caller, raw_string):
         "______________________________________________________________________________"
     )
     options = (
-        {"key": ("A", "a"), "desc": "Human trainer", "goto": ("human_gender", {})},
+        {
+            "key": ("A", "a"),
+            "desc": "Human trainer",
+            "goto": (_select_chargen_type, {"chargen_type": "human"}),
+        },
         {
             "key": ("B", "b"),
             "desc": "Fusion (no starter)",
-            "goto": ("fusion_gender", {}),
+            "goto": (_select_chargen_type, {"chargen_type": "fusion"}),
         },
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
@@ -191,14 +244,19 @@ def start(caller, raw_string):
 
 
 def human_gender(caller, raw_string, **kwargs):
-    caller.ndb.chargen = {"type": "human"}
+    data = _chargen_data(caller)
+    data["type"] = "human"
     text = "Choose your gender: (M)ale or (F)emale"
     options = (
-        {"key": ("M", "m"), "desc": "Male", "goto": ("human_type", {"gender": "Male"})},
+        {
+            "key": ("M", "m"),
+            "desc": "Male",
+            "goto": (_select_player_gender, {"gender": "Male", "next_node": "human_type"}),
+        },
         {
             "key": ("F", "f"),
             "desc": "Female",
-            "goto": ("human_type", {"gender": "Female"}),
+            "goto": (_select_player_gender, {"gender": "Female", "next_node": "human_type"}),
         },
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
@@ -207,18 +265,19 @@ def human_gender(caller, raw_string, **kwargs):
 
 
 def fusion_gender(caller, raw_string, **kwargs):
-    caller.ndb.chargen = {"type": "fusion"}
+    data = _chargen_data(caller)
+    data["type"] = "fusion"
     text = "Choose your gender: (M)ale or (F)emale"
     options = (
         {
             "key": ("M", "m"),
             "desc": "Male",
-            "goto": ("fusion_species", {"gender": "Male"}),
+            "goto": (_select_player_gender, {"gender": "Male", "next_node": "fusion_species"}),
         },
         {
             "key": ("F", "f"),
             "desc": "Female",
-            "goto": ("fusion_species", {"gender": "Female"}),
+            "goto": (_select_player_gender, {"gender": "Female", "next_node": "fusion_species"}),
         },
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
@@ -234,7 +293,10 @@ def human_type(caller, raw_string, **kwargs):
     text = "Choose your favored Pokémon type:\n" + format_columns(TYPES) + "\n"
 
     # build all the real type-choices
-    opts = [{"key": t.lower(), "desc": t, "goto": ("starter_species", {"type": t})} for t in TYPES]
+    opts = [
+        {"key": t.lower(), "desc": t, "goto": (_select_favored_type, {"type": t})}
+        for t in TYPES
+    ]
     # abort stays the same
     opts.append(ABORT_OPTION)
     # on anything else, show our invalid-entry msg *and* go back into human_type
@@ -271,7 +333,9 @@ def _handle_fusion_species_input(caller, raw_input, **kwargs):
         caller.msg("|rInvalid species.|n Try again.")
         return "fusion_species"
     mon = POKEDEX[key]
-    caller.ndb.chargen.update({"species_key": key, "species": mon.raw.get("name", mon.name)})
+    species = mon.raw.get("name", mon.name)
+    caller.ndb.chargen.update({"species_key": key, "species": species})
+    _confirm_choice(caller, "fusion_species", "fusion species", species)
     return "fusion_ability"
 
 
@@ -312,6 +376,7 @@ def fusion_ability(caller, raw_string, **kwargs):
             return "fusion_ability", k
         k = dict(k)
         k["ability"] = choice
+        _confirm_choice(caller, "fusion_ability", "ability", choice)
         return "fusion_nature", k
 
     options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
@@ -322,6 +387,7 @@ def fusion_nature(caller, raw_string, **kwargs):
     """Prompt for fusion nature."""
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
+        _confirm_choice(caller, "fusion_ability", "ability", kwargs["ability"])
     text = "Choose your fusion's nature:\n" + format_columns(NATURE_NAMES, columns=5) + "\n"
     help_lines = ["Nature effects:"]
     for name in NATURE_NAMES:
@@ -349,11 +415,7 @@ def starter_species(caller, raw_string, **kwargs):
     options = [
         {
             "key": ("starterlist", "starters", "pokemonlist"),
-            "exec": lambda cb: cb.msg("Starter Pokémon:\n" + ", ".join(get_starter_names())),
-            "goto": (
-                "starter_species",
-                {"type": caller.ndb.chargen["favored_type"]},
-            ),
+            "goto": _handle_starter_species_input,
         },
         ABORT_OPTION,
         {"key": "_default", "goto": _handle_starter_species_input},
@@ -372,20 +434,18 @@ def _handle_starter_species_input(caller, raw_input, **kwargs):
             "starter_species",
             {"type": caller.ndb.chargen.get("favored_type")},
         )
-    # First, resolve whatever the player typed (display name or key) to a canonical dex key
-    key = POKEMON_KEY_LOOKUP.get(entry)
-    # If that fails, fall back to any alias in STARTER_LOOKUP (covers custom starter aliases)
-    if not key:
-        key = STARTER_LOOKUP.get(entry)
+    key = resolve_starter_key(entry)
 
     # Must be a real Pokémon and also be allowed as a starter
-    if not key or key not in POKEDEX or key not in STARTER_KEY_SET:
+    if not key or key not in POKEDEX or not is_valid_starter_key(key):
         _invalid(caller)
         caller.msg("|rInvalid starter species.|n Use |wstarterlist|n or |wpokemonlist|n.")
         return ("starter_species", {"type": caller.ndb.chargen.get("favored_type")})
 
+    species = POKEDEX[key].raw.get("name", key)
     caller.ndb.chargen["species_key"] = key
-    caller.ndb.chargen["species"] = POKEDEX[key].raw.get("name", key)
+    caller.ndb.chargen["species"] = species
+    _confirm_choice(caller, "starter_species", "starter", species)
     return "starter_ability", {}
 
 
@@ -429,6 +489,7 @@ def starter_ability(caller, raw_string, **kwargs):
             return "starter_ability", k
         k = dict(k)
         k["ability"] = choice
+        _confirm_choice(caller, "starter_ability", "ability", choice)
         return "starter_nature", k
 
     options = [ABORT_OPTION, {"key": "_default", "goto": _pick_ability}]
@@ -439,6 +500,7 @@ def starter_nature(caller, raw_string, **kwargs):
     """Prompt for starter nature."""
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
+        _confirm_choice(caller, "starter_ability", "ability", kwargs["ability"])
     text = "Choose your starter's nature:\n" + format_columns(NATURE_NAMES, columns=5) + "\n"
     help_lines = ["Nature effects:"]
     for name in NATURE_NAMES:
@@ -469,6 +531,7 @@ def starter_gender(caller, raw_string, **kwargs):
         caller.msg("|rInvalid nature.|n Try again.")
         return starter_nature(caller, "")
     caller.ndb.chargen["nature"] = nature
+    _confirm_choice(caller, "starter_nature", "nature", nature)
 
     key = caller.ndb.chargen.get("species_key")
     data = POKEDEX[key]
@@ -485,8 +548,7 @@ def starter_gender(caller, raw_string, **kwargs):
             {
                 "key": (gender, gender.lower()),
                 "desc": desc,
-                "exec": lambda cb, g=gender: cb.ndb.chargen.__setitem__("starter_gender", g),
-                "goto": ("starter_confirm", {"gender": gender}),
+                "goto": (_select_starter_gender, {"gender": gender}),
             }
         )
     else:
@@ -497,8 +559,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 {
                     "key": ("M", "m"),
                     "desc": "Male",
-                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "M"),
-                    "goto": ("starter_confirm", {"gender": "M"}),
+                    "goto": (_select_starter_gender, {"gender": "M"}),
                 }
             )
         if f > 0:
@@ -507,8 +568,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 {
                     "key": ("F", "f"),
                     "desc": "Female",
-                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "F"),
-                    "goto": ("starter_confirm", {"gender": "F"}),
+                    "goto": (_select_starter_gender, {"gender": "F"}),
                 }
             )
         if m == 0 and f == 0:
@@ -517,8 +577,7 @@ def starter_gender(caller, raw_string, **kwargs):
                 {
                     "key": ("N", "n"),
                     "desc": "Genderless",
-                    "exec": lambda cb: cb.ndb.chargen.__setitem__("starter_gender", "N"),
-                    "goto": ("starter_confirm", {"gender": "N"}),
+                    "goto": (_select_starter_gender, {"gender": "N"}),
                 }
             )
 
@@ -541,6 +600,8 @@ def starter_confirm(caller, raw_string, **kwargs):
         data["ability"] = kwargs["ability"]
     if kwargs.get("gender"):
         data["starter_gender"] = kwargs["gender"]
+        label = {"M": "Male", "F": "Female", "N": "Genderless"}.get(kwargs["gender"], kwargs["gender"])
+        _confirm_choice(caller, "starter_gender", "starter gender", label)
 
     species = data.get("species")
     ability = data.get("ability")
@@ -593,6 +654,7 @@ def starter_confirm(caller, raw_string, **kwargs):
 def fusion_confirm(caller, raw_string, **kwargs):
     if kwargs.get("ability"):
         caller.ndb.chargen["ability"] = kwargs["ability"]
+        _confirm_choice(caller, "fusion_ability", "ability", kwargs["ability"])
 
     entry = raw_string.strip().lower()
     if entry:
@@ -604,6 +666,7 @@ def fusion_confirm(caller, raw_string, **kwargs):
             caller.msg("|rInvalid nature.|n Try again.")
             return fusion_nature(caller, "")
         caller.ndb.chargen["nature"] = nature
+        _confirm_choice(caller, "fusion_nature", "nature", nature)
 
     species = caller.ndb.chargen["species"]
     if species.lower() in ABORT_INPUTS:
