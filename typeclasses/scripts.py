@@ -101,3 +101,22 @@ class Script(DefaultScript):
 	"""
 
 	pass
+
+
+class HeartbeatScript(Script):
+    """Persistent global heartbeat runner."""
+
+    def at_script_creation(self):
+        from world.heartbeat import configure_heartbeat_script
+
+        configure_heartbeat_script(self)
+
+    def at_server_start(self):
+        from world.heartbeat import configure_heartbeat_script
+
+        configure_heartbeat_script(self)
+
+    def at_repeat(self):
+        from world.heartbeat import run_heartbeat_tick
+
+        run_heartbeat_tick(self)

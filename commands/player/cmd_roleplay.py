@@ -124,26 +124,28 @@ class CmdOOC(Command):
 
     key = "ooc"
     locks = "cmd:all()"
-    arg_regex = None
+    arg_regex = r"\s|$"
     help_category = "General"
 
     def func(self):
         caller = self.caller
-        if not self.args:
+        args = self.args.strip()
+        if not args:
             caller.msg("Usage: ooc <message> | ooc :<pose>")
             return
-        if self.args.startswith(":"):
-            pose = self.args[1:].lstrip()
+        if args.startswith(":"):
+            pose = args[1:].lstrip()
             msg = f"|w<OOC>|n |G{caller.name} {pose}|n"
             if caller.location:
                 caller.location.msg_contents(msg, from_obj=caller)
             else:
                 caller.msg(msg)
         else:
-            speech = caller.at_pre_say(self.args)
+            speech = caller.at_pre_say(args)
             if not speech:
                 return
-            caller.location.msg_contents(
-                f'|w<OOC>|n |G{caller.name} says, "{speech}"|n',
-                from_obj=caller,
-            )
+            msg = f'|w<OOC>|n |G{caller.name} says, "{speech}"|n'
+            if caller.location:
+                caller.location.msg_contents(msg, from_obj=caller)
+            else:
+                caller.msg(msg)
