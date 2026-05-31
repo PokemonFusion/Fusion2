@@ -32,17 +32,25 @@ def get_system() -> Any:
 
 
 def at_server_start() -> None:
-    """Ensure the battle manager is attached on startup."""
+    """Ensure global game systems are attached on startup."""
     system = get_system()
     try:
         from services.battle.manager import BattleManager
     except Exception:  # pragma: no cover - manager import failed
-        return
-    if not hasattr(system, "battle_manager"):
-        system.battle_manager = BattleManager()
-    # Optional: ask manager to rebuild its registry from ServerConfig/rooms
-    if hasattr(system.battle_manager, "restore_from_persistence"):
-        try:
-            system.battle_manager.restore_from_persistence()
-        except Exception:
-            pass
+        BattleManager = None
+    if BattleManager is not None:
+        if not hasattr(system, "battle_manager"):
+            system.battle_manager = BattleManager()
+        # Optional: ask manager to rebuild its registry from ServerConfig/rooms
+        if hasattr(system.battle_manager, "restore_from_persistence"):
+            try:
+                system.battle_manager.restore_from_persistence()
+            except Exception:
+                pass
+
+    try:
+        from world.heartbeat import ensure_heartbeat_script
+
+        ensure_heartbeat_script()
+    except Exception:
+        pass
