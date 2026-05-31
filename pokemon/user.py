@@ -10,6 +10,7 @@ from django.db.models import Max
 from django.utils import timezone
 from typeclasses.characters import Character
 
+from pokemon.data.starters import resolve_starter_key
 from pokemon.helpers.party_helpers import (
     get_active_party as _get_active_party,
     has_usable_pokemon as _has_usable_party,
@@ -17,9 +18,6 @@ from pokemon.helpers.party_helpers import (
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from pokemon.models.storage import PokemonPlacement, move_to_box, move_to_party
 from utils.inventory import Inventory, InventoryMixin
-
-from .data.generation import generate_pokemon
-from .dex import POKEDEX
 
 # Helper to resolve settings-provided locations into actual ObjectDBs
 try:
@@ -143,33 +141,16 @@ class User(Character, InventoryMixin):
     # Starter selection
     # ------------------------------------------------------------------
     def choose_starter(self, species_name: str) -> str:
-        """Give the player their first Pokémon."""
+        """Deprecated direct starter creation shortcut."""
 
+        if not resolve_starter_key(species_name):
+            return "That is not a valid starter species. Use |w+starters|n to list valid starters."
         if self.storage.has_party_pokemon():
             return "You already have your starter."
-
-        species = POKEDEX.get(species_name.lower())
-        if not species:
-            return "That species does not exist."
-
-        instance = generate_pokemon(species.name, level=5)
-        data = {
-            "gender": instance.gender,
-            "nature": instance.nature,
-            "ability": instance.ability,
-            "ivs": [
-                instance.ivs.hp,
-                instance.ivs.attack,
-                instance.ivs.defense,
-                instance.ivs.special_attack,
-                instance.ivs.special_defense,
-                instance.ivs.speed,
-            ],
-            "evs": [0, 0, 0, 0, 0, 0],
-        }
-        pokemon = self._create_owned_pokemon(instance.species.name, 5, data)
-        self.storage.add_active_pokemon(pokemon)
-        return f"You received {pokemon.species}!"
+        return (
+            "Direct starter selection has moved into chargen. "
+            "Use |w+starter|n with no Pokémon name to open or resume starter selection."
+        )
 
     # ------------------------------------------------------------------
     # Box management

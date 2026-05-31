@@ -5,10 +5,80 @@ from typing import Dict, List, Tuple
 from ..dex import POKEDEX
 
 # Forms or categories we explicitly exclude from “starter” status
-EXCLUDED_TAGS = {"Sub-Legendary", "Mythical", 'Restricted Legendary'}
+EXCLUDED_TAGS = {
+    "Sub-Legendary",
+    "Mythical",
+    "Restricted Legendary",
+    "Ultra Beast",
+    "Paradox",
+}
+
+ULTRA_BEAST_EXCLUSIONS = {
+    "Nihilego",
+    "Buzzwole",
+    "Pheromosa",
+    "Xurkitree",
+    "Celesteela",
+    "Kartana",
+    "Guzzlord",
+    "Poipole",
+    "Stakataka",
+    "Blacephalon",
+}
+
+PARADOX_EXCLUSIONS = {
+    "Great Tusk",
+    "Scream Tail",
+    "Brute Bonnet",
+    "Flutter Mane",
+    "Slither Wing",
+    "Sandy Shocks",
+    "Iron Treads",
+    "Iron Bundle",
+    "Iron Hands",
+    "Iron Jugulis",
+    "Iron Moth",
+    "Iron Thorns",
+    "Roaring Moon",
+    "Iron Valiant",
+    "Walking Wake",
+    "Iron Leaves",
+    "Gouging Fire",
+    "Raging Bolt",
+    "Iron Boulder",
+    "Iron Crown",
+}
+
+HARD_EXCLUDED_STARTERS = ULTRA_BEAST_EXCLUSIONS | PARADOX_EXCLUSIONS
+
+# Reserved for future design decisions around static/gift/special Pokemon such
+# as fossils, Rotom, Porygon, and Gimmighoul. Intentionally not active.
+SPECIAL_RARE_STARTER_EXCLUSIONS: set[str] = set()
 
 # Regional forms that are considered for starter eligibility
 REGIONAL_FORMS = ("Alola", "Galar")
+
+
+def _normalize_starter_key(value: object) -> str:
+    return str(value or "").replace(" ", "").replace("-", "").replace("'", "").lower()
+
+
+HARD_EXCLUDED_STARTER_KEYS = {
+    _normalize_starter_key(species) for species in HARD_EXCLUDED_STARTERS
+}
+
+
+def _has_excluded_tag(tags: list[str]) -> bool:
+    return any(tag in EXCLUDED_TAGS for tag in tags)
+
+
+def _is_hard_excluded_species(species_key: str, mon_obj) -> bool:
+    raw = mon_obj.raw or {}
+    display_name = raw.get("name", mon_obj.name)
+    return (
+        _normalize_starter_key(species_key) in HARD_EXCLUDED_STARTER_KEYS
+        or _normalize_starter_key(display_name) in HARD_EXCLUDED_STARTER_KEYS
+    )
 
 
 def _build_starters() -> Tuple[
@@ -54,13 +124,14 @@ def _build_starters() -> Tuple[
         tags = raw.get("tags", [])
         forme = raw.get("forme")
 
-        # Exclude Mythicals/Legendaries and non-starter special forms
-        if any(tag in EXCLUDED_TAGS for tag in tags):
+        # Exclude Mythicals/Legendaries and known legendary-adjacent groups.
+        if _has_excluded_tag(tags):
             continue
         if forme and forme not in REGIONAL_FORMS:
             continue
+        if _is_hard_excluded_species(key, mon):
+            continue
 
-        # **Key change**: grab the display name from raw["name"]
         add_entry(key, mon)
 
         if mon.is_baby and mon.evos:
@@ -74,9 +145,11 @@ def _build_starters() -> Tuple[
                 raw2 = evo_mon.raw or {}
                 tags2 = raw2.get("tags", [])
                 forme2 = raw2.get("forme")
-                if any(tag in EXCLUDED_TAGS for tag in tags2):
+                if _has_excluded_tag(tags2):
                     continue
                 if forme2 and forme2 not in REGIONAL_FORMS:
+                    continue
+                if _is_hard_excluded_species(ekey, evo_mon):
                     continue
                 add_entry(ekey, evo_mon)
 
@@ -95,6 +168,19 @@ def get_starter_numbers() -> List[int]:
 
 
 STARTER_NUMBERS: List[int] = get_starter_numbers()
+
+
+def resolve_starter_key(species_name: str) -> str | None:
+    """Return the canonical dex key for a valid starter input."""
+    entry = (species_name or "").strip().lower()
+    if not entry:
+        return None
+    return STARTER_LOOKUP.get(entry)
+
+
+def is_valid_starter_key(species_key: str) -> bool:
+    """Return ``True`` if ``species_key`` is in the generated starter set."""
+    return species_key in STARTER_DISPLAY_MAP
 
 
 def get_starter_names() -> List[str]:

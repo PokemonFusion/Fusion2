@@ -181,6 +181,11 @@ def test_quick_grant_uses_generated_helper():
 	assert call["species"] == "Pikachu"
 	assert call["level"] == 12
 	assert call["caller"] is caller
+	assert any("bypassing chargen" in msg for msg in caller.msgs)
+
+
+def test_givepokemon_is_staff_only():
+	assert cmd_mod.CmdGivePokemon.locks == "cmd:perm(Builder)"
 
 
 def test_quick_grant_unknown_species_reports_suggestion():

@@ -306,7 +306,8 @@ class CmdStarterList(Command):
       +starters
 
     Notes:
-      Use +starter <pokemon> during setup to make your choice.
+      Starter selection happens inside chargen. Use +starter with no arguments
+      only to open or resume that chargen menu path.
     """
 
     key = "+starters"
