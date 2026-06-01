@@ -33,11 +33,12 @@ from commands.cmdsets.world_build import WorldBuildCmdSet
 from commands.debug.cmd_debugpy import CmdDebugPy
 from commands.player.cmd_account import CmdAlts, CmdCharCreate
 from commands.player.cmd_examine import CmdExamine
+from commands.player.cmd_help import CmdHelp
 from commands.player.cmd_look import CmdLook
 from commands.player.cmd_mail import CmdMail
 from commands.player.cmd_note import CmdNote
+from commands.player.cmd_profile import CmdAccountProfile
 from commands.player.cmd_request import CmdRequest
-from commands.player.cmd_help import CmdHelp
 from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
 from commands.player.cmd_staff import CmdStaff
 
@@ -110,6 +111,7 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         self.add(CmdCharCreate())
         self.add(CmdAlts())
         self.add(CmdNote())
+        self.add(CmdAccountProfile())
         self.add(CmdRequest())
         self.add(CmdStaff())
 
