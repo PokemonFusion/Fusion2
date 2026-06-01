@@ -454,7 +454,7 @@ class CmdSpoof(Command):
 
     Usage:
         spoof <message>
-        @emit[/here|/room] <message>
+        @emit[/here||/room] <message>
 
     Examples:
         spoof A sign flashes.
@@ -526,7 +526,7 @@ class CmdNoSpoof(Command):
         elif arg in {"off", "no", "false", "0"}:
             new_value = False
         else:
-            self.caller.msg("Usage: nospoof [on|off]")
+            self.caller.msg("Usage: nospoof [on||off]")
             return
 
         _set_db_bool(self.caller, "nospoof", new_value)

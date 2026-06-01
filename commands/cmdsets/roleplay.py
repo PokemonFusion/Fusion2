@@ -4,7 +4,9 @@ from evennia import CmdSet
 
 from commands.debug.command import CmdNoSpoof, CmdSpoof
 from commands.player.cmd_glance import CmdGlance
+from commands.player.cmd_profile import CmdProfile
 from commands.player.cmd_roleplay import CmdOOC
+from commands.player.cmd_where import CmdWhere
 
 
 class RoleplayCmdSet(CmdSet):
@@ -17,4 +19,6 @@ class RoleplayCmdSet(CmdSet):
 		self.add(CmdSpoof())
 		self.add(CmdNoSpoof())
 		self.add(CmdGlance())
+		self.add(CmdWhere())
+		self.add(CmdProfile())
 		self.add(CmdOOC())

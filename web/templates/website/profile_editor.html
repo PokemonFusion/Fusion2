@@ -1,0 +1,106 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}Profile Editor{% endblock %}
+
+{% block content %}
+<section class="profile-editor" aria-labelledby="profile-editor-title">
+  <header class="player-hub-header">
+    <div>
+      <p class="fusion-kicker">Character identity</p>
+      <h1 id="profile-editor-title">Profile Editor</h1>
+      <p class="player-hub-lede">
+        Maintain character identity notes for roleplay.
+      </p>
+    </div>
+    <div class="player-hub-actions">
+      <a class="btn btn-fusion-secondary" href="{% url 'my-sheet' %}">Player Hub</a>
+      {% if webclient_enabled %}
+      <a class="btn btn-fusion-primary" href="{% url 'webclient:index' %}">Play in Browser</a>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if character_choices %}
+  <section class="player-character-panel profile-editor-panel">
+    <form class="profile-character-picker" method="get" action="{% url 'profile-editor' %}">
+      <label for="profile-character">Character</label>
+      <select id="profile-character" class="form-control" name="character" onchange="this.form.submit()">
+        {% for character in character_choices %}
+        <option value="{{ character.id }}" {% if character.selected %}selected{% endif %}>{{ character.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-fusion-secondary" type="submit">Open</button>
+    </form>
+  </section>
+
+  <section class="player-character-panel profile-editor-panel">
+    <header class="player-character-heading">
+      <div>
+        <h2>{{ selected_character.key|default:selected_character }}</h2>
+        <span>Public and private field controls</span>
+      </div>
+    </header>
+
+    <div class="profile-field-list">
+      {% for field in profile_fields %}
+      <form class="profile-field-form" method="post" action="{% url 'profile-editor' %}">
+        {% csrf_token %}
+        <input type="hidden" name="character" value="{{ selected_character_id }}">
+        <input type="hidden" name="field_key" value="{{ field.key }}">
+        <div class="profile-field-grid">
+          <label>
+            Field
+            <input class="form-control" type="text" name="field_name" value="{{ field.label }}" maxlength="32">
+          </label>
+          <label class="profile-private-toggle">
+            <input type="checkbox" name="private" value="1" {% if field.private %}checked{% endif %}>
+            Private
+          </label>
+        </div>
+        <label>
+          Text
+          <textarea class="form-control" name="field_text" rows="4" maxlength="2000">{{ field.text }}</textarea>
+        </label>
+        <div class="profile-form-actions">
+          <button class="btn btn-fusion-primary" type="submit" name="action" value="save">Save</button>
+          <button class="btn btn-fusion-secondary" type="submit" name="action" value="delete">Delete</button>
+        </div>
+      </form>
+      {% empty %}
+      <p class="player-hub-empty">No profile fields yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="player-character-panel profile-editor-panel">
+    <h2>Add Field</h2>
+    <form class="profile-field-form" method="post" action="{% url 'profile-editor' %}">
+      {% csrf_token %}
+      <input type="hidden" name="character" value="{{ selected_character_id }}">
+      <div class="profile-field-grid">
+        <label>
+          Field
+          <input class="form-control" type="text" name="field_name" maxlength="32" placeholder="Appearance">
+        </label>
+        <label class="profile-private-toggle">
+          <input type="checkbox" name="private" value="1">
+          Private
+        </label>
+      </div>
+      <label>
+        Text
+        <textarea class="form-control" name="field_text" rows="4" maxlength="2000"></textarea>
+      </label>
+      <div class="profile-form-actions">
+        <button class="btn btn-fusion-primary" type="submit" name="action" value="save">Add Field</button>
+      </div>
+    </form>
+  </section>
+  {% else %}
+  <div class="player-character-panel">
+    <h2>No Characters Found</h2>
+    <p class="player-hub-empty">Create a character before editing a profile.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

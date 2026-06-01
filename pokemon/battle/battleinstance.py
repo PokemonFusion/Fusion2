@@ -88,6 +88,7 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback imp
 
 from utils.pokemon_utils import build_battle_pokemon_from_model
 from utils.locks import clear_battle_lock, set_battle_lock
+from utils.fusion import get_battle_party_with_fusion
 
 from .compat import (
     BattleLogic,
@@ -1271,7 +1272,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         encounters that override health when constructing temporary teams.
         """
         log_info(f"Preparing party for {getattr(trainer, 'key', trainer)} (full_heal={full_heal})")
-        party = trainer.storage.get_party()
+        party = get_battle_party_with_fusion(trainer)
         pokemons: List[Pokemon] = []
         for poke in party:
             battle_poke = build_battle_pokemon_from_model(poke, full_heal=full_heal)

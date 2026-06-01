@@ -778,6 +778,72 @@ footer.footer .text-white a {
   margin-left: .75rem;
 }
 
+.player-character-actions {
+  justify-content: flex-start;
+  margin: -.35rem 0 1rem;
+}
+
+.profile-editor {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.profile-editor-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-character-picker,
+.profile-field-grid,
+.profile-form-actions {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.profile-character-picker label,
+.profile-field-grid label,
+.profile-field-form label {
+  color: var(--fusion-muted);
+  font-size: .82rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.profile-character-picker select,
+.profile-field-grid input[type="text"] {
+  min-width: min(24rem, 100%);
+}
+
+.profile-field-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-field-form {
+  background: #fffdf7;
+  border: 1px solid var(--fusion-line);
+  border-radius: 8px;
+  display: grid;
+  gap: .85rem;
+  padding: 1rem;
+}
+
+.profile-field-form textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.profile-private-toggle {
+  align-items: center;
+  color: var(--fusion-text);
+  display: inline-flex;
+  gap: .4rem;
+  margin-bottom: .45rem;
+}
+
 @media (max-width: 1199.98px) {
   .player-hub-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

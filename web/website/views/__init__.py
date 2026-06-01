@@ -9,7 +9,7 @@ def character_sheet(request):
 	"""Display the legacy character sheet route with Player Hub data."""
 
 	context = {
-		"characters": build_player_hub_entries(request.user, characters=[request.user]),
+		"characters": build_player_hub_entries(request.user),
 		"page_title": "Player Hub",
 	}
 	return render(request, "website/character_sheet.html", context)

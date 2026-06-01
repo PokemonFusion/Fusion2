@@ -20,7 +20,11 @@ from pokemon.dex import POKEDEX
 from pokemon.helpers.starter_helpers import create_chargen_starter
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from utils.enhanced_evmenu import INVALID_INPUT_MSG
-from utils.fusion import record_fusion
+from utils import fusion as fusion_utils
+
+PERMANENT = getattr(fusion_utils, "PERMANENT", "permanent")
+record_fusion = fusion_utils.record_fusion
+remember_permanent_form = getattr(fusion_utils, "remember_permanent_form", lambda *args, **kwargs: None)
 
 # ────── BUILD UNIVERSAL POKEMON LOOKUP ─────────────────────────────────────────
 
@@ -731,7 +735,9 @@ def finish_fusion(caller, raw_string):
                     5,
                 )
                 record_fusion(fused, trainer, fused, permanent=True)
+                remember_permanent_form(caller, fused)
                 caller.db.fusion_id = getattr(fused, "unique_id", None)
+                caller.db.fusion_kind = PERMANENT
                 caller.db.level = getattr(fused, "level", None)
                 caller.db.total_exp = getattr(fused, "total_exp", None)
         except Exception:  # pragma: no cover - defensive

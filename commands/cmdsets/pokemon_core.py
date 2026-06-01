@@ -23,6 +23,14 @@ from commands.player.cmd_inventory import (
 	CmdInventory,
 	CmdUseItem,
 )
+from commands.player.cmd_fusion import (
+	CmdFusionFight,
+	CmdFusionForms,
+	CmdFusionOrder,
+	CmdPermFuse,
+	CmdTempFuse,
+	CmdUnfuse,
+)
 from commands.player.cmd_learn_evolve import (
 	CmdChooseMoveset,
 	CmdEvolvePokemon,
@@ -69,6 +77,12 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdAddItem,
 			CmdGiveItem,
 			CmdUseItem,
+			CmdTempFuse,
+			CmdPermFuse,
+			CmdUnfuse,
+			CmdFusionForms,
+			CmdFusionOrder,
+			CmdFusionFight,
                         CmdMovesets,
                         CmdVend,
 			CmdEvolvePokemon,

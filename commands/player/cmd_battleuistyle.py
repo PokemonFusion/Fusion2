@@ -13,7 +13,7 @@ class CmdBattleUiStyle(Command):
     """Change your battle interface renderer.
 
     Usage:
-      +battleui/style [legacy|classic_modern|pf1]
+      +battleui/style [legacy||classic_modern||pf1]
 
     Examples:
       +battleui/style
@@ -38,7 +38,7 @@ class CmdBattleUiStyle(Command):
 
         style = normalize_battle_ui_style(arg, default=None)
         if style is None or style not in BATTLE_UI_STYLES:
-            caller.msg(f"Usage: +battleui/style <{'|'.join(BATTLE_UI_STYLES)}>")
+            caller.msg(f"Usage: +battleui/style <{'||'.join(BATTLE_UI_STYLES)}>")
             return
 
         if style == DEFAULT_BATTLE_UI_STYLE:

@@ -65,6 +65,17 @@ def _get_create_battle_pokemon():
         return None
 
 
+def _fusion_boost_enabled() -> bool:
+    """Return whether active fusion battle stat boosts are enabled."""
+
+    try:
+        from utils.fusion import is_fusion_boost_enabled
+
+        return is_fusion_boost_enabled()
+    except Exception:
+        return True
+
+
 def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemon:
     """Return a battle-ready ``Pokemon`` object from a stored model."""
 
@@ -80,7 +91,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     else:
         stats = {"hp": getattr(model, "current_hp", 1)}
 
-    level = getattr(model, "computed_level", getattr(model, "level", 1))
+    level = getattr(model, "_pf2_fusion_level", None)
+    if level is None:
+        level = getattr(model, "computed_level", getattr(model, "level", 1))
     name = getattr(model, "name", getattr(model, "species", "Pikachu"))
 
     move_names = getattr(model, "moves", None) or []
@@ -163,6 +176,25 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     )
     if slots is not None:
         battle_poke.activemoveslot_set = slots
+    if getattr(model, "_pf2_active_fusion", False):
+        battle_poke._pf2_active_fusion = True
+        battle_poke._pf2_fusion_kind = getattr(model, "_pf2_fusion_kind", None)
+        if _fusion_boost_enabled():
+            try:
+                from pokemon.dex.entities import Stats
+
+                boosted = {
+                    "hp": battle_poke.getStat("hp", True, True),
+                    "attack": battle_poke.getStat("atk", True, True) * 11 // 10,
+                    "defense": battle_poke.getStat("def", True, True) * 11 // 10,
+                    "special_attack": battle_poke.getStat("spa", True, True) * 11 // 10,
+                    "special_defense": battle_poke.getStat("spd", True, True) * 11 // 10,
+                    "speed": battle_poke.getStat("spe", True, True) * 11 // 10,
+                }
+                battle_poke.base_stats = Stats(**boosted)
+                battle_poke.stats = battle_poke._battle_stats()
+            except Exception:
+                logger.debug("Unable to apply active fusion battle stat boost.", exc_info=True)
     return battle_poke
 
 

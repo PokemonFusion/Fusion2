@@ -61,6 +61,38 @@ def test_preferred_player_command_names_keep_legacy_aliases():
             "+use",
             {"+useitem"},
         ),
+        ("commands/player/cmd_fusion.py", "CmdTempFuse"): (
+            "+fuse/temp",
+            {"+tempfuse", "+fusion/temp"},
+        ),
+        ("commands/player/cmd_fusion.py", "CmdPermFuse"): (
+            "+fuse/permanent",
+            {"+permfuse", "+fuse/perm", "+fusion/perm"},
+        ),
+        ("commands/player/cmd_fusion.py", "CmdUnfuse"): (
+            "+unfuse",
+            {"+fuse/off", "+fusion/off"},
+        ),
+        ("commands/player/cmd_fusion.py", "CmdFusionForms"): (
+            "+fusion",
+            {"+forms", "+form"},
+        ),
+        ("commands/player/cmd_fusion.py", "CmdFusionOrder"): (
+            "+fusion/order",
+            {"+mefirst"},
+        ),
+        ("commands/player/cmd_fusion.py", "CmdFusionFight"): (
+            "+fusion/fight",
+            {"+mefight"},
+        ),
+        ("commands/player/cmd_request.py", "CmdRequest"): (
+            "+request",
+            {"request", "+req"},
+        ),
+        ("commands/player/cmd_mail.py", "CmdMail"): (
+            "+mail",
+            {"mail"},
+        ),
         ("commands/player/cmd_pokedex.py", "CmdPokedexSearch"): (
             "+dex",
             {"pokedex", "poke"},
@@ -134,6 +166,12 @@ def test_updated_player_help_docstrings_have_examples_or_notes():
         ("commands/player/cmd_learn_evolve.py", "CmdChooseMoveset"),
         ("commands/player/cmd_learn_evolve.py", "CmdEvolvePokemon"),
         ("commands/player/cmd_inventory.py", "CmdUseItem"),
+        ("commands/player/cmd_fusion.py", "CmdTempFuse"),
+        ("commands/player/cmd_fusion.py", "CmdPermFuse"),
+        ("commands/player/cmd_fusion.py", "CmdUnfuse"),
+        ("commands/player/cmd_fusion.py", "CmdFusionForms"),
+        ("commands/player/cmd_fusion.py", "CmdFusionOrder"),
+        ("commands/player/cmd_fusion.py", "CmdFusionFight"),
         ("commands/player/cmd_showbattle.py", "CmdShowBattle"),
         ("commands/player/cmd_effects.py", "CmdEffects"),
     ]
@@ -153,6 +191,9 @@ def test_guide_teaches_preferred_command_names():
         "+party <slot>",
         "+box/deposit <pokemon_id> [box]",
         "+storage",
+        "+fuse/temp <slot>",
+        "+fuse/permanent <slot> confirm",
+        "+fusion/order",
         "+teach <slot>=<move>",
         "+moves/use <slot>=<set>",
         "+learnset <pokemon>",

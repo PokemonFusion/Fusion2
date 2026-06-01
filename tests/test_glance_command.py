@@ -60,6 +60,7 @@ def test_glance_lists_online_characters():
 	sys.modules["evennia.utils"] = fake_utils_pkg
 
 	cmd_mod = load_cmd_module()
+	assert cmd_mod.CmdGlance.aliases == ["ws"]
 
 	# restore modules
 	if orig_evennia is not None:

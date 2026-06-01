@@ -118,7 +118,7 @@ def render_symbol_test(mode: str = "all") -> str:
     if mode in ("all", "color", "colors"):
         sections.append(_render_color_rows())
     if not sections:
-        return "Usage: +symboltest [all|ascii|ui|colors]"
+        return "Usage: +symboltest [all||ascii||ui||colors]"
     lines = []
     for section in sections:
         if lines:
@@ -131,7 +131,7 @@ class CmdSymbolTest(Command):
     """Render a screenshot-friendly symbol and color test sheet.
 
     Usage:
-            +symboltest [all|ascii|ui|colors]
+            +symboltest [all||ascii||ui||colors]
 
     Examples:
             +symboltest

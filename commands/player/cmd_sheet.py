@@ -13,6 +13,13 @@ from utils.display import display_pokemon_sheet, display_trainer_sheet
 from utils.display_helpers import get_status_effects
 from utils.xp_utils import get_display_xp
 
+try:
+    from utils.fusion import get_active_fusion_pokemon
+except Exception:  # pragma: no cover - import-only tests may stub utils
+
+    def get_active_fusion_pokemon(character):
+        return None
+
 
 class CmdSheet(Command):
     """Display your trainer overview, inventory, or a party slot.
@@ -174,8 +181,8 @@ class CmdSheetPokemon(Command):
     """Show info about Pokemon in your active party.
 
     Usage:
-      +party [<slot>|all] [/brief|/moves|/full]
-      +sheet/pokemon [<slot>|all] [/brief|/moves|/full]
+      +party [<slot>||all] [/brief||/moves||/full]
+      +sheet/pokemon [<slot>||all] [/brief||/moves||/full]
 
     Examples:
       +party                 List your party with one-line summaries.
@@ -243,9 +250,9 @@ class CmdSheetPokemon(Command):
                         search = list(active or [])
                     except Exception:
                         search = []
-            fused = None
+            fused = get_active_fusion_pokemon(caller)
             if fusion_id:
-                fused = next(
+                fused = fused or next(
                     (mon for mon in search if str(getattr(mon, "unique_id", "")) == str(fusion_id)),
                     None,
                 )

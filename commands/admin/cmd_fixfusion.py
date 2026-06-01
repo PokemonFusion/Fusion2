@@ -5,7 +5,7 @@ from evennia import Command
 
 from pokemon.models.core import OwnedPokemon
 from pokemon.models.storage import ActivePokemonSlot
-from utils.fusion import record_fusion
+from utils.fusion import PERMANENT, record_fusion, remember_permanent_form
 
 
 class CmdFixFusion(Command):
@@ -80,12 +80,14 @@ class CmdFixFusion(Command):
 
         try:
             record_fusion(fused, trainer, fused, permanent=True)
+            remember_permanent_form(target, fused)
         except Exception as err:  # pragma: no cover - defensive
             self.caller.msg(f"Error: {err}")
             return
 
         fid = getattr(fused, "unique_id", None)
         target.db.fusion_id = fid
+        target.db.fusion_kind = PERMANENT
         if not getattr(target.db, "fusion_species", None):
             target.db.fusion_species = getattr(
                 getattr(fused, "species", None), "name", None
