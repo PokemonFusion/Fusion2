@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from collections import OrderedDict
 
-
 PROFILE_ATTR = "profile_fields"
 MAX_FIELD_LABEL_LENGTH = 32
 MAX_FIELD_TEXT_LENGTH = 2000
@@ -164,6 +163,19 @@ def _same_character(left, right) -> bool:
     return False
 
 
+def _owns_character(account, character) -> bool:
+    characters = getattr(account, "characters", None)
+    if characters is None:
+        return False
+    try:
+        owned = list(characters)
+    except TypeError:
+        owned = characters.all() if hasattr(characters, "all") else []
+    except Exception:
+        return False
+    return any(_same_character(candidate, character) for candidate in owned if candidate)
+
+
 def _check_perm(obj, perm: str) -> bool:
     check = getattr(obj, "check_permstring", None)
     if callable(check) and check(perm):
@@ -183,6 +195,8 @@ def can_view_private_fields(viewer, owner) -> bool:
     """Return whether ``viewer`` can see private fields on ``owner``."""
 
     if _same_character(viewer, owner):
+        return True
+    if _owns_character(viewer, owner):
         return True
     return any(_check_perm(viewer, perm) for perm in STAFF_PRIVATE_PERMISSIONS)
 

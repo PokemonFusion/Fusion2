@@ -3,7 +3,6 @@ import os
 import sys
 import types
 
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
@@ -83,9 +82,37 @@ class DummyChar:
         return perm in self.perms
 
 
-def call_profile(mod, caller, args="", switches=None, lhs="", rhs=""):
+class DummyAccount:
+    def __init__(self, key, ident=10, characters=None, perms=None):
+        self.key = key
+        self.name = key
+        self.id = ident
+        self.characters = list(characters or [])
+        self.db = types.SimpleNamespace()
+        self.messages = []
+        self.perms = set(perms or [])
+
+    def msg(self, text):
+        self.messages.append(text)
+
+    def check_permstring(self, perm):
+        return perm in self.perms
+
+
+class DummySession:
+    def __init__(self, puppet=None):
+        self.puppet = puppet
+
+    def get_puppet(self):
+        return self.puppet
+
+
+def call_profile(mod, caller, args="", switches=None, lhs="", rhs="", session=None, account=None, obj=None):
     cmd = mod.CmdProfile()
     cmd.caller = caller
+    cmd.account = account or getattr(caller, "account", None) or caller
+    cmd.session = session
+    cmd.obj = obj if obj is not None else caller
     cmd.args = args
     cmd.switches = switches or []
     cmd.lhs = lhs
@@ -99,6 +126,7 @@ def test_profile_command_exposes_legacy_aliases():
     try:
         assert mod.CmdProfile.key == "+profile"
         assert mod.CmdProfile.aliases == ["+finger", "+info"]
+        assert mod.CmdAccountProfile.account_caller is True
     finally:
         restore()
 
@@ -162,3 +190,65 @@ def test_profile_delete_and_privacy_commands():
     assert private == "Profile field 'Title' is now private."
     assert deleted == "Profile field 'Title' deleted."
     assert output == "Ash has no visible profile fields."
+
+
+def test_profile_can_view_global_target_from_ooc_account():
+    owner = DummyChar("Misty", ident=2)
+    account = DummyAccount("AshAccount")
+    mod, restore = load_cmd_module([owner])
+    try:
+        mod.set_profile_field(owner, "Public", "Gym leader.")
+        output = call_profile(mod, account, args="Misty", obj=account)
+    finally:
+        restore()
+
+    assert "Profile for Misty" in output
+    assert "Gym leader." in output
+
+
+def test_profile_ooc_account_owner_can_view_private_fields():
+    owner = DummyChar("Misty", ident=2)
+    account = DummyAccount("MistyAccount", characters=[owner])
+    mod, restore = load_cmd_module([owner])
+    try:
+        mod.set_profile_field(owner, "Secret", "Private note.", private=True)
+        output = call_profile(mod, account, args="Misty", obj=account)
+    finally:
+        restore()
+
+    assert "Secret <PRIVATE>" in output
+    assert "Private note." in output
+
+
+def test_profile_ooc_edit_requires_character_context():
+    account = DummyAccount("AshAccount")
+    mod, restore = load_cmd_module()
+    try:
+        output = call_profile(mod, account, switches=["set"], lhs="Title", rhs="Trainer.", obj=account)
+    finally:
+        restore()
+
+    assert output == "You must be in-character to edit your profile."
+    assert not hasattr(account.db, "profile_fields")
+
+
+def test_profile_account_command_edits_current_puppet():
+    caller = DummyAccount("AshAccount")
+    puppet = DummyChar("Ash")
+    mod, restore = load_cmd_module()
+    try:
+        saved = call_profile(
+            mod,
+            caller,
+            switches=["set"],
+            lhs="Title",
+            rhs="Trainer.",
+            session=DummySession(puppet),
+            obj=caller,
+        )
+        output = call_profile(mod, puppet)
+    finally:
+        restore()
+
+    assert saved == "Profile field 'Title' saved."
+    assert "Trainer." in output

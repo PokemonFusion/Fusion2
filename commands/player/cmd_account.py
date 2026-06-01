@@ -1,9 +1,85 @@
 from django.conf import settings
-from evennia import Command, search_account
+from evennia import Command, search_account, search_object
+from evennia.accounts.models import AccountDB
 from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
 
 from pokemon.models.storage import move_to_box
 from utils.locks import require_no_battle_lock
+
+STAFF_LOCK = (
+    "cmd:perm(Helper) or perm(Validator) or perm(Builder) or perm(Admin) "
+    "or perm(Developer) or perm(Wizards)"
+)
+
+
+def _as_list(value) -> list:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    try:
+        return list(value)
+    except TypeError:
+        return [value]
+
+
+def _display_name(obj) -> str:
+    return getattr(obj, "key", None) or getattr(obj, "username", None) or getattr(obj, "name", None) or str(obj)
+
+
+def _character_label(character) -> str:
+    name = _display_name(character)
+    dbref = getattr(character, "dbref", None)
+    return f"{name} ({dbref})" if dbref else name
+
+
+def _is_character(obj) -> bool:
+    check = getattr(obj, "is_typeclass", None)
+    return bool(callable(check) and check("typeclasses.characters.Character", exact=False))
+
+
+def _same_character(left, right) -> bool:
+    if left is right:
+        return True
+    for attr in ("id", "dbref"):
+        left_value = getattr(left, attr, None)
+        right_value = getattr(right, attr, None)
+        if left_value is not None and right_value is not None and left_value == right_value:
+            return True
+    return False
+
+
+def _account_characters(account) -> list:
+    characters = getattr(account, "characters", None)
+    if characters is None:
+        return []
+    try:
+        return [character for character in list(characters) if character]
+    except TypeError:
+        all_characters = characters.all() if hasattr(characters, "all") else []
+        return [character for character in all_characters if character]
+    except Exception:
+        return []
+
+
+def _accounts_for_character(character) -> list:
+    owners = []
+    for account in AccountDB.objects.all():
+        if any(_same_character(candidate, character) for candidate in _account_characters(account)):
+            owners.append(account)
+    return owners
+
+
+def _search_accounts(query: str) -> list:
+    return [match for match in _as_list(search_account(query, exact=True)) if match]
+
+
+def _search_characters(query: str) -> list:
+    try:
+        matches = search_object(query, exact=True, typeclass="typeclasses.characters.Character")
+    except TypeError:
+        matches = search_object(query)
+    return [match for match in _as_list(matches) if match and _is_character(match)]
 
 
 class CmdCharCreate(DefaultCmdCharCreate):
@@ -39,27 +115,91 @@ class CmdCharCreate(DefaultCmdCharCreate):
 
 
 class CmdAlts(Command):
-    """List all characters for an account.
+    """List characters for an account or find a character's account.
 
     Usage:
       @alts <account>
+      @alts/account <account>
+      @alts/char <character>
     """
 
     key = "@alts"
-    locks = "cmd:perm(Wizards)"
+    locks = STAFF_LOCK
     help_category = "Admin"
 
     def func(self):
-        if not self.args:
-            self.msg("Usage: @alts <account>")
+        args = (self.args or "").strip()
+        if not args:
+            self.msg("Usage: @alts <account> | @alts/char <character>")
             return
-        results = search_account(self.args.strip(), exact=True)
-        account = results[0] if results else None
-        if not account:
-            self.msg("No matching account found.")
+
+        switches = {switch.lower() for switch in getattr(self, "switches", []) or []}
+        if "char" in switches or "character" in switches:
+            self._show_character_accounts(args)
             return
-        names = ", ".join(char.key for char in account.characters) if account.characters else "None"
-        self.msg(f"Characters for {account.key}: {names}")
+
+        if "account" in switches or "acct" in switches:
+            self._show_account_characters(args)
+            return
+
+        if self._show_account_characters(args, quiet=True):
+            return
+
+        if self._show_character_accounts(args, quiet=True):
+            return
+
+        self.msg("No matching account or character found.")
+
+    def _show_account_characters(self, query: str, quiet: bool = False) -> bool:
+        results = _search_accounts(query)
+        if not results:
+            if not quiet:
+                self.msg("No matching account found.")
+            return False
+        if len(results) > 1:
+            names = ", ".join(_display_name(account) for account in results[:8])
+            if len(results) > 8:
+                names += ", ..."
+            self.msg(f"Multiple accounts match: {names}")
+            return True
+
+        account = results[0]
+        characters = _account_characters(account)
+        names = ", ".join(_character_label(char) for char in characters) if characters else "None"
+        self.msg(f"Characters for {_display_name(account)}: {names}")
+        return True
+
+    def _show_character_accounts(self, query: str, quiet: bool = False) -> bool:
+        matches = _search_characters(query)
+        if not matches:
+            if not quiet:
+                self.msg("No matching character found.")
+            return False
+        if len(matches) > 1:
+            names = ", ".join(_character_label(match) for match in matches[:8])
+            if len(matches) > 8:
+                names += ", ..."
+            self.msg(f"Multiple characters match: {names}")
+            return True
+
+        character = matches[0]
+        owners = _accounts_for_character(character)
+        if not owners:
+            self.msg(f"No account found for character {_character_label(character)}.")
+            return True
+
+        owner_names = ", ".join(_display_name(account) for account in owners)
+        if len(owners) == 1:
+            account = owners[0]
+            alts = ", ".join(_character_label(char) for char in _account_characters(account)) or "None"
+            self.msg(
+                f"{_character_label(character)} is on account {owner_names}. "
+                f"Characters on that account: {alts}"
+            )
+            return True
+
+        self.msg(f"{_character_label(character)} is on accounts: {owner_names}")
+        return True
 
 
 class CmdTradePokemon(Command):

@@ -21,6 +21,22 @@ def _character_name(character):
     return getattr(character, "key", None) or getattr(character, "name", None) or str(character)
 
 
+def _caller_character(command):
+    session = getattr(command, "session", None)
+    get_puppet = getattr(session, "get_puppet", None)
+    if callable(get_puppet):
+        puppet = get_puppet()
+        if _is_character(puppet):
+            return puppet
+
+    for attr in ("character", "obj", "caller"):
+        candidate = getattr(command, attr, None)
+        if _is_character(candidate):
+            return candidate
+
+    return None
+
+
 def _search_character(query):
     matches = search_object(query, exact=False, typeclass="typeclasses.characters.Character")
     return [match for match in matches if _is_character(match)]
@@ -77,34 +93,46 @@ class CmdProfile(Command):
         )
 
     def _set_field(self):
+        character = _caller_character(self)
+        if not character:
+            self.caller.msg("You must be in-character to edit your profile.")
+            return
         if not getattr(self, "lhs", "") or not getattr(self, "rhs", ""):
             self.caller.msg("Usage: +profile/set <field>=<text>")
             return
         try:
-            field = set_profile_field(self.caller, self.lhs, self.rhs)
+            field = set_profile_field(character, self.lhs, self.rhs)
         except ProfileError as err:
             self.caller.msg(str(err))
             return
         self.caller.msg(f"Profile field '{field['label']}' saved.")
 
     def _delete_field(self):
+        character = _caller_character(self)
+        if not character:
+            self.caller.msg("You must be in-character to edit your profile.")
+            return
         field = (self.args or "").strip()
         if not field:
             self.caller.msg("Usage: +profile/del <field>")
             return
-        if delete_profile_field(self.caller, field):
+        if delete_profile_field(character, field):
             self.caller.msg(f"Profile field '{field}' deleted.")
         else:
             self.caller.msg("No such profile field.")
 
     def _set_privacy(self, private):
+        character = _caller_character(self)
+        if not character:
+            self.caller.msg("You must be in-character to edit your profile.")
+            return
         field = (self.args or "").strip()
         if not field:
             action = "private" if private else "public"
             self.caller.msg(f"Usage: +profile/{action} <field>")
             return
         try:
-            updated = set_profile_field_privacy(self.caller, field, private)
+            updated = set_profile_field_privacy(character, field, private)
         except ProfileError as err:
             self.caller.msg(str(err))
             return
@@ -113,7 +141,8 @@ class CmdProfile(Command):
 
     def _show_profile(self):
         args = (self.args or "").strip()
-        target = self.caller
+        viewer = _caller_character(self) or self.caller
+        target = viewer if _is_character(viewer) else None
         if args:
             matches = _search_character(args)
             if not matches:
@@ -126,8 +155,11 @@ class CmdProfile(Command):
                 self.caller.msg(f"Multiple characters match: {names}")
                 return
             target = matches[0]
+        elif not target:
+            self.caller.msg("Usage: +profile <character>")
+            return
 
-        fields = visible_profile_fields(target, self.caller)
+        fields = visible_profile_fields(target, viewer)
         if not fields:
             self.caller.msg(f"{_character_name(target)} has no visible profile fields.")
             return
@@ -141,3 +173,9 @@ class CmdProfile(Command):
             table.add_row(label, field["text"])
 
         self.caller.msg(f"Profile for {_character_name(target)}:\n{table}")
+
+
+class CmdAccountProfile(CmdProfile):
+    """Account-level access to global profile viewing while OOC."""
+
+    account_caller = True
