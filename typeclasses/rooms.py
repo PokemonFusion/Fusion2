@@ -354,7 +354,7 @@ class FusionRoom(Room):
 		# Make sure the looker shows up in the player list even if filtered out
 		if looker.has_account and not looker.attributes.get("npc") and looker not in players:
 			players.append(looker)
-		npcs = [c for c in characters if not c.has_account or c.attributes.get("npc")]
+		npcs = [c for c in characters if c.attributes.get("npc")]
 
 		items = self.filter_visible(self.contents_get(content_type="object"), looker, **kwargs)
 
