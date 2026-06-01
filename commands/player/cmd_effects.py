@@ -40,7 +40,7 @@ class CmdEffects(Command):
     """Show battle status, field effects, and active Pokemon effects.
 
     Usage:
-      +status [#id|@name|here] [brief] [me|opp] [list|next|prev]
+      +status [#id||@name||here] [brief] [me||opp] [list||next||prev]
 
     Examples:
       +status
@@ -241,7 +241,7 @@ class CmdEffectsAdminReveal(Command):
         elif arg in {"off", "disable", "disabled", "false", "no"}:
             enabled = False
         else:
-            caller.msg("Usage: +effects/adminreveal [on|off|toggle]")
+            caller.msg("Usage: +effects/adminreveal [on||off||toggle]")
             return
 
         setter = getattr(inst, "set_admin_ability_reveal", None)

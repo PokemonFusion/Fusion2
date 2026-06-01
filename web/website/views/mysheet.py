@@ -168,6 +168,7 @@ def _character_entries(account, characters=None) -> list[dict]:
 		entries.append(
 			{
 				"character": character,
+				"character_id": _character_id(character),
 				"trainer": trainer,
 				"storage": storage,
 				"pokemon": all_pokemon,

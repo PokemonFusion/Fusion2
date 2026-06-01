@@ -5,7 +5,7 @@ class CmdUiTheme(Command):
     """Change the color theme used for room descriptions.
 
     Usage:
-      +uitheme [green|blue|red|magenta|cyan|white]
+      +uitheme [green||blue||red||magenta||cyan||white]
 
     Examples:
       +uitheme
@@ -29,7 +29,7 @@ class CmdUiTheme(Command):
             caller.msg(f"Current UI theme: {current}.")
             return
         if arg not in self.THEMES:
-            caller.msg("Usage: +uitheme <green|blue|red|magenta|cyan|white>")
+            caller.msg("Usage: +uitheme <green||blue||red||magenta||cyan||white>")
             return
         caller.db.ui_theme = arg
         caller.msg(f"UI theme set to {arg}.")

@@ -13,11 +13,11 @@ from utils.dex_suggestions import (
 
 
 def _parse_spawn_spec(spec: str) -> dict:
-	"""Parse ``species[, level][, wild|trainer]`` into a dict."""
+	"""Parse ``species[, level][, wild/trainer]`` into a dict."""
 
 	parts = [part.strip() for part in (spec or "").split(",") if part.strip()]
 	if not parts:
-		raise ValueError("Usage: @testspawn <species>[, level][, wild|trainer]")
+		raise ValueError("Usage: @testspawn <species>[, level][, wild||trainer]")
 	species = parts[0]
 	level = 5
 	kind = "wild"
@@ -33,7 +33,7 @@ class CmdTestSpawn(Command):
 	"""Store or clear the current room's debug opponent configuration.
 
 	Usage:
-	  @testspawn <species>[, level][, wild|trainer]
+	  @testspawn <species>[, level][, wild||trainer]
 	  @testspawn/clear
 	"""
 
@@ -75,7 +75,7 @@ class CmdStartTestBattle(Command):
 
 	Usage:
 	  @testbattle/start <character>
-	  @testbattle/start <character>=<species>[, level][, wild|trainer]
+	  @testbattle/start <character>=<species>[, level][, wild||trainer]
 	"""
 
 	key = "@testbattle/start"
@@ -86,7 +86,7 @@ class CmdStartTestBattle(Command):
 	def func(self):
 		if not self.args:
 			self.caller.msg(
-				"Usage: @testbattle/start <character>[=<species>[, level][, wild|trainer]]"
+				"Usage: @testbattle/start <character>[=<species>[, level][, wild||trainer]]"
 			)
 			return
 

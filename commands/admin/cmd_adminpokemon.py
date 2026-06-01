@@ -140,8 +140,8 @@ class CmdBackfillPokemonMovesets(Command):
 
 	Usage:
 	  @backfillmovesets
-	  @backfillmovesets/apply [character|limit]
-	  @backfillmovesets/replace [character|limit]
+	  @backfillmovesets/apply [character||limit]
+	  @backfillmovesets/replace [character||limit]
 	"""
 
 	key = "@backfillmovesets"

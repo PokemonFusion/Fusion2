@@ -75,7 +75,7 @@ These are the main everyday commands for regular players.
 # Account And Character
 
 charcreate <name>      Create a character on your account.
-goic <name|number>    Enter the game as one of your characters.
+goic <name||number>   Enter the game as one of your characters.
 goooc                 Leave your character and return out-of-character.
 
 # Looking And Talking
@@ -83,6 +83,12 @@ goooc                 Leave your character and return out-of-character.
 look                  Look at your current room.
 look <thing>          Look at something nearby.
 +glance               See online characters in the room.
+ws                    Alias for +glance.
++where                See online characters and visible locations.
++profile              View or edit RP profile fields.
++mail                 Read or send character mail.
++request              Send a support request to staff.
++staff                Show the public staff roster.
 ooc <message>         Speak out-of-character in the room.
 ooc :<pose>           Pose out-of-character.
 help                  Open the in-game help index.
@@ -98,6 +104,15 @@ party                 Alias for +sheet.
 +party/all            Show full sheets for every party Pokemon.
 +inventory            Show your item inventory.
 
+# Fusion
+
++fuse/temp <slot>              Temporarily fuse with a party Pokemon.
++fuse/permanent <slot> confirm Permanently unlock a fusion form.
++unfuse                        Leave your current fusion form.
++fusion                        List or choose permanent fusion forms.
++fusion/order                  Toggle whether your fusion enters battle first.
++fusion/fight                  Toggle whether your fusion joins battles.
+
 # Display Preferences
 
 +uimode               Show your current room display mode.
@@ -108,6 +123,79 @@ party                 Alias for +sheet.
 +uitheme              Show your current room color theme.
 +uitheme <color>      Choose green, blue, red, magenta, cyan, or white.
 +battleui/style       Show or change your battle UI style.
+		""",
+	},
+	{
+		"key": "character mail",
+		"aliases": ["mail", "+mail", "inbox"],
+		"category": "Guide",
+		"text": """
+Character mail is private asynchronous mail between IC characters.
+
+# Commands
+
++mail                                  Show your inbox.
++mail/send <character>=<subject>/<message>  Send mail.
++mail/read <id>                        Read a message.
++mail/reply <id>=<message>             Reply to the sender.
++mail/delete <id>                      Archive a message from your inbox.
++mail/unread <id>                      Mark a message unread.
+
+Unread mail is shown on the account character-selection screen when you log in
+or return out-of-character.
+		""",
+	},
+	{
+		"key": "support requests",
+		"aliases": ["requests", "+request", "tickets", "help request"],
+		"category": "Guide",
+		"text": """
+Use +request when you need help from staff or need to report something that
+should stay out of public chat.
+
+# Player Commands
+
++request <message>          Submit a support request.
++request/list               List your requests.
++request/show <id>          Read one of your requests.
++request/close <id> [note]  Close one of your requests.
+
+# Staff Commands
+
++request/queue [open||closed||all]  List support requests.
++request/claim <id>               Claim an open request.
++request/close <id> [note]        Close a request after handling it.
+
+Requests are tied to your account and include your current character and room
+when available.
+		""",
+	},
+	{
+		"key": "staff notes",
+		"aliases": ["+note", "+notes", "notes"],
+		"category": "Staff",
+		"locks": (
+			"read:perm(Helper) or perm(Validator) or perm(Builder) or perm(Admin) "
+			"or perm(Developer) or perm(Wizards)"
+		),
+		"text": """
+Staff notes are private operational notes on accounts or characters.
+
+# Commands
+
++note <target>              List staff notes on a target.
++note/show <target>=<id>    Read a staff note.
++note/add <target>=<note>   Add a staff note.
++note/del <target>=<id>     Remove a staff note.
+
+# Target Forms
+
+*<account>        Target an account.
+account:<name>    Target an account.
+char:<name>       Target a character.
+
+Use staff notes for moderation, validation, continuity, and support context.
+They are not player-facing profile fields.
 		""",
 	},
 	{
@@ -145,6 +233,48 @@ battle.
 		""",
 	},
 	{
+		"key": "fusion",
+		"aliases": ["fuse", "fusion forms", "+fusion", "+tempfuse", "+permfuse", "+unfuse"],
+		"category": "Guide",
+		"text": """
+Fusion means an anthro Pokemon form made from a trainer and Pokemon. It is not
+Pokemon-to-Pokemon splicing. Fusion commands cannot be used while you are in an
+active battle.
+
+# Temporary Fusion
+
++fuse/temp <slot>     Temporarily fuse with a party Pokemon.
++tempfuse slot<slot>  Legacy alias for +fuse/temp.
+
+Temporary fusion requires Bond 140. The Pokemon cannot be an egg, cannot be
+holding an item, and cannot be breeding or carrying an egg. The Pokemon leaves
+your party while fused and returns to your party or storage when you use
++unfuse.
+
+# Permanent Fusion
+
++fuse/permanent <slot> confirm  Permanently unlock a fusion form.
++permfuse slot<slot> confirm    Legacy alias for +fuse/permanent.
+
+Permanent fusion requires Bond 255. The source Pokemon becomes part of the
+character and is not returned as a separate party Pokemon when you unfuse.
+
+# Form Control
+
++unfuse                    Return to human form or end a temporary fusion.
++fusion                    List current and unlocked fusion forms.
++fusion <number||species>  Take an unlocked permanent fusion form.
++forms                     Alias for +fusion.
+
+# Battle Preferences
+
++fusion/order [first||normal]  Choose whether your fusion form enters first.
++mefirst                      Legacy toggle for +fusion/order.
++fusion/fight [on||off]        Choose whether your active fusion joins battles.
++mefight                      Legacy toggle for +fusion/fight.
+		""",
+	},
+	{
 		"key": "exploring and hunting",
 		"aliases": ["hunting", "exploration", "wild pokemon", "encounters"],
 		"category": "Guide",
@@ -157,6 +287,8 @@ area supports wild encounters.
 look              Read the current room.
 look <thing>      Inspect a character, exit, object, or feature.
 +glance           See online characters in the room.
+ws                Alias for +glance.
++where            See online characters and visible locations.
 
 Rooms usually list exits by name. Type an exit name to move through it. Some
 rooms may have highlighted shortcut letters in their exit names.

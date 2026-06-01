@@ -16,6 +16,7 @@
       {% if webclient_enabled %}
       <a class="btn btn-fusion-primary" href="{% url 'webclient:index' %}">Play in Browser</a>
       {% endif %}
+      <a class="btn btn-fusion-secondary" href="{% url 'profile-editor' %}">Edit Profiles</a>
       <a class="btn btn-fusion-secondary" href="{% url 'help' %}">Open Guide</a>
     </div>
   </header>
@@ -36,6 +37,11 @@
         <strong>${{ entry.trainer.money }}</strong>
         {% endif %}
       </header>
+      {% if entry.character_id %}
+      <div class="player-hub-actions player-character-actions">
+        <a class="btn btn-fusion-secondary" href="{% url 'profile-editor' %}?character={{ entry.character_id }}">Edit Profile</a>
+      </div>
+      {% endif %}
 
       <div class="player-summary-grid" aria-label="Trainer summary">
         <div>

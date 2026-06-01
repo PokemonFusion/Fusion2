@@ -7,7 +7,7 @@ class CmdMapMove(Command):
     """Move inside the current map.
 
     Usage:
-      +map/move <n|s|e|w>
+      +map/move <n||s||e||w>
 
     Examples:
       +map/move n

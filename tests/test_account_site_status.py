@@ -20,6 +20,14 @@ class FakeDefaultGuest:
     pass
 
 
+class FakeHandler:
+    def __init__(self, values):
+        self.values = list(values)
+
+    def all(self):
+        return list(self.values)
+
+
 def load_accounts_module():
     path = os.path.join(ROOT, "typeclasses", "accounts.py")
     spec = importlib.util.spec_from_file_location("typeclasses.accounts", path)
@@ -118,3 +126,38 @@ def test_account_authenticate_allows_unblocked_login():
 
     assert account is fake_account
     assert errors == []
+
+
+def test_account_look_shows_unread_mail_by_character():
+    original = install_fakes()
+    try:
+        mod = load_accounts_module()
+
+        session = types.SimpleNamespace(sessid=1, protocol_key="web", address="127.0.0.1")
+        char_with_mail = types.SimpleNamespace(
+            id=10,
+            name="Ash",
+            permissions=FakeHandler([]),
+            sessions=FakeHandler([]),
+        )
+        char_without_mail = types.SimpleNamespace(
+            id=11,
+            name="Misty",
+            permissions=FakeHandler([]),
+            sessions=FakeHandler([]),
+        )
+        account = mod.Account()
+        account.name = "Tester"
+        account.is_superuser = False
+        account.sessions = FakeHandler([session])
+        account.ndb = types.SimpleNamespace()
+        mod.unread_mail_counts_for_characters = lambda chars: {10: 2}
+        mod.character_identity = lambda char: char.id
+
+        output = account.at_look(target=[char_with_mail, char_without_mail], session=session)
+    finally:
+        restore_modules(original)
+
+    assert "Ash [] |y[2 unread mail]|n" in output
+    assert "Misty []" in output
+    assert "|yUnread mail:|n Ash (2). Use |wgoic|n, then |w+mail|n." in output

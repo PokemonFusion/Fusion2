@@ -14,7 +14,7 @@ class CmdStatusDev(Command):
 
         def func(self):
                 if len(self.args) < 2:
-                        self.caller.msg("Usage: statusdev <brn|psn|tox|par|slp|frz> <target>")
+                        self.caller.msg("Usage: statusdev <brn||psn||tox||par||slp||frz> <target>")
                         return
                 status_key = self.args[0].lower()
                 target_name = " ".join(self.args[1:])

@@ -9,15 +9,18 @@ class CmdGlance(Command):
 
     Usage:
       +glance
+      ws
 
     Examples:
       +glance
+      ws
 
     Notes:
       This is a quick scan; use look <character> for a full description.
     """
 
     key = "+glance"
+    aliases = ["ws"]
     locks = "cmd:all()"
     help_category = "General"
 

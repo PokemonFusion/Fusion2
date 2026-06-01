@@ -28,6 +28,7 @@ from django.utils.translation import gettext as _
 from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 from evennia.utils.utils import is_iter
 
+from utils.character_mail import character_identity, unread_mail_counts_for_characters
 from utils.site_status import get_login_block_message, is_login_blocked
 
 
@@ -105,18 +106,21 @@ class Account(DefaultAccount):
 
         if not characters:
             txt_characters = "You don't have a character yet. Use |wcharcreate|n."
+            mail_counts = {}
         else:
             max_chars = (
                 "unlimited"
                 if self.is_superuser or settings.MAX_NR_CHARACTERS is None
                 else settings.MAX_NR_CHARACTERS
             )
+            mail_counts = self._unread_mail_counts(characters)
 
             char_strings = []
             for index, char in enumerate(characters, start=1):
                 prefix = f"  {index}. "
                 permissions = ", ".join(char.permissions.all())
                 connected_sessions = list(char.sessions.all())
+                mail_notice = self._mail_notice(char, mail_counts)
 
                 if connected_sessions:
                     statuses = []
@@ -132,22 +136,53 @@ class Account(DefaultAccount):
                     status_text = "; ".join(list(dict.fromkeys(statuses)))
                     name = f"|G{char.name}|n" if controlled_by_account else f"|R{char.name}|n"
                     char_strings.append(
-                        f"{prefix}{name} [{permissions}] ({status_text})"
+                        f"{prefix}{name} [{permissions}] ({status_text}){mail_notice}"
                     )
                 else:
-                    char_strings.append(f"{prefix}{char.name} [{permissions}]")
+                    char_strings.append(f"{prefix}{char.name} [{permissions}]{mail_notice}")
 
             txt_characters = (
                 f"Available character(s) ({len(characters)}/{max_chars}, |wgoic <name>|n or |wgoic <#>|n to play):|n\n"
                 + "\n".join(char_strings)
             )
 
+        footer = self._mail_footer(characters, mail_counts)
+
         return self.ooc_appearance_template.format(
             header=txt_header,
             sessions=txt_sessions,
             characters=txt_characters,
-            footer="",
+            footer=footer,
         )
+
+    def _unread_mail_counts(self, characters):
+        """Return unread mail counts for the OOC character selector."""
+
+        try:
+            return unread_mail_counts_for_characters(characters)
+        except Exception:
+            return {}
+
+    def _mail_notice(self, char, mail_counts):
+        """Return a compact unread-mail notice for one character row."""
+
+        count = mail_counts.get(character_identity(char), 0)
+        return f" |y[{count} unread mail]|n" if count else ""
+
+    def _mail_footer(self, characters, mail_counts):
+        """Return the OOC unread-mail summary line."""
+
+        if not mail_counts:
+            return ""
+
+        parts = []
+        for char in characters:
+            count = mail_counts.get(character_identity(char), 0)
+            if count:
+                parts.append(f"{char.name} ({count})")
+        if not parts:
+            return ""
+        return "\n|yUnread mail:|n " + ", ".join(parts) + ". Use |wgoic|n, then |w+mail|n."
 
 
 class Guest(DefaultGuest):

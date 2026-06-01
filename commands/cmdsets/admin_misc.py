@@ -9,6 +9,7 @@ from commands.admin.cmd_adminpokemon import (
 	CmdRemovePokemon,
 )
 from commands.admin.cmd_fixfusion import CmdFixFusion
+from commands.admin.cmd_fusionboost import CmdFusionBoost
 from commands.admin.cmd_gitpull import CmdGitPull
 from commands.admin.cmd_givepokemon import CmdGivePokemon
 from commands.admin.cmd_heartbeat import CmdHeartbeat
@@ -30,6 +31,7 @@ class AdminMiscCmdSet(CmdSet):
 			CmdBackfillPokemonMovesets,
                         CmdPokemonInfo,
                         CmdFixFusion,
+                        CmdFusionBoost,
                         CmdGitPull,
                         CmdHeartbeat,
                         CmdSiteStatus,

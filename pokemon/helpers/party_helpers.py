@@ -66,4 +66,10 @@ def has_usable_pokemon(character) -> bool:
         """Return ``True`` if any party member can participate in battle."""
 
         party = get_active_party(character)
+        try:
+                from utils.fusion import get_battle_party_with_fusion
+
+                party = get_battle_party_with_fusion(character, party)
+        except Exception:
+                pass
         return any(pokemon_is_usable(mon) for mon in party)

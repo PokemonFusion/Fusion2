@@ -10,6 +10,9 @@ def test_player_guide_has_expected_topics():
     assert set(entries) >= {
         "getting started",
         "core commands",
+        "fusion",
+        "character mail",
+        "support requests",
         "pokemon and storage",
         "exploring and hunting",
         "battle basics",
@@ -27,7 +30,19 @@ def test_getting_started_covers_first_session_flow():
 
 def test_core_command_reference_stays_player_facing():
     text = _guide_entries()["core commands"]["text"]
-    for command in ("help", "look", "+sheet", "+inventory", "+uimode", "+battleui/style"):
+    for command in (
+        "help",
+        "look",
+        "+sheet",
+        "+inventory",
+        "+uimode",
+        "+battleui/style",
+        "+fusion",
+        "+profile",
+        "+mail",
+        "+request",
+        "+staff",
+    ):
         assert command in text
     for admin_command in ("@additem", "@adminheal", "@customhunt", "@alphaspawnapply"):
         assert admin_command not in text
