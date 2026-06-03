@@ -21,6 +21,24 @@ except Exception:  # pragma: no cover - import-only tests may stub utils
         return None
 
 
+def _parse_slash_switches(command):
+    """Extract Evennia-style /switches for Command subclasses."""
+
+    switches = []
+    for switch in getattr(command, "switches", []) or []:
+        switches.extend(part for part in str(switch).lower().split("/") if part)
+
+    raw_args = (command.args or "").strip()
+    if raw_args.startswith("/") and len(raw_args) > 1:
+        switch_text, _, raw_args = raw_args[1:].partition(" ")
+        switches.extend(part for part in switch_text.lower().split("/") if part)
+        raw_args = raw_args.strip()
+
+    command.switches = switches
+    command.args = raw_args
+    return set(switches)
+
+
 class CmdSheet(Command):
     """Display your trainer overview, inventory, or a party slot.
 
@@ -51,7 +69,7 @@ class CmdSheet(Command):
     def parse(self):
         """Parse switches and arguments for trainer, inventory, or slot views."""
 
-        switches = {sw.lower() for sw in getattr(self, "switches", []) or []}
+        switches = _parse_slash_switches(self)
 
         self.mode = "brief" if "brief" in switches else "full"
         self.view_inventory = "inv" in switches and "cat" not in switches and "inv/cat" not in switches
@@ -205,7 +223,7 @@ class CmdSheetPokemon(Command):
         self.slot = None
         self.show_all = False
         self.mode = "full"
-        switches = getattr(self, "switches", [])
+        switches = _parse_slash_switches(self)
         if "brief" in switches:
             self.mode = "brief"
         if "moves" in switches:
