@@ -284,6 +284,124 @@ def test_return_appearance_uses_classic_modern_layout_and_hotkeys():
                 assert all(len(line) <= 78 for line in plain.splitlines())
 
 
+def test_return_appearance_hides_inactive_player_puppets_from_npcs():
+        with load_rooms_module() as rooms:
+                FusionRoom = rooms.FusionRoom
+                room = FusionRoom()
+                room.key = "Route House"
+                room.id = 52
+                room.default_description = "A default description."
+                room.db = DummyDB(
+                        desc="A small route house.",
+                        weather="clear",
+                        is_item_store=False,
+                        is_item_shop=False,
+                        is_pokemon_center=False,
+                )
+
+                active_player = types.SimpleNamespace(
+                        key="Ash",
+                        id=10,
+                        has_account=True,
+                        attributes=DummyDB(npc=False),
+                        db=DummyDB(dark=False),
+                )
+                inactive_player = types.SimpleNamespace(
+                        key="Misty",
+                        id=11,
+                        has_account=False,
+                        attributes=DummyDB(npc=False),
+                        db=DummyDB(dark=False),
+                )
+                store_owner = types.SimpleNamespace(
+                        key="Shopkeeper",
+                        id=12,
+                        has_account=False,
+                        attributes=DummyDB(npc=True),
+                        db=DummyDB(dark=False),
+                )
+
+                def fake_contents_get(content_type=None, **_kwargs):
+                        if content_type == "exit":
+                                return []
+                        if content_type == "character":
+                                return [active_player, inactive_player, store_owner]
+                        if content_type == "object":
+                                return []
+                        return []
+
+                room.contents_get = fake_contents_get
+                room.filter_visible = lambda objects, *_args, **_kwargs: objects
+
+                looker = active_player
+                looker.ndb = DummyDB(cols=80)
+                looker.db.ui_mode = "fancy"
+                looker.db.ui_theme = "green"
+                looker.check_permstring = lambda _perm: False
+
+                appearance = room.return_appearance(looker)
+                plain = rooms.strip_ansi(appearance)
+
+                assert "---- Players " in plain
+                assert "Ash" in plain
+                assert "---- NPCs " in plain
+                assert "Shopkeeper" in plain
+                assert "Misty" not in plain
+
+
+def test_return_appearance_hides_npc_section_when_only_inactive_puppets_are_present():
+        with load_rooms_module() as rooms:
+                FusionRoom = rooms.FusionRoom
+                room = FusionRoom()
+                room.key = "Quiet Room"
+                room.id = 53
+                room.default_description = "A default description."
+                room.db = DummyDB(
+                        desc="A quiet room.",
+                        weather="clear",
+                        is_item_store=False,
+                        is_item_shop=False,
+                        is_pokemon_center=False,
+                )
+
+                inactive_player = types.SimpleNamespace(
+                        key="Misty",
+                        id=11,
+                        has_account=False,
+                        attributes=DummyDB(npc=False),
+                        db=DummyDB(dark=False),
+                )
+
+                def fake_contents_get(content_type=None, **_kwargs):
+                        if content_type == "exit":
+                                return []
+                        if content_type == "character":
+                                return [inactive_player]
+                        if content_type == "object":
+                                return []
+                        return []
+
+                room.contents_get = fake_contents_get
+                room.filter_visible = lambda objects, *_args, **_kwargs: objects
+
+                looker = types.SimpleNamespace()
+                looker.key = "Brock"
+                looker.id = 12
+                looker.db = DummyDB(ui_mode="fancy", ui_theme="green", dark=False)
+                looker.ndb = DummyDB(cols=80)
+                looker.has_account = True
+                looker.attributes = DummyDB(npc=False)
+                looker.check_permstring = lambda _perm: False
+
+                appearance = room.return_appearance(looker)
+                plain = rooms.strip_ansi(appearance)
+
+                assert "Misty" not in plain
+                assert "---- NPCs " not in plain
+                assert "---- Players " in plain
+                assert "Brock" in plain
+
+
 def test_return_appearance_preserves_builder_metadata_in_classic_layout():
         with load_rooms_module() as rooms:
                 FusionRoom = rooms.FusionRoom
