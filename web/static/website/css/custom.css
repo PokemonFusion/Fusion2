@@ -69,7 +69,7 @@ footer.footer .text-white a {
 }
 
 .fusion-hero-copy,
-.fusion-terminal,
+.fusion-client-preview,
 .fusion-stat-card,
 .fusion-panel {
   border: 1px solid var(--fusion-line);
@@ -126,131 +126,237 @@ footer.footer .text-white a {
   padding: .85rem 1.1rem;
 }
 
-.fusion-hero-meta {
-  align-items: center;
-  color: var(--fusion-muted);
-  display: flex;
-  flex-wrap: wrap;
-  font-weight: 800;
-  gap: .6rem;
-  margin-top: 1.6rem;
-}
-
-.fusion-hero-meta span {
-  background: rgba(255, 255, 255, .66);
-  border: 1px solid var(--fusion-line);
-  border-radius: 8px;
-  padding: .45rem .6rem;
-}
-
-.fusion-status.status-open {
-  color: var(--fusion-teal-dark);
-}
-
-.fusion-status.status-limited {
-  color: #8a5a12;
-}
-
-.fusion-status.status-maintenance {
-  color: var(--fusion-red-dark);
-}
-
-/* Terminal preview */
-.fusion-terminal {
-  background: var(--fusion-terminal);
+/* Webclient preview */
+.fusion-client-preview {
+  background:
+    linear-gradient(180deg, #1e2d29, #101b18);
   color: #d9eadc;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   min-height: 430px;
+  overflow: hidden;
+  padding: .72rem;
+}
+
+.fusion-preview-browserbar {
+  align-items: center;
+  background: #efe3d1;
+  border: 1px solid rgba(45, 40, 36, .14);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  color: var(--fusion-muted);
+  display: flex;
+  gap: .7rem;
+  min-height: 32px;
+  padding: .42rem .62rem;
+}
+
+.fusion-preview-window-dots {
+  background: var(--fusion-red);
+  border-radius: 50%;
+  box-shadow: 14px 0 0 var(--fusion-yellow), 28px 0 0 var(--fusion-teal);
+  flex: 0 0 auto;
+  height: 9px;
+  margin-right: 1.75rem;
+  width: 9px;
+}
+
+.fusion-preview-url {
+  background: rgba(255, 253, 247, .82);
+  border: 1px solid var(--fusion-line);
+  border-radius: 6px;
+  display: block;
+  font-family: "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
+  font-size: .76rem;
+  font-weight: 800;
+  line-height: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: .34rem .52rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.fusion-preview-shell {
+  background: var(--fusion-terminal);
+  border: 1px solid rgba(45, 40, 36, .18);
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   overflow: hidden;
 }
 
-.fusion-terminal-top {
+.fusion-preview-topbar {
   align-items: center;
-  background: linear-gradient(180deg, #22302c, var(--fusion-terminal-soft));
-  border-bottom: 1px solid var(--fusion-terminal-line);
+  background:
+    linear-gradient(90deg, rgba(217, 154, 49, .16), transparent 38%),
+    linear-gradient(180deg, #fff9ee, #f2e6d4);
+  border-bottom: 1px solid rgba(45, 40, 36, .12);
+  color: var(--fusion-ink);
   display: flex;
-  gap: .65rem;
-  min-height: 46px;
-  padding: .75rem .9rem;
+  flex-wrap: wrap;
+  gap: .55rem;
+  padding: .48rem .62rem .58rem;
 }
 
-.fusion-terminal-dot {
-  background: var(--fusion-yellow);
-  border-radius: 50%;
-  box-shadow: 14px 0 0 var(--fusion-red), 28px 0 0 var(--fusion-teal);
-  height: 10px;
-  margin-right: 1.75rem;
-  width: 10px;
-}
-
-.fusion-terminal-title {
-  color: #fff8ea;
+.fusion-preview-brand {
+  align-items: center;
+  color: var(--fusion-ink);
+  display: inline-flex;
+  flex: 1 1 auto;
+  gap: .6rem;
   min-width: 0;
+}
+
+.fusion-preview-brand img {
+  flex: 0 0 auto;
+  height: 34px;
+  width: 34px;
+}
+
+.fusion-preview-brand strong,
+.fusion-preview-brand small {
+  display: block;
+  line-height: 1.15;
+}
+
+.fusion-preview-brand strong {
+  font-size: .98rem;
   font-weight: 900;
 }
 
-.fusion-terminal-state {
-  background: rgba(31, 138, 132, .18);
-  border: 1px solid rgba(83, 196, 174, .35);
-  border-radius: 6px;
-  color: #a9ebd8;
+.fusion-preview-brand small {
+  color: var(--fusion-muted);
+  font-size: .7rem;
+  font-weight: 900;
+}
+
+.fusion-preview-status {
+  align-items: center;
+  background: rgba(255, 253, 247, .82);
+  border: 1px solid var(--fusion-line);
+  border-radius: 8px;
+  color: var(--fusion-teal-dark);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .72rem;
+  font-weight: 900;
+  gap: .42rem;
+  min-height: 30px;
+  padding: .22rem .42rem .22rem .52rem;
+  text-transform: uppercase;
+}
+
+.fusion-preview-status-light {
+  background: var(--fusion-teal);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(11, 94, 98, .13);
+  height: .56rem;
+  width: .56rem;
+}
+
+.fusion-preview-command-bar {
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+.fusion-preview-command-list {
+  display: flex;
+  gap: .35rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: .04rem;
+  scrollbar-width: none;
+}
+
+.fusion-preview-command-list::-webkit-scrollbar {
+  display: none;
+}
+
+.fusion-preview-command {
+  background: #fffdf7;
+  border: 1px solid var(--fusion-line);
+  border-radius: 8px;
+  color: var(--fusion-ink);
+  flex: 0 0 auto;
   font-size: .78rem;
   font-weight: 900;
-  margin-left: auto;
-  padding: .18rem .45rem;
+  line-height: 1;
+  min-height: 30px;
+  padding: .46rem .56rem;
 }
 
-.fusion-terminal-body {
-  flex: 1;
-  overflow: auto;
-  padding: 1rem 1.1rem .85rem;
+.fusion-preview-stage {
+  background: var(--fusion-terminal);
+  max-height: 232px;
+  min-height: 0;
+  overflow: hidden;
+  padding: .9rem .9rem .7rem;
 }
 
-.fusion-terminal pre {
+.fusion-preview-output {
   color: #d9eadc;
   font-family: "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
-  font-size: .92rem;
-  line-height: 1.48;
-  margin: 0;
-  white-space: pre-wrap;
+  font-size: .64rem;
+  line-height: 1.2;
+  overflow: hidden;
+  width: 64ch;
 }
 
-.term-muted {
-  color: #87a39b;
+.fusion-preview-line {
+  min-height: 1.2em;
+  white-space: pre;
 }
 
-.term-accent {
+.fusion-preview-output .ansi-blue {
+  color: #7fa8ff;
+}
+
+.fusion-preview-output .ansi-gray {
+  color: #8fa09b;
+}
+
+.fusion-preview-output .ansi-green {
+  color: #7ce0a4;
+}
+
+.fusion-preview-output .ansi-red {
+  color: #ff8a72;
+}
+
+.fusion-preview-output .ansi-white {
+  color: #fff8ea;
+}
+
+.fusion-preview-output .ansi-yellow {
   color: #ffd66b;
 }
 
-.fusion-terminal-input {
-  align-items: center;
-  background: #0c1211;
-  border-top: 1px solid var(--fusion-terminal-line);
-  color: #fff8ea;
-  display: flex;
-  font-family: "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
-  gap: .55rem;
-  min-height: 52px;
-  padding: .85rem 1rem;
-}
-
-.fusion-terminal-input span:first-child {
-  color: var(--fusion-yellow);
-}
-
-.fusion-terminal-footer {
+.fusion-preview-input {
   align-items: center;
   background: #0c1211;
   border-top: 1px solid var(--fusion-terminal-line);
   color: #d9eadc;
   display: flex;
   font-family: "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
-  font-size: .86rem;
-  gap: .55rem;
-  min-height: 42px;
-  padding: .7rem 1rem;
+  font-size: .76rem;
+  gap: .5rem;
+  min-height: 38px;
+  padding: .58rem .75rem;
+}
+
+.fusion-preview-input span:first-child {
+  color: var(--fusion-yellow);
+}
+
+.fusion-preview-caption {
+  color: rgba(255, 248, 234, .82);
+  font-weight: 800;
+  line-height: 1.35;
+  margin: .72rem .25rem 0;
 }
 
 /* Dashboard and lower sections */
@@ -437,6 +543,10 @@ footer.footer .text-white a {
   margin: 1.35rem 0 0;
 }
 
+.fusion-lower-grid-solo {
+  grid-template-columns: 1fr;
+}
+
 .fusion-panel {
   padding: 1.25rem;
 }
@@ -460,6 +570,13 @@ footer.footer .text-white a {
 
 .fusion-news-list li + li {
   margin-top: .35rem;
+}
+
+.fusion-announcement-meta {
+  color: var(--fusion-muted);
+  font-size: .82rem;
+  font-weight: 800;
+  margin: .95rem 0 0;
 }
 
 .fusion-connection-line {
@@ -540,6 +657,24 @@ footer.footer .text-white a {
   }
 }
 
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .navbar-expand-md .navbar-collapse {
+    flex-basis: 100%;
+    margin-top: .45rem;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .navbar .nav.navbar-nav.ml-auto {
+    justify-content: flex-start !important;
+    margin-left: 0 !important;
+    width: 100%;
+  }
+}
+
 @media (min-width: 992px) and (max-width: 1199.98px) {
   .fusion-hero {
     grid-template-columns: minmax(0, 1fr) minmax(390px, .9fr);
@@ -568,12 +703,23 @@ footer.footer .text-white a {
     padding: 1.45rem;
   }
 
-  .fusion-terminal {
-    min-height: 360px;
+  .fusion-client-preview {
+    min-height: 0;
+    padding: .55rem;
   }
 
-  .fusion-terminal pre {
-    font-size: .78rem;
+  .fusion-preview-stage {
+    max-height: 210px;
+    padding: .75rem .65rem .6rem;
+  }
+
+  .fusion-preview-output {
+    font-size: .56rem;
+  }
+
+  .fusion-preview-command {
+    font-size: .74rem;
+    padding: .42rem .5rem;
   }
 
   .fusion-dashboard {
@@ -582,11 +728,6 @@ footer.footer .text-white a {
 
   .fusion-notes {
     background: rgba(255, 249, 238, .9);
-  }
-
-  .fusion-hero-meta {
-    align-items: stretch;
-    flex-direction: column;
   }
 
   .fusion-actions .btn {

@@ -1,0 +1,48 @@
+{% load static %}
+
+<aside class="fusion-client-preview" aria-label="Fusion2 Webclient preview">
+  <div class="fusion-preview-browserbar" aria-hidden="true">
+    <span class="fusion-preview-window-dots"></span>
+    <span class="fusion-preview-url">/webclient/</span>
+  </div>
+
+  <div class="fusion-preview-shell">
+    <header class="fusion-preview-topbar">
+      <div class="fusion-preview-brand">
+        <img src="{% static 'website/images/fusion2/logo-fusion-core.svg' %}" alt="" width="34" height="34">
+        <span>
+          <strong>Fusion2 Webclient</strong>
+          <small>Persistent Trainer RPG</small>
+        </span>
+      </div>
+
+      <nav class="fusion-preview-command-bar" aria-label="Quick command preview">
+        <div class="fusion-preview-command-list">
+          {% for command in webclient_preview_commands %}
+          <button type="button" class="fusion-preview-command" aria-disabled="true" tabindex="-1">{{ command }}</button>
+          {% endfor %}
+        </div>
+      </nav>
+
+      <div class="fusion-preview-status" data-state="connected">
+        <span class="fusion-preview-status-light" aria-hidden="true"></span>
+        <span>connected</span>
+      </div>
+    </header>
+
+    <div class="fusion-preview-stage">
+      <div class="fusion-preview-output" aria-label="Cropped Fusion2 title screen">
+        {% for line in webclient_preview_lines %}
+        <div class="fusion-preview-line">{% for segment in line %}<span{% if segment.class %} class="{{ segment.class }}"{% endif %}>{{ segment.text }}</span>{% endfor %}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="fusion-preview-input" aria-hidden="true">
+      <span>&gt;</span>
+      <span>title screen preview</span>
+    </div>
+  </div>
+
+  <p class="fusion-preview-caption">Play directly in your browser -- no separate MUD client required.</p>
+</aside>
