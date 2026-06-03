@@ -269,6 +269,12 @@ class TurnManager:
 				except Exception:
 					pass
 			if battle_finished:
+				result_hook = getattr(self, "_handle_battle_result", None)
+				if callable(result_hook):
+					try:
+						result_hook(winner)
+					except Exception:
+						log_warn("Failed to apply battle result hook", exc_info=True)
 				if hasattr(self, "end"):
 					try:
 						self.end()  # type: ignore[misc]

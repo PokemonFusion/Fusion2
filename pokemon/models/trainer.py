@@ -153,6 +153,44 @@ class NPCTrainer(models.Model):
                 return self.name
 
 
+class GymLeaderProfile(models.Model):
+        """Gym-specific metadata for an otherwise reusable static NPC trainer."""
+
+        npc_trainer = models.OneToOneField(
+                "NPCTrainer",
+                on_delete=models.CASCADE,
+                related_name="gym_leader_profile",
+        )
+        badge = models.ForeignKey(
+                "GymBadge",
+                on_delete=models.PROTECT,
+                related_name="gym_leader_profiles",
+        )
+        league_key = models.CharField(max_length=80, db_index=True)
+        gym_key = models.CharField(max_length=80, db_index=True)
+        # Transitional content key until GymBadge grows its own durable key field.
+        badge_key = models.CharField(max_length=80, db_index=True)
+        required_badge_count = models.PositiveSmallIntegerField(default=0)
+        is_enabled = models.BooleanField(default=True, db_index=True)
+        sort_order = models.PositiveSmallIntegerField(default=1, db_index=True)
+
+        class Meta:
+                ordering = ("sort_order", "league_key", "gym_key")
+                constraints = [
+                        models.UniqueConstraint(
+                                fields=("league_key", "gym_key"),
+                                name="gymleaderprofile_unique_gym",
+                        ),
+                        models.UniqueConstraint(
+                                fields=("league_key", "badge_key"),
+                                name="gymleaderprofile_unique_badge_key",
+                        ),
+                ]
+
+        def __str__(self):  # pragma: no cover - simple repr
+                return f"{self.npc_trainer} ({self.league_key}:{self.gym_key})"
+
+
 class NPCPokemonTemplate(models.Model):
         """Reusable template for NPC-owned battle Pokemon."""
 

@@ -20,8 +20,8 @@ from pokemon.battle.battleinstance import (
         BattleSession,
         BattleType,
         create_battle_pokemon,
-        generate_trainer_pokemon,
 )
+from pokemon.services.trainer_encounters import generate_random_trainer_encounter
 from pokemon.helpers.party_helpers import has_usable_pokemon
 from utils.dex_suggestions import is_species_not_found_error, species_not_found_message
 from utils.pokemon_config import RARITY_WEIGHTS, TIERS
@@ -176,16 +176,26 @@ class HuntSystem:
 	# ------------------------------------------------------------------
 	# Main hunt entry points
 	# ------------------------------------------------------------------
-	def _start_battle_with_selection(self, hunter, poke, battle_type, intro_text) -> None:
+	def _start_battle_with_selection(
+		self,
+		hunter,
+		poke,
+		battle_type,
+		intro_text,
+		opponent_name: str | None = None,
+		ai_profile: str | None = None,
+	) -> None:
 		"""Create and start a battle session with a preselected opponent."""
 
 		def _select_override():
-			side = "Trainer" if battle_type == BattleType.TRAINER else "Wild"
+			side = opponent_name or ("Trainer" if battle_type == BattleType.TRAINER else "Wild")
 			return (poke, side, battle_type, intro_text)
 
 		inst = BattleSession(hunter)
 		if getattr(poke, "model_id", None):
 			inst.temp_pokemon_ids.append(poke.model_id)
+		if ai_profile:
+			inst._pending_opponent_ai_profile = ai_profile
 		inst._select_opponent = _select_override
 		inst.start()
 
@@ -196,11 +206,18 @@ class HuntSystem:
 
 	def _resolve_npc_encounter(self, hunter, tp_cost: int) -> str:
 		"""Handle trainer encounter generation and battle startup."""
-		poke = generate_trainer_pokemon()
-		intro_text = f"A trainer challenges you with {poke.name}!"
-		self._start_battle_with_selection(hunter, poke, BattleType.TRAINER, intro_text)
+		encounter = generate_random_trainer_encounter(self.room)
+		poke = encounter.team[0]
+		self._start_battle_with_selection(
+			hunter,
+			poke,
+			BattleType.TRAINER,
+			encounter.intro_text,
+			opponent_name=encounter.display_name,
+			ai_profile=getattr(encounter, "ai_profile", "trainer_basic"),
+		)
 		self._deduct_training_points(hunter, tp_cost)
-		return intro_text
+		return encounter.intro_text
 
 	def _resolve_wild_encounter(self, hunter, tp_cost: int) -> str:
 		"""Handle wild encounter checks, spawn selection, and battle startup."""

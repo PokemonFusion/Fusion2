@@ -39,6 +39,12 @@ See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
 battle validation workflow.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current
 offline battle proof coverage inventory.
+See [design/npc_trainer_battles.md](design/npc_trainer_battles.md) for the
+NPC trainer battle system design reference.
+See [static-npc-trainer-battles.md](static-npc-trainer-battles.md) for the
+current Builder workflow for static NPC trainer battle setup and validation.
+See [design/battle_ai.md](design/battle_ai.md) for the battle AI design
+reference and phased implementation roadmap.
 
 ## Battle HP Display
 

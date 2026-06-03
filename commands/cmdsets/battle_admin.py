@@ -12,6 +12,9 @@ from commands.admin.cmd_adminbattle import (
     CmdToggleDamageNumbers,
     CmdUiPreview,
 )
+from commands.admin.cmd_aidebug import CmdAIDebugTrace
+from commands.admin.cmd_gymbattle import CmdGymBattle
+from commands.admin.cmd_npcbattle import CmdNPCBattle
 from commands.admin.cmd_testbattle import CmdStartTestBattle, CmdTestSpawn
 
 
@@ -28,9 +31,12 @@ class BattleAdminCmdSet(CmdSet):
             CmdRestoreBattle,
             CmdBattleInfo,
             CmdBattleSnapshot,
+            CmdAIDebugTrace,
             CmdRetryTurn,
             CmdToggleDamageNumbers,
             CmdUiPreview,
+            CmdNPCBattle,
+            CmdGymBattle,
             CmdTestSpawn,
             CmdStartTestBattle,
         ):

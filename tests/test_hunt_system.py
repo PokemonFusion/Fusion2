@@ -126,6 +126,54 @@ def test_hunt_not_allowed():
 	assert msg == "You can't hunt here."
 
 
+def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch):
+	room = DummyRoom()
+	room.db.npc_chance = 100
+	room.db.tp_cost = 3
+	hunter = DummyHunter()
+	hunter.location = room
+	hunter.db.training_points = 10
+	mon = types.SimpleNamespace(name="Pidgey", level=5)
+	encounter = types.SimpleNamespace(
+		display_name="Bug Catcher Ren",
+		intro_text="Bug Catcher Ren challenges you with Pidgey!",
+		team=[mon],
+		ai_profile="trainer_skilled",
+	)
+	captured = {}
+
+	def fake_generate_random_trainer_encounter(passed_room):
+		captured["room"] = passed_room
+		return encounter
+
+	class RecordingBattleSession:
+		def __init__(self, player, opponent=None):
+			self.captainA = player
+			self.temp_pokemon_ids = []
+			captured["session"] = self
+
+		def start(self):
+			captured["selection"] = self._select_opponent()
+
+	monkeypatch.setattr("world.hunt_system.generate_random_trainer_encounter", fake_generate_random_trainer_encounter)
+	monkeypatch.setattr("world.hunt_system.BattleSession", RecordingBattleSession)
+	monkeypatch.setattr(HuntSystem, "_apply_walk_steps", lambda self, hunter: None)
+	monkeypatch.setattr(HuntSystem, "_check_itemfinder", lambda self, hunter: None)
+
+	msg = HuntSystem(room).perform_hunt(hunter)
+
+	assert msg == encounter.intro_text
+	assert captured["room"] is room
+	assert captured["selection"] == (
+		mon,
+		"Bug Catcher Ren",
+		sys.modules["pokemon.battle.battleinstance"].BattleType.TRAINER,
+		encounter.intro_text,
+	)
+	assert hunter.db.training_points == 7
+	assert captured["session"]._pending_opponent_ai_profile == "trainer_skilled"
+
+
 def test_hunt_requires_conscious_pokemon():
 	room = DummyRoom()
 	hs = HuntSystem(room)
