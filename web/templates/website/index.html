@@ -29,48 +29,9 @@
       {% endif %}
     </div>
 
-    <div class="fusion-hero-meta" aria-label="Server summary">
-      <span class="fusion-status status-{{ site_status_class }}">{{ site_status_label }}</span>
-      <span>
-        {% if num_accounts_connected == 0 or num_accounts_connected == 'no one' %}
-          Quiet right now
-        {% elif num_accounts_connected == 1 %}
-          1 trainer online
-        {% else %}
-          {{ num_accounts_connected }} trainers online
-        {% endif %}
-      </span>
-      <span>{{ num_accounts_registered }} registered account{{ num_accounts_registered|pluralize }}</span>
-      <span>{{ num_exits }} mapped exit{{ num_exits|pluralize }}</span>
-    </div>
   </div>
 
-  <aside class="fusion-terminal" aria-label="Webclient preview">
-    <div class="fusion-terminal-top">
-      <span class="fusion-terminal-title">Fusion2 Webclient</span>
-      <span class="fusion-terminal-state">connected</span>
-    </div>
-    <div class="fusion-terminal-body">
-<pre><span class="term-muted">&gt; look</span>
-Training Yard
-Morning light cuts across a field of practice rings.
-Three trainers compare notes near the fusion lab.
-
-<span class="term-accent">A scout waves you over.</span>
-"New routes opened beyond Copper Ridge."
-
-<span class="term-muted">&gt; party</span>
-Slot 1  Emberling   Lv 12  <span class="type-inline type-fire">FIRE</span>
-Slot 2  Mosskite    Lv 10  <span class="type-inline type-grass">GRASS</span>
-Slot 3  Voltrill    Lv 09  <span class="type-inline type-spark">SPARK</span>
-
-<span class="term-muted">&gt;</span></pre>
-    </div>
-    <div class="fusion-terminal-footer">
-      <span class="term-muted">&gt;</span>
-      <span>Ready for your next command</span>
-    </div>
-  </aside>
+  {% include "website/includes/real_client_preview.html" %}
 </section>
 
 <section class="fusion-dashboard" aria-label="Game dashboard">
@@ -116,22 +77,31 @@ Slot 3  Voltrill    Lv 09  <span class="type-inline type-spark">SPARK</span>
   </article>
 </section>
 
-<section class="fusion-lower-grid" aria-label="World details">
+<section class="fusion-lower-grid{% if not landing_announcement.visible %} fusion-lower-grid-solo{% endif %}" aria-label="World details">
+  {% if landing_announcement.visible %}
   <div class="fusion-panel fusion-notes">
     <div class="fusion-section-heading">
-      <p class="fusion-kicker">Recent World News</p>
-      <h2>Development Server Notes</h2>
+      <p class="fusion-kicker">{{ landing_announcement.label }}</p>
+      <h2>{{ landing_announcement.title }}</h2>
     </div>
-    <p>
-      Fusion 2 is actively evolving. Expect balance passes, route updates, and
-      trainer-facing improvements while the test server takes shape.
-    </p>
+    {% for paragraph in landing_announcement.body_paragraphs %}
+    <p>{{ paragraph }}</p>
+    {% endfor %}
+    {% if landing_announcement.bullets %}
     <ul class="fusion-news-list">
-      <li>Browser play is the primary way to jump into the world.</li>
-      <li>The Player Hub exposes roster, inventory, badges, and trainer progress from the website.</li>
-      <li>Builder tools remain available for staff through the Room Editor.</li>
+      {% for bullet in landing_announcement.bullets %}
+      <li>{{ bullet }}</li>
+      {% endfor %}
     </ul>
+    {% endif %}
+    {% if landing_announcement.updated_at or landing_announcement.updated_by %}
+    <p class="fusion-announcement-meta">
+      {% if landing_announcement.updated_at %}Updated {{ landing_announcement.updated_at }}{% endif %}
+      {% if landing_announcement.updated_by %} by {{ landing_announcement.updated_by }}{% endif %}
+    </p>
+    {% endif %}
   </div>
+  {% endif %}
 
   <div class="fusion-play-section" aria-labelledby="fusion-play-title">
     <div class="fusion-section-heading">

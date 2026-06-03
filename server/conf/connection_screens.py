@@ -41,7 +41,7 @@ CONNECTION_SCREEN = r"""
 |w        ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 |n
  |yBest Viewed in UTF8 - Unicode|n
- Welcome to |g{}|n, version {}!
+ Welcome to |g{}|n, Powered by Evennia {}!
 
  If you have an existing account, connect to it by typing:
       |wconnect <username> <password>|n
