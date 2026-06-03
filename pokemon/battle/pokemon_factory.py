@@ -157,9 +157,13 @@ def generate_wild_pokemon(location=None) -> Pokemon:
 
 
 def generate_trainer_pokemon(trainer=None) -> Pokemon:
-	"""Return a simple trainer-owned Charmander encounter."""
+	"""Return the lead Pokemon from a generated random trainer encounter."""
 
-	return create_battle_pokemon("Charmander", 5, trainer=trainer, is_wild=False)
+	from pokemon.services.trainer_encounters import generate_random_trainer_encounter
+
+	display_name = trainer if isinstance(trainer, str) else None
+	encounter = generate_random_trainer_encounter(display_name=display_name)
+	return encounter.team[0]
 
 
 def owned_model_ref(model) -> str | None:

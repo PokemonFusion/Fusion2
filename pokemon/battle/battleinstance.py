@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import random
 from collections import deque
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 from types import SimpleNamespace
 
 from pokemon.services.encounters import delete_encounter_by_ref
 from pokemon.services.pokemon_refs import parse_pokemon_ref
+from pokemon.services.trainer_encounters import generate_random_trainer_encounter
 from utils.safe_import import safe_import
 
 from .actions import ActionType
@@ -95,7 +97,6 @@ from .compat import (
     _battle_norm_key,
     _calc_stats_from_model,
     create_battle_pokemon,
-    generate_trainer_pokemon,
     generate_wild_pokemon,
     log_err,
     log_info,
@@ -203,6 +204,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.ndb.watchers_live = set()
         self.ndb.rng = self.rng
         self.temp_pokemon_ids: List[str] = []
+        self.encounter_metadata: dict[str, object] = {}
+        self._battle_result_handled = False
 
         log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
         self.persist_debug_record(event="session_initialized")
@@ -637,6 +640,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             team=team_members,
             active_pokemon=active_mon,
             is_wild=True,
+            ai_profile="wild_basic",
             ndb=SimpleNamespace(),
             db=SimpleNamespace(),
         )
@@ -915,6 +919,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         except Exception:
             log_warn("Failed to rehydrate queued declarations during restore", exc_info=True)
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
+        obj.encounter_metadata = dict(storage.get("encounter") or {})
+        obj._battle_result_handled = bool(storage.get("battle_result") or False)
         # Ensure state turn matches data since we drop it during compaction
         obj.logic.state.turn = getattr(obj.logic.data.battle, "turn", 1)
         log_info("Restored logic and temp Pokemon ids")
@@ -1086,15 +1092,18 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         origin = getattr(self.captainA, "location", None)
         opponent_poke, opponent_name, battle_type, intro_message = self._select_opponent()
+        opponent_team = self._pending_opponent_team_for(opponent_poke)
+        pending_ai_profile = getattr(self, "_pending_opponent_ai_profile", None)
         opponent_shell = None
         if battle_type == BattleType.WILD and not self.captainB:
             shell_name = f"Wild {getattr(opponent_poke, 'name', 'Pokémon')}"
             opponent_shell = SimpleNamespace(
                 name=shell_name,
                 key=shell_name,
-                team=[opponent_poke],
-                active_pokemon=opponent_poke,
+                team=opponent_team,
+                active_pokemon=opponent_team[0],
                 is_wild=True,
+                ai_profile=pending_ai_profile or "wild_basic",
                 ndb=SimpleNamespace(),
                 db=SimpleNamespace(),
             )
@@ -1103,9 +1112,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             opponent_shell = SimpleNamespace(
                 name=trainer_name,
                 key=trainer_name,
-                team=[opponent_poke],
-                active_pokemon=opponent_poke,
+                team=opponent_team,
+                active_pokemon=opponent_team[0],
                 is_npc=True,
+                ai_profile=pending_ai_profile or "trainer_basic",
                 ndb=SimpleNamespace(),
                 db=SimpleNamespace(),
             )
@@ -1116,8 +1126,91 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 self._register_trainer(trainer)
         player_pokemon = self._prepare_player_party(self.captainA)
         log_info(f"Prepared player party with {len(player_pokemon)} pokemon")
-        self._init_battle_state(origin, player_pokemon, opponent_poke, opponent_name, battle_type)
+        self._init_battle_state(
+            origin,
+            player_pokemon,
+            opponent_poke,
+            opponent_name,
+            battle_type,
+            opponent_team=opponent_team,
+        )
         self._setup_battle_room(intro_message=intro_message)
+
+    def start_trainer_encounter(self, encounter) -> None:
+        """Start a trainer battle from a resolved TrainerEncounter."""
+
+        if not getattr(encounter, "team", None):
+            raise ValueError("Trainer encounter has no Pokemon.")
+        opponent_team = list(encounter.team)
+        opponent_poke = opponent_team[0]
+        self._track_temp_opponent_team(opponent_team)
+        self._pending_opponent_team = opponent_team
+        self._pending_opponent_ai_profile = getattr(encounter, "ai_profile", "trainer_basic")
+        self._store_trainer_encounter_metadata(encounter)
+
+        def _select_override():
+            return (
+                opponent_poke,
+                encounter.display_name,
+                BattleType.TRAINER,
+                encounter.intro_text,
+            )
+
+        self._select_opponent = _select_override
+        self.start()
+
+    def _store_trainer_encounter_metadata(self, encounter) -> None:
+        """Persist minimal encounter metadata for battle result handling."""
+
+        payload = self._trainer_encounter_metadata_payload(encounter)
+        self.encounter_metadata = payload
+        if getattr(self, "storage", None):
+            self.storage.set("encounter", payload)
+
+    def _trainer_encounter_metadata_payload(self, encounter) -> dict[str, object]:
+        metadata = getattr(encounter, "metadata", None)
+        payload = dict(metadata) if isinstance(metadata, Mapping) else {}
+        source_type = getattr(encounter, "source_type", None)
+        if source_type is not None:
+            payload["source_type"] = source_type
+        payload["display_name"] = getattr(encounter, "display_name", "")
+        payload["trainer_class"] = getattr(encounter, "trainer_class", "")
+        payload["ai_profile"] = getattr(encounter, "ai_profile", "")
+        return payload
+
+    def _handle_battle_result(self, winner) -> None:
+        """Apply battle-result side effects that need the session context."""
+
+        if getattr(self, "_battle_result_handled", False):
+            return
+        metadata = dict(getattr(self, "encounter_metadata", None) or {})
+        if metadata.get("source_type") != "gym_leader":
+            return
+        if not self._winner_is_player_side(winner):
+            return
+
+        self._battle_result_handled = True
+        if getattr(self, "storage", None):
+            self.storage.set("battle_result", {"handled": True})
+
+        try:
+            from pokemon.services.gym_leaders import grant_gym_badge_for_victory
+
+            result = grant_gym_badge_for_victory(getattr(winner, "player", None), metadata)
+        except Exception:
+            log_warn("Failed to apply gym leader battle result", exc_info=True)
+            return
+
+        if result and getattr(result, "message", ""):
+            self.msg(result.message)
+
+    def _winner_is_player_side(self, winner) -> bool:
+        if winner is None:
+            return False
+        if getattr(winner, "team", None) == "A":
+            return True
+        player = getattr(winner, "player", None)
+        return player is not None and player is getattr(self, "captainA", None)
 
     def start_pvp(self) -> None:
         """Start a battle between two players."""
@@ -1233,35 +1326,48 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     # ------------------------------------------------------------------
     # Helper methods extracted from ``start``
     # ------------------------------------------------------------------
+    def _track_temp_opponent_team(self, opponent_team: List[Pokemon]) -> None:
+        """Track battle-scoped opponent Pokemon for cleanup after battle."""
+
+        for poke in opponent_team:
+            model_id = getattr(poke, "model_id", None)
+            if model_id and model_id not in self.temp_pokemon_ids:
+                self.temp_pokemon_ids.append(model_id)
+
+    def _pending_opponent_team_for(self, opponent_poke: Pokemon) -> List[Pokemon]:
+        """Return the pending opponent roster, falling back to the lead."""
+
+        opponent_team = list(getattr(self, "_pending_opponent_team", None) or [])
+        if not opponent_team:
+            return [opponent_poke]
+        if opponent_poke not in opponent_team:
+            opponent_team.insert(0, opponent_poke)
+        return opponent_team
+
     def _select_opponent(self) -> tuple[Pokemon, str, BattleType, str | None]:
         """Return the opponent details and introductory message."""
         opponent_kind = self.rng.choice(["pokemon", "trainer"])
         log_info(f"Selecting opponent: {opponent_kind}")
         if opponent_kind == "pokemon":
             opponent_poke = generate_wild_pokemon(self.captainA.location)
-            if getattr(opponent_poke, "model_id", None):
-                self.temp_pokemon_ids.append(opponent_poke.model_id)
+            self._track_temp_opponent_team([opponent_poke])
+            self._pending_opponent_team = [opponent_poke]
+            self._pending_opponent_ai_profile = "wild_basic"
             battle_type = BattleType.WILD
             opponent_name = "Wild"
             intro_message = f"A wild {opponent_poke.name} appears!"
             log_info(f"Wild opponent {opponent_poke.name} generated")
         else:
-            trainer_name = self.rng.choice(
-                [
-                    "Trainer Alex",
-                    "Trainer Bailey",
-                    "Trainer Casey",
-                    "Trainer Devon",
-                    "Trainer Emery",
-                ]
-            )
-            opponent_poke = generate_trainer_pokemon(trainer_name)
-            if getattr(opponent_poke, "model_id", None):
-                self.temp_pokemon_ids.append(opponent_poke.model_id)
+            encounter = generate_random_trainer_encounter(self.captainA.location, rng=self.rng)
+            opponent_team = list(encounter.team)
+            opponent_poke = opponent_team[0]
+            self._track_temp_opponent_team(opponent_team)
+            self._pending_opponent_team = opponent_team
+            self._pending_opponent_ai_profile = getattr(encounter, "ai_profile", "trainer_basic")
             battle_type = BattleType.TRAINER
-            opponent_name = trainer_name
-            intro_message = f"{trainer_name} challenges you with {opponent_poke.name}!"
-            log_info(f"Trainer opponent {opponent_poke.name} generated for {trainer_name}")
+            opponent_name = encounter.display_name
+            intro_message = encounter.intro_text
+            log_info(f"Trainer opponent {opponent_poke.name} generated for {opponent_name}")
         return opponent_poke, opponent_name, battle_type, intro_message
 
     def _prepare_player_party(self, trainer, full_heal: bool = False) -> List[Pokemon]:
@@ -1288,11 +1394,18 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         opponent_poke: Pokemon,
         opponent_name: str,
         battle_type: BattleType,
+        *,
+        opponent_team: List[Pokemon] | None = None,
     ) -> None:
         """Wrapper coordinating helper functions to set up a battle."""
         log_info(f"Initializing battle state for {self.captainA.key} vs {opponent_name}")
         player_participant, opponent_participant = create_participants(
-            self.captainA, player_pokemon, opponent_poke, opponent_name
+            self.captainA,
+            player_pokemon,
+            opponent_poke,
+            opponent_name,
+            self.captainB,
+            opponent_team=opponent_team,
         )
         self.logic = build_initial_state(
             origin,
@@ -1305,9 +1418,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             self.notify,
             self.captainB,
             rng=self.rng,
+            opponent_team=opponent_team,
         )
         log_info(f"Battle logic created with {len(player_pokemon)} player pokemon")
-        persist_initial_state(self, player_participant, player_pokemon)
+        persist_initial_state(self, player_participant, player_pokemon, opponent_participant)
         log_info(f"Saved battle data for id {self.battle_id}")
 
     def _setup_battle_room(self, intro_message: str | None = None) -> None:
@@ -1363,6 +1477,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             active_pokemon=opponent_poke,
             is_wild=battle_type == BattleType.WILD,
             is_npc=battle_type == BattleType.TRAINER,
+            ai_profile="trainer_basic" if battle_type == BattleType.TRAINER else "wild_basic",
             ndb=SimpleNamespace(),
             db=SimpleNamespace(),
         )
@@ -1503,7 +1618,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if not self.room.ndb.battle_instances:
                     del self.room.ndb.battle_instances
                 log_info("Removed battle_instances map from room")
-            for part in ["logic", "trainers", "temp_pokemon_ids"]:
+            for part in ["logic", "trainers", "temp_pokemon_ids", "encounter", "battle_result"]:
                 self.storage.delete(part)
             battles = getattr(self.room.db, "battles", None)
             if battles and self.battle_id in battles:

@@ -145,4 +145,4 @@ def test_spawn_npc_pokemon_from_template():
 def test_spawn_npc_pokemon_generated_fallback():
 	trainer = object()
 	p = mod.spawn_npc_pokemon(trainer, use_templates=False)
-	assert p.name == "Charmander"
+	assert p.name == "Rattata"

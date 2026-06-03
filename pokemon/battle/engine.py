@@ -134,6 +134,13 @@ from .battledata import (
     _normalize_reveal_viewer,
     _pokemon_reveal_key,
 )
+from .ai_profiles import AIDebugTrace, attach_ai_debug_trace, build_battle_ai_context
+from .ai_scoring import (
+    candidate_band_for_context,
+    choose_weighted_ai_move,
+    fallback_scored_move,
+    score_ai_moves,
+)
 from .registry import CALLBACK_REGISTRY
 
 ensure_movedex_aliases(MOVEDEX)
@@ -659,41 +666,79 @@ def _select_ai_action(
         The selected action, or ``None`` if no valid move/target exists.
     """
 
-    moves = getattr(active_pokemon, "moves", [])
-    Move = _get_move_class()
-    move_data = moves[0] if moves else Move(name="Flail")
-
-    mv_key = getattr(move_data, "key", getattr(move_data, "name", ""))
-    normalized_key = _normalize_key(mv_key)
-    move_pp = getattr(move_data, "pp", None)
-    if move_pp is None:
-        move_pp = getattr(move_data, "current_pp", None)
-
-    dex_entry = MOVEDEX.get(normalized_key)
-    if move_pp is None and dex_entry is not None:
-        move_pp = get_pp(dex_entry)
-
-    dex_data = get_raw(dex_entry)
-    display_name = (
-        dex_data.get("name")
-        or getattr(move_data, "name", None)
-        or mv_key
+    ai_context = build_battle_ai_context(participant, active_pokemon, battle)
+    trace = AIDebugTrace(
+        profile_key=ai_context.profile.key,
+        requested_profile_key=ai_context.requested_profile_key,
+        resolved_profile_key=ai_context.profile.key,
+        actor_name=getattr(active_pokemon, "name", None),
+        chosen_intent="safe_damage",
     )
-    move = BattleMove(display_name, key=normalized_key, pp=move_pp)
-    if dex_data:
-        move.raw = dex_data
-    priority = dex_data.get("priority", 0)
-    move.priority = priority
+
+    moves = getattr(active_pokemon, "moves", [])
 
     opponents = battle.opponents_of(participant)
     if not opponents:
+        attach_ai_debug_trace(participant, battle, trace)
         return None
 
     opponent = battle.rng.choice(opponents)
     if not opponent.active:
+        attach_ai_debug_trace(participant, battle, trace)
         return None
+    trace.target_name = getattr(opponent.active[0], "name", None)
+
+    scored_moves = score_ai_moves(
+        ai_context,
+        list(moves),
+        user=active_pokemon,
+        target=opponent.active[0],
+        movedex=MOVEDEX,
+        raw_getter=get_raw,
+    )
+    selected = choose_weighted_ai_move(scored_moves, rng=battle.rng, context=ai_context)
+    if selected is None:
+        for fallback_move in moves:
+            candidate = fallback_scored_move(
+                fallback_move,
+                movedex=MOVEDEX,
+                raw_getter=get_raw,
+                reason="fallback_first_legal",
+            )
+            if candidate.pp is None or candidate.pp > 0:
+                selected = candidate
+                break
+        if selected is None:
+            selected = fallback_scored_move(
+                SimpleNamespace(name="Flail"),
+                movedex=MOVEDEX,
+                raw_getter=get_raw,
+                reason="fallback_no_usable_moves" if moves else "fallback_no_moves",
+            )
+
+    selection_band = f"candidate_band_{candidate_band_for_context(ai_context):.2f}"
+    for candidate in scored_moves or [selected]:
+        reasons = list(candidate.reasons)
+        if scored_moves and candidate.key == selected.key:
+            insert_at = 1 if reasons[:1] == ["profile_weighted"] else 0
+            reasons.insert(insert_at, selection_band)
+        trace.add_action(candidate.key, candidate.score, *reasons)
+    trace.choose(selected.key, intent="safe_damage")
+
+    move = BattleMove(
+        selected.display_name,
+        key=selected.key,
+        power=selected.power,
+        accuracy=selected.accuracy,
+        priority=selected.priority,
+        type=selected.move_type,
+        raw=dict(selected.raw),
+        pp=selected.pp,
+    )
+    priority = selected.priority
 
     battle_logger.info("%s chooses %s", participant.name, move.name)
+    attach_ai_debug_trace(participant, battle, trace)
     return Action(
         participant,
         ActionType.MOVE,
@@ -4642,6 +4687,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
             # Remove fainted Pokémon from the active list
             part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]
+            if getattr(part, "side", None) is not None:
+                part.side.active = part.active
 
             # Check if the participant has any Pokémon left
             if not any(getattr(p, "hp", 0) > 0 for p in part.pokemons):
@@ -4658,6 +4705,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     if replacement:
                         part.active.append(replacement)
                         setattr(replacement, "side", part.side)
+                        if hasattr(part, "record_participation"):
+                            part.record_participation(replacement)
+                        if getattr(part, "side", None) is not None:
+                            part.side.active = part.active
                         self.register_handlers(replacement)
                         self.dispatcher.dispatch(
                             "pre_start", pokemon=replacement, battle=self
@@ -4669,6 +4720,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             "switch_in", pokemon=replacement, battle=self
                         )
                         self.apply_entry_hazards(replacement)
+                        self._log_switch_in(part, replacement)
 
     def residual(self) -> None:
         """Process residual effects and handle end-of-turn fainting."""

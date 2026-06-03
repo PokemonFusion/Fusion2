@@ -65,6 +65,23 @@ def _get_create_battle_pokemon():
         return None
 
 
+def _get_generate_trainer_pokemon():
+    """Return the trainer Pokemon compatibility callable if available."""
+
+    bi = sys.modules.get("pokemon.battle.battleinstance")
+    if bi is not None:
+        generate = getattr(bi, "generate_trainer_pokemon", None)
+        if callable(generate):
+            return generate
+    try:  # pragma: no cover - fallback to importing real package
+        from pokemon.battle import battleinstance as bi  # type: ignore
+
+        generate = getattr(bi, "generate_trainer_pokemon", None)
+        return generate if callable(generate) else None
+    except ImportError:  # pragma: no cover
+        return None
+
+
 def _fusion_boost_enabled() -> bool:
     """Return whether active fusion battle stat boosts are enabled."""
 
@@ -309,13 +326,17 @@ def spawn_npc_pokemon(trainer, *, use_templates: bool = True) -> Pokemon:
                 item=template.held_item,
             )
 
+    generate_trainer_pokemon = _get_generate_trainer_pokemon()
+    if generate_trainer_pokemon is not None:
+        return generate_trainer_pokemon(trainer)
+
     create_poke = _get_create_battle_pokemon()
     if create_poke is not None:
-        return create_poke("Charmander", 5, trainer=trainer, is_wild=False)
+        return create_poke("Rattata", 5, trainer=trainer, is_wild=False)
 
     if Pokemon is None:
         raise RuntimeError("Battle modules not available")
-    return Pokemon(name="Charmander", level=5, hp=20, max_hp=20, moves=[Move(name="Tackle")])
+    return Pokemon(name="Rattata", level=5, hp=20, max_hp=20, moves=[Move(name="Tackle")])
 
 
 def make_pokemon_from_dict(data: dict) -> Pokemon:
