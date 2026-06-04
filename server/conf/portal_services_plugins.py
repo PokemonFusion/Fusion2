@@ -14,6 +14,21 @@ process.
 
 """
 
+import re
+
+
+_HTTP_REGEX = re.compile(
+	b"(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT|PATCH) (.*? HTTP/[0-9]\\.[0-9])",
+	re.I,
+)
+
+
+def _patch_telnet_http_regex():
+	"""Keep Evennia 6.0.0's telnet HTTP guard compatible with byte input."""
+	from evennia.server.portal import telnet
+
+	telnet._HTTP_REGEX = _HTTP_REGEX
+
 
 def start_plugin_services(portal):
 	"""
@@ -21,4 +36,4 @@ def start_plugin_services(portal):
 
 	portal - a reference to the main portal application.
 	"""
-	pass
+	_patch_telnet_http_regex()
