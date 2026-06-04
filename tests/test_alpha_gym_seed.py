@@ -120,8 +120,8 @@ def test_alpha_gym_lobby_is_in_alpha_batch_file():
     assert "batchcommands alpha_gym" in text
     assert "@teleport Alpha Test Hub" in text
     assert (
-        "@dig Alpha Gym Lobby;alpha gym;gym:typeclasses.rooms.FusionRoom = "
-        "alpha gym;gym;south;s, hub;north;n"
+        "@dig Alpha Gym Lobby;(A)lpha (G)ym;alpha gym;gym:typeclasses.rooms.FusionRoom = "
+        "(A)lpha (G)ym;alpha gym;gym;ag;south;s, (H)ub;hub;north;n"
     ) in text
     assert "@set Alpha Gym Lobby/allow_hunting = False" in text
     assert "+npcbattle/check Alpha Gym Trainer - Scout Mina" in text
