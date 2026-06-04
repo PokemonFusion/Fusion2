@@ -51,8 +51,8 @@ class DummyAliases:
     def __init__(self):
         self.aliases = []
 
-    def add(self, *vals):
-        self.aliases.extend(vals)
+    def add(self, val):
+        self.aliases.append(val)
 
     def clear(self):
         self.aliases.clear()
@@ -93,9 +93,11 @@ class DummyExit:
         self.key = db_key
         self.db_key = db_key
         self.typeclass_path = typeclass_path or db_typeclass_path
+        self.db_location = db_location
         self.destination = db_destination
+        self.db_destination = db_destination
+        self.db_location_id = getattr(db_location, "id", db_location)
         self.db_destination_id = getattr(db_destination, "id", db_destination)
-        self.location_id = getattr(db_location, "id", db_location)
         self.destination_id = getattr(db_destination, "id", db_destination)
         self.aliases = DummyAliases()
         self.locks = DummyLocks()
@@ -175,8 +177,17 @@ class ExitManager:
         for ex in self.store.values():
             match = True
             for k, v in kwargs.items():
-                attr = k.replace("db_", "")
-                if getattr(ex, attr) != v:
+                if k in {"db_location", "location"}:
+                    actual = ex.db_location
+                elif k in {"db_destination", "destination"}:
+                    actual = ex.db_destination
+                elif k in {"db_location_id", "location_id"}:
+                    actual = ex.db_location_id
+                elif k in {"db_destination_id", "destination_id"}:
+                    actual = ex.db_destination_id
+                else:
+                    actual = getattr(ex, k.replace("db_", ""))
+                if actual != v:
                     match = False
                     break
             if match:
@@ -184,8 +195,9 @@ class ExitManager:
         return ExitQuery(results)
 
     def values_list(self, attr, flat=False):
-        normalized = attr.replace("db_", "")
-        return [getattr(ex, normalized) for ex in self.store.values()]
+        if attr == "db_destination_id":
+            return [ex.db_destination_id for ex in self.store.values()]
+        return [getattr(ex, attr.replace("db_", "")) for ex in self.store.values()]
 
 
 @pytest.fixture
@@ -364,6 +376,41 @@ def test_exit_edit_ajax_updates_exit(rf, dummy_env):
     assert ex.locks.first().lockstring == "lock"
 
 
+def test_exit_edit_non_ajax_redirects_to_exit_location(rf, dummy_env, monkeypatch):
+    """exit_edit redirects using Evennia's db_location_id field."""
+
+    room_store, exit_store, _ = dummy_env
+    redirect_call = {}
+
+    def fake_redirect(viewname, **kwargs):
+        redirect_call["viewname"] = viewname
+        redirect_call["kwargs"] = kwargs
+        response = HttpResponse(status=302)
+        response["Location"] = f"/room/{kwargs['pk']}/"
+        return response
+
+    monkeypatch.setattr(views, "redirect", fake_redirect)
+    ex = views.ObjectDB.objects.create(
+        typeclass_path="", db_key="north", db_location=room_store[1], db_destination=room_store[2]
+    )
+    request = attach_user(rf.post(
+        f"/exit/{ex.id}/edit/",
+        {
+            "key": "east",
+            "destination": "2",
+            "description": "desc",
+            "lockstring": "",
+            "err_msg": "",
+            "aliases": "e,east",
+        },
+    ))
+    resp = views.exit_edit(request, pk=ex.id)
+    assert resp.status_code == 302
+    assert resp["Location"] == "/room/1/"
+    assert redirect_call == {"viewname": "roomeditor:room_edit", "kwargs": {"pk": 1}}
+    assert exit_store[ex.id].aliases.all() == ["e", "east"]
+
+
 def test_exit_delete_ajax_removes_exit(rf, dummy_env):
     """exit_delete removes exits via AJAX."""
 
@@ -374,6 +421,31 @@ def test_exit_delete_ajax_removes_exit(rf, dummy_env):
     request = attach_user(rf.post(f"/exit/{ex.id}/delete/", HTTP_X_REQUESTED_WITH="XMLHttpRequest"))
     resp = views.exit_delete(request, pk=ex.id)
     assert json.loads(resp.content)["ok"] is True
+    assert ex.id not in exit_store
+
+
+def test_exit_delete_non_ajax_redirects_to_exit_location(rf, dummy_env, monkeypatch):
+    """exit_delete redirects using Evennia's db_location_id field."""
+
+    room_store, exit_store, _ = dummy_env
+    redirect_call = {}
+
+    def fake_redirect(viewname, **kwargs):
+        redirect_call["viewname"] = viewname
+        redirect_call["kwargs"] = kwargs
+        response = HttpResponse(status=302)
+        response["Location"] = f"/room/{kwargs['pk']}/"
+        return response
+
+    monkeypatch.setattr(views, "redirect", fake_redirect)
+    ex = views.ObjectDB.objects.create(
+        typeclass_path="", db_key="north", db_location=room_store[1], db_destination=room_store[2]
+    )
+    request = attach_user(rf.post(f"/exit/{ex.id}/delete/"))
+    resp = views.exit_delete(request, pk=ex.id)
+    assert resp.status_code == 302
+    assert resp["Location"] == "/room/1/"
+    assert redirect_call == {"viewname": "roomeditor:room_edit", "kwargs": {"pk": 1}}
     assert ex.id not in exit_store
 
 

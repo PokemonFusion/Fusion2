@@ -41,6 +41,11 @@ def _exit_qs():
 	"""Queryset for exit objects."""
 	return ObjectDB.objects.filter(db_typeclass_path__icontains=".exits.")
 
+def _add_aliases(obj, aliases):
+	"""Add aliases through Evennia's one-alias-at-a-time handler API."""
+	for alias in aliases:
+		obj.aliases.add(alias)
+
 @builder_required
 def room_list(request: HttpRequest):
 	"""Display a list of rooms available for editing."""
@@ -152,7 +157,7 @@ def exit_new(request: HttpRequest, room_pk: int):
 				ex.locks.add(lockstring)
 				aliases = form.cleaned_alias_list()
 				if aliases:
-					ex.aliases.add(*aliases)
+					_add_aliases(ex, aliases)
 				if form.cleaned_data.get("description"):
 					ex.db.desc = form.cleaned_data["description"]
 				if form.cleaned_data.get("lockstring"):
@@ -175,7 +180,7 @@ def exit_new(request: HttpRequest, room_pk: int):
 						)
 						rev_obj.locks.add(rev_lock)
 						if aliases:
-							rev_obj.aliases.add(*aliases)
+							_add_aliases(rev_obj, aliases)
 						if form.cleaned_data.get("description"):
 							rev_obj.db.desc = form.cleaned_data["description"]
 						if form.cleaned_data.get("lockstring"):
@@ -205,7 +210,7 @@ def exit_edit(request: HttpRequest, pk: int):
 				ex.aliases.clear()
 				aliases = form.cleaned_alias_list()
 				if aliases:
-					ex.aliases.add(*aliases)
+					_add_aliases(ex, aliases)
 				ex.db.desc = form.cleaned_data.get("description") or ""
 				ex.locks.clear()
 				if form.cleaned_data.get("lockstring"):
@@ -215,7 +220,7 @@ def exit_edit(request: HttpRequest, pk: int):
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				row = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")
 				return JsonResponse({"ok": True, "row_html": row})
-			return redirect("roomeditor:room_edit", pk=ex.location_id)
+			return redirect("roomeditor:room_edit", pk=ex.db_location_id)
 		elif request.headers.get("X-Requested-With") == "XMLHttpRequest":
 			return JsonResponse({"ok": False, "error": form.errors.as_text()}, status=400)
 	else:
@@ -237,7 +242,7 @@ def exit_edit(request: HttpRequest, pk: int):
 def exit_delete(request: HttpRequest, pk: int):
 	"""Delete an exit."""
 	ex = get_object_or_404(_exit_qs(), pk=pk)
-	room_pk = ex.location_id
+	room_pk = ex.db_location_id
 	ex.delete()
 	if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 		return JsonResponse({"ok": True})
