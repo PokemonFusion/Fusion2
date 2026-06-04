@@ -5,4 +5,10 @@ models and higher level game code.  By centralising behaviour here we can
 keep the models light-weight while still exposing convenient utilities.
 """
 
-__all__ = ["capture", "gym_leaders", "move_management", "trainer_encounters"]
+__all__ = [
+    "alpha_gym_seed",
+    "capture",
+    "gym_leaders",
+    "move_management",
+    "trainer_encounters",
+]

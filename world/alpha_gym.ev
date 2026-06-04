@@ -1,0 +1,24 @@
+#
+# Alpha gym batch commands.
+#
+# Prerequisite:
+#   world/alpha_test_zone.ev has already been loaded and Alpha Test Hub exists.
+#
+# Run once from a Developer/superuser building character:
+#
+#   batchcommands alpha_gym
+#
+# This file intentionally uses normal Evennia build commands. Run it once per
+# database; rerunning will create duplicate rooms/exits with the same names.
+#
+
+@teleport Alpha Test Hub
+#
+@dig Alpha Gym Lobby;alpha gym;gym:typeclasses.rooms.FusionRoom = alpha gym;gym;south;s, hub;north;n
+#
+@desc Alpha Gym Lobby = This is an alpha test gym for validating NPC trainer and gym leader systems. Players may enter freely, but battle startup currently uses staff commands until placed NPC interaction exists. Optional follower practice: builders can run +npcbattle/check Alpha Gym Trainer - Scout Mina and +npcbattle Alpha Gym Trainer - Scout Mina. Gym leader badge test: builders can run +gymbattle/check alpha_gym and +gymbattle alpha_gym; the first victory should grant Alpha Badge. Followers do not block leader access or grant badges.
+#
+@set Alpha Gym Lobby/allow_hunting = False
+#
+@set Alpha Gym Lobby/noitem = True
+#
