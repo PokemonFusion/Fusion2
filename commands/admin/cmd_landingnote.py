@@ -36,7 +36,7 @@ class CmdLandingNote(Command):
 
     def _usage(self):
         self.caller.msg(
-            "Usage: @landingnote[/view|/label|/title|/body|/bullet|/clearbullets|/show|/hide|/reset] [text]"
+            "Usage: @landingnote[/view||/label||/title||/body||/bullet||/clearbullets||/show||/hide||/reset] [text]"
         )
 
     def _show_current(self):
