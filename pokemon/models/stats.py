@@ -47,21 +47,42 @@ __all__ = [
 	"calculate_stats",
 	"distribute_experience",
 	"award_experience_to_party",
+	"award_trainer_xp",
+	"get_trainer_xp",
 	"apply_item_exp_mod",
 	"apply_item_ev_mod",
+	"set_trainer_xp",
+	"trainer_battle_txp_gain",
+	"trainer_level_for_xp",
+	"next_trainer_level_xp",
 ]
+
+
+TRAINER_XP_RATE = "fluctuating"
+TRAINER_TXP_BATTLE_PERCENT = 0.1555
+TRAINER_XP_ATTRS = ("trainer_xp", "txp")
+
+
+def _normalize_growth_rate(rate: str | None) -> str:
+        return str(rate or "medium_fast").strip().lower().replace("-", "_").replace(" ", "_")
 
 
 def exp_for_level(level: int, rate: str = "medium_fast") -> int:
         """Return the experience required for the given level."""
         level = max(1, min(level, 100))
-        match rate:
+        match _normalize_growth_rate(rate):
                 case "fast":
                         return int(4 * level**3 / 5)
                 case "slow":
                         return int(5 * level**3 / 4)
-                case "medium_slow":
+                case "medium_slow" | "parabolic":
                         return int(1.2 * level**3 - 15 * level**2 + 100 * level - 140)
+                case "fluctuating":
+                        if level >= 36:
+                                return int(level**3 * (level / 2 + 32) / 50)
+                        if level >= 16:
+                                return int(level**3 * (level + 14) / 50)
+                        return int(level**3 * ((level + 1) / 3 + 24) / 50)
                 case _:
                         # medium_fast by default
                         return level**3
@@ -76,6 +97,75 @@ def level_for_exp(exp: int, rate: str = "medium_fast") -> int:
 		else:
 			break
 	return level
+
+
+def trainer_level_for_xp(txp: int) -> int:
+        """Return a trainer level from trainer XP."""
+
+        return level_for_exp(max(0, int(txp or 0)), TRAINER_XP_RATE)
+
+
+def next_trainer_level_xp(txp: int) -> int:
+        """Return the TXP required for the next trainer level."""
+
+        level = trainer_level_for_xp(txp)
+        next_level = min(level + 1, 100)
+        return exp_for_level(next_level, TRAINER_XP_RATE)
+
+
+def trainer_battle_txp_gain(base_exp: int, level: int, *, trainer_battle: bool = False) -> int:
+        """Return PF1-style trainer XP earned from a fainted Pokemon."""
+
+        if base_exp <= 0 or level <= 0:
+                return 0
+        multiplier = 1.5 if trainer_battle else 1.0
+        return int(multiplier * base_exp * level / 7 * TRAINER_TXP_BATTLE_PERCENT)
+
+
+def _db_get(owner, attr: str, default=None):
+        db = getattr(owner, "db", None)
+        if db is None:
+                return default
+        getter = getattr(db, "get", None)
+        if callable(getter):
+                try:
+                        return getter(attr, default)
+                except TypeError:
+                        pass
+        return getattr(db, attr, default)
+
+
+def _db_set(owner, attr: str, value) -> None:
+        db = getattr(owner, "db", None)
+        if db is not None:
+                setattr(db, attr, value)
+
+
+def _trainer_xp_total(player) -> int:
+        for attr in TRAINER_XP_ATTRS:
+                value = _db_get(player, attr, None)
+                if value is None:
+                        continue
+                try:
+                        return max(0, int(value))
+                except (TypeError, ValueError):
+                        return 0
+        return 0
+
+
+def get_trainer_xp(player) -> int:
+        """Return the trainer XP stored on ``player``."""
+
+        return _trainer_xp_total(player)
+
+
+def set_trainer_xp(player, amount: int) -> int:
+        """Set trainer XP on ``player`` and return the normalized total."""
+
+        total = max(0, int(amount or 0))
+        for attr in TRAINER_XP_ATTRS:
+                _db_set(player, attr, total)
+        return total
 
 
 def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None) -> None:
@@ -382,6 +472,31 @@ def _notify_winner(player, caller, messages: Sequence[str]) -> None:
                         _emit(fallback, "msg", msg)
                 else:
                         print(msg)
+
+
+def award_trainer_xp(player, amount: int, *, caller=None) -> int:
+        """Award trainer XP to ``player`` and return the new TXP total."""
+
+        if not player or amount <= 0:
+                return _trainer_xp_total(player) if player else 0
+
+        current = _trainer_xp_total(player)
+        last_level = trainer_level_for_xp(current)
+        new_total = current + int(amount)
+        for attr in TRAINER_XP_ATTRS:
+                _db_set(player, attr, new_total)
+
+        name = getattr(player, "key", getattr(player, "name", "Trainer"))
+        messages = [f"{name} gained {amount} TXP!"]
+        new_level = trainer_level_for_xp(new_total)
+        if new_level > last_level:
+                messages.append(f"{name} reached trainer level {new_level}!")
+        if new_level < 100:
+                remaining = next_trainer_level_xp(new_total) - new_total
+                if remaining > 0:
+                        messages.append(f"{name} has {remaining} TXP until next trainer level.")
+        _notify_winner(player, caller, messages)
+        return new_total
 
 
 def _resolve_participants(

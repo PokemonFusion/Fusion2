@@ -15,6 +15,7 @@ from commands.admin.cmd_givepokemon import CmdGivePokemon
 from commands.admin.cmd_heartbeat import CmdHeartbeat
 from commands.admin.cmd_landingnote import CmdLandingNote
 from commands.admin.cmd_sitestatus import CmdSiteStatus
+from commands.admin.cmd_trainer_xp import CmdAdminTrainerXP
 from commands.debug.cmd_logusage import CmdLogUsage, CmdMarkVerified
 
 
@@ -37,6 +38,7 @@ class AdminMiscCmdSet(CmdSet):
                         CmdHeartbeat,
                         CmdLandingNote,
                         CmdSiteStatus,
+                        CmdAdminTrainerXP,
                         CmdLogUsage,
                         CmdMarkVerified,
                 ):

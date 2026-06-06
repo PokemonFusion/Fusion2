@@ -7,7 +7,15 @@ from evennia.utils.evtable import EvTable
 
 from pokemon.dex import MOVEDEX, POKEDEX
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
-from pokemon.models.stats import DISPLAY_STAT_MAP, STAT_KEY_MAP, exp_for_level, level_for_exp
+from pokemon.models.stats import (
+        DISPLAY_STAT_MAP,
+        STAT_KEY_MAP,
+        exp_for_level,
+        get_trainer_xp,
+        level_for_exp,
+        next_trainer_level_xp,
+        trainer_level_for_xp,
+)
 from pokemon.utils.pokemon_like import PokemonLike
 from utils.ansi import ansi
 from utils.ansi_widgets import (
@@ -272,6 +280,22 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         else:
                 xp_display = xp_label
 
+        txp_total = get_trainer_xp(char)
+        trainer_level = trainer_level_for_xp(txp_total)
+        if trainer_level >= 100:
+                txp_label_text = f"{txp_total:,} TXP"
+                txp_display = chip(txp_label_text, palette.get("type", "|c"), theme=palette, screen_reader=screen_reader)
+        else:
+                trainer_next_req = next_trainer_level_xp(txp_total)
+                trainer_floor = exp_for_level(trainer_level, "fluctuating")
+                trainer_span = max(1, trainer_next_req - trainer_floor)
+                trainer_progress = max(0, txp_total - trainer_floor)
+                remaining = max(0, trainer_next_req - txp_total)
+                txp_label_text = f"{txp_total:,} / {trainer_next_req:,} ({remaining:,} to next)"
+                txp_label = chip(txp_label_text, palette.get("type", "|c"), theme=palette, screen_reader=screen_reader)
+                txp_display = f"{bar(trainer_progress, trainer_span)} {txp_label}"
+        trainer_level_display = chip(f"Lv {trainer_level}", palette.get("value", "|w"), theme=palette, screen_reader=screen_reader)
+
         inv_pairs = gather_inventory_pairs(char)
         inventory_display = join_items(inv_pairs, max_items=5, theme=palette, screen_reader=screen_reader)
         if not inventory_display:
@@ -355,6 +379,7 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         vitals_block = [
                 section_divider("Vitals", width=width, theme=palette, screen_reader=screen_reader),
                 kv_row("HP", hp_display, "EXP", xp_display, width=width, theme=palette, screen_reader=screen_reader),
+                kv_row("Trainer", trainer_level_display, "TXP", txp_display, width=width, theme=palette, screen_reader=screen_reader),
                 stat_summary_row(stat_values, theme=palette, screen_reader=screen_reader, width=width),
         ]
 

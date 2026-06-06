@@ -25,6 +25,10 @@ def test_preferred_player_command_names_keep_legacy_aliases():
             "+party",
             {"+sheet/pokemon", "+sheet/pkmn"},
         ),
+        ("commands/player/cmd_trainer_xp.py", "CmdTrainerXP"): (
+            "+txp",
+            {"+trainerxp", "+trainerlevel"},
+        ),
         ("commands/player/cmd_party.py", "CmdShowBox"): (
             "+box",
             {"showbox", "+showbox"},

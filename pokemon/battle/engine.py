@@ -1513,6 +1513,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.rng = rng or random
         self._rewards_granted: bool = False
         self._result_logged: bool = False
+        self.award_xp: bool = True
+        self.award_txp: bool = True
         self.turn_resolution_service = turn_resolution_service or TurnResolutionService()
         self.status_service = status_service or StatusService()
         self.message_formatter = message_formatter or MessageFormatter()
@@ -4597,10 +4599,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     # lightweight and safe in CI. If that fails, fall back to the
                     # Evennia/Django app path.
                     try:
-                        from pokemon.models.stats import award_experience_to_party  # type: ignore
+                        from pokemon.models.stats import (  # type: ignore
+                            award_experience_to_party,
+                            award_trainer_xp,
+                            trainer_battle_txp_gain,
+                        )
                     except Exception:
                         try:
-                            from fusion2.pokemon.models.stats import award_experience_to_party  # type: ignore
+                            from fusion2.pokemon.models.stats import (  # type: ignore
+                                award_experience_to_party,
+                                award_trainer_xp,
+                                trainer_battle_txp_gain,
+                            )
                         except Exception:
                             # Minimal test-only fallback that writes to `.experience`.
                             def award_experience_to_party(  # type: ignore
@@ -4651,6 +4661,26 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                     gained = share + (1 if i < remainder else 0)
                                     setattr(mon, "experience", getattr(mon, "experience", 0) + gained)
 
+                            def trainer_battle_txp_gain(  # type: ignore
+                                base_exp: int,
+                                level: int,
+                                *,
+                                trainer_battle: bool = False,
+                            ) -> int:
+                                multiplier = 1.5 if trainer_battle else 1.0
+                                return math.floor(multiplier * base_exp * level / 7 * 0.1555)
+
+                            def award_trainer_xp(player, amount: int, *, caller=None):  # type: ignore
+                                if not amount or amount <= 0 or not player:
+                                    return 0
+                                db = getattr(player, "db", None)
+                                if db is None:
+                                    return 0
+                                total = int(getattr(db, "trainer_xp", getattr(db, "txp", 0)) or 0) + int(amount)
+                                setattr(db, "trainer_xp", total)
+                                setattr(db, "txp", total)
+                                return total
+
                     for poke in fainted:
                         self.on_faint(poke)
                         info = GAIN_INFO.get(
@@ -4658,6 +4688,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         )
                         base_exp = info.get("exp", 0)
                         exp = 0
+                        txp = 0
                         if base_exp:
                             level = getattr(poke, "level", 0) or 0
                             if level:
@@ -4667,10 +4698,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                     else 1
                                 )
                                 exp = math.floor(trainer_multiplier * base_exp * level / 7)
+                                txp = trainer_battle_txp_gain(
+                                    base_exp,
+                                    level,
+                                    trainer_battle=self.type
+                                    in {BattleType.TRAINER, BattleType.SCRIPTED},
+                                )
                             else:
                                 exp = base_exp
                         evs = info.get("evs", {})
-                        if exp or evs:
+                        if getattr(self, "award_xp", True) and (exp or evs):
                             try:
                                 award_experience_to_party(
                                     opponent.player,
@@ -4681,6 +4718,15 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 )
                             except TypeError:
                                 award_experience_to_party(opponent.player, exp, evs)
+                        if getattr(self, "award_txp", True) and txp:
+                            try:
+                                award_trainer_xp(
+                                    opponent.player,
+                                    txp,
+                                    caller=self,
+                                )
+                            except TypeError:
+                                award_trainer_xp(opponent.player, txp)
                 else:
                     for poke in fainted:
                         self.on_faint(poke)
