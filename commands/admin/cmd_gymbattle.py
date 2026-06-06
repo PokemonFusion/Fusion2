@@ -17,7 +17,6 @@ from pokemon.services.gym_leaders import (
     list_gym_leaders,
 )
 
-
 if _EvenniaCommand is None:  # pragma: no cover - direct test/Django imports
     class Command:  # type: ignore[no-redef]
         """Lightweight command base used when Evennia is not configured."""
@@ -31,10 +30,10 @@ class CmdGymBattle(Command):
     """Start a proof-of-concept gym leader battle.
 
     Usage:
-      +gymbattle <leader name|gym_key>
+      +gymbattle <leader name||gym_key>
       +gymbattle/list
       +gymbattle/list/all
-      +gymbattle/check <leader name|gym_key>
+      +gymbattle/check <leader name||gym_key>
     """
 
     key = "+gymbattle"
@@ -58,7 +57,7 @@ class CmdGymBattle(Command):
 
         identifier = (self.args or "").strip()
         if not identifier:
-            self.caller.msg("Usage: +gymbattle <leader|gym_key> | +gymbattle/list | +gymbattle/check <leader|gym_key>")
+            self.caller.msg("Usage: +gymbattle <leader||gym_key> | +gymbattle/list | +gymbattle/check <leader||gym_key>")
             return
 
         check_in_battle = getattr(BattleSession, "ensure_for_player", None)
@@ -118,7 +117,7 @@ class CmdGymBattle(Command):
 
     def _check_leader(self, identifier: str):
         if not identifier:
-            self.caller.msg("Usage: +gymbattle/check <leader|gym_key>")
+            self.caller.msg("Usage: +gymbattle/check <leader||gym_key>")
             return
         check = check_gym_leader(identifier, player=self.caller)
         self.caller.msg(_format_check(check))
