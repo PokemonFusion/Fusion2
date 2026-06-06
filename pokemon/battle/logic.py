@@ -89,6 +89,8 @@ class BattleLogic:
 		self.state = state
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))
+		battle.award_xp = bool(getattr(state, "xp", True))
+		battle.award_txp = bool(getattr(state, "txp", True))
 		bind_reveal_data = getattr(battle, "bind_reveal_data", None)
 		if callable(bind_reveal_data):
 			bind_reveal_data(data)

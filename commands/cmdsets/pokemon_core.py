@@ -47,6 +47,7 @@ from commands.player.cmd_party import (
         CmdWithdrawPokemon,
 )
 from commands.player.cmd_sheet import CmdSheet, CmdSheetPokemon
+from commands.player.cmd_trainer_xp import CmdTrainerXP
 from commands.player.cmd_vendor import CmdVend
 
 
@@ -72,6 +73,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdSetHoldItem,
 			CmdSheet,
 			CmdSheetPokemon,
+			CmdTrainerXP,
 			CmdChargenInfo,
 			CmdInventory,
 			CmdAddItem,
