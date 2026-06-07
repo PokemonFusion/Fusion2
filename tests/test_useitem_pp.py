@@ -233,7 +233,7 @@ def test_ppup_flow():
 
 	cmd = cmd_mod.CmdUseItem()
 	cmd.caller = caller
-	cmd.args = "1=ppup"
+	cmd.args = "ppup=1"
 	cmd.func()
 
 	assert hasattr(caller.ndb, "pending_pp_item")
@@ -245,6 +245,24 @@ def test_ppup_flow():
 	assert remove_counter[0] == 1
 	boost = poke.pp_boosts.filter(move__name__iexact="tackle").first()
 	assert boost and boost.bonus_pp > 0
+
+
+def test_ppup_compatibility_target_first_flow():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	poke = FakePokemon()
+	caller = DummyCaller(poke, remove_counter)
+
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "1=ppup"
+	cmd.func()
+
+	assert hasattr(caller.ndb, "pending_pp_item")
+	assert "Choose a move" in caller.msgs[-1]
 
 
 def test_ppup_at_max():
@@ -282,12 +300,31 @@ def test_rare_candy_levels_target_slot():
 
 	cmd = cmd_mod.CmdUseItem()
 	cmd.caller = caller
-	cmd.args = "1=Rare Candy"
+	cmd.args = "Rare Candy=Pikachu"
 	cmd.func()
 
 	assert remove_counter[0] == 1
 	assert poke.level == 6
 	assert poke.saved is True
+	assert any("grew to level 6" in msg for msg in caller.msgs)
+
+
+def test_rare_candy_compatibility_target_first_flow():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	poke = FakePokemon()
+	caller = DummyCaller(poke, remove_counter)
+
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "1=Rare Candy"
+	cmd.func()
+
+	assert remove_counter[0] == 1
+	assert poke.level == 6
 	assert any("grew to level 6" in msg for msg in caller.msgs)
 
 
@@ -304,4 +341,53 @@ def test_rare_candy_requires_target_slot():
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "Usage: +use <slot>=Rare Candy"
+	assert caller.msgs[-1] == "Usage: +use Rare Candy=<target>"
+
+
+def test_use_item_invalid_item_name_fails_before_target_lookup():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "Not An Item=Pikachu"
+	cmd.func()
+
+	assert remove_counter[0] == 0
+	assert "No such item 'Not An Item' exists." in caller.msgs[-1]
+
+
+def test_use_item_invalid_target_fails_before_item_removal():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "Rare Candy=Missingno"
+	cmd.func()
+
+	assert remove_counter[0] == 0
+	assert caller.msgs[-1] == "No Pokemon target found for 'Missingno'."
+
+
+def test_use_item_ambiguous_two_item_names_fails():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "Potion=Rare Candy"
+	cmd.func()
+
+	assert remove_counter[0] == 0
+	assert "Ambiguous item use" in caller.msgs[-1]
+	assert "use its party slot" in caller.msgs[-1]
