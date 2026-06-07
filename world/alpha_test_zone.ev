@@ -57,6 +57,12 @@
 #
 @set Alpha Candy Dispenser/stock = None
 #
+@create/drop Alpha Move Terminal:typeclasses.objects.Object
+#
+@desc Alpha Move Terminal = A temporary alpha-test terminal for teaching machine and tutor moves from a Pokemon's learnset. Use +alphalearn/list <slot> to inspect options, then +alphalearn <slot>=<move> to teach one.
+#
+@set Alpha Move Terminal/alpha_move_terminal = True
+#
 @teleport Alpha Test Hub
 #
 

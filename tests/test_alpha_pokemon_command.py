@@ -30,7 +30,14 @@ def load_alpha_command():
 
         fake_suggestions = types.ModuleType("utils.dex_suggestions")
         fake_suggestions.is_species_not_found_error = lambda err: "not found" in str(err).lower()
+        fake_suggestions.normalize_dex_key = (
+            lambda value: str(value or "").replace(" ", "").replace("-", "").replace("'", "").lower()
+        )
         fake_suggestions.species_not_found_message = lambda value: f"Missing species: {value}"
+        fake_suggestions.suggest_name = lambda query, candidates, **kwargs: next(
+            (candidate for candidate in candidates if str(candidate).lower().startswith(str(query or "").lower()[:3])),
+            None,
+        )
         sys.modules["utils.dex_suggestions"] = fake_suggestions
 
         fake_locks = types.ModuleType("utils.locks")
@@ -52,8 +59,9 @@ def load_alpha_command():
 
 
 class DummyLocation:
-    def __init__(self, key="Alpha Test Hub", **flags):
+    def __init__(self, key="Alpha Test Hub", contents=None, **flags):
         self.key = key
+        self.contents = list(contents or [])
         self.db = types.SimpleNamespace(**flags)
 
 
@@ -66,6 +74,73 @@ class DummyCaller:
 
     def msg(self, text):
         self.msgs.append(text)
+
+    def get_active_pokemon_by_slot(self, slot):
+        return getattr(self, "pokemon", None) if slot == 1 else None
+
+
+class DummyLearnedMoves(list):
+    def filter(self, **kwargs):
+        name = str(kwargs.get("name__iexact", "")).lower()
+        return DummyLearnedMoves([move for move in self if move.name.lower() == name])
+
+    def exists(self):
+        return bool(self)
+
+
+class DummyPokemon:
+    def __init__(self, species="Pikachu", name="Pika", learned=None):
+        self.species = species
+        self.name = name
+        self.learned_moves = DummyLearnedMoves(
+            [types.SimpleNamespace(name=move) for move in learned or []]
+        )
+        self.flags = []
+        self.saved = False
+        self.save_update_fields = None
+
+    def save(self, update_fields=None):
+        self.saved = True
+        self.save_update_fields = update_fields
+
+
+def alpha_terminal():
+    return types.SimpleNamespace(
+        key="Alpha Move Terminal",
+        db=types.SimpleNamespace(alpha_move_terminal=True),
+    )
+
+
+def patch_move_learning_modules(monkeypatch, taught):
+    fake_middleware = types.ModuleType("pokemon.middleware")
+    fake_middleware.get_moveset_by_name = lambda species: (
+        species,
+        {
+            "level-up": [(1, "tackle")],
+            "machine": ["thunderbolt", "swift"],
+            "tutor": ["irontail"],
+            "egg": ["fakeeggmove"],
+        },
+    )
+    fake_middleware.get_move_by_name = lambda move: (
+        move,
+        {
+            "thunderbolt": {"name": "Thunderbolt"},
+            "swift": {"name": "Swift"},
+            "irontail": {"name": "Iron Tail"},
+        }.get(move, {"name": str(move).title()}),
+    )
+    monkeypatch.setitem(sys.modules, "pokemon.middleware", fake_middleware)
+
+    fake_move_learning = types.ModuleType("pokemon.utils.move_learning")
+
+    def fake_learn_move(pokemon, move_name, caller=None, prompt=False, on_exit=None):
+        taught.append((pokemon, move_name, prompt))
+        if caller:
+            caller.msg(f"{pokemon.name} learned {move_name}.")
+
+    fake_move_learning.learn_move = fake_learn_move
+    monkeypatch.setitem(sys.modules, "pokemon.utils.move_learning", fake_move_learning)
 
 
 def test_alphapokemon_requires_alpha_area():
@@ -187,3 +262,101 @@ def test_alphapokemon_marks_generated_metadata(monkeypatch):
     assert created["met_location"] == "Alpha Test Generator (Alpha Test Hub)"
     assert created["obtained_method"] == "alpha_test"
     assert created["flags"] == ["alpha_test_generated"]
+
+
+def test_alphalearn_requires_alpha_area():
+    mod = load_alpha_command()
+    caller = DummyCaller(DummyLocation("Town Square", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1=Thunderbolt"
+    cmd.switches = []
+    cmd.func()
+
+    assert caller.msgs == ["You can only use this in the alpha testing area."]
+
+
+def test_alphalearn_requires_terminal():
+    mod = load_alpha_command()
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", alpha_test_area=True))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1=Thunderbolt"
+    cmd.switches = []
+    cmd.func()
+
+    assert caller.msgs == ["You need to use this near an Alpha Move Terminal."]
+
+
+def test_alphalearn_lists_machine_and_tutor_moves(monkeypatch):
+    mod = load_alpha_command()
+    taught = []
+    patch_move_learning_modules(monkeypatch, taught)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1"
+    cmd.switches = ["list"]
+    cmd.func()
+
+    assert caller.msgs == ["Alpha terminal moves for Pika:\nIron Tail, Swift, Thunderbolt"]
+    assert taught == []
+
+
+def test_alphalearn_rejects_non_machine_or_tutor_move(monkeypatch):
+    mod = load_alpha_command()
+    taught = []
+    patch_move_learning_modules(monkeypatch, taught)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1=Tackle"
+    cmd.switches = []
+    cmd.func()
+
+    assert caller.msgs == ["Pika cannot learn Tackle through the alpha move terminal."]
+    assert taught == []
+
+
+def test_alphalearn_teaches_machine_move_and_marks_flag(monkeypatch):
+    mod = load_alpha_command()
+    taught = []
+    patch_move_learning_modules(monkeypatch, taught)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1=Thunderbolt"
+    cmd.switches = []
+    cmd.func()
+
+    assert taught == [(caller.pokemon, "Thunderbolt", True)]
+    assert caller.msgs == ["Pika learned Thunderbolt."]
+    assert caller.pokemon.flags == ["alpha_teach:thunderbolt"]
+    assert caller.pokemon.save_update_fields == ["flags"]
+
+
+def test_alphalearn_rejects_already_known_move(monkeypatch):
+    mod = load_alpha_command()
+    taught = []
+    patch_move_learning_modules(monkeypatch, taught)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon(learned=["Thunderbolt"])
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1=Thunderbolt"
+    cmd.switches = []
+    cmd.func()
+
+    assert caller.msgs == ["Pika already knows Thunderbolt."]
+    assert taught == []

@@ -16,7 +16,7 @@ from commands.debug.command import (
 	CmdUseMove,
 )
 from commands.player.cmd_account import CmdTradePokemon
-from commands.player.cmd_alpha import CmdAlphaPokemon
+from commands.player.cmd_alpha import CmdAlphaLearnMove, CmdAlphaPokemon
 from commands.player.cmd_fusion import (
 	CmdFusionFight,
 	CmdFusionForms,
@@ -99,6 +99,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdHunt,
 			CmdLeaveHunt,
 			CmdAlphaPokemon,
+			CmdAlphaLearnMove,
 		]
 		if settings.DEV_MODE:
 			cmds.append(CmdCustomHunt)
