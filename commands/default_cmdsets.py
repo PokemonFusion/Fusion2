@@ -41,6 +41,7 @@ from commands.player.cmd_profile import CmdAccountProfile
 from commands.player.cmd_request import CmdRequest
 from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
 from commands.player.cmd_staff import CmdStaff
+from commands.player.cmd_who import CmdStaffWho
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -114,6 +115,8 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         self.add(CmdAccountProfile())
         self.add(CmdRequest())
         self.add(CmdStaff())
+        self.remove("who")
+        self.add(CmdStaffWho())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
