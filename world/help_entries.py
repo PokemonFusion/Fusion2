@@ -378,7 +378,7 @@ Most maintenance commands are used outside battle.
 
 +inventory             Show your inventory.
 +use <item>            Use an item outside battle.
-+use <slot>=<item>     Use an item on a party slot when supported.
++use <item>=<target>   Use an item on a target when supported.
 
 # Evolution
 

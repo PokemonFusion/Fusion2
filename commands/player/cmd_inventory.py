@@ -4,6 +4,8 @@ This module houses commands dealing with a player's inventory, such as
 viewing items, adding new ones, giving them to others and using them.
 """
 
+from dataclasses import dataclass
+
 from evennia import Command
 
 from utils.dex_suggestions import item_not_found_message
@@ -28,6 +30,129 @@ def _display_item_name(data, fallback: str) -> str:
     display = display or (data.get("name") if isinstance(data, dict) else None)
     display = display or getattr(data, "name", None)
     return display or str(fallback).title()
+
+
+@dataclass
+class _ParsedItemUse:
+    item_query: str
+    canonical: str | None
+    item_data: object | None
+    item_key: str
+    target_query: str | None = None
+    ambiguous_item_sides: bool = False
+
+
+@dataclass
+class _ResolvedUseTarget:
+    query: str
+    slot: int | None = None
+    pokemon: object | None = None
+    is_self: bool = False
+
+
+def _parse_item_use_args(args: str) -> _ParsedItemUse:
+    """Parse +use args into canonical item-first structure."""
+
+    if "=" not in args:
+        canonical, item_data, item_key = _inventory_item_key(args)
+        return _ParsedItemUse(args, canonical, item_data, item_key)
+
+    left, right = [part.strip() for part in args.split("=", 1)]
+    left_canonical, left_data, left_key = _inventory_item_key(left)
+    right_canonical, right_data, right_key = _inventory_item_key(right)
+
+    if left_canonical and right_canonical:
+        return _ParsedItemUse(
+            left,
+            left_canonical,
+            left_data,
+            left_key,
+            target_query=right,
+            ambiguous_item_sides=True,
+        )
+
+    if left_canonical or not right_canonical:
+        return _ParsedItemUse(left, left_canonical, left_data, left_key, target_query=right)
+
+    return _ParsedItemUse(
+        right,
+        right_canonical,
+        right_data,
+        right_key,
+        target_query=left,
+    )
+
+
+def _pokemon_text(value) -> str:
+    if value is None:
+        return ""
+    nested = getattr(value, "name", None)
+    return str(nested if nested is not None else value).strip()
+
+
+def _normalize_target_text(value) -> str:
+    return _pokemon_text(value).replace(" ", "").replace("-", "").replace("'", "").lower()
+
+
+def _iter_active_party(caller):
+    getter = getattr(caller, "get_active_party", None)
+    if callable(getter):
+        try:
+            return list(getter())
+        except Exception:
+            pass
+
+    storage = getattr(caller, "storage", None)
+    party_getter = getattr(storage, "get_party", None)
+    if callable(party_getter):
+        try:
+            return list(party_getter())
+        except Exception:
+            pass
+
+    slot_getter = getattr(caller, "get_active_pokemon_by_slot", None)
+    if callable(slot_getter):
+        party = []
+        for slot in range(1, 7):
+            pokemon = slot_getter(slot)
+            if pokemon:
+                party.append(pokemon)
+        return party
+
+    return []
+
+
+def _resolve_use_target(caller, query: str) -> tuple[_ResolvedUseTarget | None, str]:
+    raw = (query or "").strip()
+    if not raw:
+        return None, "Usage: +use <item>=<target>"
+
+    lowered = raw.lower()
+    if lowered in {"self", "me"}:
+        return _ResolvedUseTarget(raw, is_self=True), ""
+
+    if raw.isdigit():
+        slot = int(raw)
+        getter = getattr(caller, "get_active_pokemon_by_slot", None)
+        pokemon = getter(slot) if callable(getter) else None
+        if not pokemon:
+            return None, f"No Pokemon in party slot {slot}."
+        return _ResolvedUseTarget(raw, slot=slot, pokemon=pokemon), ""
+
+    needle = _normalize_target_text(raw)
+    for slot, pokemon in enumerate(_iter_active_party(caller), 1):
+        candidates = (
+            getattr(pokemon, "name", None),
+            getattr(pokemon, "nickname", None),
+            getattr(pokemon, "species", None),
+            getattr(pokemon, "unique_id", None),
+            getattr(pokemon, "id", None),
+        )
+        normalized = [_normalize_target_text(candidate) for candidate in candidates]
+        if needle in normalized:
+            return _ResolvedUseTarget(raw, slot=slot, pokemon=pokemon), ""
+
+    return None, f"No Pokemon target found for '{raw}'."
 
 
 def _growth_rate_for_pokemon(pokemon) -> str:
@@ -216,11 +341,14 @@ class CmdUseItem(Command):
 
     Usage:
       +use <item>
-      +use <slot>=<item>
+      +use <item>=<target>
 
     Examples:
       +use Potion
-      +use 2=PP Up
+      +use Potion=Pikachu
+      +use Potion=1
+      +use Rare Candy=Charizard
+      +use Escape Rope=self
 
     Notes:
       Battle items use +battle/item while a battle is waiting for your action.
@@ -280,30 +408,41 @@ class CmdUseItem(Command):
             return
 
         if not args:
-            self.caller.msg("Usage: +use <item> or +use <slot>=<item>")
+            self.caller.msg("Usage: +use <item> or +use <item>=<target>")
             return
 
-        slot = None
-        item_name = args
-        if "=" in args:
-            left, right = [p.strip() for p in args.split("=", 1)]
-            try:
-                slot = int(left)
-            except ValueError:
-                self.caller.msg("Invalid slot number.")
-                return
-            item_name = right
+        parsed = _parse_item_use_args(args)
+        canonical = parsed.canonical
+        item_data = parsed.item_data
+        item_name = parsed.item_key
 
-        canonical, item_data, item_name = _inventory_item_key(item_name)
+        if parsed.ambiguous_item_sides:
+            self.caller.msg(
+                f"Ambiguous item use: both '{parsed.item_query}' and '{parsed.target_query}' look like item names. "
+                "Use +use <item>=<target>; if your Pokemon shares an item name, use its party slot."
+            )
+            return
 
         if not canonical:
-            self.caller.msg(item_not_found_message(item_name, f"No such item '{item_name}' exists."))
+            self.caller.msg(
+                item_not_found_message(
+                    parsed.item_query,
+                    f"No such item '{parsed.item_query}' exists.",
+                )
+            )
             return
 
-        if slot is not None and item_name in {"ppup", "ppmax"}:
-            pokemon = self.caller.get_active_pokemon_by_slot(slot)
+        target = None
+        if parsed.target_query is not None:
+            target, error = _resolve_use_target(self.caller, parsed.target_query)
+            if error:
+                self.caller.msg(error)
+                return
+
+        if item_name in {"ppup", "ppmax"} and target is not None:
+            pokemon = target.pokemon
             if not pokemon:
-                self.caller.msg("No Pokémon in that slot.")
+                self.caller.msg("That item needs a Pokemon target.")
                 return
             slots = list(pokemon.activemoveslot_set.order_by("slot"))
             if not slots:
@@ -319,12 +458,12 @@ class CmdUseItem(Command):
             return
 
         if item_name == "rarecandy":
-            if slot is None:
-                self.caller.msg("Usage: +use <slot>=Rare Candy")
+            if target is None:
+                self.caller.msg("Usage: +use Rare Candy=<target>")
                 return
-            pokemon = self.caller.get_active_pokemon_by_slot(slot)
+            pokemon = target.pokemon
             if not pokemon:
-                self.caller.msg("No Pokemon in that slot.")
+                self.caller.msg("That item needs a Pokemon target.")
                 return
             _apply_rare_candy(self.caller, trainer, pokemon, item_name)
             return
