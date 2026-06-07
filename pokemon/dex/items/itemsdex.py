@@ -4604,6 +4604,7 @@ py_dict = {
 	"Revivalherb": {"name": "Revival Herb", "onUse": "Revivalherb.onUse", "num": 0, "gen": 2},
 	"Abilitycapsule": {"name": "Ability Capsule", "onUse": "Abilitycapsule.onUse", "num": 0, "gen": 6},
 	"Abilitypatch": {"name": "Ability Patch", "onUse": "Abilitypatch.onUse", "num": 0, "gen": 8},
+	"Rarecandy": {"name": "Rare Candy", "desc": "Raises one Pokemon by one level.", "num": 50, "gen": 1},
 	"Ppup": {"name": "PP Up", "desc": "Raises the max PP of a move.", "onUse": "Ppup.onUse", "num": 0, "gen": 2},
 	"Ppmax": {"name": "PP Max", "desc": "Maximizes the max PP of a move.", "onUse": "Ppmax.onUse", "num": 0, "gen": 3},
 }
