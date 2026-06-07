@@ -1,0 +1,34 @@
+#
+# Adventure Hall MVP batch commands.
+#
+# Run once from a Developer/superuser building character in the room that
+# should link to the Adventure Hall:
+#
+#   batchcommands adventure_hall
+#
+# This file intentionally uses normal Evennia build commands. Run it once per
+# database; rerunning will create duplicate rooms/exits with the same names.
+#
+
+@dig/teleport Adventure Hall;adventure hall;adventures:typeclasses.rooms.FusionRoom = adventures;adventure;adv, back;out
+#
+@desc Adventure Hall = A compact staging room for short virtual adventures. A marked instance room waits nearby for solo test runs.
+#
+@set Adventure Hall/adventure_hall = True
+#
+@set Adventure Hall/allow_hunting = False
+#
+@set Adventure Hall/noitem = True
+#
+
+@dig Adventure Instance Room #1;adventure instance 1;instance room:typeclasses.rooms.FusionRoom = instance;enter, hall;out;leave
+#
+@desc Adventure Instance Room #1 = This persistent room hosts compact virtual adventures. Its visible description changes while an adventure session is active.
+#
+@set Adventure Instance Room #1/adventure_instance = True
+#
+@set Adventure Instance Room #1/allow_hunting = False
+#
+@set Adventure Instance Room #1/noitem = True
+#
+@teleport Adventure Hall

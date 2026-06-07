@@ -156,16 +156,24 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 						self.msg(format_turn_banner(turn_no))
 					except Exception:
 						pass
+		try:
+			from pokemon.adventures.cmdsets import attach_movement_cmdset
+			from pokemon.adventures.sessions import sync_player_to_active_session
+
+			if sync_player_to_active_session(self):
+				attach_movement_cmdset(self)
+		except Exception:
+			pass
 
 	def at_pre_move(self, destination, **kwargs):
 		"""Prevent leaving while hosting a PVP request or during battles."""
 		db = getattr(self, "db", None)
 		if db is not None and getattr(db, "pvp_locked", False):
-		        self.msg("|rYou can't leave while waiting for a PVP battle.|n")
-		        return False
+			self.msg("|rYou can't leave while waiting for a PVP battle.|n")
+			return False
 
 		if not require_no_battle_lock(self):
-		        return False
+			return False
 
 		return super().at_pre_move(destination, **kwargs)
 
@@ -186,13 +194,13 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 		well.
 
 		Args:
-		    message (str): The text to say.
-		    msg_self (str or bool, optional): Custom self message or a truthy
+			message (str): The text to say.
+			msg_self (str or bool, optional): Custom self message or a truthy
 			value to use the default name-based format.
-		    msg_location (str, optional): Message for the location.
-		    receivers (DefaultObject or iterable, optional): Whom to whisper to.
-		    msg_receivers (str, optional): Message for specific receivers.
-		    **kwargs: Passed on to the parent implementation.
+			msg_location (str, optional): Message for the location.
+			receivers (DefaultObject or iterable, optional): Whom to whisper to.
+			msg_receivers (str, optional): Message for specific receivers.
+			**kwargs: Passed on to the parent implementation.
 		"""
 
 		if (msg_self is None or msg_self is True) and not kwargs.get("whisper", False):
