@@ -16,13 +16,7 @@ from commands.debug.command import (
 	CmdUseMove,
 )
 from commands.player.cmd_account import CmdTradePokemon
-from commands.player.cmd_hunt import CmdCustomHunt, CmdHunt, CmdLeaveHunt
-from commands.player.cmd_inventory import (
-	CmdAddItem,
-	CmdGiveItem,
-	CmdInventory,
-	CmdUseItem,
-)
+from commands.player.cmd_alpha import CmdAlphaPokemon
 from commands.player.cmd_fusion import (
 	CmdFusionFight,
 	CmdFusionForms,
@@ -30,6 +24,13 @@ from commands.player.cmd_fusion import (
 	CmdPermFuse,
 	CmdTempFuse,
 	CmdUnfuse,
+)
+from commands.player.cmd_hunt import CmdCustomHunt, CmdHunt, CmdLeaveHunt
+from commands.player.cmd_inventory import (
+	CmdAddItem,
+	CmdGiveItem,
+	CmdInventory,
+	CmdUseItem,
 )
 from commands.player.cmd_learn_evolve import (
 	CmdChooseMoveset,
@@ -39,12 +40,12 @@ from commands.player.cmd_learn_evolve import (
 )
 from commands.player.cmd_movesets import CmdMovesets
 from commands.player.cmd_party import (
-        CmdChargenInfo,
-        CmdDepositPokemon,
-        CmdSetHoldItem,
-        CmdShowBox,
-        CmdSwapPokemon,
-        CmdWithdrawPokemon,
+	CmdChargenInfo,
+	CmdDepositPokemon,
+	CmdSetHoldItem,
+	CmdShowBox,
+	CmdSwapPokemon,
+	CmdWithdrawPokemon,
 )
 from commands.player.cmd_sheet import CmdSheet, CmdSheetPokemon
 from commands.player.cmd_trainer_xp import CmdTrainerXP
@@ -97,6 +98,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdTradePokemon,
 			CmdHunt,
 			CmdLeaveHunt,
+			CmdAlphaPokemon,
 		]
 		if settings.DEV_MODE:
 			cmds.append(CmdCustomHunt)

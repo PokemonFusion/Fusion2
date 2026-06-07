@@ -10,6 +10,7 @@ def test_medicine_items_present():
 		"Abilitycapsule",
 		"Abilitypatch",
 		"Healthfeather",
+		"Rarecandy",
 	]
 	for item in expected:
 		assert item in ITEMDEX

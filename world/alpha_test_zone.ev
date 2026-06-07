@@ -20,6 +20,8 @@
 #
 @set Alpha Test Hub/noitem = True
 #
+@set Alpha Test Hub/alpha_test_area = True
+#
 
 @dig Alpha Recovery Room;recovery;center:typeclasses.rooms.FusionRoom = recovery;center;north;n, hub;south;s
 #
@@ -30,6 +32,8 @@
 @set Alpha Recovery Room/allow_hunting = False
 #
 @set Alpha Recovery Room/noitem = True
+#
+@set Alpha Recovery Room/alpha_test_area = True
 #
 @teleport Alpha Recovery Room
 #
@@ -43,6 +47,16 @@
 #
 @set Alpha Ball Dispenser/stock = None
 #
+@create/drop Alpha Candy Dispenser:typeclasses.vendors.PokeballVendor
+#
+@desc Alpha Candy Dispenser = A temporary alpha-test vending machine. It dispenses Rare Candy so testers can quickly check level-up moves, evolution hooks, and higher-level battles.
+#
+@set Alpha Candy Dispenser/dispense_item = rarecandy
+#
+@set Alpha Candy Dispenser/dispense_quantity = 5
+#
+@set Alpha Candy Dispenser/stock = None
+#
 @teleport Alpha Test Hub
 #
 
@@ -51,6 +65,8 @@
 @desc Alpha Route 1 - Low Grass = Short grass grows in neat patches beside the hub. Encounters here are low-level and intentionally simple for first-pass hunting, battle, and capture testing.
 #
 @set Alpha Route 1 - Low Grass/allow_hunting = True
+#
+@set Alpha Route 1 - Low Grass/alpha_test_area = True
 #
 @set Alpha Route 1 - Low Grass/encounter_rate = 100
 #
@@ -71,6 +87,8 @@
 #
 @set Alpha Route 2 - Capture Meadow/allow_hunting = True
 #
+@set Alpha Route 2 - Capture Meadow/alpha_test_area = True
+#
 @set Alpha Route 2 - Capture Meadow/encounter_rate = 100
 #
 @set Alpha Route 2 - Capture Meadow/npc_chance = 0
@@ -89,6 +107,8 @@
 @desc Alpha Route 3 - Battle Yard = Practice lanes and marked circles make this a controlled battle test area. The chart mixes common early Pokemon with varied typings for basic move, accuracy, and fainting checks.
 #
 @set Alpha Route 3 - Battle Yard/allow_hunting = True
+#
+@set Alpha Route 3 - Battle Yard/alpha_test_area = True
 #
 @set Alpha Route 3 - Battle Yard/encounter_rate = 100
 #
@@ -109,6 +129,8 @@
 #
 @set Alpha Route 4 - Weather Brook/allow_hunting = True
 #
+@set Alpha Route 4 - Weather Brook/alpha_test_area = True
+#
 @set Alpha Route 4 - Weather Brook/encounter_rate = 100
 #
 @set Alpha Route 4 - Weather Brook/npc_chance = 0
@@ -127,6 +149,8 @@
 @desc Alpha Route 5 - Rare Patch = A fenced patch with warning stakes and controlled rare spawns. Use this area for checking rare encounter messaging and capture/storage edge cases, not for normal progression balance.
 #
 @set Alpha Route 5 - Rare Patch/allow_hunting = True
+#
+@set Alpha Route 5 - Rare Patch/alpha_test_area = True
 #
 @set Alpha Route 5 - Rare Patch/encounter_rate = 100
 #

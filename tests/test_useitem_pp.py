@@ -91,8 +91,15 @@ class BoostManager(list):
 class FakePokemon:
 	def __init__(self):
 		self.name = "Pika"
+		self.species = "Pikachu"
+		self.level = 5
+		self.total_exp = 125
+		self.saved = False
 		self.activemoveslot_set = FakeQS([FakeSlot("tackle", 1)])
 		self.pp_boosts = BoostManager()
+
+	def save(self):
+		self.saved = True
 
 	def get_max_pp(self, move_name):
 		base = 10
@@ -262,3 +269,39 @@ def test_ppup_at_max():
 	# no additional removal since move already maxed
 	assert remove_counter[0] == 0
 	assert any("already" in m.lower() or "further" in m.lower() for m in caller.msgs)
+
+
+def test_rare_candy_levels_target_slot():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	poke = FakePokemon()
+	caller = DummyCaller(poke, remove_counter)
+
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "1=Rare Candy"
+	cmd.func()
+
+	assert remove_counter[0] == 1
+	assert poke.level == 6
+	assert poke.saved is True
+	assert any("grew to level 6" in msg for msg in caller.msgs)
+
+
+def test_rare_candy_requires_target_slot():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "Rare Candy"
+	cmd.func()
+
+	assert remove_counter[0] == 0
+	assert caller.msgs[-1] == "Usage: +use <slot>=Rare Candy"

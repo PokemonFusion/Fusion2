@@ -1115,4 +1115,5 @@ ITEMS_TEXT = {   'abilityshield': {   'name': 'Ability Shield',
     'revivalherb': {'name': 'Revival Herb', 'shortDesc': 'Bitter herb that revives one fainted Pokemon with full HP.'},
     'abilitycapsule': {'name': 'Ability Capsule', 'shortDesc': 'Switches one Pokemon between its regular Abilities.'},
     'abilitypatch': {'name': 'Ability Patch', 'shortDesc': 'Changes one Pokemon\'s Ability to its Hidden Ability.'},
+    'rarecandy': {'name': 'Rare Candy', 'shortDesc': 'Raises one Pokemon by one level.'},
 }
