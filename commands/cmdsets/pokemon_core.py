@@ -50,6 +50,7 @@ from commands.player.cmd_party import (
 from commands.player.cmd_sheet import CmdSheet, CmdSheetPokemon
 from commands.player.cmd_trainer_xp import CmdTrainerXP
 from commands.player.cmd_vendor import CmdVend
+from pokemon.adventures.commands import CmdAdventure
 
 
 class PokemonCoreCmdSet(CmdSet):
@@ -96,6 +97,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdChooseMoveset,
 			CmdAdminHeal,
 			CmdTradePokemon,
+			CmdAdventure,
 			CmdHunt,
 			CmdLeaveHunt,
 			CmdAlphaPokemon,

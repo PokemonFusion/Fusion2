@@ -288,6 +288,14 @@ class FusionRoom(Room):
 		"""Return the look description for this room."""
 		if not looker:
 			return ""
+		try:
+			from pokemon.adventures.renderer import render_for_room
+
+			adventure_text = render_for_room(self, looker)
+		except Exception:
+			adventure_text = None
+		if adventure_text:
+			return adventure_text
 
 		is_builder = looker.check_permstring("Builder")
 		ui_mode = self._ui_mode(looker)

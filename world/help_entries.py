@@ -297,6 +297,9 @@ rooms may have highlighted shortcut letters in their exit names.
 
 +hunt             Attempt to find a wild Pokemon in the current room.
 +hunt/leave       Leave a hunting instance if you are inside one.
++adventure/list   List compact adventure instances available from Adventure Hall.
++adventure/start  Start a solo adventure from Adventure Hall.
++adventure/leave  Leave your active adventure.
 
 If a wild Pokemon appears, the game moves you into battle. From there, use
 battle commands such as +attack, +switch, +item, or +flee.
