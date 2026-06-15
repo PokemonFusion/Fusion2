@@ -33,6 +33,13 @@ def get_system() -> Any:
 
 def at_server_start() -> None:
     """Ensure global game systems are attached on startup."""
+    try:
+        from utils.db_connection_hygiene import install_command_connection_hygiene
+
+        install_command_connection_hygiene()
+    except Exception:
+        pass
+
     system = get_system()
     try:
         from services.battle.manager import BattleManager

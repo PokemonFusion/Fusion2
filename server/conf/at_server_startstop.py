@@ -29,6 +29,10 @@ def at_server_init():
 	This is called first as the server is starting up, regardless of how.
 	Configure the daily error log handler.
 	"""
+	from utils.db_connection_hygiene import install_command_connection_hygiene
+
+	install_command_connection_hygiene()
+
 	base_dir = Path(__file__).resolve().parents[1]
 	log_dir = base_dir / "logs"
 	setup_daily_error_log(log_dir)
