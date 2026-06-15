@@ -58,6 +58,10 @@ try:
 except ImportError:
     print("secret_settings.py file not found or failed to import.")
 
+for _database_config in DATABASES.values():
+    _database_config["CONN_HEALTH_CHECKS"] = True
+    _database_config.setdefault("CONN_MAX_AGE", CONN_MAX_AGE)
+
 # Django contrib apps needed by local models.
 INSTALLED_APPS += (
     "django.contrib.postgres",
