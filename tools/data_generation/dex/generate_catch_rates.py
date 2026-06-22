@@ -33,10 +33,13 @@ with open(Path(__file__).resolve().parents[3] / "pokemon" / "data" / "pokemon_sp
 # Build mapping for all pokedex entries
 result = {}
 for name, data in pokedex.items():
-	base = data.get("baseSpecies", name)
+	display_name = data.get("name", name)
+	base = data.get("baseSpecies") or display_name
 	identifier = to_identifier(base)
 	if identifier in catch_data:
-		result[name] = catch_data[identifier]
+		info = catch_data[identifier]
+		result[name] = info
+		result[display_name] = info
 
 output_path = Path(__file__).resolve().parents[3] / "pokemon" / "dex" / "catch_rates.py"
 with open(output_path, "w") as f:

@@ -7,6 +7,7 @@ from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from evennia.objects.models import ObjectDB
+from evennia.utils.create import create_object
 
 try:
 	from evennia.utils.text2html import parse_html
@@ -46,6 +47,117 @@ def _add_aliases(obj, aliases):
 	for alias in aliases:
 		obj.aliases.add(alias)
 
+def _combined_lockstring(*lockstrings: str) -> str:
+	"""Combine optional lockstrings for Evennia's lock handler."""
+	return ";".join(part for part in (lock.strip() for lock in lockstrings if lock) if part)
+
+def _desc_attributes(*, desc: str = "", err_msg: str = "") -> list[tuple[str, str]]:
+	"""Return Evennia create_object attributes for room/exit text fields."""
+	attributes = []
+	if desc:
+		attributes.append(("desc", desc))
+	if err_msg:
+		attributes.append(("err_traverse", err_msg))
+	return attributes
+
+def _create_room(data, request: HttpRequest):
+	"""Create a room through Evennia's typeclass-aware create API."""
+	location = data.get("db_location") or None
+	lockstring = compose_room_default(
+		user_id=getattr(getattr(request, "user", None), "id", 0),
+		creator_id=None,
+	)
+	return create_object(
+		typeclass=_room_typeclass_path(),
+		key=data.get("db_key", ""),
+		location=location,
+		home=location,
+		locks=lockstring,
+		attributes=_desc_attributes(desc=data.get("desc") or data.get("db_desc") or "") or None,
+	)
+
+def _create_exit(source_room, data, request: HttpRequest, aliases: list[str], key: str | None = None):
+	"""Create an exit through Evennia's typeclass-aware create API."""
+	lockstring = _combined_lockstring(
+		compose_exit_default(
+			user_id=getattr(getattr(request, "user", None), "id", 0),
+			creator_id=None,
+		),
+		data.get("lockstring") or "",
+	)
+	return create_object(
+		typeclass=_exit_typeclass_path(),
+		key=key or data["key"],
+		location=source_room,
+		home=source_room,
+		destination=data["destination"],
+		aliases=aliases or None,
+		locks=lockstring,
+		attributes=_desc_attributes(
+			desc=data.get("description") or "",
+			err_msg=data.get("err_msg") or "",
+		) or None,
+	)
+
+def _exit_source_room(ex):
+	"""Return an exit's source room across real Evennia objects and tests."""
+	return getattr(ex, "location", None) or getattr(ex, "db_location", None)
+
+def _normalized_exit_terms(key: str, aliases: list[str]) -> set[str]:
+	"""Normalize exit command keys and aliases for conflict checks."""
+	return {term for term in [str(key or "").strip().lower(), *(str(alias or "").strip().lower() for alias in aliases)] if term}
+
+def _existing_exit_terms(ex) -> set[str]:
+	"""Return normalized command terms already claimed by an exit."""
+	aliases = ex.aliases.all() if hasattr(getattr(ex, "aliases", None), "all") else []
+	return _normalized_exit_terms(getattr(ex, "key", getattr(ex, "db_key", "")), aliases)
+
+def _reverse_aliases(forward_key: str, forward_aliases: list[str], reverse_key: str) -> list[str]:
+	"""Generate safe directional aliases for an auto-created reverse exit."""
+	aliases = []
+	seen = _normalized_exit_terms(reverse_key, [forward_key, *forward_aliases])
+	for source in [forward_key, *forward_aliases]:
+		reverse_alias = reverse_dir(source)
+		normalized = str(reverse_alias or "").strip().lower()
+		if not normalized or normalized in seen:
+			continue
+		aliases.append(reverse_alias)
+		seen.add(normalized)
+	return aliases
+
+def _exit_name_conflict(source_room, key: str, aliases: list[str], exclude=None):
+	"""Find another exit in the source room using any requested key or alias."""
+	if not source_room:
+		return None
+	wanted = _normalized_exit_terms(key, aliases)
+	source_id = getattr(source_room, "id", source_room)
+	exclude_id = getattr(exclude, "id", None)
+	for existing in _exit_qs().filter(db_location_id=source_id):
+		if exclude_id is not None and getattr(existing, "id", None) == exclude_id:
+			continue
+		overlap = wanted & _existing_exit_terms(existing)
+		if overlap:
+			return sorted(overlap)[0], existing
+	return None
+
+def _duplicate_exit_response(conflict, source_room):
+	"""Return a consistent AJAX-safe duplicate error response."""
+	term, existing = conflict
+	room_name = getattr(source_room, "key", getattr(source_room, "db_key", source_room))
+	return JsonResponse(
+		{
+			"ok": False,
+			"error": f"Exit key or alias '{term}' already exists in {room_name} on exit #{existing.id}.",
+		},
+		status=400,
+	)
+
+def _refresh_exit_cmdset(ex) -> None:
+	"""Rebuild an exit's dynamic ExitCmdSet after command-affecting edits."""
+	refresh = getattr(ex, "at_cmdset_get", None)
+	if callable(refresh):
+		refresh(force_init=True)
+
 @builder_required
 def room_list(request: HttpRequest):
 	"""Display a list of rooms available for editing."""
@@ -65,18 +177,7 @@ def room_new(request: HttpRequest):
 		form = RoomForm(request.POST)
 		if form.is_valid():
 			data = getattr(form, "cleaned_data", form.data)
-			room = ObjectDB.objects.create(
-				db_typeclass_path=_room_typeclass_path(),
-				db_key=data.get("db_key", ""),
-				db_location=data.get("db_location") or None,
-				db_lock_storage=data.get("db_lock_storage") or "",
-			)
-			room.db.desc = data.get("desc") or data.get("db_desc") or ""
-			lockstring = compose_room_default(
-				user_id=getattr(getattr(request, "user", None), "id", 0),
-				creator_id=None,
-			)
-			room.locks.add(lockstring)
+			room = _create_room(data, request)
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				html = render(
 					request,
@@ -143,50 +244,22 @@ def exit_new(request: HttpRequest, room_pk: int):
 	if request.method == "POST":
 		form = ExitForm(request.POST)
 		if form.is_valid():
+			aliases = form.cleaned_alias_list()
+			conflict = _exit_name_conflict(room, form.cleaned_data["key"], aliases)
+			if conflict:
+				return _duplicate_exit_response(conflict, room)
+			rev_key = reverse_dir(form.cleaned_data["key"]) if form.cleaned_data.get("auto_reverse") else None
+			reverse_aliases = []
+			if rev_key:
+				reverse_aliases = _reverse_aliases(form.cleaned_data["key"], aliases, rev_key)
+				rev_conflict = _exit_name_conflict(form.cleaned_data["destination"], rev_key, reverse_aliases)
+				if rev_conflict:
+					return _duplicate_exit_response(rev_conflict, form.cleaned_data["destination"])
 			with transaction.atomic():
-				ex = ObjectDB.objects.create(
-					db_typeclass_path=_exit_typeclass_path(),
-					db_key=form.cleaned_data["key"],
-					db_location=room,
-					db_destination=form.cleaned_data["destination"],
-				)
-				lockstring = compose_exit_default(
-					user_id=getattr(getattr(request, "user", None), "id", 0),
-					creator_id=None,
-				)
-				ex.locks.add(lockstring)
-				aliases = form.cleaned_alias_list()
-				if aliases:
-					_add_aliases(ex, aliases)
-				if form.cleaned_data.get("description"):
-					ex.db.desc = form.cleaned_data["description"]
-				if form.cleaned_data.get("lockstring"):
-					ex.locks.add(form.cleaned_data["lockstring"])
-				if form.cleaned_data.get("err_msg"):
-					ex.db.err_traverse = form.cleaned_data["err_msg"]
-				rev_obj = None
-				if form.cleaned_data.get("auto_reverse"):
-					rkey = reverse_dir(form.cleaned_data["key"])
-					if rkey:
-						rev_obj = ObjectDB.objects.create(
-							db_typeclass_path=_exit_typeclass_path(),
-							db_key=rkey,
-							db_location=form.cleaned_data["destination"],
-							db_destination=room,
-						)
-						rev_lock = compose_exit_default(
-							user_id=getattr(getattr(request, "user", None), "id", 0),
-							creator_id=None,
-						)
-						rev_obj.locks.add(rev_lock)
-						if aliases:
-							_add_aliases(rev_obj, aliases)
-						if form.cleaned_data.get("description"):
-							rev_obj.db.desc = form.cleaned_data["description"]
-						if form.cleaned_data.get("lockstring"):
-							rev_obj.locks.add(form.cleaned_data["lockstring"])
-						if form.cleaned_data.get("err_msg"):
-							rev_obj.db.err_traverse = form.cleaned_data["err_msg"]
+				ex = _create_exit(room, form.cleaned_data, request, aliases)
+				if rev_key:
+					reverse_data = {**form.cleaned_data, "destination": room}
+					_create_exit(form.cleaned_data["destination"], reverse_data, request, reverse_aliases, key=rev_key)
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				html = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")
 				return JsonResponse({"ok": True, "row_html": html})
@@ -204,11 +277,15 @@ def exit_edit(request: HttpRequest, pk: int):
 	if request.method == "POST":
 		form = ExitForm(request.POST)
 		if form.is_valid():
+			aliases = form.cleaned_alias_list()
+			source_room = _exit_source_room(ex)
+			conflict = _exit_name_conflict(source_room, form.cleaned_data["key"], aliases, exclude=ex)
+			if conflict:
+				return _duplicate_exit_response(conflict, source_room)
 			with transaction.atomic():
 				ex.key = form.cleaned_data["key"]
 				ex.destination = form.cleaned_data["destination"]
 				ex.aliases.clear()
-				aliases = form.cleaned_alias_list()
 				if aliases:
 					_add_aliases(ex, aliases)
 				ex.db.desc = form.cleaned_data.get("description") or ""
@@ -216,6 +293,7 @@ def exit_edit(request: HttpRequest, pk: int):
 				if form.cleaned_data.get("lockstring"):
 					ex.locks.add(form.cleaned_data["lockstring"])
 				ex.db.err_traverse = form.cleaned_data.get("err_msg") or ""
+				_refresh_exit_cmdset(ex)
 			ex.save()
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				row = render(request, "roomeditor/_exit_row.html", {"ex": ex}).content.decode("utf-8")

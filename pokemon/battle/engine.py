@@ -500,8 +500,12 @@ def _apply_move_damage(
 
     # Abilities on the user's side, including the user, can influence the
     # move's base power through ``onAllyBasePower`` hooks.
-    attacker_part = battle.participant_for(user)
-    if attacker_part:
+    attacker_part = (
+        battle.participant_for(user)
+        if battle is not None and hasattr(battle, "participant_for")
+        else None
+    )
+    if attacker_part and hasattr(battle, "participants"):
         my_team = getattr(attacker_part, "team", None)
         for part in battle.participants:
             if part.has_lost:

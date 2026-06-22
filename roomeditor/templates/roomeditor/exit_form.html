@@ -1,42 +1,34 @@
 {% extends "website/base.html" %}
+{% load static %}
 
 {% block titleblock %}Edit Exit{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/admin-roomeditor.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="row">
-  <div class="col-md-6">
-    <div class="card">
+  <div class="col-md-8">
+    <div class="card card-admin">
       <div class="card-body">
-        <h2 class="card-title">Edit Exit for Room #{{ room.id }}</h2>
-        <form method="post">
-          {% csrf_token %}
-          <p>{{ form.direction.label_tag }} {{ form.direction }}</p>
-          <p>{{ form.dest_id.label_tag }} {{ form.dest_id }}</p>
-          <p>
-            {{ form.desc.label_tag }} {{ form.desc }}<br>
-            <small class="form-text text-muted">{{ form.desc.help_text|safe }}</small>
-          </p>
-          <p>
-            {{ form.err_traverse.label_tag }} {{ form.err_traverse }}<br>
-            <small class="form-text text-muted">{{ form.err_traverse.help_text }}</small>
-          </p>
-          <p>
-            {{ form.locks.label_tag }} {{ form.locks }}
-            <button type="button" id="use-default-locks" class="btn btn-sm btn-secondary ml-1">Use Defaults</button>
-          </p>
-          <p>
-            {{ form.aliases.label_tag }} {{ form.aliases }}<br>
-            <small class="form-text text-muted">{{ form.aliases.help_text }}</small>
-          </p>
-          {{ form.exit_id }}
+        <h1 class="h3 card-title">
+          {% if exit %}Edit Exit: {{ exit.db_key }}{% else %}Create Exit{% endif %}
+        </h1>
+        <form method="post" class="needs-validation" novalidate>
+          <div class="form-grid">
+            {% csrf_token %}
+            {{ form.as_p }}
+          </div>
           <button type="submit" class="btn btn-primary">Save</button>
-          <a href="{% url 'roomeditor:room-edit' room.id %}" class="btn btn-secondary ml-2">Cancel</a>
+          {% if room %}
+            <a href="{% url 'roomeditor:room_edit' room.id %}" class="btn btn-secondary ml-2">Cancel</a>
+          {% elif exit %}
+            <a href="{% url 'roomeditor:room_edit' exit.db_location_id %}" class="btn btn-secondary ml-2">Cancel</a>
+          {% else %}
+            <a href="{% url 'roomeditor:room-list' %}" class="btn btn-secondary ml-2">Cancel</a>
+          {% endif %}
         </form>
-        <script>
-          document.getElementById("use-default-locks").addEventListener("click", function () {
-            document.getElementById("id_locks").value = "{{ default_locks|escapejs }}";
-          });
-        </script>
       </div>
     </div>
   </div>
