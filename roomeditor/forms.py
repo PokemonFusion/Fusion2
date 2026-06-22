@@ -77,9 +77,17 @@ if hasattr(ObjectDB, "_meta"):
                 self.fields["desc"].initial = getattr(self.instance.db, "desc", "")
 
         def save(self, commit: bool = True):
-            """Persist desc to Attribute storage."""
-            obj = super().save(commit=commit)
+            """Persist editable room fields through Evennia handlers."""
+            obj = self.instance
+            obj.key = self.cleaned_data.get("db_key", obj.key)
+            obj.location = self.cleaned_data.get("db_location") or None
+            obj.locks.clear()
+            lockstring = self.cleaned_data.get("db_lock_storage") or ""
+            if lockstring:
+                obj.locks.add(lockstring)
             obj.db.desc = self.cleaned_data.get("desc", "")
+            if commit:
+                obj.save()
             return obj
 else:
 

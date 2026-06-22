@@ -36,9 +36,15 @@ fake_evennia.DefaultExit = types.SimpleNamespace(path="evennia.default_exit")
 fake_models = types.ModuleType("evennia.objects.models")
 fake_models.ObjectDB = type("ObjectDB", (), {})
 fake_objects = types.ModuleType("evennia.objects")
+fake_utils = types.ModuleType("evennia.utils")
+fake_create = types.ModuleType("evennia.utils.create")
+fake_create.create_object = lambda **kwargs: None
+fake_utils.create = fake_create
 sys.modules.setdefault("evennia", fake_evennia)
 sys.modules.setdefault("evennia.objects", fake_objects)
 sys.modules.setdefault("evennia.objects.models", fake_models)
+sys.modules.setdefault("evennia.utils", fake_utils)
+sys.modules.setdefault("evennia.utils.create", fake_create)
 
 from roomeditor import views
 from roomeditor.auth import has_builder_access
@@ -81,6 +87,9 @@ class DummyLocks:
     def first(self):
         return self.locks[0] if self.locks else None
 
+    def all(self):
+        return list(self.locks)
+
 
 class DummyExit:
     """Stand-in for Evennia exits."""
@@ -94,6 +103,7 @@ class DummyExit:
         self.db_key = db_key
         self.typeclass_path = typeclass_path or db_typeclass_path
         self.db_location = db_location
+        self.location = db_location
         self.destination = db_destination
         self.db_destination = db_destination
         self.db_location_id = getattr(db_location, "id", db_location)
@@ -102,12 +112,22 @@ class DummyExit:
         self.aliases = DummyAliases()
         self.locks = DummyLocks()
         self.db = types.SimpleNamespace(desc="", err_traverse="")
+        self.home = kwargs.get("home")
+        self.cmdset_terms = set()
+        self.at_cmdset_get_calls = []
 
     def save(self):
         pass
 
     def delete(self):
         pass
+
+    def at_cmdset_get(self, **kwargs):
+        self.at_cmdset_get_calls.append(kwargs)
+        self.cmdset_terms = {self.key.lower(), *(alias.lower() for alias in self.aliases.all())}
+
+    def command_works(self, raw):
+        return raw.lower() in self.cmdset_terms
 
 
 class DummyRoom:
@@ -119,9 +139,12 @@ class DummyRoom:
         self.typeclass_path = "typeclasses.rooms.Room"
         self.db = types.SimpleNamespace(desc="")
         self.locks = DummyLocks()
+        self.location = None
+        self.home = None
+        self.deleted = False
 
     def delete(self):
-        pass
+        self.deleted = True
 
 
 class DummyUser:
@@ -212,6 +235,7 @@ def dummy_env(monkeypatch):
     room_store = {1: DummyRoom(1, "R1"), 2: DummyRoom(2, "R2")}
     exit_store = {}
     DummyExit._counter = 1
+    create_calls = []
 
     def create_exit(**kwargs):
         ex = DummyExit(**kwargs)
@@ -225,6 +249,8 @@ def dummy_env(monkeypatch):
         pk = max(room_store) + 1
         room = DummyRoom(pk, kwargs.get("db_key", "Room"))
         room.db_location = kwargs.get("db_location")
+        room.location = kwargs.get("db_location")
+        room.home = kwargs.get("home")
         room.db_lock_storage = kwargs.get("db_lock_storage", "")
         room.typeclass_path = kwargs.get("typeclass_path") or kwargs.get("db_typeclass_path") or room.typeclass_path
         def _del():
@@ -241,6 +267,53 @@ def dummy_env(monkeypatch):
                 return create_room(**kwargs)
 
         objects = Manager()
+
+    def fake_create_object(
+        *,
+        typeclass=None,
+        key=None,
+        location=None,
+        home=None,
+        aliases=None,
+        locks=None,
+        destination=None,
+        attributes=None,
+        **kwargs,
+    ):
+        create_calls.append(
+            {
+                "typeclass": typeclass,
+                "key": key,
+                "location": location,
+                "home": home,
+                "aliases": aliases,
+                "locks": locks,
+                "destination": destination,
+                "attributes": attributes,
+            }
+        )
+        if destination is not None:
+            obj = create_exit(
+                db_key=key,
+                db_location=location,
+                db_destination=destination,
+                db_typeclass_path=typeclass,
+                home=home,
+            )
+        else:
+            obj = create_room(
+                db_key=key,
+                db_location=location,
+                db_typeclass_path=typeclass,
+                home=home,
+            )
+        for alias in aliases or []:
+            obj.aliases.add(alias)
+        if locks:
+            obj.locks.add(locks)
+        for key, value, *_rest in attributes or []:
+            setattr(obj.db, key, value)
+        return obj
 
     room_manager = RoomQuery(room_store.values())
     exit_manager = ExitManager(exit_store)
@@ -283,7 +356,7 @@ def dummy_env(monkeypatch):
             self.instance.key = self.data.get("db_key", self.instance.key)
             self.instance.db.desc = self.data.get("db_desc", self.instance.db.desc)
 
-    captured = {"template": None, "context": None}
+    captured = {"template": None, "context": None, "create_calls": create_calls}
 
     def fake_render(request, template, context):
         captured["template"] = template
@@ -298,10 +371,10 @@ def dummy_env(monkeypatch):
     monkeypatch.setattr(views, "_exit_qs", lambda: exit_manager)
     monkeypatch.setattr(views, "get_object_or_404", fake_get_object_or_404)
     monkeypatch.setattr(views, "ObjectDB", DummyObjectDB)
+    monkeypatch.setattr(views, "create_object", fake_create_object)
     monkeypatch.setattr(views, "ExitForm", DummyExitForm)
     monkeypatch.setattr(views, "RoomForm", DummyRoomForm)
     monkeypatch.setattr(views, "render", fake_render)
-    monkeypatch.setattr(views, "reverse_dir", lambda key: f"{key}-rev")
 
     class DummyAtomic:
         def __enter__(self):
@@ -343,6 +416,122 @@ def test_exit_new_get_and_ajax_create(rf, dummy_env):
     assert data["row_html"] == "ROW:north"
     assert any(ex.key == "north" for ex in exit_store.values())
     assert any(ex.typeclass_path == "typeclasses.exits.Exit" for ex in exit_store.values())
+    call = captured["create_calls"][-1]
+    assert call["typeclass"] == "typeclasses.exits.Exit"
+    assert call["key"] == "north"
+    assert call["location"] is room_store[1]
+    assert call["home"] is room_store[1]
+    assert call["destination"] is room_store[2]
+
+
+def test_exit_new_auto_reverse_uses_safe_create(rf, dummy_env):
+    """exit_new gives generated reverse aliases, not forward aliases."""
+
+    room_store, exit_store, captured = dummy_env
+    request = attach_user(rf.post(
+        "/exit/new/1/",
+        {"key": "north", "destination": "2", "aliases": "n", "auto_reverse": "on"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
+    resp = views.exit_new(request, room_pk=1)
+    assert json.loads(resp.content)["ok"] is True
+    assert [call["key"] for call in captured["create_calls"]] == ["north", "south"]
+    forward_call = captured["create_calls"][0]
+    reverse_call = captured["create_calls"][-1]
+    assert forward_call["aliases"] == ["n"]
+    assert reverse_call["location"] is room_store[2]
+    assert reverse_call["home"] is room_store[2]
+    assert reverse_call["destination"] is room_store[1]
+    assert reverse_call["aliases"] == ["s"]
+    reverse_exit = next(ex for ex in exit_store.values() if ex.key == "south")
+    assert reverse_exit.aliases.all() == ["s"]
+    assert "n" not in reverse_exit.aliases.all()
+    assert len(exit_store) == 2
+
+
+def test_exit_new_reverse_alias_conflict_blocks_both_exits(rf, dummy_env):
+    """A generated reverse alias conflict aborts before creating either new exit."""
+
+    room_store, exit_store, captured = dummy_env
+    existing = views.create_object(
+        typeclass="typeclasses.exits.Exit",
+        key="east",
+        location=room_store[2],
+        home=room_store[2],
+        destination=room_store[1],
+        aliases=["s"],
+    )
+    create_count = len(captured["create_calls"])
+
+    request = attach_user(rf.post(
+        "/exit/new/1/",
+        {"key": "north", "destination": "2", "aliases": "n", "auto_reverse": "on"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
+    resp = views.exit_new(request, room_pk=1)
+    assert resp.status_code == 400
+    data = json.loads(resp.content)
+    assert data["ok"] is False
+    assert "already exists" in data["error"]
+    assert f"#{existing.id}" in data["error"]
+    assert len(captured["create_calls"]) == create_count
+    assert len(exit_store) == 1
+    assert all(ex.key != "north" for ex in exit_store.values())
+    assert all(ex.key != "south" for ex in exit_store.values())
+
+
+def test_exit_new_reverse_key_conflict_blocks_both_exits(rf, dummy_env):
+    """A reverse key conflict aborts before creating either new exit."""
+
+    room_store, exit_store, captured = dummy_env
+    existing = views.create_object(
+        typeclass="typeclasses.exits.Exit",
+        key="south",
+        location=room_store[2],
+        home=room_store[2],
+        destination=room_store[1],
+    )
+    create_count = len(captured["create_calls"])
+
+    request = attach_user(rf.post(
+        "/exit/new/1/",
+        {"key": "north", "destination": "2", "aliases": "n", "auto_reverse": "on"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
+    resp = views.exit_new(request, room_pk=1)
+    assert resp.status_code == 400
+    data = json.loads(resp.content)
+    assert data["ok"] is False
+    assert "already exists" in data["error"]
+    assert f"#{existing.id}" in data["error"]
+    assert len(captured["create_calls"]) == create_count
+    assert len(exit_store) == 1
+    assert all(ex.key != "north" for ex in exit_store.values())
+
+
+def test_exit_new_rejects_duplicate_key_or_alias(rf, dummy_env):
+    """exit_new rejects duplicate exit command terms in the source room."""
+
+    room_store, exit_store, _ = dummy_env
+    existing = views.create_object(
+        typeclass="typeclasses.exits.Exit",
+        key="north",
+        location=room_store[1],
+        home=room_store[1],
+        destination=room_store[2],
+        aliases=["n"],
+    )
+    request = attach_user(rf.post(
+        "/exit/new/1/",
+        {"key": "east", "destination": "2", "aliases": "n"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
+    resp = views.exit_new(request, room_pk=1)
+    assert resp.status_code == 400
+    data = json.loads(resp.content)
+    assert data["ok"] is False
+    assert "already exists" in data["error"]
+    assert f"#{existing.id}" in data["error"]
 
 
 def test_exit_edit_ajax_updates_exit(rf, dummy_env):
@@ -374,6 +563,71 @@ def test_exit_edit_ajax_updates_exit(rf, dummy_env):
     assert ex.db.err_traverse == "err"
     assert ex.aliases.all() == ["a", "b"]
     assert ex.locks.first().lockstring == "lock"
+    assert ex.at_cmdset_get_calls[-1] == {"force_init": True}
+
+
+def test_exit_edit_refreshes_cmdset_terms_without_reload(rf, dummy_env):
+    """exit_edit rebuilds ExitCmdSet so old commands stop and new commands work."""
+
+    room_store, exit_store, _ = dummy_env
+    ex = views.create_object(
+        typeclass="typeclasses.exits.Exit",
+        key="north",
+        location=room_store[1],
+        home=room_store[1],
+        destination=room_store[2],
+        aliases=["n"],
+    )
+    ex.at_cmdset_get(force_init=True)
+    assert ex.command_works("north") is True
+    assert ex.command_works("n") is True
+    assert ex.command_works("east") is False
+
+    request = attach_user(rf.post(
+        f"/exit/{ex.id}/edit/",
+        {
+            "key": "east",
+            "destination": "2",
+            "aliases": "e",
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
+    resp = views.exit_edit(request, pk=ex.id)
+    assert json.loads(resp.content)["ok"] is True
+    assert ex.command_works("north") is False
+    assert ex.command_works("n") is False
+    assert ex.command_works("east") is True
+    assert ex.command_works("e") is True
+    assert ex.at_cmdset_get_calls[-1] == {"force_init": True}
+
+
+def test_exit_edit_rejects_duplicate_key_or_alias(rf, dummy_env):
+    """exit_edit rejects command terms already used by another exit in the room."""
+
+    room_store, exit_store, _ = dummy_env
+    views.create_object(
+        typeclass="typeclasses.exits.Exit",
+        key="north",
+        location=room_store[1],
+        home=room_store[1],
+        destination=room_store[2],
+        aliases=["n"],
+    )
+    ex = views.create_object(
+        typeclass="typeclasses.exits.Exit",
+        key="east",
+        location=room_store[1],
+        home=room_store[1],
+        destination=room_store[2],
+    )
+    request = attach_user(rf.post(
+        f"/exit/{ex.id}/edit/",
+        {"key": "south", "destination": "2", "aliases": "n"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
+    resp = views.exit_edit(request, pk=ex.id)
+    assert resp.status_code == 400
+    assert "already exists" in json.loads(resp.content)["error"]
 
 
 def test_exit_edit_non_ajax_redirects_to_exit_location(rf, dummy_env, monkeypatch):
@@ -486,12 +740,20 @@ def test_room_new_ajax_create_and_invalid_form(rf, dummy_env, monkeypatch):
     """room_new creates rooms over AJAX and reports validation errors."""
 
     room_store, exit_store, captured = dummy_env
-    request = attach_user(rf.post("/rooms/new/", {"db_key": "Lab"}, HTTP_X_REQUESTED_WITH="XMLHttpRequest"))
+    request = attach_user(rf.post(
+        "/rooms/new/",
+        {"db_key": "Lab", "desc": "A clean test lab."},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    ))
     resp = views.room_new(request)
     data = json.loads(resp.content)
     assert data == {"ok": True, "row_html": "ROOM:Lab"}
     room = next(room for room in room_store.values() if room.key == "Lab")
     assert room.typeclass_path == "typeclasses.rooms.Room"
+    call = captured["create_calls"][-1]
+    assert call["typeclass"] == "typeclasses.rooms.Room"
+    assert call["key"] == "Lab"
+    assert call["attributes"] == [("desc", "A clean test lab.")]
 
     class InvalidRoomForm:
         class Errors:

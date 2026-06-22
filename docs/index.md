@@ -39,6 +39,8 @@ See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
 battle validation workflow.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current
 offline battle proof coverage inventory.
+See [move-inventory-audit-2026-06-22.md](move-inventory-audit-2026-06-22.md)
+for the latest full move inventory audit and generated CSV reference.
 See [design/npc_trainer_battles.md](design/npc_trainer_battles.md) for the
 NPC trainer battle system design reference.
 See [static-npc-trainer-battles.md](static-npc-trainer-battles.md) for the

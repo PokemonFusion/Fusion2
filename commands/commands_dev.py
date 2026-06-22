@@ -17,7 +17,7 @@ class CmdTestRoomWizard(default_cmds.MuxCommand):
         """Run the room wizard EvMenu."""
         evmenu.EvMenu(
             self.caller,
-            "fusion2.commands.wizards.room_wizard",
+            "commands.wizards.room_wizard",
             startnode="node_start",
             auto_quit=True,
             persistent=False,

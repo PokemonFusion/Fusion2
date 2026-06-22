@@ -1,9 +1,27 @@
 """Helper functions for pokedex data."""
 
+import re
+import unicodedata
 from typing import List, Tuple
 
 from ...data.regiondex import REGION_POKEDEX
 from ..catch_rates import CATCH_INFO
+
+
+def _normalize_catch_key(species: str) -> str:
+	"""Return a punctuation-insensitive key for catch-rate lookup."""
+
+	text = str(species).strip()
+	text = text.replace("\u2640", "f").replace("\u2642", "m").replace("\u2019", "")
+	text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+	return re.sub(r"[^A-Za-z0-9]+", "", text).lower()
+
+
+_CATCH_INFO_BY_NORMALIZED = {
+	_normalize_catch_key(name): info
+	for name, info in CATCH_INFO.items()
+	if _normalize_catch_key(name)
+}
 
 
 def get_region_entries(region: str) -> List[Tuple[int, str]]:
@@ -27,7 +45,15 @@ def get_catch_info(species: str):
 	species: str
 	    The Pok\xe9mon species name exactly as defined in ``pokedex``.
 	"""
-	return CATCH_INFO.get(species)
+	if not species:
+		return None
+
+	name = str(species).strip()
+	for candidate in (name, name.capitalize(), name.title()):
+		info = CATCH_INFO.get(candidate)
+		if info is not None:
+			return info
+	return _CATCH_INFO_BY_NORMALIZED.get(_normalize_catch_key(name))
 
 
 def get_catch_rate(species: str) -> int:
