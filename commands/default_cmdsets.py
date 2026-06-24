@@ -32,6 +32,7 @@ from commands.cmdsets.ui import UiCmdSet
 from commands.cmdsets.world_build import WorldBuildCmdSet
 from commands.debug.cmd_debugpy import CmdDebugPy
 from commands.player.cmd_account import CmdAlts, CmdCharCreate
+from commands.player.cmd_channel import CmdChannel
 from commands.player.cmd_examine import CmdExamine
 from commands.player.cmd_help import CmdHelp
 from commands.player.cmd_look import CmdLook
@@ -99,8 +100,10 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         super().at_cmdset_creation()
         self.remove("help")
         self.remove("@examine")
+        self.remove("@channel")
         self.add(CmdHelp())
         self.add(CmdExamine())
+        self.add(CmdChannel())
         #
         # any commands you add below will overload the default ones.
         #
