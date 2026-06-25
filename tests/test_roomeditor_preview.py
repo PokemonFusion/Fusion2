@@ -163,6 +163,36 @@ def attach_user(request, user=None):
     return request
 
 
+def spawn_post_data(*, action="preview", species="Pidgey", frequency="common", bands="1", enabled=True):
+    data = {
+        "action": action,
+        "allow_hunting": "on",
+        "encounter_rate": "75",
+        "npc_chance": "10",
+        "itemfinder_rate": "5",
+        "tp_cost": "2",
+        "weather": "rain",
+        "spawn_area_key": "route-alpha",
+        "preview_band": "",
+        "roll_band": "1",
+        "roll_count": "20",
+        "spawns-TOTAL_FORMS": "2",
+        "spawns-INITIAL_FORMS": "0",
+        "spawns-MIN_NUM_FORMS": "0",
+        "spawns-MAX_NUM_FORMS": "1000",
+        "spawns-0-species": species,
+        "spawns-0-frequency": frequency,
+        "spawns-0-bands": bands,
+        "spawns-1-species": "",
+        "spawns-1-frequency": "common",
+        "spawns-1-bands": "1",
+    }
+    if enabled:
+        data["spawns-0-enabled"] = "on"
+    data["spawns-1-enabled"] = "on"
+    return data
+
+
 class RoomQuery(list):
     def order_by(self, attr):
         return RoomQuery(sorted(self, key=lambda x: getattr(x, attr.replace("db_", ""))))
@@ -721,6 +751,79 @@ def test_room_edit_warning_and_ajax_save(rf, dummy_env):
     assert json.loads(resp.content)["ok"] is True
     assert room_store[1].key == "Hall"
     assert room_store[1].db.desc == "desc"
+
+
+def test_room_spawns_get_reads_legacy_hunt_chart(rf, dummy_env):
+    """room_spawns should load legacy hunt_chart rows for web editing."""
+
+    room_store, _exit_store, captured = dummy_env
+    room_store[1].db.allow_hunting = True
+    room_store[1].db.encounter_rate = 80
+    room_store[1].db.hunt_chart = [
+        {"name": "Rattata", "weight": 65, "min_level": 5, "max_level": 10},
+    ]
+
+    request = attach_user(rf.get("/room/1/spawns/"))
+    views.room_spawns(request, pk=1)
+
+    assert captured["template"] == "roomeditor/room_spawns.html"
+    context = captured["context"]
+    assert context["settings_form"].initial["allow_hunting"] is True
+    assert context["settings_form"].initial["encounter_rate"] == 80
+    assert context["spawn_source"] == "hunt_chart"
+    first_form = context["spawn_formset"].forms[0]
+    assert first_form.initial["species"] == "Rattata"
+    assert first_form.initial["frequency"] == "frequent"
+    assert "Source: hunt_chart" in context["preview_text"]
+
+
+def test_room_spawns_preview_does_not_save(rf, dummy_env):
+    """Preview validates posted rows without modifying the room."""
+
+    room_store, _exit_store, captured = dummy_env
+    room_store[1].db.hunt_chart = [{"name": "Rattata", "weight": 65}]
+
+    request = attach_user(rf.post("/room/1/spawns/", spawn_post_data(action="preview")))
+    views.room_spawns(request, pk=1)
+
+    assert captured["template"] == "roomeditor/room_spawns.html"
+    assert room_store[1].db.hunt_chart == [{"name": "Rattata", "weight": 65}]
+    assert getattr(room_store[1].db, "spawn_table", None) is None
+    context = captured["context"]
+    assert context["saved"] is False
+    assert "Source: spawn_table" in context["preview_text"]
+    assert "Pidgey" in context["preview_text"]
+
+
+def test_room_spawns_save_writes_spawn_table_and_clears_legacy_chart(rf, dummy_env):
+    """Saving room_spawns makes spawn_table the active web-managed source."""
+
+    room_store, _exit_store, captured = dummy_env
+    room_store[1].db.hunt_chart = [{"name": "Rattata", "weight": 65}]
+
+    request = attach_user(rf.post("/room/1/spawns/", spawn_post_data(action="save", bands="1, 2")))
+    views.room_spawns(request, pk=1)
+
+    room = room_store[1]
+    assert captured["template"] == "roomeditor/room_spawns.html"
+    assert captured["context"]["saved"] is True
+    assert room.db.allow_hunting is True
+    assert room.db.encounter_rate == 75
+    assert room.db.npc_chance == 10
+    assert room.db.itemfinder_rate == 5
+    assert room.db.tp_cost == 2
+    assert room.db.weather == "rain"
+    assert room.db.spawn_area_key == "route-alpha"
+    assert room.db.hunt_chart == []
+    assert room.db.spawn_table == [
+        {
+            "species": "Pidgey",
+            "frequency": "common",
+            "rarity": "common",
+            "tiers": ["T1", "T2"],
+            "enabled": True,
+        }
+    ]
 
 
 def test_room_list_marks_dangling_rooms(rf, dummy_env):

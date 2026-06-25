@@ -1,10 +1,18 @@
 # Tabs are intentional.
 from __future__ import annotations
 
+import re
+
 from django import forms
 from evennia.objects.models import ObjectDB
 
+from pokemon.spawns.adapters import SpawnAdapterError, normalize_band
+from pokemon.spawns.constants import FREQUENCIES, SpawnFrequency
 from utils.build_utils import normalize_aliases
+
+
+FREQUENCY_CHOICES = [(frequency, frequency.title()) for frequency in FREQUENCIES]
+BAND_CHOICES = [("", "All bands"), ("1", "Band 1"), ("2", "Band 2"), ("3", "Band 3"), ("4", "Band 4")]
 
 
 class ExitForm(forms.Form):
@@ -100,6 +108,75 @@ else:
             widget=forms.Textarea(attrs={"data-role": "ansi-preview-source"}),
             required=False,
         )
+
+
+class EncounterSettingsForm(forms.Form):
+    """Room-level encounter controls stored on ``room.db``."""
+
+    allow_hunting = forms.BooleanField(label="Allow hunting", required=False)
+    encounter_rate = forms.IntegerField(label="Encounter rate", min_value=0, max_value=100, initial=100)
+    npc_chance = forms.IntegerField(label="NPC battle chance", min_value=0, max_value=100, initial=0)
+    itemfinder_rate = forms.IntegerField(label="Itemfinder rate", min_value=0, max_value=100, initial=0)
+    noitem = forms.BooleanField(label="Disable itemfinder", required=False)
+    tp_cost = forms.IntegerField(label="Training point cost", min_value=0, initial=0)
+    weather = forms.CharField(label="Weather", max_length=32, required=False, initial="clear")
+    spawn_area_key = forms.CharField(label="Spawn area key", max_length=80, required=False)
+
+
+class SpawnEntryForm(forms.Form):
+    """One editable Pokemon spawn-table row."""
+
+    species = forms.CharField(label="Species", max_length=80, required=False)
+    frequency = forms.ChoiceField(label="Frequency", choices=FREQUENCY_CHOICES, initial=SpawnFrequency.COMMON.value)
+    bands = forms.CharField(label="Bands", max_length=40, required=False, initial="1")
+    enabled = forms.BooleanField(label="Enabled", required=False, initial=True)
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("DELETE"):
+            return cleaned
+
+        species = (cleaned.get("species") or "").strip()
+        bands_raw = cleaned.get("bands")
+        if not species:
+            cleaned["bands"] = []
+            return cleaned
+
+        bands = self._clean_bands(bands_raw)
+        frequency = cleaned.get("frequency") or SpawnFrequency.COMMON.value
+        if frequency == SpawnFrequency.SPECIAL.value and bands != ["T4"]:
+            raise forms.ValidationError("Special spawns are limited to band 4.")
+
+        cleaned["species"] = species
+        cleaned["bands"] = bands
+        return cleaned
+
+    def _clean_bands(self, value: str | None) -> list[str]:
+        parts = [part for part in re.split(r"[,\s]+", (value or "1").strip()) if part]
+        if not parts:
+            parts = ["1"]
+
+        bands = []
+        seen = set()
+        for part in parts:
+            try:
+                band = normalize_band(part)
+            except SpawnAdapterError as exc:
+                raise forms.ValidationError(str(exc)) from exc
+            tier = f"T{band}"
+            if tier in seen:
+                continue
+            bands.append(tier)
+            seen.add(tier)
+        return bands
+
+
+class SpawnPreviewForm(forms.Form):
+    """Preview controls for spawn setup output."""
+
+    preview_band = forms.ChoiceField(label="Preview band", choices=BAND_CHOICES, required=False)
+    roll_band = forms.ChoiceField(label="Roll band", choices=BAND_CHOICES[1:], initial="1")
+    roll_count = forms.IntegerField(label="Roll count", min_value=1, max_value=200, initial=100)
 TRAVERSE_CHOICES = [
 	("all()",            "Everyone"),
 	("perm(Builder)",    "Builders"),

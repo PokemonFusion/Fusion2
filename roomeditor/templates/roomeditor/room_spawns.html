@@ -1,0 +1,178 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block titleblock %}Encounters: {{ room.db_key }} (#{{ room.id }}){% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/admin-roomeditor.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-title mb-3">
+  <div class="d-flex justify-content-between align-items-start flex-wrap">
+    <div>
+      <h1 class="h3 mb-0">Encounters: {{ room.db_key }} <span class="text-muted">#{{ room.id }}</span></h1>
+      <small class="text-muted">Builder tools - Room Editor</small>
+    </div>
+    <div class="roomeditor-actions mt-2 mt-md-0">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'roomeditor:room_edit' room.id %}">Edit Room</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'roomeditor:room-list' %}">Rooms</a>
+    </div>
+  </div>
+  <hr class="mt-2 mb-3"/>
+</div>
+
+{% if saved %}
+  <div class="alert alert-success">Encounter settings saved.</div>
+{% endif %}
+
+<form method="post" action="">
+  {% csrf_token %}
+
+  {% if settings_form.non_field_errors or spawn_formset.non_form_errors or preview_form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ settings_form.non_field_errors }}
+      {{ spawn_formset.non_form_errors }}
+      {{ preview_form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <div class="card card-admin mb-3">
+    <div class="card-header">Room Settings</div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group col-md-3">
+          {{ settings_form.allow_hunting }} <label for="{{ settings_form.allow_hunting.id_for_label }}">Allow hunting</label>
+          {{ settings_form.allow_hunting.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ settings_form.encounter_rate.id_for_label }}">Encounter rate</label>
+          {{ settings_form.encounter_rate }}
+          {{ settings_form.encounter_rate.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ settings_form.npc_chance.id_for_label }}">NPC battle chance</label>
+          {{ settings_form.npc_chance }}
+          {{ settings_form.npc_chance.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ settings_form.tp_cost.id_for_label }}">TP cost</label>
+          {{ settings_form.tp_cost }}
+          {{ settings_form.tp_cost.errors }}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-3">
+          <label for="{{ settings_form.itemfinder_rate.id_for_label }}">Itemfinder rate</label>
+          {{ settings_form.itemfinder_rate }}
+          {{ settings_form.itemfinder_rate.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          {{ settings_form.noitem }} <label for="{{ settings_form.noitem.id_for_label }}">Disable itemfinder</label>
+          {{ settings_form.noitem.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ settings_form.weather.id_for_label }}">Weather</label>
+          {{ settings_form.weather }}
+          {{ settings_form.weather.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ settings_form.spawn_area_key.id_for_label }}">Spawn area key</label>
+          {{ settings_form.spawn_area_key }}
+          {{ settings_form.spawn_area_key.errors }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-admin mb-3">
+    <div class="card-header">Pokemon Spawns <span class="text-muted">current source: {{ spawn_source }}</span></div>
+    <div class="card-body">
+      {{ spawn_formset.management_form }}
+      <div class="table-responsive">
+        <table class="table table-sm table-striped roomeditor-spawn-table">
+          <thead>
+            <tr>
+              <th>Species</th>
+              <th>Frequency</th>
+              <th>Bands</th>
+              <th>Enabled</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in spawn_formset %}
+              <tr>
+                <td>
+                  {{ form.species }}
+                  {{ form.species.errors }}
+                  {{ form.non_field_errors }}
+                </td>
+                <td>
+                  {{ form.frequency }}
+                  {{ form.frequency.errors }}
+                </td>
+                <td>
+                  {{ form.bands }}
+                  {{ form.bands.errors }}
+                </td>
+                <td>{{ form.enabled }}</td>
+                <td>{% if form.DELETE %}{{ form.DELETE }}{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-admin mb-3">
+    <div class="card-header">Preview</div>
+    <div class="card-body">
+      <div class="form-row align-items-end">
+        <div class="form-group col-md-3">
+          <label for="{{ preview_form.preview_band.id_for_label }}">Preview band</label>
+          {{ preview_form.preview_band }}
+          {{ preview_form.preview_band.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ preview_form.roll_band.id_for_label }}">Roll band</label>
+          {{ preview_form.roll_band }}
+          {{ preview_form.roll_band.errors }}
+        </div>
+        <div class="form-group col-md-3">
+          <label for="{{ preview_form.roll_count.id_for_label }}">Roll count</label>
+          {{ preview_form.roll_count }}
+          {{ preview_form.roll_count.errors }}
+        </div>
+        <div class="form-group col-md-3 roomeditor-actions">
+          <button class="btn btn-outline-primary" type="submit" name="action" value="preview">Preview</button>
+          <button class="btn btn-primary" type="submit" name="action" value="save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% if preview_error %}
+  <div class="alert alert-danger">{{ preview_error }}</div>
+{% endif %}
+
+{% if preview_text %}
+  <div class="card card-admin mb-3">
+    <div class="card-header">Spawn Preview</div>
+    <div class="card-body">
+      <pre class="mb-0">{{ preview_text }}</pre>
+    </div>
+  </div>
+{% endif %}
+
+{% if roll_text %}
+  <div class="card card-admin mb-3">
+    <div class="card-header">Roll Test</div>
+    <div class="card-body">
+      <pre class="mb-0">{{ roll_text }}</pre>
+    </div>
+  </div>
+{% endif %}
+{% endblock content %}
