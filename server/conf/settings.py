@@ -91,6 +91,11 @@ PERMISSION_HIERARCHY = [
 # defined in ``pokemon.user``
 BASE_CHARACTER_TYPECLASS = "pokemon.user.User"
 
+# Use a PF2 command base that refreshes stale Django DB connections before and
+# after default command execution. This affects Evennia default commands such as
+# login/connect without modifying Evennia core.
+COMMAND_DEFAULT_CLASS = "commands.dbsafe.DBSafeMuxCommand"
+
 # This location may need to change depending on what starting location is
 # default to limbo, normally #2 but sometimes different. Best to put this in secret_settings
 # START_LOCATION = "#2"
@@ -111,3 +116,10 @@ EXIT_LOCK_BASE = "puppet:false();traverse:all();get:false();teleport:false();tel
 
 # Include the creating object's id() in the owner triple when composing locks.
 INCLUDE_CREATOR_IN_OWNER = True
+
+# Keep persistent DB connections short-lived. Do not use CONN_MAX_AGE = None here:
+# if Postgres, the OS, or a proxy closes idle connections, unlimited reuse makes
+# stale connections more likely.
+DATABASES["default"]["CONN_MAX_AGE"] = 60
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+
