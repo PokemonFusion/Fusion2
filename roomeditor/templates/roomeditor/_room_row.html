@@ -6,6 +6,7 @@
     <td>{{ room.typeclass_path|class_name }}</td>
     <td>
         <a class="btn btn-sm btn-outline-primary" href="{% url 'roomeditor:room_edit' room.id %}">Edit</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'roomeditor:room_spawns' room.id %}">Encounters</a>
         <button class="btn btn-sm btn-outline-danger" type="button" data-action="delete-room" data-room="{{ room.id }}">Delete</button>
         {% if room.id in dangling_ids %}
           <span class="badge badge-warning ml-1">No incoming exits</span>

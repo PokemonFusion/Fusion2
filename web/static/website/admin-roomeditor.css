@@ -53,6 +53,21 @@ white-space: nowrap;
 width: 100%;
 }
 .form-grid textarea { min-height: 9rem; }
+.roomeditor-spawn-table input[type="text"],
+.roomeditor-spawn-table select {
+width: 100%;
+min-width: 8rem;
+}
+.roomeditor-spawn-table th:nth-child(4),
+.roomeditor-spawn-table th:nth-child(5),
+.roomeditor-spawn-table td:nth-child(4),
+.roomeditor-spawn-table td:nth-child(5) {
+text-align: center;
+white-space: nowrap;
+}
+.card-admin pre {
+white-space: pre-wrap;
+}
 @media (max-width: 768px) {
 .form-grid > p { grid-template-columns: 1fr; }
 .form-grid > p > label { margin-bottom: .25rem; }

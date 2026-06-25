@@ -3,11 +3,26 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import transaction
+from django.forms import formset_factory
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from evennia.objects.models import ObjectDB
 from evennia.utils.create import create_object
+
+from pokemon.spawns.adapters import (
+	SpawnAdapterError,
+	coerce_spawn_data_entries,
+	normalize_frequency,
+	spawn_chart_from_room,
+	spawn_chart_from_spawn_table,
+)
+from pokemon.spawns.legacy_migration import (
+	recommend_bands_from_level_range,
+	recommend_frequency_from_weight,
+)
+from pokemon.spawns.preview import format_spawn_preview
+from pokemon.spawns.rolltest import format_spawn_roll_test, run_spawn_roll_test
 
 try:
 	from evennia.utils.text2html import parse_html
@@ -18,8 +33,11 @@ except Exception:
 from utils.build_utils import reverse_dir
 
 from ..auth import builder_required
-from ..forms import ExitForm, RoomForm
+from ..forms import EncounterSettingsForm, ExitForm, RoomForm, SpawnEntryForm, SpawnPreviewForm
 from ..utils.locks import compose_exit_default, compose_room_default
+
+
+SPAWN_FORMSET_PREFIX = "spawns"
 
 
 def _room_typeclass_path() -> str:
@@ -41,6 +59,209 @@ def _room_qs():
 def _exit_qs():
 	"""Queryset for exit objects."""
 	return ObjectDB.objects.filter(db_typeclass_path__icontains=".exits.")
+
+def _room_db(room, key: str, default=None):
+	"""Read an Evennia AttributeHandler value with a plain-object fallback."""
+	db = getattr(room, "db", None)
+	if db is None:
+		return default
+	try:
+		value = getattr(db, key)
+	except Exception:
+		return default
+	return default if value is None else value
+
+def _coerce_bool(value, default: bool = False) -> bool:
+	"""Coerce stored room attributes that may be strings or booleans."""
+	if value is None:
+		return default
+	if isinstance(value, bool):
+		return value
+	if isinstance(value, str):
+		return value.strip().lower() in {"1", "true", "yes", "on"}
+	return bool(value)
+
+def _coerce_int(value, default: int = 0) -> int:
+	"""Coerce numeric room attributes for form initials."""
+	try:
+		return int(value)
+	except (TypeError, ValueError):
+		return default
+
+def _encounter_settings_initial(room) -> dict:
+	"""Return room encounter settings as form initials."""
+	return {
+		"allow_hunting": _coerce_bool(_room_db(room, "allow_hunting", False)),
+		"encounter_rate": _coerce_int(_room_db(room, "encounter_rate", 100), 100),
+		"npc_chance": _coerce_int(_room_db(room, "npc_chance", 0), 0),
+		"itemfinder_rate": _coerce_int(_room_db(room, "itemfinder_rate", 0), 0),
+		"noitem": _coerce_bool(_room_db(room, "noitem", False)),
+		"tp_cost": _coerce_int(_room_db(room, "tp_cost", 0), 0),
+		"weather": str(_room_db(room, "weather", "clear") or "clear"),
+		"spawn_area_key": str(_room_db(room, "spawn_area_key", "") or ""),
+	}
+
+def _room_spawn_source(room) -> str:
+	"""Return the stored source currently feeding spawn adapters."""
+	if _room_db(room, "hunt_chart", None):
+		return "hunt_chart"
+	if _room_db(room, "spawn_table", None):
+		return "spawn_table"
+	return "empty"
+
+def _entry_frequency(entry: dict) -> str:
+	"""Return a PF2 frequency for a saved spawn entry."""
+	for key in ("frequency", "rarity"):
+		if entry.get(key):
+			try:
+				return normalize_frequency(entry.get(key))
+			except SpawnAdapterError:
+				break
+	recommended = recommend_frequency_from_weight(entry.get("weight"))
+	return recommended or "common"
+
+def _entry_bands(entry: dict) -> str:
+	"""Return display text for bands/tiers stored on a spawn entry."""
+	for key in ("tiers", "tier", "bands", "band"):
+		if key not in entry:
+			continue
+		value = entry.get(key)
+		if isinstance(value, str):
+			return value
+		try:
+			values = list(value)
+		except TypeError:
+			values = [value]
+		if values:
+			return ", ".join(str(part) for part in values)
+	recommended = recommend_bands_from_level_range(entry.get("min_level"), entry.get("max_level"))
+	if recommended:
+		return ", ".join(f"T{band}" for band in recommended)
+	return "1"
+
+def _entry_enabled(entry: dict) -> bool:
+	"""Return the enabled state for a stored spawn entry."""
+	if "enabled" in entry:
+		return _coerce_bool(entry.get("enabled"), True)
+	if "disabled" in entry:
+		return not _coerce_bool(entry.get("disabled"), False)
+	return True
+
+def _spawn_form_initial(room) -> list[dict]:
+	"""Build spawn-row initials from spawn_table or legacy hunt_chart data."""
+	data = _room_db(room, "spawn_table", None) or _room_db(room, "hunt_chart", None) or []
+	try:
+		entries = coerce_spawn_data_entries(data)
+	except SpawnAdapterError:
+		return []
+	rows = []
+	for entry in entries:
+		species = entry.get("species") or entry.get("name")
+		if not species:
+			continue
+		rows.append(
+			{
+				"species": species,
+				"frequency": _entry_frequency(entry),
+				"bands": _entry_bands(entry),
+				"enabled": _entry_enabled(entry),
+			}
+		)
+	return rows
+
+def _spawn_entry_formset(*args, **kwargs):
+	"""Return the formset used by the room spawn editor."""
+	formset_class = formset_factory(SpawnEntryForm, extra=5, can_delete=True)
+	kwargs.setdefault("prefix", SPAWN_FORMSET_PREFIX)
+	return formset_class(*args, **kwargs)
+
+def _spawn_entries_from_formset(formset) -> list[dict]:
+	"""Convert validated spawn-entry forms into persisted spawn_table rows."""
+	entries = []
+	for form in formset:
+		cleaned = getattr(form, "cleaned_data", None) or {}
+		if cleaned.get("DELETE") or not cleaned.get("species"):
+			continue
+		frequency = cleaned.get("frequency") or "common"
+		entries.append(
+			{
+				"species": cleaned["species"],
+				"frequency": frequency,
+				"rarity": frequency,
+				"tiers": cleaned.get("bands") or ["T1"],
+				"enabled": bool(cleaned.get("enabled")),
+			}
+		)
+	return entries
+
+def _area_key_for_preview(room, settings_data: dict | None = None) -> str:
+	"""Choose the area key used by preview and roll-test helpers."""
+	if settings_data and settings_data.get("spawn_area_key"):
+		return str(settings_data["spawn_area_key"]).strip()
+	for value in (_room_db(room, "spawn_area_key", None), getattr(room, "key", None), getattr(room, "id", None)):
+		if value is not None and str(value).strip():
+			return str(value).strip()
+	return "room"
+
+def _format_spawn_outputs(
+	chart,
+	*,
+	source: str,
+	preview_band: int | None = None,
+	roll_band: int = 1,
+	roll_count: int = 100,
+) -> tuple[str, str]:
+	"""Render preview and roll-test text for a spawn chart."""
+	preview_text = format_spawn_preview(chart, source=source, band=preview_band)
+	roll_result = run_spawn_roll_test(
+		chart,
+		band=roll_band,
+		count=roll_count,
+		requested_count=roll_count,
+	)
+	roll_text = format_spawn_roll_test(roll_result, source=source)
+	return preview_text, roll_text
+
+def _preview_band_value(value) -> int | None:
+	"""Return optional preview-band integer from form data."""
+	return int(value) if value else None
+
+def _spawn_outputs_for_room(room) -> tuple[str, str, str]:
+	"""Return preview output for currently saved room spawn data."""
+	try:
+		chart = spawn_chart_from_room(room)
+		preview_text, roll_text = _format_spawn_outputs(chart, source=_room_spawn_source(room))
+	except (SpawnAdapterError, ValueError) as err:
+		return "", "", str(err)
+	return preview_text, roll_text, ""
+
+def _spawn_outputs_for_entries(room, entries: list[dict], settings_data: dict, preview_data: dict) -> tuple[str, str, str]:
+	"""Return preview output for form-provided spawn rows."""
+	try:
+		chart = spawn_chart_from_spawn_table(entries, _area_key_for_preview(room, settings_data))
+		preview_text, roll_text = _format_spawn_outputs(
+			chart,
+			source="spawn_table",
+			preview_band=_preview_band_value(preview_data.get("preview_band")),
+			roll_band=int(preview_data.get("roll_band") or 1),
+			roll_count=int(preview_data.get("roll_count") or 100),
+		)
+	except (SpawnAdapterError, ValueError) as err:
+		return "", "", str(err)
+	return preview_text, roll_text, ""
+
+def _save_room_encounters(room, settings_data: dict, spawn_entries: list[dict]) -> None:
+	"""Persist encounter settings and canonical spawn_table rows."""
+	room.db.allow_hunting = bool(settings_data.get("allow_hunting"))
+	room.db.encounter_rate = int(settings_data.get("encounter_rate") or 0)
+	room.db.npc_chance = int(settings_data.get("npc_chance") or 0)
+	room.db.itemfinder_rate = int(settings_data.get("itemfinder_rate") or 0)
+	room.db.noitem = bool(settings_data.get("noitem"))
+	room.db.tp_cost = int(settings_data.get("tp_cost") or 0)
+	room.db.weather = (settings_data.get("weather") or "clear").strip().lower()
+	room.db.spawn_area_key = (settings_data.get("spawn_area_key") or "").strip()
+	room.db.spawn_table = spawn_entries
+	room.db.hunt_chart = []
 
 def _add_aliases(obj, aliases):
 	"""Add aliases through Evennia's one-alias-at-a-time handler API."""
@@ -216,6 +437,52 @@ def room_edit(request: HttpRequest, pk: int):
 			"room": room,
 			"has_incoming": incoming,
 			"exits": _exit_qs().filter(db_location_id=room.id).order_by("db_key"),
+		},
+	)
+
+@builder_required
+def room_spawns(request: HttpRequest, pk: int):
+	"""Edit encounter settings and Pokemon spawn rows for a room."""
+	room = get_object_or_404(_room_qs(), pk=pk)
+	saved = False
+	preview_text = ""
+	roll_text = ""
+	preview_error = ""
+
+	if request.method == "POST":
+		settings_form = EncounterSettingsForm(request.POST)
+		spawn_formset = _spawn_entry_formset(request.POST)
+		preview_form = SpawnPreviewForm(request.POST)
+		if settings_form.is_valid() and spawn_formset.is_valid() and preview_form.is_valid():
+			spawn_entries = _spawn_entries_from_formset(spawn_formset)
+			if request.POST.get("action") == "save":
+				_save_room_encounters(room, settings_form.cleaned_data, spawn_entries)
+				saved = True
+			preview_text, roll_text, preview_error = _spawn_outputs_for_entries(
+				room,
+				spawn_entries,
+				settings_form.cleaned_data,
+				preview_form.cleaned_data,
+			)
+	else:
+		settings_form = EncounterSettingsForm(initial=_encounter_settings_initial(room))
+		spawn_formset = _spawn_entry_formset(initial=_spawn_form_initial(room))
+		preview_form = SpawnPreviewForm(initial={"preview_band": "", "roll_band": "1", "roll_count": 100})
+		preview_text, roll_text, preview_error = _spawn_outputs_for_room(room)
+
+	return render(
+		request,
+		"roomeditor/room_spawns.html",
+		{
+			"room": room,
+			"settings_form": settings_form,
+			"spawn_formset": spawn_formset,
+			"preview_form": preview_form,
+			"preview_text": preview_text,
+			"roll_text": roll_text,
+			"preview_error": preview_error,
+			"saved": saved,
+			"spawn_source": _room_spawn_source(room),
 		},
 	)
 

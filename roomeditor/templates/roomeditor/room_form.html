@@ -10,8 +10,16 @@
 {% block content %}
 <form class="d-none" aria-hidden="true">{% csrf_token %}</form>
 <div class="page-title mb-3">
-  <h1 class="h3 mb-0">Edit Room: {{ room.db_key }} <span class="text-muted">#{{ room.id }}</span></h1>
-  <small class="text-muted">Builder tools - Room Editor</small>
+  <div class="d-flex justify-content-between align-items-start flex-wrap">
+    <div>
+      <h1 class="h3 mb-0">Edit Room: {{ room.db_key }} <span class="text-muted">#{{ room.id }}</span></h1>
+      <small class="text-muted">Builder tools - Room Editor</small>
+    </div>
+    <div class="roomeditor-actions mt-2 mt-md-0">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'roomeditor:room_spawns' room.id %}">Encounters</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'roomeditor:room-list' %}">Rooms</a>
+    </div>
+  </div>
   <hr class="mt-2 mb-3"/>
 </div>
 {% if not has_incoming %}
