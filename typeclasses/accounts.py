@@ -24,10 +24,10 @@ several more options for customizing the Guest account system.
 
 from django.conf import settings
 from django.utils.translation import gettext as _
-
 from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 from evennia.utils.utils import is_iter
 
+from utils.channel_identity import format_channel_message
 from utils.character_mail import character_identity, unread_mail_counts_for_characters
 from utils.site_status import get_login_block_message, is_login_blocked
 
@@ -183,6 +183,11 @@ class Account(DefaultAccount):
         if not parts:
             return ""
         return "\n|yUnread mail:|n " + ", ".join(parts) + ". Use |wgoic|n, then |w+mail|n."
+
+    def at_pre_channel_msg(self, message, channel, senders=None, **kwargs):
+        """Display IC channel sends by character and OOC sends by marked account."""
+
+        return format_channel_message(message, channel, senders=senders, receiver=self, **kwargs)
 
 
 class Guest(DefaultGuest):
