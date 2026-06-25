@@ -24,6 +24,7 @@ several more options for customizing the Guest account system.
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from django.db import close_old_connections
 from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 from evennia.utils.utils import is_iter
 
@@ -61,6 +62,7 @@ class Account(DefaultAccount):
     def authenticate(cls, username, password, ip="", **kwargs):
         """Authenticate accounts while respecting the public play status."""
 
+        close_old_connections()
         account, errors = super().authenticate(username, password, ip=ip, **kwargs)
         if account and is_login_blocked(account):
             return None, [_("|r%s|n") % get_login_block_message()]
