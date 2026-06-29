@@ -169,6 +169,22 @@ def test_alphapokemon_lists_starter_choices():
     assert caller.msgs == ["Alpha Pokemon choices:\nBulbasaur, Charmander"]
 
 
+def test_alphapokemon_parses_list_slash_args():
+    mod = load_alpha_command()
+    caller = DummyCaller()
+
+    cmd = mod.CmdAlphaPokemon()
+    cmd.caller = caller
+    cmd.args = "/list"
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+
+    assert cmd.args == ""
+    assert cmd.switches == ["list"]
+    assert caller.msgs == ["Alpha Pokemon choices:\nBulbasaur, Charmander"]
+
+
 def test_alphapokemon_validates_against_starter_list():
     mod = load_alpha_command()
     caller = DummyCaller()
@@ -305,6 +321,26 @@ def test_alphalearn_lists_machine_and_tutor_moves(monkeypatch):
     cmd.switches = ["list"]
     cmd.func()
 
+    assert caller.msgs == ["Alpha terminal moves for Pika:\nIron Tail, Swift, Thunderbolt"]
+    assert taught == []
+
+
+def test_alphalearn_parses_list_slash_args(monkeypatch):
+    mod = load_alpha_command()
+    taught = []
+    patch_move_learning_modules(monkeypatch, taught)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "/list 1"
+    cmd.switches = []
+    cmd.parse()
+    cmd.func()
+
+    assert cmd.args == "1"
+    assert cmd.switches == ["list"]
     assert caller.msgs == ["Alpha terminal moves for Pika:\nIron Tail, Swift, Thunderbolt"]
     assert taught == []
 

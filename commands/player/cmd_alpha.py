@@ -26,6 +26,24 @@ ALPHA_MOVE_TERMINAL_FLAGS = (
 ALPHA_MOVE_CATEGORIES = ("machine", "tutor")
 
 
+def _parse_slash_switches(command) -> set[str]:
+    """Extract slash switches left in args by Evennia's command matcher."""
+
+    switches = []
+    for switch in getattr(command, "switches", []) or []:
+        switches.extend(part for part in str(switch).lower().split("/") if part)
+
+    raw_args = (command.args or "").strip()
+    if raw_args.startswith("/") and len(raw_args) > 1:
+        switch_text, _, raw_args = raw_args[1:].partition(" ")
+        switches.extend(part for part in switch_text.lower().split("/") if part)
+        raw_args = raw_args.strip()
+
+    command.switches = switches
+    command.args = raw_args
+    return set(switches)
+
+
 def _db_bool(obj, attr: str, default: bool = False) -> bool:
     db = getattr(obj, "db", None)
     if db is None:
@@ -166,6 +184,9 @@ class CmdAlphaPokemon(Command):
     locks = "cmd:all()"
     help_category = "Pokemon"
 
+    def parse(self):
+        _parse_slash_switches(self)
+
     def func(self):
         if not require_no_battle_lock(self.caller):
             return
@@ -282,6 +303,9 @@ class CmdAlphaLearnMove(Command):
     aliases = ["+alpha/learn", "+alpha/teach", "+testlearn"]
     locks = "cmd:all()"
     help_category = "Pokemon"
+
+    def parse(self):
+        _parse_slash_switches(self)
 
     def func(self):
         if not require_no_battle_lock(self.caller):
