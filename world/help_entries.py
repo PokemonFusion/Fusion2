@@ -120,6 +120,8 @@ party                 Alias for +sheet.
 +uimode simple        Lower-detail room layout.
 +uimode boxed         Boxed fallback room layout.
 +uimode screenreader  Screen-reader friendly room layout.
++uimode ascii         Simple room layout and ASCII battle symbols.
++uimode unicode       Fancy room layout and Unicode battle symbols.
 +uitheme              Show your current room color theme.
 +uitheme <color>      Choose green, blue, red, magenta, cyan, or white.
 +battleui/style       Show or change your battle UI style.
