@@ -41,6 +41,7 @@ def install_fakes():
     original = {name: sys.modules.get(name) for name in (
         "django",
         "django.conf",
+        "django.db",
         "django.utils",
         "django.utils.translation",
         "evennia",
@@ -53,6 +54,8 @@ def install_fakes():
     django = types.ModuleType("django")
     django_conf = types.ModuleType("django.conf")
     django_conf.settings = types.SimpleNamespace(MAX_NR_CHARACTERS=10)
+    django_db = types.ModuleType("django.db")
+    django_db.close_old_connections = lambda: None
     django_utils = types.ModuleType("django.utils")
     django_translation = types.ModuleType("django.utils.translation")
     django_translation.gettext = lambda text: text
@@ -70,6 +73,7 @@ def install_fakes():
         {
             "django": django,
             "django.conf": django_conf,
+            "django.db": django_db,
             "django.utils": django_utils,
             "django.utils.translation": django_translation,
             "evennia": evennia,
@@ -161,3 +165,40 @@ def test_account_look_shows_unread_mail_by_character():
     assert "Ash [] |y[2 unread mail]|n" in output
     assert "Misty []" in output
     assert "|yUnread mail:|n Ash (2). Use |wgoic|n, then |w+mail|n." in output
+
+
+def test_account_look_warns_once_when_telnet_utf8_is_unknown():
+    original = install_fakes()
+    try:
+        mod = load_accounts_module()
+
+        session = types.SimpleNamespace(
+            sessid=1,
+            protocol_key="telnet",
+            address="127.0.0.1",
+            protocol_flags={"ENCODING": "utf-8", "CLIENTNAME": "UNKNOWN"},
+            ndb=types.SimpleNamespace(),
+        )
+        character = types.SimpleNamespace(
+            id=10,
+            name="Ash",
+            permissions=FakeHandler([]),
+            sessions=FakeHandler([]),
+        )
+        account = mod.Account()
+        account.name = "Tester"
+        account.is_superuser = False
+        account.sessions = FakeHandler([session])
+        account.ndb = types.SimpleNamespace()
+        mod.unread_mail_counts_for_characters = lambda chars: {}
+        mod.character_identity = lambda char: char.id
+
+        first = account.at_look(target=[character], session=session)
+        second = account.at_look(target=[character], session=session)
+    finally:
+        restore_modules(original)
+
+    assert "did not report UTF-8 support" in first
+    assert "+symboltest ui" in first
+    assert "+uimode ascii" in first
+    assert "did not report UTF-8 support" not in second

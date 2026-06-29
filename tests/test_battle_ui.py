@@ -265,3 +265,17 @@ def test_beip_viewer_uses_ascii_symbol_fallback() -> None:
 	assert "|CM|n" in out
 	assert "\u2640" not in out
 	assert "\u2642" not in out
+
+
+def test_viewer_ascii_symbol_preference_uses_ascii_symbols() -> None:
+	state = DummyState()
+	state.A.active_pokemon.gender = "F"
+	state.B.active_pokemon.gender = "M"
+	state.A.db = types.SimpleNamespace(battle_ascii_symbols=True)
+
+	out = render_battle_ui(state, state.A, total_width=78)
+
+	assert "|MF|n" in out
+	assert "|CM|n" in out
+	assert "\u2640" not in out
+	assert "\u2642" not in out

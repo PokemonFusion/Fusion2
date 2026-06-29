@@ -30,6 +30,7 @@ from evennia.utils.utils import is_iter
 
 from utils.channel_identity import format_channel_message
 from utils.character_mail import character_identity, unread_mail_counts_for_characters
+from utils.client_encoding import build_one_time_utf8_warning
 from utils.site_status import get_login_block_message, is_login_blocked
 
 
@@ -150,12 +151,14 @@ class Account(DefaultAccount):
 
         footer = self._mail_footer(characters, mail_counts)
 
-        return self.ooc_appearance_template.format(
+        text = self.ooc_appearance_template.format(
             header=txt_header,
             sessions=txt_sessions,
             characters=txt_characters,
             footer=footer,
         )
+        utf8_warning = build_one_time_utf8_warning(session)
+        return f"{text}\n\n{utf8_warning}" if utf8_warning else text
 
     def _unread_mail_counts(self, characters):
         """Return unread mail counts for the OOC character selector."""
