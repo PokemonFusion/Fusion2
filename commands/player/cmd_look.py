@@ -18,9 +18,11 @@ class CmdLook(Command):
     Examples:
         look
         look Nurse Joy
+        look me
 
     Notes:
-        The aliases l and ls also work.
+        The aliases l and ls also work. Use ``look me`` or ``l me`` to
+        look at yourself.
     """
 
     key = "look"
@@ -56,6 +58,8 @@ class CmdLook(Command):
         """
 
         caller = self.caller
+        if raw_search.strip().lower() == "me":
+            return caller
 
         matches = caller.search(raw_search, quiet=True)
 

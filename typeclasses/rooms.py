@@ -6,7 +6,6 @@ Rooms are simple containers that has no location of their own.
 """
 
 import random
-import re
 import shutil
 
 from evennia.objects.objects import DefaultRoom
@@ -21,6 +20,7 @@ except Exception:  # pragma: no cover - fallback if Evennia not available
 
 from pokemon.battle.battleinstance import BattleSession
 from utils.ansi import ansi
+from utils.exit_display import format_exit_name
 
 try:
 	from evennia.utils.logger import log_err, log_info
@@ -227,15 +227,7 @@ class FusionRoom(Room):
 
 	def _color_exit_name(self, name: str) -> str:
 		"""Return exit name with hotkey parentheses highlighted."""
-		if not name:
-			return ""
-
-		def repl(match: re.Match) -> str:
-			inner = match.group(1)
-			return f"|c(|w{inner}|c)"
-
-		colored = re.sub(r"\(([^)]*)\)", repl, name)
-		return f"|c{colored}|n"
+		return format_exit_name(name)
 
 	def _section_divider(self, looker, label: str, width: int) -> str:
 		"""Classic MU* divider with a left-aligned section label."""
