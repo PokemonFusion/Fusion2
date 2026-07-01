@@ -148,6 +148,34 @@ or return out-of-character.
 		""",
 	},
 	{
+		"key": "message boards",
+		"aliases": ["boards", "bboard", "+bboard", "+bbread", "+bbpost"],
+		"category": "Guide",
+		"text": """
+Message boards are persistent public or staff-gated posts.
+
+# Commands
+
++bbhelp                       Show board command help.
++bbread                       Show the board list.
++bbread <board>               List posts in a board.
++bbread <board>/<post>        Read a post.
++bbread <board> #unread       List unread posts in a board.
++bbpost <board>               Create a post.
++bbremove <board>/<post>      Remove one of your posts.
++bbcatchup all                Mark all visible boards read.
++bbcatchup <board>            Mark one board read.
++bbnext                       Read the next unread board post.
++bbnext <board>               Read the next unread post in one board.
+
+Boards can be referenced by the number shown in +bbread or by board name.
+
+# Staff
+
++bbseed                       Create the default PF1-style board sections.
+		""",
+	},
+	{
 		"key": "support requests",
 		"aliases": ["requests", "+request", "tickets", "help request"],
 		"category": "Guide",
