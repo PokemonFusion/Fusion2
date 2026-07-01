@@ -1,4 +1,5 @@
 import types
+from collections.abc import MutableMapping
 
 import pytest
 
@@ -13,11 +14,46 @@ from utils.character_profiles import (
 )
 
 
+class SaverLikeMapping(MutableMapping):
+    def __init__(self, values=None):
+        self._values = dict(values or {})
+
+    def __getitem__(self, key):
+        return self._values[key]
+
+    def __setitem__(self, key, value):
+        self._values[key] = value
+
+    def __delitem__(self, key):
+        del self._values[key]
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def __len__(self):
+        return len(self._values)
+
+
+class SaverLikeDb:
+    def __init__(self):
+        object.__setattr__(self, "_attributes", {})
+
+    def __getattribute__(self, name):
+        if name == "_attributes":
+            return object.__getattribute__(self, name)
+        return self._attributes.get(name)
+
+    def __setattr__(self, name, value):
+        if isinstance(value, dict):
+            value = SaverLikeMapping(value)
+        self._attributes[name] = value
+
+
 class DummyChar:
-    def __init__(self, key="Ash", ident=1, perms=None):
+    def __init__(self, key="Ash", ident=1, perms=None, db=None):
         self.key = key
         self.id = ident
-        self.db = types.SimpleNamespace()
+        self.db = db or types.SimpleNamespace()
         self.perms = set(perms or [])
 
     def check_permstring(self, perm):
@@ -43,6 +79,22 @@ def test_set_update_and_delete_profile_field():
 
     assert delete_profile_field(char, "Appearance") is True
     assert get_profile_fields(char) == {}
+
+
+def test_profile_fields_round_trip_through_mapping_attribute_proxy():
+    char = DummyChar(db=SaverLikeDb())
+
+    saved = set_profile_field(char, "Appearance", "Red jacket.")
+    fields = get_profile_fields(char)
+
+    assert saved == {"label": "Appearance", "text": "Red jacket.", "private": False}
+    assert fields == {
+        "appearance": {"label": "Appearance", "text": "Red jacket.", "private": False}
+    }
+
+    set_profile_field(char, "Title", "Trainer.")
+
+    assert list(get_profile_fields(char)) == ["appearance", "title"]
 
 
 def test_profile_rejects_empty_field_names_and_text():
