@@ -10,16 +10,53 @@ sys.path.insert(0, ROOT)
 def load_cmd_module(search_results=None):
     originals = {name: sys.modules.get(name) for name in (
         "evennia",
+        "evennia.commands",
+        "evennia.commands.default",
+        "evennia.commands.default.muxcommand",
         "evennia.objects",
         "evennia.objects.objects",
         "evennia.utils",
         "evennia.utils.evtable",
     )}
 
+    fake_command_base = type("Command", (), {})
+
     fake_evennia = types.ModuleType("evennia")
-    fake_evennia.Command = type("Command", (), {})
+    fake_evennia.Command = fake_command_base
     fake_evennia.search_object = lambda *args, **kwargs: list(search_results or [])
     sys.modules["evennia"] = fake_evennia
+
+    class FakeMuxCommand(fake_command_base):
+        def parse(self):
+            raw = getattr(self, "args", "")
+            args = raw.strip()
+            switches = []
+            if args.startswith("/") and len(args) > 1:
+                switch_text, _, args = args[1:].partition(" ")
+                switches = [part for part in switch_text.split("/") if part]
+                args = args.strip()
+
+            lhs, rhs = args, None
+            if "=" in lhs:
+                lhs, rhs = lhs.split("=", 1)
+            self.raw = raw
+            self.switches = switches
+            self.args = args.strip()
+            self.arglist = [arg.strip() for arg in args.split()]
+            self.lhs = lhs.strip()
+            self.lhslist = [arg.strip() for arg in self.lhs.split(",")]
+            self.rhs = rhs.strip() if rhs is not None else None
+            self.rhslist = [arg.strip() for arg in self.rhs.split(",")] if self.rhs else []
+
+    fake_mux_mod = types.ModuleType("evennia.commands.default.muxcommand")
+    fake_mux_mod.MuxCommand = FakeMuxCommand
+    fake_default_commands_pkg = types.ModuleType("evennia.commands.default")
+    fake_default_commands_pkg.muxcommand = fake_mux_mod
+    fake_commands_pkg = types.ModuleType("evennia.commands")
+    fake_commands_pkg.default = fake_default_commands_pkg
+    sys.modules["evennia.commands"] = fake_commands_pkg
+    sys.modules["evennia.commands.default"] = fake_default_commands_pkg
+    sys.modules["evennia.commands.default.muxcommand"] = fake_mux_mod
 
     fake_obj_mod = types.ModuleType("evennia.objects.objects")
     fake_obj_mod.DefaultCharacter = type("DefaultCharacter", (), {})
@@ -142,6 +179,28 @@ def test_profile_set_and_view_own_fields():
 
     assert saved == "Profile field 'Appearance' saved."
     assert "Profile for Ash" in output
+    assert "Appearance" in output
+    assert "Red jacket." in output
+
+
+def test_profile_set_parses_switch_and_assignment():
+    caller = DummyChar("Ash")
+    mod, restore = load_cmd_module()
+    try:
+        cmd = mod.CmdProfile()
+        cmd.caller = caller
+        cmd.account = caller
+        cmd.session = None
+        cmd.obj = caller
+        cmd.args = "/set Appearance=Red jacket."
+        cmd.parse()
+        cmd.func()
+        saved = caller.messages[-1]
+        output = call_profile(mod, caller)
+    finally:
+        restore()
+
+    assert saved == "Profile field 'Appearance' saved."
     assert "Appearance" in output
     assert "Red jacket." in output
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections import OrderedDict
+from collections.abc import Mapping
 
 PROFILE_ATTR = "profile_fields"
 MAX_FIELD_LABEL_LENGTH = 32
@@ -61,7 +62,7 @@ def clean_field_text(text: str) -> str:
 def _raw_fields(character):
     db = getattr(character, "db", None)
     raw = getattr(db, PROFILE_ATTR, None) if db is not None else None
-    return raw if isinstance(raw, dict) else {}
+    return raw if isinstance(raw, Mapping) else {}
 
 
 def get_profile_fields(character) -> OrderedDict[str, dict]:

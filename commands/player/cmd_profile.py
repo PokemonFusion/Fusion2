@@ -1,4 +1,5 @@
-from evennia import Command, search_object
+from evennia import search_object
+from evennia.commands.default.muxcommand import MuxCommand
 from evennia.objects.objects import DefaultCharacter
 from evennia.utils.evtable import EvTable
 
@@ -42,7 +43,7 @@ def _search_character(query):
     return [match for match in matches if _is_character(match)]
 
 
-class CmdProfile(Command):
+class CmdProfile(MuxCommand):
     """View and edit RP profile fields.
 
     Usage:
