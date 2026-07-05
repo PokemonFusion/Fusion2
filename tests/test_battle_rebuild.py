@@ -629,6 +629,17 @@ def test_multiple_hunts_saved_in_room():
 	assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
 
 
+def test_battle_sessions_do_not_reuse_player_id_as_battle_id():
+	room = DummyRoom()
+	player = DummyPlayer(99, room)
+
+	inst1 = BattleSession(player)
+	inst2 = BattleSession(player)
+
+	assert inst1.battle_id != inst2.battle_id
+	assert set(room.db.battles) == {inst1.battle_id, inst2.battle_id}
+
+
 def test_battle_segments_removed_on_end():
 	room = DummyRoom()
 	p1 = DummyPlayer(1, room)

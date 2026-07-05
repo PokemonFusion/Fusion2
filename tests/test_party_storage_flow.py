@@ -221,6 +221,29 @@ def test_deposit_requires_party_ownership(monkeypatch):
 	assert moved == [(party_mon, box)]
 
 
+def test_deposit_runs_storage_move_inside_transaction(monkeypatch):
+	mod = load_user_module(monkeypatch)
+	trainer = object()
+	party_mon = FakePokemon("party", "Pikachu", trainer=trainer)
+	box = FakeBox("Box 1")
+	storage = FakeStorage([box], party=[party_mon])
+	user = make_user(mod, storage, trainer, [party_mon], monkeypatch)
+	events = []
+
+	class Atomic:
+		def __enter__(self):
+			events.append("enter")
+
+		def __exit__(self, exc_type, exc, tb):
+			events.append(f"exit:{exc_type.__name__ if exc_type else 'ok'}")
+
+	monkeypatch.setattr(mod.transaction, "atomic", lambda: Atomic())
+	monkeypatch.setattr(mod, "move_to_box", lambda mon, storage, box: events.append(("move", mon, box)))
+
+	assert user.deposit_pokemon("party") == "Pikachu was deposited in Box 1."
+	assert events == ["enter", ("move", party_mon, box), "exit:ok"]
+
+
 def test_withdraw_full_party_returns_swap_prompt(monkeypatch):
 	mod = load_user_module(monkeypatch)
 	trainer = object()

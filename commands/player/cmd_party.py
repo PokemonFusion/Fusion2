@@ -181,13 +181,32 @@ class CmdSetHoldItem(Command):
             self.caller.msg("No Pokémon in that slot.")
             return
 
+        previous_held_item = getattr(pokemon, "held_item", "") or ""
+        if previous_held_item and previous_held_item.lower() != "nothing":
+            self.caller.msg(f"{pokemon.name} is already holding {previous_held_item}.")
+            return
+
         item = self.caller.search(item_name, location=self.caller)
         if not item:
             return
 
-        pokemon.held_item = item.key
-        pokemon.save()
-        item.delete()
+        try:
+            from django.db import transaction
+
+            with transaction.atomic():
+                pokemon.held_item = item.key
+                pokemon.save()
+                deleted = item.delete()
+                if deleted is False:
+                    raise RuntimeError("carried item delete returned false")
+        except Exception:
+            try:
+                pokemon.held_item = previous_held_item
+                pokemon.save()
+            except Exception:
+                pass
+            self.caller.msg("Unable to set held item; your carried item was not removed.")
+            return
 
         self.caller.msg(f"{pokemon.name} is now holding {item.key}.")
 

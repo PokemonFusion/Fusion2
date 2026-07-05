@@ -3,6 +3,8 @@ import types
 from contextlib import nullcontext
 from types import SimpleNamespace
 
+import pytest
+
 from pokemon.services.capture import finalize_wild_capture
 
 
@@ -221,3 +223,41 @@ def test_finalize_wild_capture_creates_ownedpokemon_when_model_id_missing(monkey
     assert created.current_hp == 11
     assert created.held_item == "Sitrus Berry"
     assert created.original_trainer is trainer
+
+
+def test_finalize_wild_capture_keeps_battle_tracking_when_placement_fails(monkeypatch):
+    dbpoke = FakeOwnedPokemon("owned-abort")
+    storage = FakeStorage(party_count=0)
+    session_updates = []
+    battle_instance = SimpleNamespace(
+        temp_pokemon_ids=["encounter:owned-abort"],
+        storage=SimpleNamespace(set=lambda key, value: session_updates.append((key, value))),
+    )
+    player = FakePlayer(storage, battle_instance=battle_instance)
+    trainer = SimpleNamespace(user=SimpleNamespace(key="Ash"))
+    target = SimpleNamespace(
+        model_id="encounter:owned-abort",
+        hp=6,
+        level=7,
+        species="Caterpie",
+        name="Caterpie",
+    )
+
+    monkeypatch.setattr("pokemon.services.capture._atomic_context", lambda: nullcontext())
+
+    def fail_move_to_party(mon, resolved_storage, slot=None):
+        raise RuntimeError("placement failed")
+
+    _install_capture_stubs(monkeypatch, dbpoke=dbpoke, move_to_party=fail_move_to_party)
+
+    with pytest.raises(RuntimeError, match="placement failed"):
+        finalize_wild_capture(
+            target_poke=target,
+            player=player,
+            trainer=trainer,
+            battle_context=battle_instance,
+            ball_name="Pokeball",
+        )
+
+    assert battle_instance.temp_pokemon_ids == ["encounter:owned-abort"]
+    assert session_updates == []

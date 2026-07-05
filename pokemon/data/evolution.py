@@ -56,13 +56,16 @@ def attempt_evolution(pokemon, *, item: Optional[str] = None) -> Optional[str]:
     Returns:
         The name of the new species if evolution occurred, else ``None``.
     """
-    species = pokemon.name
+    species = getattr(pokemon, "species", None) or pokemon.name
     level = getattr(pokemon, "level", 0)
     target = get_evolution(species, level=level, item=item)
     if not target:
         return None
     data = POKEDEX.get(target.lower())
-    pokemon.name = target
+    if hasattr(pokemon, "species"):
+        pokemon.species = target
+    else:
+        pokemon.name = target
     if hasattr(pokemon, "type_") and data:
         pokemon.type_ = ", ".join(data.types)
     try:

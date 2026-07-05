@@ -2,6 +2,18 @@
 
 from evennia.commands.command import Command
 
+SYMBOL_TEST_COMMAND_FLAG = "SYMBOL_TEST_COMMAND_ENABLED"
+SYMBOL_TEST_STAFF_PERMISSIONS = (
+    "Admin",
+    "Admins",
+    "Builder",
+    "Builders",
+    "Developer",
+    "Developers",
+    "Wizard",
+    "Wizards",
+)
+
 ANSI_COLORS = (
     ("|r", "r"),
     ("|g", "g"),
@@ -55,6 +67,55 @@ UI_GLYPHS = (
     ("turn bl", (0x2570,), "|W", "+"),
     ("turn br", (0x256F,), "|W", "+"),
 )
+
+
+def _settings_flag_enabled(*names: str) -> bool:
+    try:
+        from django.conf import settings
+    except Exception:
+        return False
+
+    for name in names:
+        try:
+            if bool(getattr(settings, name, False)):
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def symbol_test_command_enabled(caller=None) -> bool:
+    """Return whether the client glyph diagnostic command should be exposed."""
+
+    if _settings_flag_enabled("DEV_MODE", SYMBOL_TEST_COMMAND_FLAG):
+        return True
+
+    if caller is None:
+        return False
+
+    check_permstring = getattr(caller, "check_permstring", None)
+    if callable(check_permstring):
+        for permission in SYMBOL_TEST_STAFF_PERMISSIONS:
+            try:
+                if check_permstring(permission):
+                    return True
+            except Exception:
+                continue
+
+    permissions = getattr(caller, "permissions", None)
+    if permissions:
+        normalized = {str(permission).lower() for permission in permissions}
+        if any(permission.lower() in normalized for permission in SYMBOL_TEST_STAFF_PERMISSIONS):
+            return True
+
+    return False
+
+
+def _require_symbol_test_access(caller) -> bool:
+    if symbol_test_command_enabled(caller):
+        return True
+    caller.msg("Symbol diagnostics are not available right now.")
+    return False
 
 
 def _glyph(codepoints: tuple[int, ...]) -> str:
@@ -147,5 +208,7 @@ class CmdSymbolTest(Command):
     help_category = "General"
 
     def func(self):
+        if not _require_symbol_test_access(self.caller):
+            return
         mode = (self.args or "all").strip().lower() or "all"
         self.caller.msg(render_symbol_test(mode))

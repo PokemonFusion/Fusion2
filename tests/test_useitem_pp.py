@@ -134,8 +134,12 @@ class FakePokemon:
 
 
 class DummyTrainer:
-	def __init__(self, counter):
+	def __init__(self, counter, has_item=True):
 		self.counter = counter
+		self.has_item_result = has_item
+
+	def has_item(self, name, amount=1):
+		return self.has_item_result
 
 	def remove_item(self, name):
 		self.counter[0] += 1
@@ -143,11 +147,11 @@ class DummyTrainer:
 
 
 class DummyCaller:
-	def __init__(self, poke, counter):
+	def __init__(self, poke, counter, has_item=True):
 		self.poke = poke
 		self.msgs = []
 		self.ndb = types.SimpleNamespace()
-		self.trainer = DummyTrainer(counter)
+		self.trainer = DummyTrainer(counter, has_item=has_item)
 
 	def get_active_pokemon_by_slot(self, slot):
 		return self.poke if slot == 1 else None
@@ -342,6 +346,40 @@ def test_rare_candy_requires_target_slot():
 
 	assert remove_counter[0] == 0
 	assert caller.msgs[-1] == "Usage: +use Rare Candy=<target>"
+
+
+def test_rare_candy_does_not_apply_without_inventory():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	poke = FakePokemon()
+	caller = DummyCaller(poke, remove_counter, has_item=False)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "Rare Candy=Pikachu"
+	cmd.func()
+
+	assert remove_counter[0] == 0
+	assert poke.level == 5
+	assert caller.msgs[-1] == "You don't have any Rare Candy to use."
+
+
+def test_unimplemented_field_item_does_not_consume_inventory():
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller = caller
+	cmd.args = "Potion=Pikachu"
+	cmd.func()
+
+	assert remove_counter[0] == 0
+	assert caller.msgs[-1] == "Potion is not usable outside battle yet."
 
 
 def test_use_item_invalid_item_name_fails_before_target_lookup():

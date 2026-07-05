@@ -50,7 +50,7 @@ class CmdRemovePokemon(Command):
 	"""Delete a Pokémon by its ID.
 
 	Usage:
-	  @removepokemon <pokemon_id>
+	  @removepokemon <pokemon_id> confirm
 	"""
 
 	key = "@removepokemon"
@@ -58,9 +58,16 @@ class CmdRemovePokemon(Command):
 	help_category = "Admin"
 
 	def func(self):
-		pid = self.args.strip()
-		if not pid:
-			self.caller.msg("Usage: @removepokemon <pokemon_id>")
+		parts = self.args.split()
+		if not parts:
+			self.caller.msg("Usage: @removepokemon <pokemon_id> confirm")
+			return
+		pid = parts[0]
+		confirmed = any(part.lower() == "confirm" for part in parts[1:])
+		if not confirmed:
+			self.caller.msg(
+				f"This permanently deletes Pokemon {pid}. Repeat with @removepokemon {pid} confirm to continue."
+			)
 			return
 		pokemon = OwnedPokemon.objects.filter(unique_id=pid).first()
 		if not pokemon:

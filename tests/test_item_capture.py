@@ -42,6 +42,7 @@ def test_pokeball_capture_marks_opponent_lost(monkeypatch):
     p2 = BattleParticipant("P2", [defender], is_ai=False)
     p1.active = [attacker]
     p2.active = [defender]
+    p1.inventory = {"Pokeball": 1}
 
     action = Action(p1, ActionType.ITEM, p2, item="Pokeball", priority=6)
     p1.pending_action = action
@@ -56,6 +57,7 @@ def test_pokeball_capture_marks_opponent_lost(monkeypatch):
 
     assert p2.has_lost
     assert battle.battle_over
+    assert "Pokeball" not in p1.inventory
 
 
 def test_ball_modifier_inventory_and_storage(monkeypatch):
@@ -102,7 +104,7 @@ def test_ball_modifier_inventory_and_storage(monkeypatch):
     battle.run_turn()
 
     assert captured.get("ball_modifier") == BALL_MODIFIERS["ultraball"]
-    assert p1.inventory["Ultraball"] == 1
+    assert "Ultraball" not in p1.inventory
     assert "Bulbasaur" in p1.storage
 
 
@@ -150,7 +152,7 @@ def test_ball_name_with_space(monkeypatch):
     battle.run_turn()
 
     assert captured.get("ball_modifier") == BALL_MODIFIERS["ultraball"]
-    assert p1.inventory["Ultra Ball"] == 1
+    assert "Ultra Ball" not in p1.inventory
     assert "Bulbasaur" in p1.storage
 
 
@@ -168,6 +170,7 @@ def test_capture_logs_shakes_and_gotcha(monkeypatch):
     def remove_item(name, quantity=1):
         consumed["count"] += 1
         p1.inventory[name] = p1.inventory.get(name, 0) - quantity
+        return True
 
     p1.remove_item = remove_item
 
@@ -191,7 +194,7 @@ def test_capture_logs_shakes_and_gotcha(monkeypatch):
 
     assert logs.count("The ball shook!") == 3
     assert any("Gotcha!" in line for line in logs)
-    assert consumed["count"] == 0
+    assert consumed["count"] == 1
 
 
 def test_capture_failure_consumes_ball_and_logs(monkeypatch):
@@ -305,6 +308,7 @@ def test_capture_updates_pokedex_and_transfers_item(monkeypatch):
 
     p1.trainer = trainer
     p1.player = player
+    p1.inventory = {"Nest Ball": 1}
 
     class Storage:
         def get_party(self):
@@ -337,6 +341,7 @@ def test_capture_updates_pokedex_and_transfers_item(monkeypatch):
     assert player.caught == ["Bulbasaur"]
     assert player.ndb.pending_caught_pokemon[-1] == {"species": "Bulbasaur", "to_storage": False}
     assert any("nickname" in line.lower() for line in logs)
+    assert "Nest Ball" not in p1.inventory
 
 
 def test_full_party_routes_to_storage(monkeypatch):
@@ -351,6 +356,7 @@ def test_full_party_routes_to_storage(monkeypatch):
     player = SimpleNamespace(ndb=SimpleNamespace(pending_caught_pokemon=[]))
     p1.trainer = trainer
     p1.player = player
+    p1.inventory = {"Premier Ball": 1}
 
     class FullPartyStorage:
         def get_party(self):
@@ -378,3 +384,32 @@ def test_full_party_routes_to_storage(monkeypatch):
 
     assert player.ndb.pending_caught_pokemon[-1] == {"species": "Bulbasaur", "to_storage": True}
     assert any("storage" in line.lower() for line in logs)
+    assert "Premier Ball" not in p1.inventory
+
+
+def test_trainer_item_does_not_apply_when_remove_item_returns_false():
+    attacker = Pokemon("Pikachu", hp=10, max_hp=100)
+    defender = Pokemon("Bulbasaur", hp=100, max_hp=100)
+    p1 = BattleParticipant("P1", [attacker], is_ai=False)
+    p2 = BattleParticipant("P2", [defender], is_ai=False)
+    p1.active = [attacker]
+    p2.active = [defender]
+    p1.inventory = {"Potion": 1}
+    removed = {"count": 0}
+
+    def remove_item(name, quantity=1):
+        removed["count"] += 1
+        return False
+
+    p1.remove_item = remove_item
+    action = Action(p1, ActionType.ITEM, p1, item="Potion", priority=6)
+    battle = Battle(BattleType.TRAINER, [p1, p2])
+    logs: list[str] = []
+    battle.log_action = logs.append
+
+    battle.execute_item(action)
+
+    assert removed["count"] == 1
+    assert p1.inventory == {"Potion": 1}
+    assert attacker.hp == 10
+    assert not any("used Potion" in line for line in logs)

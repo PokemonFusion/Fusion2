@@ -173,7 +173,28 @@ def _growth_rate_for_pokemon(pokemon) -> str:
     return "medium_fast"
 
 
+def _trainer_has_item(trainer, item_key: str, amount: int = 1) -> bool:
+    checker = getattr(trainer, "has_item", None)
+    if callable(checker):
+        return bool(checker(item_key, amount))
+    quantity = getattr(trainer, "get_item_quantity", None)
+    if callable(quantity):
+        return int(quantity(item_key) or 0) >= amount
+    return True
+
+
+def _consume_trainer_item(trainer, item_key: str) -> bool:
+    remover = getattr(trainer, "remove_item", None)
+    if not callable(remover):
+        return False
+    return bool(remover(item_key))
+
+
 def _apply_rare_candy(caller, trainer, pokemon, item_key: str) -> None:
+    if not _trainer_has_item(trainer, item_key):
+        caller.msg("You don't have any Rare Candy to use.")
+        return
+
     level = getattr(pokemon, "computed_level", getattr(pokemon, "level", 1))
     if level >= 100:
         caller.msg(f"{pokemon.name} is already level 100.")
@@ -185,9 +206,6 @@ def _apply_rare_candy(caller, trainer, pokemon, item_key: str) -> None:
     target_exp = exp_for_level(level + 1, growth)
     current_exp = int(getattr(pokemon, "total_exp", 0) or 0)
     gained = max(0, target_exp - current_exp)
-    if not trainer.remove_item(item_key):
-        caller.msg("You don't have any Rare Candy to use.")
-        return
 
     if gained:
         add_experience(pokemon, gained, rate=growth, caller=caller)
@@ -201,6 +219,9 @@ def _apply_rare_candy(caller, trainer, pokemon, item_key: str) -> None:
         except Exception:
             pass
     new_level = getattr(pokemon, "computed_level", getattr(pokemon, "level", level + 1))
+    if not _consume_trainer_item(trainer, item_key):
+        caller.msg("Unable to consume Rare Candy after applying its effect. Please contact staff.")
+        return
     caller.msg(f"{pokemon.name} grew to level {new_level}.")
 
 
@@ -378,6 +399,11 @@ class CmdUseItem(Command):
                 return
             pokemon = pending["pokemon"]
             item = pending["item"]
+            display_name = _display_item_name(None, item)
+            if not _trainer_has_item(trainer, item):
+                self.caller.msg(f"You don't have any {display_name} to use.")
+                self.caller.ndb.pending_pp_item = None
+                return
             slots = list(pokemon.activemoveslot_set.order_by("slot"))
             move_name = None
             if move_sel.isdigit():
@@ -402,7 +428,10 @@ class CmdUseItem(Command):
                 self.caller.msg(fail_msg)
                 self.caller.ndb.pending_pp_item = None
                 return
-            trainer.remove_item(item)
+            if not _consume_trainer_item(trainer, item):
+                self.caller.msg(f"Unable to consume {display_name} after applying its effect. Please contact staff.")
+                self.caller.ndb.pending_pp_item = None
+                return
             self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
             self.caller.ndb.pending_pp_item = None
             return
@@ -440,6 +469,9 @@ class CmdUseItem(Command):
                 return
 
         if item_name in {"ppup", "ppmax"} and target is not None:
+            if not _trainer_has_item(trainer, item_name):
+                self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
+                return
             pokemon = target.pokemon
             if not pokemon:
                 self.caller.msg("That item needs a Pokemon target.")
@@ -468,10 +500,8 @@ class CmdUseItem(Command):
             _apply_rare_candy(self.caller, trainer, pokemon, item_name)
             return
 
-        success = trainer.remove_item(item_name)
-        if not success:
+        if not _trainer_has_item(trainer, item_name):
             self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
             return
 
-        # Placeholder for other item effects
-        self.caller.msg(f"You used one {_display_item_name(item_data, canonical)}.")
+        self.caller.msg(f"{_display_item_name(item_data, canonical)} is not usable outside battle yet.")

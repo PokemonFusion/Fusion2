@@ -92,10 +92,24 @@ def node_buy(caller, raw_input=None):
         caller.msg("You can't afford that.")
         return node_buy(caller)
 
+    previous_quantity = data.get("quantity", 0)
     data["quantity"] = max(0, data.get("quantity", 0) - amount)
     store[store_key] = data
     room.db.store_inventory = store
-    caller.add_item(store_key, amount)
+    try:
+        caller.add_item(store_key, amount)
+    except Exception:
+        data["quantity"] = previous_quantity
+        store[store_key] = data
+        room.db.store_inventory = store
+        refund = getattr(caller, "add_money", None) or getattr(trainer, "add_money", None)
+        if callable(refund):
+            try:
+                refund(cost)
+            except Exception:
+                pass
+        caller.msg("Something went wrong adding that item; purchase was rolled back.")
+        return node_buy(caller)
     caller.msg(f"You purchase {amount} x {store_key} for ${cost}.")
     return node_buy(caller)
 
@@ -142,6 +156,18 @@ def node_sell(caller, raw_input=None):
         caller.msg("Something went wrong removing that item.")
         return node_sell(caller)
 
+    try:
+        trainer.add_money(total)
+    except Exception:
+        restore = getattr(caller, "add_item", None) or getattr(trainer, "add_item", None)
+        if callable(restore):
+            try:
+                restore(item_name, amount)
+            except Exception:
+                pass
+        caller.msg("Something went wrong adding money; sale was rolled back.")
+        return node_sell(caller)
+
     if store_key is None:
         store_key = item_name
         data = {"price": price * 2, "quantity": 0}
@@ -150,7 +176,6 @@ def node_sell(caller, raw_input=None):
     store[store_key] = data
     room.db.store_inventory = store
 
-    trainer.add_money(total)
     caller.msg(f"You sold {amount} x {store_key} for ${total}.")
     return node_sell(caller)
 

@@ -110,9 +110,6 @@ StatsBase = Stats(
 )
 species = PokemonData("Charmander", num=4, types=["Fire"], base_stats=StatsBase)
 
-random.seed(0)
-
-
 def run(use_types):
 	user = types.SimpleNamespace(name="User", num=1, base_stats=StatsBase, species=species)
 	if use_types:
@@ -124,7 +121,9 @@ def run(use_types):
 
 
 def test_stab_falls_back_to_species_types():
+	random.seed(0)
 	dmg_without_attr = run(False)
+	random.seed(0)
 	dmg_with_attr = run(True)
 	assert dmg_without_attr == dmg_with_attr
 
