@@ -14,7 +14,7 @@ else:
 
 from .cmdsets import attach_movement_cmdset, detach_movement_cmdset
 from .renderer import render_objectives, render_session, render_template_info
-from .sessions import get_active_session_for_player, leave_session, search_session, start_session
+from .sessions import get_current_session_for_player, leave_session, search_session, start_session
 from .templates import get_template, list_templates
 
 
@@ -130,7 +130,7 @@ class CmdAdventure(Command):
             self.caller.msg(render_session(result.session))
 
     def _look(self) -> None:
-        session = get_active_session_for_player(self.caller)
+        session = get_current_session_for_player(self.caller)
         if session is None:
             self.caller.msg("You are not in an adventure.")
             return
@@ -138,7 +138,7 @@ class CmdAdventure(Command):
         self.caller.msg(render_session(session))
 
     def _objectives(self) -> None:
-        session = get_active_session_for_player(self.caller)
+        session = get_current_session_for_player(self.caller)
         if session is None:
             self.caller.msg("You are not in an adventure.")
             return

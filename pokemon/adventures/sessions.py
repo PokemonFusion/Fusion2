@@ -78,10 +78,19 @@ def _del_db_attr(obj: Any, attr: str) -> None:
         pass
 
 
+def _del_db_attr_if_points_to(obj: Any, attr: str, session_id: Any) -> None:
+    if _ids_match(_db_attr(obj, attr), session_id):
+        _del_db_attr(obj, attr)
+
+
 def _object_id(obj: Any) -> Any:
     if obj is None:
         return None
     return getattr(obj, "id", getattr(obj, "pk", None))
+
+
+def _session_id(session: Any) -> Any:
+    return getattr(session, "pk", getattr(session, "id", None))
 
 
 def _ids_match(left: Any, right: Any) -> bool:
@@ -169,31 +178,99 @@ def _is_active_session(session: Any) -> bool:
     return True
 
 
+def _is_current_session(session: Any, *, allow_completed: bool = False) -> bool:
+    if _is_active_session(session):
+        return True
+    return allow_completed and getattr(session, "state", None) == STATE_COMPLETED
+
+
+def _session_belongs_to_player(session: Any, player: Any) -> bool:
+    return _ids_match(
+        getattr(session, "leader_id", _object_id(getattr(session, "leader", None))),
+        _object_id(player),
+    )
+
+
+def _session_uses_room(session: Any, room: Any) -> bool:
+    return _ids_match(
+        getattr(session, "instance_room_id", _object_id(getattr(session, "instance_room", None))),
+        _object_id(room),
+    )
+
+
+def _player_pointer_session(player: Any, *, allow_completed: bool = False) -> tuple[Any | None, bool, bool]:
+    session_id = _db_attr(player, ADVENTURE_SESSION_ATTR)
+    if session_id in (None, "", False):
+        return None, False, False
+
+    session = get_session_by_id(session_id)
+    if session is None:
+        _del_db_attr(player, ADVENTURE_SESSION_ATTR)
+        return None, True, False
+    if not _session_belongs_to_player(session, player):
+        _del_db_attr(player, ADVENTURE_SESSION_ATTR)
+        return None, True, False
+    if _is_current_session(session, allow_completed=allow_completed):
+        return session, True, getattr(session, "state", None) == STATE_COMPLETED
+    if getattr(session, "state", None) == STATE_COMPLETED:
+        return None, True, True
+
+    _del_db_attr(player, ADVENTURE_SESSION_ATTR)
+    return None, True, False
+
+
+def _restore_active_session_for_player(player: Any) -> Any | None:
+    model = _session_model()
+    try:
+        session = _query_first(model.objects.filter(leader=player, state=STATE_ACTIVE))
+    except Exception:
+        return None
+    if not _is_active_session(session) or not _session_belongs_to_player(session, player):
+        return None
+
+    session_id = _session_id(session)
+    _set_db_attr(player, ADVENTURE_SESSION_ATTR, session_id)
+    instance_room = getattr(session, "instance_room", None)
+    if instance_room is not None:
+        room_session = get_session_by_id(_db_attr(instance_room, ADVENTURE_SESSION_ATTR))
+        if not _is_current_session(room_session, allow_completed=True):
+            _set_db_attr(instance_room, ADVENTURE_SESSION_ATTR, session_id)
+    return session
+
+
 def get_active_session_for_player(player: Any) -> Any | None:
     """Return the player's active solo Adventure session, if any."""
 
-    session = get_session_by_id(_db_attr(player, ADVENTURE_SESSION_ATTR))
-    if not _is_active_session(session):
-        if session is not None:
-            _del_db_attr(player, ADVENTURE_SESSION_ATTR)
+    session, had_pointer, completed_pointer = _player_pointer_session(player, allow_completed=False)
+    if session is not None:
+        return session
+    if had_pointer and completed_pointer:
         return None
-    if not _ids_match(getattr(session, "leader_id", _object_id(getattr(session, "leader", None))), _object_id(player)):
-        return None
-    return session
+    return _restore_active_session_for_player(player)
+
+
+def get_current_session_for_player(player: Any) -> Any | None:
+    """Return the player's active or completed-but-not-left Adventure session."""
+
+    session, _had_pointer, _completed_pointer = _player_pointer_session(player, allow_completed=True)
+    if session is not None:
+        return session
+    return _restore_active_session_for_player(player)
 
 
 def get_active_session_for_room(room: Any, looker: Any) -> Any | None:
     """Return the room session visible to ``looker``."""
 
+    session = get_current_session_for_player(looker)
+    if session is None or not _session_uses_room(session, room):
+        return None
+    session_id = _session_id(session)
     room_sid = _db_attr(room, ADVENTURE_SESSION_ATTR)
-    player_sid = _db_attr(looker, ADVENTURE_SESSION_ATTR)
-    if not room_sid or not _ids_match(room_sid, player_sid):
-        return None
-    session = get_session_by_id(room_sid)
-    if not _is_active_session(session):
-        return None
-    if not _ids_match(getattr(session, "instance_room_id", _object_id(getattr(session, "instance_room", None))), _object_id(room)):
-        return None
+    if not _ids_match(room_sid, session_id):
+        room_session = get_session_by_id(room_sid)
+        if _is_current_session(room_session, allow_completed=True):
+            return None
+        _set_db_attr(room, ADVENTURE_SESSION_ATTR, session_id)
     return session
 
 
@@ -268,7 +345,7 @@ def room_is_available(room: Any) -> bool:
     if not session_id:
         return True
     session = get_session_by_id(session_id)
-    if _is_active_session(session):
+    if _is_current_session(session, allow_completed=True):
         return False
     _del_db_attr(room, ADVENTURE_SESSION_ATTR)
     return True
@@ -343,7 +420,7 @@ def update_location_objectives(session: Any) -> bool:
 def start_session(player: Any, template_key: str) -> AdventureActionResult:
     """Start a solo Adventure for ``player``."""
 
-    if get_active_session_for_player(player):
+    if get_current_session_for_player(player):
         return AdventureActionResult(False, "You are already in an adventure.")
 
     template = get_template(template_key)
@@ -466,7 +543,7 @@ def leave_session(
 ) -> AdventureActionResult:
     """Leave and clean up the player's active Adventure session."""
 
-    session = session or get_session_by_id(_db_attr(player, ADVENTURE_SESSION_ATTR))
+    session = session or get_current_session_for_player(player)
     if session is None:
         return AdventureActionResult(False, "You are not in an adventure.")
 
@@ -478,7 +555,7 @@ def leave_session(
     _del_db_attr(player, ADVENTURE_SESSION_ATTR)
     if instance_room is not None and _ids_match(
         _db_attr(instance_room, ADVENTURE_SESSION_ATTR),
-        getattr(session, "pk", getattr(session, "id", None)),
+        _session_id(session),
     ):
         _del_db_attr(instance_room, ADVENTURE_SESSION_ATTR)
 
@@ -502,27 +579,28 @@ def expire_session(session: Any) -> None:
 
     leader = getattr(session, "leader", None)
     instance_room = getattr(session, "instance_room", None)
+    session_id = _session_id(session)
     if leader is not None:
-        _del_db_attr(leader, ADVENTURE_SESSION_ATTR)
+        _del_db_attr_if_points_to(leader, ADVENTURE_SESSION_ATTR, session_id)
     if instance_room is not None:
-        _del_db_attr(instance_room, ADVENTURE_SESSION_ATTR)
+        _del_db_attr_if_points_to(instance_room, ADVENTURE_SESSION_ATTR, session_id)
     session.state = STATE_EXPIRED
     _save_session(session, fields=("state", "updated_at"))
 
 
 def sync_player_to_active_session(player: Any) -> Any | None:
-    """Return a valid active session for reconnect/reload recovery."""
+    """Return a valid current session for reconnect/reload recovery."""
 
-    session = get_active_session_for_player(player)
+    session = get_current_session_for_player(player)
     if session is None:
         return None
     instance_room = getattr(session, "instance_room", None)
     if instance_room is not None:
-        session_id = getattr(session, "pk", getattr(session, "id", None))
+        session_id = _session_id(session)
         room_session_id = _db_attr(instance_room, ADVENTURE_SESSION_ATTR)
         if not _ids_match(room_session_id, session_id):
             room_session = get_session_by_id(room_session_id)
-            if _is_active_session(room_session):
+            if _is_current_session(room_session, allow_completed=True):
                 return None
             _set_db_attr(instance_room, ADVENTURE_SESSION_ATTR, session_id)
 

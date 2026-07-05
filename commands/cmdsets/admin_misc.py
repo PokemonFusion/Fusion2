@@ -2,6 +2,7 @@
 
 from evennia import CmdSet
 
+from commands.admin.cmd_adventureadmin import CmdAdventureAdmin
 from commands.admin.cmd_adminpokemon import (
 	CmdBackfillPokemonMovesets,
 	CmdListPokemon,
@@ -27,6 +28,7 @@ class AdminMiscCmdSet(CmdSet):
 	def at_cmdset_creation(self):
 		"""Populate the cmdset."""
 		for cmd in (
+			CmdAdventureAdmin,
 			CmdGivePokemon,
 			CmdListPokemon,
 			CmdRemovePokemon,

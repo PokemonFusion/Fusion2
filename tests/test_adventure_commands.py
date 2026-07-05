@@ -99,6 +99,17 @@ def test_adventure_leave_command_detaches_movement_cmdset(monkeypatch):
     assert caller.cmdset.deleted[-1] is AdventureMovementCmdSet
 
 
+def test_adventure_look_renders_current_completed_session(monkeypatch):
+    fake_session = types.SimpleNamespace(template_key="alpha_meadow", state="completed")
+    monkeypatch.setattr(commands, "get_current_session_for_player", lambda caller: fake_session)
+    monkeypatch.setattr(commands, "render_session", lambda session: "rendered completed adventure")
+
+    caller = _run_cmd({"look"})
+
+    assert caller.messages[-1] == "rendered completed adventure"
+    assert caller.cmdset.added[-1] == (AdventureMovementCmdSet, False)
+
+
 def test_movement_cmdset_attach_and_detach_helpers():
     caller = DummyCaller()
 
