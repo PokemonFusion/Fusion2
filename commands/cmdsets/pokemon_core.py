@@ -25,6 +25,7 @@ from commands.player.cmd_fusion import (
 	CmdTempFuse,
 	CmdUnfuse,
 )
+from commands.player.cmd_gym import CmdGym
 from commands.player.cmd_hunt import CmdCustomHunt, CmdHunt, CmdLeaveHunt
 from commands.player.cmd_inventory import (
 	CmdAddItem,
@@ -87,6 +88,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdFusionForms,
 			CmdFusionOrder,
 			CmdFusionFight,
+			CmdGym,
                         CmdMovesets,
                         CmdVend,
 			CmdEvolvePokemon,

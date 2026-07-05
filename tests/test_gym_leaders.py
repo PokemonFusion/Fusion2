@@ -160,6 +160,17 @@ def test_check_gym_leader_resolves_by_name_and_gym_key(monkeypatch):
     assert by_key.badge_name == "Boulder Badge"
 
 
+def test_check_gym_leader_reports_existing_badge(monkeypatch):
+    badge = _badge()
+    profile = _profile(badge=badge)
+    _install_profiles(monkeypatch, [profile])
+    monkeypatch.setattr(gym_leaders, "check_static_trainer", lambda trainer: _static_check(profile))
+
+    check = gym_leaders.check_gym_leader("pewter", player=_player([badge]))
+
+    assert check.has_badge
+
+
 def test_missing_gym_leader_reports_clean_error(monkeypatch):
     _install_profiles(monkeypatch, [])
 
