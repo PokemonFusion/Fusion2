@@ -409,6 +409,7 @@ def infer_item_mechanics(raw: Mapping[str, Any]) -> tuple[str, ...]:
         "maxpotion",
         "paralyzeheal",
         "potion",
+        "rarecandy",
         "superpotion",
     }
 

@@ -24,6 +24,66 @@ ALPHA_MOVE_TERMINAL_FLAGS = (
     "is_alpha_move_terminal",
 )
 ALPHA_MOVE_CATEGORIES = ("machine", "tutor")
+ALPHA_TEST_COMMAND_FLAG = "ALPHA_TEST_COMMANDS_ENABLED"
+ALPHA_STAFF_PERMISSIONS = (
+    "Admin",
+    "Admins",
+    "Builder",
+    "Builders",
+    "Developer",
+    "Developers",
+    "Wizard",
+    "Wizards",
+)
+
+
+def _settings_flag_enabled(*names: str) -> bool:
+    try:
+        from django.conf import settings
+    except Exception:
+        return False
+
+    for name in names:
+        try:
+            if bool(getattr(settings, name, False)):
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def alpha_test_commands_enabled(caller=None) -> bool:
+    """Return whether alpha convenience commands should be exposed."""
+
+    if _settings_flag_enabled("DEV_MODE", ALPHA_TEST_COMMAND_FLAG):
+        return True
+
+    if caller is None:
+        return False
+
+    check_permstring = getattr(caller, "check_permstring", None)
+    if callable(check_permstring):
+        for permission in ALPHA_STAFF_PERMISSIONS:
+            try:
+                if check_permstring(permission):
+                    return True
+            except Exception:
+                continue
+
+    permissions = getattr(caller, "permissions", None)
+    if permissions:
+        normalized = {str(permission).lower() for permission in permissions}
+        if any(permission.lower() in normalized for permission in ALPHA_STAFF_PERMISSIONS):
+            return True
+
+    return False
+
+
+def _require_alpha_test_command_access(caller) -> bool:
+    if alpha_test_commands_enabled(caller):
+        return True
+    caller.msg("Alpha test commands are not available right now.")
+    return False
 
 
 def _parse_slash_switches(command) -> set[str]:
@@ -190,6 +250,8 @@ class CmdAlphaPokemon(Command):
     def func(self):
         if not require_no_battle_lock(self.caller):
             return
+        if not _require_alpha_test_command_access(self.caller):
+            return
         if not _is_alpha_test_area(self.caller):
             self.caller.msg("You can only use this in the alpha testing area.")
             return
@@ -309,6 +371,8 @@ class CmdAlphaLearnMove(Command):
 
     def func(self):
         if not require_no_battle_lock(self.caller):
+            return
+        if not _require_alpha_test_command_access(self.caller):
             return
         if not _is_alpha_test_area(self.caller):
             self.caller.msg("You can only use this in the alpha testing area.")

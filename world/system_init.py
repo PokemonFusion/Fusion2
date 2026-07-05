@@ -42,18 +42,11 @@ def at_server_start() -> None:
 
     system = get_system()
     try:
-        from services.battle.manager import BattleManager
-    except Exception:  # pragma: no cover - manager import failed
-        BattleManager = None
-    if BattleManager is not None:
-        if not hasattr(system, "battle_manager"):
-            system.battle_manager = BattleManager()
-        # Optional: ask manager to rebuild its registry from ServerConfig/rooms
-        if hasattr(system.battle_manager, "restore_from_persistence"):
-            try:
-                system.battle_manager.restore_from_persistence()
-            except Exception:
-                pass
+        from pokemon.battle.handler import battle_handler
+
+        system.battle_manager = battle_handler
+    except Exception:
+        pass
 
     try:
         from world.heartbeat import ensure_heartbeat_script

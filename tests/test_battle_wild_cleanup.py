@@ -62,3 +62,25 @@ def test_wild_encounter_cleanup_deletes_ephemeral_refs(monkeypatch):
 def test_ownedpokemon_party_slot_handles_missing_related_manager():
 	dummy = types.SimpleNamespace(active_slots=object())
 	assert OwnedPokemon.party_slot.fget(dummy) is None
+
+
+def test_ownedpokemon_delete_if_wild_keeps_owned_pokemon(monkeypatch):
+	deleted = []
+	monkeypatch.setattr(OwnedPokemon, "delete", lambda self, *a, **k: deleted.append(self))
+
+	mon = OwnedPokemon(species="Bulbasaur", trainer_id=123)
+	mon.is_wild = True
+
+	assert mon.delete_if_wild() is False
+	assert deleted == []
+
+
+def test_ownedpokemon_delete_if_wild_deletes_temporary_wild_pokemon(monkeypatch):
+	deleted = []
+	monkeypatch.setattr(OwnedPokemon, "delete", lambda self, *a, **k: deleted.append(self))
+
+	mon = OwnedPokemon(species="Zubat")
+	mon.is_wild = True
+
+	assert mon.delete_if_wild() is True
+	assert deleted == [mon]

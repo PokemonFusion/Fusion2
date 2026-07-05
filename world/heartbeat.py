@@ -191,7 +191,7 @@ def daily_maintenance_check(context: HeartbeatContext) -> str:
 
 
 def battle_cleanup_tick(context: HeartbeatContext) -> str:
-    """Conservative battle cleanup hook with no active-battle termination."""
+    """Clean stale runtime state without terminating active battles."""
 
     try:
         from pokemon.battle.handler import battle_handler
@@ -202,10 +202,14 @@ def battle_cleanup_tick(context: HeartbeatContext) -> str:
     cleanup = getattr(battle_handler, "gc", None)
     if callable(cleanup):
         cleanup()
-        return f"battle cleanup hook ran; active battles now {len(instances)}"
-    return (
-        f"observed {len(instances)} active battle(s); no stale-battle policy configured"
-    )
+    try:
+        from world.stale_state import cleanup_stale_state, format_cleanup_counts
+
+        counts = cleanup_stale_state(active_battle_ids=set(instances))
+        stale_summary = format_cleanup_counts(counts)
+    except Exception as err:
+        stale_summary = f"stale cleanup unavailable: {err}"
+    return f"battle cleanup hook ran; active battles now {len(instances)}; {stale_summary}"
 
 
 def get_heartbeat_jobs() -> tuple[HeartbeatJob, ...]:
@@ -225,7 +229,7 @@ def get_heartbeat_jobs() -> tuple[HeartbeatJob, ...]:
         HeartbeatJob(
             name="battle_cleanup_tick",
             run=battle_cleanup_tick,
-            description="Observes battle state without ending active battles.",
+            description="Clears stale runtime state without ending active battles.",
         ),
     )
 

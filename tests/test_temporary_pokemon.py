@@ -7,22 +7,6 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 
-def test_delete_if_wild_is_legacy_noop(monkeypatch):
-	class OwnedPokemon:
-		def delete_if_wild(self):
-			return False
-
-	fake_core = types.ModuleType("pokemon.models.core")
-	fake_core.OwnedPokemon = OwnedPokemon
-	monkeypatch.setitem(sys.modules, "pokemon.models.core", fake_core)
-	monkeypatch.delitem(sys.modules, "pokemon.models", raising=False)
-
-	from pokemon.models.core import OwnedPokemon as ImportedOwnedPokemon
-
-	mon = ImportedOwnedPokemon()
-	assert mon.delete_if_wild() is False
-
-
 def test_helper_never_creates_temp_owned_rows(monkeypatch):
 	class DummyManager:
 		def __init__(self):

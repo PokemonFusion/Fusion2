@@ -132,6 +132,16 @@ def test_permfuse_requires_confirm_and_records_unlocked_form(monkeypatch):
     assert caller.storage.get_party() == []
 
 
+def test_permanent_fusion_form_tracking_is_idempotent():
+    mon = FakePokemon("mon-6", species="Raichu")
+    caller = FakeCaller([mon])
+
+    fusion_utils.remember_permanent_form(caller, mon)
+    fusion_utils.remember_permanent_form(caller, mon)
+
+    assert caller.db.fusion_forms == ["mon-6"]
+
+
 def test_fusion_forms_selects_permanent_form(monkeypatch):
     monkeypatch.setattr(cmd_fusion, "require_no_battle_lock", lambda caller: True)
     mon = FakePokemon("mon-3", species="Eevee")

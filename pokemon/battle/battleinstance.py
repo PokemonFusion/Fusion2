@@ -178,7 +178,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.observers: set[object] = set()
         self.turn_state: dict = {}
 
-        self.battle_id = getattr(player, "id", 0)
+        try:
+            self.battle_id = battle_handler.next_id()
+        except Exception:
+            self.battle_id = getattr(player, "id", 0)
         self._register_trainer(player)
         if opponent:
             self._register_trainer(opponent)

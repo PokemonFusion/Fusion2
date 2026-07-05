@@ -2,6 +2,8 @@
 
 from evennia import Command
 
+from commands.player.cmdstartmap import require_map_prototype_access
+
 
 class CmdMapMove(Command):
     """Move inside the current map.
@@ -23,6 +25,8 @@ class CmdMapMove(Command):
     help_category = "General"
 
     def func(self):
+        if not require_map_prototype_access(self.caller):
+            return
         dir_map = {"n": (0, -1), "s": (0, 1), "e": (1, 0), "w": (-1, 0)}
         direction = self.args.strip().lower()
         if direction not in dir_map:

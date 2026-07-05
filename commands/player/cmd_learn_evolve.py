@@ -223,12 +223,27 @@ class CmdEvolvePokemon(Command):
 
         from pokemon.data.evolution import attempt_evolution
 
-        new_species = attempt_evolution(pokemon, item=item)
-        if not new_species:
-            self.caller.msg("It doesn't seem to be able to evolve right now.")
-            return
+        original_species = getattr(pokemon, "species", None)
+        original_name = getattr(pokemon, "name", None)
+        original_type = getattr(pokemon, "type_", None)
+        try:
+            from django.db import transaction
 
-        if item:
-            self.caller.trainer.remove_item(item)
-        pokemon.save()
+            with transaction.atomic():
+                new_species = attempt_evolution(pokemon, item=item)
+                if not new_species:
+                    self.caller.msg("It doesn't seem to be able to evolve right now.")
+                    return
+                if item and not self.caller.trainer.remove_item(item):
+                    raise RuntimeError("evolution item could not be consumed")
+                pokemon.save()
+        except Exception:
+            if hasattr(pokemon, "species"):
+                pokemon.species = original_species
+            elif original_name is not None:
+                pokemon.name = original_name
+            if hasattr(pokemon, "type_"):
+                pokemon.type_ = original_type
+            self.caller.msg("Evolution failed; no item was consumed and the Pokemon was unchanged.")
+            return
         self.caller.msg(f"{pokemon.name} evolved into {new_species}!")

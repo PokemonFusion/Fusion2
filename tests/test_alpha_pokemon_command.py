@@ -8,7 +8,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 
-def load_alpha_command():
+def load_alpha_command(dev_mode=True, alpha_enabled=False):
     patched = {
         "evennia": sys.modules.get("evennia"),
         "pokemon.data.starters": sys.modules.get("pokemon.data.starters"),
@@ -49,6 +49,23 @@ def load_alpha_command():
         mod = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = mod
         spec.loader.exec_module(mod)
+
+        def enabled(caller=None):
+            if dev_mode or alpha_enabled:
+                return True
+            check_permstring = getattr(caller, "check_permstring", None)
+            if callable(check_permstring):
+                return bool(check_permstring("Builder") or check_permstring("Admin"))
+            return False
+
+        def require_access(caller):
+            if enabled(caller):
+                return True
+            caller.msg("Alpha test commands are not available right now.")
+            return False
+
+        mod.alpha_test_commands_enabled = enabled
+        mod._require_alpha_test_command_access = require_access
         return mod
     finally:
         for name, module in patched.items():
@@ -154,6 +171,19 @@ def test_alphapokemon_requires_alpha_area():
     cmd.func()
 
     assert caller.msgs == ["You can only use this in the alpha testing area."]
+
+
+def test_alphapokemon_blocks_normal_player_when_gate_disabled():
+    mod = load_alpha_command(dev_mode=False, alpha_enabled=False)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", alpha_test_area=True))
+
+    cmd = mod.CmdAlphaPokemon()
+    cmd.caller = caller
+    cmd.args = "Bulbasaur"
+    cmd.switches = []
+    cmd.func()
+
+    assert caller.msgs == ["Alpha test commands are not available right now."]
 
 
 def test_alphapokemon_lists_starter_choices():
@@ -292,6 +322,20 @@ def test_alphalearn_requires_alpha_area():
     cmd.func()
 
     assert caller.msgs == ["You can only use this in the alpha testing area."]
+
+
+def test_alphalearn_blocks_normal_player_when_gate_disabled():
+    mod = load_alpha_command(dev_mode=False, alpha_enabled=False)
+    caller = DummyCaller(DummyLocation("Alpha Test Hub", contents=[alpha_terminal()]))
+    caller.pokemon = DummyPokemon()
+
+    cmd = mod.CmdAlphaLearnMove()
+    cmd.caller = caller
+    cmd.args = "1=Thunderbolt"
+    cmd.switches = []
+    cmd.func()
+
+    assert caller.msgs == ["Alpha test commands are not available right now."]
 
 
 def test_alphalearn_requires_terminal():

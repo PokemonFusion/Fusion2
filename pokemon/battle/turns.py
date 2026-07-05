@@ -936,6 +936,27 @@ class TurnProcessor:
 		self.run_faint()
 		self.residual()
 
+	def _actor_has_item_for_action(self, action: Action) -> bool:
+		checker = getattr(action.actor, "has_item", None)
+		if not callable(checker):
+			return True
+		try:
+			return bool(checker(action.item, 1))
+		except TypeError:
+			return bool(checker(action.item))
+
+	def _consume_action_item(self, action: Action, *, context: str, pokemon=None) -> bool:
+		if not self._actor_has_item_for_action(action):
+			return False
+		remove_item = getattr(action.actor, "remove_item", None)
+		if not callable(remove_item):
+			return True
+		try:
+			return bool(remove_item(action.item))
+		except Exception as err:
+			self._record_failure(context=context, exception=err, pokemon=pokemon)
+			return False
+
 	def execute_item(self, action: Action) -> None:
 		"""Handle item usage during battle."""
 		from .engine import BattleType, _normalize_key
@@ -954,6 +975,8 @@ class TurnProcessor:
 			return
 
 		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
+			if not self._consume_action_item(action, context="capture_flow", pokemon=None):
+				return
 			target_poke = target.active[0]
 			try:
 				from pokemon.dex.functions import pokedex_funcs
@@ -1100,33 +1123,22 @@ class TurnProcessor:
 				target.has_lost = True
 				self.check_victory()
 			else:
-				remove_item = getattr(action.actor, "remove_item", None)
-				if callable(remove_item):
-					should_remove = True
-					checker = getattr(action.actor, "has_item", None)
-					if callable(checker):
-						try:
-							should_remove = checker(action.item, 1)
-						except TypeError:
-							should_remove = checker(action.item)
-					if should_remove:
-						try:
-							remove_item(action.item)
-						except Exception as err:
-							self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 				if hasattr(self, "log_action"):
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
 			return
 
 		target_poke = target.active[0]
-		checker = getattr(action.actor, "has_item", None)
-		if callable(checker):
-			try:
-				if not checker(action.item, 1):
-					return
-			except TypeError:
-				if not checker(action.item):
-					return
+		consumed = False
+
+		def consume_once() -> bool:
+			nonlocal consumed
+			if consumed:
+				return True
+			consumed = self._consume_action_item(action, context="trainer_item", pokemon=target_poke)
+			return consumed
+
+		if not self._actor_has_item_for_action(action):
+			return
 
 		used = False
 		healing_items = {
@@ -1148,21 +1160,31 @@ class TurnProcessor:
 		if item_key in healing_items:
 			max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
 			if 0 < getattr(target_poke, "hp", 0) < max_hp:
+				if not consume_once():
+					return
 				amount = healing_items[item_key]
 				target_poke.hp = max_hp if amount is None else min(max_hp, getattr(target_poke, "hp", 0) + amount)
 				used = True
 
 		if item_key == "fullrestore" and getattr(target_poke, "status", 0):
+			if not consume_once():
+				return
 			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
 		elif item_key in status_items and getattr(target_poke, "status", 0) in status_items[item_key]:
+			if not consume_once():
+				return
 			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
 
 		if item_key == "revive" and getattr(target_poke, "hp", 0) <= 0:
+			if not consume_once():
+				return
 			max_hp = getattr(target_poke, "max_hp", 1)
 			target_poke.hp = max(1, max_hp // 2)
 			target_poke.is_fainted = False
 			used = True
 		elif item_key == "maxrevive" and getattr(target_poke, "hp", 0) <= 0:
+			if not consume_once():
+				return
 			max_hp = getattr(target_poke, "max_hp", 1)
 			target_poke.hp = max_hp
 			target_poke.is_fainted = False
@@ -1173,6 +1195,8 @@ class TurnProcessor:
 				pp = getattr(move, "pp", None)
 				if pp is None:
 					continue
+				if not consume_once():
+					return
 				move.pp = pp + 10
 				used = True
 				break
@@ -1182,12 +1206,6 @@ class TurnProcessor:
 				self.log_action(f"But {action.item} had no effect!")
 			return
 
-		remove_item = getattr(action.actor, "remove_item", None)
-		if callable(remove_item):
-			try:
-				remove_item(action.item)
-			except Exception as err:
-				self._record_failure(context="trainer_item", exception=err, pokemon=target_poke)
 		if hasattr(self, "log_action"):
 			self.log_action(
 				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {getattr(target_poke, 'name', 'Pokemon')}!"

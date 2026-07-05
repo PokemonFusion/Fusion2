@@ -5,7 +5,8 @@ import math
 import uuid
 
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.core.exceptions import FieldDoesNotExist
+from django.db import DatabaseError, models
 from evennia.utils.idmapper.models import SharedMemoryModel
 
 from .enums import Gender, Nature
@@ -210,6 +211,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		if not is_temp or has_owner or has_ai_owner:
 			return False
 
+		relation_errors = (AttributeError, DatabaseError, FieldDoesNotExist, TypeError, ValueError)
+
 		def _clear_relation(manager, *, action: str) -> None:
 			if not manager:
 				return
@@ -230,21 +233,27 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 					deleter = getattr(iterable, "delete", None)
 					if callable(deleter):
 						deleter()
-			except (AttributeError, TypeError, ValueError):
+			except relation_errors:
 				# Relations are best-effort; ignore if unavailable
 				logger.debug("Failed to clear temporary relation '%s'.", action, exc_info=True)
 
-		_clear_relation(getattr(self, "learned_moves", None), action="clear")
-		_clear_relation(getattr(self, "activemoveslot_set", None), action="all_delete")
-		_clear_relation(getattr(self, "movesets", None), action="all_delete")
-		_clear_relation(getattr(self, "pp_boosts", None), action="all_delete")
+		def _relation(name: str):
+			try:
+				return getattr(self, name, None)
+			except relation_errors:
+				return None
 
-		active_moveset = getattr(self, "active_moveset", None)
+		_clear_relation(_relation("learned_moves"), action="clear")
+		_clear_relation(_relation("activemoveslot_set"), action="all_delete")
+		_clear_relation(_relation("movesets"), action="all_delete")
+		_clear_relation(_relation("pp_boosts"), action="all_delete")
+
+		active_moveset = _relation("active_moveset")
 		if active_moveset is not None:
 			_clear_relation(active_moveset, action="delete")
 			try:
 				self.active_moveset = None
-			except (AttributeError, TypeError):
+			except relation_errors:
 				logger.debug("Unable to clear active moveset pointer during cleanup.", exc_info=True)
 
 		try:
@@ -394,15 +403,6 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		except (AttributeError, TypeError):
 			logger.debug("Unable to persist PP boost state.", exc_info=True)
 		return True
-
-
-def _owned_pokemon_delete_if_wild_legacy(self) -> bool:
-	"""Legacy compatibility shim for pre-encounter cleanup callers."""
-
-	return False
-
-
-OwnedPokemon.delete_if_wild = _owned_pokemon_delete_if_wild_legacy
 
 
 class EncounterPokemon(BasePokemon):

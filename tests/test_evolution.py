@@ -58,6 +58,19 @@ class DummyMon:
 		self.type_ = "Grass"
 
 
+def _owned_pokemon_model():
+	os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.conf.settings")
+	import django
+
+	try:
+		django.setup()
+	except RuntimeError:
+		pass
+	from pokemon.models.core import OwnedPokemon
+
+	return OwnedPokemon
+
+
 def test_get_evolution_items_empty():
 	assert evo_mod.get_evolution_items() == []
 
@@ -66,3 +79,23 @@ def test_attempt_evolution_by_level():
 	mon = DummyMon("Bulbasaur", 20)
 	assert evo_mod.attempt_evolution(mon) == "Ivysaur"
 	assert mon.name == "Ivysaur"
+
+
+def test_attempt_evolution_updates_ownedpokemon_species_without_name_setter():
+	OwnedPokemon = _owned_pokemon_model()
+
+	mon = OwnedPokemon(species="Bulbasaur", level=20)
+
+	assert evo_mod.attempt_evolution(mon) == "Ivysaur"
+	assert mon.species == "Ivysaur"
+	assert mon.name == "Ivysaur"
+
+
+def test_attempt_evolution_preserves_ownedpokemon_nickname():
+	OwnedPokemon = _owned_pokemon_model()
+
+	mon = OwnedPokemon(species="Bulbasaur", nickname="Buddy", level=20)
+
+	assert evo_mod.attempt_evolution(mon) == "Ivysaur"
+	assert mon.species == "Ivysaur"
+	assert mon.name == "Buddy"

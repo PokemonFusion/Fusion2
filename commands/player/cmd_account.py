@@ -240,10 +240,40 @@ class CmdTradePokemon(Command):
             self.caller.msg("No such Pokemon.")
             return
         if pokemon in self.caller.storage.get_party():
-            self.caller.storage.remove_active_pokemon(pokemon)
-            target.storage.add_active_pokemon(pokemon)
+            removed = False
+            added = False
+            original_trainer = getattr(pokemon, "trainer", None)
+            try:
+                self.caller.storage.remove_active_pokemon(pokemon)
+                removed = True
+                target.storage.add_active_pokemon(pokemon)
+                added = True
+                target_trainer = getattr(target, "trainer", None)
+                if target_trainer is not None and getattr(pokemon, "trainer", None) is not target_trainer:
+                    pokemon.trainer = target_trainer
+                    save = getattr(pokemon, "save", None)
+                    if callable(save):
+                        save(update_fields=["trainer"])
+            except Exception as err:
+                if added:
+                    try:
+                        target.storage.remove_active_pokemon(pokemon)
+                    except Exception:
+                        pass
+                if removed:
+                    try:
+                        self.caller.storage.add_active_pokemon(pokemon)
+                    except Exception:
+                        pass
+                try:
+                    pokemon.trainer = original_trainer
+                except Exception:
+                    pass
+                self.caller.msg(f"Trade failed; {pokemon.nickname or pokemon.species} was returned to your party. {err}")
+                return
         elif pokemon in self.caller.storage.get_stored_pokemon():
-            move_to_box(pokemon, target.storage, target.get_box(1))
+            self.caller.msg("Boxed Pokemon trades are not supported yet. Withdraw the Pokemon to your party first.")
+            return
         else:
             self.caller.msg("You don't have that Pokemon.")
             return

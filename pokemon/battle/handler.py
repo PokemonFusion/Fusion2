@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Dict
 
 from utils.safe_import import safe_import
@@ -45,27 +46,43 @@ class BattleHandler:
 	def __init__(self):
 		# map active battle_id -> BattleSession
 		self.instances: Dict[int, BattleSession] = {}
+		self.ndb = SimpleNamespace(instances=self.instances)
+		self._next_id_fallback = 1
 
 	# -------------------------------------------------------------
 	# ID generation
 	# -------------------------------------------------------------
 	def next_id(self) -> int:
 		"""Return the next unique battle id."""
-		current = ServerConfig.objects.conf("next_battle_id", default=1)
-		ServerConfig.objects.conf(key="next_battle_id", value=current + 1)
+		current = self._server_conf("next_battle_id", default=None)
+		try:
+			current = int(current) if current is not None else int(self._next_id_fallback)
+		except (TypeError, ValueError):
+			current = int(self._next_id_fallback)
+		next_value = current + 1
+		self._server_conf(key="next_battle_id", value=next_value)
+		self._next_id_fallback = next_value
 		return current
 
 	# -------------------------------------------------------------
 	# Persistence helpers
 	# -------------------------------------------------------------
+	def _server_conf(self, key, default=None, value=None, delete=False):
+		"""Best-effort wrapper around Evennia ServerConfig persistence."""
+		try:
+			return ServerConfig.objects.conf(key=key, default=default, value=value, delete=delete)
+		except Exception as err:  # pragma: no cover - depends on runtime DB availability
+			log_info(f"BattleHandler ServerConfig unavailable for {key}: {err}")
+			return default
+
 	def _save(self) -> None:
 		"""Persist the current active battle ids and their rooms."""
 		data = {bid: inst.room.id for bid, inst in self.instances.items()}
-		ServerConfig.objects.conf(key="active_battle_rooms", value=data)
+		self._server_conf(key="active_battle_rooms", value=data)
 
 	def restore(self) -> None:
 		"""Reload any battle instances stored on the server."""
-		mapping = ServerConfig.objects.conf("active_battle_rooms", default={})
+		mapping = self._server_conf("active_battle_rooms", default={}) or {}
 		from .battleinstance import BattleSession
 
 		for bid, rid in mapping.items():
@@ -90,11 +107,98 @@ class BattleHandler:
 		for inst in list(self.instances.values()):
 			REGISTRY.unregister(inst)
 		self.instances.clear()
-		ServerConfig.objects.conf(key="active_battle_rooms", delete=True)
+		self._server_conf(key="active_battle_rooms", delete=True)
 
 	# -------------------------------------------------------------
 	# Management API
 	# -------------------------------------------------------------
+	def get(self, battle_id: int) -> "BattleSession | None":
+		"""Return the active session for ``battle_id`` if one is registered."""
+
+		try:
+			return self.instances.get(int(battle_id))
+		except (TypeError, ValueError):
+			return None
+
+	def for_player(self, player) -> "BattleSession | None":
+		"""Return the registered session involving ``player`` if any."""
+
+		if not player:
+			return None
+		ndb_inst = getattr(getattr(player, "ndb", None), "battle_instance", None)
+		if ndb_inst is not None and self.get(getattr(ndb_inst, "battle_id", None)) is ndb_inst:
+			return ndb_inst
+
+		battle_id = getattr(getattr(player, "db", None), "battle_id", None)
+		inst = self.get(battle_id)
+		if inst is not None:
+			return inst
+
+		player_id = getattr(player, "id", None)
+		for candidate in self.instances.values():
+			for collection_name in ("teamA", "teamB", "trainers", "observers"):
+				collection = getattr(candidate, collection_name, None) or []
+				try:
+					if player in collection:
+						return candidate
+					if player_id is not None and any(getattr(obj, "id", None) == player_id for obj in collection):
+						return candidate
+				except TypeError:
+					continue
+		return None
+
+	def watch(self, battle_id: int, watcher) -> bool:
+		"""Register ``watcher`` on a canonical battle session."""
+
+		inst = self.get(battle_id)
+		if not inst:
+			return False
+		add = getattr(inst, "add_observer", None) or getattr(inst, "add_watcher", None)
+		if callable(add):
+			add(watcher)
+			return True
+		return False
+
+	def unwatch(self, battle_id: int, watcher) -> bool:
+		"""Remove ``watcher`` from a canonical battle session."""
+
+		inst = self.get(battle_id)
+		if not inst:
+			return False
+		remove = getattr(inst, "remove_observer", None) or getattr(inst, "remove_watcher", None)
+		if callable(remove):
+			remove(watcher)
+			return True
+		return False
+
+	def abort(self, battle_id: int) -> None:
+		"""End a canonical battle session if it is registered."""
+
+		inst = self.get(battle_id)
+		if not inst:
+			return
+		end = getattr(inst, "end", None)
+		if callable(end):
+			end()
+		else:
+			self.unregister(inst)
+
+	def abort_request(self, battle_id: int, requester) -> bool:
+		"""Compatibility hook for older battle-manager callers."""
+
+		inst = self.get(battle_id)
+		if not inst:
+			return False
+		message = f"{getattr(requester, 'key', requester)} aborts battle #{battle_id}."
+		notify = getattr(inst, "notify", None) or getattr(inst, "msg", None)
+		if callable(notify):
+			try:
+				notify(message)
+			except Exception:
+				pass
+		self.abort(battle_id)
+		return True
+
 	def register(self, inst: BattleSession) -> None:
 		"""Track the given battle session."""
 		if not inst:

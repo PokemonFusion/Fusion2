@@ -120,7 +120,8 @@ class DummyCaller:
 		self.ndb = types.SimpleNamespace()
 		self.db = types.SimpleNamespace(battle_control=True)
 		self.has_item = lambda name: True
-		self.trainer = types.SimpleNamespace(remove_item=lambda name: None)
+		self.removed_items = []
+		self.trainer = types.SimpleNamespace(remove_item=lambda name: self.removed_items.append(name))
 
 	def msg(self, text):
 		self.msgs.append(text)
@@ -146,3 +147,4 @@ def test_battleitem_persists_declare_via_queue_item():
 	restore_modules(e, b, bi)
 	assert isinstance(player.pending_action, cmd_mod.Action)
 	assert inst.queued == [("potion", "B1")]
+	assert caller.removed_items == []
