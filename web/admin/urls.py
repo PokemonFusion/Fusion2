@@ -6,11 +6,14 @@ The main web/urls.py includes these routes for all urls starting with `admin/`
 
 """
 
+from django.urls import path
 from evennia.web.admin.urls import urlpatterns as evennia_admin_urlpatterns
+
+from .views import player_roster
 
 # add patterns here
 urlpatterns = [
-	# path("url-pattern", imported_python_view),
+	path("player-roster/", player_roster, name="player-roster"),
 	# path("url-pattern", imported_python_view),
 ]
 

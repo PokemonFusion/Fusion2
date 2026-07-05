@@ -38,6 +38,7 @@ from commands.player.cmd_help import CmdHelp
 from commands.player.cmd_look import CmdLook
 from commands.player.cmd_mail import CmdMail
 from commands.player.cmd_note import CmdNote
+from commands.player.cmd_page import CmdPage
 from commands.player.cmd_profile import CmdAccountProfile
 from commands.player.cmd_request import CmdRequest
 from commands.player.cmd_roleplay import CmdGOIC, CmdGOOOC
@@ -64,6 +65,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdExamine())
         self.add(CmdLook())
         self.add(CmdMail())
+        self.add(CmdPage())
         self.add(CmdDebugPy)
 
         # Attach grouped command sets
