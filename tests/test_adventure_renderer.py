@@ -123,3 +123,26 @@ def test_render_for_room_uses_matching_active_session(monkeypatch):
 
     assert text is not None
     assert "Meadow Entrance" in text
+
+
+def test_render_for_room_keeps_completed_session_visible_before_leave(monkeypatch):
+    FakeAdventureSession.objects = FakeSessionManager()
+    FakeAdventureSession._next_id = 1
+    hall = DummyRoom("Adventure Hall", adventure_hall=True)
+    instance = DummyRoom("Adventure Instance Room #1", adventure_instance=True)
+    hall.exits = [type("Exit", (), {"destination": instance})()]
+    player = DummyPlayer()
+    player.location = hall
+    monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
+    sessions.start_session(player, "alpha_meadow")
+    sessions.move_session(player, "north")
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    sessions.move_session(player, "south")
+
+    text = renderer.render_for_room(instance, player)
+
+    assert text is not None
+    assert "Meadow Entrance" in text
+    assert "Adventure complete. Use +adventure/leave to return." in text

@@ -1,4 +1,5 @@
 import types
+from datetime import timedelta
 
 import pytest
 
@@ -7,6 +8,7 @@ from pokemon.adventures.constants import (
     ADVENTURE_SESSION_ATTR,
     STATE_ABANDONED,
     STATE_COMPLETED,
+    STATE_EXPIRED,
 )
 
 
@@ -120,6 +122,16 @@ def adventure_world():
     return hall, instance, player
 
 
+def _complete_alpha_meadow(player):
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    sessions.move_session(player, "south")
+    return session
+
+
 def test_start_session_reserves_instance_room_and_moves_player(adventure_world):
     hall, instance, player = adventure_world
 
@@ -170,6 +182,15 @@ def test_movement_search_and_return_complete_objectives(adventure_world):
     assert "Adventure complete" in result.message
 
 
+def test_completed_session_remains_current_until_leave(adventure_world):
+    _hall, _instance, player = adventure_world
+    session = _complete_alpha_meadow(player)
+
+    assert sessions.get_active_session_for_player(player) is None
+    assert sessions.get_current_session_for_player(player) is session
+    assert getattr(player.db, ADVENTURE_SESSION_ATTR) == session.pk
+
+
 def test_invalid_virtual_movement_does_not_change_node(adventure_world):
     _hall, _instance, player = adventure_world
     session = sessions.start_session(player, "alpha_meadow").session
@@ -183,12 +204,7 @@ def test_invalid_virtual_movement_does_not_change_node(adventure_world):
 
 def test_leave_completed_session_cleans_attrs_and_returns_player(adventure_world):
     hall, instance, player = adventure_world
-    session = sessions.start_session(player, "alpha_meadow").session
-    sessions.move_session(player, "north")
-    sessions.move_session(player, "north")
-    sessions.search_session(player)
-    sessions.move_session(player, "south")
-    sessions.move_session(player, "south")
+    session = _complete_alpha_meadow(player)
 
     result = sessions.leave_session(player)
 
@@ -198,6 +214,7 @@ def test_leave_completed_session_cleans_attrs_and_returns_player(adventure_world
     assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
     assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
     assert session.state == STATE_COMPLETED
+    assert session.state != STATE_ABANDONED
 
 
 def test_leave_unfinished_session_marks_abandoned(adventure_world):
@@ -211,6 +228,49 @@ def test_leave_unfinished_session_marks_abandoned(adventure_world):
     assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
     assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
     assert session.state == STATE_ABANDONED
+
+
+def test_expired_session_clears_player_and_room_attrs(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    session.expires_at = sessions._now() - timedelta(minutes=1)
+
+    recovered = sessions.get_current_session_for_player(player)
+
+    assert recovered is None
+    assert session.state == STATE_EXPIRED
+    assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
+    assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
+
+
+def test_missing_player_pointer_recovers_from_active_session(adventure_world):
+    _hall, instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    delattr(player.db, ADVENTURE_SESSION_ATTR)
+
+    recovered = sessions.get_current_session_for_player(player)
+
+    assert recovered is session
+    assert getattr(player.db, ADVENTURE_SESSION_ATTR) == session.pk
+    assert getattr(instance.db, ADVENTURE_SESSION_ATTR) == session.pk
+
+
+def test_stale_player_attr_is_not_treated_as_truth(adventure_world):
+    _hall, _instance, player = adventure_world
+    player.db.adventure_session_id = 999
+
+    recovered = sessions.get_current_session_for_player(player)
+
+    assert recovered is None
+    assert not hasattr(player.db, ADVENTURE_SESSION_ATTR)
+
+
+def test_stale_room_attr_does_not_reserve_instance_room(adventure_world):
+    _hall, instance, _player = adventure_world
+    instance.db.adventure_session_id = 999
+
+    assert sessions.room_is_available(instance)
+    assert not hasattr(instance.db, ADVENTURE_SESSION_ATTR)
 
 
 def test_room_lookup_recovers_active_session(adventure_world):
