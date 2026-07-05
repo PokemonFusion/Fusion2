@@ -1,0 +1,100 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}Player Account Roster{% endblock %}
+
+{% block content %}
+<section aria-labelledby="player-roster-title">
+  <header class="mb-3">
+    <p class="fusion-kicker">Admin tools</p>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end">
+      <div>
+        <h1 id="player-roster-title">Player Account Roster</h1>
+        <p class="text-muted mb-0">
+          {{ account_count }} account{{ account_count|pluralize }} and
+          {{ character_count }} character{{ character_count|pluralize }}.
+        </p>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm mt-2 mt-md-0" href="{% url 'admin:index' %}">Django Admin</a>
+    </div>
+  </header>
+
+  <form method="get" class="form-row align-items-end mb-3">
+    <div class="form-group col-md-8 mb-2">
+      <label for="player-roster-search">Search accounts or characters</label>
+      <input
+        id="player-roster-search"
+        class="form-control"
+        type="search"
+        name="q"
+        value="{{ query }}"
+        placeholder="Account, character, dbref, role, location"
+      >
+    </div>
+    <div class="form-group col-md-4 mb-2">
+      <button class="btn btn-fusion-primary" type="submit">Search</button>
+      {% if query %}
+        <a class="btn btn-fusion-secondary ml-2" href="{% url 'player-roster' %}">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if query %}
+    <p class="text-muted">
+      Showing {{ displayed_account_count }} account{{ displayed_account_count|pluralize }}
+      and {{ displayed_character_count }} character{{ displayed_character_count|pluralize }}
+      matching "{{ query }}".
+    </p>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-sm table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th scope="col">Account</th>
+          <th scope="col">Created</th>
+          <th scope="col">Last Login</th>
+          <th scope="col">Characters</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <th scope="row">
+            <div>{{ row.name }}</div>
+            <small class="text-muted">
+              {{ row.dbref }}
+              {% if row.roles %} | {{ row.roles|join:", " }}{% endif %}
+            </small>
+          </th>
+          <td>{{ row.created|default:"-" }}</td>
+          <td>{{ row.last_login|default:"-" }}</td>
+          <td>
+            {% if row.characters %}
+              <ul class="list-unstyled mb-0">
+                {% for character in row.characters %}
+                <li class="mb-1">
+                  <strong>{{ character.name }}</strong>
+                  {% if character.dbref %}<span class="badge badge-light">{{ character.dbref }}</span>{% endif %}
+                  {% if character.online %}<span class="badge badge-success">Online</span>{% endif %}
+                  <small class="text-muted">
+                    {% if character.typeclass %}{{ character.typeclass }}{% endif %}
+                    {% if character.location %}{% if character.typeclass %} | {% endif %}{{ character.location }}{% endif %}
+                  </small>
+                </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <span class="text-muted">No characters</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-muted">No matching accounts found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

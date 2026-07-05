@@ -33,6 +33,9 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>
         {% if rest_api_enabled %}<li class="nav-item"><a class="nav-link" href="/api">API</a></li>{% endif %}
       {% endif %}
+      {% if user|can_view_account_roster %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'player-roster' %}">Player Roster</a></li>
+      {% endif %}
       {% if user|is_builder %}
         <li class="nav-item"><a class="nav-link" href="{% url 'roomeditor:room-list' %}">Room Editor</a></li>
       {% endif %}

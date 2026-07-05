@@ -1,6 +1,7 @@
 from django import template
 
 from roomeditor.auth import has_builder_access
+from web.admin.access import has_account_roster_access
 
 register = template.Library()
 
@@ -14,6 +15,13 @@ def is_builder(user):
     return ``False`` in that case.
     """
     return has_builder_access(user)
+
+
+@register.filter
+def can_view_account_roster(user):
+    """Return ``True`` if ``user`` may view the account roster page."""
+
+    return has_account_roster_access(user)
 
 
 @register.filter(name="class_name")

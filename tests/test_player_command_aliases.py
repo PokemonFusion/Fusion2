@@ -97,6 +97,10 @@ def test_preferred_player_command_names_keep_legacy_aliases():
             "+mail",
             {"mail"},
         ),
+        ("commands/player/cmd_page.py", "CmdPage"): (
+            "page",
+            {"@page", "tell"},
+        ),
         ("commands/player/cmd_pokedex.py", "CmdPokedexSearch"): (
             "+dex",
             {"pokedex", "poke"},
