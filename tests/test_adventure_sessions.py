@@ -125,6 +125,8 @@ def adventure_world():
 def _complete_alpha_meadow(player):
     session = sessions.start_session(player, "alpha_meadow").session
     sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "wild")
+    sessions.resolve_encounter_result(session.pk, player, "capture")
     sessions.move_session(player, "north")
     sessions.search_session(player)
     sessions.move_session(player, "south")
@@ -162,6 +164,12 @@ def test_movement_search_and_return_complete_objectives(adventure_world):
     session = start.session
 
     assert sessions.move_session(player, "north").ok
+    choice = sessions.choose_session_route(player, "trainer")
+    assert choice.ok
+    assert choice.data.encounter_kind == "trainer"
+    encounter = sessions.resolve_encounter_result(session.pk, player, "loss")
+    assert encounter.ok
+    assert session.objective_progress["resolve_encounter"] == 1
     result = sessions.move_session(player, "north")
     assert result.ok
     assert session.current_node == "old_tree"
@@ -180,6 +188,25 @@ def test_movement_search_and_return_complete_objectives(adventure_world):
     assert session.objective_progress["return_entrance"] == 1
     assert session.state == STATE_COMPLETED
     assert "Adventure complete" in result.message
+
+
+def test_route_choice_is_locked_and_encounter_result_is_idempotent(adventure_world):
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+
+    choice = sessions.choose_session_route(player, "wild")
+    duplicate_pending = sessions.choose_session_route(player, "wild")
+    wrong_route = sessions.choose_session_route(player, "trainer")
+    first = sessions.resolve_encounter_result(session.pk, player, "capture")
+    duplicate = sessions.resolve_encounter_result(session.pk, player, "win")
+
+    assert choice.ok and choice.data.species == "Rattata"
+    assert duplicate_pending.ok
+    assert not wrong_route.ok
+    assert first.ok and duplicate.ok
+    assert session.metadata["route_key"] == "wild"
+    assert session.metadata["encounter_result"] == "capture"
 
 
 def test_completed_session_remains_current_until_leave(adventure_world):

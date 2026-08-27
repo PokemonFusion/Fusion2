@@ -99,6 +99,46 @@ def test_adventure_leave_command_detaches_movement_cmdset(monkeypatch):
     assert caller.cmdset.deleted[-1] is AdventureMovementCmdSet
 
 
+def test_adventure_choose_starts_authored_encounter(monkeypatch):
+    from pokemon.battle import battleinstance
+
+    choice = types.SimpleNamespace(
+        species="Rattata",
+        level=5,
+        encounter_kind="wild",
+        opponent_name="",
+        key="wild",
+        outcome_key="wild_route",
+    )
+    session = types.SimpleNamespace(pk=42)
+    started = {}
+
+    class FakeBattleSession:
+        @staticmethod
+        def ensure_for_player(_caller):
+            return None
+
+        def __init__(self, caller):
+            started["caller"] = caller
+
+        def start_adventure_encounter(self, **kwargs):
+            started.update(kwargs)
+
+    monkeypatch.setattr(battleinstance, "BattleSession", FakeBattleSession)
+    monkeypatch.setattr(
+        commands,
+        "choose_session_route",
+        lambda _caller, _arg: AdventureActionResult(True, "Route chosen.", session, choice),
+    )
+
+    caller = _run_cmd({"choose"}, "wild")
+
+    assert caller.messages == ["Route chosen."]
+    assert started["caller"] is caller
+    assert started["adventure_session_id"] == 42
+    assert started["outcome_key"] == "wild_route"
+
+
 def test_adventure_look_renders_current_completed_session(monkeypatch):
     fake_session = types.SimpleNamespace(template_key="alpha_meadow", state="completed")
     monkeypatch.setattr(commands, "get_current_session_for_player", lambda caller: fake_session)

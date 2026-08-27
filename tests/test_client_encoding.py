@@ -24,20 +24,15 @@ def test_mtts_utf8_counts_as_confirmed_utf8():
 	assert session_utf8_status(session) == "confirmed"
 
 
-def test_telnet_without_utf8_flag_warns_once():
+def test_telnet_with_utf8_encoding_but_without_utf8_flag_does_not_warn():
 	session = types.SimpleNamespace(
 		protocol_key="telnet",
 		protocol_flags={"ENCODING": "utf-8", "CLIENTNAME": "UNKNOWN"},
 		ndb=types.SimpleNamespace(),
 	)
 
-	first = build_one_time_utf8_warning(session)
-	second = build_one_time_utf8_warning(session)
-
-	assert "did not report UTF-8 support" in first
-	assert "+symboltest ui" in first
-	assert "+uimode ascii" in first
-	assert second == ""
+	assert session_utf8_status(session) == "unknown"
+	assert build_one_time_utf8_warning(session) == ""
 
 
 def test_non_utf8_encoding_warning_names_encoding():
@@ -47,5 +42,11 @@ def test_non_utf8_encoding_warning_names_encoding():
 		ndb=types.SimpleNamespace(),
 	)
 
+	first = build_one_time_utf8_warning(session)
+	second = build_one_time_utf8_warning(session)
+
 	assert session_utf8_status(session) == "not_utf8"
-	assert "latin-1" in build_one_time_utf8_warning(session)
+	assert "latin-1" in first
+	assert "+symboltest ui" in first
+	assert "+uimode ascii" in first
+	assert second == ""

@@ -329,6 +329,8 @@ rooms may have highlighted shortcut letters in their exit names.
 +hunt/leave       Leave a hunting instance if you are inside one.
 +adventure/list   List compact adventure instances available from Adventure Hall.
 +adventure/start  Start a solo adventure from Adventure Hall.
++adventure/choose Choose an authored route when the Adventure display offers one.
++adventure/look   Redisplay your virtual location, exits, actions, and objectives.
 +adventure/leave  Leave your active adventure.
 
 If a wild Pokemon appears, the game moves you into battle. From there, use

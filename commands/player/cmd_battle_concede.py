@@ -148,6 +148,9 @@ class CmdBattleConcede(Command):
 
         if hasattr(inst, "end"):
             try:
+                result_hook = getattr(inst, "_handle_battle_result", None)
+                if callable(result_hook):
+                    result_hook(None)
                 inst.end()
                 return
             except Exception:

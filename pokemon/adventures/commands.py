@@ -14,7 +14,13 @@ else:
 
 from .cmdsets import attach_movement_cmdset, detach_movement_cmdset
 from .renderer import render_objectives, render_session, render_template_info
-from .sessions import get_current_session_for_player, leave_session, search_session, start_session
+from .sessions import (
+    choose_session_route,
+    get_current_session_for_player,
+    leave_session,
+    search_session,
+    start_session,
+)
 from .templates import get_template, list_templates
 
 
@@ -50,6 +56,7 @@ class CmdAdventure(Command):
       +adventure/look
       +adventure/objectives
       +adventure/search
+      +adventure/choose <wild|trainer>
       +adventure/leave
 
     Examples:
@@ -58,7 +65,7 @@ class CmdAdventure(Command):
       +adventure/search
 
     Notes:
-      The MVP supports solo, non-combat Adventures started from Adventure Hall.
+      Adventures are solo-first authored missions started from Adventure Hall.
     """
 
     key = "+adventure"
@@ -83,6 +90,8 @@ class CmdAdventure(Command):
             self._objectives()
         elif action == "search":
             self._search()
+        elif action == "choose":
+            self._choose(arg)
         elif action == "leave":
             self._leave()
         else:
@@ -90,7 +99,7 @@ class CmdAdventure(Command):
 
     def _action_and_arg(self) -> tuple[str, str]:
         switches = getattr(self, "switches", set())
-        for action in ("list", "info", "start", "look", "objectives", "search", "leave"):
+        for action in ("list", "info", "start", "look", "objectives", "search", "choose", "leave"):
             if action in switches:
                 return action, (self.args or "").strip()
         raw = (self.args or "").strip()
@@ -98,7 +107,7 @@ class CmdAdventure(Command):
             return "help", ""
         first, _, rest = raw.partition(" ")
         first = first.lower()
-        if first in {"list", "info", "start", "look", "objectives", "search", "leave"}:
+        if first in {"list", "info", "start", "look", "objectives", "search", "choose", "leave"}:
             return first, rest.strip()
         return "help", raw
 
@@ -150,6 +159,45 @@ class CmdAdventure(Command):
         if result.ok and result.session is not None:
             self.caller.msg("Objectives:\n" + render_objectives(result.session))
 
+    def _choose(self, arg: str) -> None:
+        if not arg:
+            self.caller.msg("Usage: +adventure/choose <route>")
+            return
+        try:
+            from pokemon.battle.battleinstance import BattleSession
+        except Exception:
+            BattleSession = None
+        if BattleSession is not None:
+            try:
+                active_battle = BattleSession.ensure_for_player(self.caller)
+            except Exception:
+                active_battle = getattr(getattr(self.caller, "ndb", None), "battle_instance", None)
+            if active_battle:
+                self.caller.msg("Finish your current battle before choosing a route.")
+                return
+
+        result = choose_session_route(self.caller, arg)
+        self.caller.msg(result.message)
+        if not result.ok or result.session is None or result.data is None:
+            return
+        if BattleSession is None:
+            self.caller.msg("The battle system is unavailable; use the same choice to retry.")
+            return
+        choice = result.data
+        try:
+            battle = BattleSession(self.caller)
+            battle.start_adventure_encounter(
+                species=choice.species,
+                level=choice.level,
+                encounter_kind=choice.encounter_kind,
+                opponent_name=choice.opponent_name,
+                adventure_session_id=getattr(result.session, "pk", getattr(result.session, "id", 0)),
+                route_key=choice.key,
+                outcome_key=choice.outcome_key or choice.key,
+            )
+        except Exception:
+            self.caller.msg("The encounter could not start; use the same choice to retry.")
+
     def _leave(self) -> None:
         result = leave_session(self.caller)
         detach_movement_cmdset(self.caller)
@@ -160,5 +208,6 @@ def _usage() -> str:
     return (
         "Usage: +adventure/list | +adventure/info <adventure> | "
         "+adventure/start <adventure> | +adventure/look | "
-        "+adventure/objectives | +adventure/search | +adventure/leave"
+        "+adventure/objectives | +adventure/search | "
+        "+adventure/choose <route> | +adventure/leave"
     )

@@ -1,8 +1,29 @@
 # Pokémon Fusion 2 Adventure System Planning Document
 
+## Current Implementation Status (2026-07-10)
+
+The Adventure foundation and first authored vertical slice are implemented.
+Alpha Meadow Survey currently provides:
+
+- solo sessions launched from Adventure Hall using a fixed instance-room pool;
+- a four-node virtual map with movement, rendering, search, and objectives;
+- a locked route choice between a catchable wild encounter and an NPC trainer;
+- soft encounter outcomes: victory, defeat, capture, or fleeing all allow the
+  expedition to continue;
+- durable session recovery, two-hour expiry, staff validation and cleanup;
+- per-player route, outcome, completion, and reward-claim records; and
+- one idempotent first-clear item reward.
+
+Additional missions, milestone UI, weekly/monthly Mission Board goals,
+difficulty variants, party progress, reputation, and builder-facing template
+editing remain planned. See [../adventure-operations.md](../adventure-operations.md)
+for the current player and staff workflow.
+
+---
+
 ## 1. Feature Summary
 
-The Adventure system is a planned PF2 feature for small, reusable, on-demand exploration content.
+The Adventure system is PF2's framework for small, reusable, on-demand exploration content.
 
 Instead of building a massive permanent map for every route, cave, forest, beach, or region, PF2 can use adventure instances: compact virtual areas where solo players or small groups can hunt Pokémon, complete tasks, battle NPC trainers, gather rewards, and roleplay around structured objectives.
 
@@ -142,6 +163,7 @@ n / s / e / w
 
 ```text
 +adventure/search
++adventure/choose <route>
 +adventure/hunt
 +adventure/gather
 +adventure/complete
@@ -376,7 +398,7 @@ Recommended reward model:
 ```text
 First clear: full reward
 Repeat clear: reduced reward
-Daily/weekly bonus: limited
+Weekly/monthly bonus: limited, flexible, and never streak-based
 Rare rewards: capped, gated, or pity-based
 Progression rewards: milestone-based
 ```
@@ -402,8 +424,10 @@ Rules:
 Example:
 
 ```text
-The first few weekly adventure objectives grant full trainer progress.
-After that, players can still adventure for RP, catching, and reduced rewards.
+Permanent first-clear and variety milestones provide the main progression.
+Small weekly goals and broader monthly goals may add capped bonuses without
+requiring daily attendance. After bonuses are exhausted, players can still
+adventure for RP, catching, alternate outcomes, and reduced rewards.
 ```
 
 ---

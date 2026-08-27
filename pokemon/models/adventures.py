@@ -75,3 +75,41 @@ class AdventureSession(models.Model):
         """Return whether this session should accept player actions."""
 
         return self.state == self.STATE_ACTIVE and self.completed_at is None
+
+
+class AdventureParticipation(models.Model):
+    """Durable per-player result and reward state for one Adventure run."""
+
+    session = models.ForeignKey(
+        AdventureSession,
+        on_delete=models.CASCADE,
+        related_name="participations",
+    )
+    player = models.ForeignKey(
+        ObjectDB,
+        on_delete=models.CASCADE,
+        related_name="adventure_participations",
+    )
+    route_key = models.CharField(max_length=80, blank=True)
+    outcome_key = models.CharField(max_length=80, blank=True)
+    encounter_result = models.CharField(max_length=32, blank=True)
+    joined_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    reward_item = models.CharField(max_length=80, blank=True)
+    reward_amount = models.PositiveIntegerField(default=0)
+    reward_claimed_at = models.DateTimeField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=("session", "player"),
+                name="adventure_participation_session_player_uniq",
+            ),
+        )
+        indexes = (
+            models.Index(fields=("player", "completed_at"), name="advpart_player_completed_idx"),
+        )
+
+    def __str__(self):  # pragma: no cover - simple representation
+        return f"{self.player} in {self.session}"

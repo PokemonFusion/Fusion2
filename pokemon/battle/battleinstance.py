@@ -1187,7 +1187,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if getattr(self, "_battle_result_handled", False):
             return
         metadata = dict(getattr(self, "encounter_metadata", None) or {})
-        if metadata.get("source_type") != "gym_leader":
+        source_type = metadata.get("source_type")
+        if source_type == "adventure":
+            self._handle_adventure_battle_result(winner, metadata)
+            return
+        if source_type != "gym_leader":
             return
         if not self._winner_is_player_side(winner):
             return
@@ -1204,6 +1208,33 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             log_warn("Failed to apply gym leader battle result", exc_info=True)
             return
 
+        if result and getattr(result, "message", ""):
+            self.msg(result.message)
+
+    def _handle_adventure_battle_result(self, winner, metadata: Mapping[str, object]) -> None:
+        """Dispatch one terminal battle outcome to its Adventure session."""
+
+        player = self.captainA
+        flee_result = getattr(self.battle, "_flee_result", None) or {}
+        if flee_result.get("success"):
+            result_key = "flee"
+        elif self._winner_is_player_side(winner):
+            pending = list(getattr(getattr(player, "ndb", None), "pending_caught_pokemon", []) or [])
+            before = int(metadata.get("capture_count_before", 0) or 0)
+            result_key = "capture" if len(pending) > before else "win"
+        else:
+            result_key = "loss"
+
+        self._battle_result_handled = True
+        if getattr(self, "storage", None):
+            self.storage.set("battle_result", {"handled": True, "result": result_key})
+        try:
+            from pokemon.adventures.sessions import resolve_encounter_result
+
+            result = resolve_encounter_result(metadata.get("adventure_session_id"), player, result_key)
+        except Exception:
+            log_warn("Failed to apply Adventure battle result", exc_info=True)
+            return
         if result and getattr(result, "message", ""):
             self.msg(result.message)
 
@@ -1457,6 +1488,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         level: int = 5,
         opponent_kind: str = "wild",
         opponent_name: str | None = None,
+        intro_message: str | None = None,
+        debug: bool = True,
     ) -> None:
         """Start an explicit debug battle against a generated opponent."""
 
@@ -1499,16 +1532,53 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             battle_type,
         )
         self._setup_battle_room(
-            intro_message=(
-                f"A debug battle begins against {shell_name} and {opponent_poke.name}."
-            )
+            intro_message=intro_message
+            or f"A debug battle begins against {shell_name} and {opponent_poke.name}."
         )
         self.persist_debug_record(
-            event="test_battle_started",
+            event="test_battle_started" if debug else "adventure_battle_started",
             species=species,
             level=int(level),
             opponent_kind=battle_type.name,
         )
+
+    def start_adventure_encounter(
+        self,
+        *,
+        species: str,
+        level: int,
+        encounter_kind: str,
+        opponent_name: str,
+        adventure_session_id: int,
+        route_key: str,
+        outcome_key: str,
+    ) -> None:
+        """Start a scripted Adventure encounter with durable result metadata."""
+
+        self.start_test_battle(
+            species=species,
+            level=level,
+            opponent_kind=encounter_kind,
+            opponent_name=opponent_name or None,
+            intro_message=(
+                f"The Adventure encounter begins against "
+                f"{opponent_name or ('Wild ' + species)}."
+            ),
+            debug=False,
+        )
+        pending = list(
+            getattr(getattr(self.captainA, "ndb", None), "pending_caught_pokemon", []) or []
+        )
+        metadata = {
+            "source_type": "adventure",
+            "adventure_session_id": adventure_session_id,
+            "route_key": route_key,
+            "outcome_key": outcome_key,
+            "capture_count_before": len(pending),
+        }
+        self.encounter_metadata = metadata
+        if getattr(self, "storage", None):
+            self.storage.set("encounter", metadata)
 
     def _sync_player_pokemon_state(self) -> None:
         """Persist battle results back to the owning player models.

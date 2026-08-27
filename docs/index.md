@@ -43,6 +43,9 @@ See [move-inventory-audit-2026-06-22.md](move-inventory-audit-2026-06-22.md)
 for the latest full move inventory audit and generated CSV reference.
 See [design/npc_trainer_battles.md](design/npc_trainer_battles.md) for the
 NPC trainer battle system design reference.
+See [design/adventure-system.md](design/adventure-system.md) for Adventure Mode
+design and current status, and [adventure-operations.md](adventure-operations.md)
+for the player and builder workflow.
 See [static-npc-trainer-battles.md](static-npc-trainer-battles.md) for the
 current Builder workflow for static NPC trainer battle setup and validation.
 See [design/battle_ai.md](design/battle_ai.md) for the battle AI design
