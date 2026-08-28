@@ -1,17 +1,28 @@
 # Pokemon Fusion 2 Theme Foundations
 
-Status: research compilation and decision aid, not approved PF2 canon.
+Status: PF1 carry-over research compilation and decision aid, not approved
+PF2 canon.
 
 This document gathers the theme material recoverable from Pokemon Fusion 1
 (PF1), compares it with statements already made by Pokemon Fusion 2 (PF2), and
 identifies the choices needed before a new PF2 theme guide can be written.
 
+This is a preservation-first note. It records the recovered PF1 position before
+PF2 revises, rejects, or replaces it, so later adjustments do not erase what the
+older game actually said or implemented.
+
 ## How to Read This Document
 
 - **Current PF2 fact** means the repository or implemented game currently says
   or enforces it.
+- **PF2 working direction** means PF2 deliberately selected or strongly favors
+  that direction, but it may not yet be implemented or published as final
+  player-facing canon.
 - **PF1 legacy canon** means PF1 presented it as setting information. It is
   historical evidence, not automatically PF2 canon.
+- **PF1 coded rule** means the surviving MUF code confirms that PF1
+  mechanically behaved that way. It is not automatically a PF2 balance or
+  implementation requirement.
 - **PF1 policy or tone** means a play guideline rather than an in-world fact.
 - **Open decision** means PF2 has not established an answer in the inspected
   repository.
@@ -73,6 +84,38 @@ did not recognize fusions as full equals.
 - Player fun and story were valued above strict realism or rigid adherence to
   franchise source material.
 
+## PF2 Population and Character Scope
+
+### PF2 working direction: fusion remains central
+
+PF2 will retain Fusion as its defining character concept rather than replacing
+it with a separate general anthro population. The intended population remains
+fundamentally humans, Pokemon, and fusions.
+
+Fusion is a substantial inherited part of PF1's identity. It connects
+human-Pokemon partnership, personal identity, battle participation, history,
+and setting conflict rather than merely explaining anthro character
+appearances. **Unrestricted non-Pokemon anthro species are outside the current
+PF2 theme scope.** This also avoids expanding the setting and cosmology merely
+to support a second anthro category.
+
+### PF2 working direction: born fusions remain
+
+Born fusions remain part of PF2 and provide the direct character fantasy of
+playing an anthro Pokemon person without requiring a transformation-centered
+concept.
+
+- A born fusion is a person, not a catchable Pokemon.
+- A born fusion may ordinarily present as strongly Pokemon-shaped or anthro.
+- A born fusion does not have to acknowledge or roleplay a mechanically
+  available human form as part of their normal identity.
+- PF2 will not add a separate `anthro Pokemon` species category alongside born
+  fusions.
+
+Most ordinary Pokemon species should be available for born-fusion concepts
+unless a specific lore or design reason requires restriction. The exact
+restricted-species list and access policy remain future decisions.
+
 ## PF1 Fusion Lore
 
 ### Spiritual origin
@@ -119,6 +162,146 @@ exceptions.
 This was an RP and character-design policy, not an explanation of fusion
 biology.
 
+#### PF2 working direction: descriptive appearance guidance
+
+PF2 will not retain a mathematical 25/75 percent appearance requirement. A
+fusion should recognizably incorporate both human and Pokemon characteristics,
+with player and staff guidance expressed through descriptive examples rather
+than measured percentages. Born fusions may lean substantially toward a
+Pokemon or anthro appearance while remaining people and fusions rather than
+ordinary Pokemon.
+
+## PF1 Fusion Mechanics and Play Assumptions
+
+PF1 connected its fusion fiction directly to a substantial coded ruleset. The
+following combines its player-facing explanation with confirmed **PF1 coded
+rules**. It is useful evidence for how PF1 understood fusion, but PF2 may
+rebalance or replace it.
+
+### Eligibility and bond
+
+- Both trainer and Pokemon had to want the fusion on some level, consciously or
+  otherwise.
+- Temporary fusion required at least 140 Bond.
+- Permanent fusion required the maximum 255 Bond.
+- At 250 Bond, a temporary fusion could choose the trainer's or Pokemon's
+  gender each time it fused. Below that threshold it normally used the
+  Pokemon's gender. A permanent fusion made its gender choice once when that
+  form was created.
+- `Bond` was explicitly an OOC system measurement rather than a number people
+  discussed in character. It represented togetherness and the ability to
+  fuse.
+- Winning a battle with a participating Pokemon and completing valid RP ticks
+  raised Bond. A Pokemon matching the trainer's favored type received an extra
+  point, and the current temporary fusion received an additional point.
+- PF1 allowed unknown personal or plot factors to make fusion or unfusion
+  easier, harder, or impossible even when the numeric requirements were met.
+
+#### PF2 working direction: bounded, non-grind Bond progression
+
+In character, Bond continues to represent the closeness and ability of a human
+and Pokemon to unite. Out of character, PF2 Bond progression must not reward
+command volume, RP text volume, repetitive battle farming, or unlimited grind
+loops.
+
+Bond may eventually advance through bounded, time-aware mechanisms such as
+meaningful milestones, adventures, battles, or relationship events. The exact
+formula is deliberately left for later system design. Whatever model is chosen
+must remain consistent with PF2's horizontal, no-grind progression philosophy.
+
+### Temporary and permanent forms
+
+- A temporary fusion removed the Pokemon from the active party while the form
+  was in use. Unfusing returned it to an open party slot or a storage box.
+- The coded temporary-unfusion command failed if no party or storage position
+  was available. The help permitted players to roleplay unfusing anyway, while
+  warning that carrying more than six Pokemon outside a Pokemon Center violated
+  League rules.
+- Permanent fusion made the source Pokemon part of the character forever. That
+  Pokemon could not be recovered later as a separate party member.
+- Permanent forms remained available to the character, and the `+fusion`
+  command allowed switching among retained forms.
+- Fusion-born characters did not have to treat the system's available human
+  form as part of their fiction. It existed for mechanical convenience.
+- Fusion, unfusion, and form switching were blocked during battle. A Pokemon
+  could not fuse while holding an item, carrying an egg, or otherwise locked by
+  breeding. Form changes preserved the character's current proportion of HP.
+
+### Combat bonus and participation
+
+- A fused character could enter battle as a Pokemon combatant, lead with
+  themselves, learn moves, and view the active form's Pokemon statistics and
+  attacks.
+- Fusion granted a 10 percent increase to Attack, Defense, Special Attack,
+  Special Defense, and Speed over the corresponding Pokemon form.
+- The fusion bonus did not apply to HP, Accuracy, or Evasion. The MUF stat
+  routine returned those values before applying the five-stat multiplier.
+
+The 10 percent increase is both a balance rule and an in-world claim. PF1's
+help said that the increase was difficult for ordinary people to measure and
+often went unnoticed except by skilled trainers.
+
+#### PF2 working direction: drop the inherent stat bonus
+
+PF2 will drop PF1's inherent 10 percent Fusion bonus. Fusion is a character
+identity and participation mechanic, not a vertical power upgrade. A player
+should not gain a competitive advantage merely because their trainer is fused;
+this follows PF2's horizontal-progression philosophy.
+
+### PF2 Combat Direction
+
+**PF2 working direction:** A fusion may personally participate in Pokemon
+battles as a Pokemon combatant, but doing so does not create an additional
+combatant beyond the battle format's normal roster or participation limit.
+
+- When a trainer fights personally as a fusion, the fusion occupies one of the
+  side's normal combatant or party positions for that battle.
+- A human or fusion trainer who does not fight personally may still use the
+  normal number of Pokemon allowed by the format.
+- Temporary fusion should use the source Pokemon's existing level, statistics,
+  moves, ability, and related battle state wherever practical.
+- Fusion changes who represents that Pokemon combatant, not how much combat
+  power or roster capacity the player receives.
+
+For a six-position format, this would mean six Pokemon for a trainer who stays
+out of the battle, or the trainer's fusion form plus five Pokemon when the
+trainer fights personally. The general rule is consumption of one normal slot,
+not a universal requirement that every battle format use six positions.
+
+### Fighter experience
+
+PF1 tracked a trainer's Pokemon-like combat growth as Fighter XP (FXP):
+
+- A temporary fusion used the lower total of the trainer's TXP or the source
+  Pokemon's XP when determining its fighting level.
+- Permanently fusing added one third of the source Pokemon's XP to the
+  character's shared FXP pool.
+- Every permanent form used that shared FXP total, but forms could have
+  different levels because species used different growth rates.
+
+#### PF2 working direction: do not restore Fighter XP by default
+
+PF2 will not recreate Fighter XP merely for PF1 compatibility. Temporary
+fusion should preferably rely on the source Pokemon's existing level,
+statistics, moves, ability, and related battle state rather than introduce a
+second progression calculation.
+
+Progression for permanent fusions and born fusions remains an **open mechanical
+decision** because those characters may not have an independent source Pokemon
+record. This document does not select that progression model.
+
+### Starting as a fusion
+
+Character generation allowed a player to begin as a fusion rather than a human
+trainer. A starting fusion received no separate starter Pokemon, selected an
+approved fusion species, ability, nature, gender and initial moves, and divided
+2,500 starting experience between TXP and FXP. The chosen species was stored as
+a retained permanent form.
+
+These exact thresholds, bonuses, XP conversions, and command limitations are
+preserved here as PF1 history. They should be reviewed as game design rather
+than silently carried into PF2 theme canon.
+
 ## PF1 Cosmology
 
 The Kasei creation legend described a many-handed Creator that existed before
@@ -130,6 +313,96 @@ watched over them.
 The text did not explicitly identify the Creator as Arceus or reconcile the
 legend with later official Pokemon cosmology. It is best treated as an in-world
 Kasei religious story unless PF2 deliberately chooses otherwise.
+
+## PF1 True Legendaries and Slivers
+
+PF1 distinguished the singular beings of legend from legendary Pokemon that
+trainers could encounter, catch, own, and fuse with.
+
+### The distinction
+
+- A **True Legendary** was the unique, earth-shaking being behind a species'
+  legends. True Legendaries were effectively uncatchable and ordinarily beyond
+  the reach of trainers.
+- A trainer could catch a Dialga, and exceptional trainers could even possess
+  more than one, but they would not possess **the** singular Dialga of legend.
+- Catchable legendary Pokemon were fragments or manifestations of a True
+  Legendary's power. PF1 called them **slivers** in its clearest IC account.
+- Other PF1 records described the same beings as aspects, reflections,
+  mimicries, or splinters. The term **legendary avatar** was not found in the
+  surviving database, help, or MUF files.
+
+### Power and identity
+
+Slivers were powerful Pokemon in their own right, but carried only a small
+portion of the True Legendary's power. The surviving IC explanation used two
+examples:
+
+- a captured Dialga could not move freely backward and forward through time;
+- a captured Jirachi could not grant wishes.
+
+Legendary Beacon encounters were also explicitly described as aspects of the
+greater Legendary rather than the unique being upon which the legend was
+based. This allowed legendary species to participate in ordinary trainer play
+without making every owner the captor of a singular godlike entity.
+
+### Evidence strength
+
+This distinction is supported by three complementary PF1 records:
+
+1. The `News - IC` post **Recent Events in Kasei** called player-catchable
+   legendaries fragments and slivers with only a small portion of a True
+   Legendary's power.
+2. The staff post **Theme notes from Yin** distinguished unique, uncatchable
+   Legendaries from catchable aspects, reflections, or mimicries and used the
+   multiple-Dialga example.
+3. The public announcement **Award Market Beta!** applied the same distinction
+   to legendaries summoned through regional Beacons.
+
+The formal five-article Theme Encyclopedia established the Creator and True
+Legendaries but did not include the sliver explanation. No dedicated
+legendary-lore help topic or local wiki export supplied a competing account.
+The board and IC news material therefore provide strong PF1 carry-over
+evidence. The PF2 decision layer below records how that evidence will be used.
+
+### PF2 working direction: retain True Legendaries and slivers
+
+PF2 will retain the distinction and the term **sliver** rather than replace it
+with `avatar`.
+
+- True Legendaries are the singular beings behind the legends and are not
+  ordinarily catchable or playable.
+- Slivers are lesser fragments, aspects, manifestations, reflections, or
+  offshoots of a corresponding True Legendary's power.
+- Multiple slivers associated with the same True Legendary may exist.
+- Slivers may be caught and owned as Pokemon where appropriate, and may
+  participate in fusion.
+- A sliver does not possess the True Legendary's unique world-altering
+  authority. A Dialga sliver cannot freely control time, and a Jirachi sliver
+  cannot simply grant wishes.
+- A legendary-species fusion derives from a sliver, not from the True
+  Legendary.
+
+Capitalization is not the formal distinction. Player-facing language should
+prefer constructions such as **True Mewtwo** and **Mewtwo sliver** rather than
+attempting to distinguish `Mewtwo` from `mewtwo`.
+
+### PF2 working direction: restricted concepts are horizontal unlocks
+
+Most ordinary Pokemon species should be usable for born-fusion concepts unless
+a specific lore or design reason requires restriction. Some unusual species
+may require restricted-character approval or an account-level unlock.
+
+Legendary or Mythical fusion characters, where allowed, represent slivers.
+Access to a restricted or sliver species is a horizontal character-concept
+reward: it grants new roleplay and identity options, not superior battle
+strength. A veteran gaining access to such a concept should not receive an
+automatic mechanical advantage.
+
+A future policy may classify concepts as **Open species**, **Restricted
+species**, **Legendary/sliver species**, or **Non-player concepts**. This note
+does not define the lists or invent account-age, badge, League, or progression
+requirements.
 
 ## PF1 Science and Artificial Fusion
 
@@ -237,6 +510,16 @@ theme help says fusions first appeared in the late 1950s or early 1960s. Both
 cannot be literally true without an explanation such as fusion disappearing
 and re-emerging.
 
+#### PF2 working direction: ancient fusion and modern rediscovery
+
+Fusion is ancient. Its knowledge and practice later became rare, hidden,
+suppressed, forgotten, or culturally marginalized across much of the wider
+world. The mid-20th-century development was a modern public rediscovery or
+renewed recognition, not the first fusion in history.
+
+The exact cause of fusion leaving common awareness remains open, as does the
+precise calendar year of its modern return.
+
 ### Timeline ambiguity
 
 The technology article refers to a Team Rocket war sixty years ago, while the
@@ -271,86 +554,156 @@ and social assumptions reflect PF1's era. They should remain historical source
 material only and should be rewritten or rejected through a modern safety and
 inclusion review.
 
-## PF2 Decisions to Make
+## PF2 Decision Status
 
-The following decisions should be settled before publishing player-facing
-canon.
+This section separates selected **PF2 working directions** from questions that
+remain genuinely unresolved. Working directions are not claims of current
+implementation or final published canon.
 
-### 1. World model
+### Working directions already chosen
 
-- Is PF2 set in Kasei, a revised Kasei, a new region, or a region-neutral hub?
-- Is the wider world modern Earth, the franchise Pokemon world, or an original
-  Pokemon-inspired continuity?
+- Fusion remains PF2's central concept, with humans, Pokemon, and fusions as
+  the fundamental population. PF2 is not adding an unrestricted non-Pokemon
+  anthro category.
+- Born fusions remain and support anthro-Pokemon character concepts without
+  requiring transformation-focused identities.
+- Fusions are people, cannot be owned or captured, and may train Pokemon or
+  personally battle as Pokemon combatants.
+- Personal fusion participation consumes one normal combatant slot and grants
+  no extra roster capacity.
+- PF2 drops PF1's inherent 10 percent fusion stat bonus.
+- Temporary fusion should reuse the source Pokemon's battle profile wherever
+  practical. PF1 Fighter XP will not return merely for compatibility.
+- Bond remains the thematic expression of closeness, but its OOC progression
+  must be bounded and resistant to command, text, or battle spam.
+- PF2 retains singular True Legendaries and lesser slivers, keeps the term
+  `sliver`, and treats legendary-species fusions as sliver-derived.
+- Restricted and sliver character concepts are horizontal identity options,
+  not superior combat choices.
+- PF2 replaces PF1's numerical appearance rule with descriptive guidance while
+  keeping recognizable human and Pokemon characteristics.
+- Fusion is ancient and later underwent modern public rediscovery or renewed
+  recognition.
+- Consensual, bond-based fusion remains partnership; coercive fusion remains
+  exploitation.
+
+### Genuinely unresolved decisions
+
+#### World model
+
+- Is PF2 set in continued Kasei, revised or rebooted Kasei, a new region, or a
+  region-neutral hub?
+- Is the wider world the official Pokemon world, an alternative continuity, or
+  a setting with real-world geography?
 - Which official regions, characters, organizations, and events exist?
 
-### 2. Fusion ontology
+#### Fusion consciousness and identity
 
-- Is fusion spiritual, biological, technological, or deliberately mysterious?
-- What happens to each participant's mind, memories, and agency?
-- Does a permanent fusion remain one person, become a new person, or contain
-  two cooperating identities?
+- How much consciousness does each participant retain?
+- Is the fused mind one consciousness, two cooperating identities, or variable?
+- How are memories shared, who controls the body, and can the participants
+  communicate internally?
+- Do the answers differ among temporary, permanent, and born fusions?
 - Can all humans and Pokemon fuse, or only some?
+- Is fusion fundamentally spiritual, biological, technological, some
+  combination of these, or deliberately mysterious?
 - Can trauma block fusion, and should that remain lore rather than a mechanic?
 
-### 3. Consent and ethics
+PF1 draft evidence allowed the answers to vary, but that draft is not promoted
+to PF2 canon.
+
+#### Consent details
 
 - What constitutes informed consent for temporary and permanent fusion?
-- Can a Pokemon revoke consent?
-- How does society distinguish partnership from coercion?
-- Is artificial fusion always coercive, or can ethical technology exist?
+- Can either participant revoke consent, and what happens if consent changes
+  during fusion?
+- How should society identify and respond to coercion?
 
-### 4. Fusion society
+#### Permanent fusion
 
-- Are fusions commonplace, rare, or newly emerging?
-- Are born fusions part of PF2?
-- Are fusions legally full people everywhere, only locally, or not yet?
-- Can a fusion own, train, or battle other Pokemon?
-- Do the legacy appearance boundaries remain useful?
+- What happens to the source Pokemon's independent consciousness and
+  personhood?
+- Is permanent fusion metaphysically irreversible, or could extraordinary plot
+  circumstances reverse one?
+- How should permanent-fusion combat progression work?
 
-### 5. History and conflict
+#### Cosmology
 
-- Keep, revise, or discard the ancient fusion history?
-- Keep, revise, or discard the Rocket war?
-- If retained, how much does the old war shape present locations and factions?
-- Should PF2 use franchise villains, original factions, or both?
+- Is PF1's complementary human-Pokemon creation explanation objective truth,
+  a religious belief, or one cultural explanation among several?
+- Is the Creator Arceus?
 
-### 6. Everyday setting
+The creation legend remains distinguishable from established physical fact.
 
-- Keep League Credits as a trainer-only economy?
-- Keep PF1's ecological and transportation assumptions?
-- Establish a default language model?
-- Define technology level, education, government, healthcare, and Pokemon
-  personhood.
+#### Team Rocket history
 
-### 7. Play tone and boundaries
+- Should PF2 preserve PF1's Rocket war, revise it, or replace some or all of it
+  with original factions?
+- If retained, how much does the war shape present locations and institutions?
+
+#### Artificial fusion
+
+PF2 retains the thematic distinction between consensual bond-based fusion and
+coercive forced fusion. It remains open whether all fusion-related technology
+is inherently unethical, only coercive manipulation is unethical, or ethical
+technological assistance can exist.
+
+#### Progression and restricted-concept policy
+
+- What progression model should permanent and born fusions use?
+- What bounded Bond formula should PF2 implement?
+- Which species belong in Open, Restricted, Legendary/sliver, and Non-player
+  classifications?
+- What approval or account-level unlock process should restricted concepts use?
+
+No exact account-age, badge, League, or progression requirements are selected
+here.
+
+#### Society and everyday setting
+
+- How common are temporary, permanent, and born fusions in different places?
+- How consistently does the wider world's law recognize fusions as full people?
+- Should PF2 keep League Credits, PF1's ecological and transportation
+  assumptions, or its default language model?
+- What are the setting's technology, education, government, healthcare, and
+  Pokemon-personhood assumptions?
+
+#### Play tone and boundaries
 
 - Is PF2 primarily cozy social RP, adventure, competitive training, dramatic
   conflict, or an explicit blend?
-- What public content rating applies?
-- Are private or adult-rated spaces part of PF2 at all?
-- What consent tools and villain-play expectations should be formalized?
+- What public content rating and consent tools apply?
+- Are private or adult-rated spaces part of PF2?
+- What villain-play and player-conflict expectations should be formalized?
 
-## Recommended Starting Direction
+## PF2 Working-Direction Summary
 
-This is a proposal for discussion, not canon:
+The current working direction, still distinct from implemented or published
+canon, is:
 
-1. Preserve the heart of PF1: fusion is a consensual expression of a deep
-   human-Pokemon bond, and fusions are people rather than property.
-2. Make PF2's central play promise "shared life and adventure in a society
-   where humans, Pokemon, and fusions coexist."
-3. Use Kasei only after deciding whether PF2 is a continuation or reboot. A
-   revised Kasei offers continuity; a new region offers freedom from timeline
-   and franchise-character baggage.
-4. Treat the creation legend as an in-world belief, not confirmed cosmology.
-5. Retain the thematic contrast between bond-based fusion and coercive fusion,
-   but reconsider whether Team Rocket specifically should own that history.
-6. Define agency and consent before adding story content about permanent or
-   artificial fusion.
-7. Retain a flexible appearance spectrum, but replace the numerical 25 percent
-   rule with clear examples unless a quantitative boundary proves useful in
-   character approval.
-8. Write a new, explicit PF2 safety and RP policy rather than adapting PF1's
-   adult-area and staff-edict language.
+1. Retain Fusion as PF2's defining character concept.
+2. Retain born fusions for anthro-Pokemon character concepts without adding a
+   separate anthro race.
+3. Keep unrestricted non-Pokemon anthros outside the core setting scope.
+4. Keep fusion consensual and bond-based; coercive fusion remains exploitation.
+5. Treat fusions as people who cannot be owned or captured.
+6. Allow fusions to train Pokemon and personally participate in Pokemon
+   battles.
+7. Make personal fusion participation consume one normal combatant slot.
+8. Drop PF1's inherent 10 percent fusion stat bonus.
+9. Do not restore Fighter XP unless later implementation demonstrates a genuine
+   need.
+10. Replace grindable Bond advancement with bounded PF2-compatible progression.
+11. Retain the True Legendary/sliver model and `sliver` terminology.
+12. Treat restricted and sliver character access as horizontal progression,
+    not increased battle power.
+13. Replace the numerical appearance rule with flexible, recognizable human
+    and Pokemon characteristics.
+14. Treat fusion as ancient, followed by modern public rediscovery or renewed
+    recognition.
+15. Leave consciousness, permanent-fusion metaphysics, Kasei continuity,
+    Rocket history, artificial-fusion details, objective cosmology, and
+    permanent/born progression for later decisions.
 
 ## Proposed Canon Deliverables
 
@@ -378,11 +731,19 @@ player-readable documents:
   - Team Rocket
 - `legacy_pf1/game/data/std-db.db`, help object containing:
   - A Theme by any other Theme!
+  - Commands 00 - Fusion Basics
   - 000 Muck Rules - Code of Conduct
   - Breeding
   - Villains Characters and You
 - `legacy_pf1/game/data/std-db.db`, development-board theme drafts and change
-  logs, including Theme Drafts 1 through 4.
+  logs, including Theme Drafts 1 through 4, Theme notes from Yin, and the
+  Fusion: Overview and Fusion: Clothing drafts.
+- `legacy_pf1/game/data/std-db.db`, `News - IC` post Recent Events in Kasei,
+  containing the clearest definition of legendary slivers.
+- `legacy_pf1/game/data/proto.new`, Announcements post Award Market Beta!,
+  applying the True Legendary distinction to Beacon encounters.
+- `legacy_pf1/game/muf/43.m`, `48.m`, `64.m`, and `87.m`: character creation,
+  stat calculation, RP-tick Bond awards, and fusion/unfusion implementation.
 - `legacy_pf1/game/data/help.txt`: generic ProtoMUCK help; it explains the help
   system but does not contain Pokemon Fusion setting canon.
 - `legacy_pf1/game/data/news.txt`: contains only `No news is set.`
