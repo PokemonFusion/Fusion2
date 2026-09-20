@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any, Iterable, Mapping
 
 from django.db import transaction
 
 from pokemon.models.core import OwnedPokemon
-from pokemon.models.moves import ActiveMoveslot, Move, Moveset, MovesetSlot
+from pokemon.models.moves import ActiveMoveslot
 from pokemon.models.stats import (
     add_evs,
     add_experience,
@@ -40,40 +41,31 @@ class CommitAdapter:
         mon.save()
 
     @staticmethod
-    def _capture(trainer: Trainer | None, spec: Mapping[str, Any]) -> OwnedPokemon:
-        mon = OwnedPokemon.objects.create(
-            trainer=trainer if isinstance(trainer, Trainer) else None,
-            species=spec.get("species", ""),
-            level=spec.get("level", 1),
-            ability=spec.get("ability", ""),
-            nature=spec.get("nature", ""),
-            gender=spec.get("gender", ""),
-            ivs=spec.get("ivs", [0, 0, 0, 0, 0, 0]),
-            evs=spec.get("evs", [0, 0, 0, 0, 0, 0]),
-            held_item=spec.get("held_item", ""),
-            current_hp=spec.get("current_hp", 0),
-            friendship=spec.get("friendship", 0),
-            is_shiny=bool(spec.get("is_shiny", False)),
-            tera_type=spec.get("tera_type", ""),
-            flags=list(spec.get("flags", []) or []),
+    def _capture(trainer: Trainer | None, spec: Mapping[str, Any], character=None):
+        """Use the same durable encounter claim as in-battle capture."""
+        if trainer is None or character is None:
+            raise ValueError("Capture requires a character and its owning trainer.")
+        from pokemon.services.capture import finalize_wild_capture
+
+        return finalize_wild_capture(
+            target_poke=SimpleNamespace(
+                model_id=spec.get("model_id") or spec.get("encounter_ref"),
+                hp=spec.get("current_hp", 0),
+            ),
+            player=character, trainer=trainer, ball_name=spec.get("ball_name", ""),
         )
-        moveset = Moveset.objects.create(pokemon=mon, index=0)
-        for idx, mv in enumerate(spec.get("moves", []), start=1):
-            name = mv.get("name")
-            if not name:
-                continue
-            move_obj, _ = Move.objects.get_or_create(name=name)
-            MovesetSlot.objects.create(moveset=moveset, move=move_obj, slot=idx)
-            ActiveMoveslot.objects.create(
-                pokemon=mon, move=move_obj, slot=idx, current_pp=mv.get("current_pp")
-            )
-        mon.active_moveset = moveset
-        mon.save()
-        return mon
 
     @classmethod
     def apply(cls, participants: Iterable[Mapping[str, Any]]) -> None:
+        participants = list(participants)
         with transaction.atomic():
+            # Claim captures before taking party Pokemon row locks. Sort owners
+            # so a multi-participant commit follows the same storage lock order.
+            captures = [part for part in participants if part.get("capture")]
+            captures.sort(key=lambda part: getattr(getattr(part.get("character"), "storage", None), "pk", 0) or 0)
+            for part in captures:
+                character = part.get("character")
+                cls._capture(getattr(character, "trainer", None), part["capture"], character)
             for part in participants:
                 char = part.get("character")
                 trainer = getattr(char, "trainer", None)
@@ -105,9 +97,6 @@ class CommitAdapter:
                             trainer.add_badge(badge)
                         except Exception:
                             pass
-                cap = part.get("capture")
-                if cap:
-                    cls._capture(trainer if isinstance(trainer, Trainer) else None, cap)
                 if char:
                     try:
                         clear_battle_lock(char)

@@ -240,6 +240,10 @@ def _party_slot(storage: Any, pokemon: Any) -> int | None:
 
 def _remove_from_party(character, pokemon: Any) -> None:
     storage = getattr(character, "storage", None)
+    reserver = getattr(storage, "reserve_for_fusion", None)
+    if callable(reserver):
+        reserver(pokemon)
+        return
     remover = getattr(storage, "remove_active_pokemon", None)
     if callable(remover):
         remover(pokemon)
@@ -249,6 +253,13 @@ def _return_to_party_or_box(character, pokemon: Any, preferred_slot: int | None 
     storage = getattr(character, "storage", None)
     if storage is None:
         return f"{_display_name(pokemon)} is no longer fused."
+
+    restorer = getattr(storage, "return_from_fusion", None)
+    if callable(restorer):
+        placement = restorer(pokemon, preferred_slot)
+        if placement.location_type == "party":
+            return f"{_display_name(pokemon)} returned to slot {placement.slot}."
+        return f"{_display_name(pokemon)} was sent to {placement.box.name}."
 
     if callable(getattr(storage, "add_active_pokemon", None)):
         try:

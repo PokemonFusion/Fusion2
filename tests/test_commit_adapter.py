@@ -289,10 +289,25 @@ def test_commit_capture(monkeypatch):
         "evs": [0, 0, 0, 0, 0, 0],
     }
 
-    CommitAdapter.apply([{ "character": char, "party": [], "capture": capture }])
+    import pytest
+    with pytest.raises(ValueError, match="owning trainer"):
+        CommitAdapter.apply([{ "character": char, "party": [], "capture": capture }])
+    assert OwnedPokemon.objects.store == {}
+    assert char.db.battle_lock == "abc"
 
-    bulba = [o for o in OwnedPokemon.objects.store.values() if o.species == "Bulbasaur"][0]
-    slot = ActiveMoveslot.objects.filter(pokemon=bulba, slot=1).first()
-    assert slot.current_pp == 35
-    assert bulba.level == 5
-    assert not hasattr(char.db, "battle_lock")
+
+def test_commit_capture_delegates_to_canonical_service(monkeypatch):
+    setup_env(monkeypatch)
+    from services.battle.commit_adapter import CommitAdapter
+
+    calls = []
+    capture_module = types.ModuleType("pokemon.services.capture")
+    capture_module.finalize_wild_capture = lambda **kwargs: calls.append(kwargs)
+    monkeypatch.setitem(sys.modules, "pokemon.services.capture", capture_module)
+    trainer = object()
+    char = types.SimpleNamespace(trainer=trainer)
+    CommitAdapter._capture(trainer, {"encounter_ref": "encounter:test-id", "current_hp": 12}, char)
+    assert calls[0]["player"] is char
+    assert calls[0]["trainer"] is trainer
+    assert calls[0]["target_poke"].model_id == "encounter:test-id"
+    assert calls[0]["target_poke"].hp == 12

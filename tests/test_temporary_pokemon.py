@@ -59,7 +59,7 @@ def test_helper_never_creates_temp_owned_rows(monkeypatch):
 
 	create_owned_pokemon(
 		"Bulbasaur",
-		trainer="Ash",
+		trainer=types.SimpleNamespace(user_id=1),
 		level=5,
 		is_wild=True,
 		ai_trainer="npc",
@@ -67,8 +67,27 @@ def test_helper_never_creates_temp_owned_rows(monkeypatch):
 		is_battle_instance=True,
 	)
 
-	assert OwnedPokemon.objects.kwargs["trainer"] == "Ash"
+	assert OwnedPokemon.objects.kwargs["trainer"].user_id == 1
 	assert "is_wild" not in OwnedPokemon.objects.kwargs
 	assert "ai_trainer" not in OwnedPokemon.objects.kwargs
 	assert "is_template" not in OwnedPokemon.objects.kwargs
 	assert "is_battle_instance" not in OwnedPokemon.objects.kwargs
+
+
+import pytest
+from contextlib import nullcontext
+
+
+@pytest.fixture(autouse=True)
+def placement_factory_dependencies(monkeypatch):
+    """Stub only storage IO for the initialization unit tests."""
+    from django.db import transaction
+    monkeypatch.setattr(transaction, "atomic", lambda: nullcontext())
+    storage_module = types.ModuleType("pokemon.models.storage")
+    storage_module.UserStorage = types.SimpleNamespace(objects=types.SimpleNamespace(
+        get_or_create=lambda **kwargs: (types.SimpleNamespace(pk=1), True)))
+    monkeypatch.setitem(sys.modules, "pokemon.models.storage", storage_module)
+    placement_module = types.ModuleType("pokemon.services.placement")
+    placement_module.PlacementService = lambda storage: types.SimpleNamespace(
+        locked=lambda: nullcontext(storage), place_new=lambda mon: None)
+    monkeypatch.setitem(sys.modules, "pokemon.services.placement", placement_module)

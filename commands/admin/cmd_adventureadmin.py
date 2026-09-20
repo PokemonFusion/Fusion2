@@ -49,7 +49,7 @@ class CmdAdventureAdmin(Command):
       +adventureadmin/abort <session_id>
       +adventureadmin/return <player>
       +adventureadmin/cleanup
-      +adventureadmin/validate <template|all>
+      +adventureadmin/validate <template||all>
       +adventureadmin/preview <template> [node]
     """
 
@@ -156,7 +156,7 @@ class CmdAdventureAdmin(Command):
 
     def _validate(self, arg: str) -> None:
         if not arg:
-            self.caller.msg("Usage: +adventureadmin/validate <template|all>")
+            self.caller.msg("Usage: +adventureadmin/validate <template||all>")
             return
         templates = list_templates() if arg.strip().lower() == "all" else [get_template(arg)]
         if not templates or any(template is None for template in templates):
@@ -205,7 +205,7 @@ def _usage() -> str:
     return (
         "Usage: +adventureadmin/list | +adventureadmin/info <session_id> | "
         "+adventureadmin/abort <session_id> | +adventureadmin/return <player> | "
-        "+adventureadmin/cleanup | +adventureadmin/validate <template|all> | "
+        "+adventureadmin/cleanup | +adventureadmin/validate <template||all> | "
         "+adventureadmin/preview <template> [node]"
     )
 

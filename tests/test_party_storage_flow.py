@@ -201,7 +201,7 @@ def test_get_pokemon_by_id_is_scoped_to_owner(monkeypatch):
 	user = make_user(mod, storage, trainer, [owned, placed, other], monkeypatch)
 
 	assert user.get_pokemon_by_id("owned") is owned
-	assert user.get_pokemon_by_id("placed") is placed
+	assert user.get_pokemon_by_id("placed") is None
 	assert user.get_pokemon_by_id("other") is None
 
 
@@ -268,13 +268,17 @@ def test_swap_pokemon_moves_boxed_mon_into_slot(monkeypatch):
 	storage = FakeStorage([box], active_by_slot={2: party_mon}, active_count=6)
 	user = make_user(mod, storage, trainer, [boxed_mon, party_mon], monkeypatch)
 	calls = []
-	monkeypatch.setattr(mod, "move_to_box", lambda mon, storage, box: calls.append(("box", mon, box)))
-	monkeypatch.setattr(mod, "move_to_party", lambda mon, storage, slot=None: calls.append(("party", mon, slot)))
+	service = types.ModuleType("pokemon.services.placement")
+	def swap(mon, slot, target_box):
+		calls.append((mon, slot, target_box))
+		return party_mon
+	service.PlacementService = lambda storage: types.SimpleNamespace(swap=swap)
+	monkeypatch.setitem(sys.modules, "pokemon.services.placement", service)
 
 	result = user.swap_pokemon("boxed", 2)
 
 	assert result == "Eevee was swapped into slot 2; Pikachu was sent to Box 1."
-	assert calls == [("box", party_mon, box), ("party", boxed_mon, 2)]
+	assert calls == [(boxed_mon, 2, box)]
 
 
 def test_pokestore_full_party_routes_box_selection_to_swap():
