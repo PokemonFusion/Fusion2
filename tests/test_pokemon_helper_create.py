@@ -66,12 +66,12 @@ def test_create_owned_pokemon_initializes_model(monkeypatch):
 
 	mon = create_owned_pokemon(
 		"Pikachu",
-		trainer="Ash",
+		trainer=types.SimpleNamespace(user_id=1),
 		level=5,
 		gender="M",
 		active_move_names=["thundershock"],
 	)
-	assert OwnedPokemon.objects.kwargs["trainer"] == "Ash"
+	assert OwnedPokemon.objects.kwargs["trainer"].user_id == 1
 	assert mon.level == 5
 	assert mon.healed
 	assert called and called[0][0] is mon
@@ -130,7 +130,7 @@ def test_create_owned_pokemon_strips_legacy_temp_flags(monkeypatch):
 
 	create_owned_pokemon(
 		"Pikachu",
-		trainer="Ash",
+		trainer=types.SimpleNamespace(user_id=1),
 		level=5,
 		is_wild=True,
 		ai_trainer="npc",
@@ -144,3 +144,22 @@ def test_create_owned_pokemon_strips_legacy_temp_flags(monkeypatch):
 	assert "is_battle_instance" not in OwnedPokemon.objects.kwargs
 	assert "is_template" not in OwnedPokemon.objects.kwargs
 	assert OwnedPokemon.objects.kwargs["met_location"] == "Viridian Forest"
+
+
+import pytest
+from contextlib import nullcontext
+
+
+@pytest.fixture(autouse=True)
+def placement_factory_dependencies(monkeypatch):
+    """Stub only storage IO for the initialization unit tests."""
+    from django.db import transaction
+    monkeypatch.setattr(transaction, "atomic", lambda: nullcontext())
+    storage_module = types.ModuleType("pokemon.models.storage")
+    storage_module.UserStorage = types.SimpleNamespace(objects=types.SimpleNamespace(
+        get_or_create=lambda **kwargs: (types.SimpleNamespace(pk=1), True)))
+    monkeypatch.setitem(sys.modules, "pokemon.models.storage", storage_module)
+    placement_module = types.ModuleType("pokemon.services.placement")
+    placement_module.PlacementService = lambda storage: types.SimpleNamespace(
+        locked=lambda: nullcontext(storage), place_new=lambda mon: None)
+    monkeypatch.setitem(sys.modules, "pokemon.services.placement", placement_module)

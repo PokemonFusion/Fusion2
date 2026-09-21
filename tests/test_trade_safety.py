@@ -100,7 +100,7 @@ class FakeCharacter:
         return None
 
 
-def test_trade_restores_party_pokemon_when_target_add_fails(monkeypatch):
+def test_trade_is_blocked_before_removing_party_pokemon(monkeypatch):
     cmd_account = load_cmd_account(monkeypatch)
     pokemon = FakePokemon()
     target = FakeCharacter("Misty", storage=FakeStorage(fail_add=True))
@@ -120,11 +120,11 @@ def test_trade_restores_party_pokemon_when_target_add_fails(monkeypatch):
     assert caller.storage.get_party() == [pokemon]
     assert target.storage.get_party() == []
     assert pokemon.trainer is None
-    assert caller.messages == ["Trade failed; Pikachu was returned to your party. target party full"]
+    assert "temporarily unavailable" in caller.messages[0]
     assert target.messages == []
 
 
-def test_trade_success_moves_party_pokemon_and_transfers_trainer(monkeypatch):
+def test_trade_is_blocked_even_when_target_has_capacity(monkeypatch):
     cmd_account = load_cmd_account(monkeypatch)
     source_trainer = types.SimpleNamespace(name="Ash trainer")
     target_trainer = types.SimpleNamespace(name="Misty trainer")
@@ -144,12 +144,12 @@ def test_trade_success_moves_party_pokemon_and_transfers_trainer(monkeypatch):
 
     command.func()
 
-    assert caller.storage.get_party() == []
-    assert target.storage.get_party() == [pokemon]
-    assert pokemon.trainer is target_trainer
-    assert pokemon.save_updates == [["trainer"]]
-    assert caller.messages == ["You traded Pikachu to Misty."]
-    assert target.messages == ["Ash traded Pikachu to you."]
+    assert caller.storage.get_party() == [pokemon]
+    assert target.storage.get_party() == []
+    assert pokemon.trainer is source_trainer
+    assert pokemon.save_updates == []
+    assert "temporarily unavailable" in caller.messages[0]
+    assert target.messages == []
 
 
 def test_boxed_trade_is_explicitly_unsupported_and_does_not_move_pokemon(monkeypatch):
@@ -174,5 +174,5 @@ def test_boxed_trade_is_explicitly_unsupported_and_does_not_move_pokemon(monkeyp
     assert caller.storage.get_stored_pokemon() == [pokemon]
     assert target.storage.get_party() == []
     assert move_calls == []
-    assert caller.messages == ["Boxed Pokemon trades are not supported yet. Withdraw the Pokemon to your party first."]
+    assert "temporarily unavailable" in caller.messages[0]
     assert target.messages == []

@@ -1107,7 +1107,7 @@ class TurnProcessor:
 							except Exception as err:
 								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
-				if player is not None and hasattr(player, "ndb"):
+				if placement.should_prompt_nickname and player is not None and hasattr(player, "ndb"):
 					pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
 					pending.append({"species": pokemon_name, "to_storage": placement.placement == "storage"})
 					try:
@@ -1118,7 +1118,7 @@ class TurnProcessor:
 				if hasattr(self, "log_action"):
 					if placement.placement == "storage":
 						self.log_action(f"{pokemon_name} was sent to your storage!")
-					else:
+					elif placement.should_prompt_nickname:
 						self.log_action(f"Would you like to give {pokemon_name} a nickname?")
 				target.has_lost = True
 				self.check_victory()

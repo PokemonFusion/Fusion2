@@ -144,58 +144,55 @@ def create_owned_pokemon(
 	active_move_names: list[str] | None = None,
 	**extra_fields,
 ):
-	"""Create and initialize an :class:`OwnedPokemon` instance.
+	"""Create, initialize and canonically place a trainer-owned Pokemon.
 
-	Parameters
-	----------
-	species:
-	    Species name of the Pokémon to create.
-	trainer:
-	    Owning trainer or ``None`` for wild/AI-controlled Pokémon.
-	level:
-	    Initial level for the Pokémon.
-	gender, ability, nature, ivs, evs:
-	    Optional data used to seed model fields. ``ivs`` and ``evs`` default
-	    to zeroed lists if not supplied.
-	extra_fields:
-	    Additional model fields passed directly to ``objects.create``.
-
-	Returns
-	-------
-	OwnedPokemon
-	    The fully initialised Pokémon model with level, health and moves set.
+	Wild and NPC instances must use EncounterPokemon. New owned Pokemon enter
+	the party if a slot is free, otherwise a storage box. Initialization and
+	placement share a transaction, so failure cannot commit an unplaced row.
+	Additional keyword fields are passed to OwnedPokemon.objects.create.
 	"""
 
-	from pokemon.models.core import OwnedPokemon
+	from django.db import transaction
 
-	ivs = ivs if ivs is not None else [0, 0, 0, 0, 0, 0]
-	evs = evs if evs is not None else [0, 0, 0, 0, 0, 0]
-	for legacy_flag in ("ai_trainer", "is_wild", "is_battle_instance", "is_template"):
-		extra_fields.pop(legacy_flag, None)
+	with transaction.atomic():
+		from pokemon.models.core import OwnedPokemon
+		from pokemon.models.storage import UserStorage
+		from pokemon.services.placement import PlacementService
 
-	pokemon = OwnedPokemon.objects.create(
-		trainer=trainer,
-		species=species,
-		nickname="",
-		gender=gender,
-		nature=nature,
-		ability=ability,
-		ivs=ivs,
-		evs=evs,
-		**extra_fields,
-	)
+		if trainer is None:
+			raise ValueError("Owned Pokemon require a trainer; use EncounterPokemon for wild/NPC Pokemon.")
+		storage, _ = UserStorage.objects.get_or_create(user_id=trainer.user_id)
 
-	pokemon.set_level(level)
-	try:
-		initialize_generated_moveset(
-			pokemon,
-			active_move_names=active_move_names,
-			replace_active=True,
-		)
-	except Exception:  # pragma: no cover - helper optional in tests
-		try:
-			learn_level_up_moves(pokemon)
-		except Exception:
-			pass
-	pokemon.heal()
-	return pokemon
+		with PlacementService(storage).locked():
+			ivs = ivs if ivs is not None else [0, 0, 0, 0, 0, 0]
+			evs = evs if evs is not None else [0, 0, 0, 0, 0, 0]
+			for legacy_flag in ("ai_trainer", "is_wild", "is_battle_instance", "is_template"):
+				extra_fields.pop(legacy_flag, None)
+
+			pokemon = OwnedPokemon.objects.create(
+				trainer=trainer,
+				species=species,
+				nickname="",
+				gender=gender,
+				nature=nature,
+				ability=ability,
+				ivs=ivs,
+				evs=evs,
+				**extra_fields,
+			)
+
+			pokemon.set_level(level)
+			try:
+				initialize_generated_moveset(
+					pokemon,
+					active_move_names=active_move_names,
+					replace_active=True,
+				)
+			except Exception:  # pragma: no cover - helper optional in tests
+				try:
+					learn_level_up_moves(pokemon)
+				except Exception:
+					pass
+			pokemon.heal()
+			PlacementService(storage).place_new(pokemon)
+			return pokemon

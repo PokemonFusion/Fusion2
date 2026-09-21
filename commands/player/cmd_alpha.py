@@ -295,7 +295,6 @@ class CmdAlphaPokemon(Command):
 
         from pokemon.data.generation import generate_pokemon
         from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-        from pokemon.models.storage import assign_to_first_storage_box, move_to_box, move_to_party
 
         instance = generate_pokemon(species_key, level=5)
         location = getattr(self.caller, "location", None)
@@ -329,16 +328,9 @@ class CmdAlphaPokemon(Command):
                 active_move_names=list(getattr(instance, "moves", []) or []),
             )
 
-            party = storage.get_party() if hasattr(storage, "get_party") else []
-            if len(list(party or [])) < 6:
-                move_to_party(pokemon, storage)
-                placement = "party"
-                box_name = None
-            else:
-                box = assign_to_first_storage_box(storage, pokemon)
-                box = move_to_box(pokemon, storage, box)
-                placement = "storage"
-                box_name = getattr(box, "name", None)
+            canonical = pokemon.placement
+            placement = "party" if canonical.location_type == "party" else "storage"
+            box_name = canonical.box.name if canonical.box_id else None
 
         log_caught = getattr(trainer, "log_caught_pokemon", None)
         if callable(log_caught):
