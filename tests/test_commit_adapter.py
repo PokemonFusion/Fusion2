@@ -311,3 +311,10 @@ def test_commit_capture_delegates_to_canonical_service(monkeypatch):
     assert calls[0]["trainer"] is trainer
     assert calls[0]["target_poke"].model_id == "encounter:test-id"
     assert calls[0]["target_poke"].hp == 12
+
+    assert not hasattr(calls[0]["target_poke"], "item")
+    assert not hasattr(calls[0]["target_poke"], "held_item")
+    for state in ({"held_item": None}, {"item": "Leftovers"}, {"item": None, "held_item": "Old Item"}):
+        CommitAdapter._capture(trainer, {"encounter_ref": "encounter:test-id", **state}, char)
+        for field, value in state.items():
+            assert getattr(calls[-1]["target_poke"], field) == value

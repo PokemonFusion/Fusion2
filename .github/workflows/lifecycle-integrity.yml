@@ -38,7 +38,7 @@ jobs:
       - name: Real ORM transactions, deferred constraints and concurrent writers
         run: python tests/integration/placement_cases.py
       - name: Focused caller and compatibility tests
-        run: pytest -q tests/test_capture_persistence.py tests/test_party_storage_flow.py tests/test_pokemon_helper_create.py tests/test_temporary_pokemon.py tests/test_trade_safety.py tests/test_alpha_pokemon_command.py tests/test_commit_adapter.py
+        run: pytest -q tests/test_capture_persistence.py tests/test_item_capture.py tests/test_party_storage_flow.py tests/test_pokemon_helper_create.py tests/test_temporary_pokemon.py tests/test_trade_safety.py tests/test_alpha_pokemon_command.py tests/test_commit_adapter.py
       - name: Check migration state
         run: python -m django makemigrations pokemon --check --dry-run
         env:

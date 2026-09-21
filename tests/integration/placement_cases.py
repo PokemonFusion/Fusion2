@@ -105,11 +105,11 @@ class PlacementCases(unittest.TestCase):
         return EncounterPokemon.objects.create(source_kind="wild", species="Pikachu", level=5,
                                                ivs=[0]*6, evs=[0]*6, current_hp=8)
 
-    def capture(self, encounter, storage=None, trainer=None, session=None):
+    def capture(self, encounter, storage=None, trainer=None, session=None, **battle_state):
         """Use the production capture service and creation factory."""
         player = SimpleNamespace(storage=storage or self.storage, location=SimpleNamespace(key="Route 1"),
                                  ndb=SimpleNamespace(battle_instance=session))
-        return finalize_wild_capture(target_poke=SimpleNamespace(model_id=f"encounter:{encounter.pk}", hp=7),
+        return finalize_wild_capture(target_poke=SimpleNamespace(model_id=f"encounter:{encounter.pk}", hp=7, **battle_state),
                                      player=player, trainer=trainer or self.trainer)
 
     def test_party_box_retry_and_mirrors(self):
@@ -195,6 +195,29 @@ class PlacementCases(unittest.TestCase):
         self.assertFalse(second.should_prompt_nickname)
         self.assertEqual(CaptureReceipt.objects.filter(encounter_id=encounter.pk).count(), 1)
         self.assertFalse(EncounterPokemon.objects.filter(pk=encounter.pk).exists())
+        self.assert_clean()
+
+    def test_capture_preserves_live_item_and_does_not_overwrite_on_retry(self):
+        """Steal/swap, consumption and absent live state survive persistence."""
+        cases = [
+            ({"item": SimpleNamespace(name="Leftovers")}, "Leftovers"),
+            ({"item": "Sitrus Berry"}, "Sitrus Berry"),
+            ({"item": None, "held_item": "Oran Berry"}, ""),
+            ({"item": ""}, ""),
+            ({"held_item": "Pecha Berry"}, "Pecha Berry"),
+            ({"held_item": None}, ""),
+            ({}, "Oran Berry"),
+        ]
+        for state, expected in cases:
+            with self.subTest(state=state):
+                encounter = self.encounter()
+                EncounterPokemon.objects.filter(pk=encounter.pk).update(held_item="Oran Berry")
+                result = self.capture(encounter, **state)
+                receipt = CaptureReceipt.objects.get(encounter_id=encounter.pk)
+                self.assertEqual(OwnedPokemon.objects.get(pk=receipt.owned_id).held_item, expected)
+                retry = self.capture(encounter, item="Stale Retry Item")
+                self.assertEqual(retry.owned_pokemon_id, result.owned_pokemon_id)
+                self.assertEqual(OwnedPokemon.objects.get(pk=receipt.owned_id).held_item, expected)
         self.assert_clean()
 
     def test_capture_overflow_and_retry_after_release(self):

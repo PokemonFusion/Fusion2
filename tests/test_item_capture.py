@@ -413,3 +413,31 @@ def test_trainer_item_does_not_apply_when_remove_item_returns_false():
     assert p1.inventory == {"Potion": 1}
     assert attacker.hp == 10
     assert not any("used Potion" in line for line in logs)
+
+
+@pytest.mark.parametrize("placement_kind", ["party", "storage"])
+def test_capture_retry_does_not_repeat_nickname_flow(monkeypatch, placement_kind):
+    """A replayed capture still ends the battle without duplicating queued UI."""
+    attacker = Pokemon("Pikachu")
+    defender = Pokemon("Bulbasaur", hp=1, max_hp=100)
+    p1 = BattleParticipant("P1", [attacker], is_ai=False)
+    p2 = BattleParticipant("P2", [defender], is_ai=False)
+    p1.active, p2.active = [attacker], [defender]
+    existing = [{"species": "Bulbasaur", "to_storage": placement_kind == "storage"}]
+    player = SimpleNamespace(ndb=SimpleNamespace(pending_caught_pokemon=list(existing)))
+    p1.player = player
+    p1.storage = SimpleNamespace(get_party=lambda: [])
+    p1.inventory = {"Pokeball": 1}
+    monkeypatch.setattr(capture_mod, "attempt_capture",
+                        lambda *args, **kwargs: capture_mod.CaptureOutcome(caught=True, shakes=1, critical=False))
+    monkeypatch.setattr("pokemon.services.capture.finalize_wild_capture",
+                        lambda **kwargs: CapturePlacementResult("caught-retry", placement_kind, 1, "Box 1", False))
+    p1.pending_action = Action(p1, ActionType.ITEM, p2, item="Pokeball", priority=6)
+    battle = Battle(BattleType.WILD, [p1, p2])
+    logs = []
+    battle.log_action = logs.append
+    battle.run_turn()
+    assert player.ndb.pending_caught_pokemon == existing
+    assert not any("nickname" in line.lower() for line in logs)
+    assert p2.has_lost
+    assert battle.battle_over

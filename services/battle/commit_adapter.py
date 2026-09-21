@@ -47,11 +47,16 @@ class CommitAdapter:
             raise ValueError("Capture requires a character and its owning trainer.")
         from pokemon.services.capture import finalize_wild_capture
 
+        target = SimpleNamespace(
+            model_id=spec.get("model_id") or spec.get("encounter_ref"),
+            hp=spec.get("current_hp", 0),
+        )
+        # Preserve absence versus explicit removal for the shared capture service.
+        for field in ("item", "held_item"):
+            if field in spec:
+                setattr(target, field, spec[field])
         return finalize_wild_capture(
-            target_poke=SimpleNamespace(
-                model_id=spec.get("model_id") or spec.get("encounter_ref"),
-                hp=spec.get("current_hp", 0),
-            ),
+            target_poke=target,
             player=character, trainer=trainer, ball_name=spec.get("ball_name", ""),
         )
 

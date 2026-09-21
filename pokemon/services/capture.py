@@ -9,6 +9,17 @@ from django.utils import timezone
 from pokemon.services.pokemon_refs import build_owned_ref, parse_pokemon_ref
 
 
+def _current_held_item(target_poke, encounter) -> str:
+	"""Prefer live battle state; explicit empty values mean the item is gone."""
+	missing = object()
+	item = getattr(target_poke, "item", missing)
+	if item is missing:
+		item = getattr(target_poke, "held_item", missing)
+	if item is missing:
+		item = encounter.held_item
+	return str(getattr(item, "name", item) or "")
+
+
 def _battle_location_name(player=None, battle_context=None) -> str:
 	for source in (getattr(player, "location", None), getattr(battle_context, "room", None), battle_context):
 		if source is None:
@@ -121,7 +132,7 @@ def finalize_wild_capture(
 				dbpoke = create_owned_pokemon(
 					encounter.species, trainer, encounter.level,
 					gender=encounter.gender, nature=encounter.nature, ability=encounter.ability,
-					ivs=list(encounter.ivs), evs=list(encounter.evs), held_item=encounter.held_item,
+					ivs=list(encounter.ivs), evs=list(encounter.evs), held_item=_current_held_item(target_poke, encounter),
 					active_move_names=list(encounter.move_names),
 				)
 				dbpoke.current_hp = max(0, int(getattr(target_poke, "hp", encounter.current_hp) or 0))
