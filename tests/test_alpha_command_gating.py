@@ -21,6 +21,7 @@ IMPORTS = {
         "CmdUseMove",
     ],
     "commands.player.cmd_account": ["CmdTradePokemon"],
+    "commands.player.cmd_gym": ["CmdGym"],
     "commands.player.cmd_fusion": [
         "CmdFusionFight",
         "CmdFusionForms",

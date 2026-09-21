@@ -15,41 +15,22 @@ class UserStorage(models.Model):
 	stored_pokemon = models.ManyToManyField("OwnedPokemon", related_name="stored_users", blank=True)
 
 	def add_active_pokemon(self, pokemon, slot: int | None = None) -> None:
-		"""Add a Pokemon to the active party in the given slot."""
-		existing = set(
-			self.placements.filter(location_type=PokemonPlacement.LocationType.PARTY).values_list("slot", flat=True)
-		)
-		if len(existing) >= 6:
-			raise ValueError("Party already has six Pokemon.")
-		if slot is None:
-			for i in range(1, 7):
-				if i not in existing:
-					slot = i
-					break
-		if slot is None:
-			raise ValueError("No available slot for Pokemon.")
-		with transaction.atomic():
-			PokemonPlacement.objects.update_or_create(
-				pokemon=pokemon,
-				defaults={
-					"storage": self,
-					"location_type": PokemonPlacement.LocationType.PARTY,
-					"slot": slot,
-					"box": None,
-					"box_position": None,
-				},
-			)
-			_sync_legacy_storage_relations(self, pokemon)
+		"""Place a Pokemon through the canonical transition service."""
+		move_to_party(pokemon, self, slot)
 
 	def remove_active_pokemon(self, pokemon) -> None:
-		"""Remove a Pokemon from the active party."""
-		with transaction.atomic():
-			self.placements.filter(
-				storage=self,
-				pokemon=pokemon,
-				location_type=PokemonPlacement.LocationType.PARTY,
-			).delete()
-			_sync_legacy_storage_relations(self, pokemon)
+		"""Deposit a Pokemon instead of leaving an owned row unplaced."""
+		move_to_box(pokemon, self)
+
+	def reserve_for_fusion(self, pokemon):
+		"""Keep an explicit placement for a Pokemon used as a fusion form."""
+		from pokemon.services.placement import PlacementService
+		return PlacementService(self).reserve_for_fusion(pokemon)
+
+	def return_from_fusion(self, pokemon, preferred_slot=None):
+		"""Return a temporary fusion through the canonical transition service."""
+		from pokemon.services.placement import PlacementService
+		return PlacementService(self).return_from_fusion(pokemon, preferred_slot)
 
 	def get_party(self):
 		"""Return active Pokemon ordered by slot."""
@@ -58,12 +39,7 @@ class UserStorage(models.Model):
 			.select_related("pokemon")
 			.order_by("slot", "id")
 		)
-		if placements:
-			return [placement.pokemon for placement in placements]
-		qs = self.active_pokemon.all()
-		if hasattr(qs, "order_by"):
-			qs = qs.order_by("active_slots__slot")
-		return list(qs)
+		return [placement.pokemon for placement in placements]
 
 	def get_stored_pokemon(self):
 		"""Return boxed Pokemon ordered by box and position."""
@@ -72,9 +48,7 @@ class UserStorage(models.Model):
 			.select_related("pokemon", "box")
 			.order_by("box_id", "box_position", "id")
 		)
-		if placements:
-			return [placement.pokemon for placement in placements]
-		return list(self.stored_pokemon.all())
+		return [placement.pokemon for placement in placements]
 
 	def has_party_pokemon(self) -> bool:
 		return bool(self.get_party())
@@ -83,8 +57,12 @@ class UserStorage(models.Model):
 		return len(self.get_party())
 
 	def sync_legacy_relations(self) -> None:
-		for placement in self.placements.select_related("pokemon"):
-			_sync_legacy_storage_relations(self, placement.pokemon)
+		"""Rebuild mirrors from valid canonical rows while excluding other writers."""
+		from pokemon.services.placement import PlacementService
+		with PlacementService(self).locked() as storage:
+			for placement in storage.placements.select_related("pokemon"):
+				placement.full_clean()
+				_sync_legacy_storage_relations(storage, placement.pokemon)
 
 
 class StorageBox(models.Model):
@@ -99,9 +77,7 @@ class StorageBox(models.Model):
 
 	def get_pokemon(self):
 		placements = list(self.placements.select_related("pokemon").order_by("box_position", "id"))
-		if placements:
-			return [placement.pokemon for placement in placements]
-		return list(self.pokemon.all())
+		return [placement.pokemon for placement in placements]
 
 
 class PokemonPlacement(models.Model):
@@ -110,6 +86,7 @@ class PokemonPlacement(models.Model):
 	class LocationType(models.TextChoices):
 		PARTY = "party", "Party"
 		BOX = "box", "Box"
+		FUSION = "fusion", "Fusion reservation"
 
 	storage = models.ForeignKey("UserStorage", on_delete=models.CASCADE, related_name="placements", db_index=True)
 	pokemon = models.OneToOneField("OwnedPokemon", on_delete=models.CASCADE, related_name="placement", db_index=True)
@@ -132,33 +109,49 @@ class PokemonPlacement(models.Model):
 				condition=models.Q(location_type="party"),
 				name="pokemon_party_slot_unique",
 			),
+			models.UniqueConstraint(
+				fields=("box", "box_position"), condition=models.Q(location_type="box"),
+				name="pokemon_box_position_unique",
+			),
+			models.CheckConstraint(
+				condition=(
+					models.Q(location_type="party", slot__isnull=False, slot__gte=1, slot__lte=6,
+						box__isnull=True, box_position__isnull=True)
+					| models.Q(location_type="box", slot__isnull=True, box__isnull=False,
+						box_position__isnull=False, box_position__gte=1)
+					| models.Q(location_type="fusion", slot__isnull=True, box__isnull=True,
+						box_position__isnull=True)
+				), name="pokemon_placement_shape",
+			),
 		]
 
 	def clean(self):
+		"""Validate cross-table ownership as well as location shape."""
+		if not self.pokemon.trainer_id or self.pokemon.trainer.user_id != self.storage.user_id:
+			raise ValidationError("Pokemon owner does not match placement storage.")
 		if self.location_type == self.LocationType.PARTY:
 			if self.slot is None or self.slot < 1 or self.slot > 6:
 				raise ValidationError("Party slot must be between 1 and 6.")
 			if self.box_id is not None or self.box_position is not None:
 				raise ValidationError("Party Pokemon cannot have box placement data.")
 		elif self.location_type == self.LocationType.BOX:
-			if self.box_id is None:
-				raise ValidationError("Box placement requires a storage box.")
-			if self.box and self.box.storage_id != self.storage_id:
+			if self.box_id is None or self.box_position is None or self.box_position < 1 or self.slot is not None:
+				raise ValidationError("Box placement requires a box, positive position, and no party slot.")
+			if self.box.storage_id != self.storage_id:
 				raise ValidationError("Box does not belong to this storage.")
-			self.slot = None
+		elif self.location_type == self.LocationType.FUSION:
+			if self.slot is not None or self.box_id is not None or self.box_position is not None:
+				raise ValidationError("Fusion reservations cannot have party or box data.")
+		else:
+			raise ValidationError("Unknown placement state.")
 
 	def save(self, *args, **kwargs):
-		self.full_clean()
-		result = super().save(*args, **kwargs)
-		_sync_legacy_storage_relations(self.storage, self.pokemon)
-		return result
-
-	def delete(self, *args, **kwargs):
-		storage = self.storage
-		pokemon = self.pokemon
-		result = super().delete(*args, **kwargs)
-		_sync_legacy_storage_relations(storage, pokemon)
-		return result
+		"""Keep canonical data and legacy mirrors in one transaction."""
+		with transaction.atomic():
+			self.full_clean()
+			result = super().save(*args, **kwargs)
+			_sync_legacy_storage_relations(self.storage, self.pokemon)
+			return result
 
 
 def _sync_legacy_storage_relations(storage: "UserStorage", pokemon) -> None:
@@ -188,9 +181,11 @@ def _sync_legacy_storage_relations(storage: "UserStorage", pokemon) -> None:
 def ensure_boxes(storage: "UserStorage", count: int = 8) -> "UserStorage":
 	"""Ensure that a storage container has at least ``count`` boxes."""
 
-	existing = storage.boxes.count()
-	for i in range(existing + 1, count + 1):
-		StorageBox.objects.create(storage=storage, name=f"Box {i}")
+	with transaction.atomic():
+		UserStorage.objects.select_for_update().get(pk=storage.pk)
+		existing = storage.boxes.count()
+		for i in range(existing + 1, count + 1):
+			StorageBox.objects.create(storage=storage, name=f"Box {i}")
 	return storage
 
 
@@ -231,39 +226,31 @@ class ActivePokemonSlot(models.Model):
 
 
 def move_to_party(mon, storage: UserStorage, slot: int | None = None) -> None:
-	"""Move ``mon`` into ``storage``'s active party."""
-
-	with transaction.atomic():
-		storage.placements.filter(pokemon=mon).delete()
-		storage.add_active_pokemon(mon, slot)
+	"""Move ``mon`` into its owner's party using a serialized transition."""
+	from pokemon.services.placement import PlacementService
+	PlacementService(storage).to_party(mon, slot)
 
 
 def move_to_box(mon, storage: UserStorage, box: StorageBox | None = None) -> StorageBox:
-	"""Place ``mon`` into ``box`` within ``storage``."""
-
-	if box is None:
-		box = assign_to_first_storage_box(storage, mon)
-	if box.storage != storage:
-		raise ValueError("Box does not belong to storage.")
-	with transaction.atomic():
-		next_pos = (box.placements.aggregate(models.Max("box_position")).get("box_position__max") or 0) + 1
-		PokemonPlacement.objects.update_or_create(
-			pokemon=mon,
-			defaults={
-				"storage": storage,
-				"location_type": PokemonPlacement.LocationType.BOX,
-				"slot": None,
-				"box": box,
-				"box_position": next_pos,
-			},
-		)
-	return box
+	"""Deposit ``mon`` through the canonical transition service."""
+	from pokemon.services.placement import PlacementService
+	return PlacementService(storage).to_box(mon, box)
 
 
 def release(mon, storage: UserStorage) -> None:
-	"""Release ``mon`` from ``storage`` entirely."""
+	"""Release an owned Pokemon through the canonical transition service."""
+	from pokemon.services.placement import PlacementService
+	PlacementService(storage).release(mon)
 
-	with transaction.atomic():
-		storage.placements.filter(pokemon=mon).delete()
-		_sync_legacy_storage_relations(storage, mon)
-		mon.delete()
+
+class CaptureReceipt(models.Model):
+	"""Durable encounter claim, retained even after the captured Pokemon is released."""
+
+	encounter_id = models.UUIDField(primary_key=True, editable=False)
+	storage = models.ForeignKey(UserStorage, on_delete=models.CASCADE)
+	pokemon = models.OneToOneField("OwnedPokemon", null=True, on_delete=models.SET_NULL)
+	owned_id = models.UUIDField(editable=False)
+	location = models.CharField(max_length=10)
+	party_slot = models.PositiveSmallIntegerField(null=True)
+	box_name = models.CharField(max_length=255, null=True)
+	created_at = models.DateTimeField(auto_now_add=True)

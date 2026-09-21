@@ -221,62 +221,7 @@ class CmdTradePokemon(Command):
     help_category = "Pokemon"
 
     def func(self):
-        if not require_no_battle_lock(self.caller):
-            return
-        if not self.args or "=" not in self.args:
-            self.caller.msg("Usage: +trade <pokemon_id>=<character>")
-            return
-        pid, target_name = [part.strip() for part in self.args.split("=", 1)]
-        target = self.caller.search(target_name)
-        if not target:
-            return
-        if not require_no_battle_lock(target):
-            return
-        if target.account == self.caller.account:
-            self.caller.msg("You cannot trade items between your own characters.")
-            return
-        pokemon = self.caller.get_pokemon_by_id(pid)
-        if not pokemon:
-            self.caller.msg("No such Pokemon.")
-            return
-        if pokemon in self.caller.storage.get_party():
-            removed = False
-            added = False
-            original_trainer = getattr(pokemon, "trainer", None)
-            try:
-                self.caller.storage.remove_active_pokemon(pokemon)
-                removed = True
-                target.storage.add_active_pokemon(pokemon)
-                added = True
-                target_trainer = getattr(target, "trainer", None)
-                if target_trainer is not None and getattr(pokemon, "trainer", None) is not target_trainer:
-                    pokemon.trainer = target_trainer
-                    save = getattr(pokemon, "save", None)
-                    if callable(save):
-                        save(update_fields=["trainer"])
-            except Exception as err:
-                if added:
-                    try:
-                        target.storage.remove_active_pokemon(pokemon)
-                    except Exception:
-                        pass
-                if removed:
-                    try:
-                        self.caller.storage.add_active_pokemon(pokemon)
-                    except Exception:
-                        pass
-                try:
-                    pokemon.trainer = original_trainer
-                except Exception:
-                    pass
-                self.caller.msg(f"Trade failed; {pokemon.nickname or pokemon.species} was returned to your party. {err}")
-                return
-        elif pokemon in self.caller.storage.get_stored_pokemon():
-            self.caller.msg("Boxed Pokemon trades are not supported yet. Withdraw the Pokemon to your party first.")
-            return
-        else:
-            self.caller.msg("You don't have that Pokemon.")
-            return
-        name = pokemon.nickname or pokemon.species
-        self.caller.msg(f"You traded {name} to {target.key}.")
-        target.msg(f"{self.caller.key} traded {name} to you.")
+        """Keep the legacy non-atomic transfer path closed pending trading work."""
+        self.caller.msg(
+            "Pokemon trading is temporarily unavailable while ownership safeguards are upgraded."
+        )

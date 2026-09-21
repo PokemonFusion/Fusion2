@@ -1,8 +1,9 @@
-import sys
 import logging
+import sys
 
-from django.db import transaction
 from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+from django.db import transaction
+
 from pokemon.services.encounters import create_encounter_pokemon, encounter_ref
 from pokemon.services.pokemon_refs import build_owned_ref
 
@@ -224,54 +225,54 @@ def grant_generated_pokemon(
     item: str | None = None,
 ):
     """Generate, persist, and grant a Pokemon to ``target``."""
+    with transaction.atomic():
+        from pokemon.data.generation import generate_pokemon
+        from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 
-    from pokemon.data.generation import generate_pokemon
-    from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+        instance = generate_pokemon(species, level=level)
+        pokemon = create_owned_pokemon(
+            instance.species.name,
+            target.trainer,
+            instance.level,
+            gender=getattr(instance, "gender", "N"),
+            nature=getattr(instance, "nature", ""),
+            ability=getattr(instance, "ability", ""),
+            ivs=[
+                getattr(getattr(instance, "ivs", None), "hp", 0),
+                getattr(getattr(instance, "ivs", None), "attack", 0),
+                getattr(getattr(instance, "ivs", None), "defense", 0),
+                getattr(getattr(instance, "ivs", None), "special_attack", 0),
+                getattr(getattr(instance, "ivs", None), "special_defense", 0),
+                getattr(getattr(instance, "ivs", None), "speed", 0),
+            ],
+            evs=[0, 0, 0, 0, 0, 0],
+            held_item=item or "",
+            active_move_names=list(getattr(instance, "moves", []) or []),
+        )
 
-    instance = generate_pokemon(species, level=level)
-    pokemon = create_owned_pokemon(
-        instance.species.name,
-        target.trainer,
-        instance.level,
-        gender=getattr(instance, "gender", "N"),
-        nature=getattr(instance, "nature", ""),
-        ability=getattr(instance, "ability", ""),
-        ivs=[
-            getattr(getattr(instance, "ivs", None), "hp", 0),
-            getattr(getattr(instance, "ivs", None), "attack", 0),
-            getattr(getattr(instance, "ivs", None), "defense", 0),
-            getattr(getattr(instance, "ivs", None), "special_attack", 0),
-            getattr(getattr(instance, "ivs", None), "special_defense", 0),
-            getattr(getattr(instance, "ivs", None), "speed", 0),
-        ],
-        evs=[0, 0, 0, 0, 0, 0],
-        held_item=item or "",
-        active_move_names=list(getattr(instance, "moves", []) or []),
-    )
-
-    if item and hasattr(pokemon, "held_item"):
-        pokemon.held_item = item
-        if hasattr(pokemon, "save"):
-            try:
-                pokemon.save(update_fields=["held_item"])
-            except Exception:
+        if item and hasattr(pokemon, "held_item"):
+            pokemon.held_item = item
+            if hasattr(pokemon, "save"):
                 try:
-                    pokemon.save()
+                    pokemon.save(update_fields=["held_item"])
                 except Exception:
-                    logger.debug("Unable to persist held item on granted pokemon.", exc_info=True)
+                    try:
+                        pokemon.save()
+                    except Exception:
+                        logger.debug("Unable to persist held item on granted pokemon.", exc_info=True)
 
-    target.storage.add_active_pokemon(pokemon)
+        target.storage.add_active_pokemon(pokemon)
 
-    if caller is not None and hasattr(caller, "msg"):
-        caller.msg(
-            f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}."
-        )
-    if caller is not None and target != caller and hasattr(target, "msg"):
-        target.msg(
-            f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}."
-        )
+        if caller is not None and hasattr(caller, "msg"):
+            caller.msg(
+                f"Gave {pokemon.species} (Lv {pokemon.computed_level}) to {target.key}."
+            )
+        if caller is not None and target != caller and hasattr(target, "msg"):
+            target.msg(
+                f"You received {pokemon.species} (Lv {pokemon.computed_level}) from {caller.key}."
+            )
 
-    return pokemon
+        return pokemon
 
 
 def battle_pokemon_from_owned(pokemon: OwnedPokemon) -> Pokemon:

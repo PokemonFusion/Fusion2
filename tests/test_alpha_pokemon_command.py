@@ -284,7 +284,8 @@ def test_alphapokemon_marks_generated_metadata(monkeypatch):
 
     def fake_create_owned_pokemon(species, trainer, level, **kwargs):
         created.update({"species": species, "trainer": trainer, "level": level, **kwargs})
-        return types.SimpleNamespace(name=species, species=species, computed_level=level, party_slot=1)
+        return types.SimpleNamespace(name=species, species=species, computed_level=level, party_slot=1,
+                                     placement=types.SimpleNamespace(location_type="party", box_id=None))
 
     fake_helpers.create_owned_pokemon = fake_create_owned_pokemon
     monkeypatch.setitem(sys.modules, "pokemon.helpers.pokemon_helpers", fake_helpers)
@@ -304,7 +305,7 @@ def test_alphapokemon_marks_generated_metadata(monkeypatch):
     assert pokemon.name == "Bulbasaur"
     assert placement == "party"
     assert box_name is None
-    assert placed == [pokemon]
+    assert placed == []  # creation factory owns initial placement
     assert created["met_location"] == "Alpha Test Generator (Alpha Test Hub)"
     assert created["obtained_method"] == "alpha_test"
     assert created["flags"] == ["alpha_test_generated"]

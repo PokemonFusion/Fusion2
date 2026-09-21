@@ -1,0 +1,45 @@
+name: Pokemon lifecycle integrity
+on:
+  pull_request:
+    paths:
+      - 'pokemon/**'
+      - 'utils/fusion.py'
+      - 'utils/pokemon_utils.py'
+      - 'commands/player/cmd_account.py'
+      - 'tests/**'
+      - 'services/battle/commit_adapter.py'
+      - '.github/workflows/lifecycle-integrity.yml'
+  workflow_dispatch:
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fusion2_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PF2_TEST_POSTGRES_DSN: 'postgresql://postgres:postgres@localhost:5432/fusion2_test'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Real ORM transactions, deferred constraints and concurrent writers
+        run: python tests/integration/placement_cases.py
+      - name: Focused caller and compatibility tests
+        run: pytest -q tests/test_capture_persistence.py tests/test_item_capture.py tests/test_party_storage_flow.py tests/test_pokemon_helper_create.py tests/test_temporary_pokemon.py tests/test_trade_safety.py tests/test_alpha_pokemon_command.py tests/test_commit_adapter.py
+      - name: Check migration state
+        run: python -m django makemigrations pokemon --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: server.conf.settings

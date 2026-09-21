@@ -152,8 +152,6 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	trainer = models.ForeignKey(
 		"Trainer",
 		on_delete=models.CASCADE,
-		null=True,
-		blank=True,
 		db_index=True,
 	)
 	nickname = models.CharField(max_length=50, blank=True)
@@ -284,8 +282,10 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	def party_slot(self) -> int | None:
 		"""Return 1-6 if this Pokémon is in the active party."""
 		try:
-			slot_rel = self.active_slots.first()
-			return slot_rel.slot if slot_rel else None
+			from .storage import PokemonPlacement
+			return PokemonPlacement.objects.filter(pokemon_id=self.pk, location_type="party").values_list(
+				"slot", flat=True
+			).first()
 		except AttributeError:
 			return None
 

@@ -8,15 +8,17 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
-from typeclasses.characters import Character
 
 from pokemon.data.starters import resolve_starter_key
 from pokemon.helpers.party_helpers import (
     get_active_party as _get_active_party,
+)
+from pokemon.helpers.party_helpers import (
     has_usable_pokemon as _has_usable_party,
 )
 from pokemon.helpers.pokemon_helpers import create_owned_pokemon
 from pokemon.models.storage import PokemonPlacement, move_to_box, move_to_party
+from typeclasses.characters import Character
 from utils.inventory import Inventory, InventoryMixin
 
 # Helper to resolve settings-provided locations into actual ObjectDBs
@@ -62,13 +64,15 @@ class User(Character, InventoryMixin):
         )
 
     def add_pokemon_to_user(self, name, level, type_, data=None):
-        pokemon = self._create_owned_pokemon(name, level, data)
-        self.storage.add_active_pokemon(pokemon)
+        with transaction.atomic():
+            pokemon = self._create_owned_pokemon(name, level, data)
+            self.storage.add_active_pokemon(pokemon)
 
     def add_pokemon_to_storage(self, name, level, type_, data=None):
-        pokemon = self._create_owned_pokemon(name, level, data)
-        box = self.get_box(1)
-        move_to_box(pokemon, self.storage, box)
+        with transaction.atomic():
+            pokemon = self._create_owned_pokemon(name, level, data)
+            box = self.get_box(1)
+            move_to_box(pokemon, self.storage, box)
 
     def show_pokemon_on_user(self):
         party = self.storage.get_party()
@@ -175,8 +179,11 @@ class User(Character, InventoryMixin):
             box = self.get_box(box_index)
         except ValueError:
             return "Invalid box number."
-        with transaction.atomic():
-            move_to_box(pokemon, self.storage, box)
+        try:
+            with transaction.atomic():
+                move_to_box(pokemon, self.storage, box)
+        except ValueError as error:
+            return str(error)
         display = pokemon.nickname or pokemon.species
         return f"{display} was deposited in {box.name}."
 
@@ -192,8 +199,11 @@ class User(Character, InventoryMixin):
             return "That Pokémon is not in that box."
         if self.storage.active_pokemon_count() >= 6:
             return "Your party is full. Use swap <pokemon_id> <party_slot> [box] to swap with a party Pokemon."
-        with transaction.atomic():
-            move_to_party(pokemon, self.storage)
+        try:
+            with transaction.atomic():
+                move_to_party(pokemon, self.storage)
+        except ValueError as error:
+            return str(error)
         display = pokemon.nickname or pokemon.species
         return f"{display} was withdrawn from {box.name}."
 
@@ -213,11 +223,11 @@ class User(Character, InventoryMixin):
         if pokemon not in box.get_pokemon():
             return "That Pokemon is not in that box."
 
-        party_pokemon = self.get_active_pokemon_by_slot(party_slot)
-        with transaction.atomic():
-            if party_pokemon:
-                move_to_box(party_pokemon, self.storage, box)
-            move_to_party(pokemon, self.storage, party_slot)
+        from pokemon.services.placement import PlacementService
+        try:
+            party_pokemon = PlacementService(self.storage).swap(pokemon, party_slot, box)
+        except ValueError as error:
+            return str(error)
 
         display = pokemon.nickname or pokemon.species
         if not party_pokemon:
@@ -239,9 +249,7 @@ class User(Character, InventoryMixin):
         OwnedPokemon = apps.get_model("pokemon", "OwnedPokemon")
         try:
             pokemon = OwnedPokemon.objects.filter(unique_id=pokemon_id, trainer=self.trainer).first()
-            if pokemon:
-                return pokemon
-            return OwnedPokemon.objects.filter(unique_id=pokemon_id, placement__storage=self.storage).first()
+            return pokemon
         except (OwnedPokemon.DoesNotExist, ValidationError, ValueError):
             return None
 
