@@ -6,7 +6,7 @@ evolution mechanics.
 
 from evennia import Command
 
-from utils.dex_suggestions import item_not_found_message, suggest_name
+from utils.dex_suggestions import suggest_name
 from utils.locks import require_no_battle_lock
 
 
@@ -186,7 +186,7 @@ class CmdEvolvePokemon(Command):
     """Evolve one of your Pokemon if possible.
 
     Usage:
-      +evolve <pokemon_id> [item]
+      +evolve <pokemon_id> [item] [=<target>]
 
     Examples:
       +evolve abc123
@@ -202,48 +202,34 @@ class CmdEvolvePokemon(Command):
     help_category = "Pokemon"
 
     def func(self):
+        """Validate and atomically apply one evolution request."""
         if not require_no_battle_lock(self.caller):
             return
-        """Attempt to evolve one of the player's Pokémon."""
-        parts = self.args.split()
-        if not parts:
-            self.caller.msg("Usage: +evolve <pokemon_id> [item]")
+        request, separator, target = self.args.partition("=")
+        parts = request.split(maxsplit=1)
+        if not parts or (separator and not target.strip()):
+            self.caller.msg("Usage: +evolve <pokemon_id> [item] [=<target>]")
             return
-
-        pid = parts[0]
-        item = parts[1] if len(parts) > 1 else None
-        pokemon = self.caller.get_pokemon_by_id(pid)
+        pokemon = self.caller.get_pokemon_by_id(parts[0])
         if not pokemon:
             self.caller.msg("No such Pokémon.")
             return
+        from pokemon.services.evolution import EvolutionError, EvolutionService
 
-        if item and not self.caller.has_item(item):
-            self.caller.msg(item_not_found_message(item, f"You do not have a {item}."))
-            return
-
-        from pokemon.data.evolution import attempt_evolution
-
-        original_species = getattr(pokemon, "species", None)
-        original_name = getattr(pokemon, "name", None)
-        original_type = getattr(pokemon, "type_", None)
         try:
-            from django.db import transaction
-
-            with transaction.atomic():
-                new_species = attempt_evolution(pokemon, item=item)
-                if not new_species:
-                    self.caller.msg("It doesn't seem to be able to evolve right now.")
-                    return
-                if item and not self.caller.trainer.remove_item(item):
-                    raise RuntimeError("evolution item could not be consumed")
-                pokemon.save()
+            result = EvolutionService(self.caller).evolve(
+                pokemon, item=parts[1] if len(parts) > 1 else None,
+                target=target.strip() or None,
+            )
+        except EvolutionError as error:
+            self.caller.msg(str(error))
+            return
         except Exception:
-            if hasattr(pokemon, "species"):
-                pokemon.species = original_species
-            elif original_name is not None:
-                pokemon.name = original_name
-            if hasattr(pokemon, "type_"):
-                pokemon.type_ = original_type
+            from evennia.utils import logger
+            logger.log_trace("Evolution failed")
             self.caller.msg("Evolution failed; no item was consumed and the Pokemon was unchanged.")
             return
-        self.caller.msg(f"{pokemon.name} evolved into {new_species}!")
+        if result:
+            self.caller.msg(f"{pokemon.name} evolved into {result}!")
+        else:
+            self.caller.msg("That evolution request was already completed. Use =<target> for the next stage.")
