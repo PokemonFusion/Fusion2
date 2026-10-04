@@ -1144,6 +1144,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if not getattr(encounter, "team", None):
             raise ValueError("Trainer encounter has no Pokemon.")
+        battle_format = getattr(encounter, "battle_format", "single")
+        if battle_format not in {"single", "double"}:
+            raise ValueError("Unsupported trainer battle format.")
+        self._trainer_active_slots = 2 if battle_format == "double" else 1
         opponent_team = list(encounter.team)
         opponent_poke = opponent_team[0]
         self._track_temp_opponent_team(opponent_team)
@@ -1410,6 +1414,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             self.captainB,
             opponent_team=opponent_team,
         )
+        slots = getattr(self, "_trainer_active_slots", 1)
+        for participant in (player_participant, opponent_participant):
+            participant.max_active = slots
+            participant.active = [mon for mon in participant.pokemons if mon and mon.hp > 0][:slots]
+            if getattr(participant, "side", None) is not None:
+                participant.side.active = participant.active
         self.logic = build_initial_state(
             origin,
             battle_type,
@@ -1600,6 +1610,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def end(self) -> None:
         """End the battle and clean up."""
         log_info(f"Ending battle {self.battle_id}")
+        from pokemon.services.trainer_challenges import release_placed_trainer
+
+        release_placed_trainer(self)
         self.persist_debug_record(event="battle_ending")
         self._sync_player_pokemon_state()
         self._set_player_control(False)

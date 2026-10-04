@@ -1,8 +1,8 @@
 # Static NPC Trainer Battles
 
-Static NPC trainer battles are the current staff-facing way to start a trainer
-battle from existing `NPCTrainer` and `NPCPokemonTemplate` rows. This is a
-small no-migration implementation slice, not the full NPC trainer roadmap.
+Static NPC trainer battles start through shared services from existing
+`NPCTrainer` and `NPCPokemonTemplate` rows. This is a
+small no-migration implementation slice with a placed-NPC player entry point.
 
 ## Current Commands
 
@@ -204,7 +204,8 @@ At battle start, each `NPCPokemonTemplate` is copied into a battle-scoped
 `EncounterPokemon` row. The template rows are not mutated by the battle.
 
 The battle startup adapter now passes the full encounter team into the NPC
-trainer participant. The first ordered template starts active. When an NPC
+trainer participant. Singles activate the first conscious template; doubles
+activate the first two, preserving the remaining roster. When an NPC
 trainer's active Pokemon faints, the next unfainted team member is sent out.
 The player wins only after all NPC trainer team members have fainted.
 
@@ -252,10 +253,81 @@ Not implemented in this slice:
 - full gym progression beyond the proof-of-concept badge gate
 - leader rewards
 - durable gym follower grouping/profile data
-- gym follower room placement or interaction hooks
-- rewards, TXP, cooldowns, and rematch policy
+- dedicated rewards/TXP and durable rematch policy (placement cooldowns below)
 - AI DSL behavior
 - strategic trainer AI switching
 - room-wide staff forcing
 - NPC editor UI
 - full player-side party switching UX beyond the existing battle engine flow
+
+## Player challenges to placed trainers (#706)
+
+Normal characters can use `+challenge <NPC name>`. Target lookup is restricted
+to the caller's room contents. The Builder-only `+npcbattle` list/check/start
+workflow remains available for content diagnosis and remote staff testing.
+
+A placed object is eligible only with explicit opt-in attributes. No migration
+or new authoring command is needed. In the Evennia shell, after creating a valid
+`NPCTrainer` and three ordered templates as above:
+
+```python
+from evennia import create_object
+from evennia.utils.search import search_object
+from pokemon.models.trainer import NPCPokemonTemplate, NPCTrainer
+
+trainer, _ = NPCTrainer.objects.get_or_create(name="Practice Trainer")
+for order, (key, species) in enumerate(
+    (("lead", "Pikachu"), ("reserve-1", "Eevee"), ("reserve-2", "Rattata")), start=1
+):
+    NPCPokemonTemplate.objects.update_or_create(
+        npc_trainer=trainer, template_key=key,
+        defaults={"species": species, "level": 8, "sort_order": order,
+                  "move_names": ["Tackle"], "ivs": [0] * 6, "evs": [0] * 6},
+    )
+
+room = search_object("#<test room dbref>")[0]
+npc = create_object("typeclasses.objects.Object", key="Practice Trainer", location=room)
+npc.db.npc_trainer_id = trainer.pk
+npc.db.trainer_challenge = {
+    "enabled": True,
+    "battle_format": "single",  # "double" requires two conscious party members
+    "cooldown_seconds": 30,
+}
+```
+
+Use a fresh test object rather than repurposing a player or an interactive
+vendor. Disabling `enabled` closes challenges. Unlinked objects, missing trainer
+rows, invalid/oversized teams, unknown template moves, unsupported formats or
+rules, and unresolved battle references block startup. Teams must have 1–6
+members for singles or 2–6 for doubles. Player readiness uses the existing
+fusion-aware battle party. Gym leader records use `+gym challenge` instead,
+so this entry point cannot bypass gym progression.
+
+Cooldown is placement-wide and starts only after successful launch; wins,
+losses, and concessions share that policy. Immediate rematches are allowed
+with zero seconds. Additional challenge rules are rejected until supported;
+no badge, reward, or progression policy is introduced here. An NPC is reserved
+by persistent battle ID for the duration of the encounter and released by the
+existing session end path, including restored sessions. Stale battle references
+fail closed and need staff investigation rather than silently launching again.
+
+### Manual smoke procedure
+
+1. Staff: configure the practice object and three valid templates, then run
+   `+npcbattle/check <database trainer name>` and confirm a clean check.
+2. Normal non-Builder character: enter its room with three conscious Pokemon.
+   Run `+challenge Practice Trainer`. Confirm one lead on each side and all
+   three roster entries retained; fight using the existing battle commands.
+3. Faint the NPC lead and confirm a reserve enters. Defeat the entire team,
+   confirm normal result/cleanup, and confirm no gym badge is awarded.
+4. Another character must receive an already-in-battle rejection while the
+   NPC is occupied. After completion, a challenge during the 30-second
+   cooldown must report resting, then accept once the cooldown expires.
+5. Set `battle_format` to `double`, wait for cooldown, and repeat. Confirm two
+   starting Pokemon per side, one reserve, reserve replacement after a faint,
+   and victory only after all three faint. Concede a second run and verify the
+   NPC's `db.battle_id` and `ndb.battle_instance` are cleared.
+6. Reject a one-conscious-Pokemon party in doubles, a disabled NPC, a trainer
+   with no templates, and a target in another room without creating a session.
+
+Production gym content and strategic NPC switching remain out of scope.
