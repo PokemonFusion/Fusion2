@@ -6,6 +6,8 @@ on:
       - 'utils/fusion.py'
       - 'utils/pokemon_utils.py'
       - 'commands/player/cmd_account.py'
+      - 'commands/player/cmd_learn_evolve.py'
+      - 'commands/player/cmd_party.py'
       - 'tests/**'
       - 'services/battle/commit_adapter.py'
       - '.github/workflows/lifecycle-integrity.yml'
@@ -37,6 +39,10 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Real ORM transactions, deferred constraints and concurrent writers
         run: python tests/integration/placement_cases.py
+      - name: Evolution and held-item transactions and concurrent retries
+        run: python tests/integration/evolution_cases.py
+      - name: Evolution conditions and commands
+        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py
       - name: Focused caller and compatibility tests
         run: pytest -q tests/test_capture_persistence.py tests/test_item_capture.py tests/test_party_storage_flow.py tests/test_pokemon_helper_create.py tests/test_temporary_pokemon.py tests/test_trade_safety.py tests/test_alpha_pokemon_command.py tests/test_commit_adapter.py
       - name: Check migration state
