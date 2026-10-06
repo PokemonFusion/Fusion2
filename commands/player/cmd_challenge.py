@@ -12,7 +12,8 @@ class CmdChallenge(Command):
     Usage:
       +challenge <NPC name>
 
-    You need a conscious party (two Pokemon for doubles). The NPC must be
+    Only singles are available until doubles action and target selection is
+    supported. You need a conscious party. The NPC must be
     accepting challenges, rested, and free of another battle.
     """
 

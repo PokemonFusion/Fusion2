@@ -50,13 +50,12 @@ def world(monkeypatch):
     return NS(player=player, npc=npc, trainer=trainer, team=team, captured=captured)
 
 
-@pytest.mark.parametrize("battle_format, slots", [("single", 1), ("double", 2)])
-def test_launch_preserves_roster_and_metadata(world, battle_format, slots):
-    world.npc.db.trainer_challenge.update(battle_format=battle_format, cooldown_seconds=30)
+def test_launch_preserves_roster_and_metadata(world):
+    world.npc.db.trainer_challenge.update(battle_format="single", cooldown_seconds=30)
     session, encounter = service.TrainerChallenge(world.player, world.npc, now=100).start()
     assert encounter.team is world.team
-    assert len(encounter.team) > slots
-    assert encounter.battle_format == battle_format
+    assert len(encounter.team) > 1
+    assert encounter.battle_format == "single"
     assert encounter.metadata["placed_npc_id"] == world.npc.id
     assert world.npc.db.battle_id == session.battle_id
     assert world.npc.db.trainer_challenge_next_at == 130
@@ -83,13 +82,6 @@ def test_launch_preserves_roster_and_metadata(world, battle_format, slots):
         (lambda w: setattr(w.npc.db, "npc_trainer_id", "bad"), "valid trainer link"),
         (lambda w: setattr(w.trainer, "gym_leader_profile", object()), "gym leader"),
         (lambda w: [setattr(mon, "hp", 0) for mon in w.team], "conscious Pokemon"),
-        (
-            lambda w: (
-                w.npc.db.trainer_challenge.update(battle_format="double"),
-                [setattr(mon, "hp", 0) for mon in w.team[1:]],
-            ),
-            "at least 2",
-        ),
     ],
 )
 def test_rejected_before_allocation(world, change, message):
@@ -199,14 +191,33 @@ def test_restored_session_releases_placed_npc(world, monkeypatch):
     assert world.npc.db.battle_id is None
 
 
-def test_double_requires_two_npc_templates(world, monkeypatch):
+def test_double_command_rejected_before_allocation(world, monkeypatch):
+    """A ready doubles team cannot reach generation, restoration or allocation."""
     world.npc.db.trainer_challenge["battle_format"] = "double"
-    monkeypatch.setattr(
-        service, "check_static_trainer", lambda value: NS(can_start_battle=True, warnings=(), template_count=1)
-    )
-    with pytest.raises(TrainerEncounterError, match="team is not ready"):
-        service.TrainerChallenge(world.player, world.npc).start()
+
+    def unexpected(*args, **kwargs):
+        pytest.fail("Double challenges must reject before encounter/session work")
+
+    monkeypatch.setattr(service, "generate_static_trainer_encounter", unexpected)
+    monkeypatch.setattr(service.BattleSession, "ensure_for_player", unexpected)
+    messages = []
+    world.player.msg = messages.append
+    world.player.search = lambda *args, **kwargs: world.npc
+    command = cmd_challenge.CmdChallenge()
+    command.caller = world.player
+    command.args = "Test Trainer"
+    command.func()
+    assert len(messages) == 1
+    assert "Double trainer challenges are not available yet" in messages[0]
+    assert "both active Pokemon" in messages[0]
+    assert "set battle_format to 'single'" in messages[0]
+    assert "#708" in messages[0]
     assert not world.captured.created
+    assert not world.captured.started
+    assert not hasattr(world.player.db, "battle_id")
+    assert not hasattr(world.npc.db, "battle_id")
+    assert not hasattr(world.npc.ndb, "battle_instance")
+    assert not hasattr(world.npc.db, "trainer_challenge_next_at")
 
 
 def test_command_is_registered_in_player_battle_cmdset():

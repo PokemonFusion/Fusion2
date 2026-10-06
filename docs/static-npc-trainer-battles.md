@@ -204,8 +204,10 @@ At battle start, each `NPCPokemonTemplate` is copied into a battle-scoped
 `EncounterPokemon` row. The template rows are not mutated by the battle.
 
 The battle startup adapter now passes the full encounter team into the NPC
-trainer participant. Singles activate the first conscious template; doubles
-activate the first two, preserving the remaining roster. When an NPC
+trainer participant. Singles activate the first conscious template; internal
+doubles encounters activate the first two, preserving the remaining roster.
+This session-level doubles behavior does not enable player doubles commands;
+`+challenge` rejects doubles until #708 supplies actor/target selection. When an NPC
 trainer's active Pokemon faints, the next unfainted team member is sent out.
 The player wins only after all NPC trainer team members have fainted.
 
@@ -290,7 +292,7 @@ npc = create_object("typeclasses.objects.Object", key="Practice Trainer", locati
 npc.db.npc_trainer_id = trainer.pk
 npc.db.trainer_challenge = {
     "enabled": True,
-    "battle_format": "single",  # "double" requires two conscious party members
+    "battle_format": "single",  # player challenges support singles only until #708
     "cooldown_seconds": 30,
 }
 ```
@@ -298,8 +300,11 @@ npc.db.trainer_challenge = {
 Use a fresh test object rather than repurposing a player or an interactive
 vendor. Disabling `enabled` closes challenges. Unlinked objects, missing trainer
 rows, invalid/oversized teams, unknown template moves, unsupported formats or
-rules, and unresolved battle references block startup. Teams must have 1–6
-members for singles or 2–6 for doubles. Player readiness uses the existing
+rules, and unresolved battle references block startup. Double configurations
+are rejected before encounter generation or session allocation, with feedback
+asking staff to set `battle_format` to `single`. Independent actions for both
+active Pokemon and target selection belong to #708. Player challenge teams
+must have 1–6 members. Player readiness uses the existing
 fusion-aware battle party. Gym leader records use `+gym challenge` instead,
 so this entry point cannot bypass gym progression.
 
@@ -323,11 +328,17 @@ fail closed and need staff investigation rather than silently launching again.
 4. Another character must receive an already-in-battle rejection while the
    NPC is occupied. After completion, a challenge during the 30-second
    cooldown must report resting, then accept once the cooldown expires.
-5. Set `battle_format` to `double`, wait for cooldown, and repeat. Confirm two
-   starting Pokemon per side, one reserve, reserve replacement after a faint,
-   and victory only after all three faint. Concede a second run and verify the
+5. After cooldown, start another singles challenge and concede. Verify the
    NPC's `db.battle_id` and `ndb.battle_instance` are cleared.
-6. Reject a one-conscious-Pokemon party in doubles, a disabled NPC, a trainer
-   with no templates, and a target in another room without creating a session.
+6. Set `battle_format` to `double` and use a character with at least two
+   conscious Pokemon. Confirm `+challenge` reports doubles unavailable and
+   asks staff to select `single` until #708; confirm no session, generated
+   encounter, NPC reservation, or new cooldown is created. Reset to `single`.
+7. Reject a party with no conscious Pokemon, a disabled NPC, a trainer with
+   no templates, and a target in another room without creating a session.
+
+Internal doubles lead/reserve and persistence/restoration behavior remains
+covered by automated battle tests. A playable player doubles smoke belongs
+to #708 and is not part of this procedure.
 
 Production gym content and strategic NPC switching remain out of scope.

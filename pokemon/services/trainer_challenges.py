@@ -53,6 +53,11 @@ class TrainerChallenge:
             raise TrainerEncounterError(
                 "That trainer has an invalid battle format. Ask staff to check its configuration."
             )
+        if battle_format == "double":
+            raise TrainerEncounterError(
+                "Double trainer challenges are not available yet: player commands cannot select both active Pokemon. "
+                "Ask staff to set battle_format to 'single' until doubles action and target selection is supported (#708)."
+            )
         cooldown = config.get("cooldown_seconds", 0)
         next_at = getattr(self.npc.db, "trainer_challenge_next_at", None) or 0
         if (
@@ -68,7 +73,7 @@ class TrainerChallenge:
         self._check_session(self.npc, "That trainer")
         if self.now < next_at:
             raise TrainerEncounterError(f"That trainer is resting. Try again in {int(next_at - self.now) + 1} seconds.")
-        required = 2 if battle_format == "double" else 1
+        required = 1
         party = get_battle_party_with_fusion(self.player)
         if sum(pokemon_is_usable(mon) for mon in party) < required:
             raise TrainerEncounterError(
