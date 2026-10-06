@@ -396,3 +396,47 @@ def test_battle_session_start_trainer_encounter_preserves_full_team():
 	assert session.encounter_metadata["trainer_class"] == "Gym Leader"
 	assert session.encounter_metadata["gym_key"] == "test_gym"
 	assert session.encounter_metadata["badge_key"] == "test_badge"
+
+
+def test_trainer_formats_activate_leads_and_keep_reserves():
+	"""Exercise the session adapter and persisted positions for both formats."""
+	from pokemon.battle.logic import BattleLogic
+	from pokemon.services.trainer_encounters import TrainerEncounter
+
+	for battle_format, slots in (("single", 1), ("double", 2)):
+		room = types.SimpleNamespace(db=types.SimpleNamespace(battles=[]), ndb=types.SimpleNamespace(battle_instances={}))
+		player = types.SimpleNamespace(key="Player", id=5, db=types.SimpleNamespace(),
+			ndb=types.SimpleNamespace(), location=room)
+		player_team = [Pokemon(name, level=5, hp=10, max_hp=10) for name in ("Bulbasaur", "Squirtle", "Charmander")]
+		npc_team = [Pokemon(name, level=5, hp=10, max_hp=10) for name in ("Pikachu", "Eevee", "Rattata")]
+		encounter = TrainerEncounter("Trainer", "Trainer", "static", battle_format, "basic", npc_team, "Hello")
+		session = BattleSession(player)
+		session._prepare_player_party = lambda trainer: player_team
+		session._setup_battle_room = lambda **kwargs: None
+		session.start_trainer_encounter(encounter)
+		for participant, roster in zip(session.battle.participants, (player_team, npc_team)):
+			assert participant.pokemons == roster
+			assert participant.active == roster[:slots]
+			assert participant.max_active == slots
+		assert len(session.data.turndata.positions) == slots * 2
+		restored = BattleLogic.from_dict(session.logic.to_dict())
+		for participant in restored.battle.participants:
+			assert len(participant.pokemons) == 3
+			assert len(participant.active) == slots
+			assert participant.max_active == slots
+		npc = session.battle.participants[1]
+		npc.active[0].hp = 0
+		session.battle.run_faint()
+		assert npc_team[2] in npc.active if slots == 2 else npc_team[1] in npc.active
+		assert session.battle.check_win_conditions() is None
+		for mon in npc_team:
+			mon.hp = 0
+		session.battle.run_faint()
+		assert session.battle.check_win_conditions() is session.battle.participants[0]
+
+		npc_object = types.SimpleNamespace(db=types.SimpleNamespace(battle_id=session.battle_id), ndb=types.SimpleNamespace(battle_instance=session))
+		session.placed_trainer = npc_object
+		session.end()
+		assert npc_object.db.battle_id is None
+		assert npc_object.ndb.battle_instance is None
+		assert getattr(player.db, "battle_id", None) is None

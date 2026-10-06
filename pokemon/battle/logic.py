@@ -138,6 +138,8 @@ class BattleLogic:
 		except Exception:
 			positions = {}
 		if isinstance(positions, dict) and positions:
+			part_a.max_active = max(1, sum(str(key).startswith("A") for key in positions))
+			part_b.max_active = max(1, sum(str(key).startswith("B") for key in positions))
 			active_a = _align_positions_with_team(part_a, positions, "A")
 			if active_a:
 				part_a.active = active_a[: part_a.max_active]

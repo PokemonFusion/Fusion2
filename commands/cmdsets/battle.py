@@ -9,6 +9,7 @@ from commands.player.cmd_battle_concede import CmdBattleConcede
 from commands.player.cmd_battle_flee import CmdBattleFlee
 from commands.player.cmd_battle_item import CmdBattleItem
 from commands.player.cmd_battle_switch import CmdBattleSwitch
+from commands.player.cmd_challenge import CmdChallenge
 from commands.player.cmd_effects import CmdEffects, CmdEffectsAdminReveal
 from commands.player.cmd_showbattle import CmdShowBattle
 from commands.player.cmd_watch import CmdUnwatch, CmdWatch
@@ -27,6 +28,7 @@ class BattleCmdSet(CmdSet):
     def at_cmdset_creation(self):
         """Populate the cmdset."""
         for cmd in (
+            CmdChallenge,
             CmdBattleAttack,
             CmdBattleSwitch,
             CmdBattleItem,
