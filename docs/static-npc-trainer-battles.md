@@ -213,13 +213,30 @@ trainer AI switching, and it does not inspect matchup, move, item, or ruleset
 context yet.
 
 Random trainer encounters still use the same shared `TrainerEncounter` shape.
+Normal `+hunt` trainer encounters now launch through `start_trainer_encounter`,
+so the complete roster, AI profile, encounter metadata, and temporary Pokemon
+cleanup tracking follow the same path as configured trainers.
 One-Pokemon random and static trainer battles continue to work as before.
+
+Pending live validation: use a normal player in a test room configured to
+generate a trainer with at least two Pokemon. Run `+hunt`, defeat its lead,
+and confirm a reserve enters before victory is awarded. Finish the battle,
+then verify the party's persisted state and cleanup of every temporary
+opponent. Also check a concession and a reconnect during the encounter.
+The automated roster/startup tests do not replace these running-game checks.
 
 Gym leader encounters also use the same shared shape with
 `source_type="gym_leader"` and gym metadata attached to the encounter. Badge
 granting happens in the battle result hook only when the player side wins.
 Losing, conceding, or admin cleanup does not grant the badge. Re-winning the
 same leader does not duplicate the badge.
+
+Confirmed gym victories are retained separately from the battle room. If badge
+delivery fails, the player can use `+gym claim` after cleanup or reconnect.
+The badge and claim marker are committed together, and rematches or repeated
+claims cannot add another copy. This requires migration `0043_gym_victory`.
+See [Gym badge recovery](gym-recovery.md) for deployment prerequisites and
+the pending live acceptance checks.
 
 Alpha gym followers use the ordinary static trainer path and are tested with
 `+npcbattle/check` and `+npcbattle`. They do not grant badges or block gym

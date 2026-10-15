@@ -110,7 +110,9 @@ class CmdCharCreate(DefaultCmdCharCreate):
             return
         self.msg(
             f"Created new character {new_character.key}. Use |wgoic {new_character.key}|n to enter"
-            " the game as this character."
+            " the game as this character.\n"
+            "After entering, type |wchargen|n to choose your character type and finish setup.\n"
+            "Type |whelp getting started|n whenever you need the beginner guide."
         )
 
 

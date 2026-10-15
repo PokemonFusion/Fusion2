@@ -4,8 +4,9 @@ import random
 from collections import deque
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
 from types import SimpleNamespace
+from typing import Any, Dict, List, Optional, Set, Tuple
+from uuid import uuid4
 
 from pokemon.services.encounters import delete_encounter_by_ref
 from pokemon.services.pokemon_refs import parse_pokemon_ref
@@ -88,14 +89,14 @@ except (ModuleNotFoundError, AttributeError):  # pragma: no cover - fallback imp
             session._msg_to(target, iface_w)
 
 
-from utils.pokemon_utils import build_battle_pokemon_from_model
-from utils.locks import clear_battle_lock, set_battle_lock
+from utils.battle_logging import setup_daily_battle_log
 from utils.fusion import get_battle_party_with_fusion
+from utils.locks import clear_battle_lock, set_battle_lock
+from utils.pokemon_utils import build_battle_pokemon_from_model
 
 from .compat import (
     BattleLogic,
     _battle_norm_key,
-    _calc_stats_from_model,
     create_battle_pokemon,
     generate_wild_pokemon,
     log_err,
@@ -110,8 +111,6 @@ from .handler import battle_handler
 from .persistence import StatePersistenceMixin
 from .setup import build_initial_state, create_participants, persist_initial_state
 from .storage import BattleDataWrapper
-from utils.battle_logging import setup_daily_battle_log
-
 
 try:  # pragma: no cover - optional import path during tests
     _select_ai_action = safe_import("pokemon.battle.engine")._select_ai_action  # type: ignore[attr-defined]
@@ -209,6 +208,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.temp_pokemon_ids: List[str] = []
         self.encounter_metadata: dict[str, object] = {}
         self._battle_result_handled = False
+        self._gym_victory_id: str | None = None
 
         log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
         self.persist_debug_record(event="session_initialized")
@@ -923,7 +923,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             log_warn("Failed to rehydrate queued declarations during restore", exc_info=True)
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
         obj.encounter_metadata = dict(storage.get("encounter") or {})
-        obj._battle_result_handled = bool(storage.get("battle_result") or False)
+        saved_result = storage.get("battle_result") or {}
+        obj._battle_result_handled = bool(saved_result.get("handled"))
+        obj._adventure_result = saved_result.get("result")
+        obj._gym_victory_id = saved_result.get("gym_victory_id")
         # Ensure state turn matches data since we drop it during compaction
         obj.logic.state.turn = getattr(obj.logic.data.battle, "turn", 1)
         log_info("Restored logic and temp Pokemon ids")
@@ -1193,30 +1196,46 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             return
         if source_type != "gym_leader":
             return
-        if not self._winner_is_player_side(winner):
+        if not getattr(self, "_gym_victory_id", None) and not self._winner_is_player_side(winner):
             return
+        self._handle_gym_victory(metadata)
 
-        self._battle_result_handled = True
-        if getattr(self, "storage", None):
-            self.storage.set("battle_result", {"handled": True})
+    def _handle_gym_victory(self, metadata: Mapping[str, object]) -> None:
+        """Retain a confirmed victory before trying to deliver its badge."""
+        from pokemon.services.gym_rewards import PENDING_MESSAGE, GymVictoryRewards
+
+        self._gym_victory_id = getattr(self, "_gym_victory_id", None) or str(uuid4())
+        saved_result = {"handled": False, "result": "win", "gym_victory_id": self._gym_victory_id}
+        rewards = GymVictoryRewards(self.captainA)
+        try:
+            if getattr(self, "storage", None):
+                self.storage.set("battle_result", saved_result)
+            rewards.record(self._gym_victory_id, metadata)
+        except Exception:
+            log_warn("Failed to save gym victory", exc_info=True)
+            self.msg("Your gym victory could not be saved yet. The battle must remain available for recovery.")
+            return
 
         try:
-            from pokemon.services.gym_leaders import grant_gym_badge_for_victory
-
-            result = grant_gym_badge_for_victory(getattr(winner, "player", None), metadata)
+            result = rewards.claim(self._gym_victory_id)
+            if result.completed:
+                if getattr(self, "storage", None):
+                    self.storage.set("battle_result", {**saved_result, "handled": True})
+                self._battle_result_handled = True
+            self.msg(result.message)
         except Exception:
             log_warn("Failed to apply gym leader battle result", exc_info=True)
-            return
-
-        if result and getattr(result, "message", ""):
-            self.msg(result.message)
+            self.msg(PENDING_MESSAGE)
 
     def _handle_adventure_battle_result(self, winner, metadata: Mapping[str, object]) -> None:
         """Dispatch one terminal battle outcome to its Adventure session."""
 
         player = self.captainA
         flee_result = getattr(self.battle, "_flee_result", None) or {}
-        if flee_result.get("success"):
+        saved_result = getattr(self, "_adventure_result", None)
+        if saved_result:
+            result_key = saved_result
+        elif flee_result.get("success"):
             result_key = "flee"
         elif self._winner_is_player_side(winner):
             pending = list(getattr(getattr(player, "ndb", None), "pending_caught_pokemon", []) or [])
@@ -1225,15 +1244,29 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         else:
             result_key = "loss"
 
-        self._battle_result_handled = True
-        if getattr(self, "storage", None):
-            self.storage.set("battle_result", {"handled": True, "result": result_key})
+        self._adventure_result = result_key
         try:
-            from pokemon.adventures.sessions import resolve_encounter_result
+            from pokemon.adventures.sessions import (
+                clear_encounter_result,
+                queue_encounter_result,
+                resolve_encounter_result,
+            )
 
+            if getattr(self, "storage", None):
+                self.storage.set("battle_result", {"handled": False, "result": result_key})
+            result_key = queue_encounter_result(metadata.get("adventure_session_id"), player, result_key)
+            self._adventure_result = result_key
             result = resolve_encounter_result(metadata.get("adventure_session_id"), player, result_key)
+            if not result.ok:
+                self.msg(f"{result.message} Use +adventure/retry to retry the saved outcome.")
+                return
+            if getattr(self, "storage", None):
+                self.storage.set("battle_result", {"handled": True, "result": result_key})
+            clear_encounter_result(metadata.get("adventure_session_id"), player)
+            self._battle_result_handled = True
         except Exception:
             log_warn("Failed to apply Adventure battle result", exc_info=True)
+            self.msg("Your Adventure encounter result is pending. Use +adventure/retry to retry it.")
             return
         if result and getattr(result, "message", ""):
             self.msg(result.message)
@@ -1669,6 +1702,21 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def end(self) -> None:
         """End the battle and clean up."""
+        metadata = dict(getattr(self, "encounter_metadata", None) or {})
+        victory_id = getattr(self, "_gym_victory_id", None)
+        if metadata.get("source_type") == "gym_leader" and victory_id and not self._battle_result_handled:
+            from pokemon.services.gym_rewards import GymVictoryRewards
+
+            # Refuse cleanup if the battle still holds the only copy. A saved
+            # ledger record can be claimed independently after room cleanup.
+            GymVictoryRewards(self.captainA).record(victory_id, metadata)
+        pending_result = getattr(self, "_adventure_result", None)
+        if metadata.get("source_type") == "adventure" and pending_result and not self._battle_result_handled:
+            from pokemon.adventures.sessions import queue_encounter_result
+
+            # Do not destroy the only copy if the character receipt could not
+            # be saved. Once queued, normal battle cleanup is safe.
+            queue_encounter_result(metadata.get("adventure_session_id"), self.captainA, pending_result)
         log_info(f"Ending battle {self.battle_id}")
         self.persist_debug_record(event="battle_ending")
         self._sync_player_pokemon_state()

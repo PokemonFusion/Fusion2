@@ -6,17 +6,33 @@ Pokemon, and held items.
 
 ## Test Targets
 
-Use these targets as separate checks:
+Run these commands from the `fusion2` repository root. The default run now
+includes both the application tests and the battle-mechanics tests:
 
 ```powershell
-.\evenv\Scripts\python.exe -m pytest
+..\evenv\Scripts\python.exe -m pytest
 ```
 
-Runs the default suite, including default examples that prove move, ability,
-species, and held-item outcomes can be asserted offline.
+Runs the application, semantic-contract, and battle-mechanics suites together.
+Import isolation applies to both test directories. The battle outcome harness
+uses normal imports so its classes and effect handlers share module identities.
+Exhaustive dex, generated callbacks, and Showdown checks remain opt-in.
+
+For the mandatory combined run, also enable generated callback checks in the
+same process:
 
 ```powershell
-.\evenv\Scripts\python.exe -m pytest fusion2\tests\test_battle_semantic_contracts.py
+..\evenv\Scripts\python.exe -m pytest tests pokemon/battle/tests --run-callback-tests
+```
+
+This checks that legacy application stubs, semantic contracts, engine tests,
+and generated callback checks coexist. It does not prove live Evennia sessions,
+PostgreSQL concurrency, or migration/deployment readiness.
+
+The following focused targets are useful while diagnosing a specific failure:
+
+```powershell
+..\evenv\Scripts\python.exe -m pytest tests\test_battle_semantic_contracts.py
 ```
 
 Runs the focused semantic proof contracts. These assert exact post-move and
@@ -24,23 +40,22 @@ post-residual state, including HP, status, stat stages, immunity markers,
 ability state, and held-item healing.
 
 ```powershell
-.\evenv\Scripts\python.exe -m pytest fusion2\pokemon\battle\tests
+..\evenv\Scripts\python.exe -m pytest pokemon\battle\tests
 ```
 
-Runs the focused battle-mechanics suite. Keep this as a separate process from
-the legacy app tests because several older tests still install import-time
-module stubs.
+Runs the focused battle-mechanics suite. It can also run in the same process
+as the application tests.
 
 ```powershell
-.\evenv\Scripts\python.exe -m pytest fusion2\tests\test_all_moves_and_abilities.py --run-dex-tests
-.\evenv\Scripts\python.exe -m pytest fusion2\pokemon\battle\tests\test_exhaustive_dex_smoke.py --run-dex-tests
+..\evenv\Scripts\python.exe -m pytest tests\test_all_moves_and_abilities.py --run-dex-tests
+..\evenv\Scripts\python.exe -m pytest pokemon\battle\tests\test_exhaustive_dex_smoke.py --run-dex-tests
 ```
 
 Runs high-volume dex checks for all loaded moves, abilities, held items, and
 Pokemon specs. These are opt-in because they are broad validation sweeps.
 
 ```powershell
-.\evenv\Scripts\python.exe -m pytest fusion2\pokemon\battle\tests\test_generated_move_callbacks.py --run-callback-tests
+..\evenv\Scripts\python.exe -m pytest pokemon\battle\tests\test_generated_move_callbacks.py --run-callback-tests
 ```
 
 Runs generated move callback checks. These verify callback references resolve
@@ -48,7 +63,7 @@ and compatible hook groups can be invoked offline. They are breadth smoke tests,
 not correctness proofs unless paired with a semantic contract or Showdown case.
 
 ```powershell
-.\evenv\Scripts\python.exe -m pytest fusion2\pokemon\battle\tests\test_showdown_differential.py --run-showdown-tests
+..\evenv\Scripts\python.exe -m pytest pokemon\battle\tests\test_showdown_differential.py --run-showdown-tests
 ```
 
 Runs scripted comparisons against the local Pokemon Showdown checkout.
@@ -57,6 +72,7 @@ The same gates are available from `fusion2/Makefile`:
 
 ```powershell
 make test
+make test-mandatory
 make test-semantic
 make test-battle
 make test-dex
@@ -244,10 +260,10 @@ The coverage inventory classifies every loaded move, ability, item, and Pokemon
 species against the current contract catalog:
 
 ```powershell
-$env:PYTHONPATH = "fusion2"; .\evenv\Scripts\python.exe -m tests.battle_contract_coverage
+..\evenv\Scripts\python.exe -m tests.battle_contract_coverage
 ```
 
-From inside `fusion2`, use:
+Or use the repository's Make target:
 
 ```powershell
 make battle-coverage

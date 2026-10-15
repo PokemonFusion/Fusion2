@@ -37,6 +37,16 @@ The first completed clear records the chosen route and encounter result and
 grants one Potion. Later clears remain available for alternate outcomes,
 catching, and roleplay but do not duplicate the first-clear reward.
 
+If an encounter result cannot be saved, use `+adventure/retry`. This replays
+the recorded outcome without starting another encounter. The original result
+survives battle cleanup and reconnect; another route encounter is blocked
+while that result is pending.
+
+If a first-clear reward could not be delivered, use `+adventure/claim`.
+This checks only your character's completed runs and works after leaving an
+Adventure. Repeated claims do not grant extra items. An interrupted inventory
+write or claim marker is rolled back together so the reward can be retried.
+
 ## Builder Setup
 
 Run `batchcommands adventure_hall` once from the room that should link to
@@ -64,3 +74,42 @@ part of the normal deployment process before enabling this version.
 - One authored mission and one fixed difficulty.
 - No weekly/monthly board goals or permanent milestone UI yet.
 - No reputation, procedural generation, crafting loop, or player-authored maps.
+
+## Recovery Change Validation
+
+The recovery changes use existing character attributes and Adventure tables;
+they add no migration beyond the branch's required `0040_adventure_participation`.
+Reload the game through the normal approved deployment procedure after that
+migration has been applied. No running service or game database is changed by
+the automated recovery tests.
+
+Manual checks on a test server:
+
+1. Finish each route normally and confirm its recorded outcome and objectives.
+2. Simulate a temporary result-save failure in a controlled test environment.
+   Confirm the battle ends once its retry receipt is saved; reconnect and use
+   `+adventure/retry`. Verify the original outcome is applied once and a new
+   encounter cannot start while it is pending.
+3. Interrupt reward delivery on a new character's first clear. Leave the run,
+   reconnect, and use `+adventure/claim` twice. Confirm exactly one Potion is
+   granted and a different character cannot claim that reward.
+4. Complete a second run and confirm it does not grant another first-clear item.
+
+For production-model PostgreSQL checks, explicitly set `PF2_TEST_POSTGRES_DSN`
+to an approved test connection and run:
+
+```powershell
+..\evenv\Scripts\python.exe tests/integration/recovery_cases.py
+```
+
+The standalone suite builds and removes a disposable schema without running
+migrations. It exercises simultaneous completion of one run, overlapping
+first clears, overlapping recovery claims, actual inventory-write and
+claim-marker rollback, and two characters sharing one account. It also
+covers gym badge recovery and runs in the PostgreSQL CI job. Migration
+rehearsal instructions are in [Gym badge recovery](gym-recovery.md).
+
+For rollback, first resolve pending results and claim unpaid rewards, then
+restore the previous code and reload through the approved deployment process.
+Do not delete participation records or reverse migration 0040: the older
+branch code also uses those tables, and the records prevent duplicate rewards.

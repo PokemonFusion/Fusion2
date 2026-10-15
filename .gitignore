@@ -59,3 +59,7 @@ server/evennia.db3-shm
 move_ability_report.txt
 
 .codex-artifacts
+
+# Local pytest caches and disposable test working directories.
+.pytest_cache/
+.pytest-basetemp*/

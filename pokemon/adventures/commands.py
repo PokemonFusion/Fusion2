@@ -18,6 +18,7 @@ from .sessions import (
     choose_session_route,
     get_current_session_for_player,
     leave_session,
+    retry_encounter_results,
     search_session,
     start_session,
 )
@@ -56,7 +57,9 @@ class CmdAdventure(Command):
       +adventure/look
       +adventure/objectives
       +adventure/search
-      +adventure/choose <wild|trainer>
+      +adventure/choose <wild||trainer>
+      +adventure/retry
+      +adventure/claim
       +adventure/leave
 
     Examples:
@@ -92,6 +95,10 @@ class CmdAdventure(Command):
             self._search()
         elif action == "choose":
             self._choose(arg)
+        elif action == "retry":
+            self._retry()
+        elif action == "claim":
+            self._claim()
         elif action == "leave":
             self._leave()
         else:
@@ -99,7 +106,7 @@ class CmdAdventure(Command):
 
     def _action_and_arg(self) -> tuple[str, str]:
         switches = getattr(self, "switches", set())
-        for action in ("list", "info", "start", "look", "objectives", "search", "choose", "leave"):
+        for action in ("list", "info", "start", "look", "objectives", "search", "choose", "retry", "claim", "leave"):
             if action in switches:
                 return action, (self.args or "").strip()
         raw = (self.args or "").strip()
@@ -107,7 +114,7 @@ class CmdAdventure(Command):
             return "help", ""
         first, _, rest = raw.partition(" ")
         first = first.lower()
-        if first in {"list", "info", "start", "look", "objectives", "search", "choose", "leave"}:
+        if first in {"list", "info", "start", "look", "objectives", "search", "choose", "retry", "claim", "leave"}:
             return first, rest.strip()
         return "help", raw
 
@@ -198,6 +205,32 @@ class CmdAdventure(Command):
         except Exception:
             self.caller.msg("The encounter could not start; use the same choice to retry.")
 
+    def _retry(self) -> None:
+        """Finish retained terminal battles, then replay saved Adventure results."""
+
+        from pokemon.battle.battleinstance import BattleSession
+
+        try:
+            battle = BattleSession.ensure_for_player(self.caller)
+            if battle is not None and getattr(battle, "_adventure_result", None):
+                battle._handle_battle_result(None)
+                battle.end()
+            message = retry_encounter_results(self.caller)
+        except Exception:
+            message = "The encounter result could not be saved. Use +adventure/retry again later."
+        self.caller.msg(message)
+
+    def _claim(self) -> None:
+        """Retry this character's unpaid rewards without requiring an active run."""
+
+        from .progress import claim_completed_rewards
+
+        try:
+            message = claim_completed_rewards(self.caller)
+        except Exception:
+            message = "Adventure rewards are unavailable. Use +adventure/claim again later."
+        self.caller.msg(message)
+
     def _leave(self) -> None:
         result = leave_session(self.caller)
         detach_movement_cmdset(self.caller)
@@ -209,5 +242,5 @@ def _usage() -> str:
         "Usage: +adventure/list | +adventure/info <adventure> | "
         "+adventure/start <adventure> | +adventure/look | "
         "+adventure/objectives | +adventure/search | "
-        "+adventure/choose <route> | +adventure/leave"
+        "+adventure/choose <route> | +adventure/retry | +adventure/claim | +adventure/leave"
     )

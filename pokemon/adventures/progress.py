@@ -9,6 +9,7 @@ from typing import Any
 from django.db import transaction
 from django.utils import timezone
 
+from .constants import STATE_COMPLETED
 from .templates import get_template
 
 
@@ -49,6 +50,14 @@ def record_encounter_result(session: Any, player: Any, result: str) -> None:
     participation.save(update_fields=("encounter_result",))
 
 
+def _lock_player(player: Any) -> None:
+    """Serialize first-clear decisions across a character's different runs."""
+
+    from evennia.objects.models import ObjectDB
+
+    ObjectDB.objects.select_for_update().get(pk=player.pk)
+
+
 def finalize_completion(session: Any) -> tuple[bool, str]:
     """Record completion and atomically grant an eligible first-clear item.
 
@@ -58,10 +67,12 @@ def finalize_completion(session: Any) -> tuple[bool, str]:
 
     player = getattr(session, "leader", None)
     template = get_template(getattr(session, "template_key", ""))
-    if player is None or template is None:
+    if player is None or template is None or getattr(session, "state", None) != STATE_COMPLETED:
         return False, ""
 
     with transaction.atomic():
+        _lock_player(player)
+        ensure_participation(session, player)
         participation = (
             _model().objects.select_for_update().get(session=session, player=player)
         )
@@ -88,14 +99,18 @@ def finalize_completion(session: Any) -> tuple[bool, str]:
         trainer = getattr(player, "trainer", None)
         add_item = getattr(trainer, "add_item", None)
         if not callable(add_item):
-            return False, "Your first-clear reward is recorded and can be claimed after inventory is available."
+            return False, "Your first-clear reward is recorded. Use +adventure/claim after inventory is available."
         try:
-            add_item(participation.reward_item, participation.reward_amount)
+            # A savepoint rolls back a partially delivered item as well as a
+            # failed claim marker, while retaining the outer reward reservation.
+            with transaction.atomic():
+                add_item(participation.reward_item, participation.reward_amount)
+                participation.reward_claimed_at = _now()
+                participation.save(update_fields=("reward_claimed_at",))
         except Exception:
-            return False, "Your first-clear reward is recorded and remains unclaimed."
+            participation.reward_claimed_at = None
+            return False, "Your first-clear reward remains unclaimed. Use +adventure/claim to retry."
 
-        participation.reward_claimed_at = _now()
-        participation.save(update_fields=("reward_claimed_at",))
         return True, (
             f"First-clear reward: {participation.reward_item} "
             f"x{participation.reward_amount}."
@@ -118,4 +133,14 @@ def safe_finalize_completion(session: Any) -> str:
         _claimed, message = finalize_completion(session)
         return message
     except Exception:
-        return ""
+        return "Your Adventure is complete, but the reward could not be saved. Use +adventure/claim to retry."
+
+
+def claim_completed_rewards(player: Any) -> str:
+    """Retry completed runs belonging to this character, including after leaving."""
+
+    from .sessions import _session_model
+
+    sessions = _session_model().objects.filter(leader=player, state=STATE_COMPLETED).order_by("completed_at", "pk")
+    messages = [message for session in sessions if (message := safe_finalize_completion(session))]
+    return "\n".join(messages) or "No unclaimed Adventure rewards."

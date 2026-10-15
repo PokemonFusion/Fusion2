@@ -37,6 +37,8 @@
 See [code-map.md](code-map.md) for more details on the codebase layout.
 See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
 battle validation workflow.
+See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
+Adventure, trainer-team, gym recovery, and onboarding branch validation record.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current
 offline battle proof coverage inventory.
 See [move-inventory-audit-2026-06-22.md](move-inventory-audit-2026-06-22.md)

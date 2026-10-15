@@ -1,7 +1,16 @@
 import contextlib
 import types
 
+import pytest
+
 from pokemon.adventures import progress
+
+
+@pytest.fixture(autouse=True)
+def fake_player_lock(monkeypatch):
+    """Use in-memory objects for these service tests; ORM coverage is separate."""
+
+    monkeypatch.setattr(progress, "_lock_player", lambda _player: None)
 
 
 class FakeParticipation:
@@ -76,7 +85,7 @@ def test_first_clear_reward_is_claimed_once(monkeypatch):
     player = types.SimpleNamespace(
         trainer=types.SimpleNamespace(add_item=lambda item, amount: inventory.append((item, amount)))
     )
-    session = types.SimpleNamespace(template_key="alpha_meadow", leader=player)
+    session = types.SimpleNamespace(template_key="alpha_meadow", leader=player, state="completed")
     manager.get_or_create(session=session, player=player)
 
     first = progress.finalize_completion(session)
@@ -93,7 +102,7 @@ def test_failed_inventory_delivery_leaves_reward_claimable(monkeypatch):
     monkeypatch.setattr(progress, "_model", lambda: model)
     monkeypatch.setattr(progress.transaction, "atomic", contextlib.nullcontext)
     player = types.SimpleNamespace(trainer=types.SimpleNamespace(add_item=lambda *_args: (_ for _ in ()).throw(RuntimeError())))
-    session = types.SimpleNamespace(template_key="alpha_meadow", leader=player)
+    session = types.SimpleNamespace(template_key="alpha_meadow", leader=player, state="completed")
     participation, _created = manager.get_or_create(session=session, player=player)
 
     claimed, message = progress.finalize_completion(session)
@@ -102,3 +111,42 @@ def test_failed_inventory_delivery_leaves_reward_claimable(monkeypatch):
     assert "remains unclaimed" in message
     assert participation.reward_item == "Potion"
     assert participation.reward_claimed_at is None
+
+    inventory = []
+    player.trainer.add_item = lambda item, amount: inventory.append((item, amount))
+    assert progress.finalize_completion(session)[0]
+    assert not progress.finalize_completion(session)[0]
+    assert inventory == [("Potion", 1)]
+
+
+def test_claim_recovers_missing_participation_after_leaving(monkeypatch):
+    """A completed run can be claimed without a current-session pointer."""
+
+    from pokemon.adventures import sessions
+
+    manager = FakeManager()
+    monkeypatch.setattr(progress, "_model", lambda: types.SimpleNamespace(objects=manager))
+    monkeypatch.setattr(progress.transaction, "atomic", contextlib.nullcontext)
+    inventory = []
+    player = types.SimpleNamespace(trainer=types.SimpleNamespace(add_item=lambda *item: inventory.append(item)))
+    completed = types.SimpleNamespace(template_key="alpha_meadow", leader=player, state="completed")
+    later = types.SimpleNamespace(template_key="alpha_meadow", leader=player, state="completed")
+
+    def completed_runs(**filters):
+        assert filters == {"leader": player, "state": "completed"}
+        return types.SimpleNamespace(order_by=lambda *_fields: [completed, later])
+
+    monkeypatch.setattr(sessions, "_session_model", lambda: types.SimpleNamespace(
+        objects=types.SimpleNamespace(filter=completed_runs)
+    ))
+    assert "Potion x1" in progress.claim_completed_rewards(player)
+    assert progress.claim_completed_rewards(player) == "No unclaimed Adventure rewards."
+    assert inventory == [("Potion", 1)]
+
+
+def test_unfinished_session_cannot_grant_completion_reward():
+    """Claim eligibility comes from completed runs, not a caller-supplied ID."""
+
+    player = types.SimpleNamespace()
+    session = types.SimpleNamespace(template_key="alpha_meadow", leader=player, state="active")
+    assert progress.finalize_completion(session) == (False, "")

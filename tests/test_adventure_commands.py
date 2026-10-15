@@ -158,3 +158,46 @@ def test_movement_cmdset_attach_and_detach_helpers():
 
     assert caller.cmdset.added == [(AdventureMovementCmdSet, False)]
     assert caller.cmdset.deleted == [AdventureMovementCmdSet]
+
+
+def test_claim_command_works_without_an_active_session(monkeypatch):
+    """Slash parsing exposes the claim service to the owning character."""
+
+    from pokemon.adventures import progress
+
+    callers = []
+    monkeypatch.setattr(progress, "claim_completed_rewards", lambda caller: callers.append(caller) or "Reward claimed.")
+    caller = _run_cmd(cmdstring="+adventure/claim", parse=True)
+    assert callers == [caller]
+    assert caller.messages == ["Reward claimed."]
+
+
+def test_retry_command_finishes_retained_terminal_battle(monkeypatch):
+    """An outage before receipt persistence can recover through the player command."""
+
+    from pokemon.battle import battleinstance
+
+    calls = []
+    retained = types.SimpleNamespace(
+        _adventure_result="win",
+        _handle_battle_result=lambda winner: calls.append(("result", winner)),
+        end=lambda: calls.append(("end", None)),
+    )
+    monkeypatch.setattr(battleinstance.BattleSession, "ensure_for_player", lambda _caller: retained)
+    monkeypatch.setattr(commands, "retry_encounter_results", lambda _caller: "Recovered Adventure result.")
+    caller = _run_cmd(cmdstring="+adventure/retry", parse=True)
+    assert calls == [("result", None), ("end", None)]
+    assert caller.messages == ["Recovered Adventure result."]
+
+
+def test_retry_command_uses_character_receipts_after_battle_cleanup(monkeypatch):
+    """Recovery does not require the finished battle to remain registered."""
+
+    from pokemon.battle import battleinstance
+
+    callers = []
+    monkeypatch.setattr(battleinstance.BattleSession, "ensure_for_player", lambda _caller: None)
+    monkeypatch.setattr(commands, "retry_encounter_results", lambda caller: callers.append(caller) or "Recovered.")
+    caller = _run_cmd(args="retry")
+    assert callers == [caller]
+    assert caller.messages == ["Recovered."]
