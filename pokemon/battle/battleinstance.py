@@ -1799,11 +1799,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 trainer.ndb.battle_instance = None
 
     def _restore_declarations(self):
-        """Restore executable choices, rejecting stale actors, targets and reserves."""
+        """Restore all valid slot choices without overwriting a sibling's action."""
         from .engine import BattleMove
 
         positions = self.data.turndata.positions
         trainer_info = self.storage.get("trainers", {}) or {}
+        restored_actions = {participant: [] for participant in self.battle.participants}
         for name, declaration in list(self.state.declare.items()):
             position = positions.get(name)
             pokemon = getattr(position, "pokemon", None)
@@ -1824,8 +1825,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     if saved is None or getattr(saved, "pp", None) == 0 or target_mon is None or target_mon.hp <= 0:
                         raise ValueError("The saved move or target is no longer legal.")
                     move = BattleMove(saved.name, key=key, pp=getattr(saved, "pp", None))
-                    actor.pending_action = Action(actor, ActionType.MOVE, self.battle.participant_for(target_mon),
-                                                  move=move, priority=getattr(move, "priority", 0), pokemon=pokemon)
+                    action = Action(actor, ActionType.MOVE, self.battle.participant_for(target_mon),
+                                    move=move, priority=getattr(move, "priority", 0), pokemon=pokemon)
                     position.declareAttack(target_name, key)
                 elif "switch" in declaration:
                     slot = int(declaration["switch"])
@@ -1834,25 +1835,26 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     reserve = actor.pokemons[slot - 1]
                     if reserve in actor.active or reserve.hp <= 0:
                         raise ValueError("The saved reserve can no longer switch in.")
-                    actor.pending_action = Action(actor, ActionType.SWITCH, target=reserve, pokemon=reserve, priority=6)
+                    action = Action(actor, ActionType.SWITCH, target=reserve, pokemon=reserve, priority=6)
                     position.declareSwitch(slot)
                 elif "item" in declaration:
                     item = declaration["item"]
                     target = self.battle.opponent_of(actor) if _battle_norm_key(item).lower().endswith("ball") else actor
-                    actor.pending_action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon)
+                    action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon)
                     position.declareItem(item)
                 elif "run" in declaration:
-                    actor.pending_action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon)
+                    action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon)
                     position.declareRun()
                 else:
                     raise ValueError("The saved action is not supported.")
+                restored_actions[actor].append(action)
             except (ValueError, TypeError, IndexError) as error:
                 self.state.declare.pop(name, None)
                 if position is not None:
                     position.removeDeclare()
-                if actor is not None:
-                    actor.pending_action = None
                 self.msg(f"Saved action at {name} was discarded: {error} Choose an action again.")
+        for actor, actions in restored_actions.items():
+            actor.pending_action = actions if len(actions) > 1 else actions[0] if actions else None
 
     def retry_battle_rewards(self):
         """Refuse cleanup while any character-scoped battle effect is still pending."""

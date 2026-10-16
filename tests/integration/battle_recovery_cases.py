@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from threading import Barrier
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -61,8 +62,11 @@ class BattleRecoveryCases(unittest.TestCase):
                 mon.current_hp = get_max_hp(mon)
                 mon.save(update_fields=("current_hp",))
         session = BattleSession(self.player, self.players[1] if kind == "pvp" else None)
-        if kind == "npc":
-            session.start_trainer_encounter(generate_static_trainer_encounter(self.npc))
+        if kind in {"npc", "double"}:
+            encounter = generate_static_trainer_encounter(self.npc)
+            if kind == "double":
+                encounter = replace(encounter, battle_format="double")
+            session.start_trainer_encounter(encounter)
         elif kind == "wild":
             mon = create_battle_pokemon("Rattata", 3, is_wild=True, move_names=["Tackle"])
             session._track_temp_opponent_team([mon])
@@ -250,6 +254,94 @@ class BattleRecoveryCases(unittest.TestCase):
         self.assertIsNotNone(restored.battle.participants[0].pending_action)
         self.assertIsNone(restored.battle.participants[1].pending_action)
         self.assertFalse(restored.is_turn_ready())
+
+    def declare_double_moves(self, session):
+        """Save each active slot's move without advancing the turn."""
+        for name, position in session.data.turndata.positions.items():
+            pokemon = position.pokemon
+            session.state.declare[name] = {
+                "move": pokemon.moves[0].name,
+                "target": "B1" if name.startswith("A") else "A1",
+                "pokemon": pokemon.model_id,
+            }
+
+    def test_double_turn_restores_and_executes_every_saved_action_once(self):
+        """All four slots execute once, with owned PP and cleared inputs checkpointed."""
+        session = self.start("double")
+        self.declare_double_moves(session)
+        restored = self.rebuild(session)
+        self.assertTrue(restored.is_turn_ready())
+        expected = {position.pokemon.model_id for position in restored.data.turndata.positions.values()}
+        for participant in restored.battle.participants:
+            self.assertIsInstance(participant.pending_action, list)
+            self.assertEqual(len(participant.pending_action), 2)
+        actions = restored.battle.select_actions()
+        self.assertEqual({action.pokemon.model_id for action in actions}, expected)
+        self.assertEqual(len(actions), 4)
+        restored._restore_declarations()
+        restored._restore_declarations()
+        self.assertEqual([len(part.pending_action) for part in restored.battle.participants], [2, 2])
+        before = {mon.model_id: mon.moves[0].pp for part in restored.battle.participants for mon in part.active
+                  if getattr(mon.moves[0], "pp", None) is not None}
+        turn = restored.battle.turn_count
+        restored.battle.rng.seed(0)
+        with patch.object(restored.battle, "use_move", wraps=restored.battle.use_move) as moves:
+            restored.execute_persistent_turn()
+        self.assertEqual(len(moves.call_args_list), 4)
+        self.assertEqual({call.args[0].pokemon.model_id for call in moves.call_args_list}, expected)
+        self.assertEqual(restored.battle.turn_count, turn + 1)
+        for participant in restored.battle.participants:
+            for mon in participant.pokemons:
+                if mon.model_id in before:
+                    self.assertEqual(mon.moves[0].pp, before[mon.model_id] - 1)
+        completed = self.rebuild(restored)
+        self.assertFalse(completed.state.declare)
+        self.assertTrue(all(part.pending_action is None for part in completed.battle.participants))
+        for participant in completed.battle.participants:
+            for mon in participant.pokemons:
+                if mon.model_id in before:
+                    self.assertEqual(mon.moves[0].pp, before[mon.model_id] - 1)
+
+    def test_invalid_double_slot_preserves_its_siblings_choice(self):
+        """Rejecting the first or last slot cannot erase another legal action."""
+        for invalid_slot in ("A1", "A2"):
+            with self.subTest(invalid_slot=invalid_slot):
+                session = self.start("double")
+                self.declare_double_moves(session)
+                session.state.declare[invalid_slot]["move"] = "Unavailable Move"
+                turn = session.battle.turn_count
+                restored = self.rebuild(session)
+                valid_slot = "A2" if invalid_slot == "A1" else "A1"
+                valid_mon = restored.data.turndata.positions[valid_slot].pokemon
+                self.assertNotIn(invalid_slot, restored.state.declare)
+                self.assertIn(valid_slot, restored.state.declare)
+                self.assertIsNone(restored.data.turndata.positions[invalid_slot].getAction())
+                self.assertEqual(restored.battle.turn_count, turn)
+                self.assertFalse(restored.is_turn_ready())
+                player_actions = restored.battle.participants[0].choose_actions(restored.battle)
+                self.assertEqual([action.pokemon.model_id for action in player_actions], [valid_mon.model_id])
+                restored.end()
+
+    def test_double_slot_item_and_switch_do_not_overwrite_a_saved_move(self):
+        """Mixed choices retain their own actor or reserve alongside the first move."""
+        reserve = create_owned_pokemon("Pikachu", self.player.trainer, 5, ivs=[0] * 6, evs=[0] * 6,
+                                       nature="Hardy", active_move_names=["Tackle"])
+        for declaration, action_type in (({"item": "Potion"}, ActionType.ITEM),
+                                         ({"switch": 3}, ActionType.SWITCH)):
+            with self.subTest(action_type=action_type):
+                session = self.start("double")
+                self.declare_double_moves(session)
+                session.state.declare["A2"] = declaration
+                restored = self.rebuild(session)
+                actions = restored.battle.participants[0].choose_actions(restored.battle)
+                self.assertEqual([action.action_type for action in actions], [ActionType.MOVE, action_type])
+                self.assertIs(actions[0].pokemon, restored.data.turndata.positions["A1"].pokemon)
+                if action_type is ActionType.ITEM:
+                    self.assertEqual(actions[1].item, "Potion")
+                    self.assertIs(actions[1].pokemon, restored.data.turndata.positions["A2"].pokemon)
+                else:
+                    self.assertEqual(actions[1].pokemon.model_id, "owned:" + str(reserve.pk))
+                restored.end()
 
     def test_faint_marker_failure_rolls_back_all_awards_then_recovers(self):
         """Party EXP/EVs and character TXP share the same claim transaction."""

@@ -45,6 +45,8 @@ control on both PvP sides. Move, switch, item and flee choices are reconstructed
 as executable actions. Changed actors, foreign trainer identities, exhausted
 moves, missing targets and illegal reserves are discarded with a message
 asking for a new choice.
+Multi-slot checkpoints retain every valid choice; discarding one slot does
+not erase its sibling's action. Completed turns consume each saved action once.
 
 Ending intent is saved before concession or terminal cleanup. Encounter-row
 deletes, saved room state, matching player locks and NPC reservations are
