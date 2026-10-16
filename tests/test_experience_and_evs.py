@@ -87,6 +87,27 @@ def test_add_evs_limits():
 	assert sum(mon.evs.values()) == 510
 
 
+def test_add_evs_preserves_array_storage_and_stat_order():
+	"""Battle rewards must leave PostgreSQL EV arrays as six numeric values."""
+	mon = types.SimpleNamespace(evs=[0, 250, 0, 0, 0, 0])
+	add_evs(mon, {"atk": 10, "spa": 4, "spe": 2})
+	assert mon.evs == [0, 252, 0, 4, 0, 2]
+
+
+def test_add_evs_array_obeys_total_limit():
+	"""An array-backed Pokemon uses the same per-stat and total EV limits."""
+	mon = types.SimpleNamespace(evs=[252, 250, 0, 0, 0, 0])
+	add_evs(mon, {"atk": 10, "def": 20})
+	assert mon.evs == [252, 252, 6, 0, 0, 0]
+
+
+def test_add_evs_preserves_empty_array_default():
+	"""An empty ArrayField default also becomes a legal six-value EV array."""
+	mon = types.SimpleNamespace(evs=[])
+	add_evs(mon, {"spe": 1})
+	assert mon.evs == [0, 0, 0, 0, 0, 1]
+
+
 def test_calculate_stats_with_ivs_evs_and_nature():
 	ivs = {
 		stat: 31

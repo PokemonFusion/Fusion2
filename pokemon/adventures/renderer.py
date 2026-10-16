@@ -50,6 +50,9 @@ def render_session(session: Any) -> str:
     lines.extend(["", "Objectives:", render_objectives(session)])
     if getattr(session, "state", None) == STATE_COMPLETED:
         lines.extend(["", "Adventure complete. Use +adventure/leave to return."])
+        reward_message = dict(getattr(session, "metadata", None) or {}).get("reward_message")
+        if reward_message:
+            lines.append(str(reward_message))
     return "\n".join(lines)
 
 
@@ -126,6 +129,10 @@ def _actions_for_node(node: Any, session: Any) -> str:
     actions = ["objectives", "leave"]
     if getattr(node, "search_text", "") or getattr(node, "search_objective", ""):
         actions.insert(0, "search")
+    metadata = dict(getattr(session, "metadata", None) or {})
+    if getattr(node, "choices", ()) and not metadata.get("route_key"):
+        choices = "|".join(choice.key for choice in node.choices)
+        actions.insert(0, f"choose <{choices}>")
     if getattr(session, "state", None) == STATE_COMPLETED:
         return "leave"
     return ", ".join(actions)

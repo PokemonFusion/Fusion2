@@ -69,6 +69,16 @@ STARTER_KEY_SET = set(STARTER_LOOKUP.values())
 ABORT_INPUTS = {"abort", ".abort", "q", "quit", "exit"}
 ABORT_OPTION = {"key": ("q", "quit", "exit"), "desc": "Abort", "goto": "node_abort"}
 
+FIRST_STEPS_MESSAGE = (
+    "Character generation complete.\n\n"
+    "|wStart here:|n Type |wlook|n and press Enter to see where you are.\n"
+    "To move, type an exit's name exactly as it appears in the room.\n"
+    "Type |w+sheet|n to see your character and battle information.\n"
+    "For a guided first outing, type |whelp first outing|n.\n"
+    "Need a hand? Type |wpublic Hi, I'm new. Where should I start?|n\n"
+    "You can return to the beginner guide with |whelp getting started|n."
+)
+
 
 # ────── HELPERS ────────────────────────────────────────────────────────────────
 
@@ -710,7 +720,7 @@ def finish_human(caller, raw_string):
     caller.db.gender = data.get("player_gender")
     caller.db.favored_type = data.get("favored_type")
     caller.msg(f"You received {pk.name} with ability {pk.ability} and nature {pk.nature} as your starter!")
-    caller.msg("Character generation complete.")
+    caller.msg(FIRST_STEPS_MESSAGE)
     return None, None
 
 
@@ -750,7 +760,7 @@ def finish_fusion(caller, raw_string):
         f"and nature {data.get('nature')}"
         "."
     )
-    caller.msg("Character generation complete.")
+    caller.msg(FIRST_STEPS_MESSAGE)
     return None, None
 
 

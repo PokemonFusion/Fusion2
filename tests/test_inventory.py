@@ -3,6 +3,8 @@ import os
 import sys
 import types
 
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
@@ -137,3 +139,23 @@ def test_add_various_medicines():
 	listed = d.list_inventory()
 	for item in meds:
 		assert item in listed
+
+
+@pytest.mark.parametrize("alias", ["Poke Ball", "Poké Ball", "POKE-BALL", "pokeball"])
+def test_inventory_display_spelling_accesses_compact_ball(alias):
+	"""Player inventory containers recognize the same ball name variants."""
+	d = Dummy()
+	d.add_item("pokeball", 2)
+	assert d.has_item(alias)
+	assert d.remove_item(alias)
+	assert d.inventory == {"pokeball": 1}
+
+
+def test_legacy_inventory_aliases_share_quantity_without_losing_items():
+	"""Old spellings can be debited together without a partial failed removal."""
+	d = Dummy()
+	d.db.inventory = {"Poke Ball": 1, "pokeball": 2, "Great Ball": 4}
+	assert d.has_item("Poké Ball", 3)
+	assert not d.remove_item("Poke Ball", 4)
+	assert d.remove_item("Poké Ball", 3)
+	assert d.inventory == {"Great Ball": 4}

@@ -6,13 +6,17 @@
 - `+hold <party-slot>=<complete item name>` equips or replaces an item.
 - `+hold <party-slot>=` removes it and returns it to trainer inventory.
 
-Names are case/punctuation insensitive, but must match a full dex key or display
-name. Prefixes, ambiguous dex names, and duplicate historical inventory aliases
-are rejected. Item evolution uses trainer inventory. Held items use trainer
+Names use the shared case, punctuation, accent and gender-symbol normalization,
+but must match a full dex key or display name. Synthesized evolution requirements
+such as Black Augurite are also recognized. Prefixes and ambiguous dex names
+are rejected. Historical inventory aliases are counted and debited together,
+using the same atomic trainer operations as battle items. Item evolution uses
+trainer inventory. Held items use trainer
 inventory first, then one exact carried object for compatibility. Removal and
 replacement return the old item to the same owner's trainer inventory, including
-items originally equipped from carried objects. Unknown legacy held names are
-returned verbatim instead of being discarded.
+items originally equipped from carried objects. Unknown legacy held items are
+returned using the trainer's existing inventory normalization instead of being
+discarded.
 
 A supplied evolution item must be the required item for the selected transition;
 it cannot be consumed for a level evolution. Held evolution items are consumed
@@ -106,9 +110,17 @@ already empty slot is a no-op. No schema migration is needed.
 - `pytest -q` for the repository suite.
 - `python tests/integration/evolution_cases.py` for real ORM success, rollback,
   invalid conditions, carried-object compatibility, replacement, removal, retries,
-  inventory alias ambiguity, and cache behavior.
+  inventory aliases, synthesized item requirements, and cache behavior.
 - Set `PF2_TEST_POSTGRES_DSN` to an expendable test database to also run competing
   evolution/equip/remove requests across independent connections. The harness
   creates and drops only a random test schema and does not run migrations.
 - The existing PostgreSQL lifecycle CI runs both integration scripts plus the
   focused evolution/command tests.
+
+The merged workflow retains the battle progression, status, capture, medicine,
+nickname/Fusion display and Adventure/gym recovery checks introduced in #721.
+Evolution adds 27 real-model PostgreSQL cases, including Black Augurite through
+the real command, retries, accented/gender-symbol source names, legacy inventory
+aliases and preservation of saved HP, PP, EXP, EVs and major status. Together
+the ten production-model PostgreSQL suites exercise 144 cases. Disposable-schema
+tests do not validate a running game or replace live gameplay acceptance.

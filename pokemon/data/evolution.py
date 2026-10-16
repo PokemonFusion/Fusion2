@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from pokemon.names import normalize_name
+
 from ..dex import POKEDEX
 
 SUPPORTED_TYPES = frozenset({"level", "useItem", "levelFriendship", "levelMove", "levelHold", "levelExtra"})
@@ -26,11 +28,6 @@ SUPPORTED_CONDITIONS = frozenset(
     }
 )
 UNSUPPORTED_CONDITIONS = frozenset({"with the console turned upside-down"})
-
-
-def normalize_name(value: str) -> str:
-    """Normalize a complete name, never a prefix or substring."""
-    return "".join(c for c in str(value).casefold() if c.isalnum())
 
 
 def lookup_species(name):

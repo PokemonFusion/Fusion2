@@ -43,10 +43,14 @@ CONNECTION_SCREEN = r"""
  |yBest Viewed in UTF8 - Unicode|n
  Welcome to |g{}|n, Powered by Evennia {}!
 
- If you have an existing account, connect to it by typing:
+ Your website and game login use the same account.
+ If you already registered on the website or in the game, type:
       |wconnect <username> <password>|n
- If you need to create an account, type (without the <>'s):
+ If this is your first account, type (without the <>'s):
       |wcreate <username> <password>|n
+
+ Your account holds your characters. After logging in, choose
+ a character from the list to begin or continue playing.
 
  If you have spaces in your username, enclose it in quotes.
  Enter |whelp|n for more info. |wlook|n will re-show this screen.

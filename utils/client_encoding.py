@@ -70,7 +70,11 @@ def session_utf8_status(session) -> str:
 def should_warn_about_utf8(session) -> bool:
 	"""Return whether the session should receive the UTF-8 capability warning."""
 
-	return session is not None and session_utf8_status(session) != "confirmed"
+	# Telnet clients do not all advertise UTF-8 through MTTS/TTYPE even when
+	# CHARSET negotiation has selected UTF-8.  A missing positive capability
+	# flag is therefore inconclusive; only warn when the active encoding is
+	# explicitly known to be something else.
+	return session is not None and session_utf8_status(session) == "not_utf8"
 
 
 def mark_utf8_warning_shown(session) -> None:

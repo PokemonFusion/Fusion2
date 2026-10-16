@@ -142,7 +142,9 @@ def _growth_from_pokemon(pokemon: Any) -> str:
         return str(growth)
     name = getattr(pokemon, "species", getattr(pokemon, "name", None))
     if name:
-        species = POKEDEX.get(name) or POKEDEX.get(str(name).lower()) or POKEDEX.get(str(name).capitalize())
+        from pokemon.names import resolve_dex_entry
+
+        species = resolve_dex_entry(POKEDEX, name)
         if species:
             return species.raw.get("growthRate", "medium_fast")
     return "medium_fast"
@@ -181,6 +183,24 @@ def _fighter_xp(character, fallback: int = 0) -> int:
 
 def _set_fighter_xp(character, amount: int) -> None:
     _db_set(character, "total_exp", max(0, int(amount)))
+
+
+def award_fusion_experience(character, pokemon: Any, amount: int) -> None:
+    """Advance a permanent active form's fighter XP after its Pokemon saves."""
+
+    if amount <= 0 or get_fusion_kind(character) != PERMANENT:
+        return
+    if str(_db_get(character, "fusion_id", "")) != _pokemon_id(pokemon):
+        return
+    total = _fighter_xp(character, fallback=_pokemon_xp(pokemon) - amount) + amount
+    _set_fighter_xp(character, total)
+    for attr in ("fighter_xp", "fxp", "xp", "experience"):
+        if _db_get(character, attr, None) is not None:
+            _db_set(character, attr, total)
+    level = _level_for_exp(total, _growth_from_pokemon(pokemon))
+    _db_set(character, "level", level)
+    pokemon._pf2_fusion_xp = total
+    pokemon._pf2_fusion_level = level
 
 
 def _set_character_fusion_view(character, pokemon: Any, *, kind: str) -> None:

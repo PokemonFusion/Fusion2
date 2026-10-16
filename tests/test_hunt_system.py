@@ -2,6 +2,8 @@ import os
 import sys
 import types
 
+import pytest
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
@@ -49,8 +51,8 @@ if "pokemon.battle.battleinstance" not in sys.modules:
 		sys.modules["pokemon.battle"] = types.ModuleType("pokemon.battle")
 	sys.modules["pokemon.battle.battleinstance"] = battle_mod
 
-from world.hunt_system import HuntSystem
 from utils.pokemon_config import RARITY_WEIGHTS
+from world.hunt_system import HuntSystem
 
 
 class DummyDB(types.SimpleNamespace):
@@ -126,7 +128,8 @@ def test_hunt_not_allowed():
 	assert msg == "You can't hunt here."
 
 
-def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch):
+@pytest.mark.parametrize("team_size", [1, 2, 6])
+def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch, team_size):
 	room = DummyRoom()
 	room.db.npc_chance = 100
 	room.db.tp_cost = 3
@@ -137,7 +140,7 @@ def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch):
 	encounter = types.SimpleNamespace(
 		display_name="Bug Catcher Ren",
 		intro_text="Bug Catcher Ren challenges you with Pidgey!",
-		team=[mon],
+		team=[mon] + [types.SimpleNamespace(name=f"Reserve {i}", level=5) for i in range(1, team_size)],
 		ai_profile="trainer_skilled",
 	)
 	captured = {}
@@ -152,8 +155,8 @@ def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch):
 			self.temp_pokemon_ids = []
 			captured["session"] = self
 
-		def start(self):
-			captured["selection"] = self._select_opponent()
+		def start_trainer_encounter(self, resolved_encounter):
+			captured["encounter"] = resolved_encounter
 
 	monkeypatch.setattr("world.hunt_system.generate_random_trainer_encounter", fake_generate_random_trainer_encounter)
 	monkeypatch.setattr("world.hunt_system.BattleSession", RecordingBattleSession)
@@ -164,14 +167,32 @@ def test_perform_hunt_npc_trainer_uses_generated_encounter(monkeypatch):
 
 	assert msg == encounter.intro_text
 	assert captured["room"] is room
-	assert captured["selection"] == (
-		mon,
-		"Bug Catcher Ren",
-		sys.modules["pokemon.battle.battleinstance"].BattleType.TRAINER,
-		encounter.intro_text,
-	)
+	assert captured["encounter"] is encounter
+	assert len(captured["encounter"].team) == team_size
 	assert hunter.db.training_points == 7
-	assert captured["session"]._pending_opponent_ai_profile == "trainer_skilled"
+	assert captured["encounter"].ai_profile == "trainer_skilled"
+
+
+def test_failed_trainer_hunt_does_not_spend_training_points(monkeypatch):
+	"""Only charge for an encounter after the full-team startup succeeds."""
+	hunter = DummyHunter()
+	encounter = types.SimpleNamespace(team=[object(), object()])
+
+	class FailingBattleSession:
+		"""Model a failure while starting the resolved trainer encounter."""
+
+		def __init__(self, player):
+			self.player = player
+
+		def start_trainer_encounter(self, resolved_encounter):
+			assert resolved_encounter is encounter
+			raise RuntimeError("battle startup failed")
+
+	monkeypatch.setattr("world.hunt_system.generate_random_trainer_encounter", lambda room: encounter)
+	monkeypatch.setattr("world.hunt_system.BattleSession", FailingBattleSession)
+	with pytest.raises(RuntimeError, match="battle startup failed"):
+		HuntSystem(hunter.location)._resolve_npc_encounter(hunter, 3)
+	assert hunter.db.training_points == 10
 
 
 def test_hunt_requires_conscious_pokemon():

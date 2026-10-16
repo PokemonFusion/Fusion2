@@ -241,7 +241,7 @@ def hp_bar_ascii(cur: int, maxhp: int, width: int = 20) -> str:
 	filled = max(0, min(width, filled))
 	empty = width - filled
 	color = THEME["ok"] if ratio > 0.5 else THEME["warn"] if ratio > 0.2 else THEME["bad"]
-	return f"{color}{'|' * filled}|n|x{'-' * empty}|n"
+	return f"{color}{'||' * filled}|n|x{'-' * empty}|n"
 
 
 def fmt_hp_line(mon, colw: int, show_abs: bool = True) -> str:
@@ -712,11 +712,11 @@ def _pf1_percent_bar(percent: int, width: int = 10) -> str:
 		if idx > filled:
 			parts.append(" ")
 		elif idx < 3:
-			parts.append(f"{THEME['bad']}||n")
+			parts.append(f"{THEME['bad']}|||n")
 		elif idx < 6:
-			parts.append(f"{THEME['warn']}||n")
+			parts.append(f"{THEME['warn']}|||n")
 		else:
-			parts.append(f"{THEME['ok']}||n")
+			parts.append(f"{THEME['ok']}|||n")
 	return "".join(parts)
 
 

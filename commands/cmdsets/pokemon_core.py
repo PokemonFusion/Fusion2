@@ -40,6 +40,7 @@ from commands.player.cmd_learn_evolve import (
 	CmdTeachMove,
 )
 from commands.player.cmd_movesets import CmdMovesets
+from commands.player.cmd_nickname import CmdCaptureNickname
 from commands.player.cmd_party import (
 	CmdChargenInfo,
 	CmdDepositPokemon,
@@ -76,6 +77,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdSetHoldItem,
 			CmdSheet,
 			CmdSheetPokemon,
+			CmdCaptureNickname,
 			CmdTrainerXP,
 			CmdChargenInfo,
 			CmdInventory,

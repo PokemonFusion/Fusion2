@@ -7,14 +7,12 @@ from dataclasses import dataclass, replace
 from typing import Any
 
 from pokemon.services.trainer_encounters import (
-    StaticTrainerCheck,
     StaticTrainerTemplateCheck,
     TrainerEncounter,
     TrainerEncounterError,
     check_static_trainer,
     generate_static_trainer_encounter,
 )
-
 
 GYM_LEADER_SOURCE_TYPE = "gym_leader"
 
@@ -191,9 +189,8 @@ def grant_gym_badge_for_victory(player, metadata: Mapping[str, Any] | None) -> G
     if metadata.get("source_type") != GYM_LEADER_SOURCE_TYPE:
         return None
 
-    try:
-        profile = _resolve_profile_from_metadata(metadata)
-    except GymLeaderNotFoundError:
+    badge = _badge_from_metadata(metadata)
+    if badge is None:
         return GymBadgeGrantResult(
             awarded=False,
             already_had=False,
@@ -201,7 +198,6 @@ def grant_gym_badge_for_victory(player, metadata: Mapping[str, Any] | None) -> G
             message="Gym badge could not be resolved for this victory.",
         )
 
-    badge = getattr(profile, "badge", None)
     badge_name = _badge_name(badge)
     trainer = _trainer_for_player(player)
     if trainer is None:
@@ -227,6 +223,28 @@ def grant_gym_badge_for_victory(player, metadata: Mapping[str, Any] | None) -> G
         badge_name=badge_name,
         message=f"You earned the {badge_name}!",
     )
+
+
+def _badge_from_metadata(metadata):
+    """Honor the badge captured at battle start even if a gym is reconfigured."""
+    badge_id = metadata.get("badge_id")
+    if badge_id is not None:
+        try:
+            return _gym_badge_model().objects.filter(pk=badge_id).first()
+        except (TypeError, ValueError):
+            return None
+    # Older saved battles did not always include a badge ID.
+    try:
+        return getattr(_resolve_profile_from_metadata(metadata), "badge", None)
+    except GymLeaderNotFoundError:
+        return None
+
+
+def _gym_badge_model():
+    """Return the badge model without requiring Django during command imports."""
+    from pokemon.models.trainer import GymBadge
+
+    return GymBadge
 
 
 def _profile_metadata(profile) -> dict[str, object]:
@@ -404,6 +422,8 @@ def _add_badge(trainer, badge) -> None:
     add_func = getattr(badges, "add", None)
     if callable(add_func):
         add_func(badge)
+        return
+    raise RuntimeError("Trainer has no badge delivery method.")
 
 
 def _badge_rows(badges) -> list[Any]:

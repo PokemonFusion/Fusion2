@@ -1,4 +1,4 @@
-.PHONY: setup lint test test-semantic test-battle test-dex test-callbacks test-showdown battle-coverage org
+.PHONY: setup lint test test-mandatory test-semantic test-battle test-dex test-callbacks test-showdown battle-coverage org
 
 setup:
 	pip install -r requirements.txt && pip install -r requirements-dev.txt
@@ -8,6 +8,9 @@ lint:
 
 test:
 	PF2_NO_EVENNIA=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest -q -n auto --dist=loadgroup --durations=25
+
+test-mandatory:
+	PF2_NO_EVENNIA=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest -q tests pokemon/battle/tests --run-callback-tests
 
 test-semantic:
 	PF2_NO_EVENNIA=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest -q tests/test_battle_semantic_contracts.py

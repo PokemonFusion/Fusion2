@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from evennia import Command
 
+from pokemon.names import normalize_name
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
@@ -77,7 +78,8 @@ class CmdBattleItem(Command):
             return
 
         participant = _get_participant(inst, self.caller)
-        target = inst.battle.opponent_of(participant)
+        is_ball = normalize_name(item_name).endswith("ball")
+        target = inst.battle.opponent_of(participant) if is_ball else participant
         action = Action(
             participant,
             ActionType.ITEM,

@@ -1,5 +1,6 @@
 from pokemon.data.generation import get_valid_moves
 from pokemon.middleware import get_moveset_by_name
+from pokemon.names import normalize_name
 from pokemon.utils.move_learning import learn_move
 
 
@@ -8,7 +9,7 @@ def node_start(caller, raw_input=None, **kwargs):
 	moves = kwargs.get("moves")
 	level_map = kwargs.get("level_map", {})
 	if moves is None:
-		known = {m.name.lower() for m in pokemon.learned_moves.all()}
+		known = {normalize_name(m.name) for m in pokemon.learned_moves.all()}
 		_, moveset = get_moveset_by_name(pokemon.species)
 		if moveset:
 			lvl_moves = [(lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= pokemon.computed_level]
@@ -18,7 +19,7 @@ def node_start(caller, raw_input=None, **kwargs):
 		else:
 			ordered = get_valid_moves(pokemon.species, pokemon.computed_level)
 			level_map = {}
-		moves = [m for m in ordered if m.lower() not in known]
+		moves = [m for m in ordered if normalize_name(m) not in known]
 		if not moves:
 			caller.msg(f"{pokemon.name} has no new moves to learn.")
 			return None, None
@@ -51,7 +52,7 @@ def node_start(caller, raw_input=None, **kwargs):
 		learn_next()
 		return None, None
 	for mv in moves:
-		if mv.lower() == cmd:
+		if normalize_name(mv) == normalize_name(cmd):
 			learn_move(pokemon, mv, caller=caller, prompt=True)
 			return f"{pokemon.name} learned {mv.capitalize()}.", None
 	caller.msg("Invalid choice.")

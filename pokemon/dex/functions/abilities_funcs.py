@@ -1605,9 +1605,12 @@ class Lightmetal:
 
 class Lightningrod:
 	def onAnyRedirectTarget(self, target=None, source=None, move=None):
+		"""Draw another Pokémon's targeted Electric move to this holder."""
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and target is not holder and move and move.type == "Electric" and move.target in {"normal", "any"}:
-			return holder
+		if holder and holder is not source and target is not holder and move and move.type == "Electric":
+			move_target = getattr(move, "target", None) or getattr(move, "raw", {}).get("target")
+			if move_target in {"normal", "any"}:
+				return holder
 
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.type == "Electric" and target:
@@ -2971,9 +2974,12 @@ class Stickyhold:
 
 class Stormdrain:
 	def onAnyRedirectTarget(self, target=None, source=None, move=None):
+		"""Draw another Pokémon's targeted Water move to this holder."""
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and target is not holder and move and move.type == "Water" and move.target in {"normal", "any"}:
-			return holder
+		if holder and holder is not source and target is not holder and move and move.type == "Water":
+			move_target = getattr(move, "target", None) or getattr(move, "raw", {}).get("target")
+			if move_target in {"normal", "any"}:
+				return holder
 
 	def onTryHit(self, target=None, source=None, move=None):
 		if move and move.type == "Water" and target:

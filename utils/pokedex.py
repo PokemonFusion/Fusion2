@@ -1,3 +1,8 @@
+"""Character Pokédex progress with equivalent-name lookup support."""
+
+from pokemon.names import normalize_name
+
+
 class DexTrackerMixin:
 	"""Mixin to track Pokédex progress on a Character."""
 
@@ -10,22 +15,22 @@ class DexTrackerMixin:
 
 	def _add(self, attr: str, name: str):
 		lst = self._get_list(attr)
-		key = name.lower()
-		if key not in lst:
+		key = normalize_name(name)
+		if key and key not in {normalize_name(value) for value in lst}:
 			lst.append(key)
 			setattr(self.db, attr, lst)
 
 	@property
 	def dex_seen(self):
-		return set(self._get_list("dex_seen"))
+		return {normalize_name(value) for value in self._get_list("dex_seen")}
 
 	@property
 	def dex_owned(self):
-		return set(self._get_list("dex_owned"))
+		return {normalize_name(value) for value in self._get_list("dex_owned")}
 
 	@property
 	def dex_caught(self):
-		return set(self._get_list("dex_caught"))
+		return {normalize_name(value) for value in self._get_list("dex_caught")}
 
 	def mark_seen(self, name: str) -> None:
 		self._add("dex_seen", name)
@@ -37,7 +42,7 @@ class DexTrackerMixin:
 		self._add("dex_caught", name)
 
 	def get_dex_symbol(self, name: str) -> str:
-		key = name.lower()
+		key = normalize_name(name)
 		if key in self.dex_caught:
 			return "[C]"
 		if key in self.dex_owned:

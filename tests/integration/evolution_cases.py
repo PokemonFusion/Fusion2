@@ -98,6 +98,66 @@ class EvolutionCases(unittest.TestCase):
         self.assertEqual(self.quantity("firestone"), 1)
         self.assertEqual(service.evolve(mon, item="Fire Stone"), "Ninetales")
 
+    def test_success_preserves_saved_hp_pp_exp_and_status(self):
+        """Evolution and held-item writes retain the battle state fixed in #721."""
+        from pokemon.models.moves import ActiveMoveslot, Move
+
+        mon, service = self.lifecycle(
+            "Eevee", level=10, total_exp=1051, current_hp=3, status="slp",
+            sleep_turns=2, nickname="River Friend", ability="Anticipation",
+            evs=[1, 2, 3, 4, 5, 6], flags=["alpha"],
+        )
+        move, _ = Move.objects.get_or_create(name="Water Gun")
+        slot = ActiveMoveslot.objects.create(pokemon=mon, move=move, slot=1, current_pp=3)
+        fields = ["current_hp", "total_exp", "status", "sleep_turns", "nickname", "ivs", "evs"]
+        before = OwnedPokemon.objects.filter(pk=mon.pk).values(*fields).get()
+        self.trainer.add_item("waterstone")
+        self.trainer.add_item("leftovers")
+        self.assertEqual(service.evolve(mon, item="Water Stone"), "Vaporeon")
+        self.assertEqual(mon.ability, "Hydration")
+        service.hold(1, "Leftovers")
+        service.hold(1)
+        self.assertEqual(OwnedPokemon.objects.filter(pk=mon.pk).values(*fields).get(), before)
+        self.assertEqual(ActiveMoveslot.objects.get(pk=slot.pk).current_pp, 3)
+        self.assertIn("alpha", mon.flags)
+
+    def test_accented_and_gender_symbol_sources_evolve_from_saved_names(self):
+        """Persisted display spellings reach the rule and service layers."""
+        for species, gender, target in [
+            ("Flabébé", "F", "Floette"),
+            ("Nidoran♀", "F", "Nidorina"),
+            ("Nidoran♂", "M", "Nidorino"),
+        ]:
+            with self.subTest(species=species):
+                mon, service = self.lifecycle(species, gender=gender, level=19)
+                self.assertEqual(service.evolve(mon), target)
+                self.assertEqual(mon.species, target)
+
+    def test_spaced_species_requires_active_move_and_preserves_nickname(self):
+        """Name lookup remains valid while the new move condition is enforced."""
+        from pokemon.models.moves import ActiveMoveslot, Move
+
+        mon, service = self.lifecycle("Mime Jr.", level=20, nickname="Baby Stage")
+        with self.assertRaises(EvolutionError):
+            service.evolve(mon)
+        self.assertEqual(mon.species, "Mime Jr.")
+        move, _ = Move.objects.get_or_create(name="Mimic")
+        ActiveMoveslot.objects.create(pokemon=mon, move=move, slot=1, current_pp=7)
+        self.assertEqual(service.evolve(mon), "Mr. Mime")
+        self.assertEqual(mon.species, "Mr. Mime")
+        self.assertEqual(mon.name, "Baby Stage")
+        self.assertEqual(mon.activemoveslot_set.get().current_pp, 7)
+
+    def test_invalid_inventory_amounts_never_mutate_alias_rows(self):
+        """Retain the branch's positive-integer guard alongside main's aliases."""
+        self.trainer.add_item("Fire Stone", 2)
+        for amount in (True, 0, -1, 1.5, "1"):
+            for method in (self.trainer.add_item, self.trainer.remove_item):
+                with self.subTest(amount=amount, method=method.__name__):
+                    with self.assertRaises(ValueError):
+                        method("firestone", amount)
+        self.assertEqual(self.quantity("Fire Stone"), 2)
+
     def test_interruption_after_database_save_rolls_back_species_and_inventory(self):
         mon, service = self.lifecycle()
         self.trainer.add_item("firestone")
@@ -168,15 +228,58 @@ class EvolutionCases(unittest.TestCase):
         self.assertEqual(mon.held_item, "Sitrus Berry")
         self.assertEqual(self.quantity("oranberry"), 1)
 
-    def test_legacy_inventory_name_and_ambiguous_rows(self):
+    def test_legacy_inventory_aliases_share_one_atomic_debit(self):
+        """Keep main's support for existing equivalent inventory spellings."""
+        from pokemon.models.trainer import InventoryEntry
+
         mon, service = self.lifecycle()
-        self.trainer.add_item("fire stone")
-        self.trainer.add_item("firestone")
-        with self.assertRaisesRegex(EvolutionError, "Ambiguous"):
-            service.evolve(mon, item="Fire Stone")
-        self.trainer.remove_item("firestone")
+        InventoryEntry.objects.create(owner=self.trainer, item_name="fire stone", quantity=1)
+        InventoryEntry.objects.create(owner=self.trainer, item_name="firestone", quantity=1)
+        self.assertEqual(self.quantity("Fire Stone"), 2)
         service.evolve(mon, item="Fire Stone")
-        self.assertEqual(self.quantity("fire stone"), 0)
+        self.assertEqual(mon.species, "Ninetales")
+        self.assertEqual(self.quantity("fire stone"), 1)
+        self.assertIsNone(service.evolve(mon, item="firestone"))
+        self.assertEqual(self.quantity("Fire Stone"), 1)
+
+    def test_black_augurite_command_commits_and_replays_once(self):
+        """A synthesized evolution requirement reaches the real command/service."""
+        from evennia.commands.command import Command
+
+        with patch("evennia.Command", Command, create=True):
+            from commands.player.cmd_learn_evolve import CmdEvolvePokemon
+
+        mon, service = self.lifecycle("Scyther")
+        self.trainer.add_item("blackaugurite", 2)
+        messages = []
+        caller = service.caller
+        caller.msg = messages.append
+        caller.get_pokemon_by_id = lambda _pid: mon
+        command = CmdEvolvePokemon()
+        command.caller = caller
+        command.args = f"{mon.unique_id} Black Augurite"
+        command.func()
+        self.assertEqual(mon.species, "Kleavor")
+        self.assertEqual(self.quantity("Black Augurite"), 1)
+        self.assertIn("evolved into Kleavor", messages[-1])
+        command.func()
+        self.assertIn("already completed", messages[-1])
+        self.assertEqual(self.quantity("blackaugurite"), 1)
+
+    def test_held_item_aliases_preserve_replacement_and_removal_quantities(self):
+        """Replacing a held item works across old and canonical bag spellings."""
+        from pokemon.models.trainer import InventoryEntry
+
+        mon, service = self.lifecycle(held_item="Sitrus Berry")
+        InventoryEntry.objects.create(owner=self.trainer, item_name="oran berry", quantity=1)
+        InventoryEntry.objects.create(owner=self.trainer, item_name="oranberry", quantity=1)
+        service.hold(1, "Oran Berry")
+        self.assertEqual(mon.held_item, "Oran Berry")
+        self.assertEqual(self.quantity("oranberry"), 1)
+        self.assertEqual(self.quantity("sitrus berry"), 1)
+        service.hold(1)
+        self.assertEqual(self.quantity("Oran Berry"), 2)
+        self.assertEqual(self.quantity("Sitrus Berry"), 1)
 
     def test_legacy_carried_item_rolls_back_then_returns_to_trainer(self):
         mon, service = self.lifecycle(held_item="Sitrus Berry")

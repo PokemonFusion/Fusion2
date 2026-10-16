@@ -15,6 +15,21 @@ from pokemon.dex import POKEDEX
 
 
 @pytest.mark.parametrize(
+    "query,expected",
+    [
+        ("Flabébé", "Flabebe"),
+        ("Nidoran♀", "Nidoran-F"),
+        ("Nidoran♂", "Nidoran-M"),
+        ("Mr. Mime", "MrMime"),
+    ],
+)
+def test_lookup_preserves_shared_accent_punctuation_and_gender_handling(query, expected):
+    """Evolution accepts the same complete species spellings as other commands."""
+    assert lookup_species(query) is lookup_species(expected)
+    assert lookup_species(query) is not None
+
+
+@pytest.mark.parametrize(
     "source,target,level,item,context",
     [
         ("Bulbasaur", "Ivysaur", 16, None, EvolutionContext()),

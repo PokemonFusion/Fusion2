@@ -167,7 +167,7 @@ def test_account_look_shows_unread_mail_by_character():
     assert "|yUnread mail:|n Ash (2). Use |wgoic|n, then |w+mail|n." in output
 
 
-def test_account_look_warns_once_when_telnet_utf8_is_unknown():
+def test_account_look_does_not_warn_when_telnet_utf8_is_unknown():
     original = install_fakes()
     try:
         mod = load_accounts_module()
@@ -198,7 +198,5 @@ def test_account_look_warns_once_when_telnet_utf8_is_unknown():
     finally:
         restore_modules(original)
 
-    assert "did not report UTF-8 support" in first
-    assert "+symboltest ui" in first
-    assert "+uimode ascii" in first
-    assert "did not report UTF-8 support" not in second
+    assert "Display note:" not in first
+    assert "Display note:" not in second

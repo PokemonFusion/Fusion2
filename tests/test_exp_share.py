@@ -73,3 +73,15 @@ def test_award_experience_with_share():
         assert mons[1].experience == 45
         assert mons[2].experience == 45
         assert all(m.evs.get("attack") == 1 for m in mons)
+
+
+def test_typed_participant_reference_rewards_the_switched_pokemon():
+        """Modern battle refs must not fall back to the first healthy slot."""
+        mons = [DummyMon("a"), DummyMon("b")]
+        user = DummyUser(False, mons)
+        award_experience_to_party(
+                user, 100, {"spe": 1}, participants=[DummyBattleMon("owned:b")],
+        )
+        assert mons[0].experience == 0
+        assert mons[1].experience == 100
+        assert mons[1].evs["speed"] == 1

@@ -7,6 +7,7 @@ from typing import List
 
 from pokemon.helpers.pokemon_spawn import get_spawn
 from pokemon.services.encounters import create_encounter_pokemon, encounter_ref
+from pokemon.services.move_management import _get_move_pp_from_dex, _get_movedex
 from pokemon.services.pokemon_refs import build_owned_ref
 
 from ..data.generation import generate_pokemon
@@ -33,15 +34,15 @@ def _stat_list(source) -> List[int]:
 def _calc_stats_from_model(poke):
 	"""Return calculated stats for a stored Pokemon model."""
 	try:
-		from ..stats import calculate_stats
+		from ..models.stats import calculate_stats
 	except Exception:  # pragma: no cover
 		calculate_stats = None
 
 	ivs_list = _stat_list(getattr(poke, "ivs", None))
 	evs_list = _stat_list(getattr(poke, "evs", None))
 	nature = getattr(poke, "nature", "Hardy")
-	name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
-	level = getattr(poke, "level", 1)
+	name = getattr(poke, "species", None) or getattr(poke, "name", "Pikachu")
+	level = getattr(poke, "_pf2_fusion_level", None) or getattr(poke, "level", 1)
 
 	ivs = {
 		"hp": ivs_list[0],
@@ -102,6 +103,8 @@ def create_battle_pokemon(
 	inst = generate_pokemon(species, level=level)
 	move_names = list(move_names or getattr(inst, "moves", []) or ["Flail"])
 	moves = [Move(name=m) for m in move_names]
+	for move in moves:
+		_, move.pp = _get_move_pp_from_dex(_get_movedex(), move.name)
 
 	ivs_list = _stat_list(getattr(inst, "ivs", None))
 	evs_list = _stat_list(getattr(inst, "evs", None))
@@ -120,6 +123,7 @@ def create_battle_pokemon(
 			evs=evs_list,
 			current_hp=max_hp,
 			move_names=move_names,
+			move_pp=[move.pp for move in moves],
 			npc_trainer=trainer if not is_wild else None,
 			template_key=template_key,
 		)

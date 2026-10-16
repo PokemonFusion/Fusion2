@@ -2,73 +2,40 @@
 
 from __future__ import annotations
 
-import importlib.util
+import importlib
 import os
 import random
 import sys
-import types
 from typing import Tuple
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
 
-battle_pkg = types.ModuleType("pokemon.battle")
-battle_pkg.__path__ = []  # type: ignore[attr-defined]
-sys.modules.setdefault("pokemon.battle", battle_pkg)
-
-_MODULES = {}
-
-
-def _load_module(name: str, relative_path: str):
-        path = os.path.join(ROOT, relative_path)
-        spec = importlib.util.spec_from_file_location(name, path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[name] = module
-        assert spec and spec.loader
-        spec.loader.exec_module(module)
-        return module
-
 
 def load_modules():
-        """Ensure the lightweight battle modules are loaded for tests."""
+        """Use the active import context without replacing module identities.
 
-        if _MODULES:
-                return _MODULES
-
-        # Core battle modules
-        battledata = _load_module("pokemon.battle.battledata", "pokemon/battle/battledata.py")
-        engine = _load_module("pokemon.battle.engine", "pokemon/battle/engine.py")
-        damage_mod = _load_module("pokemon.battle.damage", "pokemon/battle/damage.py")
-
-        # Status package
-        _load_module("pokemon.battle.status.status_core", "pokemon/battle/status/status_core.py")
-        _load_module("pokemon.battle.status.burn", "pokemon/battle/status/burn.py")
-        _load_module("pokemon.battle.status.poison", "pokemon/battle/status/poison.py")
-        _load_module("pokemon.battle.status.paralysis", "pokemon/battle/status/paralysis.py")
-        _load_module("pokemon.battle.status.sleep", "pokemon/battle/status/sleep.py")
-        _load_module("pokemon.battle.status.freeze", "pokemon/battle/status/freeze.py")
-        _load_module("pokemon.battle.status", "pokemon/battle/status/__init__.py")
-
-        # Supporting dex modules
-        entities = _load_module("pokemon.dex.entities", "pokemon/dex/entities.py")
-        items_funcs = _load_module("pokemon.dex.functions.items_funcs", "pokemon/dex/functions/items_funcs.py")
-        _load_module("pokemon.dex.functions.conditions_funcs", "pokemon/dex/functions/conditions_funcs.py")
-
-        _MODULES.update(
-                {
-                        "Pokemon": battledata.Pokemon,
-                        "Battle": engine.Battle,
-                        "BattleParticipant": engine.BattleParticipant,
-                        "BattleType": engine.BattleType,
-                        "Move": battledata.Move,
-                        "BattleMove": engine.BattleMove,
-                        "Stats": entities.Stats,
-                        "damage_calc": damage_mod.damage_calc,
-                        "FlameOrb": items_funcs.Flameorb,
-                }
-        )
-        return _MODULES
+        Pytest restores each module's imports around legacy stub-based tests.
+        Normal imports follow that context; an extra cache or file-based reload
+        leaves battle classes and monkeypatched effect handlers out of sync.
+        """
+        battledata = importlib.import_module("pokemon.battle.battledata")
+        engine = importlib.import_module("pokemon.battle.engine")
+        damage_mod = importlib.import_module("pokemon.battle.damage")
+        entities = importlib.import_module("pokemon.dex.entities")
+        items_funcs = importlib.import_module("pokemon.dex.functions.items_funcs")
+        return {
+                "Pokemon": battledata.Pokemon,
+                "Battle": engine.Battle,
+                "BattleParticipant": engine.BattleParticipant,
+                "BattleType": engine.BattleType,
+                "Move": battledata.Move,
+                "BattleMove": engine.BattleMove,
+                "Stats": entities.Stats,
+                "damage_calc": damage_mod.damage_calc,
+                "FlameOrb": items_funcs.Flameorb,
+        }
 
 
 def make_stats(value: int = 120):

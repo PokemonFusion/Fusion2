@@ -413,7 +413,10 @@ class CmdAlphaLearnMove(Command):
             return
 
         learned_moves = getattr(pokemon, "learned_moves", None)
-        if learned_moves is not None and learned_moves.filter(name__iexact=selected).exists():
+        from pokemon.names import find_named
+
+        learned = learned_moves.all() if learned_moves is not None and hasattr(learned_moves, "all") else learned_moves
+        if learned is not None and find_named(learned, selected) is not None:
             self.caller.msg(f"{pokemon.name} already knows {selected}.")
             return
 

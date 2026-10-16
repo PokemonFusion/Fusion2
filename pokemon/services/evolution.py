@@ -10,8 +10,9 @@ from pokemon.data.evolution import (
     EvolutionContext,
     attempt_evolution,
     evolution_options,
-    normalize_name,
+    get_evolution_items,
 )
+from pokemon.names import normalize_name
 from pokemon.services.placement import PlacementError, PlacementService
 
 
@@ -20,7 +21,7 @@ class EvolutionError(ValueError):
 
 
 def resolve_item(query):
-    """Resolve one full dex item name/key; reject unknown or ambiguous names."""
+    """Resolve a full dex name or synthesized evolution item requirement."""
     from pokemon.dex import ITEMDEX
 
     query = normalize_name(query)
@@ -29,6 +30,14 @@ def resolve_item(query):
         display = data.raw.get("name") or data.name
         if query and query in {normalize_name(key), normalize_name(display)}:
             matches[key.lower()] = display
+    if not matches:
+        # Some evolution requirements are supplied by the rule service because
+        # the checked-in item dex omits them (for example Black Augurite).
+        matches = {
+            normalize_name(display): display
+            for display in get_evolution_items()
+            if query and query == normalize_name(display)
+        }
     if len(matches) != 1:
         raise EvolutionError("Use a complete, unambiguous item name.")
     return next(iter(matches.items()))
@@ -130,18 +139,6 @@ class EvolutionService:
             stats={"atk": stats.get("attack"), "def": stats.get("defense")},
         )
 
-    @staticmethod
-    def _inventory_key(trainer, item_key):
-        """Accept historical display-name rows without unsafe partial matching."""
-        matches = [
-            e.item_name
-            for e in trainer.inventory.select_for_update().all()
-            if normalize_name(e.item_name) == normalize_name(item_key) and e.quantity > 0
-        ]
-        if len(matches) > 1:
-            raise EvolutionError("Ambiguous inventory entries; ask staff to consolidate them.")
-        return matches[0] if matches else None
-
     def evolve(self, mon, *, item=None, target=None):
         """Consume exactly one required item and persist one eligible transition."""
         item_key, display = resolve_item(item) if item else (None, None)
@@ -163,8 +160,7 @@ class EvolutionService:
                     "It doesn't seem to be able to evolve right now (condition or target unavailable)."
                 )
             if item_key:
-                stored_key = self._inventory_key(trainer, item_key)
-                if not stored_key or not trainer.remove_item(stored_key):
+                if not trainer.remove_item(item_key):
                     raise EvolutionError(f"You do not have a {display}.")
             result = attempt_evolution(pokemon, item=display, context=context, target=options[0].name)
             if not result:
@@ -185,19 +181,17 @@ class EvolutionService:
             if normalize_name(previous) == normalize_name(display or ""):
                 return f"{pokemon.name} is already holding {display or 'nothing'}."
             if item_key:
-                stored_key = self._inventory_key(trainer, item_key)
-                if stored_key:
-                    if not trainer.remove_item(stored_key):
+                if trainer.has_item(item_key):
+                    if not trainer.remove_item(item_key):
                         raise EvolutionError(f"You do not have a {display}.")
                 else:
                     self._consume_carried(item_key)
             if previous:
-                # Unknown legacy held names are returned verbatim, never discarded.
+                # Unknown legacy held items are returned, never discarded.
                 try:
                     old_key, _ = resolve_item(previous)
                 except EvolutionError:
                     old_key = previous.lower()
-                old_key = self._inventory_key(trainer, old_key) or old_key
                 trainer.add_item(old_key)
             pokemon.held_item = display or ""
             pokemon.save()

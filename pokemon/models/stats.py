@@ -20,6 +20,7 @@ def _invalidate_stat_cache(pokemon) -> None:
                                 setattr(pokemon, "_cached_stats", None)
 
 
+from pokemon.names import resolve_dex_entry
 from pokemon.services.move_management import learn_level_up_moves
 from pokemon.utils.boosts import ALL_STATS, STAT_KEY_MAP
 
@@ -183,8 +184,7 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 						return growth
 				name = getattr(poke, "species", getattr(poke, "name", None))
 				if name:
-						species = POKEDEX.get(name) or POKEDEX.get(str(name).lower()) or \
-								POKEDEX.get(str(name).capitalize())
+						species = resolve_dex_entry(POKEDEX, name)
 						if species:
 								return species.raw.get("growthRate", "medium_fast")
 				return "medium_fast"
@@ -218,18 +218,11 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 def add_evs(pokemon, gains: Mapping[str, int]) -> None:
 		"""Apply EV gains to ``pokemon`` respecting limits."""
 
-		evs_attr = getattr(pokemon, "evs", {}) or {}
-		if isinstance(evs_attr, dict):
-				evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs_attr.items()}
+		evs_attr = getattr(pokemon, "evs", {})
+		if isinstance(evs_attr, dict) or evs_attr is None:
+				evs = {STAT_KEY_MAP.get(k, k): v for k, v in (evs_attr or {}).items()}
 		else:
-				evs = {
-						"hp": evs_attr[0],
-						"attack": evs_attr[1],
-						"defense": evs_attr[2],
-						"special_attack": evs_attr[3],
-						"special_defense": evs_attr[4],
-						"speed": evs_attr[5],
-				}
+				evs = dict(zip(ALL_STATS, evs_attr))
 
 		total = sum(evs.values())
 		for stat, val in gains.items():
@@ -244,7 +237,9 @@ def add_evs(pokemon, gains: Mapping[str, int]) -> None:
 						continue
 				evs[full] = current + allowed
 				total += allowed
-		pokemon.evs = evs
+		# OwnedPokemon stores EVs in a PostgreSQL ArrayField. Keep its
+		# representation intact; battle-only objects may use a stat mapping.
+		pokemon.evs = evs if isinstance(evs_attr, dict) or evs_attr is None else [evs.get(stat, 0) for stat in ALL_STATS]
 		_invalidate_stat_cache(pokemon)
 
 
@@ -325,7 +320,7 @@ def calculate_stats(
 ) -> Dict[str, int]:
 	"""Return calculated stats for the given Pokémon parameters."""
 
-	species = POKEDEX.get(species_name) or POKEDEX.get(species_name.capitalize()) or POKEDEX.get(species_name.lower())
+	species = resolve_dex_entry(POKEDEX, species_name)
 	if not species:
 		raise ValueError(f"Species '{species_name}' not found")
 
@@ -406,7 +401,10 @@ def _mon_identifier(mon) -> str | None:
         for attr in ("unique_id", "model_id", "id"):
                 value = getattr(mon, attr, None)
                 if value is not None:
-                        return str(value)
+                        from pokemon.services.pokemon_refs import parse_pokemon_ref
+
+                        kind, identifier = parse_pokemon_ref(value)
+                        return identifier if kind == "owned" else str(value)
         return None
 
 
@@ -558,6 +556,9 @@ def award_experience_to_party(
                         mons = list(active.all())
                 else:
                         mons = list(active or [])
+        from utils.fusion import award_fusion_experience, get_battle_party_with_fusion
+
+        mons = get_battle_party_with_fusion(player, mons)
         if not mons:
                 return
 
@@ -595,6 +596,8 @@ def award_experience_to_party(
                                         mon.save()
                                 except Exception:
                                         pass
+                                else:
+                                        award_fusion_experience(player, mon, gained)
 
         recipients = set(participant_mons)
         if share_enabled:
@@ -628,5 +631,7 @@ def award_experience_to_party(
                                         mon.save()
                                 except Exception:
                                         pass
+                                else:
+                                        award_fusion_experience(player, mon, gained)
 
         _notify_winner(player, caller, participant_messages + non_participant_messages)

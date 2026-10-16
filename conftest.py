@@ -1,6 +1,9 @@
-"""Shared pytest options for Fusion2 tests."""
+"""Shared pytest options and import isolation for all Fusion2 test suites."""
 
 from __future__ import annotations
+
+import sys
+import types
 
 import pytest
 
@@ -50,3 +53,81 @@ def pytest_collection_modifyitems(config, items):
 			item.add_marker(skip_showdown)
 		if "callbacks" in item.keywords and not config.getoption("--run-callback-tests"):
 			item.add_marker(skip_callbacks)
+
+
+_PROTECTED_MODULE_ROOTS = (
+	"commands",
+	"evennia",
+	"fusion2",
+	"menus",
+	"pokemon",
+	"typeclasses",
+	"utils",
+	"world",
+)
+
+
+def _is_protected_module(name: str) -> bool:
+	"""Identify application modules that legacy tests replace with stubs."""
+	return any(name == root or name.startswith(f"{root}.") for root in _PROTECTED_MODULE_ROOTS)
+
+
+def _snapshot_modules():
+	"""Capture module identities and globals for one test module's imports."""
+	modules = {}
+	attrs = {}
+	for name, module in list(sys.modules.items()):
+		if not _is_protected_module(name):
+			continue
+		modules[name] = module
+		if isinstance(module, types.ModuleType):
+			attrs[name] = module.__dict__.copy()
+	return modules, attrs
+
+
+def _restore_modules(snapshot) -> None:
+	"""Restore the captured imports, including parent-package attributes."""
+	modules, attrs = snapshot
+	for name in list(sys.modules):
+		if _is_protected_module(name) and name not in modules:
+			sys.modules.pop(name, None)
+	for name, module in modules.items():
+		sys.modules[name] = module
+		if isinstance(module, types.ModuleType):
+			saved_attrs = attrs.get(name)
+			if saved_attrs is not None:
+				module.__dict__.clear()
+				module.__dict__.update(saved_attrs)
+
+
+class _IsolatedModule(pytest.Module):
+	"""Keep legacy import-time test stubs from leaking into other test modules."""
+
+	def _getobj(self):
+		"""Collect this test module without leaking its import-time stubs."""
+		self._pre_import_modules = _snapshot_modules()
+		try:
+			module = super()._getobj()
+			self._runtime_modules = _snapshot_modules()
+			return module
+		finally:
+			_restore_modules(self._pre_import_modules)
+
+	def setup(self) -> None:
+		"""Activate the same imports the test module saw during collection."""
+		runtime_modules = getattr(self, "_runtime_modules", None)
+		if runtime_modules is not None:
+			_restore_modules(runtime_modules)
+		super().setup()
+
+	def teardown(self) -> None:
+		"""Release this module's stubs before the next test module runs."""
+		pre_import_modules = getattr(self, "_pre_import_modules", None)
+		if pre_import_modules is not None:
+			_restore_modules(pre_import_modules)
+		super().teardown()
+
+
+def pytest_pycollect_makemodule(module_path, parent):
+	"""Apply the shared collector to application and battle-mechanics tests."""
+	return _IsolatedModule.from_parent(parent, path=module_path)

@@ -257,6 +257,8 @@ class CmdFusionForms(Command):
         return forms
 
     def _match_form(self, forms, raw: str):
+        from pokemon.names import normalize_name
+
         query = (raw or "").strip().lower()
         if not query:
             return None
@@ -268,7 +270,7 @@ class CmdFusionForms(Command):
             pid = str(getattr(pokemon, "unique_id", "") or getattr(pokemon, "id", "")).lower()
             species = str(getattr(pokemon, "species", "")).lower()
             name = _pokemon_display(pokemon).lower()
-            if pid.startswith(query) or species == query or name == query:
+            if pid.startswith(query) or normalize_name(species) == normalize_name(query) or name == query:
                 return pokemon
         return None
 

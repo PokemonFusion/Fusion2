@@ -29,6 +29,7 @@ def test_on_exit_called_when_auto_learn():
 			return FakeMove(name), True
 
 	models_mod.Move = type("Move", (), {"objects": Manager()})
+	move_service_mod.get_or_create_move = lambda name, **kwargs: models_mod.Move.objects.get_or_create(name=name.capitalize())[0]
 
 	orig_pokemon = sys.modules.get("pokemon")
 	orig_utils = sys.modules.get("pokemon.utils")
