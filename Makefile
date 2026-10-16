@@ -10,7 +10,7 @@ test:
 	PF2_NO_EVENNIA=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest -q -n auto --dist=loadgroup --durations=25
 
 test-mandatory:
-	PF2_NO_EVENNIA=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest -q tests pokemon/battle/tests --run-callback-tests
+	python -B tools/run_mandatory_tests.py
 
 test-semantic:
 	PF2_NO_EVENNIA=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest -q tests/test_battle_semantic_contracts.py
