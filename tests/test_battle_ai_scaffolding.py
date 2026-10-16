@@ -31,9 +31,9 @@ def test_resolve_ai_profile_uses_wild_battle_default():
 
 
 def test_unknown_ai_profile_falls_back_to_trainer_default():
+    from pokemon.battle._shared import _normalize_key
     from pokemon.battle.ai_profiles import build_battle_ai_context
     from pokemon.battle.ai_scoring import score_ai_moves
-    from pokemon.battle._shared import _normalize_key
     from pokemon.battle.engine import BattleType
 
     participant = types.SimpleNamespace(name="AI Trainer", ai_profile="custom_missing_profile")
@@ -256,7 +256,7 @@ def test_select_ai_action_uses_emergency_fallback_when_all_pp_empty(monkeypatch)
 
     action = engine._select_ai_action(participant, active_pokemon, StubBattle())
 
-    assert action.move.name == "Flail"
+    assert action.move.name == "Struggle"
     assert participant.last_ai_debug_trace.scores[0].reasons == ("fallback_no_usable_moves",)
 
 

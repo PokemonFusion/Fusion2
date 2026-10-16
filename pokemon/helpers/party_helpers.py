@@ -53,6 +53,47 @@ def get_party_slots(character) -> List:
         return (party + [None] * 6)[:6]
 
 
+def get_battle_switch_choices(character, roster) -> dict:
+        """Map canonical party/Fusion selectors to internal battle roster indices."""
+        from pokemon.services.pokemon_refs import parse_pokemon_ref
+
+        if getattr(character, "storage", None) is None:
+                return {i: (i, mon) for i, mon in enumerate(roster, 1) if mon is not None}
+        party = get_party_slots(character)
+        choices = {}
+        for slot, model in enumerate(party, 1):
+                if model is None:
+                        continue
+                identifier = str(getattr(model, "unique_id", "") or "")
+                for index, mon in enumerate(roster, 1):
+                        kind, model_id = parse_pokemon_ref(getattr(mon, "model_id", None))
+                        if mon is model or (identifier and kind == "owned" and model_id == identifier):
+                                choices[slot] = (index, mon)
+                                break
+        fusion_id = str(getattr(getattr(character, "db", None), "fusion_id", "") or "")
+        if fusion_id:
+                for index, mon in enumerate(roster, 1):
+                        kind, model_id = parse_pokemon_ref(getattr(mon, "model_id", None))
+                        if kind == "owned" and model_id == fusion_id and not any(mon is p for _, p in choices.values()):
+                                key = party.index(None) + 1 if None in party else "fusion"
+                                choices[key] = (index, mon)
+                                break
+        return dict(sorted(choices.items(), key=lambda choice: 7 if choice[0] == "fusion" else choice[0]))
+
+
+def resolve_battle_switch_choice(character, choices, selection):
+        """Resolve a canonical slot or the Fusion alias without roster renumbering."""
+        from pokemon.services.pokemon_refs import parse_pokemon_ref
+
+        if str(selection).strip().lower() == "fusion":
+                fusion_id = str(getattr(getattr(character, "db", None), "fusion_id", "") or "")
+                key = next((slot for slot, (_, mon) in choices.items()
+                            if parse_pokemon_ref(getattr(mon, "model_id", None)) == ("owned", fusion_id)), "fusion")
+        else:
+                key = int(selection)
+        return choices[key]
+
+
 def pokemon_is_usable(pokemon) -> bool:
         """Return ``True`` if ``pokemon`` is conscious and able to battle."""
 

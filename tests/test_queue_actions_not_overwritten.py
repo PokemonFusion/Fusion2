@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 
 from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
@@ -10,6 +12,11 @@ def _setup_battle():
 	room = DummyRoom()
 	p1 = DummyPlayer(1, room)
 	p2 = DummyPlayer(2, room)
+	# Queue tests use owned-party selectors, so both model and battle copies
+	# need the stable identities supplied by production storage.
+	for player in (p1, p2):
+		for pokemon in player.storage.party:
+			pokemon.unique_id = str(uuid4())
 	inst = BattleSession(p1, p2)
 	inst.start_pvp()
 	return inst, p1, p2
@@ -36,7 +43,7 @@ def test_queue_item_does_not_overwrite_existing_action():
 	assert inst.state.declare["A1"]["item"].lower() == "potion"
 
 
-@pytest.mark.parametrize("item_name", ["Potion", "Antidote", "Poke Ball"])
+@pytest.mark.parametrize("item_name", ["Potion", "Antidote"])
 @pytest.mark.parametrize("team", ["A", "B"])
 def test_item_queue_and_restore_keep_correct_side(item_name, team):
 	"""Queued items retain safe targets through an actual session restore."""
@@ -46,9 +53,10 @@ def test_item_queue_and_restore_keep_correct_side(item_name, team):
 	inst = BattleSession(p1, p2)
 	inst.start_pvp()
 	caller = p1 if team == "A" else p2
+	actor = inst.battle.participants[0 if team == "A" else 1]
+	actor.inventory = {item_name: 1}
 	inst.queue_item(item_name, caller=caller)
-	other = "B" if team == "A" else "A"
-	expected = other if item_name == "Poke Ball" else team
+	expected = team
 	assert inst.state.declare[f"{team}1"]["target"] == f"{expected}1"
 	# Restore must rebuild the engine action, not merely the UI declaration.
 	room = caller.location

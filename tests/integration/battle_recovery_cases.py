@@ -667,7 +667,7 @@ class BattleRecoveryCases(unittest.TestCase):
         self.player.messages.clear()
         session.queue_item("Potion", caller=self.player)
         opponent = session.battle.participants[1].active[0].name
-        self.assertEqual(self.player.messages, [f"Waiting on {opponent}..."])
+        self.assertEqual(self.player.messages, ["A1 (Squirtle) prepares Potion → A1.", f"Waiting on {opponent}..."])
         self.assertEqual(session._missing_action_positions(), ["B1"])
         self.player.messages.clear()
         saved = dict(session.state.declare)

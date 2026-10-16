@@ -55,6 +55,7 @@ def _align_positions_with_team(
                 pools[_participant_identifier(mon)].append(mon)
 
         active: List = []
+        participant._active_slots = {}
         for pos_name, pos in positions.items():
                 if not isinstance(pos_name, str) or not pos_name.startswith(team_key):
                         continue
@@ -78,6 +79,7 @@ def _align_positions_with_team(
                 if replacement:
                         setattr(pos, "pokemon", replacement)
                         active.append(replacement)
+                        participant._active_slots[int(pos_name[1:]) - 1] = replacement
         return active
 
 
@@ -99,6 +101,7 @@ class BattleLogic:
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
+			participant.last_ai_switch_turn = getattr(state, "ai_switch_turns", {}).get(team, -100)
 			saved = getattr(state, "participants", {}).get(team)
 			if saved is not None:
 				participant.participating_pokemon = []
@@ -136,6 +139,7 @@ class BattleLogic:
 		flee = getattr(self.battle, "_flee_result", {}) or {}
 		self.state.flee_result = {key: flee[key] for key in ("success", "reason", "message") if key in flee}
 		self.state.flee_attempts = {key: int(getattr(part, "flee_attempts", 0)) for key, part in teams}
+		self.state.ai_switch_turns = {key: int(getattr(part, "last_ai_switch_turn", -100)) for key, part in teams}
 		self.state.participants = {
 			key: [_participant_identifier(mon) for mon in (getattr(part, "participating_pokemon", []) or getattr(part, "active", []))]
 			for key, part in teams
@@ -210,6 +214,7 @@ class BattleLogic:
 		for part in (part_a, part_b):
 			for mon in part.pokemons:
 				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref)
+				mon.volatiles = restore_battle_value(mon.volatiles, pokemon_by_ref)
 		for name in ("weather_state", "terrain_state", "pseudo_weather"):
 			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref))
 		battle.turn_count = data.battle.turn

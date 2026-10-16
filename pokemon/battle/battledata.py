@@ -935,6 +935,8 @@ class Pokemon:
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
             "tempvals": snapshot_battle_value(detached_mapping(self.tempvals)),
+            "volatiles": snapshot_battle_value(detached_mapping(self.volatiles)),
+            "choice_locked_move": self.choice_locked_move,
             "gender": self.gender,
         }
 
@@ -1098,6 +1100,8 @@ class Pokemon:
             if isinstance(move_data, dict) and "pp" in move_data:
                 setattr(move, "pp", move_data["pp"])
         obj.tempvals = detached_mapping(data.get("tempvals", {}))
+        obj.volatiles = detached_mapping(data.get("volatiles", {}))
+        obj.choice_locked_move = data.get("choice_locked_move")
         obj.boosts = detached_mapping(
             data.get(
                 "boosts",

@@ -13,8 +13,8 @@ class CmdChallenge(Command):
       +challenge <NPC name>
       +challenge/retry
 
-    Only singles are available until doubles action and target selection is
-    supported. You need a conscious party. The NPC must be
+    The NPC's configured single or double format is honored. Doubles requires
+    two conscious party members. The NPC must be
     accepting challenges, rested, and free of another battle.
     """
 

@@ -184,13 +184,24 @@ class TrainerChallengeCases(unittest.TestCase):
         self.command(retry=True)
         self.assert_clean(before)
 
-    def test_doubles_reject_before_allocation(self):
-        """Unavailable player doubles cannot reserve or consume any encounter."""
+    def test_doubles_require_two_before_allocation(self):
+        """A one-member player party cannot reserve or consume a doubles encounter."""
         before = EncounterPokemon.objects.count()
         self.npc.db.trainer_challenge = {"enabled": True, "battle_format": "double"}
         self.command()
         self.assert_clean(before)
-        self.assertTrue(any("Double trainer challenges" in str(message) for message in self.player.messages))
+        self.assertTrue(any("at least 2 conscious Pokemon" in str(message) for message in self.player.messages))
+
+    def test_doubles_launches_both_active_slots(self):
+        """A normal player launches a configured doubles NPC with a full roster."""
+        create_owned_pokemon("Eevee", self.player.trainer, 5, ivs=[0] * 6, evs=[0] * 6, active_move_names=["Tackle"])
+        self.npc.db.trainer_challenge = {"enabled": True, "battle_format": "double"}
+        self.command()
+        session = self.player.ndb.battle_instance
+        self.assertIsNotNone(session, self.player.messages)
+        self.assertEqual([len(part.active) for part in session.battle.participants], [2, 2])
+        self.assertEqual(set(session.data.turndata.positions), {"A1", "A2", "B1", "B2"})
+        self.assertEqual(len(session.battle.participants[1].pokemons), 3)
 
 
 if __name__ == "__main__":

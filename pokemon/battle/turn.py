@@ -131,6 +131,7 @@ class TurnManager:
 
 	def _sync_active_battle_state(self) -> None:
 		"""Mirror engine active slots into UI and persisted turn data."""
+		from .active_slots import active_at
 
 		battle = getattr(self, "battle", None)
 		participants = list(getattr(battle, "participants", []) or [])
@@ -169,7 +170,7 @@ class TurnManager:
 				position_names = [f"{team}{slot + 1}" for slot in range(len(active))]
 
 			for slot, pos_name in enumerate(position_names):
-				pokemon = active[slot] if slot < len(active) else None
+				pokemon = active_at(participant, slot)
 				pos = positions.get(pos_name)
 				if pos is not None:
 					try:

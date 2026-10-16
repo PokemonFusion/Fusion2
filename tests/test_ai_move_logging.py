@@ -47,10 +47,11 @@ def test_ai_move_choice_logged():
 	eng.battle_logger = DummyLogger()
 
 	poke = types.SimpleNamespace(moves=[types.SimpleNamespace(name="Tackle")])
+	foe = types.SimpleNamespace(moves=[types.SimpleNamespace(name="Tackle")])
 	ai = eng.BattleParticipant("AI", [poke], is_ai=True)
-	player = eng.BattleParticipant("Player", [poke], is_ai=False)
+	player = eng.BattleParticipant("Player", [foe], is_ai=False)
 	ai.active = [poke]
-	player.active = [poke]
+	player.active = [foe]
 	battle = eng.Battle(eng.BattleType.WILD, [ai, player])
 
 	action = ai.choose_action(battle)
