@@ -24,7 +24,8 @@ class CmdBattleSwitch(Command):
 	"""Switch your active Pokémon in battle.
 
 	Usage:
-		+battle/switch <slot|fusion>
+		+battle/switch <slot>
+		+battle/switch fusion
 
 	Examples:
 		+switch 2
