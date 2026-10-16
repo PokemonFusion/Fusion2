@@ -182,6 +182,19 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             self.battle_id = battle_handler.next_id()
         except Exception:
             self.battle_id = getattr(player, "id", 0)
+        # Registration writes may fail after attaching us to a character.
+        # Initialize every cleanup dependency before those visible side effects.
+        self.storage = BattleDataWrapper(self.room, self.battle_id)
+        self.logic: BattleLogic | None = None
+        self.watchers: set[int] = set()
+        self.ndb = type("NDB", (), {})()
+        self.ndb.watchers_live = set()
+        self.ndb.rng = self.rng
+        self.temp_pokemon_ids: List[str] = []
+        self.encounter_metadata: dict[str, object] = {}
+        self._battle_result_handled = False
+        self._gym_victory_id: str | None = None
+
         self._register_trainer(player)
         if opponent:
             self._register_trainer(opponent)
@@ -196,20 +209,6 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if self.battle_id not in battles:
             battles.append(self.battle_id)
         self.room.db.battles = battles
-
-        # helper for accessing persistent battle data
-        self.storage = BattleDataWrapper(self.room, self.battle_id)
-
-        self.logic: BattleLogic | None = None
-        self.watchers: set[int] = set()
-        # keep a non-persistent watcher set on ndb
-        self.ndb = type("NDB", (), {})()
-        self.ndb.watchers_live = set()
-        self.ndb.rng = self.rng
-        self.temp_pokemon_ids: List[str] = []
-        self.encounter_metadata: dict[str, object] = {}
-        self._battle_result_handled = False
-        self._gym_victory_id: str | None = None
 
         log_info(f"BattleSession {self.battle_id} registered in room #{getattr(self.room, 'id', '?')}")
         self.persist_debug_record(event="session_initialized")

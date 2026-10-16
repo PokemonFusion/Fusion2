@@ -67,6 +67,24 @@ class AdventureLifecycleCases(unittest.TestCase):
         self.assertIsNotNone(self.player.ndb.battle_instance)
         self.assertTrue(self.player.db.battle_control)
 
+    def test_constructor_room_write_failure_can_clean_up_partial_session(self):
+        """Cleanup fields exist even when registration fails inside __init__."""
+        attributes = self.player.location.attributes
+        original_add = attributes.add
+        failed = []
+
+        def fail_room_registration(key, *args, **kwargs):
+            if key == "battles" and not failed:
+                failed.append(True)
+                raise RuntimeError("room registration write failed")
+            return original_add(key, *args, **kwargs)
+
+        with patch.object(attributes, "add", fail_room_registration):
+            self.choose()
+        self.assertIsNone(self.player.ndb.battle_instance)
+        self.assertIsNone(self.player.db.battle_lock)
+        self.assertFalse(self.player.location.db.battles)
+
     def test_failure_after_registration_cleans_up_encounter_and_room_state(self):
         """A late startup error must release both the manager and temporary row."""
         original = BattleSession._setup_battle_room

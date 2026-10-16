@@ -27,7 +27,7 @@ production gym content, and other Pokemon lifecycle work separately.
 | Check | Result |
 | --- | --- |
 | Combined application, battle, and generated callback suite | 2,922 passed; 4,010 skipped; 1,279 warnings |
-| PostgreSQL progression, names, status/items, capture/Ether, PP/Full Restore, UI and Adventure lifecycle suites | 87 passed |
+| PostgreSQL progression, names, status/items, capture/Ether, PP/Full Restore, UI and Adventure lifecycle suites | 88 passed |
 | Production-model PostgreSQL reward recovery suite | 9 passed |
 | PostgreSQL placement, capture, and concurrent-writer suite | 20 passed |
 | Additional PostgreSQL lifecycle diagnostics | 14 passed |
@@ -68,10 +68,10 @@ live redirect callback failure was repaired and its PvP sequence repeated
 without new battle errors. QA accounts and their normal gameplay history are
 retained; these results do not establish deployment to PF2-Dev.
 
-PR review additionally verifies startup failures before and after registration,
+PR review additionally verifies startup failures inside, before and after registration,
 metadata persistence before the first turn, concession receipt failures and
 single cleanup, retry after a cleanup outage, and a committed capture replay
-after losing its in-memory nickname tracking. All eight cases use real
+after losing its in-memory nickname tracking. All nine cases use real
 commands, sessions, the canonical battle handler and saved models in a guarded
 disposable PostgreSQL schema. Failed startup releases locks or retains a
 player-accessible cleanup retry; pending terminal concessions freeze battle
