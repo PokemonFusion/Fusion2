@@ -238,8 +238,12 @@ def get_item_by_name(name):
 		display_name = text_entry.get("name")
 		if display_name:
 			normalized = _normalize_key(display_name)
-			return ITEM_BY_NAME.get(normalized, (None, None))
-	return None, None
+			if normalized in ITEM_BY_NAME:
+				return ITEM_BY_NAME[normalized]
+	from pokemon.items import get_gameplay_item
+
+	item = get_gameplay_item(name)
+	return (_normalize_key(item.name).capitalize(), item) if item else (None, None)
 
 
 def _get_item_text_entry(name, details):

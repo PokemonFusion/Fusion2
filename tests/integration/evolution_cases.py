@@ -53,6 +53,20 @@ class EvolutionCases(unittest.TestCase):
         self.assertEqual(mon.species, "Ninetales")
         self.assertEqual(self.quantity("firestone"), 1)
 
+    def test_everstone_equip_blocks_evolution_and_removal_returns_item(self):
+        """A supported held item omitted from ITEMDEX must work through the service."""
+        mon, service = self.lifecycle("Bulbasaur", level=40)
+        self.trainer.add_item("everstone")
+        service.hold(1, "Everstone")
+        self.assertEqual(mon.held_item, "Everstone")
+        self.assertEqual(self.quantity("Everstone"), 0)
+        with self.assertRaises(EvolutionError):
+            service.evolve(mon)
+        self.assertEqual(mon.species, "Bulbasaur")
+        service.hold(1)
+        self.assertEqual(self.quantity("Everstone"), 1)
+        self.assertEqual(service.evolve(mon), "Ivysaur")
+
     def test_level_retry_cannot_skip_second_stage(self):
         mon, service = self.lifecycle("Bulbasaur", level=40)
         self.assertEqual(service.evolve(mon), "Ivysaur")

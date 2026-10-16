@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 from typing import Callable, List, Optional, Tuple
 
-from .battledata import BattleData, Pokemon, Team
+from .battledata import BattleData, Pokemon, Team, TurnData
 from .engine import Battle, BattleParticipant, BattleType
 from .logic import BattleLogic
 from .state import BattleState
@@ -115,6 +115,9 @@ def build_initial_state(
     )
     opponent_team_data = Team(trainer=opponent_name, pokemon_list=resolved_opponent_team)
     data = BattleData(player_team, opponent_team_data)
+    slots = getattr(player_participant, "max_active", 1)
+    if slots > 1:
+        data.turndata = TurnData(data.teams, teamslots=slots)
 
     state = BattleState.from_battle_data(data, ai_type=battle_type.name)
     if battle_type == BattleType.WILD:
