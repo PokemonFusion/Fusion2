@@ -22,6 +22,7 @@ class PVPRequest:
 	host_key: str
 	password: Optional[str] = None
 	opponent_id: Optional[int] = None
+	battle_format: str = "single"
 
 	def get_host(self):
 		"""Return the host object if available."""
@@ -57,14 +58,27 @@ def get_requests(location) -> Dict[int, PVPRequest]:
 	return reqs
 
 
-def create_request(host, password: Optional[str] = None) -> PVPRequest:
+def validate_format_party(player, battle_format: str) -> None:
+	"""Check doubles readiness before creating or consuming a room request."""
+	if battle_format not in {"single", "double"}:
+		raise ValueError("Choose the single or double battle format.")
+	if battle_format == "single":
+		if not has_usable_pokemon(player):
+			raise ValueError("You don't have any Pokémon able to battle.")
+		return
+	from pokemon.helpers.party_helpers import pokemon_is_usable
+	from utils.fusion import get_battle_party_with_fusion
+	if sum(pokemon_is_usable(mon) for mon in get_battle_party_with_fusion(player)) < 2:
+		raise ValueError("Doubles requires at least two conscious Pokémon in each player's party.")
+
+
+def create_request(host, password: Optional[str] = None, battle_format: str = "single") -> PVPRequest:
 	"""Create a new request on the host's location."""
-	if not has_usable_pokemon(host):
-		raise ValueError("You don't have any Pokémon able to battle.")
+	validate_format_party(host, battle_format)
 	reqs = get_requests(host.location)
 	if host.id in reqs:
 		raise ValueError("You are already hosting a PVP request.")
-	req = PVPRequest(host_id=host.id, host_key=host.key, password=password)
+	req = PVPRequest(host_id=host.id, host_key=host.key, password=password, battle_format=battle_format)
 	reqs[host.id] = req
 	# persist after mutation
 	host.location.db.pvp_requests = reqs
@@ -99,9 +113,16 @@ def find_request(location, host_name: str) -> Optional[PVPRequest]:
 	return None
 
 
-def start_pvp_battle(host, opponent) -> None:
+def start_pvp_battle(host, opponent, battle_format: str = "single"):
 	"""Create and start a PVP ``BattleSession`` between ``host`` and ``opponent``."""
 	from .battleinstance import BattleSession
 
+	if opponent is None or opponent is host or host.location is None or opponent.location != host.location:
+		raise ValueError("Both players must be in the same room to start the battle.")
+	for player in (host, opponent):
+		validate_format_party(player, battle_format)
+		if getattr(player.ndb, "battle_instance", None) or getattr(player.db, "battle_id", None):
+			raise ValueError("Both players must finish their current battle first.")
 	battle = BattleSession(host, opponent)
-	battle.start_pvp()
+	battle.start_pvp(battle_format=battle_format)
+	return battle

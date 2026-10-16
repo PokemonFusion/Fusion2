@@ -73,20 +73,20 @@ class ActionQueue:
 		Parameters
 		----------
 		caller : object | None
-		    Trainer requesting the action.
+            Trainer requesting the action.
 		action_desc : str
-		    Description used for duplicate checking and logging.
+            Description used for duplicate checking and logging.
 		declare : Callable[[Any], None]
-		    Callback applying the action to a position.
+            Callback applying the action to a position.
 		state_data : dict
-		    Action specific fields to store in ``state.declare``.
+            Action specific fields to store in ``state.declare``.
 		log_template : str
-		    Template for the action log message. ``pokemon`` and ``pos``
-		    placeholders will be supplied automatically.
+            Template for the action log message. ``pokemon`` and ``pos``
+            placeholders will be supplied automatically.
 		log_params : dict
-		    Additional parameters for ``log_template``.
+            Additional parameters for ``log_template``.
 		save_desc : str
-		    Description used when logging state persistence.
+            Description used when logging state persistence.
 		"""
 
 		if not self.data or not self.battle:
@@ -135,10 +135,21 @@ class ActionQueue:
 	# ------------------------------------------------------------------
 	# Public queueing API
 	# ------------------------------------------------------------------
+	def _queue_controlled_choice(self, caller, kind, *args, actor=None):
+		"""Keep the public queue API's refusal-and-message behavior."""
+		caller = caller or self.captainA
+		try:
+			return getattr(self.choices_for(caller), kind)(*args, actor=actor)
+		except ValueError as error:
+			self._msg_to(caller, str(error))
+			return False
 
-	def queue_move(self, move_key: str, target: str = "B1", caller=None) -> None:
+	def queue_move(self, move_key: str, target: str | None = None, caller=None, *, actor=None) -> None:
 		"""Queue a move by its dex key and run the turn if ready."""
 
+		if callable(getattr(self, "choices_for", None)):
+			return self._queue_controlled_choice(caller, "move", move_key, target, actor=actor)
+		target = target or "B1"
 		norm_key = _battle_norm_key(move_key)
 		self._queue_action(
 			caller,
@@ -150,9 +161,11 @@ class ActionQueue:
 			"queued move",
 		)
 
-	def queue_switch(self, slot: int, caller=None) -> None:
+	def queue_switch(self, slot: int, caller=None, *, actor=None) -> None:
 		"""Queue a Pokémon switch and run the turn if ready."""
 
+		if callable(getattr(self, "choices_for", None)):
+			return self._queue_controlled_choice(caller, "switch", slot, actor=actor)
 		self._queue_action(
 			caller,
 			"switch",
@@ -163,9 +176,11 @@ class ActionQueue:
 			"queued switch",
 		)
 
-	def queue_item(self, item_name: str, target: str | None = None, caller=None) -> None:
+	def queue_item(self, item_name: str, target: str | None = None, caller=None, *, actor=None) -> None:
 		"""Queue medicine on the user's side and capture balls on the opponent."""
 
+		if callable(getattr(self, "choices_for", None)):
+			return self._queue_controlled_choice(caller, "item", item_name, target, actor=actor)
 		own_position, _ = self._get_position_for_trainer(caller or self.captainA)
 		if not own_position:
 			return

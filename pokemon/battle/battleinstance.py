@@ -577,11 +577,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             name = getattr(pokemon, "name", None) or getattr(pokemon, "species", None)
             if not name:
                 continue
-            prompts.setdefault(trainer, []).append(str(name))
+            doubles = len(positions) > 2
+            prompts.setdefault(trainer, []).append(f"{pos_name} ({name})" if doubles else str(name))
 
         for trainer, names in prompts.items():
             message = f"Choose an action for {self._format_pokemon_names(names)}."
             self._msg_to(trainer, message)
+            if len(positions) > 2:
+                field = "; ".join(f"{label}: {slot.pokemon.name} ({max(0, round(slot.pokemon.hp / max(1, slot.pokemon.max_hp) * 100))}% HP)"
+                                  for label, slot in positions.items() if getattr(slot, "pokemon", None) is not None)
+                self._msg_to(trainer, field + "\nUse +attack <your slot> <move> <target>, +switch <your slot> <party slot>, or +item <your slot> <item>.")
     def _register_trainer(self, trainer) -> None:
         """Record battle state and locks for ``trainer``."""
 
@@ -1281,7 +1286,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         player = getattr(winner, "player", None)
         return player is not None and player is getattr(self, "captainA", None)
 
-    def start_pvp(self) -> None:
+    def start_pvp(self, battle_format: str = "single") -> None:
         """Start a battle between two players."""
         if not self.captainB:
             return
@@ -1293,6 +1298,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         player_pokemon = self._prepare_player_party(self.captainA)
 
         opp_pokemon = self._prepare_player_party(self.captainB)
+        active_count = 2 if battle_format == "double" else 1
+        if battle_format not in {"single", "double"}:
+            raise ValueError("Choose the single or double battle format.")
+        if active_count == 2 and any(sum(p.hp > 0 for p in party) < 2 for party in (player_pokemon, opp_pokemon)):
+            raise ValueError("Doubles requires two conscious Pokémon on each side.")
 
         try:
             player_participant = BattleParticipant(
@@ -1319,10 +1329,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             except TypeError:
                 opponent_participant = BattleParticipant(self.captainB.key, opp_pokemon)
 
-        if player_participant.pokemons:
-            player_participant.active = [player_participant.pokemons[0]]
-        if opponent_participant.pokemons:
-            opponent_participant.active = [opponent_participant.pokemons[0]]
+        for participant in (player_participant, opponent_participant):
+            participant.max_active = active_count
+            participant.active = [mon for mon in participant.pokemons if mon.hp > 0][:active_count]
 
         battle = Battle(
             BattleType.PVP,
@@ -1333,6 +1342,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         teamA = Team(trainer=self.captainA.key, pokemon_list=player_pokemon)
         teamB = Team(trainer=self.captainB.key, pokemon_list=opp_pokemon)
         data = BattleData(teamA, teamB)
+        if active_count == 2:
+            from .battledata import TurnData
+            data.turndata = TurnData(data.teams, teamslots=active_count)
+            data.battle.how_many = active_count
 
         state = BattleState.from_battle_data(data, ai_type=BattleType.PVP.name)
         state.roomweather = getattr(getattr(origin, "db", {}), "weather", "clear")
@@ -1823,7 +1836,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def _restore_declarations(self):
         """Restore all valid slot choices without overwriting a sibling's action."""
-        from .engine import BattleMove
+        from .active_slots import slot_for
+        from .legal_actions import LegalActions
 
         positions = self.data.turndata.positions
         trainer_info = self.storage.get("trainers", {}) or {}
@@ -1838,44 +1852,51 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 trainer_ids = trainer_info.get("team" + name[0], [])
                 if declaration.get("trainer") and str(declaration["trainer"]) not in map(str, trainer_ids):
                     raise ValueError("The saved choice belongs to another trainer.")
-                if declaration.get("pokemon") and declaration["pokemon"] != pokemon.model_id:
+                if declaration.get("pokemon") and str(declaration["pokemon"]) != str(pokemon.model_id):
                     raise ValueError("The acting Pokemon has changed.")
                 if "move" in declaration:
                     key = _battle_norm_key(declaration["move"])
-                    saved = next((move for move in pokemon.moves if _battle_norm_key(move.name) == key), None)
                     target_name = declaration.get("target", "B1" if name[0] == "A" else "A1")
                     target_mon = getattr(positions.get(target_name), "pokemon", None)
-                    if saved is None or getattr(saved, "pp", None) == 0 or target_mon is None or target_mon.hp <= 0:
+                    if declaration.get("target_ref") and str(declaration["target_ref"]) != str(getattr(target_mon, "model_id", None)):
+                        raise ValueError("The saved target has changed.")
+                    action = next((candidate for candidate in LegalActions(self.battle, actor, pokemon).moves()
+                                   if _battle_norm_key(candidate.move.key) == key
+                                   and candidate.target_pokemon is target_mon), None)
+                    if action is None and actor.is_ai:
+                        # AI preferences can be refreshed before ordering; a
+                        # human must choose again when their saved input expires.
+                        action = next(iter(LegalActions(self.battle, actor, pokemon).moves()), None)
+                    if action is None:
                         raise ValueError("The saved move or target is no longer legal.")
-                    move = BattleMove(saved.name, key=key, pp=getattr(saved, "pp", None))
-                    action = Action(actor, ActionType.MOVE, self.battle.participant_for(target_mon),
-                                    move=move, priority=getattr(move, "priority", 0), pokemon=pokemon,
-                                    target_pokemon=target_mon,
-                                    target_slot=self.battle.participant_for(target_mon).active.index(target_mon))
                     position.declareAttack(target_name, key)
                 elif "switch" in declaration:
                     slot = int(declaration["switch"])
                     if not 1 <= slot <= len(actor.pokemons):
                         raise ValueError("The saved reserve slot is no longer available.")
                     reserve = actor.pokemons[slot - 1]
-                    if reserve in actor.active or reserve.hp <= 0:
+                    reserved = [candidate.pokemon for candidate in restored_actions[actor]
+                                if candidate.action_type is ActionType.SWITCH]
+                    active_slot = slot_for(actor, pokemon)
+                    if not any(mon is reserve for mon in LegalActions(self.battle, actor, pokemon).reserves(slot=active_slot, reserved=reserved)):
                         raise ValueError("The saved reserve can no longer switch in.")
-                    active_slot = next(index for index, mon in enumerate(actor.active) if mon is pokemon)
                     action = Action(actor, ActionType.SWITCH, target=reserve, pokemon=reserve, priority=6,
                                     switch_slot=active_slot, switch_from=pokemon)
                     position.declareSwitch(slot)
                 elif "item" in declaration:
                     item = declaration["item"]
                     target = self.battle.opponent_of(actor) if _battle_norm_key(item).lower().endswith("ball") else actor
-                    action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon)
+                    action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon,
+                                    target_slot=slot_for(actor, pokemon) if target is actor else 0)
                     position.declareItem(item)
                 elif "run" in declaration:
                     action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon)
                     position.declareRun()
                 else:
                     raise ValueError("The saved action is not supported.")
+                action.player_selected = not actor.is_ai
                 restored_actions[actor].append(action)
-            except (ValueError, TypeError, IndexError) as error:
+            except (ValueError, TypeError, IndexError, StopIteration) as error:
                 self.state.declare.pop(name, None)
                 if position is not None:
                     position.removeDeclare()
@@ -1953,12 +1974,19 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     # ---- Persistence helpers ------------------------------------------------
 
+    def choices_for(self, caller):
+        """Return the player's authoritative view of legal per-slot choices."""
+        from .player_choices import PlayerChoices
+        return PlayerChoices(self, caller)
+
     def is_turn_ready(self) -> bool:
         if self.data:
+            required = {name: pos for name, pos in self.data.turndata.positions.items()
+                        if getattr(pos, "pokemon", None) is not None and getattr(pos.pokemon, "hp", 1) > 0}
             if self.state:
-                missing = [name for name in self.data.turndata.positions if name not in self.state.declare]
+                missing = [name for name in required if name not in self.state.declare]
             else:
-                missing = [name for name, pos in self.data.turndata.positions.items() if not pos.getAction()]
+                missing = [name for name, pos in required.items() if not pos.getAction()]
             if missing:
                 log_info(f"Waiting for actions from positions {missing} in battle {self.battle_id}")
                 return False

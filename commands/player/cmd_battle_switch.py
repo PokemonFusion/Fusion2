@@ -22,14 +22,16 @@ class CmdBattleSwitch(Command):
 	"""Switch your active Pokémon in battle.
 
 	Usage:
-	  +battle/switch <slot>
+      +battle/switch <slot>
+      +switch <acting slot> <party slot>
 
 	Examples:
-	  +switch 2
-	  +battle/switch 4
+      +switch 2
+      +battle/switch 4
+      +switch A2 3
 
 	Notes:
-	  With no slot, the command opens a prompt listing available Pokemon.
+      With no slot, the command opens a prompt listing available Pokemon.
 	"""
 
 	key = "+battle/switch"
@@ -58,6 +60,11 @@ class CmdBattleSwitch(Command):
 			inst = BattleSession.ensure_for_player(self.caller)
 		if not inst or not getattr(inst, "battle", None):
 			self.caller.msg(NOT_IN_BATTLE_MSG)
+			return
+		if callable(getattr(inst, "choices_for", None)):
+			from .battle_choice_prompts import split_actor, switch_prompt
+			actor, selection = split_actor(slot)
+			switch_prompt(inst, self.caller, selection, actor)
 			return
 		participant = _get_participant(inst, self.caller)
 

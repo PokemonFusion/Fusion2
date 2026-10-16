@@ -222,15 +222,15 @@ def test_restored_session_releases_placed_npc(world, monkeypatch):
     assert world.npc.db.battle_id is None
 
 
-def test_double_command_rejected_before_allocation(world, monkeypatch):
-    """A ready doubles team cannot reach generation, restoration or allocation."""
+def test_double_command_requires_two_player_pokemon(world, monkeypatch):
+    """A one-member player party cannot reserve or consume a doubles encounter."""
     world.npc.db.trainer_challenge["battle_format"] = "double"
+    monkeypatch.setattr(service, "get_battle_party_with_fusion", lambda player: [NS(hp=10)])
 
     def unexpected(*args, **kwargs):
         pytest.fail("Double challenges must reject before encounter/session work")
 
     monkeypatch.setattr(service, "generate_static_trainer_encounter", unexpected)
-    monkeypatch.setattr(service.BattleSession, "ensure_for_player", unexpected)
     messages = []
     world.player.msg = messages.append
     world.player.search = lambda *args, **kwargs: world.npc
@@ -239,10 +239,7 @@ def test_double_command_rejected_before_allocation(world, monkeypatch):
     command.args = "Test Trainer"
     command.func()
     assert len(messages) == 1
-    assert "Double trainer challenges are not available yet" in messages[0]
-    assert "both active Pokemon" in messages[0]
-    assert "set battle_format to 'single'" in messages[0]
-    assert "#708" in messages[0]
+    assert "at least 2 conscious Pokemon" in messages[0]
     assert not world.captured.created
     assert not world.captured.started
     assert not hasattr(world.player.db, "battle_id")

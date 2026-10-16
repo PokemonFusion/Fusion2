@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ._shared import _normalize_key, get_pp, get_raw
+from .active_slots import active_at, slot_for
 
 
 def pokemon_key(pokemon):
@@ -31,7 +32,7 @@ class LegalActions:
             slot = getattr(action, "switch_slot", None) or 0
             source = getattr(action, "switch_from", None)
             if source is None:
-                source = active[slot] if 0 <= slot < len(active) else None
+                source = active_at(action.actor, slot)
         else:
             source = action.pokemon or (active[0] if active else None)
         return cls(battle, action.actor, source)
@@ -135,7 +136,7 @@ class LegalActions:
                                   if any(mon is target for mon in part.active)), self.participant)
                 actions.append(Action(self.participant, ActionType.MOVE, owner, move,
                                       priority=move.priority, pokemon=self.pokemon, target_pokemon=target,
-                                      target_slot=next((index for index, mon in enumerate(owner.active) if mon is target), 0)))
+                                      target_slot=slot_for(owner, target)))
         if not actions and fallback:
             # Struggle is not a learned move and is exempt from choice/Disable locks.
             struggle = self._move("Struggle")
@@ -147,7 +148,7 @@ class LegalActions:
                              if any(mon is target for mon in part.active))
                 actions.append(Action(self.participant, ActionType.MOVE, owner, struggle,
                                       pokemon=self.pokemon, target_pokemon=target,
-                                      target_slot=next(index for index, mon in enumerate(owner.active) if mon is target)))
+                                      target_slot=slot_for(owner, target)))
         return actions
 
     def reserves(self, *, slot: int = 0, forced: bool = False, reserved=()) -> list:
@@ -156,7 +157,7 @@ class LegalActions:
         if getattr(part, "has_lost", False) or not 0 <= slot < getattr(part, "max_active", 1):
             return []
         active = list(getattr(part, "active", []))
-        current = active[slot] if slot < len(active) else None
+        current = active_at(part, slot)
         if forced and self.conscious(current):
             return []
         if not forced:
@@ -178,8 +179,7 @@ class LegalActions:
         """Enumerate voluntary replacements for this actor's exact active slot."""
         from .engine import Action, ActionType
 
-        active = list(getattr(self.participant, "active", []))
-        slot = next((index for index, mon in enumerate(active) if mon is self.pokemon), None)
+        slot = slot_for(self.participant, self.pokemon)
         if slot is None:
             return []
         return [Action(self.participant, ActionType.SWITCH, priority=6, pokemon=mon,
@@ -194,6 +194,7 @@ class LegalActions:
             return None
         legal = self.moves() + self.switches(reserved=reserved)
         for candidate in legal:
+            candidate.player_selected = getattr(action, "player_selected", False)
             if candidate.action_type is not action.action_type:
                 continue
             if candidate.action_type is ActionType.SWITCH:

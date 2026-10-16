@@ -162,17 +162,15 @@ class TurnProcessor:
 
 	def run_action(self) -> None:
 		"""Main action runner modeled on Showdown's ``runAction``."""
+		from .active_slots import active_at
 		for part in self.participants:
 			acts = getattr(part, "pending_action", None)
 			if not acts:
 				continue
 			if not isinstance(acts, list):
 				acts = [acts]
-			if part.active:
-				switching = part.active[0]
-			else:
-				switching = None
 			for act in list(acts):
+				switching = act.switch_from or active_at(part, act.switch_slot or 0)
 				if act.action_type is ActionType.SWITCH and switching:
 					for opp in self.participants:
 						if opp is part or opp.has_lost:
@@ -187,6 +185,8 @@ class TurnProcessor:
 								oa
 								and oa.action_type is ActionType.MOVE
 								and getattr(getattr(oa, "move", None), "key", "") == "pursuit"
+								and oa.target is part
+								and active_at(part, oa.target_slot or 0) is switching
 							):
 								switching.tempvals["switching"] = True
 								self.use_move(oa)
@@ -306,11 +306,11 @@ class TurnProcessor:
 			else:
 				part_actions = [raw_actions]
 			for action in part_actions:
-				if getattr(raw_participant, "is_ai", False) and action.action_type in {ActionType.MOVE, ActionType.SWITCH}:
+				if (getattr(raw_participant, "is_ai", False) or getattr(action, "player_selected", False)) and action.action_type in {ActionType.MOVE, ActionType.SWITCH}:
 					from .legal_actions import LegalActions
 
 					reserved = [a.pokemon for a in actions if a.actor is raw_participant and a.action_type is ActionType.SWITCH]
-					action = LegalActions.for_action(self, action).refresh(action, fallback=True, reserved=reserved)
+					action = LegalActions.for_action(self, action).refresh(action, fallback=getattr(raw_participant, "is_ai", False), reserved=reserved)
 					if action is None:
 						continue
 				if action.target and action.target not in self.participants:
@@ -344,7 +344,7 @@ class TurnProcessor:
 		trick_room = bool(self.field.get_pseudo_weather("trickroom"))
 
 		for action in actions:
-			poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
+			poke = action.switch_from or action.pokemon or (action.actor.active[0] if action.actor.active else None)
 			move = action.move
 			base_priority = action.priority
 			priority = base_priority
@@ -908,7 +908,7 @@ class TurnProcessor:
 			if getattr(self, "battle_over", False):
 				break
 			action_type = getattr(action, "action_type", None)
-			if getattr(action.actor, "is_ai", False) and action_type in {ActionType.MOVE, ActionType.SWITCH}:
+			if (getattr(action.actor, "is_ai", False) or getattr(action, "player_selected", False)) and action_type in {ActionType.MOVE, ActionType.SWITCH}:
 				from .legal_actions import LegalActions
 
 				if LegalActions.for_action(self, action).refresh(action) is None:
@@ -1147,7 +1147,10 @@ class TurnProcessor:
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
 			return
 
-		target_poke = target.active[0]
+		from .active_slots import active_at
+		target_poke = active_at(target, action.target_slot or 0)
+		if target_poke is None:
+			return
 		consumed = False
 
 		def consume_once() -> bool:

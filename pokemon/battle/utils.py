@@ -61,16 +61,8 @@ def get_modified_stat(pokemon, stat: str) -> int:
 
 
 def is_self_target(target: Optional[str]) -> bool:
-	"""Return ``True`` if ``target`` refers to the user or its allies.
-
-	The battle engine simplifies targeting by treating moves that would
-	normally affect an ally (such as ``"adjacentAlly"``) as if they target
-	the user when no ally is present.  This helper centralises that logic so
-	callers can easily determine whether a move's effects should apply to the
-	user or to their opponent.
-	"""
-
-	return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+	"""Return whether a move intrinsically targets its own user."""
+	return target == "self"
 
 
 def apply_boost(pokemon, boosts, source=None, effect=None) -> None:
@@ -84,11 +76,11 @@ def apply_boost(pokemon, boosts, source=None, effect=None) -> None:
 	Parameters
 	----------
 	pokemon: Any
-	    The Pokémon receiving the boost.
+        The Pokémon receiving the boost.
 	boosts: dict | None
-	    Mapping of stat identifiers to stage deltas.
+        Mapping of stat identifiers to stage deltas.
 	source, effect: Any, optional
-	    Additional context forwarded to ability callbacks.
+        Additional context forwarded to ability callbacks.
 	"""
 
 	_apply_boost(pokemon, boosts, source=source, effect=effect)
