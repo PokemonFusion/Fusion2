@@ -8,6 +8,7 @@ except Exception:  # pragma: no cover
     evennia_logger = None
 
 from utils.dex_suggestions import move_not_found_message, pokemon_not_found_message
+from utils.locks import require_no_battle_lock
 
 log = logging.getLogger(__name__)
 
@@ -579,6 +580,8 @@ class CmdHeal(Command):
     help_category = "Pokemon"
 
     def func(self):
+        if not require_no_battle_lock(self.caller):
+            return
         location = self.caller.location
         if not (location and location.db.is_pokemon_center):
             self.caller.msg("You must be at a Pokémon Center to heal.")

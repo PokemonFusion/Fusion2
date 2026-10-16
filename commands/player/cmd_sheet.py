@@ -39,6 +39,13 @@ def _parse_slash_switches(command):
     return set(switches)
 
 
+def _party_slots(caller):
+    """Use canonical slot positions for list displays and numbered sheets."""
+    getter = getattr(caller.storage, "get_party_slots", None)
+    party = list(getter() if callable(getter) else get_active_party(caller))
+    return (party + [None] * 6)[:6]
+
+
 class CmdSheet(Command):
     """Display your trainer overview, inventory, or a party slot.
 
@@ -163,11 +170,11 @@ class CmdSheet(Command):
 
         if isinstance(self.slot, int):
             try:
-                party = get_active_party(caller)
+                party = _party_slots(caller)
             except Exception:  # pragma: no cover - best effort compatibility
                 party = []
 
-            if not party:
+            if not any(party):
                 caller.msg("You have no Pokémon in your party.")
                 return
             if self.slot < 1 or self.slot > len(party):
@@ -240,13 +247,7 @@ class CmdSheetPokemon(Command):
         """Execute the command."""
         caller = self.caller
 
-        # Get party; normalize to a fixed-size list (6) with None for empties
-        party = list(caller.storage.get_party()) or []
-
-        if len(party) < 6:
-            party = party + [None] * (6 - len(party))
-        elif len(party) > 6:
-            party = party[:6]
+        party = _party_slots(caller)
 
         trainer = getattr(caller, "trainer", None)
         fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
@@ -335,7 +336,7 @@ class CmdSheetPokemon(Command):
                     party.append(fusion_mon)
 
         if self.show_all:
-            if not party:
+            if not any(party):
                 caller.msg("You have no Pokémon in your party.")
                 return
             sheets = []
@@ -350,7 +351,7 @@ class CmdSheetPokemon(Command):
             return
 
         if self.slot is None:
-            if not party:
+            if not any(party):
                 caller.msg("You have no Pokémon in your party.")
                 return
             lines = ["|wParty Pokémon|n"]

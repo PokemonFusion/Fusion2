@@ -4440,6 +4440,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         start_hp = getattr(target, "hp", 0)
         start_user_boosts = dict(getattr(user, "boosts", {}))
         start_target_boosts = dict(getattr(target, "boosts", {}))
+        start_statuses = (getattr(user, "status", None), getattr(target, "status", None))
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
@@ -4465,6 +4466,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             start_user_boosts != end_user_boosts
             or start_target_boosts != end_target_boosts
         )
+        statuses_changed = start_statuses != (
+            getattr(user, "status", None), getattr(target, "status", None)
+        )
         target_self = is_self_target(action.move.raw.get("target"))
         user_name = getattr(user, "name", "Pokemon")
         target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
@@ -4484,7 +4488,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     start_target_boosts,
                     end_target_boosts,
                 )
-        elif boosts_changed:
+        elif boosts_changed or statuses_changed:
             if target_self:
                 self.log_action(f"{user_name} used {action.move.name}!")
             else:

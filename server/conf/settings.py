@@ -96,6 +96,9 @@ BASE_CHARACTER_TYPECLASS = "pokemon.user.User"
 # login/connect without modifying Evennia core.
 COMMAND_DEFAULT_CLASS = "commands.dbsafe.DBSafeMuxCommand"
 
+# Keep the HTTP guard byte-safe on deployed Evennia versions with a text regex.
+TELNET_PROTOCOL_CLASS = "server.conf.telnet.FusionTelnetProtocol"
+
 # This location may need to change depending on what starting location is
 # default to limbo, normally #2 but sometimes different. Best to put this in secret_settings
 # START_LOCATION = "#2"
