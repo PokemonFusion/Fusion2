@@ -18,6 +18,20 @@ class AdventureObjective:
 
 
 @dataclass(frozen=True)
+class AdventureChoice:
+    """One authored route decision available at a virtual node."""
+
+    key: str
+    label: str
+    description: str
+    encounter_kind: str
+    species: str
+    level: int
+    opponent_name: str = ""
+    outcome_key: str = ""
+
+
+@dataclass(frozen=True)
 class AdventureNode:
     """A virtual location inside an Adventure."""
 
@@ -28,6 +42,7 @@ class AdventureNode:
     search_text: str = ""
     search_objective: str = ""
     coordinates: tuple[int, int] | None = None
+    choices: tuple[AdventureChoice, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -46,14 +61,16 @@ class AdventureTemplate:
     max_party_size: int = 1
     recommended_level: str = "Any"
     status: str = "active"
+    first_clear_item: str = "Potion"
+    first_clear_amount: int = 1
 
 
 ALPHA_MEADOW = AdventureTemplate(
     key="alpha_meadow",
     name="Alpha Meadow Survey",
     description=(
-        "A small non-combat survey route for testing virtual movement, "
-        "objectives, and clean adventure exits."
+        "A short authored survey with a route choice, a Pokemon encounter, "
+        "field objectives, and a clean return to Adventure Hall."
     ),
     category="hunt/tutorial",
     region="Alpha",
@@ -74,18 +91,39 @@ ALPHA_MEADOW = AdventureTemplate(
             key="tall_grass",
             name="Tall Grass Path",
             description=(
-                "Tall grass bends in the breeze. Something small rustles out "
-                "of sight, but this survey is not using battle encounters yet."
+                "Tall grass bends in the breeze. Fresh tracks lead deeper into "
+                "the meadow while a field surveyor waits nearby."
             ),
             exits={"south": "entrance", "east": "small_pond", "north": "old_tree"},
             coordinates=(0, 1),
+            choices=(
+                AdventureChoice(
+                    key="wild",
+                    label="Follow the fresh tracks",
+                    description="Follow the tracks toward a catchable wild encounter.",
+                    encounter_kind="wild",
+                    species="Rattata",
+                    level=5,
+                    outcome_key="wild_route",
+                ),
+                AdventureChoice(
+                    key="trainer",
+                    label="Answer the surveyor's challenge",
+                    description="Take a friendly battle against a field surveyor.",
+                    encounter_kind="trainer",
+                    species="Pidgey",
+                    level=5,
+                    opponent_name="Surveyor Mina",
+                    outcome_key="trainer_route",
+                ),
+            ),
         ),
         "small_pond": AdventureNode(
             key="small_pond",
             name="Small Pond",
             description=(
                 "Clear water gathers beside smooth stones. Ripple marks show "
-                "where Pokemon might gather once encounters are enabled."
+                "where Pokemon gather at the meadow's edge."
             ),
             exits={"west": "tall_grass"},
             coordinates=(1, 1),
@@ -104,6 +142,12 @@ ALPHA_MEADOW = AdventureTemplate(
         ),
     },
     objectives=(
+        AdventureObjective(
+            key="resolve_encounter",
+            type="encounter",
+            description="Choose a route and resolve its encounter.",
+            target_node="tall_grass",
+        ),
         AdventureObjective(
             key="reach_old_tree",
             type="reach",
@@ -163,6 +207,20 @@ def validate_template(template: AdventureTemplate) -> list[str]:
         for direction, target in node.exits.items():
             if target not in template.nodes:
                 errors.append(f"Node '{node.key}' exit '{direction}' points to missing node '{target}'.")
+        seen_choices: set[str] = set()
+        for choice in node.choices:
+            if not choice.key:
+                errors.append(f"Node '{node.key}' has a choice without a key.")
+            elif choice.key in seen_choices:
+                errors.append(f"Node '{node.key}' repeats choice '{choice.key}'.")
+            seen_choices.add(choice.key)
+            if choice.encounter_kind not in {"wild", "trainer"}:
+                errors.append(
+                    f"Choice '{choice.key}' has unsupported encounter kind "
+                    f"'{choice.encounter_kind}'."
+                )
+            if not choice.species or choice.level < 1:
+                errors.append(f"Choice '{choice.key}' needs a species and positive level.")
     for objective in template.objectives:
         if not objective.key:
             errors.append("Objective key is required.")

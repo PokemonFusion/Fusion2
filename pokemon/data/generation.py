@@ -1,20 +1,22 @@
 """Utilities for generating Pokémon instances from dex data."""
 
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from ..dex import POKEDEX, MOVEDEX
-from .learnsets.learnsets import LEARNSETS
-from ..dex.entities import Stats, Pokemon as SpeciesPokemon
+from pokemon.names import normalize_name, resolve_dex_entry
 
+from ..dex import MOVEDEX, POKEDEX
+from ..dex.entities import Pokemon as SpeciesPokemon
+from ..dex.entities import Stats
+from .learnsets.learnsets import LEARNSETS
 
 # Mapping for numeric dex-number lookups
 POKEDEX_BY_NUM = {mon.num: mon for mon in POKEDEX.values()}
 # Fast case-insensitive name lookups.  ``POKEDEX`` itself keeps canonical keys
 # which may use mixed casing, so we build a helper map that normalizes names.
-POKEDEX_LOOKUP = {name.lower(): mon for name, mon in POKEDEX.items()}
-POKEDEX_LOOKUP.update({mon.name.lower(): mon for mon in POKEDEX.values()})
+POKEDEX_LOOKUP = {normalize_name(name): mon for name, mon in POKEDEX.items()}
+POKEDEX_LOOKUP.update({normalize_name(mon.name): mon for mon in POKEDEX.values()})
 
 
 # Preprocess learnset level-up data at import time to avoid repeated parsing.
@@ -120,7 +122,7 @@ def get_gender(
 
 def get_valid_moves(species_name: str, level: int) -> List[str]:
     """Return a list of moves learnable at or below the given level."""
-    key = species_name.lower()
+    key = normalize_name(species_name)
     level_map = LEVEL_UP_LEARNSETS.get(key)
     if not level_map:
         return []
@@ -157,7 +159,7 @@ def _resolve_species_entry(species_name: object) -> SpeciesPokemon | None:
     if species:
         return species
 
-    normalized = text.lower()
+    normalized = normalize_name(text)
     species = POKEDEX_LOOKUP.get(normalized)
     if species:
         return species
@@ -189,7 +191,7 @@ def choose_wild_moves(
     if not species:
         return []
 
-    key = species.name.lower()
+    key = normalize_name(species.name)
 
     types = [t.lower() for t in species.types]
 
@@ -212,11 +214,11 @@ def choose_wild_moves(
     )
 
     def is_stab(mv: str) -> bool:
-        md = MOVEDEX.get(mv.lower())
+        md = resolve_dex_entry(MOVEDEX, mv)
         return bool(md and md.type and md.type.lower() in types)
 
     def is_damaging(mv: str) -> bool:
-        md = MOVEDEX.get(mv.lower())
+        md = resolve_dex_entry(MOVEDEX, mv)
         if not md:
             return False
         if md.category == "Status":

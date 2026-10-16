@@ -102,7 +102,9 @@ def _get_pokemon_types(pokemon: PokemonLike) -> list[str]:
 		return []
 
 	name = str(species)
-	entry = POKEDEX.get(name) or POKEDEX.get(name.capitalize()) or POKEDEX.get(name.lower())
+	from pokemon.names import resolve_dex_entry
+
+	entry = resolve_dex_entry(POKEDEX, name)
 	if entry:
 		types = getattr(entry, "types", None)
 		if not types and isinstance(entry, dict):
@@ -127,6 +129,31 @@ def _title_bar(text: str, width: int = 78) -> str:
 	return f"{THEME['border']}{side}[|n{title}{THEME['border']}] {side}|n".ljust(width)
 
 
+def _active_fusion_sheet(character):
+        """Read the active form through the same model bridge used by battles."""
+        from utils.fusion import _growth_from_pokemon, get_active_fusion_pokemon
+        from utils.pokemon_utils import build_battle_pokemon_from_model
+
+        owned = get_active_fusion_pokemon(character)
+        if owned is None:
+                return None
+        battle = build_battle_pokemon_from_model(owned)
+        stats = {
+                name: battle.getStat(key, True, True)
+                for name, key in (
+                        ("hp", "hp"), ("attack", "atk"), ("defense", "def"),
+                        ("special_attack", "spa"), ("special_defense", "spd"), ("speed", "spe"),
+                )
+        }
+        return SimpleNamespace(
+                species=owned.species, level=battle.level, hp=battle.hp, max_hp=battle.max_hp,
+                status=getattr(owned, "status", ""), types=battle.types, nature=owned.nature,
+                ability=owned.ability, held_item=owned.held_item,
+                total_exp=getattr(owned, "_pf2_fusion_xp", owned.total_exp),
+                growth_rate=_growth_from_pokemon(owned), stats=stats,
+        )
+
+
 def display_trainer_sheet(character, mode: str | None = None) -> str:
         """Return a formatted sheet for a trainer character.
 
@@ -142,6 +169,7 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         width = 60
         char = character
         db = getattr(char, "db", SimpleNamespace())
+        fusion = _active_fusion_sheet(char) if getattr(db, "fusion_id", None) else None
 
         requested_mode = (mode or getattr(db, "sheet_mode", "full") or "full").lower()
         if requested_mode not in {"full", "brief", "inventory"}:
@@ -172,15 +200,19 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 return chip(text, color)
 
         level_val = _as_int(getattr(db, "level", None))
+        if fusion:
+                level_val = fusion.level
         level_str = str(level_val) if level_val is not None else "—"
 
-        fusion_species = getattr(db, "fusion_species", None)
+        fusion_species = fusion.species if fusion else getattr(db, "fusion_species", None)
         species = fusion_species or getattr(char, "species", None) or "Human"
-        morphology = getattr(db, "morphology", None)
+        morphology = "Fusion" if fusion else getattr(db, "morphology", None)
         if not morphology:
                 morphology = "Fusion" if fusion_species else "Human"
         gender = getattr(db, "gender", None) or getattr(char, "gender", "?") or "?"
         status_raw = getattr(db, "status", None) or "None"
+        if fusion:
+                status_raw = fusion.status or "None"
         faction_display = get_faction_and_rank(char) or "None"
 
         species_display = _chip(species, "—", palette.get("value", "|y"))
@@ -198,8 +230,14 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 or getattr(char, "held_item", None)
                 or "Nothing"
         )
+        if fusion:
+                nature = fusion.nature or "—"
+                ability = fusion.ability or "—"
+                held_item = fusion.held_item or "Nothing"
 
         raw_types = getattr(db, "types", None) or getattr(char, "types", None) or []
+        if fusion:
+                raw_types = fusion.types
         if isinstance(raw_types, str):
                 type_list = [raw_types]
         else:
@@ -219,12 +257,16 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 stats_dict = getattr(db, "stats", None)
                 if isinstance(stats_dict, dict):
                         hp_max = _as_int(stats_dict.get("hp"))
+        if fusion:
+                hp_current, hp_max = fusion.hp, fusion.max_hp
 
         xp_total = None
         for xp_attr in ("total_exp", "xp", "experience"):
                 xp_total = _as_int(getattr(db, xp_attr, None))
                 if xp_total is not None:
                         break
+        if fusion:
+                xp_total = fusion.total_exp
         xp_to_next = None
         for xp_attr in ("exp_to_next", "xp_to_next"):
                 xp_to_next = _as_int(getattr(db, xp_attr, None))
@@ -247,6 +289,8 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         next_requirement = None
         if xp_total is not None:
                 growth_rate = getattr(db, "growth_rate", getattr(char, "growth_rate", "medium_fast"))
+                if fusion:
+                        growth_rate = fusion.growth_rate
                 try:
                         current_level = level_val if level_val is not None else level_for_exp(xp_total, growth_rate)
                         current_level = max(1, int(current_level))
@@ -261,6 +305,8 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                         xp_ratio = max(0.0, min(1.0, progress / span))
                 except Exception:
                         xp_ratio = None
+        if fusion:
+                xp_to_next = max(0, next_requirement - xp_total) if next_requirement is not None else None
 
         xp_label_text: str
         if xp_total is not None and next_requirement is not None:
@@ -309,6 +355,9 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 return None
 
         wallet_value = _first_attr("money", "wallet", "cash", "credits", "pokedollars")
+        trainer = getattr(char, "trainer", None)
+        if trainer is not None and getattr(trainer, "money", None) is not None:
+                wallet_value = trainer.money
         bank_value = _first_attr("bank", "savings", "account")
         money_display = money_line(wallet_value, bank_value, theme=palette, screen_reader=screen_reader)
         if not money_display:
@@ -340,10 +389,14 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 return apply_screen_reader(sheet) if screen_reader else sheet
 
         stats_dict = getattr(db, "stats", None)
+        if fusion:
+                stats_dict = fusion.stats
         stat_values = {}
         if isinstance(stats_dict, dict):
                 stat_values.update(stats_dict)
         for attr in ("phys_atk", "phys_def", "sp_atk", "sp_def", "speed"):
+                if fusion:
+                        continue
                 value = getattr(db, attr, None)
                 if value is None:
                         value = getattr(char, attr, None)

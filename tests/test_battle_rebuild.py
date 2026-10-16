@@ -289,6 +289,58 @@ def test_trainer_ids_saved_and_restored():
 	assert storage_after.get("trainers") == {"teamA": [1], "teamB": [2]}
 
 
+def test_restore_keeps_unhandled_adventure_result_retryable(monkeypatch):
+	"""A saved pending receipt must not become handled merely by being nonempty."""
+
+	room = DummyRoom()
+	p1 = DummyPlayer(1, room)
+	p2 = DummyPlayer(2, room)
+	inst = BattleSession(p1, p2)
+	inst.start_pvp()
+	inst.storage.set("encounter", {"source_type": "adventure", "adventure_session_id": 17})
+	inst.storage.set("battle_result", {"handled": False, "result": "capture"})
+	monkeypatch.setattr(bi_mod, "search_object", lambda oid: [p1] if str(oid).lstrip("#") == "1" else [p2])
+	p1.ndb.battle_instance = None
+	p2.ndb.battle_instance = None
+	room.ndb.battle_instances = {}
+
+	restored = BattleSession.restore(room, inst.battle_id)
+	assert restored is not None
+	assert not restored._battle_result_handled
+	assert restored._adventure_result == "capture"
+
+
+def test_restore_keeps_pending_gym_victory_identity(monkeypatch):
+	"""Reload reuses the original victory even when the winner object is gone."""
+	from uuid import uuid4
+
+	from pokemon.services.gym_rewards import GymClaimResult, GymVictoryRewards
+
+	room = DummyRoom()
+	p1 = DummyPlayer(1, room)
+	p2 = DummyPlayer(2, room)
+	inst = BattleSession(p1, p2)
+	inst.start_pvp()
+	victory_id = str(uuid4())
+	metadata = {"source_type": "gym_leader", "badge_id": 21}
+	inst.storage.set("encounter", metadata)
+	inst.storage.set("battle_result", {"handled": False, "result": "win", "gym_victory_id": victory_id})
+	monkeypatch.setattr(bi_mod, "search_object", lambda oid: [p1] if str(oid).lstrip("#") == "1" else [p2])
+	p1.ndb.battle_instance = None
+	p2.ndb.battle_instance = None
+	room.ndb.battle_instances = {}
+	recorded = []
+	monkeypatch.setattr(GymVictoryRewards, "record", lambda rewards, key, meta: recorded.append((key, meta)))
+	monkeypatch.setattr(GymVictoryRewards, "claim", lambda rewards, key: GymClaimResult(True, "Recovered badge."))
+
+	restored = BattleSession.restore(room, inst.battle_id)
+	assert not restored._battle_result_handled
+	assert restored._gym_victory_id == victory_id
+	restored._handle_battle_result(None)
+	assert restored._battle_result_handled
+	assert recorded == [(victory_id, metadata)]
+
+
 def test_restore_recreates_wild_opponent_shell():
 	room = DummyRoom()
 	player = DummyPlayer(1, room)
@@ -660,6 +712,60 @@ def test_battle_segments_removed_on_end():
 	assert storage.get("trainers") is None
 	assert storage.get("temp_pokemon_ids") is None
 	assert inst.battle_id not in getattr(room.db, "battles", [])
+
+
+def test_adventure_result_survives_cleanup_and_character_reconnect(monkeypatch):
+	"""Recovery uses character storage after the battle and its room data are gone."""
+
+	from pokemon.adventures import sessions
+
+	room = DummyRoom()
+	p1 = DummyPlayer(1, room)
+	p2 = DummyPlayer(2, room)
+	inst = BattleSession(p1, p2)
+	inst.start_pvp()
+	inst.encounter_metadata = {"source_type": "adventure", "adventure_session_id": 17}
+	inst._adventure_result = "capture"
+	inst.end()
+	assert inst.storage.get("data") is None
+	assert p1.db.pending_adventure_results == {"17": "capture"}
+
+	reconnected = DummyPlayer(1, room)
+	reconnected.db = p1.db
+	calls = []
+	monkeypatch.setattr(sessions, "resolve_encounter_result", lambda sid, player, outcome:
+		calls.append((sid, player, outcome)) or sessions.AdventureActionResult(True, "Recovered capture."))
+	assert sessions.retry_encounter_results(reconnected) == "Recovered capture."
+	assert calls == [("17", reconnected, "capture")]
+	assert reconnected.db.pending_adventure_results == {}
+
+
+def test_gym_victory_survives_battle_room_cleanup(monkeypatch):
+	"""Undelivered badges remain in the ledger after battle storage is deleted."""
+	from pokemon.services.gym_rewards import GymVictoryRewards
+
+	room = DummyRoom()
+	p1 = DummyPlayer(1, room)
+	p2 = DummyPlayer(2, room)
+	inst = BattleSession(p1, p2)
+	inst.start_pvp()
+	inst.encounter_metadata = {"source_type": "gym_leader", "badge_id": 21}
+	receipts = {}
+
+	def record(rewards, key, metadata):
+		receipts.setdefault(key, (rewards.player.id, dict(metadata)))
+
+	def fail_claim(rewards, key):
+		raise RuntimeError("badge delivery unavailable")
+
+	monkeypatch.setattr(GymVictoryRewards, "record", record)
+	monkeypatch.setattr(GymVictoryRewards, "claim", fail_claim)
+	inst._handle_battle_result(types.SimpleNamespace(team="A", player=p1))
+	inst.end()
+	assert inst.storage.get("data") is None
+	assert inst.storage.get("encounter") is None
+	assert inst.storage.get("battle_result") is None
+	assert receipts == {inst._gym_victory_id: (p1.id, inst.encounter_metadata)}
 
 
 def test_independent_storage_between_battles():

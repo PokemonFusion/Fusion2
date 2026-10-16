@@ -1,6 +1,8 @@
 import types
 from pathlib import Path
 
+import pytest
+
 from commands.player import cmd_gym
 from pokemon.services import gym_leaders
 from pokemon.services.gym_leaders import GymLeaderCheck
@@ -50,6 +52,42 @@ def _run_command(args, caller=None):
     cmd.args = args
     cmd.func()
     return caller
+
+
+def test_gym_claim_uses_callers_receipts_without_requiring_a_party(monkeypatch):
+    """Recovery must work outside a gym with no battle-ready Pokemon."""
+    from pokemon.services.gym_rewards import GymClaimResult
+
+    caller = DummyCaller()
+    calls = []
+
+    def claim_pending(rewards):
+        calls.append(rewards.player)
+        return (GymClaimResult(True, "You earned the Alpha Badge!", awarded=True),)
+
+    monkeypatch.setattr(cmd_gym.GymVictoryRewards, "claim_pending", claim_pending)
+    monkeypatch.setattr(cmd_gym, "has_usable_pokemon", lambda player: pytest.fail("must not check party"))
+    _run_command("claim", caller)
+    assert calls == [caller]
+    assert caller.messages == ["You earned the Alpha Badge!"]
+
+
+def test_gym_claim_empty_and_database_failure_are_reported(monkeypatch):
+    """An outage is not reported as having no outstanding awards."""
+    monkeypatch.setattr(cmd_gym.GymVictoryRewards, "claim_pending", lambda rewards: ())
+    assert _run_command("claim").messages == ["No unclaimed gym badges."]
+
+    def fail_claim(rewards):
+        raise RuntimeError("ledger unavailable")
+
+    monkeypatch.setattr(cmd_gym.GymVictoryRewards, "claim_pending", fail_claim)
+    assert "+gym claim" in _run_command("claim").messages[-1]
+
+
+def test_gym_claim_rejects_target_character_or_victory_arguments(monkeypatch):
+    """The player command cannot select another character's reward."""
+    monkeypatch.setattr(cmd_gym.GymVictoryRewards, "claim_pending", lambda rewards: pytest.fail("must not claim"))
+    assert _run_command("claim OtherPlayer").messages == ["Usage: +gym claim"]
 
 
 def test_gym_command_is_registered_in_pokemon_core_cmdset():

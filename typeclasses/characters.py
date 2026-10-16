@@ -164,6 +164,16 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 				attach_movement_cmdset(self)
 		except Exception:
 			pass
+		if not inst:
+			try:
+				from menus.capture_nickname import start_capture_nickname
+
+				start_capture_nickname(self)
+			except Exception:
+				from evennia.utils.logger import log_trace
+
+				log_trace("Could not resume capture nickname choices on login.")
+				self.msg("Use +nickname to name your captured Pokémon when you are ready.")
 
 	def at_pre_move(self, destination, **kwargs):
 		"""Prevent leaving while hosting a PVP request or during battles."""

@@ -94,6 +94,7 @@ import os
 import sys
 
 from pokemon.dex import MOVEDEX
+from pokemon.names import resolve_dex_entry
 
 try:  # pragma: no cover - ability data may be stubbed during tests
     from pokemon.dex import ABILITYDEX  # type: ignore
@@ -1434,8 +1435,8 @@ class RewardService:
             for poke in getattr(participant, "pokemons", []):
                 if getattr(poke, "hp", 0) > 0:
                     continue
-                species = getattr(poke, "name", getattr(poke, "species", ""))
-                info = GAIN_INFO.get(species, {}) if species else {}
+                species = getattr(poke, "species", None) or getattr(poke, "name", "")
+                info = resolve_dex_entry(GAIN_INFO, species) or {}
                 amount = int(info.get("exp", 0)) if info else 0
                 if amount <= 0:
                     level = getattr(poke, "level", 1) or 1
@@ -2275,13 +2276,19 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     if result is not None:
                         break
                 any_hook = f"onAny{eventid}"
-                any_result = self._call_effect_event(
-                    actual_holder,
-                    any_hook,
+                any_args = (
                     relay if relayVar is not None else target,
                     target if relayVar is not None else source,
                     source if relayVar is not None else effect,
                     effect if relayVar is not None else None,
+                )
+                if eventid == "RedirectTarget":
+                    # The target is already the relay for redirect callbacks.
+                    any_args = (relay if relayVar is not None else target, source, effect)
+                any_result = self._call_effect_event(
+                    actual_holder,
+                    any_hook,
+                    *any_args,
                     battle=self,
                     effect_state=state,
                 )
@@ -3014,7 +3021,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # ------------------------------------------------------------------
 
     def deduct_pp(self, pokemon, move: BattleMove) -> None:
-        """Decrease the PP of ``move`` on ``pokemon`` if possible."""
+        """Spend PP on the matching stored slot and battle move snapshot."""
         pp_cost = 1
         event_cost = self.runEvent("DeductPP", pokemon, None, move, pp_cost)
         if event_cost is False:
@@ -3022,6 +3029,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if isinstance(event_cost, (int, float)):
             pp_cost = max(0, int(event_cost))
 
+        move_key = _normalize_key(getattr(move, "key", None) or move.name)
+        moves = getattr(pokemon, "moves", [])
         slots = getattr(pokemon, "activemoveslot_set", None)
         if slots is not None:
             try:
@@ -3029,26 +3038,36 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             except Exception:  # pragma: no cover - fallback for stubs
                 slot_iter = slots
             for slot in slot_iter:
-                if getattr(getattr(slot, "move", None), "name", None) == move.name:
+                if _normalize_key(getattr(getattr(slot, "move", None), "name", "")) == move_key:
                     current = getattr(slot, "current_pp", None)
-                    if current is not None and current > 0:
+                    if current is not None:
                         updated = max(0, current - pp_cost)
                         slot.current_pp = updated
                         move.pp = updated
-                        if hasattr(slot, "save"):
+                        for cached_move in moves:
+                            cached_key = getattr(cached_move, "key", None) or getattr(cached_move, "name", "")
+                            if _normalize_key(cached_key) == move_key:
+                                cached_move.pp = updated
+                        if updated != current and hasattr(slot, "save"):
                             try:
-                                slot.save()
+                                try:
+                                    slot.save(update_fields=["current_pp"])
+                                except TypeError:  # pragma: no cover - legacy adapters
+                                    slot.save()
                             except Exception:
-                                pass
+                                battle_logger.exception("Unable to persist spent PP for move %s.", move.name)
                     return
 
-        moves = getattr(pokemon, "moves", [])
         for m in moves:
-            if getattr(m, "name", None) == move.name and hasattr(m, "pp"):
-                if m.pp is not None and m.pp > 0:
-                    m.pp = max(0, m.pp - pp_cost)
+            cached_key = getattr(m, "key", None) or getattr(m, "name", "")
+            if _normalize_key(cached_key) == move_key:
+                current = getattr(m, "pp", None)
+                if current is None:
+                    current = move.pp
+                if current is not None:
+                    m.pp = max(0, current - pp_cost)
                     move.pp = m.pp
-                return
+                    return
 
         if move.pp is not None and move.pp > 0:
             move.pp = max(0, move.pp - pp_cost)
@@ -4065,6 +4084,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             action.move.pp = current
                         break
 
+        if action.move.pp is None:
+            for cached_move in getattr(user, "moves", []):
+                if _normalize_key(cached_move.name) == getattr(action.move, "key", ""):
+                    action.move.pp = getattr(cached_move, "pp", None)
+                    break
+
         if action.move.pp is not None and action.move.pp <= 0:
             return
         action.move = self._locked_move_override(user, action.move)
@@ -4687,9 +4712,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
                     for poke in fainted:
                         self.on_faint(poke)
-                        info = GAIN_INFO.get(
-                            getattr(poke, "name", getattr(poke, "species", "")), {}
-                        )
+                        species = getattr(poke, "species", None) or getattr(poke, "name", "")
+                        info = resolve_dex_entry(GAIN_INFO, species) or {}
                         base_exp = info.get("exp", 0)
                         exp = 0
                         txp = 0

@@ -1,9 +1,11 @@
 import types
 
+import pytest
+
 from pokemon.battle import setup
 from pokemon.battle.battledata import Pokemon
-from pokemon.battle.engine import BattleType
 from pokemon.battle.battleinstance import BattleSession
+from pokemon.battle.engine import BattleType
 
 
 def test_build_initial_state_marks_wild_encounter(monkeypatch):
@@ -334,7 +336,9 @@ def test_battle_session_start_trainer_encounter_preserves_display_name():
 	assert session.temp_pokemon_ids == ["encounter:static-1"]
 
 
-def test_battle_session_start_trainer_encounter_preserves_full_team():
+@pytest.mark.parametrize("launch_path", ["direct", "hunt"])
+def test_battle_session_start_trainer_encounter_preserves_full_team(monkeypatch, launch_path):
+	"""Configured encounters and normal hunts use the same full-team setup."""
 	room = types.SimpleNamespace(
 		db=types.SimpleNamespace(battles=[]),
 		ndb=types.SimpleNamespace(battle_instances={}),
@@ -380,7 +384,14 @@ def test_battle_session_start_trainer_encounter_preserves_full_team():
 	session._init_battle_state = fake_init
 	session._setup_battle_room = lambda intro_message=None: None
 
-	session.start_trainer_encounter(encounter)
+	if launch_path == "hunt":
+		from world import hunt_system
+
+		monkeypatch.setattr(hunt_system, "generate_random_trainer_encounter", lambda origin: encounter)
+		monkeypatch.setattr(hunt_system, "BattleSession", lambda hunter: session)
+		assert hunt_system.HuntSystem(room)._resolve_npc_encounter(player, 0) == encounter.intro_text
+	else:
+		session.start_trainer_encounter(encounter)
 
 	assert session.captainB is not None
 	assert session.captainB.name == "Test Trainer"

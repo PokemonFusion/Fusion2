@@ -1,8 +1,10 @@
 """Trainer related models such as ``Trainer`` and inventory."""
 
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.db import models, transaction
 from evennia.objects.models import ObjectDB
+
+from pokemon.names import normalize_name
 
 from .core import SpeciesEntry
 from .validators import validate_evs, validate_ivs
@@ -13,7 +15,19 @@ def _resolve_species_entry(species: str | int) -> "SpeciesEntry | None":
 
         if isinstance(species, int):
                 return SpeciesEntry.objects.filter(pk=species).first()
-        return SpeciesEntry.objects.filter(name__iexact=str(species)).first()
+        from pokemon.dex import POKEDEX
+        from pokemon.names import find_named, resolve_dex_entry
+
+        exact = SpeciesEntry.objects.filter(name__iexact=str(species)).first()
+        if exact:
+                return exact
+        entry = resolve_dex_entry(POKEDEX, species)
+        if entry:
+                display = entry.get("name") if isinstance(entry, dict) else entry.name
+                exact = SpeciesEntry.objects.filter(name__iexact=display).first()
+                if exact:
+                        return exact
+        return find_named(SpeciesEntry.objects.all(), species)
 
 
 class GymBadge(models.Model):
@@ -99,12 +113,17 @@ class Trainer(models.Model):
                         except Exception:
                                 pass
 
-        def get_item_quantity(self, item_name: str) -> int:
-                """Return the quantity of ``item_name`` owned by this trainer."""
+        def _inventory_entries(self, item_name: str, *, lock: bool = False):
+                """Match canonical and legacy spellings without rewriting inventory."""
+                key = normalize_name(item_name)
+                entries = InventoryEntry.objects.filter(owner=self).order_by("pk")
+                if lock:
+                        entries = entries.select_for_update()
+                return [entry for entry in entries if normalize_name(entry.item_name) == key]
 
-                item_name = item_name.lower()
-                entry = self.inventory.filter(item_name=item_name).first()
-                return entry.quantity if entry else 0
+        def get_item_quantity(self, item_name: str) -> int:
+                """Count the item across equivalent stored name spellings."""
+                return sum(entry.quantity for entry in self._inventory_entries(item_name))
 
         def has_item(self, item_name: str, amount: int = 1) -> bool:
                 """Return ``True`` if at least ``amount`` of ``item_name`` is owned."""
@@ -112,30 +131,41 @@ class Trainer(models.Model):
                 return self.get_item_quantity(item_name) >= amount
 
         def add_item(self, item_name: str, amount: int = 1) -> None:
-                """Add ``amount`` of ``item_name`` to this trainer's inventory."""
-                item_name = item_name.lower()
-                entry, _ = InventoryEntry.objects.get_or_create(
-                        owner=self, item_name=item_name, defaults={"quantity": 0}
-                )
-                entry.quantity += amount
-                entry.save()
-                self._sync_character_inventory()
+                """Reuse legacy aliases and store new items under normalized names."""
+                if isinstance(amount, bool) or not isinstance(amount, int) or amount <= 0:
+                        raise ValueError("Item amount must be a positive integer.")
+                with transaction.atomic():
+                        Trainer.objects.select_for_update().get(pk=self.pk)
+                        entries = self._inventory_entries(item_name, lock=True)
+                        if entries:
+                                entry = entries[0]
+                        else:
+                                entry = InventoryEntry(owner=self, item_name=normalize_name(item_name), quantity=0)
+                        entry.quantity += amount
+                        entry.save()
+                        transaction.on_commit(self._sync_character_inventory)
 
         def remove_item(self, item_name: str, amount: int = 1) -> bool:
-                """Remove ``amount`` of ``item_name`` and return success."""
-                item_name = item_name.lower()
-                try:
-                        entry = InventoryEntry.objects.get(owner=self, item_name=item_name)
-                except InventoryEntry.DoesNotExist:
-                        return False
-                if entry.quantity < amount:
-                        return False
-                entry.quantity -= amount
-                if entry.quantity <= 0:
-                        entry.delete()
-                else:
-                        entry.save()
-                self._sync_character_inventory()
+                """Lock the inventory debit and refresh its cache only on commit."""
+                if isinstance(amount, bool) or not isinstance(amount, int) or amount <= 0:
+                        raise ValueError("Item amount must be a positive integer.")
+                with transaction.atomic():
+                        Trainer.objects.select_for_update().get(pk=self.pk)
+                        entries = self._inventory_entries(item_name, lock=True)
+                        if sum(entry.quantity for entry in entries) < amount:
+                                return False
+                        remaining = amount
+                        for entry in entries:
+                                removed = min(entry.quantity, remaining)
+                                entry.quantity -= removed
+                                remaining -= removed
+                                if entry.quantity <= 0:
+                                        entry.delete()
+                                else:
+                                        entry.save(update_fields=["quantity"])
+                                if remaining == 0:
+                                        break
+                        transaction.on_commit(self._sync_character_inventory)
                 return True
 
         def list_inventory(self):

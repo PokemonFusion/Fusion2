@@ -25,6 +25,7 @@ except Exception:  # pragma: no cover - fallback if engine isn't loaded
 	from pokemon.battle.engine import BattleMove
 
 from pokemon.dex import MOVEDEX
+from pokemon.names import normalize_name, resolve_dex_entry
 
 ABORT_WORDS = {".abort", "abort", "cancel", "quit", "exit"}
 LETTERS = ["A", "B", "C", "D"]
@@ -94,13 +95,13 @@ def _route_move(
 	else:
 		for idx, mv in enumerate(slots):
 			name = mv if isinstance(mv, str) else getattr(mv, "name", "")
-			if name.lower() == s.lower():
+			if normalize_name(name) == normalize_name(s):
 				sel_index = idx
 				move_obj = BattleMove(name, pp=pp_overrides.get(idx))
 				break
 
 	if move_obj:
-		dex_entry = MOVEDEX.get(getattr(move_obj, "key", move_obj.name).lower())
+		dex_entry = resolve_dex_entry(MOVEDEX, move_obj.name)
 		move_obj.priority = dex_entry.raw.get("priority", 0) if dex_entry else 0
 
 	if not move_obj:

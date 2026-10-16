@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from datetime import timezone as dt_timezone
 from typing import Any, Iterable
 
+from django.db import transaction
 from django.utils import timezone
 
 from .constants import (
@@ -35,6 +36,7 @@ class AdventureActionResult:
     ok: bool
     message: str
     session: Any | None = None
+    data: Any | None = None
 
 
 def _session_model():
@@ -139,7 +141,7 @@ def _search_object(query: Any) -> list[Any]:
         return []
 
 
-def get_session_by_id(session_id: Any) -> Any | None:
+def get_session_by_id(session_id: Any, *, for_update: bool = False) -> Any | None:
     """Return an AdventureSession by primary key."""
 
     if session_id in (None, ""):
@@ -148,11 +150,13 @@ def get_session_by_id(session_id: Any) -> Any | None:
         resolved_id = int(session_id)
     except (TypeError, ValueError):
         resolved_id = session_id
-    model = _session_model()
+    manager = _session_model().objects
+    if for_update:
+        manager = manager.select_for_update()
     try:
-        return _query_first(model.objects.filter(pk=resolved_id))
+        return _query_first(manager.filter(pk=resolved_id))
     except Exception:
-        return _query_first(model.objects.filter(id=resolved_id))
+        return _query_first(manager.filter(id=resolved_id))
 
 
 def _is_expired(session: Any) -> bool:
@@ -389,10 +393,22 @@ def _all_required_complete(template: AdventureTemplate, progress: dict[str, int]
 
 
 def _mark_completed(session: Any) -> None:
+    """Mark objectives complete; reward delivery follows the session save."""
+
     if getattr(session, "state", None) == STATE_COMPLETED:
         return
     session.state = STATE_COMPLETED
     session.completed_at = _now()
+
+
+def _completion_reward_message(session: Any) -> str:
+    """Attempt rewards only after completion has been persisted."""
+
+    if getattr(session, "state", None) != STATE_COMPLETED:
+        return ""
+    from .progress import safe_finalize_completion
+
+    return safe_finalize_completion(session)
 
 
 def update_location_objectives(session: Any) -> bool:
@@ -454,6 +470,10 @@ def start_session(player: Any, template_key: str) -> AdventureActionResult:
         metadata={},
     )
 
+    from .progress import safe_ensure_participation
+
+    safe_ensure_participation(session, player)
+
     _set_db_attr(player, ADVENTURE_SESSION_ATTR, getattr(session, "pk", getattr(session, "id", None)))
     _set_db_attr(instance_room, ADVENTURE_SESSION_ATTR, getattr(session, "pk", getattr(session, "id", None)))
     move_to = getattr(player, "move_to", None)
@@ -466,6 +486,147 @@ def start_session(player: Any, template_key: str) -> AdventureActionResult:
     return AdventureActionResult(
         True,
         f"Started {template.name}.",
+        session=session,
+    )
+
+
+def choose_session_route(player: Any, choice_key: str) -> AdventureActionResult:
+    """Lock an authored route choice and return its encounter definition."""
+
+    session = get_active_session_for_player(player)
+    if session is None:
+        return AdventureActionResult(False, "You are not in an adventure.")
+    if str(_session_id(session)) in dict(_db_attr(player, "pending_adventure_results", {}) or {}):
+        return AdventureActionResult(False, "Your encounter result is pending. Use +adventure/retry.", session=session)
+    template = get_template(getattr(session, "template_key", ""))
+    node = template.nodes.get(getattr(session, "current_node", "")) if template else None
+    if node is None:
+        return AdventureActionResult(False, "This adventure location is missing.", session=session)
+    if not node.choices:
+        return AdventureActionResult(False, "There is no route choice here.", session=session)
+
+    metadata = dict(getattr(session, "metadata", None) or {})
+    if metadata.get("route_key"):
+        existing = next(
+            (item for item in node.choices if item.key.lower() == (choice_key or "").strip().lower()),
+            None,
+        )
+        if (
+            metadata.get("encounter_state") == "pending"
+            and existing is not None
+            and existing.key == metadata.get("route_key")
+        ):
+            return AdventureActionResult(
+                True,
+                f"Retrying route encounter: {existing.label}.",
+                session=session,
+                data=existing,
+            )
+        return AdventureActionResult(False, "You have already chosen a route.", session=session)
+    query = (choice_key or "").strip().lower()
+    choice = next((item for item in node.choices if item.key.lower() == query), None)
+    if choice is None:
+        available = ", ".join(item.key for item in node.choices)
+        return AdventureActionResult(False, f"Choose one of: {available}.", session=session)
+
+    metadata.update(
+        {
+            "route_key": choice.key,
+            "outcome_key": choice.outcome_key or choice.key,
+            "encounter_state": "pending",
+            "encounter_result": "",
+        }
+    )
+    session.metadata = metadata
+    _save_session(session, fields=("metadata", "updated_at"))
+    try:
+        from .progress import record_choice
+
+        record_choice(
+            session,
+            player,
+            route_key=choice.key,
+            outcome_key=choice.outcome_key or choice.key,
+        )
+    except Exception:
+        pass
+    return AdventureActionResult(True, f"Route chosen: {choice.label}.", session=session, data=choice)
+
+
+def queue_encounter_result(session_id: Any, player: Any, result: str) -> str:
+    """Keep the original terminal outcome through battle cleanup and reconnect."""
+
+    if getattr(player, "db", None) is None:
+        raise RuntimeError("Adventure result recovery requires character storage.")
+    pending = dict(_db_attr(player, "pending_adventure_results", {}) or {})
+    result = pending.setdefault(str(session_id), result)
+    _set_db_attr(player, "pending_adventure_results", pending)
+    return result
+
+
+def clear_encounter_result(session_id: Any, player: Any) -> None:
+    """Remove a saved outcome only after its Adventure records are committed."""
+
+    pending = dict(_db_attr(player, "pending_adventure_results", {}) or {})
+    pending.pop(str(session_id), None)
+    _set_db_attr(player, "pending_adventure_results", pending)
+
+
+def retry_encounter_results(player: Any) -> str:
+    """Retry this character's saved outcomes without starting another battle."""
+
+    pending = dict(_db_attr(player, "pending_adventure_results", {}) or {})
+    if not pending:
+        return "No Adventure encounter results are waiting to be retried."
+    messages = []
+    for session_id, outcome in pending.items():
+        try:
+            result = resolve_encounter_result(session_id, player, outcome)
+            if result.ok:
+                clear_encounter_result(session_id, player)
+            messages.append(result.message)
+        except Exception:
+            messages.append("The encounter result is still pending. Use +adventure/retry again later.")
+    return "\n".join(messages)
+
+
+def resolve_encounter_result(session_id: Any, player: Any, result: str) -> AdventureActionResult:
+    """Commit the objective and participation result together, once."""
+
+    from .progress import record_encounter_result
+
+    with transaction.atomic():
+        session = get_session_by_id(session_id, for_update=True)
+        if session is None or not _session_belongs_to_player(session, player):
+            return AdventureActionResult(False, "Adventure session could not be matched.")
+        metadata = dict(getattr(session, "metadata", None) or {})
+        if metadata.get("encounter_state") == "resolved":
+            # Repair participation rows missed by an older, partially applied result.
+            record_encounter_result(session, player, metadata["encounter_result"])
+            return AdventureActionResult(True, "This encounter was already resolved.", session=session)
+        if metadata.get("encounter_state") != "pending":
+            return AdventureActionResult(False, "No Adventure encounter is pending.", session=session)
+
+        normalized = (result or "loss").strip().lower()
+        if normalized not in {"win", "loss", "flee", "capture"}:
+            normalized = "loss"
+        record_encounter_result(session, player, normalized)
+        metadata["encounter_state"] = "resolved"
+        metadata["encounter_result"] = normalized
+        session.metadata = metadata
+        progress = dict(getattr(session, "objective_progress", None) or {})
+        progress["resolve_encounter"] = 1
+        session.objective_progress = progress
+        if session.state == STATE_ACTIVE:
+            update_location_objectives(session)
+        _save_session(
+            session,
+            fields=("metadata", "objective_progress", "state", "completed_at", "updated_at"),
+        )
+    reward_message = _completion_reward_message(session)
+    return AdventureActionResult(
+        True,
+        f"Encounter resolved ({normalized}). Continue the survey and return to the entrance. {reward_message}".strip(),
         session=session,
     )
 
@@ -495,12 +656,15 @@ def move_session(player: Any, direction: str) -> AdventureActionResult:
     update_location_objectives(session)
     _save_session(
         session,
-        fields=("current_node", "visited_nodes", "objective_progress", "state", "completed_at", "updated_at"),
+        fields=("current_node", "visited_nodes", "objective_progress", "metadata", "state", "completed_at", "updated_at"),
     )
     target_node = template.nodes[target_key]
     message = f"You move {normalized} to {target_node.name}."
     if getattr(session, "state", None) == STATE_COMPLETED:
         message += " Adventure complete. Use +adventure/leave to return."
+        reward_message = _completion_reward_message(session)
+        if reward_message:
+            message += f" {reward_message}"
     return AdventureActionResult(True, message, session=session)
 
 
@@ -526,8 +690,12 @@ def search_session(player: Any) -> AdventureActionResult:
         progress[objective.key] = 1
         session.objective_progress = progress
         update_location_objectives(session)
-        _save_session(session, fields=("objective_progress", "state", "completed_at", "updated_at"))
-        return AdventureActionResult(True, node.search_text or "You find what you were looking for.", session=session)
+        _save_session(session, fields=("objective_progress", "metadata", "state", "completed_at", "updated_at"))
+        message = node.search_text or "You find what you were looking for."
+        reward_message = _completion_reward_message(session)
+        if reward_message:
+            message += f" {reward_message}"
+        return AdventureActionResult(True, message, session=session)
 
     if node.search_text:
         return AdventureActionResult(True, node.search_text, session=session)

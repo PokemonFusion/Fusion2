@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from .helpers import build_battle, load_modules, physical_move
 
 
@@ -80,6 +82,28 @@ def test_redirect_target_event_changes_damage_recipient():
 
     assert defender.hp == start_defender_hp
     assert redirector.hp < start_redirector_hp
+
+
+@pytest.mark.parametrize(("ability", "matching_type"), [("Lightningrod", "Electric"), ("Stormdrain", "Water")])
+def test_real_redirect_abilities_receive_the_move_and_preserve_other_targets(monkeypatch, ability, matching_type):
+    """Actual dex callbacks must see the move rather than a duplicate target."""
+    modules = load_modules()
+    battle, attacker, defender = build_battle()
+    redirector = modules["Pokemon"]("Redirector", hp=200, max_hp=200, ability=ability)
+    redirector.ability_state = {"target": redirector}
+    redirector.side = battle.participants[1].side
+    redirector.battle = battle
+    battle.participants[1].pokemons.append(redirector)
+    battle.participants[1].active.append(redirector)
+    failures = []
+    monkeypatch.setattr(battle, "_record_failure", lambda **kwargs: failures.append(kwargs))
+    for move_type, expected in (("Normal", defender), (matching_type, redirector)):
+        move = modules["BattleMove"](name="Redirect probe", type=move_type, raw={"target": "normal"})
+        result = battle.runEvent("RedirectTarget", defender, attacker, move, defender)
+        assert not failures, [str(failure.get("exception")) for failure in failures]
+        assert result is expected
+        assert battle.runEvent("RedirectTarget", defender, redirector, move, defender) is defender
+    assert not failures
 
 
 def test_foe_redirect_target_volatile_redirects_to_partner():

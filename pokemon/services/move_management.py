@@ -14,13 +14,15 @@ from typing import Iterable
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 
+from pokemon.names import find_named, normalize_name, resolve_dex_entry
+
 logger = logging.getLogger(__name__)
 
 
 def _fallback_normalize_key(val: str) -> str:
 	"""Return a normalized move key when battle helpers are unavailable."""
 
-	return val.replace(" ", "").replace("-", "").replace("'", "").lower()
+	return normalize_name(val)
 
 
 def normalize_move_key(value: str) -> str:
@@ -82,6 +84,11 @@ def _get_move_pp_from_dex(movedex, move_name: str):
 			base_pp = entry.get("pp")
 		if base_pp is not None:
 			return key, base_pp
+	entry = resolve_dex_entry(movedex, move_name)
+	if entry is not None:
+		base_pp = entry.get("pp") if isinstance(entry, dict) else getattr(entry, "pp", None)
+		if base_pp is not None:
+			return next(key for key, candidate in movedex.items() if candidate is entry), base_pp
 	return "", None
 
 
@@ -136,6 +143,26 @@ def _relation_items(relation, *, order_by: str | None = None) -> list:
 		return list(items)
 	except TypeError:
 		return []
+
+
+def get_or_create_move(move_name: str, *, pokemon=None):
+	"""Reuse learned/legacy name variants before creating a move record."""
+	from pokemon.models.moves import Move
+
+	learned = _relation_items(getattr(pokemon, "learned_moves", None))
+	match = find_named(learned, move_name)
+	if match is not None:
+		return match
+	display_name = _move_display_name(move_name)
+	try:
+		match = Move.objects.filter(name__iexact=display_name).first()
+	except AttributeError:  # pragma: no cover - lightweight model adapters
+		match = None
+	if match is None:
+		match = find_named(_relation_items(Move.objects), move_name)
+	if match is not None:
+		return match
+	return Move.objects.get_or_create(name=display_name)[0]
 
 
 def _move_norms(moves) -> set[str]:
@@ -284,8 +311,6 @@ def initialize_generated_moveset(
 	if not pokemon:
 		return {"learned": 0, "active": []}
 
-	from pokemon.models.moves import Move
-
 	level_moves = level_up_move_names_for_pokemon(pokemon)
 	raw_active_names = list(active_move_names or default_active_move_names_for_pokemon(pokemon))
 	active_names: list[str] = []
@@ -313,7 +338,7 @@ def initialize_generated_moveset(
 		norm = normalize_move_key(display_name)
 		if norm in known:
 			continue
-		move_obj, _created = Move.objects.get_or_create(name=display_name)
+		move_obj = get_or_create_move(display_name, pokemon=pokemon)
 		if learned_relation is not None:
 			learned_relation.add(move_obj)
 		known.add(norm)
@@ -346,7 +371,7 @@ def initialize_generated_moveset(
 		display_name = _move_display_name(move_name)
 		if not display_name:
 			continue
-		move_obj, _created = Move.objects.get_or_create(name=display_name)
+		move_obj = get_or_create_move(display_name, pokemon=pokemon)
 		active_ms.slots.create(move=move_obj, slot=slot)
 
 	_save_pokemon(pokemon, update_fields=["active_moveset"])
@@ -612,4 +637,5 @@ __all__ = [
 	"apply_active_moveset",
 	"apply_current_pp",
 	"normalize_move_key",
+	"get_or_create_move",
 ]

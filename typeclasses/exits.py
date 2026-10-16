@@ -1,9 +1,7 @@
 """
 Exits
 
-Exits are connectors between Rooms. An exit always has a destination property
-set and has a single command defined on itself with the same name as its key,
-for allowing Characters to traverse the exit to its destination.
+Exits connect Rooms and expose their names and aliases as traversal commands.
 
 """
 
@@ -24,10 +22,7 @@ class Exit(ObjectParent, DefaultExit):
     methods common to all object child classes.
     """
 
-    # Exits should never override core command aliases such as ``look``. By
-    # giving exits a lower priority than the default cmdset, regular commands
-    # will take precedence when there is a name clash with an exit alias (for
-    # example, an exit alias ``l`` will no longer shadow the ``look`` command).
+    # Core commands take precedence over a conflicting traversal name.
     priority = -1
 
     appearance_template = """
@@ -39,6 +34,35 @@ class Exit(ObjectParent, DefaultExit):
 {things}
 {footer}
     """
+
+    def create_exit_cmdset(self, exidbobj):
+        """Keep safe traversal names when another alias matches a core command.
+
+        Evennia merges whole commands by overlapping names and aliases. Give
+        each traversal name its own command so a conflict such as ``l`` with
+        ``look`` removes only that shortcut, rather than the entire exit.
+        """
+        from evennia.commands.cmdset import CmdSet
+
+        exit_cmdset = CmdSet(None)
+        exit_cmdset.key = "ExitCmdSet"
+        exit_cmdset.priority = self.priority
+        exit_cmdset.duplicates = True
+        names = [exidbobj.db_key, *exidbobj.aliases.all()]
+        for name in dict.fromkeys(name.strip().lower() for name in names if name.strip()):
+            exit_cmdset.add(
+                self.exit_command(
+                    key=name,
+                    aliases=[],
+                    locks=str(exidbobj.locks),
+                    auto_help=False,
+                    destination=exidbobj.db_destination,
+                    arg_regex=r"^$",
+                    is_exit=True,
+                    obj=exidbobj,
+                )
+            )
+        return exit_cmdset
 
     def get_display_name(self, looker=None, **kwargs):
         """Display exit names with the same shortcut coloring used in room lists."""

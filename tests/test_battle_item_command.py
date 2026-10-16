@@ -5,6 +5,8 @@ import types
 from dataclasses import dataclass
 from enum import Enum
 
+import pytest
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
@@ -110,7 +112,7 @@ class FakeInstance:
 		self.battle = battle
 		self.queued = []
 
-	def queue_item(self, item_name, target="B1", caller=None):
+	def queue_item(self, item_name, target=None, caller=None):
 		self.queued.append((item_name, target))
 
 
@@ -127,7 +129,9 @@ class DummyCaller:
 		self.msgs.append(text)
 
 
-def test_battleitem_persists_declare_via_queue_item():
+@pytest.mark.parametrize("item_name", ["potion", "Super Potion", "Antidote", "Poke Ball"])
+@pytest.mark.parametrize("player_index", [0, 1])
+def test_battleitem_persists_declare_via_queue_item(item_name, player_index):
 	e, b, bi = setup_modules()
 	cmd_mod = load_cmd_module()
 
@@ -137,14 +141,18 @@ def test_battleitem_persists_declare_via_queue_item():
 	battle = FakeBattle([player, enemy])
 	inst = FakeInstance(battle)
 	caller = DummyCaller()
+	player.player = caller
+	if player_index:
+		battle.participants.reverse()
 	caller.ndb.battle_instance = inst
 
 	cmd = cmd_mod.CmdBattleItem()
 	cmd.caller = caller
-	cmd.args = "potion"
+	cmd.args = item_name
 	cmd.func()
 
 	restore_modules(e, b, bi)
 	assert isinstance(player.pending_action, cmd_mod.Action)
-	assert inst.queued == [("potion", "B1")]
+	assert player.pending_action.target is (enemy if item_name == "Poke Ball" else player)
+	assert inst.queued == [(item_name, None)]
 	assert caller.removed_items == []

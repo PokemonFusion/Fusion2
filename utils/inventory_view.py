@@ -35,7 +35,21 @@ def gather_inventory_pairs(char) -> ItemPairs:
         db_inventory = getattr(db, "inventory", None)
 
         sources: list[Iterable] = []
-        if isinstance(db_inventory, dict):
+        trainer = getattr(char, "trainer", None)
+        lister = getattr(trainer, "list_inventory", None)
+        if callable(lister):
+                from pokemon.middleware import get_item_by_name
+
+                entries = []
+                for entry in lister():
+                        name = entry.item_name
+                        _, item = get_item_by_name(name)
+                        if item:
+                                raw = getattr(item, "raw", {}) or {}
+                                name = raw.get("name") or getattr(item, "name", None) or name
+                        entries.append((name, entry.quantity))
+                sources.append(entries)
+        elif isinstance(db_inventory, dict):
                 sources.append(db_inventory.items())
         elif hasattr(db_inventory, "items"):
                 try:
@@ -70,9 +84,11 @@ def gather_inventory_pairs(char) -> ItemPairs:
         for name, count in pairs:
                 key = _strip(name)
                 try:
-                        value = max(1, int(count))
+                        value = int(count)
                 except Exception:
                         value = 1
+                if value <= 0:
+                        continue
                 merged[key] = merged.get(key, 0) + value
 
         normalised = [(k, v) for k, v in merged.items()]

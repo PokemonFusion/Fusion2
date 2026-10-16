@@ -1,7 +1,6 @@
 """Menu for learning a move and potentially replacing an active one."""
 
-from pokemon.models.moves import Move
-from pokemon.services.move_management import apply_active_moveset
+from pokemon.services.move_management import apply_active_moveset, get_or_create_move
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -45,7 +44,7 @@ def node_replace(caller, raw_input=None, **kwargs):
 		caller.msg("Invalid choice.")
 		return node_choose(caller, **kwargs)
 	old = slots[slot].move.name
-	move_obj, _ = Move.objects.get_or_create(name=move_name.capitalize())
+	move_obj = get_or_create_move(move_name, pokemon=pokemon)
 	slots[slot].move = move_obj
 	slots[slot].save()
 	apply_active_moveset(pokemon)
