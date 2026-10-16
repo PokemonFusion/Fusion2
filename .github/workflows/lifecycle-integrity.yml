@@ -74,6 +74,8 @@ jobs:
         run: python tests/integration/progression_cases.py
       - name: Battle reward retries, atomic turn checkpoints and lifecycle recovery
         run: python tests/integration/battle_recovery_cases.py
+      - name: Legal AI actions, reserve switches and checkpoint rebuilds
+        run: python tests/integration/ai_action_cases.py
       - name: Move and species name variants on PostgreSQL
         run: python tests/integration/name_resolution_cases.py
       - name: Battle item targets and persistent status on PostgreSQL

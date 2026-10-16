@@ -38,6 +38,7 @@ class BattleState:
 	ending: bool = False
 	flee_result: Dict = field(default_factory=dict)
 	flee_attempts: Dict[str, int] = field(default_factory=dict)
+	ai_switch_turns: Dict[str, int] = field(default_factory=dict)
 	participants: Dict[str, List[str]] = field(default_factory=dict)
 	capture_succeeded: bool = False
 
