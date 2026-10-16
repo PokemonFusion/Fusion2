@@ -1,3 +1,4 @@
+from pokemon.names import normalize_name
 from pokemon.services.move_management import apply_active_moveset
 
 
@@ -105,21 +106,18 @@ def node_edit(caller, raw_input=None):
 	if cmd in ("back", "b"):
 		return node_manage(caller)
 	moves = [m.strip() for m in raw_input.split(",") if m.strip()][:4]
-	learned = {m.name.lower() for m in poke.learned_moves.all().order_by("name")}
-	invalid = [m for m in moves if m.lower() not in learned]
+	learned = {normalize_name(m.name): m for m in poke.learned_moves.all().order_by("name")}
+	invalid = [m for m in moves if normalize_name(m) not in learned]
 	if invalid:
 		caller.msg("Invalid move(s): " + ", ".join(invalid))
 		return node_edit(caller)
-	if len({m.lower() for m in moves}) != len(moves):
+	if len({normalize_name(m) for m in moves}) != len(moves):
 		caller.msg("Duplicate moves are not allowed.")
 		return node_edit(caller)
-	from pokemon.models.moves import Move as MoveModel
-
 	ms, _ = poke.movesets.get_or_create(index=idx)
 	ms.slots.all().delete()
 	for i, mv in enumerate(moves, 1):
-		obj, _ = MoveModel.objects.get_or_create(name=mv.capitalize())
-		ms.slots.create(move=obj, slot=i)
+		ms.slots.create(move=learned[normalize_name(mv)], slot=i)
 	if poke.active_moveset and poke.active_moveset.index == idx:
 		apply_active_moveset(poke)
 	caller.msg(f"Moveset {idx + 1} updated.")

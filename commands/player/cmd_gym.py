@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 try:
     from evennia import Command as _EvenniaCommand
 except Exception:  # pragma: no cover - optional in lightweight tests
@@ -16,6 +18,9 @@ from pokemon.services.gym_leaders import (
     generate_gym_leader_encounter,
     list_gym_leaders,
 )
+from pokemon.services.gym_rewards import PENDING_MESSAGE, GymVictoryRewards
+
+logger = logging.getLogger(__name__)
 
 
 if _EvenniaCommand is None:  # pragma: no cover - direct test/Django imports
@@ -34,6 +39,7 @@ class CmdGym(Command):
       +gym list
       +gym check <gym>
       +gym challenge <gym>
+      +gym claim
 
     Examples:
       +gym list
@@ -43,6 +49,7 @@ class CmdGym(Command):
     Notes:
       Gym badges are awarded once. You may rematch a gym leader after earning
       the badge, but the rematch will not award another copy.
+      Use +gym claim to retry a pending badge award, including after reconnecting.
     """
 
     key = "+gym"
@@ -63,7 +70,27 @@ class CmdGym(Command):
         if subcommand == "challenge":
             self._challenge_gym(rest)
             return
+        if subcommand == "claim":
+            self._claim_badges(rest)
+            return
         self.caller.msg(_usage())
+
+    def _claim_badges(self, args: str):
+        """Claim only the caller's saved victories, without starting a battle."""
+        if args:
+            self.caller.msg("Usage: +gym claim")
+            return
+        try:
+            results = GymVictoryRewards(self.caller).claim_pending()
+        except Exception:
+            logger.exception("Could not load pending gym victories")
+            self.caller.msg(PENDING_MESSAGE)
+            return
+        if not results:
+            self.caller.msg("No unclaimed gym badges.")
+            return
+        for result in results:
+            self.caller.msg(result.message)
 
     def _list_gyms(self):
         checks = [
@@ -153,7 +180,7 @@ def _split_subcommand(args: str | None) -> tuple[str, str]:
 
 
 def _usage() -> str:
-    return "Usage: +gym list | +gym check <gym> | +gym challenge <gym>"
+    return "Usage: +gym list | +gym check <gym> | +gym challenge <gym> | +gym claim"
 
 
 def _yes_no(value: bool) -> str:

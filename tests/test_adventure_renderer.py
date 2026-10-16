@@ -55,6 +55,9 @@ class FakeSessionManager:
         self.store[session.pk] = session
         return session
 
+    def select_for_update(self):
+        return self
+
     def filter(self, **kwargs):
         items = list(self.store.values())
         for key, value in kwargs.items():
@@ -126,6 +129,13 @@ def test_render_for_room_uses_matching_active_session(monkeypatch):
 
 
 def test_render_for_room_keeps_completed_session_visible_before_leave(monkeypatch):
+    import contextlib
+
+    from pokemon.adventures import progress
+
+    monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
+    monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")
     FakeAdventureSession.objects = FakeSessionManager()
     FakeAdventureSession._next_id = 1
     hall = DummyRoom("Adventure Hall", adventure_hall=True)
@@ -136,6 +146,9 @@ def test_render_for_room_keeps_completed_session_visible_before_leave(monkeypatc
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
     sessions.start_session(player, "alpha_meadow")
     sessions.move_session(player, "north")
+    session = sessions.get_active_session_for_player(player)
+    sessions.choose_session_route(player, "wild")
+    sessions.resolve_encounter_result(session.pk, player, "win")
     sessions.move_session(player, "north")
     sessions.search_session(player)
     sessions.move_session(player, "south")

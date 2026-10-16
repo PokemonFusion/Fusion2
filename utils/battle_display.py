@@ -5,14 +5,14 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
-# Matches Either |X where X is letter, or |[123] style codes
-ANSI_RE = re.compile(r"\|\[[0-9]{1,3}\]|\|[A-Za-z]")
+# Match escaped literal pipes before Evennia color/reset codes.
+ANSI_RE = re.compile(r"\|\||\|\[[0-9]{1,3}\]|\|[A-Za-z]")
 
 
 def strip_ansi(s: str) -> str:
-	"""Remove Evennia-style ANSI codes."""
+	"""Remove Evennia color codes while decoding escaped literal pipes."""
 
-	return ANSI_RE.sub("", s)
+	return ANSI_RE.sub(lambda match: "|" if match.group() == "||" else "", s)
 
 
 def pad_ansi(s: str, width: int) -> str:

@@ -45,17 +45,22 @@ class Account(DefaultAccount):
 --------------------------------------------------------------------
 {header}
 
-{sessions}
-
-  |whelp|n - more commands
-  |wpublic <text>|n - talk on public channel
-  |wcharcreate <name> [=description]|n - create new character
-  |wchardelete <name>|n - delete a character
-  |wgoic <name>|n - enter the game as character (|wgoooc|n to get back here)
-  |wgoic|n - enter the game as latest character controlled.
+Your account is your login for both the website and the game.
+Your characters are the people you play in the world.
 
 {characters}
+
+{next_step}
 {footer}
+
+|wOther commands:|n
+  |whelp|n - more commands
+  |wpublic <text>|n - talk on public channel
+  |wchardelete <name>|n - delete a character
+  |wgoooc|n - return here while playing a character
+  |wgoic|n - return to the last character you played
+
+{sessions}
 --------------------------------------------------------------------
     """.strip()
 
@@ -94,7 +99,7 @@ class Account(DefaultAccount):
             # No active sessions connected to this account.
             return ""
 
-        txt_header = f"Account |g{self.name}|n (you are Out-of-Character)"
+        txt_header = f"Account |g{self.name}|n - Character selection"
 
         sess_strings = []
         for index, sess in enumerate(sessions, start=1):
@@ -108,7 +113,14 @@ class Account(DefaultAccount):
         txt_sessions = "|wConnected session(s):|n\n" + "\n".join(sess_strings)
 
         if not characters:
-            txt_characters = "You don't have a character yet. Use |wcharcreate|n."
+            txt_characters = (
+                "You don't have a character yet.\n"
+                "Type |wcharcreate <name>|n, replacing <name> with your character's name."
+            )
+            txt_next_step = (
+                "Then type |wgoic <name>|n to enter the game as that character.\n"
+                "Once in the game, type |wchargen|n to begin character setup."
+            )
             mail_counts = {}
         else:
             max_chars = (
@@ -148,6 +160,12 @@ class Account(DefaultAccount):
                 f"Available character(s) ({len(characters)}/{max_chars}, |wgoic <name>|n or |wgoic <#>|n to play):|n\n"
                 + "\n".join(char_strings)
             )
+            txt_next_step = (
+                "|wNext:|n type |wgoic 1|n to enter as the first character above.\n"
+                "Once in the game, type |wchargen|n for first-time character setup.\n"
+                "Finished setup? Type |whelp getting started|n for your next steps.\n"
+                "Use |wcharcreate <name>|n only if you want another character."
+            )
 
         footer = self._mail_footer(characters, mail_counts)
 
@@ -155,6 +173,7 @@ class Account(DefaultAccount):
             header=txt_header,
             sessions=txt_sessions,
             characters=txt_characters,
+            next_step=txt_next_step,
             footer=footer,
         )
         utf8_warning = build_one_time_utf8_warning(session)

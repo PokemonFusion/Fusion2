@@ -1,3 +1,4 @@
+import contextlib
 import types
 from datetime import timedelta
 
@@ -66,6 +67,9 @@ class FakeSessionManager:
         self.store[session.pk] = session
         return session
 
+    def select_for_update(self):
+        return self
+
     def filter(self, **kwargs):
         items = list(self.store.values())
         for key, value in kwargs.items():
@@ -106,9 +110,14 @@ class FakeAdventureSession:
 
 @pytest.fixture(autouse=True)
 def fake_session_model(monkeypatch):
+    from pokemon.adventures import progress
+
     FakeAdventureSession.objects = FakeSessionManager()
     FakeAdventureSession._next_id = 1
     monkeypatch.setattr(sessions, "_session_model", lambda: FakeAdventureSession)
+    monkeypatch.setattr(sessions.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
+    monkeypatch.setattr(progress, "safe_finalize_completion", lambda _session: "")
     return FakeAdventureSession.objects
 
 
@@ -125,6 +134,8 @@ def adventure_world():
 def _complete_alpha_meadow(player):
     session = sessions.start_session(player, "alpha_meadow").session
     sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "wild")
+    sessions.resolve_encounter_result(session.pk, player, "capture")
     sessions.move_session(player, "north")
     sessions.search_session(player)
     sessions.move_session(player, "south")
@@ -162,6 +173,12 @@ def test_movement_search_and_return_complete_objectives(adventure_world):
     session = start.session
 
     assert sessions.move_session(player, "north").ok
+    choice = sessions.choose_session_route(player, "trainer")
+    assert choice.ok
+    assert choice.data.encounter_kind == "trainer"
+    encounter = sessions.resolve_encounter_result(session.pk, player, "loss")
+    assert encounter.ok
+    assert session.objective_progress["resolve_encounter"] == 1
     result = sessions.move_session(player, "north")
     assert result.ok
     assert session.current_node == "old_tree"
@@ -180,6 +197,83 @@ def test_movement_search_and_return_complete_objectives(adventure_world):
     assert session.objective_progress["return_entrance"] == 1
     assert session.state == STATE_COMPLETED
     assert "Adventure complete" in result.message
+
+
+def test_route_choice_is_locked_and_encounter_result_is_idempotent(adventure_world):
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+
+    choice = sessions.choose_session_route(player, "wild")
+    duplicate_pending = sessions.choose_session_route(player, "wild")
+    wrong_route = sessions.choose_session_route(player, "trainer")
+    first = sessions.resolve_encounter_result(session.pk, player, "capture")
+    duplicate = sessions.resolve_encounter_result(session.pk, player, "win")
+
+    assert choice.ok and choice.data.species == "Rattata"
+    assert duplicate_pending.ok
+    assert not wrong_route.ok
+    assert first.ok and duplicate.ok
+    assert session.metadata["route_key"] == "wild"
+    assert session.metadata["encounter_result"] == "capture"
+
+
+def test_retry_uses_saved_outcome_and_blocks_another_encounter(adventure_world, monkeypatch):
+    """A persistence failure retains the capture outcome through a later retry."""
+
+    from pokemon.adventures import progress
+
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "wild")
+    sessions.queue_encounter_result(session.pk, player, "capture")
+    sessions.queue_encounter_result(session.pk, player, "loss")
+
+    def fail_result(*_args):
+        raise RuntimeError("temporary participation save failure")
+
+    monkeypatch.setattr(progress, "record_encounter_result", fail_result)
+    assert "still pending" in sessions.retry_encounter_results(player)
+    assert session.metadata["encounter_state"] == "pending"
+    assert not sessions.choose_session_route(player, "wild").ok
+    assert player.db.pending_adventure_results == {str(session.pk): "capture"}
+
+    monkeypatch.setattr(progress, "record_encounter_result", lambda *_args: None)
+    assert "capture" in sessions.retry_encounter_results(player)
+    assert session.objective_progress["resolve_encounter"] == 1
+    assert player.db.pending_adventure_results == {}
+
+
+def test_retry_cannot_apply_another_characters_result(adventure_world):
+    """A stale or mismatched receipt cannot change a different player's run."""
+
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    stranger = DummyPlayer("Other player")
+    sessions.queue_encounter_result(session.pk, stranger, "win")
+
+    assert "could not be matched" in sessions.retry_encounter_results(stranger)
+    assert session.objective_progress["resolve_encounter"] == 0
+
+
+def test_completion_is_saved_before_reward_delivery(adventure_world, monkeypatch):
+    """Claim recovery can find a completed session even when delivery fails."""
+
+    from pokemon.adventures import progress
+
+    _hall, _instance, player = adventure_world
+    observed = []
+
+    def reward_attempt(session):
+        observed.append((session.state, session.saved_fields[-1]))
+        return "Use +adventure/claim to retry."
+
+    monkeypatch.setattr(progress, "safe_finalize_completion", reward_attempt)
+    session = _complete_alpha_meadow(player)
+    assert observed[0][0] == STATE_COMPLETED
+    assert "state" in observed[0][1]
+    assert session.state == STATE_COMPLETED
 
 
 def test_completed_session_remains_current_until_leave(adventure_world):

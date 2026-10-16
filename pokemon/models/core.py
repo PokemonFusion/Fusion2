@@ -64,10 +64,9 @@ class BasePokemon(models.Model):
 		species_name = self.species
 		try:  # pragma: no cover - data source may be unavailable in tests
 			from pokemon.dex import POKEDEX  # type: ignore
+			from pokemon.names import resolve_dex_entry
 
-			entry = (
-				POKEDEX.get(species_name) or POKEDEX.get(species_name.lower()) or POKEDEX.get(species_name.capitalize())
-			)
+			entry = resolve_dex_entry(POKEDEX, species_name)
 
 			if entry:
 				types = getattr(entry, "types", None)
@@ -173,6 +172,8 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	flags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
 	tera_type = models.CharField(max_length=20, blank=True)
 	current_hp = models.PositiveIntegerField(default=0)
+	status = models.CharField(max_length=20, blank=True, default="")
+	sleep_turns = models.PositiveSmallIntegerField(null=True, blank=True)
 	total_exp = models.BigIntegerField(default=0)
 	learned_moves = models.ManyToManyField(
 		"Move",
@@ -316,6 +317,7 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			self.current_hp = max_hp
 		if hasattr(self, "status"):
 			self.status = ""
+		self.sleep_turns = None
 		apply_current_pp(self)
 
 		try:
@@ -369,13 +371,16 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 			logger.debug("MOVEDEX unavailable while applying PP boost.", exc_info=True)
 			return False
 
-		move = self.learned_moves.filter(name__iexact=move_name).first()
+		from pokemon.names import find_named, resolve_dex_entry
+
+		move = find_named(self.learned_moves.all(), move_name)
 		if not move:
 			return False
 
 		slots = self.activemoveslot_set.filter(move=move)
 		boost, _ = self.pp_boosts.get_or_create(move=move)
-		base_pp = MOVEDEX.get(move.name.lower(), {}).get("pp")
+		entry = resolve_dex_entry(MOVEDEX, move.name)
+		base_pp = entry.get("pp") if isinstance(entry, dict) else getattr(entry, "pp", None)
 		if base_pp is None:
 			return False
 		max_bonus = math.floor(base_pp * MAX_PP_MULTIPLIER) - base_pp

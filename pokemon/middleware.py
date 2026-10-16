@@ -8,6 +8,7 @@ from pokemon.data.text import ITEMS_TEXT, MOVES_TEXT
 from pokemon.dex import ITEMDEX as itemdex
 from pokemon.dex import MOVEDEX as movedex
 from pokemon.dex import POKEDEX as pokedex
+from pokemon.names import normalize_name
 
 # Cache for built movesets keyed by normalized Pokémon name
 MOVESET_CACHE = {}
@@ -37,7 +38,7 @@ def _ensure_movedex():
 def _normalize_key(name: str) -> str:
 	"""Normalize names for case-insensitive dex lookups."""
 
-	return name.replace(" ", "").replace("-", "").replace("'", "").lower()
+	return normalize_name(name)
 
 
 def _get(obj, key, default=None):
@@ -395,7 +396,7 @@ def get_moveset_by_name(name):
 	lookups to avoid repeatedly rebuilding the same data.
 	"""
 
-	key = name.lower()
+	key = _normalize_key(name)
 	if key in MOVESET_CACHE:
 		return key, MOVESET_CACHE[key]
 

@@ -6,6 +6,7 @@ evolution mechanics.
 
 from evennia import Command
 
+from pokemon.names import find_named
 from utils.dex_suggestions import item_not_found_message, suggest_name
 from utils.locks import require_no_battle_lock
 
@@ -99,21 +100,23 @@ class CmdTeachMove(Command):
             return
         from pokemon.data.generation import get_valid_moves
 
-        valid = [m.lower() for m in get_valid_moves(pokemon.species, pokemon.computed_level)]
-        if self.move_name.lower() not in valid:
+        valid = get_valid_moves(pokemon.species, pokemon.computed_level)
+        selected = find_named(valid, self.move_name)
+        if selected is None:
             message = f"{pokemon.name} cannot learn {self.move_name}."
             suggestion = suggest_name(self.move_name, valid)
             if suggestion:
                 message += f" Did you mean {suggestion}?"
             self.caller.msg(message)
             return
-        if pokemon.learned_moves.filter(name__iexact=self.move_name).exists():
+        learned = pokemon.learned_moves
+        if find_named(learned.all() if hasattr(learned, "all") else learned, self.move_name) is not None:
             self.caller.msg(f"{pokemon.name} already knows {self.move_name}.")
             return
 
         from pokemon.utils.move_learning import learn_move
 
-        learn_move(pokemon, self.move_name, caller=self.caller, prompt=True)
+        learn_move(pokemon, selected, caller=self.caller, prompt=True)
 
 
 class CmdLearn(Command):

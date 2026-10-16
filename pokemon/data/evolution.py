@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from pokemon.names import resolve_dex_entry
+
 from ..dex import POKEDEX
 
 __all__ = ["get_evolution_items", "get_evolution", "attempt_evolution"]
@@ -18,11 +20,7 @@ def get_evolution_items() -> List[str]:
 def get_evolution(species: str, *, level: int, item: Optional[str] = None) -> Optional[str]:
     """Return the name of the evolved species if conditions are met."""
     def lookup(name: str):
-        return (
-            POKEDEX.get(name)
-            or POKEDEX.get(name.capitalize())
-            or POKEDEX.get(name.lower())
-        )
+        return resolve_dex_entry(POKEDEX, name)
 
     current = lookup(species)
     if not current:
@@ -61,7 +59,7 @@ def attempt_evolution(pokemon, *, item: Optional[str] = None) -> Optional[str]:
     target = get_evolution(species, level=level, item=item)
     if not target:
         return None
-    data = POKEDEX.get(target.lower())
+    data = resolve_dex_entry(POKEDEX, target)
     if hasattr(pokemon, "species"):
         pokemon.species = target
     else:

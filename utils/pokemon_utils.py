@@ -6,6 +6,7 @@ from django.db import transaction
 
 from pokemon.services.encounters import create_encounter_pokemon, encounter_ref
 from pokemon.services.pokemon_refs import build_owned_ref
+from pokemon.services.status_persistence import PersistentStatus
 
 try:
     from pokemon.models.core import OwnedPokemon
@@ -43,11 +44,13 @@ def _get_calc_stats_from_model():
 
     bi = sys.modules.get("pokemon.battle.battleinstance")
     if bi is not None:
-        return getattr(bi, "_calc_stats_from_model", None)
+        calculator = getattr(bi, "_calc_stats_from_model", None)
+        if callable(calculator):
+            return calculator
     try:  # pragma: no cover - fallback when running with real package
-        from pokemon.battle import battleinstance as bi  # type: ignore
+        from pokemon.battle.pokemon_factory import _calc_stats_from_model
 
-        return getattr(bi, "_calc_stats_from_model", None)
+        return _calc_stats_from_model
     except ImportError:  # pragma: no cover
         return None
 
@@ -180,7 +183,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     model_id = build_owned_ref(getattr(model, "unique_id", getattr(model, "model_id", None)))
 
     battle_poke = Pokemon(
-        name=name,
+        name=getattr(model, "species", None) or name,
         level=level,
         hp=max(0, current_hp),
         max_hp=max_hp if max_hp is not None else current_hp,
@@ -192,6 +195,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         model_id=model_id,
         gender=getattr(model, "gender", "N"),
     )
+    battle_poke.name = name
+    status = PersistentStatus() if full_heal else PersistentStatus.from_pokemon(model)
+    status.apply_to_battle(battle_poke)
     if slots is not None:
         battle_poke.activemoveslot_set = slots
     if getattr(model, "_pf2_active_fusion", False):
@@ -512,19 +518,16 @@ def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
         from pokemon import dex as dex_mod  # type: ignore
     except ImportError:  # boundary: optional dex module
         dex_mod = None
-    try:
-        from pokemon.battle.engine import _normalize_key
-    except ImportError:
-        _normalize_key = _fallback_normalize_key
-
     if Pokemon is None:
         raise RuntimeError("Dex not available")
 
+    from pokemon.names import resolve_dex_entry
+
     sp = None
     if dex_mod is not None and getattr(dex_mod, "POKEDEX", None):
-        sp = dex_mod.POKEDEX.get(_normalize_key(species)) or dex_mod.POKEDEX.get(species)
+        sp = resolve_dex_entry(dex_mod.POKEDEX, species)
     if sp is None:
-        sp = _GLOBAL_POKEDEX.get(_normalize_key(species)) or _GLOBAL_POKEDEX.get(species)
+        sp = resolve_dex_entry(_GLOBAL_POKEDEX, species)
     if sp is None:
         try:
             import importlib.util
@@ -538,7 +541,7 @@ def make_pokemon_from_dex(species: str, *, level: int = 1, moves=None):
                 real_dex = importlib.util.module_from_spec(spec)
                 sys.modules[spec.name] = real_dex
                 spec.loader.exec_module(real_dex)
-                sp = real_dex.POKEDEX.get(_normalize_key(species)) or real_dex.POKEDEX.get(species)
+                sp = resolve_dex_entry(real_dex.POKEDEX, species)
         except (ImportError, AttributeError):
             logger.debug("Unable to lazy-load dex module for species lookup.", exc_info=True)
             sp = None

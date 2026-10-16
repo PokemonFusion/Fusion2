@@ -32,37 +32,82 @@ HELP_ENTRY_DICTS = [
 		"text": """
 Welcome to Pokemon Fusion 2.
 
-This is a text RPG, so most actions are typed as short commands. The browser
-client is the recommended way to play: register, create a character, enter the
-game, then follow the setup prompts.
+You play by typing a command and pressing Enter. Keep any + at the start of a
+command. In examples such as goic <name>, replace <name> with your character's
+name and leave out the angle brackets.
+
+Already finished character setup? Type look, then help first outing for a
+short introduction to moving, talking, and trying your first wild battle.
 
 # First Steps
 
-1. Create an account or log in from the website.
-2. Create a character with:
-   charcreate <name>
-3. Enter the game with:
-   goic <name>
-   goic <number>
-4. Start character setup with:
+1. Register once. The website and game use the same account and password.
+   Your account is your login; a character is the person you play.
+2. Open Play in Browser. If asked to connect, use that same account.
+3. Check the character list. Registration normally creates your first
+   character with your account name. To play the first character listed, type:
+   goic 1
+   You can also use goic <name>. Only use charcreate <name> if you have no
+   character yet or want to create another one.
+4. Once inside the game, start character setup with:
    chargen
-5. See starter options with:
-   +starters
-6. Pick your starter inside chargen. If you leave the menu during starter
-   selection, resume it with:
-   +starter
+   Choose a human trainer with a starter Pokemon, or a Fusion who can battle
+   as their own Pokemon form. Follow the menu's prompts one at a time.
+5. Human trainers choose their starter in the menu. Type starterlist when
+   asked for a species. Outside the menu, +starters lists starter options;
+   +starter opens or resumes human starter selection if needed.
 
 # After Setup
 
-Use look to read the room, +sheet to check your trainer, and +hunt in route
-rooms that allow wild encounters. If a battle starts, wait for the battle UI to
-ask for your command before choosing a move, switch, item, or flee action.
+Type look to see your room. To move, type one of the listed exit names as a
+command. Type +sheet to see your character and battle information.
+
+Your next guide is help first outing. It walks through the Alpha Test Hub's
+beginner route and +hunt, with instructions for getting help along the way.
+You can also stay and chat: public Hi, I'm new! speaks on the public channel.
 
 # Useful Website Links
 
 Home shows the current play status. Player Hub shows a read-only overview of
 your characters, party, boxed Pokemon, inventory, and badges once you have a
 character.
+		""",
+	},
+	{
+		"key": "first outing",
+		"aliases": ["first battle", "after setup"],
+		"category": "Guide",
+		"text": """
+Your first outing
+
+Start with a small goal: learn to move, try a wild battle when you are ready,
+and find your way back. You can explore or chat at your own pace.
+
+1. Type look and press Enter. Read the room name, description, and exits.
+   An exit name is also a command: type it to move to the next room.
+2. Type +sheet to inspect your character. Human trainers have a starter;
+   Fusions can battle as their own form, even with no separate party Pokemon.
+3. At Alpha Test Hub, type low grass to enter the beginner route. If you
+   aren't at the hub, follow your room's listed exits. If you cannot find it,
+   type: public Hi, I'm new. How do I reach Alpha Test Hub from here?
+4. In Alpha Route 1 - Low Grass, type +hunt to look for a wild Pokemon.
+   Follow any selection prompt, then wait for the battle display to ask for
+   your action. Use the commands it shows. Type help battle basics for the
+   battle commands, or +status to check a battle already in progress.
+5. When the battle has ended, type look. From Low Grass, type hub to return.
+   At Alpha Test Hub, +heal restores your party Pokemon before another outing.
+
+If a command says you can't hunt here, check the room name with look: +hunt
+works in encounter rooms, not the hub. If no Pokemon can battle, check +sheet
+and heal your party at the hub. If your Fusion still cannot battle or you get
+stuck, use public to ask for help. To send staff a support request, type:
+   +request I need help starting. Here is what happened: ...
+Replace the dots with the command you tried and the response you received.
+
+Prefer to meet people first? Type public Hi, I'm new! to introduce yourself.
+Use say Hello! to talk to people in your room. No battle is required to chat.
+
+Type help getting started to return to account and character setup guidance.
 		""",
 	},
 	{
@@ -329,6 +374,10 @@ rooms may have highlighted shortcut letters in their exit names.
 +hunt/leave       Leave a hunting instance if you are inside one.
 +adventure/list   List compact adventure instances available from Adventure Hall.
 +adventure/start  Start a solo adventure from Adventure Hall.
++adventure/choose Choose an authored route when the Adventure display offers one.
++adventure/retry  Retry a saved encounter result after a temporary failure.
++adventure/claim  Claim unpaid completion rewards, including after leaving a run.
++adventure/look   Redisplay your virtual location, exits, actions, and objectives.
 +adventure/leave  Leave your active adventure.
 
 If a wild Pokemon appears, the game moves you into battle. From there, use

@@ -1,24 +1,42 @@
+"""Inventory containers and compatibility wrappers."""
+
 import warnings
+
+from pokemon.names import normalize_name
 
 
 class Inventory(dict):
 	"""Simple container for item quantities."""
 
+	def _matching_keys(self, name: str) -> list[str]:
+		"""Return every equivalent key, including legacy display spellings."""
+		key = normalize_name(name)
+		return [item for item in self if normalize_name(item) == key]
+
 	def add(self, name: str, quantity: int = 1) -> None:
-		self[name] = self.get(name, 0) + quantity
+		"""Reuse an existing spelling while preserving inventory display text."""
+		keys = self._matching_keys(name)
+		key = keys[0] if keys else name
+		self[key] = self.get(key, 0) + quantity
 
 	def remove(self, name: str, quantity: int = 1) -> bool:
-		if self.get(name, 0) < quantity:
+		"""Debit equivalent keys together without partially removing an item."""
+		keys = self._matching_keys(name)
+		if sum(self[key] for key in keys) < quantity:
 			return False
-		new_amount = self.get(name, 0) - quantity
-		if new_amount <= 0:
-			self.pop(name, None)
-		else:
-			self[name] = new_amount
+		for key in keys:
+			removed = min(self[key], quantity)
+			self[key] -= removed
+			quantity -= removed
+			if self[key] <= 0:
+				self.pop(key)
+			if quantity == 0:
+				break
 		return True
 
 	def has(self, name: str, quantity: int = 1) -> bool:
-		return self.get(name, 0) >= quantity
+		"""Recognize an item by display or compact spelling."""
+		return sum(self[key] for key in self._matching_keys(name)) >= quantity
 
 	def list(self) -> str:
 		if not self:

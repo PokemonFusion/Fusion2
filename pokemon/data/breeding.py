@@ -12,8 +12,10 @@ how to look up the species that will hatch from two parents::
     print(egg)  # -> "Pichu"
 """
 
-from .generation import PokemonInstance
+from pokemon.names import resolve_dex_entry
+
 from ..dex import POKEDEX
+from .generation import PokemonInstance
 
 # Mapping of male-only species to the female species that lays their eggs
 _SPECIAL_MOTHERS = {
@@ -45,11 +47,8 @@ __all__ = ["determine_egg_species"]
 
 
 def _lookup_species(name: str):
-    return (
-        POKEDEX.get(name)
-        or POKEDEX.get(name.lower())
-        or POKEDEX.get(name.capitalize())
-    )
+    """Resolve stored keys and display names to the same breeding species."""
+    return resolve_dex_entry(POKEDEX, name)
 
 
 def _get_base_form(species_name: str) -> str:

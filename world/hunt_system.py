@@ -17,12 +17,12 @@ except Exception:  # pragma: no cover - Evennia not installed in CI
                 pass
 
 from pokemon.battle.battleinstance import (
-        BattleSession,
-        BattleType,
-        create_battle_pokemon,
+    BattleSession,
+    BattleType,
+    create_battle_pokemon,
 )
-from pokemon.services.trainer_encounters import generate_random_trainer_encounter
 from pokemon.helpers.party_helpers import has_usable_pokemon
+from pokemon.services.trainer_encounters import generate_random_trainer_encounter
 from utils.dex_suggestions import is_species_not_found_error, species_not_found_message
 from utils.pokemon_config import RARITY_WEIGHTS, TIERS
 
@@ -207,15 +207,8 @@ class HuntSystem:
 	def _resolve_npc_encounter(self, hunter, tp_cost: int) -> str:
 		"""Handle trainer encounter generation and battle startup."""
 		encounter = generate_random_trainer_encounter(self.room)
-		poke = encounter.team[0]
-		self._start_battle_with_selection(
-			hunter,
-			poke,
-			BattleType.TRAINER,
-			encounter.intro_text,
-			opponent_name=encounter.display_name,
-			ai_profile=getattr(encounter, "ai_profile", "trainer_basic"),
-		)
+		inst = BattleSession(hunter)
+		inst.start_trainer_encounter(encounter)
 		self._deduct_training_points(hunter, tp_cost)
 		return encounter.intro_text
 

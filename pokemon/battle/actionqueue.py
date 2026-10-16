@@ -163,8 +163,17 @@ class ActionQueue:
 			"queued switch",
 		)
 
-	def queue_item(self, item_name: str, target: str = "B1", caller=None) -> None:
-		"""Queue an item use and run the turn if ready."""
+	def queue_item(self, item_name: str, target: str | None = None, caller=None) -> None:
+		"""Queue medicine on the user's side and capture balls on the opponent."""
+
+		own_position, _ = self._get_position_for_trainer(caller or self.captainA)
+		if not own_position:
+			return
+		is_ball = _battle_norm_key(item_name).lower().endswith("ball")
+		if not is_ball:
+			target = own_position
+		elif target is None:
+			target = "A1" if own_position.startswith("B") else "B1"
 
 		self._queue_action(
 			caller,

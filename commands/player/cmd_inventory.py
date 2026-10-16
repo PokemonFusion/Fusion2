@@ -91,7 +91,9 @@ def _pokemon_text(value) -> str:
 
 
 def _normalize_target_text(value) -> str:
-    return _pokemon_text(value).replace(" ", "").replace("-", "").replace("'", "").lower()
+    from pokemon.names import normalize_name
+
+    return normalize_name(_pokemon_text(value))
 
 
 def _iter_active_party(caller):
@@ -162,12 +164,9 @@ def _growth_rate_for_pokemon(pokemon) -> str:
     species_name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
     if species_name:
         from pokemon.dex import POKEDEX
+        from pokemon.names import resolve_dex_entry
 
-        entry = (
-            POKEDEX.get(species_name)
-            or POKEDEX.get(str(species_name).lower())
-            or POKEDEX.get(str(species_name).capitalize())
-        )
+        entry = resolve_dex_entry(POKEDEX, species_name)
         if entry:
             return (getattr(entry, "raw", {}) or {}).get("growthRate", "medium_fast")
     return "medium_fast"
@@ -412,7 +411,9 @@ class CmdUseItem(Command):
                     move_name = slots[idx].move.name
             else:
                 for s in slots:
-                    if s.move.name.lower() == move_sel.lower():
+                    from pokemon.names import normalize_name
+
+                    if normalize_name(s.move.name) == normalize_name(move_sel):
                         move_name = s.move.name
                         break
             if not move_name:

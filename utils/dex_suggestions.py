@@ -5,11 +5,13 @@ from __future__ import annotations
 from difflib import get_close_matches
 from typing import Iterable
 
+from pokemon.names import normalize_name
+
 
 def normalize_dex_key(name: object) -> str:
 	"""Normalize user-facing dex names for tolerant comparisons."""
 
-	return str(name or "").replace(" ", "").replace("-", "").replace("'", "").lower()
+	return normalize_name(name)
 
 
 def _get_value(obj: object, key: str, default=None):

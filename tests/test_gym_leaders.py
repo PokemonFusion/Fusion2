@@ -1,8 +1,10 @@
 import importlib
 import types
 
+import pytest
+
 from pokemon.battle.battleinstance import BattleSession
-from pokemon.services import gym_leaders
+from pokemon.services import gym_leaders, gym_rewards
 from pokemon.services.trainer_encounters import (
     StaticTrainerCheck,
     StaticTrainerTemplateCheck,
@@ -11,6 +13,9 @@ from pokemon.services.trainer_encounters import (
 
 
 class FakeQS(list):
+    def first(self):
+        return self[0] if self else None
+
     def order_by(self, *fields):
         return FakeQS(
             sorted(
@@ -32,6 +37,9 @@ class FakeManager:
 
     def all(self):
         return FakeQS(self.rows)
+
+    def filter(self, **kwargs):
+        return FakeQS(row for row in self.rows if all(getattr(row, key) == value for key, value in kwargs.items()))
 
 
 class FakeBadges:
@@ -134,6 +142,10 @@ def _install_profiles(monkeypatch, profiles):
         gym_leaders,
         "_gym_leader_profile_model",
         lambda: types.SimpleNamespace(objects=FakeManager(profiles)),
+    )
+    monkeypatch.setattr(
+        gym_leaders, "_gym_badge_model",
+        lambda: types.SimpleNamespace(objects=FakeManager([profile.badge for profile in profiles])),
     )
 
 
@@ -309,6 +321,27 @@ def test_grant_gym_badge_ignores_non_gym_metadata(monkeypatch):
     assert player.trainer.badges.rows == []
 
 
+def test_missing_original_badge_does_not_award_reconfigured_badge(monkeypatch):
+    """A stored badge ID takes precedence over a gym's current configuration."""
+    profile = _profile(badge=_badge(id=22))
+    player = _player()
+    _install_profiles(monkeypatch, [profile])
+    metadata = {**gym_leaders._profile_metadata(profile), "badge_id": 21}
+    result = gym_leaders.grant_gym_badge_for_victory(player, metadata)
+    assert not result.awarded
+    assert not result.already_had
+    assert player.trainer.badges.rows == []
+
+
+def test_missing_badge_delivery_method_cannot_report_success(monkeypatch):
+    """A broken trainer endpoint must leave the award retryable."""
+    profile = _profile()
+    _install_profiles(monkeypatch, [profile])
+    player = types.SimpleNamespace(trainer=types.SimpleNamespace(badges=[]))
+    with pytest.raises(RuntimeError, match="no badge delivery method"):
+        gym_leaders.grant_gym_badge_for_victory(player, gym_leaders._profile_metadata(profile))
+
+
 def test_battle_result_hook_grants_gym_badge_once(monkeypatch):
     player = _player()
     metadata = {"source_type": "gym_leader", "gym_key": "pewter"}
@@ -323,7 +356,17 @@ def test_battle_result_hook_grants_gym_badge_once(monkeypatch):
             message="You earned the Boulder Badge!",
         )
 
-    monkeypatch.setattr(gym_leaders, "grant_gym_badge_for_victory", fake_grant)
+    records = {}
+
+    def record(rewards, victory_id, passed_metadata):
+        records[victory_id] = (rewards.player, passed_metadata)
+
+    def claim(rewards, victory_id):
+        result = fake_grant(*records[victory_id])
+        return gym_rewards.GymClaimResult(True, result.message, awarded=True)
+
+    monkeypatch.setattr(gym_rewards.GymVictoryRewards, "record", record)
+    monkeypatch.setattr(gym_rewards.GymVictoryRewards, "claim", claim)
     session = BattleSession.__new__(BattleSession)
     session.teamA = [player]
     session.teamB = []
@@ -341,7 +384,10 @@ def test_battle_result_hook_grants_gym_badge_once(monkeypatch):
 
     assert calls == [(player, metadata)]
     assert messages == ["You earned the Boulder Badge!"]
-    assert session.storage.values["battle_result"] == {"handled": True}
+    assert session.storage.values["battle_result"] == {
+        "handled": True, "result": "win", "gym_victory_id": session._gym_victory_id,
+    }
+    assert len(records) == 1
 
 
 def test_battle_result_hook_does_not_grant_on_loss(monkeypatch):
