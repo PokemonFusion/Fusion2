@@ -630,12 +630,99 @@ class BattleRecoveryCases(unittest.TestCase):
         target = restored.battle.participants[1].active[0]
         self.assertIs(target.tempvals["last_damaged_by"]["source"], restored.battle.participants[0].active[0])
 
+    def test_switch_command_keeps_canonical_slot_across_checkpoint_restore(self):
+        """Party slot six queues the correct compact roster entry and survives restore."""
+        first, second = self.player.storage.get_party()
+        reserve = create_owned_pokemon("Squirtle", self.player.trainer, 5, ivs=[0] * 6, evs=[0] * 6,
+                                       nature="Hardy", active_move_names=["Tackle"])
+        placement = PlacementService(self.player.storage)
+        box = StorageBox.objects.create(storage=self.player.storage, name="UX storage")
+        placement.to_box(first, box)
+        placement.to_party(reserve, 6)
+        session = self.start("pvp")
+        for selection in ("1", "3", "-1", "7"):
+            command = CmdBattleSwitch()
+            command.caller, command.args = self.player, selection
+            command.func()
+            self.assertIn("Invalid Pokémon slot", self.player.messages[-1])
+            self.assertFalse(session.state.declare)
+        self.player.messages.clear()
+        command.args = "6"
+        command.func()
+        self.assertEqual(session.state.declare["A1"]["switch"], 2)
+        self.assertEqual(session.battle.participants[0].pending_action.pokemon.model_id, f"owned:{reserve.pk}")
+        self.assertEqual(sum("Waiting on" in text for text in self.player.messages), 1)
+        self.assertFalse(any("Team A" in text for text in self.player.messages))
+        restored = self.rebuild(session)
+        self.assertEqual(restored.state.declare["A1"]["switch"], 2)
+        self.assertEqual(restored.battle.participants[0].pending_action.pokemon.model_id, f"owned:{reserve.pk}")
+        restored.queue_move("tackle", "A1", caller=self.players[1])
+        self.assertEqual(restored.battle.participants[0].active[0].model_id, f"owned:{reserve.pk}")
+        self.assertEqual(self.player.storage.get_party_slots(), [None, second, None, None, None, reserve])
+
+    def test_item_waiting_feedback_uses_authoritative_opponent_choice(self):
+        """A persisted item declaration must not say its own acting Pokemon is missing."""
+        session = self.start("pvp")
+        self.player.trainer.add_item("Potion", 1)
+        self.player.messages.clear()
+        session.queue_item("Potion", caller=self.player)
+        opponent = session.battle.participants[1].active[0].name
+        self.assertEqual(self.player.messages, ["A1 (Squirtle) prepares Potion → A1.", f"Waiting on {opponent}..."])
+        self.assertEqual(session._missing_action_positions(), ["B1"])
+        self.player.messages.clear()
+        saved = dict(session.state.declare)
+        session.queue_item("Potion", caller=self.player)
+        self.assertEqual(session.state.declare, saved)
+        self.assertEqual(len(self.player.messages), 1)
+        self.assertIn("already has an action queued", self.player.messages[0])
+        self.assertEqual(self.player.trainer.get_item_quantity("Potion"), 1)
+
+    def full_party_fusion_switches(self, order):
+        """Exercise the real seven-member roster, saved switch and return switch."""
+        fusion = self.player.storage.get_party()[0]
+        self.player.storage.reserve_for_fusion(fusion)
+        self.player.db.fusion_id = str(fusion.pk)
+        self.player.db.fusion_kind = "permanent"
+        self.player.db.fusion_species = fusion.species
+        self.player.db.fusion_battle_order = order
+        for _ in range(5):
+            create_owned_pokemon("Bulbasaur", self.player.trainer, 5, ivs=[0] * 6, evs=[0] * 6,
+                                 nature="Hardy", active_move_names=["Tackle"])
+        slots = self.player.storage.get_party_slots()
+        self.assertTrue(all(slots))
+        session = self.start("pvp")
+        self.assertEqual(len(session.battle.participants[0].pokemons), 7)
+        selections = ("6", "fusion", "6", "fusion") if order == "first" else ("fusion", "6", "fusion")
+        for selection in selections:
+            command = CmdBattleSwitch()
+            command.caller, command.args = self.player, selection
+            command.func()
+            expected = fusion if selection == "fusion" else slots[5]
+            expected_id = f"owned:{expected.pk}"
+            self.assertEqual(session.battle.participants[0].pending_action.pokemon.model_id, expected_id)
+            session = self.rebuild(session)
+            self.assertEqual(session.battle.participants[0].pending_action.pokemon.model_id, expected_id)
+            session.queue_move("tackle", "A1", caller=self.players[1])
+            self.assertEqual(session.battle.participants[0].active[0].model_id, expected_id)
+        self.assertEqual(self.player.storage.get_party_slots(), slots)
+        fusion.refresh_from_db()
+        self.assertEqual(fusion.placement.location_type, "fusion")
+
+    def test_full_party_normally_ordered_fusion_can_switch_in_and_back(self):
+        """A normally appended Fusion stays reachable after a party member returns."""
+        self.full_party_fusion_switches("normal")
+
+    def test_full_party_first_ordered_fusion_can_switch_out_and_back(self):
+        """Leading with the Fusion must not make it unreachable once benched."""
+        self.full_party_fusion_switches("first")
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:
         database.create_model_tables()
         import evennia
         from django.db import close_old_connections, connections
+        from evennia.commands.cmdset import CmdSet
         from evennia.commands.command import Command
         from evennia.objects.models import ObjectDB
 
@@ -645,12 +732,14 @@ if __name__ == "__main__":
         from pokemon.battle.pokemon_factory import create_battle_pokemon
         from pokemon.helpers.pokemon_helpers import create_owned_pokemon, get_max_hp
         from pokemon.models.core import EncounterPokemon, OwnedPokemon
-        from pokemon.models.storage import UserStorage
+        from pokemon.models.storage import StorageBox, UserStorage
         from pokemon.models.trainer import NPCPokemonTemplate, NPCTrainer, Trainer
         from pokemon.services.battle_rewards import CATEGORY, BattleRewards
+        from pokemon.services.placement import PlacementService
         from pokemon.services.trainer_encounters import generate_static_trainer_encounter
-        with patch.object(evennia, "Command", Command):
+        with patch.object(evennia, "Command", Command), patch.object(evennia, "CmdSet", CmdSet):
             from commands.player.cmd_battle_retry import CmdBattleRetry
+            from commands.player.cmd_battle_switch import CmdBattleSwitch
 
         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(BattleRecoveryCases))
         raise SystemExit(not result.wasSuccessful())

@@ -105,6 +105,24 @@ def test_switch_reservation_and_exact_slot(session):
     assert second not in player.active
 
 
+def test_gapped_party_switch_keeps_sibling_double_action(session):
+    """Canonical slot six maps to reserve three without overwriting A1's move."""
+    player = session.battle.participants[0]
+    for index, pokemon in enumerate(player.pokemons):
+        pokemon.model_id = f"owned:{index}"
+    models = [SimpleNamespace(unique_id=str(index)) for index in range(3)]
+    session.captainA.storage = SimpleNamespace(get_party_slots=lambda: [None, models[0], None, models[1], None, models[2]])
+    with pytest.raises(ValueError, match="Invalid Pokémon slot"):
+        choices(session).switch(3, actor="A2")
+    assert not session.state.declare
+    choices(session).move("Tackle", "B1", actor="A1")
+    first = player.pending_action
+    choices(session).switch(6, actor="A2")
+    assert player.pending_action[0] is first
+    assert player.pending_action[1].pokemon is player.pokemons[2]
+    assert session.state.declare["A2"]["switch"] == 3
+
+
 def test_fainting_preserves_surviving_slot_and_checkpoint(session):
     """A2 stays A2 when A1 faints, including when no reserve remains."""
     player = session.battle.participants[0]

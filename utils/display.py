@@ -8,45 +8,47 @@ from evennia.utils.evtable import EvTable
 from pokemon.dex import MOVEDEX, POKEDEX
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import (
-        DISPLAY_STAT_MAP,
-        STAT_KEY_MAP,
-        exp_for_level,
-        get_trainer_xp,
-        level_for_exp,
-        next_trainer_level_xp,
-        trainer_level_for_xp,
+	DISPLAY_STAT_MAP,
+	STAT_KEY_MAP,
+	exp_for_level,
+	get_trainer_xp,
+	level_for_exp,
+	next_trainer_level_xp,
+	trainer_level_for_xp,
 )
 from pokemon.utils.pokemon_like import PokemonLike
 from utils.ansi import ansi
 from utils.ansi_widgets import (
-        THEME as WIDGET_THEME,
-        apply_screen_reader,
-        bar,
-        chip,
-        get_theme,
-        header_box,
-        infer_hp_phrase,
-        infer_xp_phrase,
-        join_items,
-        kv_row,
-        money_line,
-        section_divider,
-        stat_summary_row,
-        status_code,
-        themed_line,
-        type_chip,
+	THEME as WIDGET_THEME,
 )
-from utils.inventory_view import (
-        gather_inventory_pairs,
-        format_inventory_by_category,
-        format_inventory_table,
+from utils.ansi_widgets import (
+	apply_screen_reader,
+	bar,
+	chip,
+	get_theme,
+	header_box,
+	infer_hp_phrase,
+	infer_xp_phrase,
+	join_items,
+	kv_row,
+	money_line,
+	section_divider,
+	stat_summary_row,
+	status_code,
+	themed_line,
+	type_chip,
 )
 from utils.display_helpers import (
-        format_move_details,
-        get_egg_description,
-        get_status_effects,
+	format_move_details,
+	get_egg_description,
+	get_status_effects,
 )
 from utils.faction_utils import get_faction_and_rank
+from utils.inventory_view import (
+	format_inventory_by_category,
+	format_inventory_table,
+	gather_inventory_pairs,
+)
 from utils.xp_utils import get_display_xp, get_next_level_xp
 
 __all__ = [
@@ -615,13 +617,13 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	Parameters
 	----------
 	caller : object
-	    The calling object (unused but kept for API compatibility).
+		The calling object (unused but kept for API compatibility).
 	pokemon : PokemonLike
-	    The Pokémon to display.
+		The Pokémon to display.
 	slot : int or None, optional
-	    The party slot for labeling.
+		The party slot for labeling.
 	mode : str, optional
-	    One of ``"full"``, ``"brief"`` or ``"moves"``.
+		One of ``"full"``, ``"brief"`` or ``"moves"``.
 	"""
 	name = getattr(pokemon, "name", "Unknown")
 	species = getattr(pokemon, "species", name)
@@ -650,7 +652,11 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	held = getattr(pokemon, "held_item", None) or "Nothing"
 
 	xp_to = max(0, (next_xp or 0) - (xp or 0))
-	xp_pct = 0 if not next_xp else int(min(100, max(0, (xp / next_xp) * 100)))
+	growth = getattr(pokemon, "growth_rate", "medium_fast")
+	xp_floor = exp_for_level(level, growth)
+	xp_span = (next_xp or 0) - xp_floor
+	xp_pct = int(min(100, max(0, (xp - xp_floor) / xp_span * 100))) if xp_span > 0 else 0
+	xp_progress = "MAX LEVEL" if level >= 100 else f"{xp_pct}% to next, {xp_to} xp"
 
 	top = EvTable(border="none")
 	top.add_row(
@@ -661,7 +667,7 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	top.add_row(
 		f"{THEME['muted']}Level|n: {THEME['value']}{level}|n    "
 		f"{THEME['muted']}XP|n: {THEME['value']}{xp}|n/{next_xp} "
-		f"{THEME['muted']}({xp_pct}% to next, {xp_to} xp)|n"
+		f"{THEME['muted']}({xp_progress})|n"
 	)
 	lines.append(str(top))
 

@@ -15,7 +15,7 @@ def load_cmd_module(monkeypatch):
     monkeypatch.setitem(sys.modules, "pokemon.helpers", types.ModuleType("pokemon.helpers"))
 
     fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
-    fake_party_helpers.get_active_party = lambda caller: []
+    fake_party_helpers.get_party_slots = lambda caller: [None] * 6
     monkeypatch.setitem(sys.modules, "pokemon.helpers.party_helpers", fake_party_helpers)
 
     fake_pokemon_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")

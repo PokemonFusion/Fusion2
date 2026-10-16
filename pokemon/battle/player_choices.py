@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pokemon.helpers.party_helpers import get_battle_switch_choices, resolve_battle_switch_choice
+
 from ._shared import _normalize_key
 from .active_slots import slot_for
 from .engine import Action, ActionType
@@ -93,17 +95,18 @@ class PlayerChoices:
         self._store(position, pokemon, action, declaration,
                     lambda pos: pos.declareAttack(target, key), f"{position} ({pokemon.name}) prepares {move.name} → {affected}.")
 
+    def switch_choices(self):
+        """Expose stable party slots and the reserved Fusion choice to prompts."""
+        return get_battle_switch_choices(self.caller, self.participant.pokemons)
+
     def switch(self, party_slot, *, actor=None):
         """Reserve one conscious bench member for the specified active slot."""
         position, pokemon = self.actor(actor)
         self._check(position, pokemon)
         try:
-            index = int(party_slot) - 1
-            if index < 0:
-                raise ValueError
-            incoming = self.participant.pokemons[index]
-        except (ValueError, TypeError, IndexError):
-            raise ValueError("Choose a valid party slot to switch in.") from None
+            index, incoming = resolve_battle_switch_choice(self.caller, self.switch_choices(), party_slot)
+        except (ValueError, TypeError, KeyError):
+            raise ValueError("Invalid Pokémon slot. Use +party or +switch to see available slots.") from None
         pending = self.participant.pending_action
         pending = pending if isinstance(pending, list) else [pending] if pending else []
         reserved = [action.pokemon for action in pending if action.action_type is ActionType.SWITCH]
@@ -111,7 +114,7 @@ class PlayerChoices:
                        if action.pokemon is incoming), None)
         if action is None:
             raise ValueError(f"{position} cannot switch to that Pokémon (active, fainted, reserved or trapped).")
-        self._store(position, pokemon, action, {"switch": index + 1}, lambda pos: pos.declareSwitch(index + 1),
+        self._store(position, pokemon, action, {"switch": index}, lambda pos: pos.declareSwitch(index),
                     f"{position} ({pokemon.name}) prepares to switch to {incoming.name}.")
 
     def item(self, item_name, target=None, *, actor=None):

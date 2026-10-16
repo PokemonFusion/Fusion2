@@ -200,6 +200,34 @@ class PlayerDoublesCases(unittest.TestCase):
         self.assertFalse(session.state.declare)
         self.assertIn("earlier turn", self.players[0].messages[-1])
 
+    def test_gapped_party_switch_prompt_preserves_sibling_choice_and_rebuild(self):
+        """Doubles commands display canonical reserves and persist internal indices."""
+        from evennia.utils import evmenu
+
+        own = self.players[0].storage.get_party()
+        placement = PlacementService(self.players[0].storage)
+        placement.to_party(own[1], 4)
+        placement.to_party(own[0], 2)
+        placement.to_party(own[2], 6)
+        session = self.launch()
+        self.command("attack", "A1 Tackle B1")
+        saved = dict(session.state.declare["A1"])
+        callbacks, prompts = [], []
+        with patch.object(evmenu, "get_input", side_effect=lambda caller, prompt, callback: (prompts.append(prompt), callbacks.append(callback))):
+            self.command("switch", "A2")
+        self.assertIn("6. Pikachu", prompts[0])
+        self.assertNotIn("3. Pikachu", prompts[0])
+        callbacks[0](self.players[0], "", "6")
+        self.assertEqual(session.state.declare["A1"], saved)
+        self.assertEqual(session.state.declare["A2"]["switch"], 3)
+        restored = self.rebuild()
+        self.assertEqual(restored.state.declare["A1"], saved)
+        self.assertEqual(restored.state.declare["A2"]["switch"], 3)
+        self.command("attack", "B1 Tackle A1", self.players[1])
+        self.command("attack", "B2 Tackle A1", self.players[1])
+        self.assertEqual(active_at(restored.battle.participants[0], 1).model_id, f"owned:{own[2].pk}")
+        self.assertEqual(self.players[0].storage.get_party_slots(), [None, own[0], None, own[1], None, own[2]])
+
     def test_readiness_rechecked_without_consuming_request(self):
         """A guest who faints after joining cannot consume the ready room request."""
         self.command("create", "double")
@@ -234,6 +262,7 @@ if __name__ == "__main__":
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import UserStorage
         from pokemon.models.trainer import Trainer
+        from pokemon.services.placement import PlacementService
 
         COMMANDS = {"attack": (cmd_battle_attack, cmd_battle_attack.CmdBattleAttack),
                     "switch": (cmd_battle_switch, cmd_battle_switch.CmdBattleSwitch),

@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 
 from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
@@ -10,6 +12,11 @@ def _setup_battle():
 	room = DummyRoom()
 	p1 = DummyPlayer(1, room)
 	p2 = DummyPlayer(2, room)
+	# Queue tests use owned-party selectors, so both model and battle copies
+	# need the stable identities supplied by production storage.
+	for player in (p1, p2):
+		for pokemon in player.storage.party:
+			pokemon.unique_id = str(uuid4())
 	inst = BattleSession(p1, p2)
 	inst.start_pvp()
 	return inst, p1, p2

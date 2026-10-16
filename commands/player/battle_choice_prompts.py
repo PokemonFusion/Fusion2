@@ -91,7 +91,7 @@ def switch_prompt(inst, caller, selection, actor=None):
         submit(selection)
         return
     reserves = LegalActions(inst.battle, choices.participant, pokemon).switches()
-    lines = [f"{index}. {mon.name}" for index, mon in enumerate(choices.participant.pokemons, 1)
+    lines = [f"{index}. {mon.name}" for index, (_, mon) in choices.switch_choices().items()
              if any(action.pokemon is mon for action in reserves)]
     if not lines:
         caller.msg(f"{position} has no legal reserve to switch in.")

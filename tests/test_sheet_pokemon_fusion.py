@@ -49,7 +49,7 @@ def test_sheet_pokemon_fusion_slot_displays_level_and_hp(stats, hp, expected):
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
         sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
         fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
-        fake_party_helpers.get_active_party = lambda caller: []
+        fake_party_helpers.get_party_slots = lambda caller: [None] * 6
         sys.modules["pokemon.helpers.party_helpers"] = fake_party_helpers
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
         store = {}
@@ -184,7 +184,7 @@ def test_sheet_pokemon_fusion_slot_falls_back_to_fused_stats():
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
         sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
         fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
-        fake_party_helpers.get_active_party = lambda caller: []
+        fake_party_helpers.get_party_slots = lambda caller: [None] * 6
         sys.modules["pokemon.helpers.party_helpers"] = fake_party_helpers
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
 
@@ -335,7 +335,7 @@ def test_sheet_pokemon_fusion_slot_computes_stats_without_cache():
         sys.modules["pokemon.helpers"] = types.ModuleType("pokemon.helpers")
         sys.modules["pokemon.helpers"].__path__ = [os.path.join(ROOT, "pokemon", "helpers")]
         fake_party_helpers = types.ModuleType("pokemon.helpers.party_helpers")
-        fake_party_helpers.get_active_party = lambda caller: []
+        fake_party_helpers.get_party_slots = lambda caller: [None] * 6
         sys.modules["pokemon.helpers.party_helpers"] = fake_party_helpers
         fake_helpers = types.ModuleType("pokemon.helpers.pokemon_helpers")
 

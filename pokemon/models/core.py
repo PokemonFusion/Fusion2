@@ -356,6 +356,19 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		except (ImportError, AttributeError):
 			return self.current_hp
 
+	def get_max_pp(self, move_name: str) -> int:
+		"""Return a move's PP capacity, including this Pokemon's stored boost."""
+		from pokemon.dex import MOVEDEX
+		from pokemon.names import find_named, resolve_dex_entry
+
+		move = find_named(self.learned_moves.all(), move_name)
+		if move is None:
+			return 0
+		entry = resolve_dex_entry(MOVEDEX, move.name)
+		base_pp = entry.get("pp", 0) if isinstance(entry, dict) else getattr(entry, "pp", 0)
+		boost = self.pp_boosts.filter(move=move).first()
+		return int(base_pp or 0) + int(getattr(boost, "bonus_pp", 0) or 0)
+
 	def apply_pp_up(self, move_name: str) -> bool:
 		"""Apply a PP Up to the given move and return success."""
 		return self._apply_pp_boost(move_name, 1)
