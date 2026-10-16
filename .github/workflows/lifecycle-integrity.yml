@@ -11,6 +11,7 @@ on:
       - 'commands/cmdsets/pokemon_core.py'
       - 'commands/cmdsets/battle.py'
       - 'commands/player/cmd_challenge.py'
+      - 'commands/player/cmd_battle_retry.py'
       - 'server/conf/at_server_startstop.py'
       - 'utils/server_logging.py'
       - 'commands/player/cmd_nickname.py'
@@ -69,6 +70,8 @@ jobs:
         run: python tests/integration/recovery_cases.py
       - name: Battle EXP, HP, PP and post-win healing on PostgreSQL
         run: python tests/integration/progression_cases.py
+      - name: Battle reward retries, atomic turn checkpoints and lifecycle recovery
+        run: python tests/integration/battle_recovery_cases.py
       - name: Move and species name variants on PostgreSQL
         run: python tests/integration/name_resolution_cases.py
       - name: Battle item targets and persistent status on PostgreSQL

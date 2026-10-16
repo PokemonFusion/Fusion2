@@ -89,6 +89,7 @@ class TurnManager:
 
 		if getattr(self, "storage", None):
 			try:
+				self.logic.sync_runtime_state()
 				self.storage.set("data", self.logic.data.to_dict())
 				self.storage.set(
 					"state",
@@ -218,7 +219,8 @@ class TurnManager:
 		self._notify_turn_banner(upcoming=True)
 		battle_finished = False
 		try:
-			self.battle.run_turn()
+			execute = getattr(self, "execute_persistent_turn", self.battle.run_turn)
+			execute()
 		except Exception:
 			err_txt = traceback.format_exc()
 			self.turn_state["error"] = err_txt
@@ -232,6 +234,9 @@ class TurnManager:
 				exc_info=False,
 			)
 			self.notify(f"Battle error:\n{err_txt}")
+			self._set_player_control(True)
+			self.msg("The turn could not be saved. Use +battle/retry to retry the retained choices.")
+			return
 		else:
 			self._sync_active_battle_state()
 			battle = self.battle
