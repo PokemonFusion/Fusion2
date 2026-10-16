@@ -63,9 +63,12 @@ class CmdBattleAttack(Command):
         if raw.lower().startswith("/menu"):
             self.switch_menu = True
             raw = raw[len("/menu") :].strip()
-        parts = raw.split()
-        self.move_name = parts[0] if parts else ""
-        self.target_token = parts[1] if len(parts) > 1 else ""
+        parts = raw.rsplit(None, 1)
+        self.target_token = ""
+        if len(parts) == 2 and re.fullmatch(r"[AB]\d+", parts[1], re.IGNORECASE):
+            self.move_name, self.target_token = parts
+        else:
+            self.move_name = raw
 
     def func(self):
         if not getattr(self.caller.db, "battle_control", False):
@@ -164,7 +167,7 @@ class CmdBattleAttack(Command):
             else:
                 for idx, mv in enumerate(slots):
                     name = mv if isinstance(mv, str) else getattr(mv, "name", "")
-                    if name.lower() == selected.lower():
+                    if _normalize_key(name) == _normalize_key(selected):
                         selected_move = mv
                         sel_index = idx
                         break

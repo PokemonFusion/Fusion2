@@ -5,6 +5,14 @@ on:
       - 'pokemon/**'
       - 'utils/fusion.py'
       - 'utils/pokemon_utils.py'
+      - 'utils/display.py'
+      - 'utils/inventory_view.py'
+      - 'utils/battle_display.py'
+      - 'commands/cmdsets/pokemon_core.py'
+      - 'commands/player/cmd_nickname.py'
+      - 'menus/capture_nickname.py'
+      - 'typeclasses/characters.py'
+      - 'typeclasses/exits.py'
       - 'commands/player/cmd_account.py'
       - 'commands/player/cmd_gym.py'
       - 'world/hunt_system.py'
@@ -46,7 +54,19 @@ jobs:
         run: python tests/integration/placement_cases.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims
         run: python tests/integration/recovery_cases.py
-      - name: Fresh install and both upgrade histories on PostgreSQL
+      - name: Battle EXP, HP, PP and post-win healing on PostgreSQL
+        run: python tests/integration/progression_cases.py
+      - name: Move and species name variants on PostgreSQL
+        run: python tests/integration/name_resolution_cases.py
+      - name: Battle item targets and persistent status on PostgreSQL
+        run: python tests/integration/status_item_cases.py
+      - name: Capture replay debits and durable Ether restoration on PostgreSQL
+        run: python tests/integration/capture_ether_cases.py
+      - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL
+        run: python tests/integration/capture_pp_item_cases.py
+      - name: Capture nickname input and Fusion character sheets on PostgreSQL
+        run: python tests/integration/ui_cases.py
+      - name: Fresh install and three upgrade histories on PostgreSQL
         run: python tests/integration/recovery_migrations.py
       - name: Merged migration graph
         run: python tests/integration/migration_graph.py

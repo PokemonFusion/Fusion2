@@ -17,6 +17,7 @@ from isolated_postgres import IsolatedPostgres
 BASELINES = {
     "adventure": "0040_adventure_participation",
     "main": "0041_placement_integrity_triggers",
+    "status": "0043_gym_victory",
 }
 
 
@@ -49,6 +50,7 @@ class RecoveryMigrationRehearsal:
         required = {("pokemon", name) for name in (
             "0040_adventure_participation", "0041_placement_integrity_triggers",
             "0042_merge_adventure_placement", "0043_gym_victory",
+            "0044_owned_pokemon_status",
         )}
         assert required <= set(executor.loader.applied_migrations), "Merged migration history is incomplete."
         changes = MigrationAutodetector(
@@ -107,10 +109,13 @@ class RecoveryMigrationRehearsal:
 
         from pokemon.adventures.progress import claim_completed_rewards
         from pokemon.models.adventures import AdventureParticipation
+        from pokemon.models.core import OwnedPokemon
         from pokemon.models.trainer import Trainer
         from pokemon.services.placement_audit import audit_placements_v1
 
         trainer = Trainer.objects.get(pk=seed["trainer"])
+        pokemon = OwnedPokemon.objects.get(pk=seed["pokemon"])
+        assert pokemon.status == "" and pokemon.sleep_turns is None, "Upgrade introduced a status condition."
         assert trainer.get_item_quantity("Potion") == 2, "Upgrade changed existing inventory."
         assert trainer.badges.filter(pk=seed["badge"]).exists(), "Upgrade lost an earned badge."
         assert not list(audit_placements_v1(apps)), "Upgrade changed valid Pokemon ownership or placement."
@@ -127,10 +132,10 @@ class RecoveryMigrationRehearsal:
 def main():
     """Run each migration scenario in an independent Django process."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=("fresh", "adventure", "main"))
+    parser.add_argument("--scenario", choices=("fresh", *BASELINES))
     args = parser.parse_args()
     if args.scenario is None:
-        for scenario in ("fresh", "adventure", "main"):
+        for scenario in ("fresh", *BASELINES):
             subprocess.run([sys.executable, str(Path(__file__).resolve()), "--scenario", scenario], check=True)
         return
     with IsolatedPostgres():

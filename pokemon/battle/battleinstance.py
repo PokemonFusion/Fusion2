@@ -10,10 +10,11 @@ from uuid import uuid4
 
 from pokemon.services.encounters import delete_encounter_by_ref
 from pokemon.services.pokemon_refs import parse_pokemon_ref
+from pokemon.services.status_persistence import PersistentStatus
 from pokemon.services.trainer_encounters import generate_random_trainer_encounter
 from utils.safe_import import safe_import
 
-from .actions import ActionType
+from .actions import Action, ActionType
 from .battledata import BattleData, Move, Pokemon, Team
 from .engine import Battle, BattleParticipant, BattleType
 from .messaging import MessagingMixin
@@ -917,6 +918,15 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                         pos.declareSwitch(d["switch"])
                 elif "item" in d:
                     pos.declareItem(d["item"])
+                    # The engine consumes pending actions, not declarations.
+                    # Rebuild the item action as well as its saved UI state.
+                    actor = obj.battle.participant_for(pos.pokemon)
+                    if actor:
+                        is_ball = _battle_norm_key(d["item"]).lower().endswith("ball")
+                        target = obj.battle.opponent_of(actor) if is_ball else actor
+                        actor.pending_action = Action(
+                            actor, ActionType.ITEM, target, item=d["item"], priority=6,
+                        )
                 elif "run" in d:
                     pos.declareRun()
         except Exception:
@@ -1634,12 +1644,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             if not storage:
                 continue
 
-            party: List[Any] = []
-            if hasattr(storage, "get_party"):
-                try:
-                    party = list(storage.get_party())
-                except Exception:
-                    party = []
+            party: List[Any] = get_battle_party_with_fusion(player)
             if not party and hasattr(storage, "active_pokemon"):
                 manager = storage.active_pokemon
                 try:
@@ -1683,22 +1688,30 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if hasattr(mon, "current_hp"):
                     mon.current_hp = hp_val
 
-                status_val = getattr(poke, "status", "")
-                if isinstance(status_val, int):
-                    status_val = "" if status_val <= 0 else str(status_val)
-                if hasattr(mon, "status"):
-                    mon.status = status_val or ""
+                PersistentStatus.from_pokemon(poke, battle=True).apply_to_model(mon)
 
                 if hasattr(mon, "save"):
+                    update_fields = ["current_hp"]
+                    meta = getattr(mon, "_meta", None)
+                    for field_name in ("status", "sleep_turns"):
+                        if hasattr(mon, field_name) and (
+                            meta is None or any(field.name == field_name for field in meta.concrete_fields)
+                        ):
+                            update_fields.append(field_name)
                     try:
-                        mon.save(update_fields=["current_hp", "status"])
-                    except Exception:
+                        mon.save(update_fields=update_fields)
+                    except TypeError:
+                        # Lightweight battle adapters may only accept save().
                         try:
                             mon.save()
-                        except Exception as err:
+                        except Exception:
                             log_warn("Failed to persist synced Pokemon state", exc_info=True)
                             if "PYTEST_CURRENT_TEST" in __import__("os").environ:
                                 raise
+                    except Exception:
+                        log_warn("Failed to persist synced Pokemon state", exc_info=True)
+                        if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                            raise
 
     def end(self) -> None:
         """End the battle and clean up."""
@@ -1772,6 +1785,15 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         log_info(f"Cleared battle data for {self.battle_id}")
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")
+        for trainer in list(self.teamA) + list(self.teamB):
+            if trainer and getattr(trainer, "db", None) is not None:
+                try:
+                    from menus.capture_nickname import start_capture_nickname
+
+                    start_capture_nickname(trainer)
+                except Exception:
+                    log_warn("Unable to open capture nickname prompt", exc_info=True)
+                    self._msg_to(trainer, "Use +nickname to choose a name for your captured Pokémon.")
 
     # ---- Persistence helpers ------------------------------------------------
 

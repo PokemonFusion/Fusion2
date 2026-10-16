@@ -959,24 +959,24 @@ class TurnProcessor:
 
 	def execute_item(self, action: Action) -> None:
 		"""Handle item usage during battle."""
-		from .engine import BattleType, _normalize_key
+		from pokemon.names import normalize_name
 
-		item_name = action.item.lower()
-		item_key = _normalize_key(item_name).lower()
+		from .engine import BattleType
+
+		item_key = normalize_name(action.item)
 		target = action.target
 		if item_key.endswith("ball"):
 			if target not in self.participants or target.has_lost or not target.active:
 				opponents = self.opponents_of(action.actor)
 				target = opponents[0] if opponents else None
 		else:
-			if target not in self.participants or target.has_lost or not target.active:
-				target = action.actor if getattr(action.actor, "active", None) else None
+			# Medicine belongs to the acting trainer, even if an old saved
+			# declaration incorrectly points at the opposing participant.
+			target = action.actor if getattr(action.actor, "active", None) else None
 		if not target or not target.active:
 			return
 
 		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
-			if not self._consume_action_item(action, context="capture_flow", pokemon=None):
-				return
 			target_poke = target.active[0]
 			try:
 				from pokemon.dex.functions import pokedex_funcs
@@ -1030,16 +1030,29 @@ class TurnProcessor:
 				if caught_count is not None:
 					critical_rate = min(0.5, max(0, caught_count) / 600)
 
-			outcome = capture_mod.attempt_capture(
-				max_hp,
-				target_poke.hp,
-				catch_rate,
-				ball_modifier=ball_mod,
-				status=status,
-				rng=rng,
-				critical_chance=critical_rate,
-				return_details=True,
-			)
+			try:
+				from pokemon.services.capture import WildCaptureAttempt
+
+				capture_owner = player if getattr(player, "storage", None) is not None else action.actor
+				battle_context = getattr(getattr(capture_owner, "ndb", None), "battle_instance", None)
+				attempt = WildCaptureAttempt(
+					target_poke=target_poke, player=capture_owner, trainer=trainer,
+					battle_context=battle_context, ball_name=action.item,
+				).resolve(
+					consume_ball=lambda: self._consume_action_item(action, context="capture_flow", pokemon=target_poke),
+					roll=lambda: capture_mod.attempt_capture(
+						max_hp, target_poke.hp, catch_rate, ball_modifier=ball_mod,
+						status=status, rng=rng, critical_chance=critical_rate, return_details=True,
+					),
+				)
+			except Exception as err:
+				self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
+				if hasattr(self, "log_action"):
+					self.log_action("The capture could not be finalized.")
+				return
+			outcome, placement = attempt.outcome, attempt.placement
+			if outcome is None and placement is None:
+				return
 
 			nickname_cb = getattr(self, "_pokemon_nickname", None)
 			pokemon_name = None
@@ -1058,27 +1071,8 @@ class TurnProcessor:
 				for _ in range(getattr(outcome, "shakes", 0)):
 					self.log_action("The ball shook!")
 
-			caught = getattr(outcome, "caught", bool(outcome))
+			caught = placement is not None
 			if caught:
-				try:
-					from pokemon.services.capture import finalize_wild_capture
-
-					capture_owner = player if getattr(player, "storage", None) is not None else action.actor
-					battle_context = getattr(capture_owner, "ndb", None)
-					battle_context = getattr(battle_context, "battle_instance", None)
-					placement = finalize_wild_capture(
-						target_poke=target_poke,
-						player=capture_owner,
-						trainer=trainer,
-						battle_context=battle_context,
-						ball_name=action.item,
-					)
-				except Exception as err:
-					self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
-					if hasattr(self, "log_action"):
-						self.log_action("The capture could not be finalized.")
-					return
-
 				if hasattr(self, "log_action"):
 					self.log_action(f"Gotcha! {pokemon_name} was caught!")
 				target.active.remove(target_poke)
@@ -1109,7 +1103,10 @@ class TurnProcessor:
 
 				if placement.should_prompt_nickname and player is not None and hasattr(player, "ndb"):
 					pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
-					pending.append({"species": pokemon_name, "to_storage": placement.placement == "storage"})
+					pending.append({
+						"species": pokemon_name, "to_storage": placement.placement == "storage",
+						"pokemon_id": placement.owned_pokemon_id,
+					})
 					try:
 						player.ndb.pending_caught_pokemon = pending
 					except Exception as err:
@@ -1118,8 +1115,6 @@ class TurnProcessor:
 				if hasattr(self, "log_action"):
 					if placement.placement == "storage":
 						self.log_action(f"{pokemon_name} was sent to your storage!")
-					elif placement.should_prompt_nickname:
-						self.log_action(f"Would you like to give {pokemon_name} a nickname?")
 				target.has_lost = True
 				self.check_victory()
 			else:
@@ -1146,6 +1141,7 @@ class TurnProcessor:
 			"superpotion": 60,
 			"hyperpotion": 120,
 			"maxpotion": None,
+			"fullrestore": None,
 		}
 		status_items = {
 			"antidote": {"psn", "tox"},
@@ -1166,11 +1162,11 @@ class TurnProcessor:
 				target_poke.hp = max_hp if amount is None else min(max_hp, getattr(target_poke, "hp", 0) + amount)
 				used = True
 
-		if item_key == "fullrestore" and getattr(target_poke, "status", 0):
-			if not consume_once():
-				return
-			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
-		elif item_key in status_items and getattr(target_poke, "status", 0) in status_items[item_key]:
+		if (
+			getattr(target_poke, "hp", 0) > 0
+			and item_key in status_items
+			and getattr(target_poke, "status", 0) in status_items[item_key]
+		):
 			if not consume_once():
 				return
 			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
@@ -1191,15 +1187,14 @@ class TurnProcessor:
 			used = True
 
 		if item_key == "ether":
-			for move in getattr(target_poke, "moves", []) or []:
-				pp = getattr(move, "pp", None)
-				if pp is None:
-					continue
-				if not consume_once():
-					return
-				move.pp = pp + 10
-				used = True
-				break
+			from pokemon.services.battle_items import BattlePPRestoration
+
+			trainer = getattr(action.actor, "trainer", None) or getattr(getattr(action.actor, "player", None), "trainer", None)
+			try:
+				used = BattlePPRestoration(target_poke, trainer).restore(consume_once) or used
+			except Exception as err:
+				self._record_failure(context="trainer_item", exception=err, pokemon=target_poke)
+				return
 
 		if not used:
 			if hasattr(self, "log_action"):

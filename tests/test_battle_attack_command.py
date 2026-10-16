@@ -515,3 +515,26 @@ def test_battleattack_displays_dex_move_name():
 		cmd_mod.MOVEDEX.clear()
 		cmd_mod.MOVEDEX.update(original_movedex)
 		restore_modules(orig_evennia, orig_battle, orig_bi, orig_engine, orig_shared, orig_ui, orig_ui_move)
+
+
+def test_battleattack_accepts_spaced_move_name_and_position():
+	"""A display name is one move argument, with only the position split off."""
+	origs = setup_modules()
+	cmd_mod = load_cmd_module()
+	try:
+		for text, target in [("Water Gun", ""), ("Water Gun B1", "B1"), ("WATER  GUN b1", "b1")]:
+			poke = types.SimpleNamespace(activemoveslot_set=FakeQS([FakeSlot("Watergun", 1)]))
+			player = FakeParticipant("Player", poke)
+			enemy = FakeParticipant("Enemy", poke)
+			caller = DummyCaller()
+			caller.ndb.battle_instance = FakeInstance(FakeBattle([player, enemy]))
+			cmd = cmd_mod.CmdBattleAttack()
+			cmd.caller = caller
+			cmd.args = text
+			cmd.parse()
+			assert cmd.target_token == target
+			cmd.func()
+			assert player.pending_action is not None
+			assert player.pending_action.target is enemy
+	finally:
+		restore_modules(*origs)

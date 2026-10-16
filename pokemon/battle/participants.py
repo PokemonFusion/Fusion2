@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional
 
-from .contracts import BattleContextProtocol
-
+from pokemon.names import normalize_name
 from utils.safe_import import safe_import
+
+from .contracts import BattleContextProtocol
 
 if TYPE_CHECKING:  # pragma: no cover - circular imports for typing only
         from pokemon.battle.actions import Action
@@ -174,12 +175,12 @@ class BattleParticipant:
                         yield inventory
 
         def _match_inventory_key(self, inventory, name: str):
-                """Return the matching key in ``inventory`` for ``name`` ignoring case."""
+                """Match display/compact spellings in transient battle inventories."""
 
                 if isinstance(inventory, dict):
-                        target = name.lower()
+                        target = normalize_name(name)
                         for key in list(inventory.keys()):
-                                if str(key).lower() == target:
+                                if normalize_name(key) == target:
                                         return key
                 return name
 

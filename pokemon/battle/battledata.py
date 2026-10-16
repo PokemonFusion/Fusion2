@@ -17,6 +17,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, List, Optional
 
+from pokemon.names import normalize_name
 from pokemon.services.pokemon_refs import parse_pokemon_ref
 from utils.safe_import import safe_import
 
@@ -499,7 +500,7 @@ class Pokemon:
         if the lookup fails for any reason.
         """
 
-        species_name = self.name
+        species_name = self.species
         pdex: Dict[str, Any] = {}
         try:  # pragma: no cover - data lookup is optional in tests
             dex_mod = safe_import("pokemon.dex")
@@ -542,11 +543,9 @@ class Pokemon:
                             sys.modules.pop(mod_name, None)
 
         try:  # pragma: no cover - POKEDEX access is optional
-            entry = (
-                pdex.get(species_name)
-                or pdex.get(species_name.lower())
-                or pdex.get(species_name.capitalize())
-            )
+            from pokemon.names import resolve_dex_entry
+
+            entry = resolve_dex_entry(pdex, species_name)
             if entry:
                 types = getattr(entry, "types", None)
                 if types is None and isinstance(entry, dict):
@@ -605,19 +604,9 @@ class Pokemon:
         if not pdex:
             return None
 
-        normalized = "".join(ch for ch in str(lookup_name).lower() if ch.isalnum())
-        candidates = [
-            lookup_name,
-            str(lookup_name).lower(),
-            str(lookup_name).title(),
-            normalized,
-            normalized.capitalize(),
-        ]
-        for candidate in candidates:
-            entry = pdex.get(candidate)
-            if entry:
-                return entry
-        return None
+        from pokemon.names import resolve_dex_entry
+
+        return resolve_dex_entry(pdex, lookup_name)
 
     def getName(self) -> str:
         return self.name
@@ -959,6 +948,8 @@ class Pokemon:
         info.update(
             {
                 "name": self.name,
+                "species": str(self.species),
+                "base_species": str(self.base_species),
                 "level": self.level,
                 "hp": self.hp,
                 "max_hp": self.max_hp,
@@ -977,6 +968,7 @@ class Pokemon:
         """Recreate a ``Pokemon`` from its minimal serialised form."""
 
         name = data.get("name", "Pikachu")
+        species = data.get("species") or name
         level = data.get("level", 1)
         moves = [Move.from_dict(m) for m in data.get("moves", [])]
         max_hp = data.get("max_hp")
@@ -1014,6 +1006,7 @@ class Pokemon:
                 try:
                     poke = OwnedPokemon.objects.get(unique_id=ref_identifier)
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
+                    species = data.get("species") or getattr(poke, "species", name)
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
                     item = getattr(poke, "item", getattr(poke, "held_item", item))
@@ -1028,8 +1021,8 @@ class Pokemon:
                             max_hp = get_max_hp(poke)
                         except Exception:
                             max_hp = getattr(poke, "current_hp", None)
+                    slots = getattr(poke, "activemoveslot_set", None)
                     if not moves:
-                        slots = getattr(poke, "activemoveslot_set", None)
                         if slots is not None:
                             try:
                                 iterable = slots.all().order_by("slot")
@@ -1052,6 +1045,7 @@ class Pokemon:
                 try:
                     poke = EncounterPokemon.objects.get(encounter_id=ref_identifier)
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
+                    species = data.get("species") or getattr(poke, "species", name)
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
                     item = getattr(poke, "held_item", item)
@@ -1064,11 +1058,20 @@ class Pokemon:
                     if not moves:
                         move_names = list(getattr(poke, "move_names", []) or [])[:4]
                         moves = [Move(name=m) for m in move_names]
+                    saved_pp = dict(zip(
+                        (normalize_name(name) for name in getattr(poke, "move_names", [])),
+                        getattr(poke, "move_pp", []),
+                    ))
+                    for move in moves:
+                        if getattr(move, "pp", None) is None:
+                            pp = saved_pp.get(normalize_name(move.name))
+                            if pp is not None:
+                                move.pp = pp
                 except Exception:
                     pass
 
         obj = cls(
-            name=name,
+            name=species,
             level=level,
             hp=data.get("current_hp", data.get("hp", 100)),
             max_hp=max_hp,
@@ -1084,6 +1087,8 @@ class Pokemon:
             gender=gender,
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
+        obj.name = name
+        obj.base_species = data.get("base_species") or species
         if slots is not None:
             obj.activemoveslot_set = slots
         stored_moves = data.get("moves", [])

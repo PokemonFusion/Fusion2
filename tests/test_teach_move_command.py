@@ -115,6 +115,7 @@ def setup_modules():
 	orig_learn = sys.modules.get("pokemon.utils.move_learning")
 
 	pokemon_pkg = types.ModuleType("pokemon")
+	pokemon_pkg.__path__ = [os.path.join(ROOT, "pokemon")]
 	gen_mod = types.ModuleType("pokemon.data.generation")
 	gen_mod.generate_pokemon = lambda *a, **k: None
 	gen_mod.get_valid_moves = lambda species, lvl: ["tackle", "growl"]

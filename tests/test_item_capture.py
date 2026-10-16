@@ -156,6 +156,27 @@ def test_ball_name_with_space(monkeypatch):
     assert "Bulbasaur" in p1.storage
 
 
+@pytest.mark.parametrize("alias", ["Ultra Ball", "ULTRA-BALL", "Ultrá Ball", "Ultra_Ball"])
+def test_ball_alias_keeps_capture_modifier_and_consumes_compact_inventory(monkeypatch, alias):
+    """Name normalization must not silently reduce a better ball's modifier."""
+    actor = BattleParticipant("Player", [Pokemon("Pikachu")])
+    foe = BattleParticipant("Wild", [Pokemon("Bulbasaur", hp=1, max_hp=100)])
+    actor.active, foe.active = [actor.pokemons[0]], [foe.pokemons[0]]
+    actor.inventory = {"ultraball": 1}
+    received = {}
+
+    def capture(*args, **kwargs):
+        """Keep the throw unsuccessful so no persistence fixture is needed."""
+        received.update(kwargs)
+        return capture_mod.CaptureOutcome(caught=False, shakes=0, critical=False)
+
+    monkeypatch.setattr(capture_mod, "attempt_capture", capture)
+    battle = Battle(BattleType.WILD, [actor, foe])
+    battle.execute_item(Action(actor, ActionType.ITEM, foe, item=alias))
+    assert received["ball_modifier"] == BALL_MODIFIERS["ultraball"]
+    assert actor.inventory == {}
+
+
 def test_capture_logs_shakes_and_gotcha(monkeypatch):
     attacker = Pokemon("Pikachu")
     defender = Pokemon("Bulbasaur", hp=1, max_hp=100)
@@ -339,8 +360,10 @@ def test_capture_updates_pokedex_and_transfers_item(monkeypatch):
     assert trainer.items == []
     assert player.seen == ["Bulbasaur"]
     assert player.caught == ["Bulbasaur"]
-    assert player.ndb.pending_caught_pokemon[-1] == {"species": "Bulbasaur", "to_storage": False}
-    assert any("nickname" in line.lower() for line in logs)
+    assert player.ndb.pending_caught_pokemon[-1] == {
+        "species": "Bulbasaur", "to_storage": False, "pokemon_id": "caught-5",
+    }
+    assert not any("Would you like" in line for line in logs)
     assert "Nest Ball" not in p1.inventory
 
 
@@ -382,7 +405,9 @@ def test_full_party_routes_to_storage(monkeypatch):
 
     battle.run_turn()
 
-    assert player.ndb.pending_caught_pokemon[-1] == {"species": "Bulbasaur", "to_storage": True}
+    assert player.ndb.pending_caught_pokemon[-1] == {
+        "species": "Bulbasaur", "to_storage": True, "pokemon_id": "caught-6",
+    }
     assert any("storage" in line.lower() for line in logs)
     assert "Premier Ball" not in p1.inventory
 

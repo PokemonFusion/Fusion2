@@ -39,6 +39,7 @@ IMPORTS = {
         "CmdTeachMove",
     ],
     "commands.player.cmd_movesets": ["CmdMovesets"],
+    "commands.player.cmd_nickname": ["CmdCaptureNickname"],
     "commands.player.cmd_party": [
         "CmdChargenInfo",
         "CmdDepositPokemon",
@@ -120,6 +121,7 @@ def test_pokemon_core_cmdset_hides_alpha_commands_when_gate_disabled():
     keys = [command.key for command in cmdset.added]
     assert "+alphapokemon" not in keys
     assert "+alphalearn" not in keys
+    assert any(isinstance(command, mod.CmdCaptureNickname) for command in cmdset.added)
 
 
 def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
@@ -131,3 +133,4 @@ def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
     keys = [command.key for command in cmdset.added]
     assert "+alphapokemon" in keys
     assert "+alphalearn" in keys
+    assert any(isinstance(command, mod.CmdCaptureNickname) for command in cmdset.added)

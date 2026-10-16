@@ -1,32 +1,22 @@
+"""Generate battle rewards by matching dex and CSV species identities."""
+
 import csv
 import json
 import sys
-import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT))
 
 from pokemon.dex.pokedex import pokedex
-
-# helper to convert species names to identifier style
-
-
-def to_identifier(name: str) -> str:
-	name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
-	name = name.lower().replace(" ", "-")
-	for ch in ("'", ".", ":", "_", "’"):
-		name = name.replace(ch, "")
-	name = name.replace("♀", "-f").replace("♂", "-m")
-	return name
-
+from pokemon.names import normalize_name
 
 # load base experience values
 base_exp = {}
 with open(ROOT / "pokemon" / "data" / "pokemon.csv") as f:
 	reader = csv.DictReader(f)
 	for row in reader:
-		base_exp[row["identifier"]] = int(row["base_experience"])
+		base_exp[normalize_name(row["identifier"])] = int(row["base_experience"])
 
 # map stat ids to names
 stat_names = {}
@@ -53,7 +43,7 @@ ev_yields = {}
 with open(ROOT / "pokemon" / "data" / "pokemon.csv") as f:
 	reader = csv.DictReader(f)
 	for row in reader:
-		id_to_name[int(row["id"])] = row["identifier"]
+		id_to_name[int(row["id"])] = normalize_name(row["identifier"])
 
 with open(ROOT / "pokemon" / "data" / "pokemon_stats.csv") as f:
 	reader = csv.DictReader(f)
@@ -67,7 +57,7 @@ with open(ROOT / "pokemon" / "data" / "pokemon_stats.csv") as f:
 
 result = {}
 for name in pokedex:
-	ident = to_identifier(name)
+	ident = normalize_name(name)
 	exp = base_exp.get(ident)
 	evs = ev_yields.get(ident, {})
 	if exp is not None:
@@ -75,8 +65,9 @@ for name in pokedex:
 
 out_path = ROOT / "pokemon" / "dex" / "exp_ev_yields.py"
 with open(out_path, "w") as f:
-	f.write("GAIN_INFO = ")
-	json.dump(result, f, indent=4, sort_keys=True)
-	f.write("\n")
+	f.write("GAIN_INFO = {\n")
+	for name, info in sorted(result.items()):
+		f.write(f"\t{json.dumps(name)}: {json.dumps(info, sort_keys=True)},\n")
+	f.write("}\n")
 
 print(f"Wrote {len(result)} entries to {out_path}")

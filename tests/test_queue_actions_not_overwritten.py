@@ -1,4 +1,8 @@
+import pytest
+
 from tests.test_battle_rebuild import BattleSession, DummyPlayer, DummyRoom
+from tests.test_battle_restore_missing_state import DummyPlayer as PartyPlayer
+from tests.test_battle_restore_missing_state import DummyPokemonModel
 
 
 def _setup_battle():
@@ -30,6 +34,30 @@ def test_queue_item_does_not_overwrite_existing_action():
 	inst.queue_item("potion", caller=p1)
 	inst.queue_item("superpotion", caller=p1)
 	assert inst.state.declare["A1"]["item"].lower() == "potion"
+
+
+@pytest.mark.parametrize("item_name", ["Potion", "Antidote", "Poke Ball"])
+@pytest.mark.parametrize("team", ["A", "B"])
+def test_item_queue_and_restore_keep_correct_side(item_name, team):
+	"""Queued items retain safe targets through an actual session restore."""
+	room = DummyRoom()
+	p1 = PartyPlayer(1, room, [DummyPokemonModel("Squirtle")])
+	p2 = PartyPlayer(2, room, [DummyPokemonModel("Rattata")])
+	inst = BattleSession(p1, p2)
+	inst.start_pvp()
+	caller = p1 if team == "A" else p2
+	inst.queue_item(item_name, caller=caller)
+	other = "B" if team == "A" else "A"
+	expected = other if item_name == "Poke Ball" else team
+	assert inst.state.declare[f"{team}1"]["target"] == f"{expected}1"
+	# Restore must rebuild the engine action, not merely the UI declaration.
+	room = caller.location
+	room.ndb.battle_instances = {}
+	restored = BattleSession.restore(room, inst.battle_id)
+	actor = restored.battle.participants[0 if team == "A" else 1]
+	target = restored.battle.participants[0 if expected == "A" else 1]
+	assert actor.pending_action.item == item_name
+	assert actor.pending_action.target is target
 
 
 def test_queue_run_does_not_overwrite_existing_action():

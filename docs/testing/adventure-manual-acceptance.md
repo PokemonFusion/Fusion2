@@ -2,7 +2,7 @@
 
 These steps test the Adventure changes against a running game. Run every in-game command separately and inspect the response before continuing. Do not paste a whole playthrough while a battle is waiting for input.
 
-Record the exact code commit loaded by the test game before beginning. This checklist does not perform deployment, migrations, or reloads. The complete branch also requires the merged migration history through `0043_gym_victory`; see [the branch validation record](../alpha-reliability-validation.md) and [gym recovery](../gym-recovery.md).
+Record the exact code commit loaded by the test game before beginning. This checklist does not perform deployment, migrations, or reloads. The complete branch also requires the merged migration history through `0044_owned_pokemon_status`; see [the branch validation record](../alpha-reliability-validation.md) and [gym recovery](../gym-recovery.md).
 
 ## 1. Prepare the test environment
 
