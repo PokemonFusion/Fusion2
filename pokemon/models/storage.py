@@ -41,6 +41,16 @@ class UserStorage(models.Model):
 		)
 		return [placement.pokemon for placement in placements]
 
+	def get_party_slots(self):
+		"""Return six canonical party slots, retaining gaps as ``None``."""
+		party = [None] * 6
+		placements = self.placements.filter(
+			location_type=PokemonPlacement.LocationType.PARTY
+		).select_related("pokemon")
+		for placement in placements:
+			party[placement.slot - 1] = placement.pokemon
+		return party
+
 	def get_stored_pokemon(self):
 		"""Return boxed Pokemon ordered by box and position."""
 		placements = list(
