@@ -2,7 +2,7 @@
 
 from commands.admin.cmd_npcbattle import Command
 from pokemon.battle.compat import log_warn
-from pokemon.services.trainer_challenges import TrainerChallenge
+from pokemon.services.trainer_challenges import TrainerChallenge, retry_trainer_challenge_cleanup
 from pokemon.services.trainer_encounters import TrainerEncounterError
 
 
@@ -11,6 +11,7 @@ class CmdChallenge(Command):
 
     Usage:
       +challenge <NPC name>
+      +challenge/retry
 
     Only singles are available until doubles action and target selection is
     supported. You need a conscious party. The NPC must be
@@ -18,11 +19,24 @@ class CmdChallenge(Command):
     """
 
     key = "+challenge"
+    aliases = ["+challenge/retry"]
     locks = "cmd:all()"
     help_category = "Pokemon"
 
     def func(self):
         """Resolve only room contents and launch through the challenge policy."""
+        if getattr(self, "cmdstring", "").lower() == "+challenge/retry":
+            try:
+                cleaned = retry_trainer_challenge_cleanup(self.caller)
+            except Exception:
+                log_warn("Placed trainer startup cleanup retry failed", exc_info=True)
+                self.caller.msg("Challenge cleanup is still unavailable. Try +challenge/retry again shortly.")
+                return
+            self.caller.msg(
+                "Failed challenge startup cleaned up. You can challenge that trainer again."
+                if cleaned else "There is no failed challenge startup waiting for cleanup."
+            )
+            return
         name = (self.args or "").strip()
         if not name:
             self.caller.msg("Usage: +challenge <NPC name>")

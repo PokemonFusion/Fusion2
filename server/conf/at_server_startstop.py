@@ -21,7 +21,12 @@ from pathlib import Path
 
 from utils.battle_logging import setup_daily_battle_log
 from utils.error_logging import setup_daily_error_log
+from utils.server_logging import install_rotation_safe_logging
 from utils.usage_logging import setup_daily_usage_log
+
+# Evennia imports this hook module while constructing its service, before
+# server.py creates the WeeklyLogFile used by the server's file observer.
+install_rotation_safe_logging()
 
 
 def at_server_init():

@@ -29,6 +29,8 @@ def world(monkeypatch):
         def __init__(self, caller):
             captured.created = True
             self.battle_id = 22
+            self.player = caller
+            caller.ndb.battle_instance = self
 
         def start_trainer_encounter(self, value):
             captured.started = True
@@ -37,6 +39,7 @@ def world(monkeypatch):
         def end(self):
             captured.ended = True
             service.release_placed_trainer(self)
+            self.player.ndb.battle_instance = None
 
     monkeypatch.setattr(service, "BattleSession", Session)
     monkeypatch.setattr(service, "get_battle_party_with_fusion", lambda caller: team)
@@ -135,6 +138,34 @@ def test_start_failure_releases_npc_and_does_not_apply_cooldown(world, monkeypat
     assert world.captured.ended
     assert world.npc.db.battle_id is None
     assert not hasattr(world.npc.db, "trainer_challenge_next_at")
+
+
+def test_partial_constructor_failure_is_cleaned_and_can_retry(world, monkeypatch):
+    """Recover a registered session even when constructor assignment never finishes."""
+    original = service.BattleSession.__init__
+
+    def fail_after_registration(session, caller):
+        original(session, caller)
+        caller.ndb.battle_instance = session
+        caller.db.battle_lock = "22"
+        raise RuntimeError("room registration failed")
+
+    def end(session):
+        world.captured.ended = True
+        world.player.ndb.battle_instance = None
+        world.player.db.battle_lock = None
+
+    monkeypatch.setattr(service.BattleSession, "end", end)
+    with monkeypatch.context() as fault:
+        fault.setattr(service.BattleSession, "__init__", fail_after_registration)
+        with pytest.raises(RuntimeError, match="registration failed"):
+            service.TrainerChallenge(world.player, world.npc).start()
+    assert world.captured.ended
+    assert world.player.db.battle_lock is None
+    assert world.player.ndb.battle_instance is None
+    assert world.player.db.pending_trainer_challenge_cleanup is None
+    service.TrainerChallenge(world.player, world.npc).start()
+    assert world.captured.started
 
 
 def test_release_does_not_clear_another_session(world):

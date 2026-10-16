@@ -51,3 +51,18 @@ def test_inventory_uses_item_text_description_fallback():
 	assert caller.msgs
 	assert "Potion x2 - Restores 20 HP to one Pokemon." in caller.msgs[-1]
 	assert "No description available" not in caller.msgs[-1]
+
+
+def test_inventory_displays_supplemental_full_names():
+	"""Normalized saved keys render the same names accepted by evolution/hold."""
+	mod = load_cmd_module()
+	caller = DummyCaller()
+	caller.trainer.list_inventory = lambda: [
+		types.SimpleNamespace(item_name="blackaugurite", quantity=2),
+		types.SimpleNamespace(item_name="everstone", quantity=1),
+	]
+	cmd = mod.CmdInventory()
+	cmd.caller = caller
+	cmd.func()
+	assert "Black Augurite x2 - Evolves Scyther into Kleavor." in caller.msgs[-1]
+	assert "Everstone x1 - Prevents the holder from evolving." in caller.msgs[-1]

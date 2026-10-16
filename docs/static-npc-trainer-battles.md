@@ -285,6 +285,15 @@ Normal characters can use `+challenge <NPC name>`. Target lookup is restricted
 to the caller's room contents. The Builder-only `+npcbattle` list/check/start
 workflow remains available for content diagnosis and remote staff testing.
 
+If startup fails after a session has registered, the command cleans up the
+partial session and generated encounter rows before a new launch. If cleanup
+storage is temporarily unavailable, a character-scoped receipt retains the
+battle identity and encounter references. Use `+challenge/retry` to finish that
+cleanup, including after reconnect or reload, then challenge the NPC again.
+Repeating the original challenge also attempts its pending cleanup first.
+The retry refuses to clear a different current battle and does not apply a new
+cooldown. NPC reservations remain until protected room cleanup succeeds.
+
 A placed object is eligible only with explicit opt-in attributes. No migration
 or new authoring command is needed. In the Evennia shell, after creating a valid
 `NPCTrainer` and three ordered templates as above:

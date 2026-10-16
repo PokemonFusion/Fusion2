@@ -9,6 +9,10 @@ on:
       - 'utils/inventory_view.py'
       - 'utils/battle_display.py'
       - 'commands/cmdsets/pokemon_core.py'
+      - 'commands/cmdsets/battle.py'
+      - 'commands/player/cmd_challenge.py'
+      - 'server/conf/at_server_startstop.py'
+      - 'utils/server_logging.py'
       - 'commands/player/cmd_nickname.py'
       - 'menus/capture_nickname.py'
       - 'typeclasses/characters.py'
@@ -57,6 +61,8 @@ jobs:
         run: python tests/integration/placement_cases.py
       - name: Evolution and held-item transactions and concurrent retries
         run: python tests/integration/evolution_cases.py
+      - name: NPC challenge constructor failure and persistent cleanup retries
+        run: python tests/integration/trainer_challenge_cases.py
       - name: Evolution conditions and commands
         run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims

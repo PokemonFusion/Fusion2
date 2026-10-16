@@ -12,6 +12,7 @@ from pokemon.data.evolution import (
     evolution_options,
     get_evolution_items,
 )
+from pokemon.items import GAMEPLAY_ITEMS
 from pokemon.names import normalize_name
 from pokemon.services.placement import PlacementError, PlacementService
 
@@ -35,7 +36,7 @@ def resolve_item(query):
         # the checked-in item dex omits them (for example Black Augurite).
         matches = {
             normalize_name(display): display
-            for display in get_evolution_items()
+            for display in [*get_evolution_items(), *(item.name for item in GAMEPLAY_ITEMS.values())]
             if query and query == normalize_name(display)
         }
     if len(matches) != 1:

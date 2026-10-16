@@ -6,6 +6,7 @@ import math
 import time
 from collections.abc import Mapping
 from dataclasses import replace
+from types import SimpleNamespace
 
 from pokemon.battle.battleinstance import BattleSession
 from pokemon.helpers.party_helpers import pokemon_is_usable
@@ -38,6 +39,7 @@ class TrainerChallenge:
 
     def start(self):
         """Start through the shared encounter adapter, preserving the entire team."""
+        retry_trainer_challenge_cleanup(self.player)
         if self.player.location is None or self.npc.location != self.player.location:
             raise TrainerEncounterError("You must be in the same room as that trainer.")
         config = getattr(self.npc.db, "trainer_challenge", None)
@@ -105,21 +107,95 @@ class TrainerChallenge:
             self.npc.ndb.battle_instance = session
             session.start_trainer_encounter(encounter)
         except Exception:
+            # __init__ may register the player before it fails to return.
+            session = session or getattr(self.player.ndb, "battle_instance", None)
+            refs = [mon.model_id for mon in encounter.team if getattr(mon, "model_id", None)]
+            pending = {"battle_id": getattr(session, "battle_id", None),
+                       "room_id": getattr(self.player.location, "id", None),
+                       "npc_id": self.npc.id, "encounter_refs": refs}
+            if session is not None:
+                session.placed_trainer = self.npc
+                session._challenge_cleanup = pending
+                session.temp_pokemon_ids = list(dict.fromkeys([
+                    *getattr(session, "temp_pokemon_ids", []), *refs,
+                ]))
             try:
-                if session is not None:
-                    session.end()
-            finally:
-                if session is not None:
-                    release_placed_trainer(session)
-                from pokemon.services.encounters import delete_encounter_by_ref
-
-                for mon in encounter.team:
-                    ref = getattr(mon, "model_id", None)
-                    if ref:
-                        delete_encounter_by_ref(ref)
+                # The receipt also covers disconnect/reload before cleanup can
+                # finish. Keep it and the generated rows if cleanup is unavailable.
+                self.player.db.pending_trainer_challenge_cleanup = pending
+                retry_trainer_challenge_cleanup(self.player)
+            except Exception as error:
+                raise TrainerEncounterError(
+                    "Trainer challenge startup failed and cleanup is still pending. "
+                    "Use +challenge/retry before starting another battle."
+                ) from error
             raise
         self.npc.db.trainer_challenge_next_at = self.now + cooldown
         return session, encounter
+
+
+def retry_trainer_challenge_cleanup(player):
+    """Finish one failed startup, retaining its receipt until every step succeeds."""
+    session = getattr(player.ndb, "battle_instance", None)
+    pending = getattr(player.db, "pending_trainer_challenge_cleanup", None)
+    pending = pending or getattr(session, "_challenge_cleanup", None)
+    if not pending:
+        return False
+    battle_id = pending.get("battle_id")
+    if battle_id is not None:
+        # Check before restoration: _register_trainer during restore writes locks.
+        for attr in ("battle_lock", "battle_id"):
+            value = getattr(player.db, attr, None)
+            if value not in (None, False, "") and str(value) != str(battle_id):
+                raise TrainerEncounterError("Finish your current battle before retrying the old challenge cleanup.")
+    if session is None and battle_id is not None:
+        from pokemon.battle.handler import battle_handler
+
+        session = battle_handler.get(battle_id) or BattleSession.ensure_for_player(player)
+    if session is not None:
+        if session.battle_id != battle_id:
+            raise TrainerEncounterError("Finish your current battle before retrying the old challenge cleanup.")
+        session.end()
+    elif battle_id is not None:
+        _cleanup_orphaned_start(player, pending)
+
+    from pokemon.services.encounters import delete_encounter_by_ref
+
+    npc = getattr(session, "placed_trainer", None)
+    if npc is None:
+        from evennia.objects.models import ObjectDB
+
+        npc = ObjectDB.objects.filter(pk=pending["npc_id"]).first()
+    release_placed_trainer(SimpleNamespace(placed_trainer=npc, battle_id=battle_id))
+    for ref in pending["encounter_refs"]:
+        delete_encounter_by_ref(ref)
+    player.db.pending_trainer_challenge_cleanup = None
+    if session is not None:
+        session._challenge_cleanup = None
+    return True
+
+
+def _cleanup_orphaned_start(player, pending):
+    """Release recorded constructor debris after reload without touching other battles."""
+    from evennia.objects.models import ObjectDB
+
+    from pokemon.battle.storage import BattleDataWrapper
+    from utils.locks import clear_battle_lock
+
+    battle_id = pending["battle_id"]
+    room = ObjectDB.objects.filter(pk=pending["room_id"]).first()
+    if room is not None:
+        storage = BattleDataWrapper(room, battle_id)
+        for part in ("logic", "trainers", "temp_pokemon_ids", "encounter", "battle_result",
+                     "data", "state", "meta", "field", "active", "last_action", "debug"):
+            storage.delete(part)
+        room.db.battles = [bid for bid in (room.db.battles or []) if str(bid) != str(battle_id)]
+        instances = getattr(room.ndb, "battle_instances", None)
+        if instances:
+            instances.pop(battle_id, None)
+    clear_battle_lock(player)
+    player.db.battle_id = None
+    player.db.battle_control = False
 
 
 def release_placed_trainer(session):

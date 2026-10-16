@@ -18,6 +18,10 @@ items originally equipped from carried objects. Unknown legacy held items are
 returned using the trainer's existing inventory normalization instead of being
 discarded.
 
+`pokemon/items.py` supplies shared metadata for supported noncompetitive items
+omitted from ITEMDEX. Everstone can be equipped by `+hold`; Black Augurite keeps
+its full display name in inventory and the same identity in evolution commands.
+
 A supplied evolution item must be the required item for the selected transition;
 it cannot be consumed for a level evolution. Held evolution items are consumed
 from the Pokemon, not a second copy from the bag. Nicknames are preserved and

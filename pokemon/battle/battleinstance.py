@@ -1744,7 +1744,6 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         log_info(f"Ending battle {self.battle_id}")
         from pokemon.services.trainer_challenges import release_placed_trainer
 
-        release_placed_trainer(self)
         self.persist_debug_record(event="battle_ending")
         self._sync_player_pokemon_state()
         self._set_player_control(False)
@@ -1775,6 +1774,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     self.room.db.battles = battles
                 else:
                     delattr(self.room.db, "battles")
+        release_placed_trainer(self)
         for trainer in list(self.teamA) + list(self.teamB):
             if not trainer:
                 continue
