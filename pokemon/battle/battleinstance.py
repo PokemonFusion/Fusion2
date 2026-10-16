@@ -437,6 +437,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def _determine_target_position(self, action, positions: Dict[str, Any]) -> str:
         """Best-effort resolution of the target position for ``action``."""
 
+        chosen_target = getattr(action, "target_pokemon", None)
+        if chosen_target is not None:
+            name, _ = self._position_for_pokemon(chosen_target, positions)
+            if name:
+                return name
+
         target_team = getattr(getattr(action, "target", None), "team", None)
         if target_team:
             active = list(getattr(getattr(action, "target", None), "active", []))
@@ -468,29 +474,41 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         for participant in getattr(self.battle, "participants", []):
             if not getattr(participant, "is_ai", False):
                 continue
+            pending = getattr(participant, "pending_action", None)
+            pending = list(pending) if isinstance(pending, list) else [pending] if pending else []
             for pokemon in list(getattr(participant, "active", [])):
                 pos_name, pos = self._position_for_pokemon(pokemon, positions)
                 if not pos_name or not pos or pos.getAction():
                     continue
                 try:
-                    action = _select_ai_action(participant, pokemon, self.battle)  # type: ignore[misc]
+                    reserved = [action.pokemon for action in pending if action.action_type is ActionType.SWITCH]
+                    action = _select_ai_action(participant, pokemon, self.battle, reserved=reserved)  # type: ignore[misc]
                 except Exception:
                     action = None
-                if not action or getattr(action, "action_type", None) is not ActionType.MOVE:
+                if not action:
                     continue
-                move_obj = getattr(action, "move", None)
-                move_key = getattr(move_obj, "key", None) or getattr(move_obj, "name", None)
-                if not move_key:
-                    continue
-                target_pos = self._determine_target_position(action, positions)
-                norm_key = _battle_norm_key(str(move_key))
                 try:
-                    pos.declareAttack(target_pos, norm_key)
+                    if action.action_type is ActionType.SWITCH:
+                        slot = participant.pokemons.index(action.pokemon) + 1
+                        pos.declareSwitch(slot)
+                        declaration = {"switch": slot}
+                    elif action.action_type is ActionType.MOVE:
+                        move_key = getattr(action.move, "key", None) or getattr(action.move, "name", None)
+                        if not move_key:
+                            continue
+                        target_pos = self._determine_target_position(action, positions)
+                        norm_key = _battle_norm_key(str(move_key))
+                        pos.declareAttack(target_pos, norm_key)
+                        declaration = {"move": norm_key, "target": target_pos}
+                    else:
+                        continue
                 except Exception:
                     continue
                 if self.state is not None:
-                    self.state.declare[pos_name] = {"move": norm_key, "target": target_pos}
-                participant.pending_action = action
+                    declaration["pokemon"] = pokemon.model_id
+                    self.state.declare[pos_name] = declaration
+                pending.append(action)
+                participant.pending_action = pending if len(pending) > 1 else pending[0]
                 queued = True
 
         if queued and self.logic and getattr(self, "storage", None):
@@ -1752,6 +1770,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
+        for participant in getattr(self.battle, "participants", []):
+            if participant.is_ai:
+                profile = (getattr(self, "encounter_metadata", {}) or {}).get("ai_profile")
+                if profile:
+                    participant.ai_profile = profile
 
     def _cleanup_saved_battle(self):
         """Remove persistent debris atomically before releasing runtime references."""
@@ -1826,7 +1849,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                         raise ValueError("The saved move or target is no longer legal.")
                     move = BattleMove(saved.name, key=key, pp=getattr(saved, "pp", None))
                     action = Action(actor, ActionType.MOVE, self.battle.participant_for(target_mon),
-                                    move=move, priority=getattr(move, "priority", 0), pokemon=pokemon)
+                                    move=move, priority=getattr(move, "priority", 0), pokemon=pokemon,
+                                    target_pokemon=target_mon,
+                                    target_slot=self.battle.participant_for(target_mon).active.index(target_mon))
                     position.declareAttack(target_name, key)
                 elif "switch" in declaration:
                     slot = int(declaration["switch"])
@@ -1835,7 +1860,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     reserve = actor.pokemons[slot - 1]
                     if reserve in actor.active or reserve.hp <= 0:
                         raise ValueError("The saved reserve can no longer switch in.")
-                    action = Action(actor, ActionType.SWITCH, target=reserve, pokemon=reserve, priority=6)
+                    active_slot = next(index for index, mon in enumerate(actor.active) if mon is pokemon)
+                    action = Action(actor, ActionType.SWITCH, target=reserve, pokemon=reserve, priority=6,
+                                    switch_slot=active_slot, switch_from=pokemon)
                     position.declareSwitch(slot)
                 elif "item" in declaration:
                     item = declaration["item"]

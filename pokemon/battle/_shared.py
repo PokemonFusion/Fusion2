@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 _NORMALIZED_DEX_IDS: dict[int, dict[str, int]] = {}
@@ -63,11 +64,16 @@ def detached_mapping(value: Any) -> dict[str, Any]:
 
 def snapshot_battle_value(value: Any) -> Any:
     """Serialize Pokemon references without copying their live ORM relationships."""
-    from .battledata import Pokemon
+    from .battledata import Move, Pokemon
 
     if isinstance(value, Pokemon):
         reference = value.model_id or f"{value.name}|{value.level}|{value.max_hp}"
         return {"__pf2_pokemon_ref__": reference}
+    battle_move = getattr(sys.modules.get("pokemon.battle.engine"), "BattleMove", Move)
+    if not isinstance(battle_move, type):
+        battle_move = Move
+    if isinstance(value, (Move, battle_move)):
+        return {"__pf2_move_ref__": value.name, "key": getattr(value, "key", None), "pp": getattr(value, "pp", None)}
     if isinstance(value, Mapping):
         return {key: snapshot_battle_value(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -81,6 +87,15 @@ def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any]) -> Any:
     if isinstance(value, Mapping):
         if set(value) == {"__pf2_pokemon_ref__"}:
             return pokemon_by_ref.get(value["__pf2_pokemon_ref__"])
+        if "__pf2_move_ref__" in value:
+            from .engine import MOVEDEX, BattleMove
+
+            name = value["__pf2_move_ref__"]
+            key = value.get("key") or _normalize_key(name)
+            raw = get_raw(MOVEDEX.get(_normalize_key(key)))
+            return BattleMove(name, key=key, pp=value.get("pp"), raw=raw,
+                              power=raw.get("basePower", 0) or 0, type=raw.get("type"),
+                              accuracy=raw.get("accuracy", 100), priority=raw.get("priority", 0))
         return {key: restore_battle_value(item, pokemon_by_ref) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
         items = [restore_battle_value(item, pokemon_by_ref) for item in value]

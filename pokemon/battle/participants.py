@@ -15,7 +15,6 @@ from .contracts import BattleContextProtocol
 
 if TYPE_CHECKING:  # pragma: no cover - circular imports for typing only
         from pokemon.battle.actions import Action
-        from pokemon.battle.engine import Battle
 
 
 class BattleParticipant:
@@ -149,12 +148,15 @@ class BattleParticipant:
                         return []
 
                 actions: List[Action] = []
+                reserved = []
                 _select_ai_action = safe_import("pokemon.battle.engine")._select_ai_action  # type: ignore[attr-defined]
 
                 for active_poke in self.active:
-                        action = _select_ai_action(self, active_poke, battle)
+                        action = _select_ai_action(self, active_poke, battle, reserved=reserved)
                         if action:
                                 actions.append(action)
+                                if getattr(action, "switch_from", None) is not None:
+                                        reserved.append(action.pokemon)
                 return actions
 
         # ------------------------------------------------------------------

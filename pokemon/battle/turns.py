@@ -306,6 +306,13 @@ class TurnProcessor:
 			else:
 				part_actions = [raw_actions]
 			for action in part_actions:
+				if getattr(raw_participant, "is_ai", False) and action.action_type in {ActionType.MOVE, ActionType.SWITCH}:
+					from .legal_actions import LegalActions
+
+					reserved = [a.pokemon for a in actions if a.actor is raw_participant and a.action_type is ActionType.SWITCH]
+					action = LegalActions.for_action(self, action).refresh(action, fallback=True, reserved=reserved)
+					if action is None:
+						continue
 				if action.target and action.target not in self.participants:
 					action.target = None
 				if not action.target:
@@ -901,6 +908,12 @@ class TurnProcessor:
 			if getattr(self, "battle_over", False):
 				break
 			action_type = getattr(action, "action_type", None)
+			if getattr(action.actor, "is_ai", False) and action_type in {ActionType.MOVE, ActionType.SWITCH}:
+				from .legal_actions import LegalActions
+
+				if LegalActions.for_action(self, action).refresh(action) is None:
+					self.log_action(f"{action.actor.name}'s saved action is no longer legal.")
+					continue
 			if action_type is ActionType.RUN:
 				if self.attempt_flee(action):
 					break
@@ -909,7 +922,7 @@ class TurnProcessor:
 				new_pokemon = getattr(action, "pokemon", None)
 				if new_pokemon is None:
 					continue
-				self.perform_switch_action(action.actor, new_pokemon)
+				self.perform_switch_action(action.actor, new_pokemon, slot=getattr(action, "switch_slot", None) or 0)
 				continue
 			if action_type is ActionType.MOVE and action.move:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)

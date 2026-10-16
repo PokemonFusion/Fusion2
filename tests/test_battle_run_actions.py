@@ -1,12 +1,10 @@
 import random
 import types
-
-
 from unittest.mock import patch
 
 from pokemon.battle.actions import Action, ActionType
-from pokemon.battle.engine import Battle, BattleParticipant, BattleType
 from pokemon.battle.battleinstance import BattleSession
+from pokemon.battle.engine import Battle, BattleParticipant, BattleType
 
 
 class SimplePokemon:
@@ -91,10 +89,10 @@ def test_switch_action_uses_selected_pokemon():
 
         action = Action(player, ActionType.SWITCH, pokemon=bench, target=bench, priority=6)
 
-        with patch.object(battle, "perform_switch_action") as switch:
-                battle.execute_actions([action])
+        battle.execute_actions([action])
 
-        switch.assert_called_once_with(player, bench)
+        assert player.active == [bench]
+        assert lead not in player.active
 
 
 def test_run_away_overrides_trap():

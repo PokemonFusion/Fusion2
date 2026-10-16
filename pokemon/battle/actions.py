@@ -63,6 +63,10 @@ class Action:
 	priority_mod: float = 0.0
 	speed: int = 0
 	pokemon: Optional[Any] = None
+	target_pokemon: Optional[Any] = None
+	target_slot: Optional[int] = None
+	switch_slot: Optional[int] = None
+	switch_from: Optional[Any] = None
 
 
 class BattleActions:
@@ -108,11 +112,18 @@ class BattleActions:
 			return winner
 		return None
 
-	def perform_switch_action(self, participant: BattleParticipant, new_pokemon) -> None:
+	def perform_switch_action(self, participant: BattleParticipant, new_pokemon, slot: int = 0) -> None:
 		"""Execute a switch action for ``participant``."""
 		if participant not in self.participants:
 			return
-		self.switch_pokemon(participant, new_pokemon)
+		from .legal_actions import LegalActions
+
+		current = participant.active[slot] if 0 <= slot < len(participant.active) else None
+		if new_pokemon not in LegalActions(self, participant, current).reserves(slot=slot):
+			return
+		self.switch_pokemon(participant, new_pokemon, slot=slot)
+		if participant.is_ai and slot < len(participant.active) and participant.active[slot] is new_pokemon:
+			participant.last_ai_switch_turn = self.turn_count
 		self.check_victory()
 
 	def check_win_conditions(self) -> Optional[BattleParticipant]:
