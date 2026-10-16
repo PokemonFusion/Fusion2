@@ -21,7 +21,7 @@ from pokemon.names import normalize_name
 from pokemon.services.pokemon_refs import parse_pokemon_ref
 from utils.safe_import import safe_import
 
-from ._shared import detached_mapping
+from ._shared import detached_mapping, snapshot_battle_value
 
 try:
     POKEDEX = safe_import("pokemon.dex").POKEDEX  # type: ignore[attr-defined]
@@ -934,7 +934,7 @@ class Pokemon:
             "status": self.status,
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
-            "tempvals": detached_mapping(self.tempvals),
+            "tempvals": snapshot_battle_value(detached_mapping(self.tempvals)),
             "gender": self.gender,
         }
 
@@ -1336,10 +1336,10 @@ class Field:
         return {
             "payday": self.payday,
             "weather": self.weather,
-            "weather_state": self.weather_state,
+            "weather_state": snapshot_battle_value(self.weather_state),
             "terrain": self.terrain,
-            "terrain_state": self.terrain_state,
-            "pseudo_weather": self.pseudo_weather,
+            "terrain_state": snapshot_battle_value(self.terrain_state),
+            "pseudo_weather": snapshot_battle_value(self.pseudo_weather),
         }
 
     @classmethod

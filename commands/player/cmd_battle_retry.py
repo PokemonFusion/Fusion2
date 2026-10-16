@@ -24,7 +24,10 @@ class CmdBattleRetry(Command):
             session = BattleSession.ensure_for_player(self.caller)
             if session is not None:
                 session.retry_battle_rewards()
-                if session.turn_state.get("error"):
+                if session.turn_state.get("error") or (
+                    session.state is not None and session.state.declare and session.is_turn_ready()
+                    and not session.state.ending and not getattr(session.battle, "battle_over", False)
+                ):
                     session.run_turn()
                     if session.turn_state.get("error"):
                         self.caller.msg(PENDING_MESSAGE)

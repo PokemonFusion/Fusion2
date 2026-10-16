@@ -35,6 +35,10 @@ checkpoint in a transaction. Failed saves roll back SQL and restore runtime
 Pokemon, pending choices and the random generator to the retained input.
 Completed checkpoints discard consumed declarations. Reward receipts protect
 against replay even if an older room checkpoint is restored.
+Temporary damage and field effects store Pokemon references by roster identity,
+then reconnect them during rebuild, so checkpoints do not pickle live ORM
+relationships. A fully declared retained turn can resume with `+battle/retry`
+after reload; partial PvP input still waits for the other player.
 
 Rebuild retains faint markers, terminal teams, legal reserves and player
 control on both PvP sides. Move, switch, item and flee choices are reconstructed

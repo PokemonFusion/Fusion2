@@ -521,6 +521,23 @@ class BattleRecoveryCases(unittest.TestCase):
         self.assertFalse(restored.battle.participants[1].pokemons)
         self.assertTrue(restored.battle.participants[1].has_lost)
 
+    def test_damage_source_snapshot_does_not_pickle_live_relationship_managers(self):
+        """Live damage sources use roster references rather than ORM object graphs."""
+        import pickle
+
+        from evennia.utils.dbserialize import to_pickle
+
+        session = self.start("pvp")
+        source = session.battle.participants[0].active[0]
+        target = session.battle.participants[1].active[0]
+        owned = OwnedPokemon.objects.get(pk=source.model_id.split(":", 1)[1])
+        source.live_relationship = owned.activemoveslot_set
+        target.tempvals["last_damaged_by"] = {"source": source, "damage": 4, "this_turn": True}
+        pickle.dumps(to_pickle(session.data.to_dict()))
+        restored = self.rebuild(session)
+        target = restored.battle.participants[1].active[0]
+        self.assertIs(target.tempvals["last_damaged_by"]["source"], restored.battle.participants[0].active[0])
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:

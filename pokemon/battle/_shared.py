@@ -61,6 +61,33 @@ def detached_mapping(value: Any) -> dict[str, Any]:
         return {}
 
 
+def snapshot_battle_value(value: Any) -> Any:
+    """Serialize Pokemon references without copying their live ORM relationships."""
+    from .battledata import Pokemon
+
+    if isinstance(value, Pokemon):
+        reference = value.model_id or f"{value.name}|{value.level}|{value.max_hp}"
+        return {"__pf2_pokemon_ref__": reference}
+    if isinstance(value, Mapping):
+        return {key: snapshot_battle_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        items = [snapshot_battle_value(item) for item in value]
+        return tuple(items) if isinstance(value, tuple) else items
+    return value
+
+
+def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any]) -> Any:
+    """Reconnect saved source/target references to this restored battle's roster."""
+    if isinstance(value, Mapping):
+        if set(value) == {"__pf2_pokemon_ref__"}:
+            return pokemon_by_ref.get(value["__pf2_pokemon_ref__"])
+        return {key: restore_battle_value(item, pokemon_by_ref) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        items = [restore_battle_value(item, pokemon_by_ref) for item in value]
+        return tuple(items) if isinstance(value, tuple) else items
+    return value
+
+
 def reset_tempvals(pokemon: Any) -> None:
     """Replace a Pokemon's temporary battle flags with a plain empty dict."""
 

@@ -1864,14 +1864,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def execute_persistent_turn(self):
         """Commit one complete engine turn and checkpoint, or restore its input."""
-        from django.db import transaction
-        from evennia.objects.models import ObjectDB
-
         from pokemon.services.battle_rewards import BattleRewards, BufferedMessages
 
         if not BattleRewards.supports(self.captainA):
             self.battle.run_turn()
             return
+        from django.db import transaction
+        from evennia.objects.models import ObjectDB
         snapshot = self.logic.to_dict()
         adventure_result = getattr(self, "_adventure_result", None)
         controllers = {part.team: part.player for part in self.battle.participants}

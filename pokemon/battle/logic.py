@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Dict, List, Sequence
 
+from ._shared import restore_battle_value
 from .battledata import BattleData, Team
 from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
@@ -205,6 +206,12 @@ class BattleLogic:
 			if getattr(part, "side", None) is not None:
 				part.side.active = part.active
 		battle = Battle(btype, [part_a, part_b])
+		pokemon_by_ref = {_participant_identifier(mon): mon for part in (part_a, part_b) for mon in part.pokemons}
+		for part in (part_a, part_b):
+			for mon in part.pokemons:
+				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref)
+		for name in ("weather_state", "terrain_state", "pseudo_weather"):
+			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref))
 		battle.turn_count = data.battle.turn
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))
