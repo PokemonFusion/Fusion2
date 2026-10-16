@@ -1241,7 +1241,7 @@ class PositionData:
 
 @dataclass(init=False)
 class Team:
-    """Representation of a trainer's party."""
+    """Battle roster with six ordinary slots and any additional participants."""
 
     trainer: str
     slot1: Optional[Pokemon] = None
@@ -1250,6 +1250,7 @@ class Team:
     slot4: Optional[Pokemon] = None
     slot5: Optional[Pokemon] = None
     slot6: Optional[Pokemon] = None
+    extra_pokemon: List[Pokemon] = field(default_factory=list)
 
     def __init__(self, trainer: str, pokemon_list: Optional[List[Pokemon]] = None) -> None:
         self.trainer = trainer
@@ -1265,19 +1266,15 @@ class Team:
             self.slot5,
             self.slot6,
         ) = slots
+        # A reserved trainer Fusion can join six party Pokemon. Keep the
+        # complete roster so internal switch indices survive a checkpoint.
+        self.extra_pokemon = list(pokemon_list[6:])
 
     def returnlist(self) -> List[Optional[Pokemon]]:
-        return [self.slot1, self.slot2, self.slot3, self.slot4, self.slot5, self.slot6]
+        return [self.slot1, self.slot2, self.slot3, self.slot4, self.slot5, self.slot6, *self.extra_pokemon]
 
     def returndict(self) -> Dict[int, Optional[Pokemon]]:
-        return {
-            1: self.slot1,
-            2: self.slot2,
-            3: self.slot3,
-            4: self.slot4,
-            5: self.slot5,
-            6: self.slot6,
-        }
+        return dict(enumerate(self.returnlist(), 1))
 
     def to_dict(self) -> Dict:
         return {

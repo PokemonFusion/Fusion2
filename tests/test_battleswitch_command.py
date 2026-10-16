@@ -294,3 +294,42 @@ def test_battleswitch_reserved_fusion_matches_the_party_sheet_display_slot():
 		assert command._choices(participant) == {1: (2, fusion), 2: (1, second)}
 	finally:
 		restore_modules(*originals)
+
+
+@pytest.mark.parametrize("order", ["normal", "first"])
+@pytest.mark.parametrize("prompted", [False, True])
+def test_battleswitch_full_party_fusion_remains_selectable(order, prompted):
+	"""The seventh roster member has a named choice without renumbering party slots."""
+	originals = setup_modules()
+	try:
+		cmd_mod = load_cmd_module()
+		mons = [types.SimpleNamespace(name=f"Party {i}", model_id=f"owned:{i}", hp=10) for i in range(1, 7)]
+		fusion = types.SimpleNamespace(name="Fusion", model_id="owned:form", hp=10)
+		roster = [fusion, *mons] if order == "first" else [*mons, fusion]
+		participant = FakeParticipant("Player", roster)
+		participant.active = [mons[0]]
+		instance = FakeQueueInstance(FakeBattle([participant]))
+		caller = DummyCaller()
+		caller.storage = types.SimpleNamespace(get_party_slots=lambda: [types.SimpleNamespace(unique_id=str(i)) for i in range(1, 7)])
+		caller.db.fusion_id = "form"
+		caller.ndb.battle_instance = instance
+		command = cmd_mod.CmdBattleSwitch()
+		command.caller, command.args = caller, "" if prompted else "fusion"
+		command.func()
+		if prompted:
+			assert "fusion. Fusion" in caller.msgs[-1]
+			assert "6. Party 6" in caller.msgs[-1]
+			caller.ndb.last_prompt_callback(caller, "", "Fusion")
+		assert participant.pending_action.pokemon is fusion
+		assert instance.queued == [1 if order == "first" else 7]
+		participant.active = [fusion]
+		command.args = "6"
+		command.func()
+		assert participant.pending_action.pokemon is mons[5]
+		assert instance.queued[-1] == (7 if order == "first" else 6)
+		participant.active = [mons[5]]
+		command.args = "fusion"
+		command.func()
+		assert participant.pending_action.pokemon is fusion
+	finally:
+		restore_modules(*originals)

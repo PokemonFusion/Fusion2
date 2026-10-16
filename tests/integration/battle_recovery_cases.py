@@ -677,6 +677,45 @@ class BattleRecoveryCases(unittest.TestCase):
         self.assertIn("already has an action queued", self.player.messages[0])
         self.assertEqual(self.player.trainer.get_item_quantity("Potion"), 1)
 
+    def full_party_fusion_switches(self, order):
+        """Exercise the real seven-member roster, saved switch and return switch."""
+        fusion = self.player.storage.get_party()[0]
+        self.player.storage.reserve_for_fusion(fusion)
+        self.player.db.fusion_id = str(fusion.pk)
+        self.player.db.fusion_kind = "permanent"
+        self.player.db.fusion_species = fusion.species
+        self.player.db.fusion_battle_order = order
+        for _ in range(5):
+            create_owned_pokemon("Bulbasaur", self.player.trainer, 5, ivs=[0] * 6, evs=[0] * 6,
+                                 nature="Hardy", active_move_names=["Tackle"])
+        slots = self.player.storage.get_party_slots()
+        self.assertTrue(all(slots))
+        session = self.start("pvp")
+        self.assertEqual(len(session.battle.participants[0].pokemons), 7)
+        selections = ("6", "fusion", "6", "fusion") if order == "first" else ("fusion", "6", "fusion")
+        for selection in selections:
+            command = CmdBattleSwitch()
+            command.caller, command.args = self.player, selection
+            command.func()
+            expected = fusion if selection == "fusion" else slots[5]
+            expected_id = f"owned:{expected.pk}"
+            self.assertEqual(session.battle.participants[0].pending_action.pokemon.model_id, expected_id)
+            session = self.rebuild(session)
+            self.assertEqual(session.battle.participants[0].pending_action.pokemon.model_id, expected_id)
+            session.queue_move("tackle", "A1", caller=self.players[1])
+            self.assertEqual(session.battle.participants[0].active[0].model_id, expected_id)
+        self.assertEqual(self.player.storage.get_party_slots(), slots)
+        fusion.refresh_from_db()
+        self.assertEqual(fusion.placement.location_type, "fusion")
+
+    def test_full_party_normally_ordered_fusion_can_switch_in_and_back(self):
+        """A normally appended Fusion stays reachable after a party member returns."""
+        self.full_party_fusion_switches("normal")
+
+    def test_full_party_first_ordered_fusion_can_switch_out_and_back(self):
+        """Leading with the Fusion must not make it unreachable once benched."""
+        self.full_party_fusion_switches("first")
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:

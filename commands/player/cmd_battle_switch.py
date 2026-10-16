@@ -24,14 +24,16 @@ class CmdBattleSwitch(Command):
 	"""Switch your active Pokémon in battle.
 
 	Usage:
-		+battle/switch <slot>
+		+battle/switch <slot|fusion>
 
 	Examples:
 		+switch 2
 		+battle/switch 4
+		+switch fusion
 
 	Notes:
 		Slots match +party, including gaps. With no slot, list available Pokemon.
+		Use 'fusion' to select your active Fusion form, even with a full party.
 	"""
 
 	key = "+battle/switch"
@@ -58,13 +60,14 @@ class CmdBattleSwitch(Command):
 		# The party sheet displays a reserved active Fusion in the first free
 		# position. Preserve that display choice without changing its placement.
 		fusion_id = str(getattr(self.caller.db, "fusion_id", "") or "")
-		if fusion_id and None in party:
+		if fusion_id:
 			for index, mon in enumerate(roster, 1):
 				kind, model_id = parse_pokemon_ref(getattr(mon, "model_id", None))
 				if kind == "owned" and model_id == fusion_id and not any(mon is p for _, p in choices.values()):
-					choices[party.index(None) + 1] = (index, mon)
+					key = party.index(None) + 1 if None in party else "fusion"
+					choices[key] = (index, mon)
 					break
-		return dict(sorted(choices.items()))
+		return dict(sorted(choices.items(), key=lambda choice: 7 if choice[0] == "fusion" else choice[0]))
 
 	def _select(self, inst, participant, choice):
 		"""Validate one canonical selection for both direct and prompted input."""
@@ -72,7 +75,14 @@ class CmdBattleSwitch(Command):
 			self.caller.msg("Switch cancelled.")
 			return False
 		try:
-			index, pokemon = self._choices(participant)[int(choice)]
+			choices = self._choices(participant)
+			if choice.lower() == "fusion":
+				fusion_id = str(getattr(self.caller.db, "fusion_id", "") or "")
+				key = next((slot for slot, (_, mon) in choices.items()
+					if parse_pokemon_ref(getattr(mon, "model_id", None)) == ("owned", fusion_id)), "fusion")
+			else:
+				key = int(choice)
+			index, pokemon = choices[key]
 		except (ValueError, KeyError):
 			self.caller.msg("Invalid Pokémon slot. Use +party or +switch to see available slots.")
 			return True

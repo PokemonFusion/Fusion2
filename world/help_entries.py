@@ -311,6 +311,8 @@ removing an item returns the previous item to trainer inventory. For example:
 
 Party numbers stay the same across +party, +switch, storage and moveset menus,
 including empty slots. Box menu numbers identify entries within that box.
+If your active Fusion joins a full party in battle, use +switch fusion to
+select it. +switch lists the available party slots and Fusion choice.
 
 Storage commands cannot be used while your character is locked into an active
 battle.
