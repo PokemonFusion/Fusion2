@@ -55,6 +55,7 @@ def _align_positions_with_team(
                 pools[_participant_identifier(mon)].append(mon)
 
         active: List = []
+        participant._active_slots = {}
         for pos_name, pos in positions.items():
                 if not isinstance(pos_name, str) or not pos_name.startswith(team_key):
                         continue
@@ -78,6 +79,7 @@ def _align_positions_with_team(
                 if replacement:
                         setattr(pos, "pokemon", replacement)
                         active.append(replacement)
+                        participant._active_slots[int(pos_name[1:]) - 1] = replacement
         return active
 
 

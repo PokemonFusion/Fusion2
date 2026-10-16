@@ -67,6 +67,7 @@ class Action:
 	target_slot: Optional[int] = None
 	switch_slot: Optional[int] = None
 	switch_from: Optional[Any] = None
+	player_selected: bool = False
 
 
 class BattleActions:
@@ -116,13 +117,14 @@ class BattleActions:
 		"""Execute a switch action for ``participant``."""
 		if participant not in self.participants:
 			return
+		from .active_slots import active_at
 		from .legal_actions import LegalActions
 
-		current = participant.active[slot] if 0 <= slot < len(participant.active) else None
+		current = active_at(participant, slot)
 		if new_pokemon not in LegalActions(self, participant, current).reserves(slot=slot):
 			return
 		self.switch_pokemon(participant, new_pokemon, slot=slot)
-		if participant.is_ai and slot < len(participant.active) and participant.active[slot] is new_pokemon:
+		if participant.is_ai and active_at(participant, slot) is new_pokemon:
 			participant.last_ai_switch_turn = self.turn_count
 		self.check_victory()
 

@@ -194,8 +194,13 @@ class DummyRoom:
 
 
 class DummyStorage:
+	"""Supply a legal party for real queue validation in session tests."""
+	def __init__(self):
+		self.party = [types.SimpleNamespace(name=name, level=5, moves=["tackle", "growl"])
+                      for name in ("Squirtle", "Eevee", "Pikachu")]
+
 	def get_party(self):
-		return []
+		return list(self.party)
 
 
 class DummyPlayer:
@@ -206,6 +211,7 @@ class DummyPlayer:
 		self.ndb = types.SimpleNamespace()
 		self.location = room
 		self.storage = DummyStorage()
+		self.has_item = lambda name, quantity=1: name.lower() in {"potion", "superpotion"}
 
 	def msg(self, text):
 		pass

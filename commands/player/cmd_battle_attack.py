@@ -12,10 +12,6 @@ try:  # pragma: no cover - EvMenu may not be available during tests
 except Exception:  # pragma: no cover
     EnhancedEvMenu = None  # type: ignore
 
-from utils.battle_display import render_move_gui
-from world.system_init import get_system
-
-from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
 from pokemon.battle._shared import (
     _normalize_key,
     ensure_movedex_aliases,
@@ -23,6 +19,10 @@ from pokemon.battle._shared import (
     get_raw,
 )
 from pokemon.dex import MOVEDEX
+from utils.battle_display import render_move_gui
+from world.system_init import get_system
+
+from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
 
 ensure_movedex_aliases(MOVEDEX)
 
@@ -40,11 +40,13 @@ class CmdBattleAttack(Command):
 
     Usage:
       +battle/attack <move> [target]
+      +attack <acting slot> <move> [target]
       +attack /menu  (interactive menu)
 
     Examples:
       +attack Tackle
       +attack Thunderbolt B1
+      +attack A2 Water Gun B1
       +attack /menu
 
     Notes:
@@ -63,6 +65,8 @@ class CmdBattleAttack(Command):
         if raw.lower().startswith("/menu"):
             self.switch_menu = True
             raw = raw[len("/menu") :].strip()
+        from .battle_choice_prompts import split_actor
+        self.actor_token, raw = split_actor(raw)
         parts = raw.rsplit(None, 1)
         self.target_token = ""
         if len(parts) == 2 and re.fullmatch(r"[AB]\d+", parts[1], re.IGNORECASE):
@@ -92,6 +96,10 @@ class CmdBattleAttack(Command):
             inst = BattleSession.ensure_for_player(self.caller)
         if not inst or not getattr(inst, "battle", None):
             self.caller.msg(NOT_IN_BATTLE_MSG)
+            return
+        if callable(getattr(inst, "choices_for", None)):
+            from .battle_choice_prompts import attack_prompt
+            attack_prompt(inst, self.caller, self.move_name, self.target_token or None, self.actor_token)
             return
         participant = _get_participant(inst, self.caller)
         active = participant.active[0] if participant.active else None

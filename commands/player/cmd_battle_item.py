@@ -23,6 +23,7 @@ class CmdBattleItem(Command):
 
     Usage:
       +battle/item <item>
+      +item <acting slot> <item>
 
     Examples:
       +item Potion
@@ -44,7 +45,8 @@ class CmdBattleItem(Command):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
 
-        item_name = self.args.strip()
+        from .battle_choice_prompts import split_actor
+        actor, item_name = split_actor(self.args)
         if not item_name:
             self.caller.msg("Usage: +battle/item <item>")
             return
@@ -75,6 +77,12 @@ class CmdBattleItem(Command):
 
         if not inst or not getattr(inst, "battle", None):
             self.caller.msg(NOT_IN_BATTLE_MSG)
+            return
+        if callable(getattr(inst, "choices_for", None)):
+            try:
+                inst.choices_for(self.caller).item(item_name, actor=actor)
+            except ValueError as error:
+                self.caller.msg(str(error))
             return
 
         participant = _get_participant(inst, self.caller)
