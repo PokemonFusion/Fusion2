@@ -1598,17 +1598,6 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     ) -> None:
         """Start a scripted Adventure encounter with durable result metadata."""
 
-        self.start_test_battle(
-            species=species,
-            level=level,
-            opponent_kind=encounter_kind,
-            opponent_name=opponent_name or None,
-            intro_message=(
-                f"The Adventure encounter begins against "
-                f"{opponent_name or ('Wild ' + species)}."
-            ),
-            debug=False,
-        )
         pending = list(
             getattr(getattr(self.captainA, "ndb", None), "pending_caught_pokemon", []) or []
         )
@@ -1622,6 +1611,19 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.encounter_metadata = metadata
         if getattr(self, "storage", None):
             self.storage.set("encounter", metadata)
+        # Identity must survive before initial state, registration or input
+        # can expose a playable encounter to the character.
+        self.start_test_battle(
+            species=species,
+            level=level,
+            opponent_kind=encounter_kind,
+            opponent_name=opponent_name or None,
+            intro_message=(
+                f"The Adventure encounter begins against "
+                f"{opponent_name or ('Wild ' + species)}."
+            ),
+            debug=False,
+        )
 
     def _sync_player_pokemon_state(self) -> None:
         """Persist battle results back to the owning player models.

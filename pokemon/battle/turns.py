@@ -1073,6 +1073,11 @@ class TurnProcessor:
 
 			caught = placement is not None
 			if caught:
+				if (getattr(battle_context, "encounter_metadata", None) or {}).get("source_type") == "adventure":
+					# A receipt replay suppresses nickname tracking. Keep the
+					# terminal capture identity independently of that UI queue.
+					if not getattr(battle_context, "_adventure_result", None):
+						battle_context._adventure_result = "capture"
 				if hasattr(self, "log_action"):
 					self.log_action(f"Gotcha! {pokemon_name} was caught!")
 				target.active.remove(target_poke)

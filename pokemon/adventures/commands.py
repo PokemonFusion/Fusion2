@@ -191,6 +191,7 @@ class CmdAdventure(Command):
             self.caller.msg("The battle system is unavailable; use the same choice to retry.")
             return
         choice = result.data
+        battle = None
         try:
             battle = BattleSession(self.caller)
             battle.start_adventure_encounter(
@@ -203,6 +204,14 @@ class CmdAdventure(Command):
                 outcome_key=choice.outcome_key or choice.key,
             )
         except Exception:
+            battle = battle or getattr(getattr(self.caller, "ndb", None), "battle_instance", None)
+            if battle is not None:
+                battle._startup_failed = True
+                try:
+                    battle.end()
+                except Exception:
+                    self.caller.msg("The encounter could not start and cleanup is pending. Use +adventure/retry, then choose the route again.")
+                    return
             self.caller.msg("The encounter could not start; use the same choice to retry.")
 
     def _retry(self) -> None:
@@ -212,7 +221,10 @@ class CmdAdventure(Command):
 
         try:
             battle = BattleSession.ensure_for_player(self.caller)
-            if battle is not None and getattr(battle, "_adventure_result", None):
+            if battle is not None and getattr(battle, "_startup_failed", False):
+                battle.end()
+                self.caller.msg("The incomplete encounter was cleaned up. Choose the same route to retry.")
+            elif battle is not None and getattr(battle, "_adventure_result", None):
                 battle._handle_battle_result(None)
                 battle.end()
             message = retry_encounter_results(self.caller)

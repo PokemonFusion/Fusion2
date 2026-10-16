@@ -103,14 +103,30 @@ class CmdBattleConcede(Command):
         """Carry out the concession once confirmation has been received."""
 
         battle_id = self._extract_battle_id(inst)
-        recorded = False
-        if manager and battle_id is not None:
-            try:
-                recorded = bool(manager.abort_request(int(battle_id), self.caller))
-            except Exception:
-                recorded = False
-        if not recorded and manager and battle_id is not None:
-            self.caller.msg("Unable to contact the battle manager; ending the battle locally.")
+        try:
+            result_hook = getattr(inst, "_handle_battle_result", None)
+            if callable(result_hook):
+                result_hook(None)
+            if callable(getattr(inst, "end", None)):
+                # Canonical end() retains the session if its durable outcome
+                # cannot be saved. Never bypass that guard with manager abort.
+                inst.end()
+            elif manager and battle_id is not None:
+                request = getattr(manager, "abort_request", None)
+                if not callable(request) or not request(int(battle_id), self.caller):
+                    abort = getattr(manager, "abort", None)
+                    if not callable(abort):
+                        raise RuntimeError("Battle manager cannot finish this session.")
+                    abort(int(battle_id))
+            else:
+                raise RuntimeError("No cleanup path is available for this battle.")
+        except Exception:
+            if getattr(inst, "_adventure_result", None):
+                self.caller.db.battle_control = False
+                self.caller.msg("Your Adventure concession is retained for recovery. Use +adventure/retry to finish saving it.")
+            else:
+                self.caller.msg("Your concession could not be completed. The battle is retained; retry +concede yes.")
+            return
 
         self.caller.msg("You concede the battle.")
         message = f"{getattr(self.caller, 'key', 'Someone')} has conceded the battle."
@@ -143,22 +159,6 @@ class CmdBattleConcede(Command):
         if hasattr(self.caller, "db"):
             try:
                 self.caller.db.battle_control = False
-            except Exception:
-                pass
-
-        if hasattr(inst, "end"):
-            try:
-                result_hook = getattr(inst, "_handle_battle_result", None)
-                if callable(result_hook):
-                    result_hook(None)
-                inst.end()
-                return
-            except Exception:
-                pass
-
-        if manager and battle_id is not None and hasattr(manager, "abort"):
-            try:
-                manager.abort(int(battle_id))
             except Exception:
                 pass
 
