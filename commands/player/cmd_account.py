@@ -3,8 +3,9 @@ from evennia import Command, search_account, search_object
 from evennia.accounts.models import AccountDB
 from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
 
-from pokemon.models.storage import move_to_box
-from utils.locks import require_no_battle_lock
+# Preserve the legacy command module's public imports while trading is disabled.
+from pokemon.models.storage import move_to_box as move_to_box
+from utils.locks import require_no_battle_lock as require_no_battle_lock
 
 STAFF_LOCK = (
     "cmd:perm(Helper) or perm(Validator) or perm(Builder) or perm(Admin) "
@@ -205,16 +206,10 @@ class CmdAlts(Command):
 
 
 class CmdTradePokemon(Command):
-    """Trade a Pokemon with another character.
+    """Pokemon trading is temporarily unavailable.
 
-    Usage:
-      +trade <pokemon_id>=<character>
-
-    Examples:
-      +trade abc123=Misty
-
-    Notes:
-      You cannot trade while either character is in battle.
+    Ownership safeguards are being upgraded. +trade does not transfer any
+    Pokemon or items while trading is unavailable.
     """
 
     key = "+trade"

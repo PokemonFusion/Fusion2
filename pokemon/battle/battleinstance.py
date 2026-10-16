@@ -1926,12 +1926,19 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     # ---- Persistence helpers ------------------------------------------------
 
+    def _missing_action_positions(self) -> list[str]:
+        """Use the same authoritative declarations for readiness and feedback."""
+        if not self.data:
+            return []
+        positions = self.data.turndata.positions
+        if self.state:
+            return [name for name in positions if name not in self.state.declare]
+        return [name for name, pos in positions.items() if not pos.getAction()]
+
     def is_turn_ready(self) -> bool:
+        """Return whether every required battle position has declared an action."""
         if self.data:
-            if self.state:
-                missing = [name for name in self.data.turndata.positions if name not in self.state.declare]
-            else:
-                missing = [name for name, pos in self.data.turndata.positions.items() if not pos.getAction()]
+            missing = self._missing_action_positions()
             if missing:
                 log_info(f"Waiting for actions from positions {missing} in battle {self.battle_id}")
                 return False
@@ -1948,6 +1955,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         return False
 
     def maybe_run_turn(self, actor=None, *, notify_waiting: bool = True) -> None:
+        """Advance a ready turn or send one concise notice about missing choices."""
         if self.is_turn_ready():
             log_info(f"Turn ready for battle {self.battle_id}")
             self.run_turn()
@@ -1959,33 +1967,28 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             return
 
         log_info(f"Turn not ready for battle {self.battle_id}")
-        waiting_poke = None
+        if not notify_waiting:
+            return
+        waiting_names = []
         if self.data:
-            for name, pos in self.data.turndata.positions.items():
-                if not pos.getAction() and pos.pokemon:
-                    waiting_poke = pos.pokemon
-                    break
-        waiting_participant = None
-        if waiting_poke and self.battle:
-            try:
-                waiting_participant = self.battle.participant_for(waiting_poke)
-            except Exception:
-                waiting_participant = None
-        if waiting_poke and not bool(getattr(waiting_participant, "is_ai", False)):
-            waiting_name = getattr(waiting_poke, "name", str(waiting_poke))
-            try:
-                if actor:
-                    send_interface_to(self, actor, waiting_on=waiting_name)
-                else:
-                    broadcast_interfaces(self, waiting_on=waiting_name)
-            except Exception:
-                log_warn("Failed to display waiting interface", exc_info=True)
-            if notify_waiting:
-                message = f"Waiting on {waiting_name}..."
-                if actor:
-                    self._msg_to(actor, message)
-                else:
-                    self.msg(message)
+            positions = self.data.turndata.positions
+            for name in self._missing_action_positions():
+                pokemon = positions[name].pokemon
+                if pokemon is None:
+                    continue
+                participant = self.battle.participant_for(pokemon) if self.battle else None
+                if bool(getattr(participant, "is_ai", False)):
+                    continue
+                label = getattr(pokemon, "name", str(pokemon))
+                if len(positions) > 2:
+                    label = f"{label} ({name})"
+                waiting_names.append(label)
+        if waiting_names:
+            message = f"Waiting on {', '.join(waiting_names)}..."
+            if actor:
+                self._msg_to(actor, message)
+            else:
+                self.msg(message)
 
 
 __all__ = ["BattleSession", "BattleInstance", "create_battle_pokemon"]

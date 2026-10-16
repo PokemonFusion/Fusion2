@@ -44,6 +44,15 @@ def get_active_party(character) -> List:
         return list(_iter_party_storage(storage))
 
 
+def get_party_slots(character) -> List:
+        """Return six player-facing party positions without closing empty gaps."""
+
+        storage = getattr(character, "storage", None)
+        getter = getattr(storage, "get_party_slots", None)
+        party = list(getter() if callable(getter) else get_active_party(character))
+        return (party + [None] * 6)[:6]
+
+
 def pokemon_is_usable(pokemon) -> bool:
         """Return ``True`` if ``pokemon`` is conscious and able to battle."""
 

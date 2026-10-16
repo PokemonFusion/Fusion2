@@ -379,7 +379,23 @@ def test_unimplemented_field_item_does_not_consume_inventory():
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "Potion is not usable outside battle yet."
+	assert "Potion is not usable outside battle yet." in caller.msgs[-1]
+	assert "+heal at a Pokemon Center" in caller.msgs[-1]
+	assert "+item <item> during battle" in caller.msgs[-1]
+
+
+def test_pp_up_without_target_explains_supported_usage():
+	"""A supported field item needs a target, rather than claiming it is unavailable."""
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller, cmd.args = caller, "PP Up"
+	cmd.func()
+	assert remove_counter[0] == 0
+	assert caller.msgs[-1] == "Usage: +use PP Up=<party slot or Pokemon name>"
 
 
 def test_use_item_invalid_item_name_fails_before_target_lookup():

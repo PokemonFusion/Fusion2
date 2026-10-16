@@ -296,12 +296,21 @@ boxes and can be moved around outside battle.
 +box/withdraw <pokemon_id> [box]             Move a boxed Pokemon into your party.
 +box/swap <pokemon_id> <party_slot> [box]    Swap a boxed Pokemon with a party slot.
 +storage                                      Open Pokemon storage at a Pokemon Center.
-+trade <pokemon_id>=<character>               Trade a Pokemon to another character.
+
+Trading is temporarily unavailable while ownership safeguards are upgraded.
++trade does not transfer Pokemon.
 
 # Held Items
 
-+hold <slot>=<item>    Give a party Pokemon a held item from your carried
-                       objects.
++hold <slot>=<item>    Equip or replace a party Pokemon's held item.
++hold <slot>=          Remove its held item.
+
+Held items come from trainer inventory or an exact carried item. Replacing or
+removing an item returns the previous item to trainer inventory. For example:
++hold 2=Oran Berry, then +hold 2= to remove it.
+
+Party numbers stay the same across +party, +switch, storage and moveset menus,
+including empty slots. Box menu numbers identify entries within that box.
 
 Storage commands cannot be used while your character is locked into an active
 battle.
@@ -459,8 +468,17 @@ Most maintenance commands are used outside battle.
 # Items
 
 +inventory             Show your inventory.
-+use <item>            Use an item outside battle.
-+use <item>=<target>   Use an item on a target when supported.
++use Rare Candy=2      Give a Rare Candy to the Pokemon in party slot 2.
++use PP Up=2           Increase a move's maximum PP (prompts for the move).
++use PP Max=2          Increase PP capacity with a PP Max (prompts for a move).
+
+These are the currently supported field-use items. Targets can also be
+unambiguous Pokemon names. At the PP prompt, use +use <move name or number>.
+PP Up and PP Max increase PP capacity. Ether and Elixir restore PP in battle.
+
+Potions, status medicine and PP-restoring items currently use +item <item>
+during battle. Outside battle, +heal restores your party at a Pokemon Center.
+Escape Rope field use is not implemented.
 
 # Evolution
 

@@ -1,3 +1,4 @@
+from pokemon.helpers.party_helpers import get_party_slots
 from pokemon.names import normalize_name
 from pokemon.services.move_management import apply_active_moveset
 
@@ -7,13 +8,15 @@ def node_start(caller, raw_input=None):
 	if not (caller.location and caller.location.db.is_pokemon_center):
 		caller.msg("You must be at a Pokémon Center to manage movesets.")
 		return None, None
-	mons = caller.storage.get_party()
-	if not mons:
+	mons = get_party_slots(caller)
+	if not any(mons):
 		caller.msg("You have no active Pokémon.")
 		return None, None
 	if not raw_input:
 		lines = ["|wSelect a Pokémon to manage|n"]
 		for i, mon in enumerate(mons, 1):
+			if mon is None:
+				continue
 			disp = mon.nickname or mon.species
 			lines.append(f"  {i}. {disp}")
 		lines.append("Enter number or 'quit'.")
@@ -22,6 +25,8 @@ def node_start(caller, raw_input=None):
 		return "Exiting Moveset Manager.", None
 	try:
 		idx = int(raw_input.strip()) - 1
+		if not 0 <= idx < len(mons) or mons[idx] is None:
+			raise ValueError
 		pokemon = mons[idx]
 	except (ValueError, IndexError):
 		caller.msg("Invalid choice.")

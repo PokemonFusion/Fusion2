@@ -6,7 +6,7 @@ from typing import Optional
 
 from evennia import Command
 
-from pokemon.helpers.party_helpers import get_active_party
+from pokemon.helpers.party_helpers import get_party_slots
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import level_for_exp
 from utils.display import display_pokemon_sheet, display_trainer_sheet
@@ -41,9 +41,7 @@ def _parse_slash_switches(command):
 
 def _party_slots(caller):
     """Use canonical slot positions for list displays and numbered sheets."""
-    getter = getattr(caller.storage, "get_party_slots", None)
-    party = list(getter() if callable(getter) else get_active_party(caller))
-    return (party + [None] * 6)[:6]
+    return get_party_slots(caller)
 
 
 class CmdSheet(Command):

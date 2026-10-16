@@ -364,14 +364,18 @@ class CmdUseItem(Command):
       +use <item>=<target>
 
     Examples:
-      +use Potion
-      +use Potion=Pikachu
-      +use Potion=1
+      +use Rare Candy=1
       +use Rare Candy=Charizard
-      +use Escape Rope=self
+      +use PP Up=2
+      +use PP Max=2
 
     Notes:
+      Field use currently supports Rare Candy, PP Up and PP Max. PP items
+      prompt for a move; reply with +use <move name or number>. They increase
+      PP capacity. Targets accept party slots or unambiguous Pokemon names.
       Battle items use +battle/item while a battle is waiting for your action.
+      Potions and PP-restoring items currently require battle use. Outside
+      battle, +heal restores your party at a Pokemon Center.
     """
 
     key = "+use"
@@ -469,7 +473,10 @@ class CmdUseItem(Command):
                 self.caller.msg(error)
                 return
 
-        if item_name in {"ppup", "ppmax"} and target is not None:
+        if item_name in {"ppup", "ppmax"}:
+            if target is None:
+                self.caller.msg(f"Usage: +use {_display_item_name(item_data, canonical)}=<party slot or Pokemon name>")
+                return
             if not _trainer_has_item(trainer, item_name):
                 self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
                 return
@@ -505,4 +512,9 @@ class CmdUseItem(Command):
             self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
             return
 
-        self.caller.msg(f"{_display_item_name(item_data, canonical)} is not usable outside battle yet.")
+        self.caller.msg(
+            f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
+            "Supported field items: Rare Candy, PP Up and PP Max. "
+            "Use +heal at a Pokemon Center to restore your party; "
+            "battle items use +item <item> during battle."
+        )
