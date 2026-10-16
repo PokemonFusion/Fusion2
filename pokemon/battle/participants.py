@@ -152,7 +152,7 @@ class BattleParticipant:
                 _select_ai_action = safe_import("pokemon.battle.engine")._select_ai_action  # type: ignore[attr-defined]
 
                 for active_poke in self.active:
-                        action = _select_ai_action(self, active_poke, battle, reserved=reserved)
+                        action = _select_ai_action(self, active_poke, battle, reserved=reserved, planned=actions)
                         if action:
                                 actions.append(action)
                                 if getattr(action, "switch_from", None) is not None:

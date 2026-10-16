@@ -633,12 +633,12 @@ def _apply_move_damage(
 
 
 def _select_ai_action(
-    participant: "BattleParticipant", active_pokemon, battle: "Battle", *, reserved=()
+    participant: "BattleParticipant", active_pokemon, battle: "Battle", *, reserved=(), planned=()
 ) -> Optional[Action]:
     """Select a scored legal move or bounded voluntary reserve switch."""
     from .ai_actions import select_ai_action
 
-    return select_ai_action(participant, active_pokemon, battle, logger=battle_logger, reserved=reserved)
+    return select_ai_action(participant, active_pokemon, battle, logger=battle_logger, reserved=reserved, planned=planned)
 
 
 @dataclass
@@ -844,6 +844,12 @@ class BattleMove:
         if self.onHit:
             handled = invoke_callback(self.onHit, user, target, battle=battle)
             if handled is not True:
+                return
+            if (str(self.key).lower() == "pollenpuff"
+                    and getattr(user, "side", None) is not None
+                    and getattr(user, "side", None) is getattr(target, "side", None)):
+                # Its ally callback heals; the damaging default only applies
+                # to foes. Do not undo the heal with a friendly damage hit.
                 return
 
         # Default behaviour for moves without custom handlers
@@ -4881,6 +4887,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     pass
             if name not in self.field.pseudo_weather:
                 continue
+            if name == "trickroom":
+                # Older checkpoints stored only True; give those a bounded
+                # remaining lifetime as well as preserving new duration state.
+                if effect is True:
+                    effect = {"duration": 5}
+                    self.field.pseudo_weather[name] = effect
+                if isinstance(effect, dict) and isinstance(effect.get("duration"), (int, float)):
+                    effect["duration"] -= 1
+                    if effect["duration"] <= 0:
+                        self.remove_pseudo_weather(name)
 
         # Remove Pokémon that fainted from residual damage
         self.run_faint()

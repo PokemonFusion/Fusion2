@@ -11,7 +11,6 @@ except Exception:  # pragma: no cover - optional in lightweight tests
 
 from pokemon.battle.battleinstance import BattleSession
 
-
 if _EvenniaCommand is None:  # pragma: no cover - direct test/Django imports
     class Command:  # type: ignore[no-redef]
         """Lightweight command base used when Evennia is not configured."""
@@ -172,6 +171,7 @@ def _score_entries(trace) -> list[dict[str, Any]]:
                 "action": _text(action, "unknown"),
                 "score": _number(value),
                 "reasons": tuple(_text(reason, "unknown") for reason in reasons),
+                "target": _field(score, "target"),
                 "index": index,
             }
         )
@@ -183,7 +183,8 @@ def _format_score_entry(entry: dict[str, Any]) -> str:
     score = "?" if entry["score"] is None else f"{entry['score']:.1f}"
     reasons = ", ".join(reason for reason in entry["reasons"] if reason)
     suffix = f" - {reasons}" if reasons else ""
-    return _clip(f"  {entry['action']}: {score}{suffix}", LINE_WIDTH)
+    target = f" -> {entry['target']}" if entry.get("target") else ""
+    return _clip(f"  {entry['action']}{target}: {score}{suffix}", LINE_WIDTH)
 
 
 def _field(obj, name: str, default: Any = None) -> Any:

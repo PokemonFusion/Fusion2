@@ -63,9 +63,11 @@ def detached_mapping(value: Any) -> dict[str, Any]:
 
 
 def snapshot_battle_value(value: Any) -> Any:
-    """Serialize Pokemon references without copying their live ORM relationships."""
-    from .battledata import Move, Pokemon
+    """Serialize battler and field references without copying live ORM graphs."""
+    from .battledata import Field, Move, Pokemon
 
+    if isinstance(value, Field):
+        return {"__pf2_field_ref__": True}
     if isinstance(value, Pokemon):
         reference = value.model_id or f"{value.name}|{value.level}|{value.max_hp}"
         return {"__pf2_pokemon_ref__": reference}
@@ -82,9 +84,11 @@ def snapshot_battle_value(value: Any) -> Any:
     return value
 
 
-def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any]) -> Any:
-    """Reconnect saved source/target references to this restored battle's roster."""
+def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any], *, field=None) -> Any:
+    """Reconnect saved source/target references to the restored roster and field."""
     if isinstance(value, Mapping):
+        if set(value) == {"__pf2_field_ref__"}:
+            return field
         if set(value) == {"__pf2_pokemon_ref__"}:
             return pokemon_by_ref.get(value["__pf2_pokemon_ref__"])
         if "__pf2_move_ref__" in value:
@@ -96,9 +100,9 @@ def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any]) -> Any:
             return BattleMove(name, key=key, pp=value.get("pp"), raw=raw,
                               power=raw.get("basePower", 0) or 0, type=raw.get("type"),
                               accuracy=raw.get("accuracy", 100), priority=raw.get("priority", 0))
-        return {key: restore_battle_value(item, pokemon_by_ref) for key, item in value.items()}
+        return {key: restore_battle_value(item, pokemon_by_ref, field=field) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
-        items = [restore_battle_value(item, pokemon_by_ref) for item in value]
+        items = [restore_battle_value(item, pokemon_by_ref, field=field) for item in value]
         return tuple(items) if isinstance(value, tuple) else items
     return value
 
