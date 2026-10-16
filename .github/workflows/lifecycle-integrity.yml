@@ -14,6 +14,8 @@ on:
       - 'typeclasses/characters.py'
       - 'typeclasses/exits.py'
       - 'commands/player/cmd_account.py'
+      - 'commands/player/cmd_learn_evolve.py'
+      - 'commands/player/cmd_party.py'
       - 'commands/player/cmd_battle_concede.py'
       - 'commands/player/cmd_gym.py'
       - 'world/hunt_system.py'
@@ -53,6 +55,10 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Real ORM transactions, deferred constraints and concurrent writers
         run: python tests/integration/placement_cases.py
+      - name: Evolution and held-item transactions and concurrent retries
+        run: python tests/integration/evolution_cases.py
+      - name: Evolution conditions and commands
+        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims
         run: python tests/integration/recovery_cases.py
       - name: Battle EXP, HP, PP and post-win healing on PostgreSQL

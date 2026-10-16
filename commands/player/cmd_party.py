@@ -144,16 +144,18 @@ class CmdShowBox(Command):
 
 
 class CmdSetHoldItem(Command):
-    """Give one of your active Pokemon a held item.
+    """Give, replace, or remove an active Pokemon's held item.
 
     Usage:
       +hold <slot>=<item>
 
     Examples:
       +hold 1=Oran Berry
+      +hold 1=
 
     Notes:
-      The item must be carried by your character.
+      Uses trainer inventory, or an exact carried item. Replaced and removed
+      items return to trainer inventory. An empty item removes the held item.
     """
 
     key = "+hold"
@@ -162,53 +164,31 @@ class CmdSetHoldItem(Command):
     help_category = "Pokemon"
 
     def func(self):
+        """Set the desired held item; an empty right side removes it."""
         if not require_no_battle_lock(self.caller):
             return
-        if not self.args or "=" not in self.args:
-            self.caller.msg("Usage: +hold <slot>=<item>")
+        if "=" not in self.args:
+            self.caller.msg("Usage: +hold <slot>=<item> (leave item empty to remove)")
             return
-
-        slot_str, item_name = [p.strip() for p in self.args.split("=", 1)]
-
+        slot_str, item = [part.strip() for part in self.args.split("=", 1)]
         try:
             slot = int(slot_str)
         except ValueError:
             self.caller.msg("Slot must be a number between 1 and 6.")
             return
-
-        pokemon = self.caller.get_active_pokemon_by_slot(slot)
-        if not pokemon:
-            self.caller.msg("No Pokémon in that slot.")
-            return
-
-        previous_held_item = getattr(pokemon, "held_item", "") or ""
-        if previous_held_item and previous_held_item.lower() != "nothing":
-            self.caller.msg(f"{pokemon.name} is already holding {previous_held_item}.")
-            return
-
-        item = self.caller.search(item_name, location=self.caller)
-        if not item:
-            return
+        from pokemon.services.evolution import EvolutionError, EvolutionService
 
         try:
-            from django.db import transaction
-
-            with transaction.atomic():
-                pokemon.held_item = item.key
-                pokemon.save()
-                deleted = item.delete()
-                if deleted is False:
-                    raise RuntimeError("carried item delete returned false")
-        except Exception:
-            try:
-                pokemon.held_item = previous_held_item
-                pokemon.save()
-            except Exception:
-                pass
-            self.caller.msg("Unable to set held item; your carried item was not removed.")
+            message = EvolutionService(self.caller).hold(slot, item or None)
+        except EvolutionError as error:
+            self.caller.msg(str(error))
             return
-
-        self.caller.msg(f"{pokemon.name} is now holding {item.key}.")
+        except Exception:
+            from evennia.utils import logger
+            logger.log_trace("Held item transition failed")
+            self.caller.msg("Unable to change held item; Pokemon and inventory were unchanged.")
+            return
+        self.caller.msg(message)
 
 
 class CmdChargenInfo(Command):

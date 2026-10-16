@@ -111,13 +111,19 @@ def test_spaced_species_use_the_same_learnsets_and_generated_moves(name):
 def test_spaced_evolution_and_breeding_lookups_preserve_species_names():
     """Names at evolution and breeding boundaries use the same dex entries."""
     from pokemon.data.breeding import _lookup_species
-    from pokemon.data.evolution import attempt_evolution, get_evolution
+    from pokemon.data.evolution import EvolutionContext, attempt_evolution, get_evolution
     from pokemon.dex import POKEDEX
 
     assert _lookup_species("Mr. Mime") is POKEDEX["Mrmime"]
-    assert get_evolution("Mime Jr.", level=50) == get_evolution("Mimejr", level=50) == "Mr. Mime"
+    assert get_evolution("Mime Jr.", level=50) is None
+    context = EvolutionContext(moves=("Mimic",))
+    assert (
+        get_evolution("Mime Jr.", level=50, context=context)
+        == get_evolution("Mimejr", level=50, context=context)
+        == "Mr. Mime"
+    )
     mon = SimpleNamespace(species="Mime Jr.", name="Baby Stage", level=50, type_="")
-    assert attempt_evolution(mon) == "Mr. Mime"
+    assert attempt_evolution(mon, context=context) == "Mr. Mime"
     assert mon.species == "Mr. Mime"
     assert mon.name == "Baby Stage"
     assert mon.type_ == "Psychic, Fairy"

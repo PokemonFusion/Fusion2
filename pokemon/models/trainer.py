@@ -132,6 +132,8 @@ class Trainer(models.Model):
 
         def add_item(self, item_name: str, amount: int = 1) -> None:
                 """Reuse legacy aliases and store new items under normalized names."""
+                if isinstance(amount, bool) or not isinstance(amount, int) or amount <= 0:
+                        raise ValueError("Item amount must be a positive integer.")
                 with transaction.atomic():
                         Trainer.objects.select_for_update().get(pk=self.pk)
                         entries = self._inventory_entries(item_name, lock=True)
@@ -145,6 +147,8 @@ class Trainer(models.Model):
 
         def remove_item(self, item_name: str, amount: int = 1) -> bool:
                 """Lock the inventory debit and refresh its cache only on commit."""
+                if isinstance(amount, bool) or not isinstance(amount, int) or amount <= 0:
+                        raise ValueError("Item amount must be a positive integer.")
                 with transaction.atomic():
                         Trainer.objects.select_for_update().get(pk=self.pk)
                         entries = self._inventory_entries(item_name, lock=True)
