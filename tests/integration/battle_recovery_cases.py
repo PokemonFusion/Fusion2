@@ -1,0 +1,547 @@
+"""Database-backed reward failures and real battle-session rebuild checks."""
+
+from __future__ import annotations
+
+import unittest
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from types import SimpleNamespace
+from unittest.mock import patch
+from uuid import uuid4
+
+from isolated_postgres import IsolatedPostgres
+from ui_cases import PlayerView
+
+
+class BattleRecoveryCases(unittest.TestCase):
+    """Drive production sessions against disposable PostgreSQL model tables."""
+
+    def setUp(self):
+        """Create two ordinary players, a real room and a two-member NPC roster."""
+        self.players = []
+        room = ObjectDB.objects.create(db_key="Recovery room " + uuid4().hex[:8])
+        self.room = SimpleNamespace(id=room.pk, key=room.key, db=room.db, ndb=room.ndb,
+                                    attributes=room.attributes, contents=[])
+        for name in ("Recovery A ", "Recovery B "):
+            character = ObjectDB.objects.create(db_key=name + uuid4().hex[:8])
+            trainer = Trainer.objects.create(user=character, trainer_number=Trainer.objects.count() + 1)
+            storage = UserStorage.objects.create(user=character)
+            player = PlayerView(character, trainer, storage)
+            player.location = self.room
+            self.players.append(player)
+            self.room.contents.append(player)
+            for species in ("Squirtle", "Bulbasaur"):
+                create_owned_pokemon(species, trainer, 5, ivs=[0] * 6, evs=[0] * 6,
+                                     nature="Hardy", active_move_names=["Tackle"])
+        self.player = self.players[0]
+        self.npc = NPCTrainer.objects.create(name="Recovery NPC " + uuid4().hex[:8])
+        for order, species in enumerate(("Rattata", "Pidgey"), 1):
+            NPCPokemonTemplate.objects.create(npc_trainer=self.npc, species=species, level=3,
+                                              template_key=str(order), sort_order=order,
+                                              ivs=[0] * 6, evs=[0] * 6, move_names=["Tackle"])
+        self.sessions = []
+        self.search = patch("pokemon.battle.battleinstance.search_object", self.find)
+        self.search.start()
+
+    def tearDown(self):
+        """Clean only the current restored session for each test battle."""
+        self.search.stop()
+        for session in self.sessions:
+            if session.battle_id in (self.room.db.battles or []):
+                session.end()
+
+    def find(self, query):
+        """Resolve transport wrappers while leaving all persistence real."""
+        return [p for p in self.players if query == f"#{p.id}"]
+
+    def start(self, kind="npc"):
+        """Start the ordinary NPC, wild or two-player session implementation."""
+        for player in self.players:
+            for mon in OwnedPokemon.objects.filter(trainer=player.trainer):
+                mon.current_hp = get_max_hp(mon)
+                mon.save(update_fields=("current_hp",))
+        session = BattleSession(self.player, self.players[1] if kind == "pvp" else None)
+        if kind == "npc":
+            session.start_trainer_encounter(generate_static_trainer_encounter(self.npc))
+        elif kind == "wild":
+            mon = create_battle_pokemon("Rattata", 3, is_wild=True, move_names=["Tackle"])
+            session._track_temp_opponent_team([mon])
+            session._select_opponent = lambda: (mon, "Wild Rattata", BattleType.WILD, "Wild encounter")
+            session.start()
+        else:
+            session.start()
+        self.sessions.append(session)
+        return session
+
+    def rebuild(self, session):
+        """Discard live references and restore the production serialized checkpoint."""
+        session._sync_active_battle_state()
+        session._persist_turn_state()
+        battle_handler.unregister(session)
+        for player in self.players:
+            player.ndb.battle_instance = None
+        self.room.ndb.battle_instances = {}
+        restored = BattleSession.restore(self.room, session.battle_id)
+        self.assertIsNotNone(restored)
+        self.sessions[self.sessions.index(session)] = restored
+        return restored
+
+    def wallet(self):
+        """Read the authoritative wallet without a cached trainer instance."""
+        return Trainer.objects.values_list("money", flat=True).get(pk=self.player.trainer.pk)
+
+    def exp(self):
+        """Read the complete party EXP vector directly from SQL."""
+        return list(OwnedPokemon.objects.filter(trainer=self.player.trainer).order_by("pk")
+                    .values_list("total_exp", flat=True))
+
+    def defeat_npc(self, session):
+        """Reach the normal terminal reward path with both configured opponents fainted."""
+        for mon in session.battle.participants[1].pokemons:
+            mon.hp = 0
+        session.battle.run_faint()
+        return session.battle.participants[0]
+
+    def test_failed_wallet_write_does_not_announce_or_mark_delivery(self):
+        """A write outage must remain retryable instead of claiming successful payment."""
+        session = self.start()
+        winner = self.defeat_npc(session)
+        before = self.wallet()
+        with patch.object(Trainer, "add_money", side_effect=RuntimeError("wallet unavailable")):
+            try:
+                session.battle.handle_end_of_battle_rewards(winner)
+            except RuntimeError:
+                pass
+        self.assertFalse(session.battle._rewards_granted)
+        self.assertEqual(self.wallet(), before)
+        self.assertFalse(any("received ₽" in str(message) for message in self.player.messages))
+        session.battle.handle_end_of_battle_rewards(winner)
+        self.assertGreater(self.wallet(), before)
+
+    def test_prize_replay_after_rebuild_pays_once(self):
+        """A fresh engine cannot turn an already committed prize into a new payment."""
+        session = self.start()
+        winner = self.defeat_npc(session)
+        session.battle.handle_end_of_battle_rewards(winner)
+        paid = self.wallet()
+        self.assertGreater(paid, 0)
+        restored = self.rebuild(session)
+        restored.battle.participants[1].has_lost = True
+        restored.battle.handle_end_of_battle_rewards(restored.battle.participants[0])
+        self.assertEqual(self.wallet(), paid)
+
+    def test_faint_rebuild_does_not_repeat_exp_or_evs(self):
+        """A previously processed faint must not award EXP again when rebuilt."""
+        session = self.start()
+        session.battle.participants[1].active[0].hp = 0
+        session.battle.run_faint()
+        awarded = self.exp()
+        restored = self.rebuild(session)
+        restored.battle.run_faint()
+        self.assertEqual(self.exp(), awarded)
+        self.assertEqual(restored.battle.participants[1].active[0].name, "Pidgey")
+
+    def test_no_reserve_rebuild_has_no_fainted_active(self):
+        """All-fainted teams must stay terminal rather than restoring an invalid lead."""
+        for kind in ("npc", "wild", "pvp"):
+            with self.subTest(kind=kind):
+                session = self.start(kind)
+                for mon in session.battle.participants[0].pokemons:
+                    mon.hp = 0
+                session.battle.run_faint()
+                restored = self.rebuild(session)
+                part = restored.battle.participants[0]
+                self.assertFalse(part.active)
+                self.assertTrue(part.has_lost)
+                restored.end()
+
+    def test_forced_reserve_rebuild_uses_conscious_member(self):
+        """Fainting and restoring retain the legal player reserve in each battle type."""
+        for kind in ("npc", "wild", "pvp"):
+            with self.subTest(kind=kind):
+                session = self.start(kind)
+                part = session.battle.participants[0]
+                part.active[0].hp = 0
+                session.battle.run_faint()
+                restored = self.rebuild(session)
+                active = restored.battle.participants[0].active
+                self.assertEqual(len(active), 1)
+                self.assertGreater(active[0].hp, 0)
+                self.assertEqual(active[0].name, "Bulbasaur")
+                restored.end()
+
+    def test_pvp_rebuild_keeps_both_sides_human(self):
+        """A restored opponent must still wait for its player's action."""
+        restored = self.rebuild(self.start("pvp"))
+        self.assertEqual(restored.battle.type, BattleType.PVP)
+        self.assertFalse(restored.battle.participants[0].is_ai)
+        self.assertFalse(restored.battle.participants[1].is_ai)
+
+    def test_wallet_failure_then_rebuild_retry_command_pays_once(self):
+        """A player command recovers a saved failed claim without replaying the fight."""
+        session = self.start()
+        winner = self.defeat_npc(session)
+        with patch.object(Trainer, "add_money", side_effect=RuntimeError("wallet unavailable")):
+            session.battle.handle_end_of_battle_rewards(winner)
+            with self.assertRaises(RuntimeError):
+                session.end()
+        restored = self.rebuild(session)
+        command = CmdBattleRetry()
+        command.caller = self.player
+        command.func()
+        paid = self.wallet()
+        self.assertGreater(paid, 0)
+        self.assertIsNone(self.player.db.battle_lock)
+        self.assertNotIn(restored.battle_id, self.room.db.battles or [])
+        command.func()
+        self.assertEqual(self.wallet(), paid)
+
+    def test_marker_failure_rolls_back_money_and_retries(self):
+        """An outage after wallet save cannot commit money without its marker."""
+        session = self.start()
+        winner = self.defeat_npc(session)
+        original = self.player.attributes.add
+
+        def fail_marker(key, value, *args, **kwargs):
+            if kwargs.get("category") == CATEGORY and value.get("claimed"):
+                raise RuntimeError("marker unavailable")
+            return original(key, value, *args, **kwargs)
+
+        with patch.object(self.player.attributes, "add", fail_marker):
+            session.battle.handle_end_of_battle_rewards(winner)
+        self.assertEqual(self.wallet(), 0)
+        self.assertFalse(session.battle._rewards_granted)
+        session.battle.handle_end_of_battle_rewards(winner)
+        self.assertGreater(self.wallet(), 0)
+
+    def test_stale_checkpoint_cannot_repeat_faint_effect(self):
+        """A committed effect receipt protects even an older room checkpoint."""
+        session = self.start()
+        old_data = session.data.to_dict()
+        old_state = session.state.to_dict()
+        session.battle.participants[1].active[0].hp = 0
+        session.battle.run_faint()
+        awarded = self.exp()
+        restored = self.rebuild(session)
+        restored.storage.set("data", old_data)
+        restored.storage.set("state", old_state)
+        battle_handler.unregister(restored)
+        for player in self.players:
+            player.ndb.battle_instance = None
+        stale = BattleSession.restore(self.room, restored.battle_id)
+        self.sessions[self.sessions.index(restored)] = stale
+        stale.battle.participants[1].active[0].hp = 0
+        stale.battle.run_faint()
+        self.assertEqual(self.exp(), awarded)
+
+    def test_pending_player_action_and_resources_survive_rebuild(self):
+        """A half-declared PvP turn keeps one choice and waits for the other player."""
+        session = self.start("pvp")
+        active = session.battle.participants[0].active[0]
+        active.hp = 10
+        active.status = "par"
+        active.moves[0].pp = 7
+        session.queue_move("Tackle", caller=self.player)
+        turn = session.battle.turn_count
+        restored = self.rebuild(session)
+        active = restored.battle.participants[0].active[0]
+        self.assertEqual((active.hp, active.status, active.moves[0].pp), (10, "par", 7))
+        self.assertEqual(restored.battle.turn_count, turn)
+        self.assertIsNotNone(restored.battle.participants[0].pending_action)
+        self.assertIsNone(restored.battle.participants[1].pending_action)
+        self.assertFalse(restored.is_turn_ready())
+
+    def test_faint_marker_failure_rolls_back_all_awards_then_recovers(self):
+        """Party EXP/EVs and character TXP share the same claim transaction."""
+        session = self.start()
+        self.player.db.exp_share = True
+        before = self.exp()
+        original = self.player.attributes.add
+
+        def fail_marker(key, value, *args, **kwargs):
+            if kwargs.get("category") == CATEGORY and value.get("claimed"):
+                raise RuntimeError("faint marker unavailable")
+            return original(key, value, *args, **kwargs)
+
+        session.battle.participants[1].active[0].hp = 0
+        with patch.object(self.player.attributes, "add", fail_marker):
+            session.battle.run_faint()
+        self.assertEqual(self.exp(), before)
+        self.assertFalse(self.player.db.trainer_xp)
+        restored = self.rebuild(session)
+        restored.retry_battle_rewards()
+        awarded = self.exp()
+        self.assertGreater(sum(awarded), sum(before))
+        self.assertGreater(self.player.db.trainer_xp, 0)
+        restored.retry_battle_rewards()
+        restored.battle.run_faint()
+        self.assertEqual(self.exp(), awarded)
+
+    def test_receipt_write_failure_leaves_faint_retryable(self):
+        """A failed intent write must precede the irreversible faint marker."""
+        session = self.start()
+        target = session.battle.participants[1].active[0]
+        target.hp = 0
+        before = self.exp()
+        original = self.player.attributes.add
+
+        def fail_receipt(key, value, *args, **kwargs):
+            if kwargs.get("category") == CATEGORY:
+                raise RuntimeError("receipt unavailable")
+            return original(key, value, *args, **kwargs)
+
+        with patch.object(self.player.attributes, "add", fail_receipt), self.assertRaises(RuntimeError):
+            session.battle.run_faint()
+        self.assertFalse(getattr(target, "is_fainted", False))
+        self.assertEqual(self.exp(), before)
+        session.battle.run_faint()
+        self.assertGreater(sum(self.exp()), sum(before))
+
+    def race(self, callbacks):
+        """Give each concurrent claimant its own SQL connection and transport."""
+        barrier = Barrier(len(callbacks))
+
+        def work(callback):
+            close_old_connections()
+            try:
+                character = ObjectDB.objects.get(pk=self.player.id)
+                player = PlayerView(character, Trainer.objects.get(user=character), UserStorage.objects.get(user=character))
+                barrier.wait(timeout=10)
+                return callback(player)
+            finally:
+                connections.close_all()
+
+        with ThreadPoolExecutor(max_workers=len(callbacks)) as executor:
+            return list(executor.map(work, callbacks))
+
+    def test_concurrent_duplicate_claims_pay_once(self):
+        """Two independent delivery attempts serialize on the character row."""
+        rewards = BattleRewards(uuid4())
+        key = rewards.record(self.player, "prize", {"money": 100})
+        results = self.race([lambda player: rewards.claim(player, key), lambda player: rewards.claim(player, key)])
+        self.assertEqual(results.count(True), 1)
+        self.assertEqual(self.wallet(), 100)
+
+    def test_concurrent_distinct_claims_do_not_lose_money(self):
+        """Separate battle events cannot overwrite a stale trainer wallet."""
+        rewards = BattleRewards(uuid4())
+        first = rewards.record(self.player, "first", {"money": 100})
+        second = rewards.record(self.player, "second", {"money": 200})
+        self.race([lambda player: rewards.claim(player, first), lambda player: rewards.claim(player, second)])
+        self.assertEqual(self.wallet(), 300)
+
+    def test_foreign_character_cannot_claim_receipt(self):
+        """One account or battle identity never grants access to another character."""
+        rewards = BattleRewards(uuid4())
+        key = rewards.record(self.player, "prize", {"money": 100})
+        with self.assertRaises(ValueError):
+            rewards.claim(self.players[1], key)
+        self.assertEqual(self.wallet(), 0)
+
+    def test_checkpoint_failure_rolls_back_turn_and_retains_choices(self):
+        """A failed final checkpoint cannot consume PP or leave a half-played turn."""
+        session = self.start("pvp")
+        session.queue_move("Tackle", caller=self.player)
+        session.queue_move = lambda *args, **kwargs: None
+        for participant in session.battle.participants:
+            active = participant.active[0]
+            active.moves[0].pp = 35
+            target = session.battle.opponent_of(participant)
+            participant.pending_action = Action(participant, ActionType.MOVE, target,
+                                                  move=BattleMove("Tackle", pp=35), pokemon=active)
+        session.state.declare["B1"] = {"move": "tackle", "target": "A1", "trainer": str(self.players[1].id),
+                                        "pokemon": session.battle.participants[1].active[0].model_id}
+        session._persist_turn_state()
+        before = [(p.active[0].hp, p.active[0].moves[0].pp) for p in session.battle.participants]
+        turn = session.battle.turn_count
+        original = session.storage.set
+
+        def fail_checkpoint(key, value):
+            if key == "state":
+                raise RuntimeError("checkpoint unavailable")
+            return original(key, value)
+
+        with patch.object(session.storage, "set", fail_checkpoint), self.assertRaises(RuntimeError):
+            session.execute_persistent_turn()
+        self.assertEqual(session.battle.turn_count, turn)
+        self.assertEqual([(p.active[0].hp, p.active[0].moves[0].pp) for p in session.battle.participants], before)
+        self.assertTrue(all(p.pending_action for p in session.battle.participants))
+        session.execute_persistent_turn()
+        self.assertEqual(session.battle.turn_count, turn + 1)
+        restored = self.rebuild(session)
+        self.assertFalse(restored.state.declare)
+        self.assertTrue(all(p.pending_action is None for p in restored.battle.participants))
+
+    def test_cleanup_failure_retains_terminal_intent_and_encounter_rows(self):
+        """Late cleanup failure rolls back deletes and can finish after rebuild."""
+        session = self.start()
+        before = EncounterPokemon.objects.count()
+        original = session.storage.delete
+
+        def fail_cleanup(part):
+            if part == "state":
+                raise RuntimeError("cleanup unavailable")
+            return original(part)
+
+        with patch.object(session.storage, "delete", fail_cleanup), self.assertRaises(RuntimeError):
+            session.end()
+        self.assertEqual(EncounterPokemon.objects.count(), before)
+        self.assertEqual(self.player.db.battle_lock, session.battle_id)
+        restored = self.rebuild(session)
+        self.assertTrue(restored.state.ending)
+        command = CmdBattleRetry()
+        command.caller = self.player
+        command.func()
+        self.assertIsNone(self.player.db.battle_lock)
+        self.assertEqual(EncounterPokemon.objects.count(), before - 2)
+        self.assertEqual(self.wallet(), 0)
+
+    def test_duplicate_cleanup_cannot_unlock_a_new_battle(self):
+        """An old end callback must not release the player's newer session."""
+        old = self.start()
+        old.end()
+        new = self.start()
+        old.end()
+        self.assertEqual(self.player.db.battle_lock, new.battle_id)
+        self.assertTrue(self.player.db.battle_control)
+        self.assertIs(self.player.ndb.battle_instance, new)
+
+    def test_stale_saved_actor_is_discarded_without_advancing_turn(self):
+        """A stored move for a replaced active Pokemon cannot run as its reserve."""
+        session = self.start("pvp")
+        session.queue_move("Tackle", caller=self.player)
+        part = session.battle.participants[0]
+        part.active = [part.pokemons[1]]
+        turn = session.battle.turn_count
+        restored = self.rebuild(session)
+        self.assertFalse(restored.state.declare)
+        self.assertIsNone(restored.battle.participants[0].pending_action)
+        self.assertEqual(restored.battle.turn_count, turn)
+        self.assertTrue(any("discarded" in str(message) for message in self.player.messages))
+
+    def test_saved_switch_restores_the_requested_legal_reserve(self):
+        """A pending switch uses its saved party slot instead of becoming an attack."""
+        session = self.start("pvp")
+        session.queue_switch(2, caller=self.player)
+        restored = self.rebuild(session)
+        action = restored.battle.participants[0].pending_action
+        self.assertEqual(action.action_type, ActionType.SWITCH)
+        self.assertEqual(action.pokemon.name, "Bulbasaur")
+
+    def test_completed_flee_result_survives_rebuild(self):
+        """A saved escape cannot be misreported as an Adventure loss after reload."""
+        session = self.start("wild")
+        participant = session.battle.participants[0]
+        participant.flee_attempts = 2
+        session.battle._flee_result = {"success": True, "reason": "speed", "participant": participant,
+                                      "pokemon": participant.active[0]}
+        session.battle.battle_over = True
+        restored = self.rebuild(session)
+        self.assertTrue(restored.battle._flee_result["success"])
+        self.assertTrue(restored.battle.battle_over)
+        self.assertEqual(restored.battle.participants[0].flee_attempts, 2)
+        self.assertNotIn("participant", restored.state.flee_result)
+
+    def test_participation_history_survives_rebuild(self):
+        """Switching and reload keep both legitimate EXP recipients."""
+        session = self.start()
+        participant = session.battle.participants[0]
+        participant.record_participation(participant.pokemons[0])
+        participant.active = [participant.pokemons[1]]
+        participant.record_participation(participant.pokemons[1])
+        restored = self.rebuild(session)
+        self.assertEqual(len(restored.battle.participants[0].participating_pokemon), 2)
+        before = self.exp()
+        restored.battle.participants[1].active[0].hp = 0
+        restored.battle.run_faint()
+        self.assertTrue(all(after > prior for prior, after in zip(before, self.exp())))
+
+    def test_receipt_plan_is_immutable_and_claimable_without_session(self):
+        """A room-independent pending claim retains its first amount through replay."""
+        rewards = BattleRewards(uuid4())
+        rewards.record(self.player, "prize", {"money": 100})
+        rewards.record(self.player, "prize", {"money": 999})
+        command = CmdBattleRetry()
+        command.caller = self.player
+        command.func()
+        self.assertEqual(self.wallet(), 100)
+        command.func()
+        self.assertEqual(self.wallet(), 100)
+        self.assertFalse(BattleRewards.pending(self.player))
+
+    def test_active_fusion_receives_faint_award_once_across_rebuild(self):
+        """Canonical Fusion placement still receives Pokemon EXP and fighter XP."""
+        mon = OwnedPokemon.objects.get(trainer=self.player.trainer, species="Squirtle")
+        self.player.storage.reserve_for_fusion(mon)
+        self.player.db.fusion_id = str(mon.pk)
+        self.player.db.fusion_kind = "permanent"
+        self.player.db.fusion_battle_order = "first"
+        self.player.db.total_exp = mon.total_exp
+        before = mon.total_exp
+        session = self.start()
+        session.battle.participants[1].active[0].hp = 0
+        session.battle.run_faint()
+        awarded = OwnedPokemon.objects.values_list("total_exp", flat=True).get(pk=mon.pk)
+        self.assertGreater(awarded, before)
+        self.assertEqual(self.player.db.total_exp, awarded)
+        restored = self.rebuild(session)
+        restored.battle.run_faint()
+        self.assertEqual(OwnedPokemon.objects.values_list("total_exp", flat=True).get(pk=mon.pk), awarded)
+        self.assertEqual(self.player.db.total_exp, awarded)
+
+    def test_capture_rolls_back_with_checkpoint_then_commits_once(self):
+        """A failed turn cannot debit a ball or publish a phantom caught Pokemon."""
+        session = self.start("wild")
+        self.player.trainer.add_item("Master Ball", 1)
+        actor, target = session.battle.participants
+        actor.pending_action = Action(actor, ActionType.ITEM, target, item="Master Ball", priority=6,
+                                      pokemon=actor.active[0])
+        session.state.declare["A1"] = {"item": "Master Ball", "target": "B1", "trainer": str(self.player.id),
+                                        "pokemon": actor.active[0].model_id}
+        session._persist_turn_state()
+        before = OwnedPokemon.objects.count()
+        original = session.storage.set
+
+        def fail_checkpoint(key, value):
+            if key == "state":
+                raise RuntimeError("capture checkpoint unavailable")
+            return original(key, value)
+
+        with patch.object(session.storage, "set", fail_checkpoint), self.assertRaises(RuntimeError):
+            session.execute_persistent_turn()
+        self.assertEqual(OwnedPokemon.objects.count(), before)
+        self.assertEqual(self.player.trainer.get_item_quantity("Master Ball"), 1)
+        self.assertFalse(self.player.ndb.pending_caught_pokemon)
+        session.execute_persistent_turn()
+        self.assertEqual(OwnedPokemon.objects.count(), before + 1, getattr(session.battle, "_callback_failures", []))
+        self.assertEqual(self.player.trainer.get_item_quantity("Master Ball"), 0)
+        self.assertEqual(len(self.player.ndb.pending_caught_pokemon), 1)
+        restored = self.rebuild(session)
+        self.assertTrue(restored.battle.capture_succeeded)
+        self.assertFalse(restored.battle.participants[1].pokemons)
+        self.assertTrue(restored.battle.participants[1].has_lost)
+
+
+if __name__ == "__main__":
+    with IsolatedPostgres() as database:
+        database.create_model_tables()
+        import evennia
+        from django.db import close_old_connections, connections
+        from evennia.commands.command import Command
+        from evennia.objects.models import ObjectDB
+
+        from pokemon.battle.battleinstance import BattleSession
+        from pokemon.battle.engine import Action, ActionType, BattleMove, BattleType
+        from pokemon.battle.handler import battle_handler
+        from pokemon.battle.pokemon_factory import create_battle_pokemon
+        from pokemon.helpers.pokemon_helpers import create_owned_pokemon, get_max_hp
+        from pokemon.models.core import EncounterPokemon, OwnedPokemon
+        from pokemon.models.storage import UserStorage
+        from pokemon.models.trainer import NPCPokemonTemplate, NPCTrainer, Trainer
+        from pokemon.services.battle_rewards import CATEGORY, BattleRewards
+        from pokemon.services.trainer_encounters import generate_static_trainer_encounter
+        with patch.object(evennia, "Command", Command):
+            from commands.player.cmd_battle_retry import CmdBattleRetry
+
+        result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(BattleRecoveryCases))
+        raise SystemExit(not result.wasSuccessful())

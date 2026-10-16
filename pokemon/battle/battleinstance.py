@@ -896,40 +896,6 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 logic.state.teams = rebuilt_state.teams
         obj.logic = logic
         obj.logic.battle.log_action = obj.notify
-        # Rehydrate any queued-but-unresolved declarations from state -> positions.
-        # This avoids needing to persist turndata.turninit snapshots on input.
-        try:
-            decls: Dict[str, Any] = getattr(obj.logic.state, "declare", {}) or {}
-            positions: Dict[str, Any] = getattr(obj.logic.data.turndata, "positions", {}) or {}
-            for pos_name, d in decls.items():
-                pos = positions.get(pos_name)
-                if not pos or not isinstance(d, dict):
-                    continue
-                # d may contain one of: {"move","target"}, {"switch"}, {"item"}, {"run"}
-                if "move" in d:
-                    # default target if missing
-                    tgt = d.get("target", "B1")
-                    pos.declareAttack(tgt, d["move"])
-                elif "switch" in d:
-                    try:
-                        pos.declareSwitch(int(d["switch"]))
-                    except Exception:
-                        pos.declareSwitch(d["switch"])
-                elif "item" in d:
-                    pos.declareItem(d["item"])
-                    # The engine consumes pending actions, not declarations.
-                    # Rebuild the item action as well as its saved UI state.
-                    actor = obj.battle.participant_for(pos.pokemon)
-                    if actor:
-                        is_ball = _battle_norm_key(d["item"]).lower().endswith("ball")
-                        target = obj.battle.opponent_of(actor) if is_ball else actor
-                        actor.pending_action = Action(
-                            actor, ActionType.ITEM, target, item=d["item"], priority=6,
-                        )
-                elif "run" in d:
-                    pos.declareRun()
-        except Exception:
-            log_warn("Failed to rehydrate queued declarations during restore", exc_info=True)
         obj.temp_pokemon_ids = list(storage.get("temp_pokemon_ids") or [])
         obj.encounter_metadata = dict(storage.get("encounter") or {})
         saved_result = storage.get("battle_result") or {}
@@ -1087,6 +1053,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             if "PYTEST_CURRENT_TEST" in __import__("os").environ:
                 raise
 
+        obj._restore_declarations()
+        obj._bind_reward_delivery()
+        obj.storage.set("state", obj._compact_state_for_persist(obj.state.to_dict()))
         return obj
 
     def start(self) -> None:
@@ -1250,6 +1219,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             result_key = saved_result
         elif flee_result.get("success"):
             result_key = "flee"
+        elif getattr(self.battle, "capture_succeeded", False):
+            result_key = "capture"
         elif self._winner_is_player_side(winner):
             pending = list(getattr(getattr(player, "ndb", None), "pending_caught_pokemon", []) or [])
             before = int(metadata.get("capture_count_before", 0) or 0)
@@ -1512,6 +1483,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def _setup_battle_room(self, intro_message: str | None = None) -> None:
         """Move players to the battle room and notify watchers."""
+        self._bind_reward_delivery()
         log_info(f"Setting up battle room for {self.battle_id}")
         self.add_watcher(self.captainA)
         if self.captainB and getattr(self.captainB, "id", None) is not None:
@@ -1634,7 +1606,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             debug=False,
         )
 
-    def _sync_player_pokemon_state(self) -> None:
+    def _sync_player_pokemon_state(self, *, strict=False) -> None:
         """Persist battle results back to the owning player models.
 
         ``BattleSession`` creates temporary battle representations of a
@@ -1717,15 +1689,17 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                             mon.save()
                         except Exception:
                             log_warn("Failed to persist synced Pokemon state", exc_info=True)
-                            if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                            if strict or "PYTEST_CURRENT_TEST" in __import__("os").environ:
                                 raise
                     except Exception:
                         log_warn("Failed to persist synced Pokemon state", exc_info=True)
-                        if "PYTEST_CURRENT_TEST" in __import__("os").environ:
+                        if strict or "PYTEST_CURRENT_TEST" in __import__("os").environ:
                             raise
 
     def end(self) -> None:
         """End the battle and clean up."""
+        if getattr(self, "_ended", False):
+            return
         metadata = dict(getattr(self, "encounter_metadata", None) or {})
         victory_id = getattr(self, "_gym_victory_id", None)
         if metadata.get("source_type") == "gym_leader" and victory_id and not self._battle_result_handled:
@@ -1741,50 +1715,17 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             # Do not destroy the only copy if the character receipt could not
             # be saved. Once queued, normal battle cleanup is safe.
             queue_encounter_result(metadata.get("adventure_session_id"), self.captainA, pending_result)
+        if self.state is not None:
+            self.state.ending = True
+            self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
+        self.retry_battle_rewards()
         log_info(f"Ending battle {self.battle_id}")
-        from pokemon.services.trainer_challenges import release_placed_trainer
 
         self.persist_debug_record(event="battle_ending")
-        self._sync_player_pokemon_state()
+        self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
-        try:
-            from ..models import OwnedPokemon
-        except Exception:  # pragma: no cover
-            OwnedPokemon = None
-        for pid in getattr(self, "temp_pokemon_ids", []):
-            try:
-                delete_encounter_by_ref(pid)
-            except Exception as err:
-                log_warn("Battle cleanup encountered an error", exc_info=True)
-                if "PYTEST_CURRENT_TEST" in __import__("os").environ:
-                    raise
-        self.temp_pokemon_ids.clear()
-        if self.room:
-            if hasattr(self.room.ndb, "battle_instances"):
-                self.room.ndb.battle_instances.pop(self.battle_id, None)
-                if not self.room.ndb.battle_instances:
-                    del self.room.ndb.battle_instances
-                log_info("Removed battle_instances map from room")
-            for part in ["logic", "trainers", "temp_pokemon_ids", "encounter", "battle_result"]:
-                self.storage.delete(part)
-            battles = getattr(self.room.db, "battles", None)
-            if battles and self.battle_id in battles:
-                battles.remove(self.battle_id)
-                if battles:
-                    self.room.db.battles = battles
-                else:
-                    delattr(self.room.db, "battles")
-        release_placed_trainer(self)
-        for trainer in list(self.teamA) + list(self.teamB):
-            if not trainer:
-                continue
-            ndb = getattr(trainer, "ndb", None)
-            if ndb and getattr(ndb, "battle_instance", None) == self:
-                delattr(ndb, "battle_instance")
-            if hasattr(trainer, "db"):
-                clear_battle_lock(trainer)
-                if hasattr(trainer.db, "battle_id"):
-                    delattr(trainer.db, "battle_id")
+        self._cleanup_saved_battle()
+        self._ended = True
         self.logic = None
         if self.state:
             self.notify("The battle has ended.")
@@ -1792,10 +1733,6 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if hasattr(self.ndb, "watchers_live"):
             self.ndb.watchers_live.clear()
         battle_handler.unregister(self)
-        for seg in ("data", "state", "meta", "field", "active"):
-            self.storage.delete(seg)
-        self.storage.delete("last_action")
-        self.storage.delete("debug")
         log_info(f"Cleared battle data for {self.battle_id}")
         self.msg("The battle has ended.")
         log_info(f"Battle {self.battle_id} fully cleaned up")
@@ -1808,6 +1745,183 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 except Exception:
                     log_warn("Unable to open capture nickname prompt", exc_info=True)
                     self._msg_to(trainer, "Use +nickname to choose a name for your captured Pokémon.")
+
+    def _bind_reward_delivery(self):
+        """Bind one durable identity to fresh and reconstructed battle engines."""
+        from pokemon.services.battle_rewards import BattleRewards
+
+        if self.battle and self.state and BattleRewards.supports(self.captainA):
+            self.battle.reward_delivery = BattleRewards(self.state.reward_id)
+
+    def _cleanup_saved_battle(self):
+        """Remove persistent debris atomically before releasing runtime references."""
+        from contextlib import nullcontext
+
+        from django.db import transaction
+
+        from pokemon.services.battle_rewards import BattleRewards
+        from pokemon.services.trainer_challenges import release_placed_trainer
+
+        trainers = [trainer for trainer in (*self.teamA, *self.teamB) if trainer]
+        persistent = BattleRewards.supports(self.captainA)
+        try:
+            with transaction.atomic() if persistent else nullcontext():
+                for ref in getattr(self, "temp_pokemon_ids", []):
+                    delete_encounter_by_ref(ref)
+                if self.room:
+                    for part in ("logic", "trainers", "temp_pokemon_ids", "encounter", "battle_result",
+                                 "data", "state", "meta", "field", "active", "last_action", "debug"):
+                        self.storage.delete(part)
+                    battles = [bid for bid in (self.room.db.battles or []) if str(bid) != str(self.battle_id)]
+                    if battles:
+                        self.room.db.battles = battles
+                    elif getattr(self.room.db, "battles", None) is not None:
+                        delattr(self.room.db, "battles")
+                release_placed_trainer(self)
+                for trainer in trainers:
+                    if hasattr(trainer, "db"):
+                        if str(getattr(trainer.db, "battle_id", None)) == str(self.battle_id):
+                            clear_battle_lock(trainer)
+                            delattr(trainer.db, "battle_id")
+        except Exception:
+            if persistent:
+                self.room.attributes.reset_cache()
+                for trainer in [*trainers, getattr(self, "placed_trainer", None)]:
+                    if getattr(trainer, "attributes", None) is not None:
+                        trainer.attributes.reset_cache()
+            raise
+        self.temp_pokemon_ids.clear()
+        instances = getattr(self.room.ndb, "battle_instances", None)
+        if instances is not None:
+            instances.pop(self.battle_id, None)
+        for trainer in trainers:
+            if getattr(getattr(trainer, "ndb", None), "battle_instance", None) is self:
+                trainer.ndb.battle_instance = None
+
+    def _restore_declarations(self):
+        """Restore executable choices, rejecting stale actors, targets and reserves."""
+        from .engine import BattleMove
+
+        positions = self.data.turndata.positions
+        trainer_info = self.storage.get("trainers", {}) or {}
+        for name, declaration in list(self.state.declare.items()):
+            position = positions.get(name)
+            pokemon = getattr(position, "pokemon", None)
+            actor = self.battle.participant_for(pokemon) if pokemon else None
+            try:
+                if not actor or pokemon.hp <= 0 or not isinstance(declaration, Mapping):
+                    raise ValueError("The acting Pokemon is no longer available.")
+                trainer_ids = trainer_info.get("team" + name[0], [])
+                if declaration.get("trainer") and str(declaration["trainer"]) not in map(str, trainer_ids):
+                    raise ValueError("The saved choice belongs to another trainer.")
+                if declaration.get("pokemon") and declaration["pokemon"] != pokemon.model_id:
+                    raise ValueError("The acting Pokemon has changed.")
+                if "move" in declaration:
+                    key = _battle_norm_key(declaration["move"])
+                    saved = next((move for move in pokemon.moves if _battle_norm_key(move.name) == key), None)
+                    target_name = declaration.get("target", "B1" if name[0] == "A" else "A1")
+                    target_mon = getattr(positions.get(target_name), "pokemon", None)
+                    if saved is None or getattr(saved, "pp", None) == 0 or target_mon is None or target_mon.hp <= 0:
+                        raise ValueError("The saved move or target is no longer legal.")
+                    move = BattleMove(saved.name, key=key, pp=getattr(saved, "pp", None))
+                    actor.pending_action = Action(actor, ActionType.MOVE, self.battle.participant_for(target_mon),
+                                                  move=move, priority=getattr(move, "priority", 0), pokemon=pokemon)
+                    position.declareAttack(target_name, key)
+                elif "switch" in declaration:
+                    slot = int(declaration["switch"])
+                    if not 1 <= slot <= len(actor.pokemons):
+                        raise ValueError("The saved reserve slot is no longer available.")
+                    reserve = actor.pokemons[slot - 1]
+                    if reserve in actor.active or reserve.hp <= 0:
+                        raise ValueError("The saved reserve can no longer switch in.")
+                    actor.pending_action = Action(actor, ActionType.SWITCH, target=reserve, pokemon=reserve, priority=6)
+                    position.declareSwitch(slot)
+                elif "item" in declaration:
+                    item = declaration["item"]
+                    target = self.battle.opponent_of(actor) if _battle_norm_key(item).lower().endswith("ball") else actor
+                    actor.pending_action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon)
+                    position.declareItem(item)
+                elif "run" in declaration:
+                    actor.pending_action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon)
+                    position.declareRun()
+                else:
+                    raise ValueError("The saved action is not supported.")
+            except (ValueError, TypeError, IndexError) as error:
+                self.state.declare.pop(name, None)
+                if position is not None:
+                    position.removeDeclare()
+                if actor is not None:
+                    actor.pending_action = None
+                self.msg(f"Saved action at {name} was discarded: {error} Choose an action again.")
+
+    def retry_battle_rewards(self):
+        """Refuse cleanup while any character-scoped battle effect is still pending."""
+        delivery = getattr(self.battle, "reward_delivery", None)
+        if delivery is not None:
+            for player in (*self.teamA, *self.teamB):
+                if delivery.supports(player):
+                    delivery.retry(player, caller=self.battle)
+
+    def execute_persistent_turn(self):
+        """Commit one complete engine turn and checkpoint, or restore its input."""
+        from django.db import transaction
+        from evennia.objects.models import ObjectDB
+
+        from pokemon.services.battle_rewards import BattleRewards, BufferedMessages
+
+        if not BattleRewards.supports(self.captainA):
+            self.battle.run_turn()
+            return
+        snapshot = self.logic.to_dict()
+        adventure_result = getattr(self, "_adventure_result", None)
+        controllers = {part.team: part.player for part in self.battle.participants}
+        rng = self.battle.rng
+        rng_state = rng.getstate() if hasattr(rng, "getstate") else None
+        messages = BufferedMessages(self)
+        original_log = self.battle.log_action
+        self.battle.log_action = messages.msg
+        try:
+            with transaction.atomic():
+                ids = sorted(BattleRewards.character(player).pk for player in controllers.values()
+                             if BattleRewards.supports(player))
+                list(ObjectDB.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+                self.battle.run_turn()
+                self._sync_player_pokemon_state(strict=True)
+                self._sync_active_battle_state()
+                self.state.turn = self.battle.turn_count
+                self.data.battle.turn = self.battle.turn_count
+                self.logic.sync_runtime_state()
+                self.state.declare.clear()
+                for position in self.data.turndata.positions.values():
+                    position.removeDeclare()
+                for participant in self.battle.participants:
+                    participant.pending_action = None
+                self.storage.set("data", self.data.to_dict())
+                self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
+                transaction.on_commit(messages.publish, robust=True)
+        except Exception:
+            # Runtime Pokemon and pending actions are mutable. SQL rollback
+            # alone is insufficient; restore the same legal inputs and RNG.
+            self.room.attributes.reset_cache()
+            for player in controllers.values():
+                if BattleRewards.supports(player):
+                    BattleRewards.character(player).attributes.reset_cache()
+            self.logic = BattleLogic.from_dict(snapshot)
+            self._adventure_result = adventure_result
+            for participant in self.battle.participants:
+                participant.player = controllers.get(participant.team)
+                if participant.player is not None:
+                    participant.player.team = participant.pokemons
+                    participant.player.active_pokemon = participant.active[0] if participant.active else None
+            self.battle.rng = rng
+            if rng_state is not None:
+                rng.setstate(rng_state)
+            self.battle.log_action = original_log
+            self._restore_declarations()
+            self._bind_reward_delivery()
+            raise
+        else:
+            self.battle.log_action = original_log
 
     # ---- Persistence helpers ------------------------------------------------
 

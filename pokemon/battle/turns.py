@@ -10,8 +10,8 @@ from utils.safe_import import safe_import
 from ._shared import _normalize_key
 from .actions import Action, ActionType
 from .contracts import BattleContextProtocol, CombatPokemonProtocol, ParticipantAdapter, ParticipantProtocol
-from .random_source import resolve_rng
 from .error_handling import handle_battle_exception
+from .random_source import resolve_rng
 
 logger = logging.getLogger("battle")
 
@@ -1073,6 +1073,7 @@ class TurnProcessor:
 
 			caught = placement is not None
 			if caught:
+				self.capture_succeeded = True
 				if (getattr(battle_context, "encounter_metadata", None) or {}).get("source_type") == "adventure":
 					# A receipt replay suppresses nickname tracking. Keep the
 					# terminal capture identity independently of that UI queue.
@@ -1107,15 +1108,21 @@ class TurnProcessor:
 								self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
 
 				if placement.should_prompt_nickname and player is not None and hasattr(player, "ndb"):
-					pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
-					pending.append({
-						"species": pokemon_name, "to_storage": placement.placement == "storage",
-						"pokemon_id": placement.owned_pokemon_id,
-					})
-					try:
+					def remember_catch():
+						"""Publish the UI catch only after its outer turn commits."""
+						pending = list(getattr(player.ndb, "pending_caught_pokemon", []) or [])
+						pending.append({
+							"species": pokemon_name,
+							"to_storage": placement.placement == "storage",
+							"pokemon_id": placement.owned_pokemon_id,
+						})
 						player.ndb.pending_caught_pokemon = pending
-					except Exception as err:
-						self._record_failure(context="capture_flow", exception=err, pokemon=target_poke)
+					if getattr(trainer, "_meta", None) is not None:
+						from django.db import transaction
+
+						transaction.on_commit(remember_catch, robust=True)
+					else:
+						remember_catch()
 
 				if hasattr(self, "log_action"):
 					if placement.placement == "storage":

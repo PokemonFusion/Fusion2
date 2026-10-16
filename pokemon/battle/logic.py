@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Dict, List, Sequence
 
-from .battledata import BattleData
+from .battledata import BattleData, Team
 from .engine import Battle, BattleParticipant, BattleType
 from .state import BattleState
 
@@ -91,14 +91,53 @@ class BattleLogic:
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))
 		battle.award_xp = bool(getattr(state, "xp", True))
 		battle.award_txp = bool(getattr(state, "txp", True))
+		battle._rewards_granted = bool(getattr(state, "rewards_granted", False))
+		battle.battle_over = bool(getattr(state, "battle_over", False))
+		battle._flee_result = dict(getattr(state, "flee_result", {}) or {})
+		battle.capture_succeeded = bool(getattr(state, "capture_succeeded", False))
+		for index, participant in enumerate(battle.participants):
+			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
+			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
+			saved = getattr(state, "participants", {}).get(team)
+			if saved is not None:
+				participant.participating_pokemon = []
+				participant._participant_cache = set()
+				for mon in participant.pokemons:
+					if _participant_identifier(mon) in saved:
+						if hasattr(participant, "record_participation"):
+							participant.record_participation(mon)
+						else:
+							participant.participating_pokemon.append(mon)
 		bind_reveal_data = getattr(battle, "bind_reveal_data", None)
 		if callable(bind_reveal_data):
 			bind_reveal_data(data)
 
 	def to_dict(self):
+		self.sync_runtime_state()
 		return {
 			"data": self.data.to_dict(),
 			"state": self.state.to_dict(),
+		}
+
+	def sync_runtime_state(self):
+		"""Freeze primitive result and participation state before a checkpoint."""
+		self.state.rewards_granted = bool(getattr(self.battle, "_rewards_granted", False))
+		self.state.battle_over = bool(getattr(self.battle, "battle_over", False))
+		self.state.capture_succeeded = bool(getattr(self.battle, "capture_succeeded", False))
+		teams = [
+			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
+			for index, part in enumerate(self.battle.participants)
+		]
+		for key, participant in teams:
+			team = self.data.teams.get(key)
+			if team is not None:
+				self.data.teams[key] = Team(team.trainer, participant.pokemons)
+		flee = getattr(self.battle, "_flee_result", {}) or {}
+		self.state.flee_result = {key: flee[key] for key in ("success", "reason", "message") if key in flee}
+		self.state.flee_attempts = {key: int(getattr(part, "flee_attempts", 0)) for key, part in teams}
+		self.state.participants = {
+			key: [_participant_identifier(mon) for mon in (getattr(part, "participating_pokemon", []) or getattr(part, "active", []))]
+			for key, part in teams
 		}
 
 	@classmethod
@@ -132,7 +171,7 @@ class BattleLogic:
 				teamB.trainer,
 				[p for p in teamB.returnlist() if p],
 			)
-		part_b.is_ai = state.ai_type != "Player"
+		part_b.is_ai = state.ai_type.upper() not in {"PLAYER", "PVP"}
 		try:
 			positions = getattr(data.turndata, "positions", {}) or {}
 		except Exception:
@@ -157,6 +196,14 @@ class BattleLogic:
 			btype = BattleType[state.ai_type.upper()]
 		except KeyError:
 			btype = BattleType.WILD
+		for part in (part_a, part_b):
+			part.active = [mon for mon in part.active if mon.hp > 0]
+			conscious = [mon for mon in part.pokemons if mon.hp > 0]
+			part.has_lost = not conscious
+			if not part.active and conscious:
+				part.active = conscious[:part.max_active]
+			if getattr(part, "side", None) is not None:
+				part.side.active = part.active
 		battle = Battle(btype, [part_a, part_b])
 		battle.turn_count = data.battle.turn
 		battle.debug = getattr(state, "debug", False)

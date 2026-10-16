@@ -930,6 +930,7 @@ class Pokemon:
 
         info: Dict[str, Any] = {
             "current_hp": self.hp,
+            "is_fainted": bool(getattr(self, "is_fainted", False)),
             "status": self.status,
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
@@ -1088,6 +1089,7 @@ class Pokemon:
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
         obj.name = name
+        obj.is_fainted = bool(data.get("is_fainted", obj.hp <= 0))
         obj.base_species = data.get("base_species") or species
         if slots is not None:
             obj.activemoveslot_set = slots

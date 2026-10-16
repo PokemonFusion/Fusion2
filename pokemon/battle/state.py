@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Set
+from uuid import uuid4
 
 from .battledata import BattleData, Pokemon
 
@@ -31,6 +32,14 @@ class BattleState:
 	four_moves: bool = False
 	pokemon_control: Dict[str, str] = field(default_factory=dict)
 	debug: bool = False
+	reward_id: str = field(default_factory=lambda: str(uuid4()))
+	rewards_granted: bool = False
+	battle_over: bool = False
+	ending: bool = False
+	flee_result: Dict = field(default_factory=dict)
+	flee_attempts: Dict[str, int] = field(default_factory=dict)
+	participants: Dict[str, List[str]] = field(default_factory=dict)
+	capture_succeeded: bool = False
 
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this state."""

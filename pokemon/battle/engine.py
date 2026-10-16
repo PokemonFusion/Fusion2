@@ -124,16 +124,8 @@ if "pokemon.battle" not in sys.modules:
 from ._shared import (
     _normalize_key,
     ensure_movedex_aliases,
-    get_pp,
     get_raw,
     reset_tempvals,
-)
-from .battledata import (
-    _REVEAL_ALL_VIEWERS,
-    _ability_display_name,
-    _caller_is_admin,
-    _normalize_reveal_viewer,
-    _pokemon_reveal_key,
 )
 from .ai_profiles import AIDebugTrace, attach_ai_debug_trace, build_battle_ai_context
 from .ai_scoring import (
@@ -141,6 +133,13 @@ from .ai_scoring import (
     choose_weighted_ai_move,
     fallback_scored_move,
     score_ai_moves,
+)
+from .battledata import (
+    _REVEAL_ALL_VIEWERS,
+    _ability_display_name,
+    _caller_is_admin,
+    _normalize_reveal_viewer,
+    _pokemon_reveal_key,
 )
 from .registry import CALLBACK_REGISTRY
 
@@ -1430,7 +1429,7 @@ class RewardService:
         for participant in battle.participants:
             if participant is winner or not getattr(participant, "has_lost", False):
                 continue
-            if getattr(participant, "player", None):
+            if getattr(participant, "player", None) and not getattr(participant, "is_ai", False):
                 continue
             for poke in getattr(participant, "pokemons", []):
                 if getattr(poke, "hp", 0) > 0:
@@ -1448,19 +1447,22 @@ class RewardService:
             return
 
         recipient = winner.player
+        delivery = getattr(battle, "reward_delivery", None)
+        if delivery is not None and delivery.supports(recipient):
+            claimed = delivery.deliver(recipient, "prize", {"money": prize_money}, caller=battle)
+            if claimed is None:
+                return
+            battle._rewards_granted = True
+            if claimed:
+                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!")
+            return
         trainer = getattr(recipient, "trainer", None)
         if trainer and hasattr(trainer, "add_money"):
-            try:
-                trainer.add_money(prize_money)
-            except Exception:  # pragma: no cover - persistence best-effort
-                pass
+            trainer.add_money(prize_money)
         else:
             add_money = getattr(recipient, "add_money", None)
             if callable(add_money):
-                try:
-                    add_money(prize_money)
-                except Exception:  # pragma: no cover - persistence best-effort
-                    pass
+                add_money(prize_money)
 
         if hasattr(battle, "log_action"):
             battle.log_action(
@@ -4711,7 +4713,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 return total
 
                     for poke in fainted:
-                        self.on_faint(poke)
+                        delivery = getattr(self, "reward_delivery", None)
+                        persistent = delivery is not None and delivery.supports(opponent.player)
+                        if not persistent:
+                            self.on_faint(poke)
                         species = getattr(poke, "species", None) or getattr(poke, "name", "")
                         info = resolve_dex_entry(GAIN_INFO, species) or {}
                         base_exp = info.get("exp", 0)
@@ -4735,6 +4740,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             else:
                                 exp = base_exp
                         evs = info.get("evs", {})
+                        if persistent:
+                            payload = delivery.faint_plan(
+                                opponent.player, exp if self.award_xp else 0,
+                                evs if self.award_xp else {}, txp if self.award_txp else 0,
+                                getattr(opponent, "participating_pokemon", None),
+                            )
+                            identity = getattr(poke, "model_id", None) or str(part.pokemons.index(poke))
+                            delivery.deliver(opponent.player, f"faint:{part.team}:{identity}", payload, caller=self,
+                                             before_claim=lambda: self.on_faint(poke))
+                            continue
                         if getattr(self, "award_xp", True) and (exp or evs):
                             try:
                                 award_experience_to_party(
