@@ -124,11 +124,16 @@ def _emit_to_location(caller, location, message, html_only=False):
 
 
 def heal_party(char):
-    """Heal all active Pokemon for the given character."""
+    """Heal the canonical party and active reserved Fusion form once each."""
+    from utils.fusion import get_active_fusion_pokemon
+
     storage = getattr(char, "storage", None)
     if not storage:
         return
-    party = storage.get_party()
+    party = list(storage.get_party())
+    fusion = get_active_fusion_pokemon(char)
+    if fusion is not None and fusion not in party:
+        party.append(fusion)
     for mon in party:
         if hasattr(mon, "heal"):
             mon.heal()

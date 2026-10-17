@@ -189,6 +189,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         max_hp=max_hp if max_hp is not None else current_hp,
         moves=moves,
         ability=getattr(model, "ability", None),
+        item=getattr(model, "held_item", None) or getattr(model, "item", None),
         ivs=ivs,
         evs=evs,
         nature=nature,
