@@ -309,6 +309,9 @@ class PlayerDoublesCases(unittest.TestCase):
                     self.assertGreater(own.active[1].hp, start_hp[own.active[1].model_id])
                 elif volatile:
                     self.assertTrue(all(volatile in mon.volatiles for mon in targets))
+                    if volatile == "confusion":
+                        self.assertTrue(all(isinstance(mon.volatiles[volatile], dict) for mon in targets))
+                        self.assertTrue(all(mon.volatiles[volatile]["turns"] > 0 for mon in targets))
                 else:
                     self.assertTrue(all(not mon.item for mon in targets))
                 stored = OwnedPokemon.objects.get(pk=lead.pk)
@@ -320,6 +323,14 @@ class PlayerDoublesCases(unittest.TestCase):
                     own, foe = restored.battle.participants
                     self.assertTrue(own.active[0].item)
                     self.assertTrue(all(not mon.item for mon in [*foe.active, own.active[1]]))
+                if volatile == "confusion":
+                    with patch("pokemon.dex.functions.conditions_funcs.random.random", return_value=1.0):
+                        self.command("attack", "A1 Teeter Dance")
+                        self.command("attack", "A2 Helping Hand A1")
+                        self.command("attack", "B1 Helping Hand B2", self.players[1])
+                        self.command("attack", "B2 Helping Hand B1", self.players[1])
+                    self.assertEqual(restored.battle.turn_count, 3)
+                    self.assertFalse(restored.turn_state.get("error"))
                 self.session.end()
 
 

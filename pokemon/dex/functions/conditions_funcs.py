@@ -183,9 +183,13 @@ class Confusion:
 	"""Confusion volatile status."""
 
 	def onBeforeMove(self, pokemon, *_, **__):
+		"""Advance confusion, repairing legacy boolean or incomplete state once."""
 		vol = getattr(pokemon, "volatiles", {}).get("confusion")
-		if not vol:
+		if vol is None or vol is False:
 			return True
+		if not isinstance(vol, dict) or "turns" not in vol:
+			self.onStart(pokemon)
+			vol = pokemon.volatiles["confusion"]
 		turns = vol.get("turns", 0)
 		if turns <= 0:
 			self.onEnd(pokemon)
@@ -204,8 +208,12 @@ class Confusion:
 		return True
 
 	def onStart(self, pokemon, *_, **__):
+		"""Initialize the duration inside the battle's existing effect state."""
 		if hasattr(pokemon, "volatiles"):
-			pokemon.volatiles.setdefault("confusion", {"turns": random.randint(2, 5)})
+			vol = pokemon.volatiles.get("confusion")
+			if not isinstance(vol, dict):
+				vol = pokemon.volatiles["confusion"] = {}
+			vol.setdefault("turns", random.randint(2, 5))
 		return True
 
 

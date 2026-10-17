@@ -109,3 +109,21 @@ def test_spread_nonstat_effects_match_messages(name, volatile, applied):
     else:
         assert any("had no effect" in message for message in messages), messages
     assert move.pp == raw["pp"]-1
+
+
+@pytest.mark.parametrize("initial,remaining", [
+    (True, 4), ({}, 4), ({"turns": 3}, 2), ({"turns": 0}, None),
+])
+def test_confusion_advances_legacy_and_initialized_state(monkeypatch, initial, remaining):
+    """Old confusion checkpoints recover without resetting an existing countdown."""
+    from pokemon.dex.functions import conditions_funcs
+
+    monkeypatch.setattr(conditions_funcs.random, "randint", lambda low, high: 5)
+    monkeypatch.setattr(conditions_funcs.random, "random", lambda: 1.0)
+    pokemon = Pokemon("Confused Friend", level=5, hp=20, max_hp=20)
+    pokemon.volatiles["confusion"] = initial
+    assert conditions_funcs.Confusion().onBeforeMove(pokemon) is True
+    if remaining is None:
+        assert "confusion" not in pokemon.volatiles
+    else:
+        assert pokemon.volatiles["confusion"]["turns"] == remaining

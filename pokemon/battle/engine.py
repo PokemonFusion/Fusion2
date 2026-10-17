@@ -1022,7 +1022,10 @@ class BattleMove:
                     cb(target)
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected and hasattr(affected, "volatiles"):
-                affected.volatiles.setdefault(volatile, True)
+                if battle:
+                    battle.apply_volatile_status(affected, volatile)
+                else:
+                    affected.volatiles.setdefault(volatile, True)
 
         # Apply major status conditions inflicted by this move
         status = self.raw.get("status") if self.raw else None
