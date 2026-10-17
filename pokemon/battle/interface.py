@@ -173,6 +173,12 @@ def display_battle_interface(
 
 		@property
 		def field(self):
+			session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
+			field = getattr(getattr(session, "battle", None), "field", None)
+			room = getattr(field, "pseudo_weather", {}).get("trickroom")
+			if room:
+				remaining = room.get("duration") if isinstance(room, dict) else None
+				return f"Trick Room ({remaining})" if remaining is not None else "Trick Room"
 			return getattr(self._state, "field", "-")
 
 		@property

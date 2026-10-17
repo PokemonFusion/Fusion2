@@ -91,3 +91,20 @@ def test_render_interfaces_trainer_names_visible() -> None:
     assert "Trainer Emery" in iface_a
     assert "Trainer Emery" in iface_w
     assert "Team" in iface_b and "O" in iface_b
+
+
+def test_render_interfaces_show_live_trick_room_and_remaining_turns() -> None:
+    """Captains and observers see the same current room timer after a rebuild."""
+    from types import SimpleNamespace
+
+    from pokemon.battle.battledata import Field
+
+    t_a = DummyTrainer("Player", DummyMon("Jolteon", 20, 20))
+    t_b = DummyTrainer("Cadence", DummyMon("Slowbro", 20, 20))
+    field = Field()
+    field.pseudo_weather["trickroom"] = {"duration": 4}
+    t_a.ndb = SimpleNamespace(battle_instance=SimpleNamespace(battle=SimpleNamespace(field=field)))
+    state = BattleState()
+    assert all("Trick Room (4)" in view for view in render_interfaces(t_a, t_b, state))
+    field.remove_pseudo_weather("trickroom")
+    assert all("Trick Room" not in view for view in render_interfaces(t_a, t_b, state))

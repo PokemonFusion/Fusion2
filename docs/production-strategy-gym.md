@@ -104,6 +104,38 @@ Live acceptance remains a separate record. After approved local deployment:
    and forced cooldown expiry belong in disposable test schemas, not real-player
    progression records.
 
-These automated scenarios do not claim human playtesting or completed live
-Evennia acceptance. Migration rehearsal and live deployment must be recorded
-when they are actually performed.
+### Local acceptance: October 17, 2026
+
+PR #743 was deployed to the local game after preserving all four unrelated WIP
+files and taking a custom-format PostgreSQL backup whose contents were verified.
+Migration 0045 applied successfully. Two installer runs retained the same leader,
+profile, badge and three roster identities. The Server was reloaded successfully.
+
+Four isolated, ordinary Player accounts exercised the real loopback Telnet path.
+The command transcript and database comparisons passed 54 assertions, covering
+discovery, Alpha exclusion, the two-conscious-actor requirement, visible rules,
+Trick Room execution and speed order, first clear, exactly one badge, unchanged
+money/inventory/XP/EVs, cooldown rejection, duplicate claims, natural loss,
+concession, healing and immediate first-clear retry. A mid-battle Server reload
+preserved the complete roster, configuration, Trick Room source/duration and one
+player declaration plus both AI choices; reconnect showed the remaining actor.
+
+This run found and repaired misleading success messages for field/healing/
+volatile moves, an absent Trick Room HUD timer, and Protect persisting beyond its
+turn. A repeat player battle observed Snorlax protect itself for one turn, then
+take damage and faint on the following turn. Focused regression tests cover the
+same failures, including old boolean Protect snapshots.
+
+All 2,905 pre-existing gameplay rows were compared. The sole change to their
+existing fields was the intended retirement of Alpha's profile; all four WIP
+file hashes remained identical. The four QA accounts were disabled with unusable
+passwords and all QA battle locks/checkpoints were released.
+
+Portal and Server were RUNNING afterward. The run produced no new traceback or
+unhandled-protocol errors; the existing Windows log-rotation warning (`WinError
+32`, rotation deferred while the file is open) remains an operational follow-up.
+
+An allowed rematch after cooldown expiry and injected reward-delivery failures
+remain disposable-PostgreSQL evidence; live cooldown timestamps and live delivery
+were not manipulated. This is automated local player-protocol acceptance, not
+human balance/fun playtesting or remote deployment acceptance.
