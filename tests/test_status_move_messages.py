@@ -127,3 +127,19 @@ def test_confusion_advances_legacy_and_initialized_state(monkeypatch, initial, r
         assert "confusion" not in pokemon.volatiles
     else:
         assert pokemon.volatiles["confusion"]["turns"] == remaining
+
+
+def test_confusion_countdown_advances_once_per_executed_action(monkeypatch):
+    """The turn dispatcher and move executor must share one prevention check."""
+    from pokemon.dex.functions import conditions_funcs
+
+    monkeypatch.setattr(conditions_funcs.random, "random", lambda: 1.0)
+    user = Pokemon("Squirtle", level=5, hp=20, max_hp=20)
+    target = Pokemon("Eevee", level=5, hp=20, max_hp=20)
+    user.volatiles["confusion"] = {"turns": 4}
+    actor, foe = BattleParticipant("Player", [user]), BattleParticipant("Foe", [target])
+    battle = Battle(BattleType.PVP, [actor, foe])
+    move = BattleMove("Tackle", pp=10)
+    battle.execute_actions([Action(actor, ActionType.MOVE, foe, move, pokemon=user)])
+    assert user.volatiles["confusion"]["turns"] == 3
+    assert move.pp == 9

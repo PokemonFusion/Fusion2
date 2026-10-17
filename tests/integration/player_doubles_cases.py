@@ -324,6 +324,9 @@ class PlayerDoublesCases(unittest.TestCase):
                     self.assertTrue(own.active[0].item)
                     self.assertTrue(all(not mon.item for mon in [*foe.active, own.active[1]]))
                 if volatile == "confusion":
+                    targets = [*restored.battle.participants[1].active,
+                               restored.battle.participants[0].active[1]]
+                    durations = {mon.model_id: mon.volatiles[volatile]["turns"] for mon in targets}
                     with patch("pokemon.dex.functions.conditions_funcs.random.random", return_value=1.0):
                         self.command("attack", "A1 Teeter Dance")
                         self.command("attack", "A2 Helping Hand A1")
@@ -331,6 +334,8 @@ class PlayerDoublesCases(unittest.TestCase):
                         self.command("attack", "B2 Helping Hand B1", self.players[1])
                     self.assertEqual(restored.battle.turn_count, 3)
                     self.assertFalse(restored.turn_state.get("error"))
+                    self.assertTrue(all(mon.volatiles[volatile]["turns"] == durations[mon.model_id] - 1
+                                        for mon in targets))
                 self.session.end()
 
 
