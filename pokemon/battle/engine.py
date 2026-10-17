@@ -126,6 +126,7 @@ from ._shared import (
     ensure_movedex_aliases,
     get_raw,
     reset_tempvals,
+    snapshot_battle_value,
 )
 from .battledata import (
     _REVEAL_ALL_VIEWERS,
@@ -746,6 +747,34 @@ class BattleType(Enum):
     PVP = 1
     TRAINER = 2
     SCRIPTED = 3
+
+
+@dataclass(frozen=True)
+class _MoveResultState:
+    """Detached effects used to distinguish a successful move from no change."""
+
+    hp: int
+    boosts: dict
+    status: Any
+    volatiles: dict
+    item: str
+    ability: str
+
+    @classmethod
+    def capture(cls, pokemon):
+        """Copy condition state without following live battler or ORM graphs."""
+        from pokemon.utils.boosts import STAT_KEY_MAP
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        ability = getattr(pokemon, "ability", None)
+        return cls(
+            hp=getattr(pokemon, "hp", 0),
+            boosts={STAT_KEY_MAP.get(key, key): value for key, value in getattr(pokemon, "boosts", {}).items()},
+            status=getattr(pokemon, "status", None),
+            volatiles=snapshot_battle_value(getattr(pokemon, "volatiles", {}) or {}),
+            item=_normalize_key(getattr(item, "name", None) or item or ""),
+            ability=_normalize_key(getattr(ability, "name", None) or ability or ""),
+        )
 
 
 @dataclass
@@ -3848,23 +3877,23 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move.execute(user, target, self)
         return True
 
-    def _announce_move_result(self, user, target, move, start_hp, start_user_boosts,
-                              start_target_boosts, start_statuses):
+    def _announce_move_result(self, user, target, move, before_user, before_target, *, report_no_effect=True):
         """Describe one target's actual damage, conditions and stat changes."""
-        from pokemon.utils.boosts import STAT_KEY_MAP
-
-        start_user_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in start_user_boosts.items()}
-        start_target_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in start_target_boosts.items()}
-        end_hp = getattr(target, "hp", 0)
-        end_user_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in getattr(user, "boosts", {}).items()}
-        end_target_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in getattr(target, "boosts", {}).items()}
-        dmg = start_hp - end_hp
+        after_user, after_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
+        start_user_boosts, end_user_boosts = before_user.boosts, after_user.boosts
+        start_target_boosts, end_target_boosts = before_target.boosts, after_target.boosts
+        dmg = before_target.hp - after_target.hp
         boosts_changed = (
             start_user_boosts != end_user_boosts
             or start_target_boosts != end_target_boosts
         )
-        statuses_changed = start_statuses != (
-            getattr(user, "status", None), getattr(target, "status", None)
+        statuses_changed = (before_user.status, before_target.status) != (
+            after_user.status, after_target.status
+        )
+        effects_changed = any(
+            before.hp < after.hp or before.volatiles != after.volatiles
+            or before.item != after.item or before.ability != after.ability
+            for before, after in ((before_user, after_user), (before_target, after_target))
         )
         target_self = target is user
         user_name = getattr(user, "name", "Pokemon")
@@ -3885,7 +3914,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     start_target_boosts,
                     end_target_boosts,
                 )
-        elif boosts_changed or statuses_changed:
+        elif boosts_changed or statuses_changed or effects_changed:
             if target_self:
                 self.log_action(f"{user_name} used {move.name}!")
             else:
@@ -3916,7 +3945,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 self.announce_stat_changes(
                     affected, start, end, move.raw.get("boosts")
                 )
-            else:
+            elif report_no_effect:
                 self.log_action(
                     f"{user_name} used {move.name} on {target_name} but it had no effect!"
                 )
@@ -4417,10 +4446,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # as appropriate, so behaviour remains informative while enabling tests
         # to validate move side effects.
 
-        start_hp = getattr(target, "hp", 0)
-        start_user_boosts = dict(getattr(user, "boosts", {}))
-        start_target_boosts = dict(getattr(target, "boosts", {}))
-        start_statuses = (getattr(user, "status", None), getattr(target, "status", None))
+        before_user, before_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
@@ -4432,6 +4458,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if action.move.raw.get("target") == "allies" and action.move.onHit:
             # Group support handlers already visit the user's party once.
             spread_targets = []
+        # Some callbacks affect the whole group on the primary hit. Retain each
+        # target's original state so those effects also get an accurate summary.
+        spread_before = {id(mon): _MoveResultState.capture(mon) for mon in spread_targets}
         action.move._spread = len(spread_targets) > 1
         executed = self._do_move(user, target, action.move)
         if not executed:
@@ -4445,8 +4474,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
-        self._announce_move_result(user, target, action.move, start_hp, start_user_boosts,
-                                   start_target_boosts, start_statuses)
+        self._announce_move_result(user, target, action.move, before_user, before_target)
 
         if action.move.raw.get("forceSwitch") and target is not None and getattr(target, "hp", 0) > 0:
             if self._can_drag_out(target, source=user, effect=action.move):
@@ -4519,14 +4547,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         for extra in spread_targets:
             if extra is not target and getattr(extra, "hp", 0) > 0:
-                before_hp = extra.hp
-                before_user_boosts = dict(getattr(user, "boosts", {}))
-                before_target_boosts = dict(getattr(extra, "boosts", {}))
-                before_statuses = (getattr(user, "status", None), getattr(extra, "status", None))
+                before_user = _MoveResultState.capture(user)
                 action.move.execute(user, extra, self)
                 if str(action.move.raw.get("category", "")).lower() == "status":
-                    self._announce_move_result(user, extra, action.move, before_hp, before_user_boosts,
-                                               before_target_boosts, before_statuses)
+                    self._announce_move_result(
+                        user, extra, action.move, before_user, spread_before[id(extra)],
+                        # Callback-only moves can change state outside this
+                        # summary's model; leave their failure text to the handler.
+                        report_no_effect=any(action.move.raw.get(key) for key in
+                                             ("boosts", "status", "volatileStatus", "heal")),
+                    )
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""

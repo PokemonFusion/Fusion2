@@ -242,6 +242,86 @@ class PlayerDoublesCases(unittest.TestCase):
         self.assertIn(self.players[0].id, self.room.db.pvp_requests)
         self.assertIn("two conscious", self.players[0].messages[-1])
 
+    def test_item_checkpoints_preserve_removal_swap_and_legacy_fallback(self):
+        """Owned and encounter restores keep battle items, including an empty slot."""
+        from pokemon.battle.battledata import Pokemon
+        from pokemon.services.encounters import create_encounter_pokemon, encounter_ref
+        from utils.pokemon_utils import build_battle_pokemon_from_model
+
+        owned = self.players[0].storage.get_party()[0]
+        owned.held_item = "Leftovers"
+        owned.save(update_fields=["held_item"])
+        encounter = create_encounter_pokemon(
+            species="Eevee", level=20, source_kind="wild", held_item="Leftovers",
+        )
+        for model, reference in ((owned, f"owned:{owned.pk}"), (encounter, encounter_ref(encounter))):
+            with self.subTest(reference=reference):
+                initial = build_battle_pokemon_from_model(model)
+                initial.model_id = reference
+                self.assertEqual(getattr(initial.item, "name", initial.item), "Leftovers")
+                legacy = initial.to_dict()
+                del legacy["item"]
+                legacy_item = Pokemon.from_dict(legacy).item
+                self.assertEqual(getattr(legacy_item, "name", legacy_item), "Leftovers")
+                for item in (None, "", "Choice Scarf"):
+                    initial.item = item
+                    restored = Pokemon.from_dict(initial.to_dict())
+                    self.assertEqual(getattr(restored.item, "name", restored.item), item)
+                self.assertEqual(model.held_item, "Leftovers")
+
+    def test_spread_nonstat_messages_and_effects_survive_rebuild(self):
+        """Real move commands summarize healing, volatiles and group item removal."""
+        from pokemon.helpers.pokemon_helpers import get_max_hp
+        from pokemon.services.move_management import initialize_generated_moveset
+
+        for name, volatile in (("Life Dew", None), ("Teeter Dance", "confusion"),
+                               ("Heal Block", "healblock"), ("Corrosive Gas", None)):
+            with self.subTest(move=name):
+                for index, player in enumerate(self.players):
+                    player.messages.clear()
+                    for slot, mon in enumerate(player.storage.get_party()):
+                        mon.heal()
+                        mon.nickname = f"Side {index} Member {slot}"
+                        if name == "Life Dew" and index == 0:
+                            mon.current_hp = get_max_hp(mon)//2
+                        mon.held_item = "Leftovers" if name == "Corrosive Gas" else ""
+                        mon.save()
+                lead = self.players[0].storage.get_party()[0]
+                initialize_generated_moveset(lead, active_move_names=[name], replace_active=True)
+                session = self.launch()
+                own, foe = session.battle.participants
+                if name == "Corrosive Gas":
+                    self.assertTrue(all(mon.item for part in (own, foe) for mon in part.active))
+                start_hp = {mon.model_id:mon.hp for mon in own.active}
+                self.command("attack", f"A1 {name}")
+                self.command("attack", "A2 Helping Hand A1")
+                self.command("attack", "B1 Helping Hand B2", self.players[1])
+                self.command("attack", "B2 Helping Hand B1", self.players[1])
+                self.assertEqual(session.battle.turn_count, 2)
+                self.assertFalse(session.turn_state.get("error"), session.turn_state)
+                text = "\n".join(self.players[0].messages)
+                targets = own.active if name == "Life Dew" else (foe.active if name == "Heal Block" else [*foe.active,own.active[1]])
+                for mon in targets:
+                    summary = f"used {name}!" if mon is own.active[0] else f"used {name} on {mon.name}!"
+                    self.assertIn(summary, text)
+                    self.assertNotIn(f"used {name} on {mon.name} but it had no effect", text)
+                if name == "Life Dew":
+                    self.assertGreater(own.active[1].hp, start_hp[own.active[1].model_id])
+                elif volatile:
+                    self.assertTrue(all(volatile in mon.volatiles for mon in targets))
+                else:
+                    self.assertTrue(all(not mon.item for mon in targets))
+                stored = OwnedPokemon.objects.get(pk=lead.pk)
+                self.assertEqual(stored.activemoveslot_set.get(slot=1).current_pp, get_pp(MOVEDEX[_normalize_key(name)])-1)
+                restored = self.rebuild()
+                self.assertEqual(restored.battle.turn_count, 2)
+                self.assertFalse(restored.turn_state.get("error"))
+                if name == "Corrosive Gas":
+                    own, foe = restored.battle.participants
+                    self.assertTrue(own.active[0].item)
+                    self.assertTrue(all(not mon.item for mon in [*foe.active, own.active[1]]))
+                self.session.end()
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:

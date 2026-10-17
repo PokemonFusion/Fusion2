@@ -2,8 +2,9 @@
 
 import pytest
 
+from pokemon.battle._shared import _normalize_key, get_raw
 from pokemon.battle.battledata import Pokemon
-from pokemon.battle.engine import Action, ActionType, Battle, BattleMove, BattleParticipant, BattleType
+from pokemon.battle.engine import MOVEDEX, Action, ActionType, Battle, BattleMove, BattleParticipant, BattleType
 
 
 @pytest.mark.parametrize("types,initial,ability,applied", [
@@ -62,3 +63,49 @@ def test_growl_reports_each_spread_target_and_its_actual_stat_change(first_stage
     assert ally.boosts.get("attack", 0) == 0
     assert user.boosts.get("attack", 0) == 0
     assert move.pp == 39
+
+
+@pytest.mark.parametrize("name,volatile", [
+    ("Life Dew", None), ("Teeter Dance", "confusion"),
+    ("Heal Block", "healblock"), ("Corrosive Gas", None),
+])
+@pytest.mark.parametrize("applied", [True, False])
+def test_spread_nonstat_effects_match_messages(name, volatile, applied):
+    """Production move callbacks cannot contradict healing, conditions or item loss."""
+    user = Pokemon("Supporter", level=5, hp=10 if applied else 20, max_hp=20)
+    ally = Pokemon("Friend", level=5, hp=10 if applied else 20, max_hp=20)
+    first = Pokemon("First Foe", level=5, hp=20, max_hp=20)
+    second = Pokemon("Second Foe", level=5, hp=20, max_hp=20)
+    actor, foe = BattleParticipant("Player", [user, ally]), BattleParticipant("Foe", [first, second])
+    actor.active, foe.active = [user, ally], [first, second]
+    battle = Battle(BattleType.PVP, [actor, foe])
+    messages = []
+    battle.log_action = messages.append
+    targets = [user, ally] if name == "Life Dew" else ([first, second] if name == "Heal Block" else [first, second, ally])
+    for target in targets:
+        if volatile and not applied:
+            target.volatiles[volatile] = True
+        if name == "Corrosive Gas" and applied:
+            target.item = "Leftovers"
+    raw = get_raw(MOVEDEX[_normalize_key(name)])
+    move = BattleMove(name, raw=raw, accuracy=True, pp=raw["pp"])
+    target = targets[0]
+    battle.use_move(Action(actor, ActionType.MOVE, actor if target is user else foe,
+                           move, pokemon=user, target_pokemon=target))
+    for target in targets:
+        if name == "Life Dew":
+            assert target.hp == (15 if applied else 20)
+        elif volatile:
+            assert volatile in target.volatiles
+        else:
+            assert not target.item and not getattr(target, "held_item", None)
+        success = f"Supporter used {name}!" if target is user else f"Supporter used {name} on {target.name}!"
+        if applied:
+            assert messages.count(success) == 1
+        else:
+            assert success not in messages
+    if applied:
+        assert not any("had no effect" in message for message in messages), messages
+    else:
+        assert any("had no effect" in message for message in messages), messages
+    assert move.pp == raw["pp"]-1
