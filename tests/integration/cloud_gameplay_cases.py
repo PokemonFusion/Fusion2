@@ -98,6 +98,55 @@ class CloudGameplayCases(unittest.TestCase):
         self.assertIn("Second Pal", text)
         self.assertIn("Sixth Pal", text)
 
+    def test_center_heals_reserved_fusion_hp_status_sleep_and_boosted_pp(self):
+        """Active forms heal even with a full party or participation disabled."""
+        fusion = self.owned
+        self.storage.reserve_for_fusion(fusion)
+        self.player.db.fusion_id = str(fusion.pk)
+        self.player.db.fusion_species = fusion.species
+        for index in range(6):
+            self.pokemon(f"Party {index+1}")
+        inactive = self.pokemon("Inactive boxed form")
+        placements = list(self.storage.placements.order_by("pokemon_id").values())
+        inactive.current_hp, inactive.status = 1, "par"
+        inactive.save()
+        for kind in ("permanent", "temporary"):
+            for order in ("normal", "first"):
+                for participates in (True, False):
+                    with self.subTest(kind=kind, order=order, participates=participates):
+                        self.player.db.fusion_kind = kind
+                        self.player.db.fusion_battle_order = order
+                        self.player.db.fusion_participates = participates
+                        fusion.current_hp, fusion.status, fusion.sleep_turns = 1, "slp", 2
+                        fusion.save()
+                        fusion.activemoveslot_set.update(current_pp=1)
+                        fusion.pp_boosts.update_or_create(move=fusion.activemoveslot_set.get().move,
+                                                          defaults={"bonus_pp": 3})
+                        self.assertIn("fully healed", self.command(CmdHeal))
+                        fusion.refresh_from_db()
+                        self.assertEqual((fusion.current_hp, fusion.status, fusion.sleep_turns),
+                                         (get_max_hp(fusion), "", None))
+                        self.assertEqual(fusion.activemoveslot_set.get().current_pp, 28)
+                        self.assertEqual(list(self.storage.placements.order_by("pokemon_id").values()), placements)
+                        inactive.refresh_from_db()
+                        self.assertEqual((inactive.current_hp, inactive.status), (1, "par"))
+
+    def test_center_heals_fusion_only_but_battle_guard_still_blocks_it(self):
+        """A reserved form alone is healable without bypassing a battle lock."""
+        self.storage.reserve_for_fusion(self.owned)
+        self.player.db.fusion_id = str(self.owned.pk)
+        self.player.db.fusion_kind = "permanent"
+        self.owned.current_hp = 1
+        self.owned.save()
+        self.player.db.battle_lock = 19
+        self.assertIn("cannot do that during battle", self.command(CmdHeal))
+        self.owned.refresh_from_db()
+        self.assertEqual(self.owned.current_hp, 1)
+        self.player.db.battle_lock = None
+        self.assertIn("fully healed", self.command(CmdHeal))
+        self.owned.refresh_from_db()
+        self.assertEqual(self.owned.current_hp, get_max_hp(self.owned))
+
     def test_fusion_overlay_does_not_renumber_the_canonical_party(self):
         """A reserved Fusion uses a free display slot without shifting other members."""
         self.gapped_party()

@@ -3848,6 +3848,79 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move.execute(user, target, self)
         return True
 
+    def _announce_move_result(self, user, target, move, start_hp, start_user_boosts,
+                              start_target_boosts, start_statuses):
+        """Describe one target's actual damage, conditions and stat changes."""
+        from pokemon.utils.boosts import STAT_KEY_MAP
+
+        start_user_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in start_user_boosts.items()}
+        start_target_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in start_target_boosts.items()}
+        end_hp = getattr(target, "hp", 0)
+        end_user_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in getattr(user, "boosts", {}).items()}
+        end_target_boosts = {STAT_KEY_MAP.get(key, key): value for key, value in getattr(target, "boosts", {}).items()}
+        dmg = start_hp - end_hp
+        boosts_changed = (
+            start_user_boosts != end_user_boosts
+            or start_target_boosts != end_target_boosts
+        )
+        statuses_changed = start_statuses != (
+            getattr(user, "status", None), getattr(target, "status", None)
+        )
+        target_self = target is user
+        user_name = getattr(user, "name", "Pokemon")
+        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
+        if dmg > 0:
+            if getattr(self, "show_damage_numbers", False):
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name} and dealt {dmg} damage!"
+                )
+            if boosts_changed:
+                self.announce_stat_changes(
+                    user,
+                    start_user_boosts,
+                    end_user_boosts,
+                )
+                self.announce_stat_changes(
+                    target,
+                    start_target_boosts,
+                    end_target_boosts,
+                )
+        elif boosts_changed or statuses_changed:
+            if target_self:
+                self.log_action(f"{user_name} used {move.name}!")
+            else:
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name}!"
+                )
+            self.announce_stat_changes(
+                user,
+                start_user_boosts,
+                end_user_boosts,
+                move.raw.get("boosts") if target_self else None,
+            )
+            self.announce_stat_changes(
+                target,
+                start_target_boosts,
+                end_target_boosts,
+                move.raw.get("boosts") if not target_self else None,
+            )
+        else:
+            if move.raw.get("boosts"):
+                fail_target = "its own" if target_self else f"{target_name}'s"
+                self.log_action(
+                    f"{user_name}'s {move.name} failed to affect {fail_target} stats!"
+                )
+                affected = user if target_self else target
+                start = start_user_boosts if target_self else start_target_boosts
+                end = end_user_boosts if target_self else end_target_boosts
+                self.announce_stat_changes(
+                    affected, start, end, move.raw.get("boosts")
+                )
+            else:
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name} but it had no effect!"
+                )
+
     def use_move(self, action: Action) -> None:
         """Attempt to use the chosen move applying simple failure rules."""
         if not action.move:
@@ -4361,9 +4434,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             spread_targets = []
         action.move._spread = len(spread_targets) > 1
         executed = self._do_move(user, target, action.move)
-        end_hp = getattr(target, "hp", 0)
-        end_user_boosts = dict(getattr(user, "boosts", {}))
-        end_target_boosts = dict(getattr(target, "boosts", {}))
         if not executed:
             try:
                 user.tempvals["moved"] = True
@@ -4375,68 +4445,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
-        dmg = start_hp - end_hp
-        boosts_changed = (
-            start_user_boosts != end_user_boosts
-            or start_target_boosts != end_target_boosts
-        )
-        statuses_changed = start_statuses != (
-            getattr(user, "status", None), getattr(target, "status", None)
-        )
-        target_self = target is user
-        user_name = getattr(user, "name", "Pokemon")
-        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
-        if dmg > 0:
-            if getattr(self, "show_damage_numbers", False):
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name} and dealt {dmg} damage!"
-                )
-            if boosts_changed:
-                self.announce_stat_changes(
-                    user,
-                    start_user_boosts,
-                    end_user_boosts,
-                )
-                self.announce_stat_changes(
-                    target,
-                    start_target_boosts,
-                    end_target_boosts,
-                )
-        elif boosts_changed or statuses_changed:
-            if target_self:
-                self.log_action(f"{user_name} used {action.move.name}!")
-            else:
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name}!"
-                )
-            self.announce_stat_changes(
-                user,
-                start_user_boosts,
-                end_user_boosts,
-                action.move.raw.get("boosts") if target_self else None,
-            )
-            self.announce_stat_changes(
-                target,
-                start_target_boosts,
-                end_target_boosts,
-                action.move.raw.get("boosts") if not target_self else None,
-            )
-        else:
-            if action.move.raw.get("boosts"):
-                fail_target = "its own" if target_self else f"{target_name}'s"
-                self.log_action(
-                    f"{user_name}'s {action.move.name} failed to affect {fail_target} stats!"
-                )
-                affected = user if target_self else target
-                start = start_user_boosts if target_self else start_target_boosts
-                end = end_user_boosts if target_self else end_target_boosts
-                self.announce_stat_changes(
-                    affected, start, end, action.move.raw.get("boosts")
-                )
-            else:
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name} but it had no effect!"
-                )
+        self._announce_move_result(user, target, action.move, start_hp, start_user_boosts,
+                                   start_target_boosts, start_statuses)
 
         if action.move.raw.get("forceSwitch") and target is not None and getattr(target, "hp", 0) > 0:
             if self._can_drag_out(target, source=user, effect=action.move):
@@ -4509,7 +4519,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         for extra in spread_targets:
             if extra is not target and getattr(extra, "hp", 0) > 0:
+                before_hp = extra.hp
+                before_user_boosts = dict(getattr(user, "boosts", {}))
+                before_target_boosts = dict(getattr(extra, "boosts", {}))
+                before_statuses = (getattr(user, "status", None), getattr(extra, "status", None))
                 action.move.execute(user, extra, self)
+                if str(action.move.raw.get("category", "")).lower() == "status":
+                    self._announce_move_result(user, extra, action.move, before_hp, before_user_boosts,
+                                               before_target_boosts, before_statuses)
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
