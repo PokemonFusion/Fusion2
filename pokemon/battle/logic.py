@@ -90,6 +90,9 @@ class BattleLogic:
 		self.battle = battle
 		self.data = data
 		self.state = state
+		# One live field must also be the checkpoint's field. Otherwise an
+		# executed Trick Room disappears during a save/rebuild.
+		data.field = battle.field
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))
 		battle.award_xp = bool(getattr(state, "xp", True))
@@ -125,6 +128,7 @@ class BattleLogic:
 
 	def sync_runtime_state(self):
 		"""Freeze primitive result and participation state before a checkpoint."""
+		self.data.field = self.battle.field
 		self.state.rewards_granted = bool(getattr(self.battle, "_rewards_granted", False))
 		self.state.battle_over = bool(getattr(self.battle, "battle_over", False))
 		self.state.capture_succeeded = bool(getattr(self.battle, "capture_succeeded", False))
@@ -213,10 +217,11 @@ class BattleLogic:
 		pokemon_by_ref = {_participant_identifier(mon): mon for part in (part_a, part_b) for mon in part.pokemons}
 		for part in (part_a, part_b):
 			for mon in part.pokemons:
-				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref)
-				mon.volatiles = restore_battle_value(mon.volatiles, pokemon_by_ref)
+				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref, field=data.field)
+				mon.volatiles = restore_battle_value(mon.volatiles, pokemon_by_ref, field=data.field)
 		for name in ("weather_state", "terrain_state", "pseudo_weather"):
-			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref))
+			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref, field=data.field))
+		battle.field = data.field
 		battle.turn_count = data.battle.turn
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))

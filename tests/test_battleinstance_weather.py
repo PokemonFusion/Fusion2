@@ -226,9 +226,12 @@ class BattleParticipant:
 
 class Battle:
 	def __init__(self, battle_type, parts, **kwargs):
+		from pokemon.battle.battledata import Field
+
 		self.type = battle_type
 		self.participants = parts
 		self.rng = kwargs.get("rng")
+		self.field = Field()
 
 	def run_turn(self):
 		pass

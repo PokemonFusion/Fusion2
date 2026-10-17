@@ -482,7 +482,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     continue
                 try:
                     reserved = [action.pokemon for action in pending if action.action_type is ActionType.SWITCH]
-                    action = _select_ai_action(participant, pokemon, self.battle, reserved=reserved)  # type: ignore[misc]
+                    action = _select_ai_action(participant, pokemon, self.battle, reserved=reserved, planned=pending)  # type: ignore[misc]
                 except Exception:
                     action = None
                 if not action:
@@ -1869,6 +1869,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                         action = next(iter(LegalActions(self.battle, actor, pokemon).moves()), None)
                     if action is None:
                         raise ValueError("The saved move or target is no longer legal.")
+                    if actor.is_ai:
+                        key = _battle_norm_key(action.move.key)
+                        target_name = self._determine_target_position(action, positions)
+                        declaration = dict(declaration, move=key, target=target_name)
+                        if "target_ref" in declaration:
+                            declaration["target_ref"] = getattr(action.target_pokemon, "model_id", None)
+                        self.state.declare[name] = declaration
                     position.declareAttack(target_name, key)
                 elif "switch" in declaration:
                     slot = int(declaration["switch"])

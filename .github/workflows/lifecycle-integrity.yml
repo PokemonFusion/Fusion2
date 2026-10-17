@@ -80,6 +80,8 @@ jobs:
         run: python tests/integration/battle_recovery_cases.py
       - name: Legal AI actions, reserve switches and checkpoint rebuilds
         run: python tests/integration/ai_action_cases.py
+      - name: Doubles AI scoring, Trick Room and checkpoint rebuilds
+        run: python tests/integration/ai_scoring_cases.py
       - name: Player doubles commands, targets and complete battle
         run: python tests/integration/player_doubles_cases.py
       - name: Move and species name variants on PostgreSQL

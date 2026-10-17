@@ -7067,7 +7067,9 @@ class Trickroom:
 		field = args[0] if args else kwargs.get("field")
 		if field:
 			pw = getattr(field, "pseudo_weather", {})
-			pw["trickroom"] = True
+			# Keep the engine's duration and source state for residuals/rebuilds.
+			if not isinstance(pw.get("trickroom"), dict):
+				pw["trickroom"] = {"duration": 5}
 			field.pseudo_weather = pw
 		return True
 
