@@ -43,8 +43,8 @@ class CmdGym(Command):
 
     Examples:
       +gym list
-      +gym check alpha_gym
-      +gym challenge alpha_gym
+      +gym check tempo_gym
+      +gym challenge tempo_gym
 
     Notes:
       Gym badges are awarded once. You may rematch a gym leader after earning
@@ -96,7 +96,7 @@ class CmdGym(Command):
         checks = [
             check
             for check in list_gym_leaders(player=self.caller, include_disabled=False)
-            if check.enabled
+            if _is_player_visible(check)
         ]
         if not checks:
             self.caller.msg("No gyms are available right now.")
@@ -153,6 +153,22 @@ class CmdGym(Command):
             self.caller.msg(_configuration_message(check))
             return
 
+        if check.reward_policy == "badge_only":
+            from pokemon.services.gym_challenges import GymChallenge
+
+            try:
+                session, encounter = GymChallenge(self.caller, identifier).start()
+            except GymLeaderError as error:
+                self.caller.msg(str(error))
+                return
+            except Exception:
+                logger.exception("Production gym startup failed and was rolled back")
+                self.caller.msg("The gym challenge could not start. No reward or cooldown was consumed; try again.")
+                return
+            mode = encounter.metadata["challenge_mode"].replace("_", " ")
+            self.caller.msg(f"Started {mode} gym challenge #{session.battle_id} against {encounter.display_name}.")
+            return
+
         if check.has_badge:
             self.caller.msg(
                 f"You already have the {check.badge_name}. This rematch will not award another badge."
@@ -192,7 +208,7 @@ def _gym_label(check: GymLeaderCheck) -> str:
 
 
 def _is_player_visible(check: GymLeaderCheck) -> bool:
-    return bool(check.found and check.enabled)
+    return bool(check.found and check.enabled and check.content_stage == "production")
 
 
 def _missing_or_unavailable_message(identifier: str) -> str:
@@ -209,8 +225,13 @@ def _format_check(check: GymLeaderCheck) -> str:
         f"Your badges: {check.badge_count}",
         f"Qualifies: {_yes_no(check.eligible)}",
         f"Already earned: {_yes_no(check.has_badge)}",
+        f"Format: {check.battle_format}",
     ]
-    if check.has_badge:
+    if check.rules_text:
+        lines.append(check.rules_text)
+    if check.availability_message:
+        lines.append(check.availability_message)
+    elif check.has_badge:
         lines.append("Rematch available. No additional badge will be awarded.")
     elif check.can_start_battle:
         lines.append("Challenge available.")
@@ -222,6 +243,8 @@ def _format_check(check: GymLeaderCheck) -> str:
 
 
 def _eligibility_message(check: GymLeaderCheck) -> str:
+    if check.availability_message:
+        return check.availability_message
     for issue in check.issues:
         if issue.startswith("Requires at least") or "trainer progression record" in issue:
             return issue

@@ -1202,6 +1202,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if source_type != "gym_leader":
             return
         if not getattr(self, "_gym_victory_id", None) and not self._winner_is_player_side(winner):
+            if metadata.get("reward_policy") == "badge_only":
+                text = metadata.get("defeat_text")
+                if text:
+                    self.msg(str(text))
+                self._battle_result_handled = True
             return
         self._handle_gym_victory(metadata)
 
@@ -1227,6 +1232,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if getattr(self, "storage", None):
                     self.storage.set("battle_result", {**saved_result, "handled": True})
                 self._battle_result_handled = True
+                if metadata.get("victory_text"):
+                    self.msg(str(metadata["victory_text"]))
             self.msg(result.message)
         except Exception:
             log_warn("Failed to apply gym leader battle result", exc_info=True)
@@ -1756,6 +1763,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
+        if metadata.get("reward_policy") == "badge_only" and not victory_id and not self._battle_result_handled:
+            self._battle_result_handled = True
+            self.msg("Gym challenge ended without victory. No badge or cooldown was consumed; you may retry.")
         self._ended = True
         self.logic = None
         if self.state:
@@ -1783,6 +1793,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
+        metadata = getattr(self, "encounter_metadata", {}) or {}
+        if self.battle and metadata.get("source_type") == "gym_leader" and metadata.get("reward_policy") == "badge_only":
+            self.battle.award_xp = self.battle.award_txp = self.battle.award_prizes = False
+            self.state.xp = self.state.txp = False
         for participant in getattr(self.battle, "participants", []):
             if participant.is_ai:
                 profile = (getattr(self, "encounter_metadata", {}) or {}).get("ai_profile")
