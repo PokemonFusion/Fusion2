@@ -1307,6 +1307,8 @@ class RewardService:
     def handle_end_of_battle_rewards(self, battle: "Battle", winner: BattleParticipant) -> None:
         """Award post-battle rewards to the winning participant."""
 
+        if not getattr(battle, "award_prizes", True):
+            return
         if battle._rewards_granted:
             return
         if not winner or not getattr(winner, "player", None):
