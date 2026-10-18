@@ -88,6 +88,9 @@ assert migration.dependencies == [("pokemon", "0042_merge_adventure_placement")]
 state = ProjectState()
 for operation in migration.operations:
     operation.state_forwards("pokemon", state)
+for operation in importlib.import_module("pokemon.migrations.0045_production_strategy_gym").Migration.operations:
+    if getattr(operation, "model_name", None) == "gymvictory":
+        operation.state_forwards("pokemon", state)
 expected = ModelState.from_model(GymVictory)
 actual = state.models["pokemon", "gymvictory"]
 assert set(actual.fields) == set(expected.fields)

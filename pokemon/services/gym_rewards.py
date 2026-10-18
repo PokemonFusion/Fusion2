@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -12,6 +13,15 @@ logger = logging.getLogger(__name__)
 PENDING_MESSAGE = "Your gym badge award is pending. Use +gym claim to retry it."
 
 
+def _metadata_snapshot(value):
+    """Detach nested Evennia Saver containers before writing a JSON victory row."""
+    if isinstance(value, Mapping):
+        return {key: _metadata_snapshot(item) for key, item in value.items()}
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return [_metadata_snapshot(item) for item in value]
+    return value
+
+
 @dataclass(frozen=True)
 class GymClaimResult:
     """Report whether a saved victory's badge has been delivered."""
@@ -19,13 +29,17 @@ class GymClaimResult:
     completed: bool
     message: str
     awarded: bool = False
+    award_kind: str = ""
 
 
 class GymVictoryRewards:
     """Record victories and claim awards only for the supplied character."""
 
     def __init__(self, player):
-        self.player = player
+        """Use the persistent character behind an optional session transport."""
+        from pokemon.services.battle_rewards import BattleRewards
+
+        self.player = BattleRewards.character(player)
 
     def record(self, victory_id, metadata):
         """Save the first victory snapshot before attempting badge delivery.
@@ -38,7 +52,7 @@ class GymVictoryRewards:
             raise ValueError("Only confirmed gym victories can be recorded.")
         victory, _created = self._model().objects.get_or_create(
             pk=UUID(str(victory_id)),
-            defaults={"player": self.player, "metadata": dict(metadata)},
+            defaults={"player": self.player, "metadata": _metadata_snapshot(metadata)},
         )
         if victory.player_id != self.player.pk:
             raise ValueError("This gym victory belongs to another character.")
@@ -57,14 +71,19 @@ class GymVictoryRewards:
             player_model.objects.select_for_update().get(pk=self.player.pk)
             victory = model.objects.select_for_update().get(pk=victory_id, player=self.player)
             if victory.claimed_at is not None:
-                return GymClaimResult(True, "This gym victory has already been claimed.")
+                return GymClaimResult(True, "This gym victory has already been claimed.", award_kind=victory.award_kind)
             result = grant_gym_badge_for_victory(self.player, victory.metadata)
             if result is None or not (result.awarded or result.already_had):
                 detail = f"{result.message} " if result and result.message else ""
                 return GymClaimResult(False, detail + PENDING_MESSAGE)
             victory.claimed_at = timezone.now()
-            victory.save(update_fields=("claimed_at",))
-        return GymClaimResult(True, result.message, awarded=result.awarded)
+            victory.award_kind = "first_clear" if result.awarded else "rematch"
+            victory.save(update_fields=("claimed_at", "award_kind"))
+        message = result.message
+        if victory.metadata.get("reward_policy") == "badge_only":
+            message = (f"First clear complete: you earned the {result.badge_name}!" if result.awarded else
+                       "Rematch complete. Your existing badge is unchanged; no repeat rewards are awarded.")
+        return GymClaimResult(True, message, awarded=result.awarded, award_kind=victory.award_kind)
 
     def claim_pending(self) -> tuple[GymClaimResult, ...]:
         """Retry this character's unclaimed victories independently."""

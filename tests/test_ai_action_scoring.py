@@ -7,10 +7,11 @@ import random
 
 import pytest
 
+from pokemon.battle.actions import Action, ActionType
 from pokemon.battle.ai_action_scoring import AIActionScorer
 from pokemon.battle.ai_profiles import DEFAULT_AI_PROFILES, build_battle_ai_context
 from pokemon.battle.battledata import Move, Pokemon
-from pokemon.battle.engine import Battle, BattleParticipant, BattleType, _select_ai_action
+from pokemon.battle.engine import Battle, BattleMove, BattleParticipant, BattleType, _select_ai_action
 from pokemon.battle.legal_actions import LegalActions
 from pokemon.dex import MOVEDEX
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
@@ -85,6 +86,56 @@ def test_legacy_boolean_trick_room_has_a_bounded_lifetime():
     for _ in range(5):
         battle.residual()
     assert battle.field.get_pseudo_weather("trickroom") is None
+
+
+def test_executed_trick_room_reports_its_actual_field_effect():
+    """The production gym's successful strategy must not tell players it failed."""
+    user = mon("Slowbro", ("Trick Room",))
+    battle, ai, opponent = encounter([user], [mon("Jolteon")])
+    messages = []
+    battle.log_action = messages.append
+    battle.use_move(Action(ai, ActionType.MOVE, target=opponent, move=BattleMove("Trick Room"), pokemon=user))
+    assert battle.field.get_pseudo_weather("trickroom")
+    assert any("twisted the dimensions" in text for text in messages)
+    assert not any("no effect" in text for text in messages)
+
+
+@pytest.mark.parametrize("move_name", ["Recover", "Heal Pulse"])
+def test_gym_healing_reports_success_when_hp_increases(move_name):
+    """Both the self-heal and ally support move display their actual success."""
+    user = mon("Slowking", (move_name,), hp_fraction=.5)
+    ally = mon("Slowbro", hp_fraction=.5)
+    battle, ai, _ = encounter([user, ally], [mon("Jolteon")])
+    target = user if move_name == "Recover" else ally
+    previous_hp = target.hp
+    messages = []
+    battle.log_action = messages.append
+    battle.use_move(Action(ai, ActionType.MOVE, target=ai, target_pokemon=target,
+                           move=BattleMove(move_name), pokemon=user))
+    assert target.hp > previous_hp
+    assert not any("no effect" in text for text in messages)
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+def test_gym_protect_expires_before_the_next_turn(legacy):
+    """A protected gym opponent becomes hittable again, including old snapshots."""
+    user = mon("Slowbro", ("Protect",))
+    foe = mon("Jolteon", ("Tackle",))
+    battle, ai, opponent = encounter([user], [foe])
+    messages = []
+    battle.log_action = messages.append
+    if legacy:
+        user.volatiles["protect"] = True
+    else:
+        battle.use_move(Action(ai, ActionType.MOVE, target=user, move=BattleMove("Protect"), pokemon=user))
+        assert not any("no effect" in text for text in messages)
+    hp = user.hp
+    battle.use_move(Action(opponent, ActionType.MOVE, target=user, move=BattleMove("Tackle"), pokemon=foe))
+    assert user.hp == hp
+    battle.residual()
+    assert "protect" not in user.volatiles
+    battle.use_move(Action(opponent, ActionType.MOVE, target=user, move=BattleMove("Tackle"), pokemon=foe))
+    assert user.hp < hp
 
 
 def test_offensive_setup_needs_an_available_attack():

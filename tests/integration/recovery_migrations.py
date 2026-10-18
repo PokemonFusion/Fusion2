@@ -18,6 +18,7 @@ BASELINES = {
     "adventure": "0040_adventure_participation",
     "main": "0041_placement_integrity_triggers",
     "status": "0043_gym_victory",
+    "strategy_gym": "0044_owned_pokemon_status",
 }
 
 
@@ -51,6 +52,7 @@ class RecoveryMigrationRehearsal:
             "0040_adventure_participation", "0041_placement_integrity_triggers",
             "0042_merge_adventure_placement", "0043_gym_victory",
             "0044_owned_pokemon_status",
+            "0045_production_strategy_gym",
         )}
         assert required <= set(executor.loader.applied_migrations), "Merged migration history is incomplete."
         changes = MigrationAutodetector(
@@ -75,6 +77,17 @@ class RecoveryMigrationRehearsal:
         trainer = model("Trainer").objects.create(user=player, trainer_number=1)
         badge = model("GymBadge").objects.create(name="Preserved Badge", region="Rehearsal")
         trainer.badges.add(badge)
+        leader = model("NPCTrainer").objects.create(name="Migration Alpha Leader")
+        profile_model = model("GymLeaderProfile")
+        config = {"content_stage": "test"} if any(field.name == "content_stage" for field in profile_model._meta.fields) else {}
+        profile = profile_model.objects.create(npc_trainer=leader, badge=badge, league_key="alpha",
+                                               gym_key="alpha_gym", badge_key="alpha_badge", **config)
+        try:
+            victory_model = model("GymVictory")
+        except LookupError:
+            victory_model = None
+        victory = victory_model.objects.create(player=player, metadata={"source_type": "gym_leader",
+                                                                         "badge_id": badge.pk}) if victory_model else None
         model("InventoryEntry").objects.create(owner=trainer, item_name="potion", quantity=2)
         storage = model("UserStorage").objects.create(user=player)
         with transaction.atomic():
@@ -98,7 +111,8 @@ class RecoveryMigrationRehearsal:
                 session=run, player=player, route_key="wild", encounter_result="capture",
                 completed_at=timezone.now(), reward_item="Potion", reward_amount=1,
             )
-        return {"player": player.pk, "trainer": trainer.pk, "badge": badge.pk,
+        return {"player": player.pk, "trainer": trainer.pk, "badge": badge.pk, "gym": profile.pk,
+                "victory": str(victory.pk) if victory else None,
                 "pokemon": pokemon.pk, "run": run.pk, "had_participation": participation is not None}
 
     @staticmethod
@@ -110,7 +124,8 @@ class RecoveryMigrationRehearsal:
         from pokemon.adventures.progress import claim_completed_rewards
         from pokemon.models.adventures import AdventureParticipation
         from pokemon.models.core import OwnedPokemon
-        from pokemon.models.trainer import Trainer
+        from pokemon.models.gym import GymVictory
+        from pokemon.models.trainer import GymLeaderProfile, Trainer
         from pokemon.services.placement_audit import audit_placements_v1
 
         trainer = Trainer.objects.get(pk=seed["trainer"])
@@ -118,6 +133,13 @@ class RecoveryMigrationRehearsal:
         assert pokemon.status == "" and pokemon.sleep_turns is None, "Upgrade introduced a status condition."
         assert trainer.get_item_quantity("Potion") == 2, "Upgrade changed existing inventory."
         assert trainer.badges.filter(pk=seed["badge"]).exists(), "Upgrade lost an earned badge."
+        profile = GymLeaderProfile.objects.get(pk=seed["gym"])
+        assert profile.content_stage == "test", "Upgrade exposed installed Alpha content to production players."
+        assert profile.battle_format == "single" and profile.reward_policy == "legacy"
+        if seed["victory"]:
+            victory = GymVictory.objects.get(pk=seed["victory"])
+            assert victory.claimed_at is None and victory.award_kind == ""
+            assert victory.metadata["badge_id"] == seed["badge"], "Upgrade redirected a pending gym award."
         assert not list(audit_placements_v1(apps)), "Upgrade changed valid Pokemon ownership or placement."
         if seed["had_participation"]:
             receipt = AdventureParticipation.objects.get(session_id=seed["run"])

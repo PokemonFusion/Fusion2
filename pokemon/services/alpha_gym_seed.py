@@ -173,6 +173,7 @@ def _upsert_gym_leader_profile(model, leader, badge):
         "badge_key": ALPHA_BADGE_KEY,
         "required_badge_count": 0,
         "is_enabled": True,
+        "content_stage": "test",
         "sort_order": 1,
     }
     if profile is None:

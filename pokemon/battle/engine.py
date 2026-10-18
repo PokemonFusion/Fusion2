@@ -1307,6 +1307,8 @@ class RewardService:
     def handle_end_of_battle_rewards(self, battle: "Battle", winner: BattleParticipant) -> None:
         """Award post-battle rewards to the winning participant."""
 
+        if not getattr(battle, "award_prizes", True):
+            return
         if battle._rewards_granted:
             return
         if not winner or not getattr(winner, "player", None):
@@ -4345,6 +4347,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # to validate move side effects.
 
         start_hp = getattr(target, "hp", 0)
+        start_user_hp = getattr(user, "hp", 0)
+        start_volatiles = (set(getattr(user, "volatiles", {})), set(getattr(target, "volatiles", {})))
+        start_room = bool(self.field.get_pseudo_weather("trickroom"))
         start_user_boosts = dict(getattr(user, "boosts", {}))
         start_target_boosts = dict(getattr(target, "boosts", {}))
         start_statuses = (getattr(user, "status", None), getattr(target, "status", None))
@@ -4402,13 +4407,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     start_target_boosts,
                     end_target_boosts,
                 )
-        elif boosts_changed or statuses_changed:
+        elif (boosts_changed or statuses_changed or end_hp > start_hp
+              or getattr(user, "hp", 0) > start_user_hp
+              or start_volatiles != (set(getattr(user, "volatiles", {})), set(getattr(target, "volatiles", {})))
+              or start_room != bool(self.field.get_pseudo_weather("trickroom"))):
             if target_self:
                 self.log_action(f"{user_name} used {action.move.name}!")
             else:
                 self.log_action(
                     f"{user_name} used {action.move.name} on {target_name}!"
                 )
+            if start_room != bool(self.field.get_pseudo_weather("trickroom")):
+                self.log_action("Trick Room twisted the dimensions!" if not start_room else "Trick Room's twisted dimensions returned to normal!")
             self.announce_stat_changes(
                 user,
                 start_user_boosts,
@@ -4808,6 +4818,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         handler = VOLATILE_HANDLERS.get(vol)
                         if handler and hasattr(handler, "onResidual"):
                             handler.onResidual(poke, battle=self)
+                        if vol == "protect":
+                            # Protection ends with this turn, including restored
+                            # sessions whose old volatile had no duration state.
+                            self.remove_volatile(poke, vol)
 
         self._handle_slot_condition_residuals()
 

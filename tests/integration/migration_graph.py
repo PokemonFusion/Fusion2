@@ -43,5 +43,17 @@ with patch(
     plan = loader.graph.forwards_plan(leaves[0])
     for name in ("0040_adventure_participation", "0041_placement_integrity_triggers"):
         assert ("pokemon", name) in plan, name
+    from django.db.migrations.state import ModelState
+
+    from pokemon.models.gym import GymVictory
+    from pokemon.models.trainer import GymLeaderProfile
+
+    state = loader.project_state()
+    for model in (GymLeaderProfile, GymVictory):
+        expected = ModelState.from_model(model)
+        actual = state.models["pokemon", model._meta.model_name]
+        assert set(actual.fields) == set(expected.fields), model.__name__
+        for name in expected.fields:
+            assert actual.fields[name].deconstruct()[1:] == expected.fields[name].deconstruct()[1:], name
 
 print("Merged migration graph is connected; only SQLite memory was used.")
