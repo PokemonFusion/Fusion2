@@ -945,8 +945,9 @@ class Pokemon:
 
         if self.ability is not None:
             info["ability"] = getattr(self.ability, "name", self.ability)
-        if self.item is not None:
-            info["item"] = getattr(self.item, "name", self.item)
+        # An explicit empty item records removal; omission is reserved for
+        # legacy checkpoints that must fall back to the stored model.
+        info["item"] = getattr(self.item, "name", self.item)
 
         info.update(
             {
@@ -1012,7 +1013,8 @@ class Pokemon:
                     species = data.get("species") or getattr(poke, "species", name)
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
-                    item = getattr(poke, "item", getattr(poke, "held_item", item))
+                    if "item" not in data:
+                        item = getattr(poke, "item", getattr(poke, "held_item", item))
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
@@ -1051,7 +1053,8 @@ class Pokemon:
                     species = data.get("species") or getattr(poke, "species", name)
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
-                    item = getattr(poke, "held_item", item)
+                    if "item" not in data:
+                        item = getattr(poke, "held_item", item)
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)

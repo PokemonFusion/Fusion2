@@ -126,6 +126,7 @@ from ._shared import (
     ensure_movedex_aliases,
     get_raw,
     reset_tempvals,
+    snapshot_battle_value,
 )
 from .battledata import (
     _REVEAL_ALL_VIEWERS,
@@ -748,6 +749,34 @@ class BattleType(Enum):
     SCRIPTED = 3
 
 
+@dataclass(frozen=True)
+class _MoveResultState:
+    """Detached effects used to distinguish a successful move from no change."""
+
+    hp: int
+    boosts: dict
+    status: Any
+    volatiles: dict
+    item: str
+    ability: str
+
+    @classmethod
+    def capture(cls, pokemon):
+        """Copy condition state without following live battler or ORM graphs."""
+        from pokemon.utils.boosts import STAT_KEY_MAP
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        ability = getattr(pokemon, "ability", None)
+        return cls(
+            hp=getattr(pokemon, "hp", 0),
+            boosts={STAT_KEY_MAP.get(key, key): value for key, value in getattr(pokemon, "boosts", {}).items()},
+            status=getattr(pokemon, "status", None),
+            volatiles=snapshot_battle_value(getattr(pokemon, "volatiles", {}) or {}),
+            item=_normalize_key(getattr(item, "name", None) or item or ""),
+            ability=_normalize_key(getattr(ability, "name", None) or ability or ""),
+        )
+
+
 @dataclass
 class BattleMove:
     """Representation of a move used in battle."""
@@ -993,7 +1022,10 @@ class BattleMove:
                     cb(target)
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected and hasattr(affected, "volatiles"):
-                affected.volatiles.setdefault(volatile, True)
+                if battle:
+                    battle.apply_volatile_status(affected, volatile)
+                else:
+                    affected.volatiles.setdefault(volatile, True)
 
         # Apply major status conditions inflicted by this move
         status = self.raw.get("status") if self.raw else None
@@ -3850,6 +3882,79 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move.execute(user, target, self)
         return True
 
+    def _announce_move_result(self, user, target, move, before_user, before_target, *, report_no_effect=True, field_changed=False):
+        """Describe one target's actual damage, conditions and stat changes."""
+        after_user, after_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
+        start_user_boosts, end_user_boosts = before_user.boosts, after_user.boosts
+        start_target_boosts, end_target_boosts = before_target.boosts, after_target.boosts
+        dmg = before_target.hp - after_target.hp
+        boosts_changed = (
+            start_user_boosts != end_user_boosts
+            or start_target_boosts != end_target_boosts
+        )
+        statuses_changed = (before_user.status, before_target.status) != (
+            after_user.status, after_target.status
+        )
+        effects_changed = any(
+            before.hp < after.hp or before.volatiles != after.volatiles
+            or before.item != after.item or before.ability != after.ability
+            for before, after in ((before_user, after_user), (before_target, after_target))
+        )
+        target_self = target is user
+        user_name = getattr(user, "name", "Pokemon")
+        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
+        if dmg > 0:
+            if getattr(self, "show_damage_numbers", False):
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name} and dealt {dmg} damage!"
+                )
+            if boosts_changed:
+                self.announce_stat_changes(
+                    user,
+                    start_user_boosts,
+                    end_user_boosts,
+                )
+                self.announce_stat_changes(
+                    target,
+                    start_target_boosts,
+                    end_target_boosts,
+                )
+        elif boosts_changed or statuses_changed or effects_changed or field_changed:
+            if target_self:
+                self.log_action(f"{user_name} used {move.name}!")
+            else:
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name}!"
+                )
+            self.announce_stat_changes(
+                user,
+                start_user_boosts,
+                end_user_boosts,
+                move.raw.get("boosts") if target_self else None,
+            )
+            self.announce_stat_changes(
+                target,
+                start_target_boosts,
+                end_target_boosts,
+                move.raw.get("boosts") if not target_self else None,
+            )
+        else:
+            if move.raw.get("boosts"):
+                fail_target = "its own" if target_self else f"{target_name}'s"
+                self.log_action(
+                    f"{user_name}'s {move.name} failed to affect {fail_target} stats!"
+                )
+                affected = user if target_self else target
+                start = start_user_boosts if target_self else start_target_boosts
+                end = end_user_boosts if target_self else end_target_boosts
+                self.announce_stat_changes(
+                    affected, start, end, move.raw.get("boosts")
+                )
+            elif report_no_effect:
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name} but it had no effect!"
+                )
+
     def use_move(self, action: Action) -> None:
         """Attempt to use the chosen move applying simple failure rules."""
         if not action.move:
@@ -4346,13 +4451,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # as appropriate, so behaviour remains informative while enabling tests
         # to validate move side effects.
 
-        start_hp = getattr(target, "hp", 0)
-        start_user_hp = getattr(user, "hp", 0)
-        start_volatiles = (set(getattr(user, "volatiles", {})), set(getattr(target, "volatiles", {})))
+        before_user, before_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
         start_room = bool(self.field.get_pseudo_weather("trickroom"))
-        start_user_boosts = dict(getattr(user, "boosts", {}))
-        start_target_boosts = dict(getattr(target, "boosts", {}))
-        start_statuses = (getattr(user, "status", None), getattr(target, "status", None))
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
@@ -4364,11 +4464,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if action.move.raw.get("target") == "allies" and action.move.onHit:
             # Group support handlers already visit the user's party once.
             spread_targets = []
+        # Some callbacks affect the whole group on the primary hit. Retain each
+        # target's original state so those effects also get an accurate summary.
+        spread_before = {id(mon): _MoveResultState.capture(mon) for mon in spread_targets}
         action.move._spread = len(spread_targets) > 1
         executed = self._do_move(user, target, action.move)
-        end_hp = getattr(target, "hp", 0)
-        end_user_boosts = dict(getattr(user, "boosts", {}))
-        end_target_boosts = dict(getattr(target, "boosts", {}))
         if not executed:
             try:
                 user.tempvals["moved"] = True
@@ -4380,73 +4480,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
-        dmg = start_hp - end_hp
-        boosts_changed = (
-            start_user_boosts != end_user_boosts
-            or start_target_boosts != end_target_boosts
-        )
-        statuses_changed = start_statuses != (
-            getattr(user, "status", None), getattr(target, "status", None)
-        )
-        target_self = target is user
-        user_name = getattr(user, "name", "Pokemon")
-        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
-        if dmg > 0:
-            if getattr(self, "show_damage_numbers", False):
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name} and dealt {dmg} damage!"
-                )
-            if boosts_changed:
-                self.announce_stat_changes(
-                    user,
-                    start_user_boosts,
-                    end_user_boosts,
-                )
-                self.announce_stat_changes(
-                    target,
-                    start_target_boosts,
-                    end_target_boosts,
-                )
-        elif (boosts_changed or statuses_changed or end_hp > start_hp
-              or getattr(user, "hp", 0) > start_user_hp
-              or start_volatiles != (set(getattr(user, "volatiles", {})), set(getattr(target, "volatiles", {})))
-              or start_room != bool(self.field.get_pseudo_weather("trickroom"))):
-            if target_self:
-                self.log_action(f"{user_name} used {action.move.name}!")
-            else:
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name}!"
-                )
-            if start_room != bool(self.field.get_pseudo_weather("trickroom")):
-                self.log_action("Trick Room twisted the dimensions!" if not start_room else "Trick Room's twisted dimensions returned to normal!")
-            self.announce_stat_changes(
-                user,
-                start_user_boosts,
-                end_user_boosts,
-                action.move.raw.get("boosts") if target_self else None,
-            )
-            self.announce_stat_changes(
-                target,
-                start_target_boosts,
-                end_target_boosts,
-                action.move.raw.get("boosts") if not target_self else None,
-            )
-        else:
-            if action.move.raw.get("boosts"):
-                fail_target = "its own" if target_self else f"{target_name}'s"
-                self.log_action(
-                    f"{user_name}'s {action.move.name} failed to affect {fail_target} stats!"
-                )
-                affected = user if target_self else target
-                start = start_user_boosts if target_self else start_target_boosts
-                end = end_user_boosts if target_self else end_target_boosts
-                self.announce_stat_changes(
-                    affected, start, end, action.move.raw.get("boosts")
-                )
-            else:
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name} but it had no effect!"
-                )
+        room_active = bool(self.field.get_pseudo_weather("trickroom"))
+        room_changed = start_room != room_active
+        self._announce_move_result(user, target, action.move, before_user, before_target, field_changed=room_changed)
+        if room_changed:
+            self.log_action("Trick Room twisted the dimensions!" if room_active else "Trick Room's twisted dimensions returned to normal!")
 
         if action.move.raw.get("forceSwitch") and target is not None and getattr(target, "hp", 0) > 0:
             if self._can_drag_out(target, source=user, effect=action.move):
@@ -4519,7 +4557,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         for extra in spread_targets:
             if extra is not target and getattr(extra, "hp", 0) > 0:
+                before_user = _MoveResultState.capture(user)
                 action.move.execute(user, extra, self)
+                if str(action.move.raw.get("category", "")).lower() == "status":
+                    self._announce_move_result(
+                        user, extra, action.move, before_user, spread_before[id(extra)],
+                        # Callback-only moves can change state outside this
+                        # summary's model; leave their failure text to the handler.
+                        report_no_effect=any(action.move.raw.get(key) for key in
+                                             ("boosts", "status", "volatileStatus", "heal")),
+                    )
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""

@@ -17,6 +17,7 @@ on:
       - 'server/conf/at_server_startstop.py'
       - 'server/conf/settings.py'
       - 'server/conf/telnet.py'
+      - 'server/conf/amp.py'
       - 'utils/server_logging.py'
       - 'commands/player/cmd_nickname.py'
       - 'menus/capture_nickname.py'
@@ -92,6 +93,8 @@ jobs:
         run: python tests/integration/status_item_cases.py
       - name: Center healing locks and canonical party-slot commands on PostgreSQL
         run: python tests/integration/cloud_gameplay_cases.py
+      - name: Real AMP input routing through reload and session synchronization
+        run: python tests/integration/amp_reload_cases.py
       - name: Capture replay debits and durable Ether restoration on PostgreSQL
         run: python tests/integration/capture_ether_cases.py
       - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL

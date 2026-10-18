@@ -926,8 +926,8 @@ class TurnProcessor:
 				continue
 			if action_type is ActionType.MOVE and action.move:
 				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
-				if self.status_prevents_move(actor_poke, getattr(action, "move", None)):
-					continue
+				# use_move owns prevention checks, including direct move execution.
+				# Checking here too advances sleep/confusion and rolls paralysis twice.
 				self.use_move(action)
 				if actor_poke is not None:
 					try:
