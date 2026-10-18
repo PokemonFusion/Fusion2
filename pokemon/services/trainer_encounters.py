@@ -386,7 +386,6 @@ def _battle_pokemon_from_template(template, trainer):
         model_id=_encounter_ref(encounter),
         gender=gender,
         item=_text(getattr(template, "held_item", None), ""),
-        tera_type=_text(getattr(template, "tera_type", None), ""),
     )
 
 

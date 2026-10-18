@@ -46,7 +46,7 @@ with patch(
     from django.db.migrations.state import ModelState
 
     from pokemon.models.gym import GymVictory
-    from pokemon.models.trainer import GymLeaderProfile, NPCPokemonTemplate
+    from pokemon.models.trainer import GymLeaderProfile
 
     state = loader.project_state()
     for model in (GymLeaderProfile, GymVictory):
@@ -55,8 +55,5 @@ with patch(
         assert set(actual.fields) == set(expected.fields), model.__name__
         for name in expected.fields:
             assert actual.fields[name].deconstruct()[1:] == expected.fields[name].deconstruct()[1:], name
-    expected = ModelState.from_model(NPCPokemonTemplate).fields["tera_type"]
-    actual = state.models["pokemon", "npcpokemontemplate"].fields["tera_type"]
-    assert actual.deconstruct()[1:] == expected.deconstruct()[1:]
 
 print("Merged migration graph is connected; only SQLite memory was used.")

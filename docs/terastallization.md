@@ -66,10 +66,9 @@ or choices. Active slots are evaluated in stable order, so only one ally can
 reserve the side's use. The policy is deterministic; the profile disables
 random score variation.
 
-`NPCPokemonTemplate.tera_type` optionally authors any supported type, including
-Stellar. Blank templates keep the ordinary primary-type fallback. Random NPC
-team specifications also accept `tera_type`. Encounter battle snapshots carry
-the resolved type without adding permanent encounter transformation fields.
+Existing room NPC encounter specifications accept `tera_type`, including
+Stellar. Static NPC templates use the ordinary primary-type fallback. Encounter
+battle snapshots carry the resolved configuration without new database fields.
 
 Pokemon checkpoints contain configured type, active Tera type, original types
 and consumed Stellar types. Battle checkpoints contain used sides and pending
@@ -86,8 +85,7 @@ DSN, `python tests/integration/terastallization_cases.py` exercises normal
 singles/doubles commands, checkpoints, rollback, cleanup and NPC authoring.
 The lifecycle CI workflow includes these checks and migration rehearsals.
 
-Migration `0046_npc_tera_type` adds one optional, blank NPC template column.
-Local migration rehearsal, migration of the running game and service restarts
-require operational approval. Automated command tests do not substitute for
-live player acceptance. Nothing in this PR installs a new gym or changes an
-existing trainer's AI profile.
+No migration is required. Activating the code on the running game requires an
+approved service restart. Automated command tests do not substitute for live
+player acceptance. Nothing in this PR installs a new gym or changes an existing
+trainer's AI profile.

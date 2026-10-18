@@ -53,7 +53,6 @@ class RecoveryMigrationRehearsal:
             "0042_merge_adventure_placement", "0043_gym_victory",
             "0044_owned_pokemon_status",
             "0045_production_strategy_gym",
-            "0046_npc_tera_type",
         )}
         assert required <= set(executor.loader.applied_migrations), "Merged migration history is incomplete."
         changes = MigrationAutodetector(

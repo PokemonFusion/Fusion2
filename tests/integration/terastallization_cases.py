@@ -173,16 +173,17 @@ class TerastallizationCases(unittest.TestCase):
         stored = OwnedPokemon.objects.get(pk=mon.model_id.split(":", 1)[1])
         self.assertEqual((stored.species, stored.tera_type), ("Eevee", "Stellar"))
 
-    def test_authored_npc_stellar_type_survives_encounter_checkpoint(self):
-        """Authoring selects Stellar without storing battle typing on encounter rows."""
+    def test_configured_npc_stellar_type_survives_encounter_checkpoint(self):
+        """Existing encounter data selects Stellar without adding a database column."""
         from pokemon.battle.battledata import Pokemon
-        from pokemon.models.trainer import NPCPokemonTemplate, NPCTrainer
-        from pokemon.services.trainer_encounters import generate_static_trainer_encounter
+        from pokemon.services.trainer_encounters import generate_random_trainer_encounter
 
-        trainer = NPCTrainer.objects.create(name="Stellar QA " + uuid4().hex[:8])
-        NPCPokemonTemplate.objects.create(npc_trainer=trainer, species="Eevee", level=20, tera_type="Stellar",
-                                          ivs=[0] * 6, evs=[0] * 6, nature="Hardy", move_names=["Tera Blast"])
-        mon = generate_static_trainer_encounter(trainer).team[0]
+        self.room.db.npc_trainer_chart = [{"species": "Eevee", "min_level": 20, "max_level": 20,
+                                          "tera_type": "Stellar", "move_names": ["Tera Blast"],
+                                          "ai_profile": "trainer_tera"}]
+        encounter = generate_random_trainer_encounter(self.room, rng=random.Random(4))
+        self.assertEqual(encounter.ai_profile, "trainer_tera")
+        mon = encounter.team[0]
         self.assertEqual(mon.tera_type, "Stellar")
         rebuilt = Pokemon.from_dict(mon.to_dict())
         self.assertEqual((rebuilt.tera_type, rebuilt.types, rebuilt.terastallized), ("Stellar", ["Normal"], None))

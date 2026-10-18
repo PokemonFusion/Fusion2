@@ -249,7 +249,6 @@ class NPCPokemonTemplate(models.Model):
         ivs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list, validators=[validate_ivs])
         evs = ArrayField(models.PositiveSmallIntegerField(), size=6, default=list, validators=[validate_evs])
         held_item = models.CharField(max_length=50, blank=True)
-        tera_type = models.CharField(max_length=20, blank=True)
         move_names = models.JSONField(default=list, blank=True)
         sort_order = models.PositiveSmallIntegerField(default=1, db_index=True)
 
