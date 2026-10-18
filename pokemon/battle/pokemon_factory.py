@@ -97,6 +97,7 @@ def create_battle_pokemon(
 	is_wild: bool = False,
 	template_key: str = "",
 	move_names: list[str] | None = None,
+	tera_type: str = "",
 ) -> Pokemon:
 	"""Return a ``Pokemon`` battle object for the given species/level."""
 
@@ -143,6 +144,7 @@ def create_battle_pokemon(
 		model_id=encounter_ref(encounter),
 		gender=getattr(inst, "gender", "N"),
 		item=getattr(encounter, "held_item", ""),
+		tera_type=tera_type,
 	)
 
 

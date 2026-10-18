@@ -61,4 +61,8 @@ def select_ai_action(participant, pokemon, battle, *, logger, reserved=(), plann
         else:
             logger.info("%s chooses to switch to %s", participant.name, getattr(chosen.pokemon, "name", "Pokemon"))
     attach_ai_debug_trace(participant, battle, trace)
+    if chosen is not None and chosen.move is not None:
+        from .terastallization import Terastallization
+
+        Terastallization.propose_ai(battle, participant, chosen, context.profile)
     return chosen

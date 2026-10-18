@@ -20,6 +20,7 @@ def _stub_factory(monkeypatch):
         is_wild=False,
         template_key="",
         move_names=None,
+        tera_type="",
     ):
         calls.append(
             {
@@ -29,6 +30,7 @@ def _stub_factory(monkeypatch):
                 "is_wild": is_wild,
                 "template_key": template_key,
                 "move_names": move_names,
+                "tera_type": tera_type,
             }
         )
         return types.SimpleNamespace(
@@ -36,6 +38,7 @@ def _stub_factory(monkeypatch):
             level=level,
             model_id=f"encounter:{species}:{level}",
             move_names=list(move_names or []),
+            tera_type=tera_type,
         )
 
     monkeypatch.setattr(trainer_encounters, "_create_battle_pokemon", fake_create_battle_pokemon)
@@ -90,6 +93,7 @@ def test_random_trainer_encounter_uses_npc_trainer_chart(monkeypatch):
                 "min_level": 7,
                 "max_level": 7,
                 "move_names": ["Tackle"],
+                "tera_type": "Stellar",
                 "ai_profile": "basic",
                 "source_type": "random",
                 "reward_profile": {"money": "default"},
@@ -107,6 +111,7 @@ def test_random_trainer_encounter_uses_npc_trainer_chart(monkeypatch):
     assert encounter.reward_profile == {"money": "default"}
     assert encounter.ruleset == {"format": "single"}
     assert encounter.team[0].name == "Geodude"
+    assert encounter.team[0].tera_type == "Stellar"
     assert encounter.intro_text == "Hiker Rowan challenges you with Geodude!"
     assert calls == [
         {
@@ -116,6 +121,7 @@ def test_random_trainer_encounter_uses_npc_trainer_chart(monkeypatch):
             "is_wild": False,
             "template_key": "random",
             "move_names": ["Tackle"],
+            "tera_type": "Stellar",
         }
     ]
 

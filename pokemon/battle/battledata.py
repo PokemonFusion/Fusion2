@@ -245,6 +245,7 @@ class Pokemon:
         model_id: Optional[int] = None,
         gender: str = "N",
         types: Optional[List[str]] = None,
+        tera_type: str = "",
     ):
         self.name = name
         self.species = name
@@ -322,7 +323,21 @@ class Pokemon:
         # exist.  Use the explicitly supplied types if provided; otherwise fall
         # back to a Pokédex lookup based on the Pokémon's species name.
         self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
+        self.tera_type = tera_type
+        self.terastallized = None
+        self.tera_original_types = []
+        self.stellar_boosted_types = []
         self.stats = self._battle_stats()
+
+    @property
+    def types(self):
+        """Expose defensive battle types, fixed throughout Terastallization."""
+        return list(self._types) if getattr(self, "terastallized", None) else self._types
+
+    @types.setter
+    def types(self, value):
+        if not getattr(self, "terastallized", None):
+            self._types = list(value)
 
     def eat_item(self, *args, **kwargs):
         """Delegate held-item consumption to the active battle when available."""
@@ -426,7 +441,7 @@ class Pokemon:
     def setType(self, typ) -> bool:
         """Set this Pokemon's active battle type or types."""
 
-        if not typ:
+        if not typ or getattr(self, "terastallized", None):
             return False
         if isinstance(typ, (list, tuple, set)):
             new_types = [str(value).title() for value in typ if value]
@@ -962,6 +977,10 @@ class Pokemon:
                 "evs": list(self.evs),
                 "nature": self.nature,
                 "types": list(self.types),
+                "tera_type": self.tera_type,
+                "terastallized": self.terastallized,
+                "tera_original_types": list(self.tera_original_types),
+                "stellar_boosted_types": list(self.stellar_boosted_types),
             }
         )
 
@@ -1094,6 +1113,14 @@ class Pokemon:
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
         obj.name = name
+        obj.tera_type = data.get("tera_type", "")
+        obj.tera_original_types = list(data.get("tera_original_types", []))
+        obj.stellar_boosted_types = list(data.get("stellar_boosted_types", []))
+        # Database typing is only a fallback for legacy snapshots. A live
+        # transformation must retain the checkpoint's defensive type.
+        if data.get("terastallized"):
+            obj.types = list(data.get("types") or obj.types)
+            obj.terastallized = data["terastallized"]
         obj.is_fainted = bool(data.get("is_fainted", obj.hp <= 0))
         obj.base_species = data.get("base_species") or species
         if slots is not None:

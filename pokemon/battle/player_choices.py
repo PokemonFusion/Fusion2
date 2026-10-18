@@ -59,6 +59,32 @@ class PlayerChoices:
         """Expose the same executable candidates used by NPCs."""
         return LegalActions(self.battle, self.participant, pokemon).moves()
 
+    def tera(self, *, actor=None, cancel=False):
+        """Persist a Tera reservation before this actor chooses its move."""
+        from .terastallization import Terastallization
+
+        position, pokemon = self.actor(actor)
+        self._check(position, pokemon)
+        side = Terastallization.side(self.battle, self.participant)
+        previous = dict(getattr(self.battle, "tera_pending", {}))
+        if cancel:
+            declaration = previous.get(side, {})
+            if declaration.get("pokemon") != Terastallization.identifier(pokemon):
+                raise ValueError("That Pokemon has no Terastallization reserved.")
+            self.battle.tera_pending.pop(side)
+            message = f"{position}: Terastallization cancelled."
+        else:
+            tera_type = Terastallization.reserve(self.battle, self.participant, pokemon)
+            message = f"{position} ({pokemon.name}) will Terastallize into {tera_type} when its move is locked. Choose a move with +attack."
+        try:
+            self.session.logic.sync_runtime_state()
+            self.session.storage.set("state", self.session._compact_state_for_persist(self.session.state.to_dict()))
+        except Exception:
+            self.battle.tera_pending = previous
+            self.session.logic.sync_runtime_state()
+            raise
+        self.caller.msg(message)
+
     def target_labels(self, targets):
         """Label legal target identities using the current field positions."""
         return {name: pos.pokemon for name, pos in self.session.data.turndata.positions.items()

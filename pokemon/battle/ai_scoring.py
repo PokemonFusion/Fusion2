@@ -183,6 +183,10 @@ def _score_one_move(
     accuracy_factor = _weighted_accuracy_factor(raw_accuracy_factor, weights)
     category = str(raw.get("category") or getattr(dex_entry, "category", "") or getattr(move, "category", "") or "")
     move_type = _move_type(move, dex_entry, raw)
+    if _normalize_key(key).lower() == "terablast":
+        from .terastallization import tera_blast_parameters
+
+        move_type, category, power = tera_blast_parameters(user)
     priority = _move_priority(move, raw)
     reasons: list[str] = ["profile_weighted"]
 

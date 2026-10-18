@@ -6710,13 +6710,12 @@ class Terablast:
 	def onModifyMove(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
 		user = args[1] if len(args) > 1 else kwargs.get("user")
-		tera = getattr(user, "terastallized", None)
-		if tera and move:
-			if getattr(user, "atk", 0) > getattr(user, "spa", 0):
-				move.category = "Physical"
-			else:
-				move.category = "Special"
-			move.type = tera
+		if move:
+			from pokemon.battle.terastallization import tera_blast_parameters
+
+			move.type, move.category, move.power = tera_blast_parameters(user)
+			if isinstance(getattr(move, "raw", None), dict):
+				move.raw["category"] = move.category
 
 	def onModifyType(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")

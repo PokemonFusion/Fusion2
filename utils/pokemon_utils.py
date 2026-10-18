@@ -195,6 +195,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         nature=nature,
         model_id=model_id,
         gender=getattr(model, "gender", "N"),
+        tera_type=getattr(model, "tera_type", ""),
     )
     battle_poke.name = name
     status = PersistentStatus() if full_heal else PersistentStatus.from_pokemon(model)

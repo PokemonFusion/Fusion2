@@ -87,6 +87,8 @@ jobs:
         run: python tests/integration/production_gym_cases.py
       - name: Player doubles commands, targets and complete battle
         run: python tests/integration/player_doubles_cases.py
+      - name: Tera commands, Stellar boosts and transactional checkpoint rollback
+        run: python tests/integration/terastallization_cases.py
       - name: Move and species name variants on PostgreSQL
         run: python tests/integration/name_resolution_cases.py
       - name: Battle item targets and persistent status on PostgreSQL

@@ -37,6 +37,7 @@ class AIProfile:
     knowledge_policy: str = "visible_only"
     allowed_intents: tuple[str, ...] = (DEFAULT_INTENT,)
     strategy_key: str | None = None
+    tera_policy: str = "none"
     scoring: AIScoringWeights = field(default_factory=AIScoringWeights)
 
 
@@ -124,6 +125,10 @@ class AIDebugTrace:
 
 
 DEFAULT_AI_PROFILES: dict[str, AIProfile] = {
+    "trainer_tera": AIProfile(
+        key="trainer_tera", level=3, tera_policy="matching_attack",
+        scoring=AIScoringWeights(randomness=0.0, top_candidate_band=1.0),
+    ),
     "wild_basic": AIProfile(
         key="wild_basic",
         level=0,

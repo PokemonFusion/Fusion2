@@ -621,7 +621,13 @@ def _apply_move_damage(
     if battle_move.onBasePower:
         move.onBasePower = battle_move.onBasePower
 
+    move._stellar_boosts = getattr(battle_move, "_stellar_boosts", {})
+    battle_move._stellar_boosts = move._stellar_boosts
+    move._tera_shared_use = True
     result = apply_damage(user, target, move, battle=battle, spread=spread)
+    from .terastallization import apply_stellar_cost
+
+    apply_stellar_cost(user, battle_move, result)
 
     try:
         move_power = getattr(move, "power", None)
@@ -2459,6 +2465,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def restore_transforms(self) -> None:
         """Revert any Pokémon transformed via the Transform move."""
+        from .terastallization import Terastallization
+
         for part in self.participants:
             for poke in part.pokemons:
                 backup = getattr(poke, "tempvals", {}).get("transform_backup")
@@ -2468,6 +2476,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     poke.tempvals.pop("transform_backup", None)
                     if hasattr(poke, "transformed"):
                         poke.transformed = False
+        # Transform can have backed up an already-Tera defensive type. Restore
+        # ordinary typing last so that backup cannot reintroduce the Tera type.
+        Terastallization.cleanup(self)
 
     # ------------------------------------------------------------------
     # Battle event hooks
@@ -3959,6 +3970,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Attempt to use the chosen move applying simple failure rules."""
         if not action.move:
             return
+        # One shared cache covers every hit/target of this use, never the next
+        # turn or a damage preview. Only the consumed type ledger is persisted.
+        action.move._stellar_boosts = {}
 
         user = action.pokemon or (
             action.actor.active[0] if action.actor.active else None
@@ -4396,7 +4410,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 except Exception:
                     move.basePowerCallback = None
 
+            move._stellar_boosts = action.move._stellar_boosts
+            move._tera_shared_use = True
             dmg_result = apply_damage(user, target, move, battle=self, update_hp=False)
+            from .terastallization import apply_stellar_cost
+
+            apply_stellar_cost(user, action.move, dmg_result)
             dmg = sum(dmg_result.debug.get("damage", []))
             if isinstance(sub, dict):
                 remaining = sub.get("hp", 0) - dmg
