@@ -1339,6 +1339,8 @@ class RewardService:
     def handle_end_of_battle_rewards(self, battle: "Battle", winner: BattleParticipant) -> None:
         """Award post-battle rewards to the winning participant."""
 
+        if not getattr(battle, "award_prizes", True):
+            return
         if battle._rewards_granted:
             return
         if not winner or not getattr(winner, "player", None):
@@ -3880,7 +3882,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move.execute(user, target, self)
         return True
 
-    def _announce_move_result(self, user, target, move, before_user, before_target, *, report_no_effect=True):
+    def _announce_move_result(self, user, target, move, before_user, before_target, *, report_no_effect=True, field_changed=False):
         """Describe one target's actual damage, conditions and stat changes."""
         after_user, after_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
         start_user_boosts, end_user_boosts = before_user.boosts, after_user.boosts
@@ -3917,7 +3919,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     start_target_boosts,
                     end_target_boosts,
                 )
-        elif boosts_changed or statuses_changed or effects_changed:
+        elif boosts_changed or statuses_changed or effects_changed or field_changed:
             if target_self:
                 self.log_action(f"{user_name} used {move.name}!")
             else:
@@ -4450,6 +4452,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # to validate move side effects.
 
         before_user, before_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
+        start_room = bool(self.field.get_pseudo_weather("trickroom"))
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
@@ -4477,7 +4480,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
-        self._announce_move_result(user, target, action.move, before_user, before_target)
+        room_active = bool(self.field.get_pseudo_weather("trickroom"))
+        room_changed = start_room != room_active
+        self._announce_move_result(user, target, action.move, before_user, before_target, field_changed=room_changed)
+        if room_changed:
+            self.log_action("Trick Room twisted the dimensions!" if room_active else "Trick Room's twisted dimensions returned to normal!")
 
         if action.move.raw.get("forceSwitch") and target is not None and getattr(target, "hp", 0) > 0:
             if self._can_drag_out(target, source=user, effect=action.move):
@@ -4858,6 +4865,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         handler = VOLATILE_HANDLERS.get(vol)
                         if handler and hasattr(handler, "onResidual"):
                             handler.onResidual(poke, battle=self)
+                        if vol == "protect":
+                            # Protection ends with this turn, including restored
+                            # sessions whose old volatile had no duration state.
+                            self.remove_volatile(poke, vol)
 
         self._handle_slot_condition_residuals()
 

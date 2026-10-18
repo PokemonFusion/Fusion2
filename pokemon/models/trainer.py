@@ -204,6 +204,17 @@ class GymLeaderProfile(models.Model):
         is_enabled = models.BooleanField(default=True, db_index=True)
         sort_order = models.PositiveSmallIntegerField(default=1, db_index=True)
 
+        battle_format = models.CharField(max_length=10, default="single", choices=(("single", "Singles"), ("double", "Doubles")))
+        ai_profile = models.CharField(max_length=80, default="gym_leader")
+        strategy_key = models.CharField(max_length=40, blank=True, default="", choices=(("", "None"), ("trick_room", "Trick Room")))
+        content_stage = models.CharField(max_length=16, default="production", choices=(("production", "Production"), ("test", "Test")))
+        intro_text = models.TextField(blank=True)
+        victory_text = models.TextField(blank=True)
+        defeat_text = models.TextField(blank=True)
+        rules_text = models.TextField(blank=True)
+        reward_policy = models.CharField(max_length=16, default="legacy", choices=(("legacy", "Legacy"), ("badge_only", "Badge only")))
+        rematch_cooldown_seconds = models.PositiveIntegerField(default=0)
+
         class Meta:
                 ordering = ("sort_order", "league_key", "gym_key")
                 constraints = [
