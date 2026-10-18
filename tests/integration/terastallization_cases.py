@@ -188,6 +188,20 @@ class TerastallizationCases(unittest.TestCase):
         rebuilt = Pokemon.from_dict(mon.to_dict())
         self.assertEqual((rebuilt.tera_type, rebuilt.types, rebuilt.terastallized), ("Stellar", ["Normal"], None))
 
+    def test_legacy_owned_checkpoint_uses_configuration_only_when_key_is_absent(self):
+        """Legacy loads inherit configuration; explicit checkpoint values win."""
+        from pokemon.battle.battledata import Pokemon
+
+        session = self.launch()
+        original = session.battle.participants[0].active[1]
+        payload = original.to_dict()
+        payload.pop("tera_type")
+        self.assertEqual(Pokemon.from_dict(payload).tera_type, "Stellar")
+        for value in ("", "Fire"):
+            with self.subTest(saved_type=value):
+                payload["tera_type"] = value
+                self.assertEqual(Pokemon.from_dict(payload).tera_type, value)
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:

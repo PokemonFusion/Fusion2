@@ -49,9 +49,16 @@ class Terastallization:
         if not pending and side in getattr(battle, "tera_pending", {}):
             raise ValueError("Your side already has Terastallization reserved. Cancel it first.")
         species = str(getattr(pokemon, "species", getattr(pokemon, "name", ""))).lower()
+        lookup = getattr(pokemon, "_lookup_species_entry", None)
+        entry = lookup(species) if lookup else None
+        species_data = entry if isinstance(entry, dict) else getattr(entry, "raw", {}) or {}
+        forme = str(species_data.get("forme", "")).lower().split("-")[0]
+        named_forme = species.split("-")[1:2]
         item = getattr(pokemon, "item", None)
         raw = getattr(item, "raw", {}) or {}
-        if (any(name in species for name in ("ogerpon", "terapagos", "mega", "primal"))
+        if (species.startswith(("ogerpon", "terapagos"))
+                or species_data.get("isMega") or species_data.get("isPrimal")
+                or forme in {"mega", "primal"} or named_forme in (["mega"], ["primal"])
                 or getattr(pokemon, "mega_evolved", False) or getattr(pokemon, "pending_mega", False)
                 or raw.get("megaStone") or getattr(pokemon, "transformed", False)
                 or "dynamax" in getattr(pokemon, "volatiles", {})):

@@ -1012,6 +1012,7 @@ class Pokemon:
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
         types = data.get("types")
+        tera_type = data.get("tera_type", "")
         gender = data.get("gender", "N")
         slots = None
         if model_id:
@@ -1039,6 +1040,8 @@ class Pokemon:
                     nature = getattr(poke, "nature", nature)
                     gender = getattr(poke, "gender", gender)
                     types = getattr(poke, "type_", types)
+                    if "tera_type" not in data:
+                        tera_type = getattr(poke, "tera_type", tera_type)
                     if max_hp is None:
                         try:
                             get_max_hp = safe_import("pokemon.helpers.pokemon_helpers").get_max_hp
@@ -1113,7 +1116,7 @@ class Pokemon:
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
         obj.name = name
-        obj.tera_type = data.get("tera_type", "")
+        obj.tera_type = tera_type
         obj.tera_original_types = list(data.get("tera_original_types", []))
         obj.stellar_boosted_types = list(data.get("stellar_boosted_types", []))
         # Database typing is only a fallback for legacy snapshots. A live

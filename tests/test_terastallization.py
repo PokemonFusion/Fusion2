@@ -140,6 +140,26 @@ def test_pending_survives_checkpoint_before_move(session):
     assert not restored.battle.tera_used
 
 
+@pytest.mark.parametrize("species", ("Meganium", "Yanmega"))
+def test_ordinary_species_with_mega_in_name_can_terastallize(session, species):
+    """Species names are not evidence of an incompatible Mega forme."""
+    mon = session.battle.participants[0].active[0]
+    mon.species = species
+    assert Terastallization.validate(session.battle, session.battle.participants[0], mon) == "Stellar"
+
+
+@pytest.mark.parametrize("species", (
+    "Charizard-Mega-X", "charizardmegay", "Groudon-Primal", "kyogreprimal",
+    "Ogerpon-Wellspring", "Terapagos-Stellar",
+))
+def test_special_formes_remain_ineligible(session, species):
+    """Canonical dex identifiers and display forme names remain unsupported."""
+    mon = session.battle.participants[0].active[0]
+    mon.species = species
+    with pytest.raises(ValueError, match="form or transformation"):
+        Terastallization.validate(session.battle, session.battle.participants[0], mon)
+
+
 @pytest.mark.parametrize("tera_type", TERA_TYPES)
 def test_all_nineteen_types_rebuild_with_used_side(session, tera_type):
     """Every supported type survives the real roster/position checkpoint path."""
