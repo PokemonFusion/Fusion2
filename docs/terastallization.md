@@ -34,9 +34,13 @@ type-changing economy or editor.
 - Stellar keeps the pre-Tera defensive types. The first damaging use of each
   move type receives 2x STAB for an original type or 4915/4096 (approximately
   1.2x) otherwise. Later uses return to ordinary STAB. A single use shares its
-  boost across every hit and spread target. Damage previews consume nothing;
+  boost across every hit and spread target. Damage previews, misses and attacks
+  blocked by type or ability immunity consume nothing;
   the spent-type ledger survives switching and rebuilds. Stellar bypasses
-  Adaptability's STAB modification.
+  Adaptability's STAB modification. Its 60-power floor applies to any move type
+  while that type's boost is unused, with the same priority, multi-hit and
+  variable-power exceptions. The floor checks the spent-type ledger for each
+  damage target; sharing a spread move's STAB boost does not renew its floor.
 - Tera Blast is Normal, Special, 80 power before Tera. After Tera it uses the
   Tera type and whichever of the staged Attack and Special Attack is higher
   (ties stay Special), before ability/item stat modifiers. Stellar Tera Blast

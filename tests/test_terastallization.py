@@ -222,6 +222,37 @@ def test_stellar_one_boost_covers_multihit_and_next_use_is_unboosted(session):
     assert damage_calc(mon, foe, move, rng=random.Random(1)).debug["stab"] == [1] * 3
 
 
+@pytest.mark.parametrize("immunity", ("typing", "ability"))
+def test_stellar_immune_attack_preserves_type_boost(session, immunity):
+    """An immune target cannot spend the boost needed by the next real hit."""
+    from unittest.mock import patch
+
+    mon = activate(session)
+    target = pokemon("Gastly" if immunity == "typing" else "Vulpix")
+    original = session.battle.runEvent
+
+    def immunity_event(name, *args, **kwargs):
+        """Exercise the real immunity event boundary without replacing damage."""
+        return False if name == "Immunity" and immunity == "ability" else original(name, *args, **kwargs)
+
+    with patch.object(session.battle, "runEvent", side_effect=immunity_event):
+        result = damage_calc(mon, target, damage_move("Tackle"), battle=session.battle, rng=random.Random(8))
+    assert not any(result.debug.get("damage", []))
+    assert not mon.stellar_boosted_types
+    result = damage_calc(mon, session.battle.participants[1].active[0], damage_move("Tackle"), rng=random.Random(8))
+    assert result.debug["stab"] == [4915 / 4096]
+    assert mon.stellar_boosted_types == ["Normal"]
+
+
+def test_stellar_struggle_does_not_spend_a_type_boost(session):
+    """Struggle receives no Tera boost and cannot consume a Normal charge."""
+    mon = activate(session)
+    result = damage_calc(mon, session.battle.participants[1].active[0], damage_move("Struggle"), rng=random.Random(8))
+    assert result.debug["stab"] == [1]
+    assert result.debug["power"] == [50]
+    assert not mon.stellar_boosted_types
+
+
 @pytest.mark.parametrize("type_,priority,multihit,base,callback,expected", (
     ("Water", 0, None, 40, None, 60), ("Water", 1, None, 40, None, 40),
     ("Water", 0, 2, 40, None, 40), ("Water", 0, None, 0, True, 40),
@@ -229,10 +260,52 @@ def test_stellar_one_boost_covers_multihit_and_next_use_is_unboosted(session):
 ))
 def test_power_floor_exceptions(session, type_, priority, multihit, base, callback, expected):
     """Matching weak attacks gain 60 power without boosting priority/variable moves."""
+    session.battle.participants[0].active[0].tera_type = "Water"
     mon = activate(session)
     move = BattleMove("test", type=type_, raw={"priority": priority, "multihit": multihit,
                                              "basePower": base, "basePowerCallback": callback})
     assert tera_power_floor(mon, move, 40) == expected
+
+
+@pytest.mark.parametrize("move_type", ("Water", "Fire"))
+def test_stellar_weak_move_floor_expires_with_its_type_boost(session, move_type):
+    """Native and non-native types get 60 power only while their boost is unused."""
+    mon = activate(session)
+    move = BattleMove("test", type=move_type, raw={"basePower": 40})
+    assert tera_power_floor(mon, move, 40) == 60
+    assert mon.stellar_boosted_types == []
+    mon.stellar_boosted_types.append(move_type)
+    assert tera_power_floor(mon, move, 40) == 40
+    move._stellar_boosts = {move_type.lower(): True}
+    assert tera_power_floor(mon, move, 40) == 40
+
+
+def test_stellar_spread_power_floor_reads_spent_type_for_each_target(session):
+    """Twister's first target consumes its floor; later damage stays at 40 power."""
+    from unittest.mock import patch
+
+    from pokemon.battle import damage
+
+    mon = activate(session)
+    own, foe = session.battle.participants
+    mon.moves.append(Move("Twister"))
+    action = Action(own, ActionType.MOVE, foe, move=BattleMove("Twister"), pokemon=mon, target_pokemon=foe.active[0])
+    original, powers = damage.base_damage, []
+
+    def record(level, power, *args, **kwargs):
+        """Observe power in real damage calculations without replacing the damage."""
+        powers.append(power)
+        return original(level, power, *args, **kwargs)
+
+    with patch.object(damage, "base_damage", side_effect=record):
+        session.battle.use_move(action)
+        assert powers == [60, 40]
+        powers.clear()
+        for member in foe.active:
+            member.hp = member.max_hp
+        session.battle.use_move(action)
+        assert powers == [40, 40]
+    assert mon.stellar_boosted_types == ["Dragon"]
 
 
 def test_tera_blast_stellar_category_effectiveness_and_drop(session):

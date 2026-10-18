@@ -170,7 +170,11 @@ def tera_power_floor(attacker, move, power):
     raw = getattr(move, "raw", {}) or {}
     tera = getattr(attacker, "terastallized", None)
     types = getattr(attacker, "types", [])
-    matches = str(getattr(move, "type", "")).lower() in {str(typ).lower() for typ in types}
+    move_type = str(getattr(move, "type", "")).lower()
+    matches = move_type in {str(typ).lower() for typ in types}
+    if tera == "Stellar":
+        used = {str(typ).lower() for typ in getattr(attacker, "stellar_boosted_types", [])}
+        matches = move_type not in used
     key = str(getattr(move, "key", getattr(move, "name", ""))).replace(" ", "").lower()
     if (key != "struggle" and tera and matches and 0 < power < 60 and raw.get("priority", 0) <= 0
             and not raw.get("multihit") and not (raw.get("basePower", power) in (0, 150)
