@@ -414,6 +414,20 @@ def base_damage(
     return result
 
 
+def _consume_stellar_boost(attacker: Pokemon, move: Move) -> None:
+    """Spend a type once, retaining the shared multiplier for this move use."""
+    if not move.type or str(getattr(move, "key", getattr(move, "name", ""))).lower() == "struggle":
+        return
+    move_type = str(move.type).lower()
+    used = {str(typ).lower() for typ in attacker.stellar_boosted_types}
+    if move_type in used:
+        return
+    cache = getattr(move, "_stellar_boosts", {})
+    cache[move_type] = True
+    move._stellar_boosts = cache
+    attacker.stellar_boosted_types.append(str(move.type).title())
+
+
 def stab_multiplier(attacker: Pokemon, move: Move, *, consume: bool = False) -> float:
     """Return the STAB multiplier for ``attacker`` using ``move``.
 
@@ -440,10 +454,7 @@ def stab_multiplier(attacker: Pokemon, move: Move, *, consume: bool = False) -> 
         if available:
             stab = 2.0 if has_type else 4915 / 4096
             if consume:
-                cache[move_type] = True
-                move._stellar_boosts = cache
-                if move_type not in used:
-                    attacker.stellar_boosted_types.append(str(move.type).title())
+                _consume_stellar_boost(attacker, move)
         # Stellar deliberately bypasses ModifySTAB, including Adaptability.
         return stab
     if tera and str(tera).lower() == move_type:
@@ -1025,7 +1036,8 @@ def damage_calc(
                                 dmg = floor(dmg * wmult)
 
             # STAB
-            stab = stab_multiplier(attacker, move, consume=True)
+            # Determine the multiplier without spending a boost on an immunity.
+            stab = stab_multiplier(attacker, move)
             dmg = floor(dmg * stab)
             result.debug.setdefault("stab", []).append(stab)
 
@@ -1074,6 +1086,8 @@ def damage_calc(
                 result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
                 continue
             dmg = floor(dmg * eff)
+            if getattr(attacker, "terastallized", None) == "Stellar":
+                _consume_stellar_boost(attacker, move)
 
             # Critical hit
             crit_ratio = 0
