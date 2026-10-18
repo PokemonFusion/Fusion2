@@ -198,13 +198,23 @@ def display_battle_interface(
 	if total_width is None:
 		total_width = get_battle_ui_width(viewer) if viewer is not None else 78
 	adapter = _StateAdapter(captain_a, captain_b, battle_state)
-	return render_battle_ui(
+	output = render_battle_ui(
 		adapter,
 		viewer,
 		total_width=total_width,
 		waiting_on=waiting_on,
 		style=style,
 	)
+	# Include every active slot, including a doubles partner. The ordinary HUD
+	# currently displays one lead per trainer; Tera must remain visible at A2/B2.
+	session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
+	positions = getattr(getattr(getattr(session, "data", None), "turndata", None), "positions", {})
+	for label, position in positions.items():
+		mon = getattr(position, "pokemon", None)
+		tera = getattr(mon, "terastallized", None)
+		if tera:
+			output += f"\n{label}: Tera {tera} ({getattr(mon, 'name', 'Pokemon')})"
+	return output
 
 
 def render_interfaces(captain_a, captain_b, state, *, waiting_on=None, style: str | None = None):

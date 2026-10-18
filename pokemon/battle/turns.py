@@ -106,6 +106,8 @@ class TurnProcessor:
 
 		if not pokemon:
 			return None, "no_pokemon"
+		if getattr(pokemon, "terastallized", None):
+			return None, "already_terastallized"
 		current_name = str(getattr(pokemon, "species", None) or getattr(pokemon, "name", "") or "")
 		if getattr(pokemon, "mega_evolved", False) or "mega" in _normalize_key(current_name):
 			return None, "already_mega_evolved"
@@ -274,6 +276,9 @@ class TurnProcessor:
 
 	def lock_choices(self) -> None:
 		"""Apply locked-in transformations like Mega Evolution or Terastallization."""
+		from .terastallization import Terastallization
+
+		Terastallization.lock(self)
 		for part in self.participants:
 			if part.has_lost:
 				continue
@@ -281,10 +286,6 @@ class TurnProcessor:
 				if getattr(poke, "pending_mega", False):
 					self.perform_mega_evolution(poke)
 					poke.pending_mega = False
-				tera = getattr(poke, "pending_tera", None)
-				if tera:
-					self.perform_tera_change(poke, tera)
-					poke.pending_tera = None
 
 	def select_actions(self) -> List[Action]:
 		"""Collect participant actions using the participant protocol contract."""
@@ -320,6 +321,11 @@ class TurnProcessor:
 					if opps:
 						action.target = opps[0]
 				actions.append(action)
+		from .terastallization import Terastallization
+
+		# Direct engine callers choose AI actions here; sessions already queued
+		# their AI choices before lock_choices. Both paths share the same guard.
+		Terastallization.lock(self, actions)
 		return actions
 
 	def collect_actions(self) -> List[Action]:
@@ -1271,9 +1277,20 @@ class TurnProcessor:
 			self.log_action(f"{getattr(pokemon, 'name', 'Pokemon')} Mega Evolved!")
 		return True
 
-	def perform_tera_change(self, pokemon, tera_type: str) -> None:
-		"""Placeholder for Terastallization mechanics."""
-		setattr(pokemon, "tera_type", tera_type)
+	def perform_tera_change(self, pokemon, tera_type: str) -> bool:
+		"""Apply only the side's matching, reserved declaration."""
+		from .terastallization import Terastallization
+
+		part = self.participant_for(pokemon)
+		if part is None:
+			return False
+		side = Terastallization.side(self, part)
+		pending = getattr(self, "tera_pending", {}).get(side, {})
+		expected = {"pokemon": Terastallization.identifier(pokemon), "type": tera_type,
+			"slot": str(Terastallization.slot(part, pokemon))}
+		if pending != expected:
+			return False
+		return Terastallization.activate(self, part, pokemon, tera_type)
 
 	def end_turn(self) -> None:
 		for part in self.participants:

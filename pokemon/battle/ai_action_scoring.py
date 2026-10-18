@@ -168,16 +168,21 @@ class AIActionScorer:
     def estimate_damage(self, move, target):
         """Use a pure rough damage estimate; never execute callbacks or consume RNG."""
         raw = move.raw
-        physical = str(raw.get("category", "Physical")).lower() == "physical"
+        category, move_type = raw.get("category", "Physical"), move.type
+        power = max(0, raw.get("basePower", move.power) or 0)
+        if _normalize_key(move.key).lower() == "terablast":
+            from .terastallization import tera_blast_parameters
+
+            move_type, category, power = tera_blast_parameters(self.user)
+        physical = str(category).lower() == "physical"
         attack = self._stat(self.user, "atk" if physical else "spa")
         defense = self._stat(target, "def" if physical else "spd")
         level = max(1, getattr(self.user, "level", 50))
-        power = max(0, raw.get("basePower", move.power) or 0)
         if not power:
             return 0.0
-        effectiveness = _safe_type_effectiveness(target, move.type)
+        effectiveness = _safe_type_effectiveness(target, move_type)
         burn = 0.5 if physical and getattr(self.user, "status", None) == "brn" else 1.0
-        return (((2 * level / 5 + 2) * power * attack / max(1, defense) / 50) + 2) * _safe_stab(self.user, move.type) * effectiveness * burn
+        return (((2 * level / 5 + 2) * power * attack / max(1, defense) / 50) + 2) * _safe_stab(self.user, move_type) * effectiveness * burn
 
     def _recovery(self, target, move):
         """Value recoverable missing HP with a deficit threshold and urgency cap."""

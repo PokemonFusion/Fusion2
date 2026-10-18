@@ -101,6 +101,8 @@ class BattleLogic:
 		battle.battle_over = bool(getattr(state, "battle_over", False))
 		battle._flee_result = dict(getattr(state, "flee_result", {}) or {})
 		battle.capture_succeeded = bool(getattr(state, "capture_succeeded", False))
+		battle.tera_used = set(getattr(state, "tera_used", []))
+		battle.tera_pending = {key: dict(value) for key, value in getattr(state, "tera_pending", {}).items()}
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
@@ -132,6 +134,8 @@ class BattleLogic:
 		self.state.rewards_granted = bool(getattr(self.battle, "_rewards_granted", False))
 		self.state.battle_over = bool(getattr(self.battle, "battle_over", False))
 		self.state.capture_succeeded = bool(getattr(self.battle, "capture_succeeded", False))
+		self.state.tera_used = sorted(getattr(self.battle, "tera_used", set()))
+		self.state.tera_pending = {key: dict(value) for key, value in getattr(self.battle, "tera_pending", {}).items()}
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

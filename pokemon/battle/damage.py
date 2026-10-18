@@ -4,8 +4,9 @@ from dataclasses import dataclass, field
 from math import floor
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
-from ._shared import _normalize_key
 from utils.safe_import import safe_import
+
+from ._shared import _normalize_key
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -413,7 +414,7 @@ def base_damage(
     return result
 
 
-def stab_multiplier(attacker: Pokemon, move: Move) -> float:
+def stab_multiplier(attacker: Pokemon, move: Move, *, consume: bool = False) -> float:
     """Return the STAB multiplier for ``attacker`` using ``move``.
 
     This helper tolerates different container layouts.  If ``attacker`` does
@@ -423,10 +424,30 @@ def stab_multiplier(attacker: Pokemon, move: Move) -> float:
 
     if not move.type:
         return 1.0
+    if str(getattr(move, "key", getattr(move, "name", ""))).lower() == "struggle":
+        return 1.0
 
-    types = _get_types(attacker)
-    has_type = str(move.type).lower() in types
+    tera = getattr(attacker, "terastallized", None)
+    types = ({str(typ).lower() for typ in getattr(attacker, "tera_original_types", [])}
+             if tera else _get_types(attacker))
+    move_type = str(move.type).lower()
+    has_type = move_type in types or bool(getattr(move, "forceSTAB", False))
     stab = 1.5 if has_type else 1.0
+    if tera == "Stellar":
+        used = {str(typ).lower() for typ in getattr(attacker, "stellar_boosted_types", [])}
+        cache = getattr(move, "_stellar_boosts", {})
+        available = move_type not in used or cache.get(move_type, False)
+        if available:
+            stab = 2.0 if has_type else 4915 / 4096
+            if consume:
+                cache[move_type] = True
+                move._stellar_boosts = cache
+                if move_type not in used:
+                    attacker.stellar_boosted_types.append(str(move.type).title())
+        # Stellar deliberately bypasses ModifySTAB, including Adaptability.
+        return stab
+    if tera and str(tera).lower() == move_type:
+        stab = 2.0 if has_type else 1.5
 
     ability = getattr(attacker, "ability", None)
     if ability is not None:
@@ -457,6 +478,8 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
     eff = 1.0
     if not move.type:
         return eff
+    if str(move.type).lower() == "stellar":
+        return 2.0 if getattr(target, "terastallized", None) else 1.0
     chart = TYPE_CHART.get(move.type.capitalize())
     if not chart:
         return eff
@@ -515,6 +538,8 @@ def damage_calc(
     rng: Optional[random.Random] = None,
 ) -> DamageResult:
     result = DamageResult()
+    if not getattr(move, "_tera_shared_use", False):
+        move._stellar_boosts = {}
     rng = rng or getattr(battle, "rng", random)
 
     # Handle multihit distribution
@@ -938,6 +963,10 @@ def damage_calc(
                 power = int(new_power)
                 move.power = int(new_power)
 
+        from .terastallization import tera_power_floor
+
+        power = tera_power_floor(attacker, move, power)
+
         # ------------------------------------------------------------------
         # Fast-path for non-damaging moves
         # ------------------------------------------------------------------
@@ -996,7 +1025,7 @@ def damage_calc(
                                 dmg = floor(dmg * wmult)
 
             # STAB
-            stab = stab_multiplier(attacker, move)
+            stab = stab_multiplier(attacker, move, consume=True)
             dmg = floor(dmg * stab)
             result.debug.setdefault("stab", []).append(stab)
 

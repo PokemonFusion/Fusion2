@@ -513,6 +513,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if queued and self.logic and getattr(self, "storage", None):
             try:
+                self.logic.sync_runtime_state()
                 compact = self._compact_state_for_persist(self.logic.state.to_dict())
                 self.storage.set("state", compact)
             except Exception:
@@ -1763,6 +1764,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
+        if self.battle:
+            from .terastallization import Terastallization
+
+            Terastallization.cleanup(self.battle)
         if metadata.get("reward_policy") == "badge_only" and not victory_id and not self._battle_result_handled:
             self._battle_result_handled = True
             self.msg("Gym challenge ended without victory. No badge or cooldown was consumed; you may retry.")
@@ -1976,6 +1981,21 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             for player in controllers.values():
                 if BattleRewards.supports(player):
                     BattleRewards.character(player).attributes.reset_cache()
+            # OwnedPokemon uses Evennia's identity cache. SQL rollback does
+            # not rewind instances mutated by the HP/status sync above; clear
+            # that stale view before rebuilding runtime objects or party UI.
+            from pokemon.models.core import OwnedPokemon
+
+            owned_ids = []
+            for participant in self.battle.participants:
+                for pokemon in participant.pokemons:
+                    kind, identifier = parse_pokemon_ref(getattr(pokemon, "model_id", None))
+                    if kind == "owned" and identifier:
+                        owned_ids.append(identifier)
+            for pokemon in OwnedPokemon.objects.filter(pk__in=owned_ids):
+                pokemon.flush_from_cache(force=True)
+                pokemon.refresh_from_db()
+                OwnedPokemon.cache_instance(pokemon)
             self.logic = BattleLogic.from_dict(snapshot)
             self._adventure_result = adventure_result
             for participant in self.battle.participants:

@@ -41,6 +41,8 @@ class BattleState:
 	ai_switch_turns: Dict[str, int] = field(default_factory=dict)
 	participants: Dict[str, List[str]] = field(default_factory=dict)
 	capture_succeeded: bool = False
+	tera_used: List[str] = field(default_factory=list)
+	tera_pending: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this state."""

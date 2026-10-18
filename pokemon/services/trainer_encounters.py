@@ -324,6 +324,7 @@ def _build_battle_pokemon(spec: Mapping[str, Any], defaults: Mapping[str, Any], 
         is_wild=False,
         template_key=_text(spec.get("template_key") or defaults.get("template_key"), "random"),
         move_names=move_names,
+        tera_type=_text(spec.get("tera_type") or defaults.get("tera_type"), ""),
     )
 
 
