@@ -174,7 +174,7 @@ def tera_power_floor(attacker, move, power):
     matches = move_type in {str(typ).lower() for typ in types}
     if tera == "Stellar":
         used = {str(typ).lower() for typ in getattr(attacker, "stellar_boosted_types", [])}
-        matches = move_type not in used or getattr(move, "_stellar_boosts", {}).get(move_type, False)
+        matches = move_type not in used
     key = str(getattr(move, "key", getattr(move, "name", ""))).replace(" ", "").lower()
     if (key != "struggle" and tera and matches and 0 < power < 60 and raw.get("priority", 0) <= 0
             and not raw.get("multihit") and not (raw.get("basePower", power) in (0, 150)

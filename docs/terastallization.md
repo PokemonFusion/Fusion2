@@ -38,8 +38,8 @@ type-changing economy or editor.
   the spent-type ledger survives switching and rebuilds. Stellar bypasses
   Adaptability's STAB modification. Its 60-power floor applies to any move type
   while that type's boost is unused, with the same priority, multi-hit and
-  variable-power exceptions. Later uses lose this floor along with the boost;
-  every target of one spread use shares the first-use floor.
+  variable-power exceptions. The floor checks the spent-type ledger for each
+  damage target; sharing a spread move's STAB boost does not renew its floor.
 - Tera Blast is Normal, Special, 80 power before Tera. After Tera it uses the
   Tera type and whichever of the staged Attack and Special Attack is higher
   (ties stay Special), before ability/item stat modifiers. Stellar Tera Blast

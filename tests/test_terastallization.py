@@ -246,11 +246,11 @@ def test_stellar_weak_move_floor_expires_with_its_type_boost(session, move_type)
     mon.stellar_boosted_types.append(move_type)
     assert tera_power_floor(mon, move, 40) == 40
     move._stellar_boosts = {move_type.lower(): True}
-    assert tera_power_floor(mon, move, 40) == 60
+    assert tera_power_floor(mon, move, 40) == 40
 
 
-def test_stellar_spread_power_floor_is_shared_once_per_use(session):
-    """Both Twister targets get the first-use floor; the next use returns to 40."""
+def test_stellar_spread_power_floor_reads_spent_type_for_each_target(session):
+    """Twister's first target consumes its floor; later damage stays at 40 power."""
     from unittest.mock import patch
 
     from pokemon.battle import damage
@@ -268,7 +268,7 @@ def test_stellar_spread_power_floor_is_shared_once_per_use(session):
 
     with patch.object(damage, "base_damage", side_effect=record):
         session.battle.use_move(action)
-        assert powers == [60, 60]
+        assert powers == [60, 40]
         powers.clear()
         for member in foe.active:
             member.hp = member.max_hp
