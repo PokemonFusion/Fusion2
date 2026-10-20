@@ -89,6 +89,10 @@ def snapshot_battle_value(value: Any) -> Any:
     """Serialize battler and field references without copying live ORM graphs."""
     from .battledata import Field, Move, Pokemon
 
+    # Evennia treats unknown iterable subclasses as saved lists. SpeciesName
+    # is a str subclass, so detach it before it enters an Attribute checkpoint.
+    if isinstance(value, str):
+        return str(value)
     if isinstance(value, Field):
         return {"__pf2_field_ref__": True}
     if isinstance(value, Pokemon):

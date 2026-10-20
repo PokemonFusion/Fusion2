@@ -1012,7 +1012,7 @@ class Pokemon:
 
         info.update(
             {
-                "name": self.name,
+                "name": str(self.name),
                 "species": str(self.species),
                 "base_species": str(self.base_species),
                 "level": self.level,

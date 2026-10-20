@@ -230,6 +230,13 @@ class BattleLogic:
 		for name in ("weather_state", "terrain_state", "pseudo_weather"):
 			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref, field=data.field))
 		battle.field = data.field
+		# Handlers are runtime objects, not checkpoint data. Reconnect them
+		# without setWeather/setTerrain, whose Start hooks reset durations and
+		# replay activation effects on every restore.
+		for name in ("weather", "terrain"):
+			effect = getattr(data.field, name, None)
+			setattr(data.field, name + "_handler", battle._lookup_effect(effect) if effect else None)
+		battle.weather_state = data.field.weather_state
 		battle.turn_count = data.battle.turn
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))

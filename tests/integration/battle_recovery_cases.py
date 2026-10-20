@@ -21,13 +21,16 @@ class BattleRecoveryCases(unittest.TestCase):
         """Create two ordinary players, a real room and a two-member NPC roster."""
         self.players = []
         room = ObjectDB.objects.create(db_key="Recovery room " + uuid4().hex[:8])
-        self.room = SimpleNamespace(id=room.pk, key=room.key, db=room.db, ndb=room.ndb,
+        self.room = SimpleNamespace(id=room.pk, pk=room.pk, key=room.key, db=room.db, ndb=room.ndb,
                                     attributes=room.attributes, contents=[])
         for name in ("Recovery A ", "Recovery B "):
             character = ObjectDB.objects.create(db_key=name + uuid4().hex[:8])
             trainer = Trainer.objects.create(user=character, trainer_number=Trainer.objects.count() + 1)
             storage = UserStorage.objects.create(user=character)
             player = PlayerView(character, trainer, storage)
+            # Native post-battle item cleanup uses the same primary-key alias
+            # exposed by real Evennia objects, including on its rollback path.
+            player.pk = character.pk
             player.location = self.room
             self.players.append(player)
             self.room.contents.append(player)
@@ -715,6 +718,79 @@ class BattleRecoveryCases(unittest.TestCase):
     def test_full_party_first_ordered_fusion_can_switch_out_and_back(self):
         """Leading with the Fusion must not make it unreachable once benched."""
         self.full_party_fusion_switches("first")
+
+    def test_native_form_names_survive_real_attribute_checkpoints(self):
+        """Evennia must store native names as text, including repeat rebuilds."""
+        from pokemon.battle.terastallization import Terastallization
+
+        forms = (("Ogerpon", "Defiant", ""),
+                 ("Ogerpon-Wellspring", "Water Absorb", "Wellspring Mask"),
+                 ("Ogerpon-Hearthflame", "Mold Breaker", "Hearthflame Mask"),
+                 ("Ogerpon-Cornerstone", "Sturdy", "Cornerstone Mask"),
+                 ("Terapagos", "Tera Shift", ""))
+        for species, ability, item in forms:
+            with self.subTest(species=species):
+                OwnedPokemon.objects.filter(trainer=self.player.trainer).delete()
+                create_owned_pokemon(species, self.player.trainer, 50, ability=ability,
+                                     held_item=item, active_move_names=["Splash"],
+                                     nature="Hardy", ivs=[0] * 6, evs=[0] * 6)
+                session = self.start("pvp")
+                owner = session.battle.participants[0]
+                mon = owner.active[0]
+                chosen = Terastallization.reserve(session.battle, owner, mon)
+                self.assertTrue(Terastallization.activate(session.battle, owner, mon, chosen))
+                expected = str(mon.name)
+                for _ in range(2):
+                    session = self.rebuild(session)
+                    mon = session.battle.participants[0].active[0]
+                    self.assertIsInstance(mon.name, str)
+                    self.assertEqual(mon.name, expected)
+                    self.assertEqual(session.battle.tera_used, {"A"})
+                # Waiting feedback must also accept a restored native name.
+                session.maybe_run_turn(actor=self.player)
+                session.end()
+
+    def test_checkpoint_keeps_nicknames_and_plain_names(self):
+        """Detaching a native name must not replace ordinary or custom names."""
+        session = self.start("pvp")
+        owned = OwnedPokemon.objects.get(trainer=self.player.trainer, species="Squirtle")
+        owned.nickname = "My Squirtle"
+        owned.save(update_fields=["nickname"])
+        session.battle.participants[0].active[0].name = "My Squirtle"
+        for _ in range(2):
+            session = self.rebuild(session)
+            self.assertEqual(session.battle.participants[0].active[0].name, "My Squirtle")
+            self.assertEqual(session.battle.participants[1].active[0].name, "Squirtle")
+
+    def test_restored_weather_and_terrain_expire_without_restarting(self):
+        """Restore handlers without replaying entry effects or resetting timers."""
+        cases = (("weather", "SunnyDay", "", 5),
+                 ("weather", "RainDance", "Damp Rock", 8),
+                 ("terrain", "ElectricTerrain", "", 5),
+                 ("terrain", "GrassyTerrain", "Terrain Extender", 8))
+        for kind, name, item, duration in cases:
+            with self.subTest(kind=kind, name=name):
+                session = self.start("pvp")
+                battle = session.battle
+                source = battle.participants[0].active[0]
+                source.item = battle._coerce_item(item)
+                self.assertTrue(getattr(battle, "set" + kind.title())(name, source=source))
+                key = getattr(battle.field, kind)
+                battle.residual()
+                self.assertEqual(battle.field.pseudo_weather[key]["duration"], duration - 1)
+                session = self.rebuild(session)
+                battle = session.battle
+                self.assertEqual(battle.field.pseudo_weather[key]["duration"], duration - 1)
+                for remaining in range(duration - 2, 0, -1):
+                    battle.residual()
+                    self.assertEqual(battle.field.pseudo_weather[key]["duration"], remaining)
+                battle.residual()
+                self.assertIsNone(getattr(battle.field, kind))
+                self.assertNotIn(key, battle.field.pseudo_weather)
+                session = self.rebuild(session)
+                self.assertIsNone(getattr(session.battle.field, kind))
+                self.assertFalse(getattr(session.battle.field, kind + "_handler", None))
+                session.end()
 
 
 if __name__ == "__main__":
