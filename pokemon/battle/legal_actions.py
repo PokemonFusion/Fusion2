@@ -15,7 +15,7 @@ def pokemon_key(pokemon):
 class LegalActions:
     """Enumerate legal choices using current engine state and control hooks."""
 
-    automatic_targets = frozenset({"all", "allAdjacent", "allAdjacentFoes", "allies", "allySide", "foeSide", "allyTeam", "randomNormal"})
+    automatic_targets = frozenset({"all", "allAdjacent", "allAdjacentFoes", "allies", "allySide", "foeSide", "allyTeam", "randomNormal", "scripted"})
 
     def __init__(self, battle, participant, pokemon):
         self.battle = battle
@@ -58,12 +58,12 @@ class LegalActions:
         """Return living targets permitted by the move's declared target class."""
         foes = [mon for part in self.battle.opponents_of(self.participant)
                 if not getattr(part, "has_lost", False)
-                for mon in getattr(part, "active", []) if self.conscious(mon)]
+                for mon in getattr(part, "active", []) if self.conscious(mon) and not getattr(mon, "volatiles", {}).get("commanding")]
         allies = [mon for part in getattr(self.battle, "participants", [self.participant])
                   if part is self.participant or (
                       getattr(self.participant, "team", None) is not None
                       and getattr(part, "team", None) == self.participant.team)
-                  for mon in getattr(part, "active", []) if self.conscious(mon)]
+                  for mon in getattr(part, "active", []) if self.conscious(mon) and not getattr(mon, "volatiles", {}).get("commanding")]
         others = [mon for mon in allies if mon is not self.pokemon]
         target = (getattr(move, "raw", {}) or {}).get("target", "normal")
         if target == "self":
@@ -76,7 +76,7 @@ class LegalActions:
             return foes + allies
         if target in {"normal", "any", "allAdjacent"}:
             return foes + others
-        if target in {"adjacentFoe", "allAdjacentFoes", "foeSide", "randomNormal"}:
+        if target in {"adjacentFoe", "allAdjacentFoes", "foeSide", "randomNormal", "scripted"}:
             return foes
         # Unknown target classes must not silently become arbitrary attacks.
         return []
@@ -122,8 +122,9 @@ class LegalActions:
         if not self.is_active() or not self.battle.opponents_of(self.participant):
             return []
         actions = []
-        for source in getattr(self.pokemon, "moves", []) or []:
+        for index, source in enumerate(getattr(self.pokemon, "moves", []) or []):
             move = self._move(source)
+            move._runtime_slot_index = index
             if not self._move_allowed(source, move):
                 continue
             targets = self.targets(move)

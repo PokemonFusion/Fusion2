@@ -1,5 +1,7 @@
 """Move summaries distinguish successful conditions from blocked effects."""
 
+import random
+
 import pytest
 
 from pokemon.battle._shared import _normalize_key, get_raw
@@ -20,6 +22,7 @@ def test_thunder_wave_summary_matches_actual_status(types, initial, ability, app
     actor, foe = BattleParticipant("Player", [user]), BattleParticipant("Foe", [target])
     actor.active, foe.active = [user], [target]
     battle = Battle(BattleType.WILD, [actor, foe])
+    battle.rng = random.Random(1)  # This summary case requires a qualifying hit.
     messages = []
     battle.log_action = messages.append
     move = BattleMove("Thunder Wave", accuracy=True, pp=20, raw={
@@ -34,6 +37,23 @@ def test_thunder_wave_summary_matches_actual_status(types, initial, ability, app
         assert target.status == initial
         assert any("had no effect" in message for message in messages)
     assert move.pp == 19
+
+
+def test_thunder_wave_miss_keeps_status_empty_and_spends_one_pp():
+    """A normal accuracy failure must never announce successful paralysis."""
+    user = Pokemon("Raichu", level=5, hp=20, max_hp=20)
+    target = Pokemon("Target", level=5, hp=20, max_hp=20, types=["Normal"])
+    actor, foe = BattleParticipant("Player", [user]), BattleParticipant("Foe", [target])
+    actor.active, foe.active = [user], [target]
+    battle = Battle(BattleType.WILD, [actor, foe])
+    battle.rng = random.Random(2)
+    messages = []
+    battle.log_action = messages.append
+    move = BattleMove("Thunder Wave", pp=20)
+    battle.use_move(Action(actor, ActionType.MOVE, foe, move, pokemon=user))
+    assert not target.status and move.pp == 19
+    assert any("missed" in message for message in messages)
+    assert "Raichu used Thunder Wave on Target!" not in messages
 
 
 @pytest.mark.parametrize("first_stage,second_stage", [(0, 0), (-6, 0), (0, -6), (-6, -6)])

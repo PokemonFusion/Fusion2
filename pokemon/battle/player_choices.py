@@ -154,10 +154,19 @@ class PlayerChoices:
             raise ValueError("Poké Balls can only be used against wild Pokémon.")
         owner = self.battle.opponent_of(self.participant) if is_ball else self.participant
         target_pokemon = owner.active[0] if is_ball and owner.active else pokemon
+        item_move = None
+        if target is not None and not is_ball:
+            selector, _, item_move = str(target).partition("/")
+            try:
+                _, target_pokemon = resolve_battle_switch_choice(self.caller, self.switch_choices(), selector.strip())
+            except (ValueError, TypeError, KeyError):
+                raise ValueError("Choose an owned party slot, including a fainted reserve.") from None
+            item_move = item_move.strip() or None
         action = Action(self.participant, ActionType.ITEM, owner, item=item_name, priority=6,
-                        pokemon=pokemon, target_pokemon=target_pokemon, target_slot=slot_for(owner, target_pokemon))
-        target = next(name for name, mon in self.target_labels([target_pokemon]).items())
-        self._store(position, pokemon, action, {"item": item_name, "target": target},
+                        pokemon=pokemon, target_pokemon=target_pokemon, target_slot=slot_for(owner, target_pokemon), item_move=item_move)
+        target = next((name for name, mon in self.target_labels([target_pokemon]).items()), target_pokemon.name)
+        declaration = {"item": item_name, "target": target, "item_target_ref": getattr(target_pokemon, "model_id", None), "item_move": item_move}
+        self._store(position, pokemon, action, declaration,
                     lambda pos: pos.declareItem(item_name), f"{position} ({pokemon.name}) prepares {item_name} → {target}.")
 
     def _store(self, position, pokemon, action, declaration, declare, message):

@@ -24,10 +24,13 @@ class CmdBattleItem(Command):
     Usage:
       +battle/item <item>
       +item <acting slot> <item>
+      +item [acting slot] <item>=<party slot>[/<move slot or name>]
 
     Examples:
       +item Potion
       +battle/item Poke Ball
+      +item Revive=2
+      +item A1 Max Ether=3/Water Gun
 
     Notes:
       This queues an item as your battle action. Field-use items use +use.
@@ -47,6 +50,9 @@ class CmdBattleItem(Command):
 
         from .battle_choice_prompts import split_actor
         actor, item_name = split_actor(self.args)
+        item_name, separator, target = item_name.partition("=")
+        item_name = item_name.strip()
+        target = target.strip() if separator else None
         if not item_name:
             self.caller.msg("Usage: +battle/item <item>")
             return
@@ -80,7 +86,7 @@ class CmdBattleItem(Command):
             return
         if callable(getattr(inst, "choices_for", None)):
             try:
-                inst.choices_for(self.caller).item(item_name, actor=actor)
+                inst.choices_for(self.caller).item(item_name, target=target, actor=actor)
             except ValueError as error:
                 self.caller.msg(str(error))
             return

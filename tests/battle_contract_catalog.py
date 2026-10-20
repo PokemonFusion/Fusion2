@@ -22,9 +22,9 @@ from pokemon.battle.tests.outcome_harness import (
     MoveOutcomeContract,
     MoveQueueProbe,
     MoveSpec,
-    PostBattleAbilityOutcomeContract,
     PokemonExpectation,
     PokemonSpec,
+    PostBattleAbilityOutcomeContract,
     ProofCalledMove,
     RandomControl,
     ResidualOutcomeContract,
@@ -34,8 +34,8 @@ from pokemon.battle.tests.outcome_harness import (
     SwitchOutcomeContract,
     ability_immunity_contract,
     boost_contract,
-    chance_roll,
     callback_damage_contract,
+    chance_roll,
     combo_contract,
     coverage_id,
     damage_contract,
@@ -55,7 +55,6 @@ from pokemon.battle.tests.outcome_harness import (
     volatile_contract,
     weather_contract,
 )
-
 
 NO_CRIT_MAX_DAMAGE = RandomControl(
     random_values=(percent_roll(100 / 24, False),),
@@ -906,13 +905,13 @@ MOVE_CONTRACTS = [
         expect_target=PokemonExpectation(hp_delta=0),
     ),
     MoveOutcomeContract(
-        name="conversion 2 copies the target's current typing",
+        name="conversion 2 requires a previous move instead of copying target typing",
         mechanic="type_change",
         user=PokemonSpec(name="Converter", types=("Normal",)),
         target=PokemonSpec(name="Target", types=("Ghost", "Poison")),
         move=dex_move("Conversion 2", accuracy=True),
         covers=("move:conversion2",),
-        expect_user=PokemonExpectation(hp_delta=0, types=("Ghost", "Poison")),
+        expect_user=PokemonExpectation(hp_delta=0, types=("Normal",)),
         expect_target=PokemonExpectation(hp_delta=0, types=("Ghost", "Poison")),
     ),
     MoveOutcomeContract(
@@ -1161,14 +1160,14 @@ MOVE_CONTRACTS = [
         expect_target=PokemonExpectation(boosts={"atk": -1}),
     ),
     MoveOutcomeContract(
-        name="quash marks the target to act last",
+        name="quash fails without a pending target action",
         mechanic="turn_order",
         user=PokemonSpec(name="Quasher"),
         target=PokemonSpec(name="Target"),
         move=dex_move("Quash", accuracy=True),
         covers=("move:quash",),
         expect_user=PokemonExpectation(hp_delta=0),
-        expect_target=PokemonExpectation(hp_delta=0, tempvals={"quash": True}),
+        expect_target=PokemonExpectation(hp_delta=0, tempvals={"quash": None}),
     ),
     MoveOutcomeContract(
         name="swallow consumes stockpile layers to heal",
@@ -1316,7 +1315,7 @@ MOVE_CONTRACTS = [
         target=PokemonSpec(name="Target"),
         move=dex_move("Mind Reader", accuracy=True),
         covers=("move:mindreader",),
-        expect_user=PokemonExpectation(hp_delta=0, volatiles=("lock_on",)),
+        expect_user=PokemonExpectation(hp_delta=0, volatiles=("lockon",)),
         expect_target=PokemonExpectation(hp_delta=0),
     ),
     MoveOutcomeContract(
@@ -1462,8 +1461,8 @@ MOVE_CONTRACTS = [
     MoveOutcomeContract(
         name="guard split averages raw defensive stats",
         mechanic="stat_average",
-        user=PokemonSpec(name="Guard", extra={"def": 80, "spd": 100}),
-        target=PokemonSpec(name="Target", extra={"def": 160, "spd": 140}),
+        user=PokemonSpec(name="Guard", base_stats={"defense": 80, "special_defense": 100}),
+        target=PokemonSpec(name="Target", base_stats={"defense": 160, "special_defense": 140}),
         move=dex_move("Guard Split", accuracy=True),
         covers=("move:guardsplit",),
         expect_user=PokemonExpectation(hp_delta=0, stats={"def": 120, "spd": 120}),
@@ -1472,8 +1471,8 @@ MOVE_CONTRACTS = [
     MoveOutcomeContract(
         name="power split averages raw offensive stats",
         mechanic="stat_average",
-        user=PokemonSpec(name="Power", extra={"atk": 80, "spa": 100}),
-        target=PokemonSpec(name="Target", extra={"atk": 160, "spa": 140}),
+        user=PokemonSpec(name="Power", base_stats={"attack": 80, "special_attack": 100}),
+        target=PokemonSpec(name="Target", base_stats={"attack": 160, "special_attack": 140}),
         move=dex_move("Power Split", accuracy=True),
         covers=("move:powersplit",),
         expect_user=PokemonExpectation(hp_delta=0, stats={"atk": 120, "spa": 120}),
@@ -1482,8 +1481,8 @@ MOVE_CONTRACTS = [
     MoveOutcomeContract(
         name="speed swap exchanges raw speed stats",
         mechanic="stat_average",
-        user=PokemonSpec(name="Speed", extra={"spe": 50}),
-        target=PokemonSpec(name="Target", extra={"spe": 150}),
+        user=PokemonSpec(name="Speed", base_stats={"speed": 50}),
+        target=PokemonSpec(name="Target", base_stats={"speed": 150}),
         move=dex_move("Speed Swap", accuracy=True),
         covers=("move:speedswap",),
         expect_user=PokemonExpectation(hp_delta=0, stats={"spe": 150}),
@@ -2385,7 +2384,18 @@ ITEM_CALLBACK_CONTRACTS = [
         expect_target=PokemonExpectation(item=""),
     ),
     ItemCallbackOutcomeContract(
-        name="gems consume themselves and mark a matching attack boost",
+        name="blunder policy consumes on an explicit accuracy miss",
+        item="Blunderpolicy",
+        event="onAccuracyMiss",
+        mechanic="item_boost_guard",
+        covers=(coverage_id("item", "Blunder Policy"),),
+        user=PokemonSpec(name="Missed Attacker"),
+        target=PokemonSpec(name="Target"),
+        pokemon_side="user",
+        expect_user=PokemonExpectation(item="", boosts={"spe": 2}),
+    ),
+    ItemCallbackOutcomeContract(
+        name="gems arm matching attacks without premature consumption or stat stages",
         item="Buggem",
         event="onSourceTryPrimaryHit",
         mechanic="item_gem_trigger",
@@ -2393,7 +2403,7 @@ ITEM_CALLBACK_CONTRACTS = [
         user=PokemonSpec(name="Gem User"),
         target=PokemonSpec(name="Target"),
         move=MoveSpec(name="Proof Bug", power=40, type="Bug", category="Physical", raw={"target": "normal"}),
-        expect_user=PokemonExpectation(item="", boosts={"atk": 1}),
+        expect_user=PokemonExpectation(item="Bug Gem", boosts={"atk": 0, "spa": 0}),
     ),
     ItemCallbackOutcomeContract(
         name="rocky helmet damages contact attackers",
@@ -2622,7 +2632,7 @@ ITEM_CALLBACK_CONTRACTS = [
         expect_user=PokemonExpectation(item="", boosts={"spe": 1}),
     ),
     ItemCallbackOutcomeContract(
-        name="eject pack consumes itself after a stat drop",
+        name="eject pack retains itself without a legal reserve",
         item="Ejectpack",
         event="onAfterBoost",
         mechanic="item_boost_guard",
@@ -2633,7 +2643,7 @@ ITEM_CALLBACK_CONTRACTS = [
         source_side="target",
         pokemon_side="user",
         boosts={"def": -1},
-        expect_user=PokemonExpectation(item=""),
+        expect_user=PokemonExpectation(item="Eject Pack"),
     ),
     ItemCallbackOutcomeContract(
         name="expert belt boosts super-effective damage",
@@ -2763,7 +2773,7 @@ ITEM_CALLBACK_CONTRACTS = [
         covers=(coverage_id("item", "Mirror Herb"),),
         user=PokemonSpec(name="Mirror Holder"),
         target=PokemonSpec(name="Boosted Foe"),
-        target_side="user",
+        target_side="target",
         source_side="target",
         pokemon_side="user",
         boosts={"atk": 2, "def": -1},
@@ -2919,7 +2929,7 @@ ABILITY_EVENT_CONTRACTS = [
         mechanic="ability_faint_trigger",
         covers=(coverage_id("ability", "Soul-Heart"),),
         user=PokemonSpec(name="Soul", ability="Soul-Heart"),
-        target=PokemonSpec(name="Fainted"),
+        target=PokemonSpec(name="Fainted", hp=0),
         owner="user",
         target_side="target",
         source_side="target",
@@ -3102,7 +3112,7 @@ ABILITY_EVENT_CONTRACTS = [
         expect_target=PokemonExpectation(status="brn"),
     ),
     AbilityEventOutcomeContract(
-        name="teraform zero changes Terapagos to Stellar after terastallization",
+        name="teraform zero cannot transform an unterastallized Terapagos",
         event="onAfterTerastallization",
         mechanic="ability_start",
         covers=(coverage_id("ability", "Teraform Zero"),),
@@ -3112,7 +3122,7 @@ ABILITY_EVENT_CONTRACTS = [
         pokemon_side="user",
         target_side=None,
         source_side=None,
-        expect_user=PokemonExpectation(species="Terapagos-Stellar"),
+        expect_user=PokemonExpectation(species="Terapagos"),
     ),
     AbilityEventOutcomeContract(
         name="unaware ignores another Pokemon's stat boosts",
@@ -3220,11 +3230,11 @@ MOVE_CONTRACTS.extend(
             expect_target=PokemonExpectation(hp_less_than=100, tempvals={"switch_out": True}),
         ),
         MoveOutcomeContract(
-            name="wimp out queues a switch after taking damage",
+            name="wimp out queues a switch after crossing half hp",
             mechanic="ability_control",
             covers=(coverage_id("ability", "Wimp Out"),),
             user=PokemonSpec(name="Attacker", types=("Normal",)),
-            target=PokemonSpec(name="Wimp", ability="Wimp Out", hp=200, max_hp=200),
+            target=PokemonSpec(name="Wimp", ability="Wimp Out", hp=110, max_hp=200),
             move=MoveSpec(
                 name="Proof Heavy Strike Wimp",
                 power=40,
@@ -3234,7 +3244,7 @@ MOVE_CONTRACTS.extend(
                 raw={"target": "normal"},
             ),
             random_control=NO_CRIT_MAX_DAMAGE,
-            expect_target=PokemonExpectation(hp_less_than=200, tempvals={"switch_out": True}),
+            expect_target=PokemonExpectation(hp_less_than=100, tempvals={"switch_out": True}),
         ),
         MoveOutcomeContract(
             name="shield dust removes foe secondary effects",
@@ -3275,6 +3285,13 @@ MOVE_CONTRACTS.extend(
 
 
 MOVE_EVENT_CONTRACTS = [
+    MoveEventOutcomeContract(
+        name="quash defers the actual pending target action",
+        move="Quash", event="onHit", mechanic="turn_order",
+        covers=(coverage_id("move", "Quash"),),
+        battle_extra={"queue": MoveQueueProbe()},
+        expect_result=True, expect_queue_deferred=True,
+    ),
     MoveEventOutcomeContract(
         name="after you prioritizes an ally queued action in doubles",
         move="After You",
@@ -3352,7 +3369,8 @@ MOVE_EVENT_CONTRACTS = [
         mechanic="move_copy",
         covers=(coverage_id("move", "Me First"),),
         user=PokemonSpec(name="Me First User"),
-        target=PokemonSpec(name="Selected Foe", extra={"last_move": CALLED_TARGET_DAMAGE}),
+        target=PokemonSpec(name="Selected Foe"),
+        battle_extra={"queue": MoveQueueProbe(action=SimpleNamespace(move=CALLED_TARGET_DAMAGE))},
         expect_result=True,
         expect_called_moves=("Proof Called Strike",),
         expect_user=PokemonExpectation(tempvals={"called_move": "Proof Called Strike"}),
@@ -3673,7 +3691,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Grass", "Poison"),
             ability="Thick Fat",
             item="Venusaurite",
-            stats={"atk": 100, "def": 123, "spa": 122, "spd": 120, "spe": 80},
+            stats={'atk': 105, 'def': 128, 'spa': 127, 'spd': 125, 'spe': 85},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3694,7 +3712,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Grass", "Poison"),
             ability="Thick Fat",
             item="Venusaurite",
-            stats={"atk": 100, "def": 123, "spa": 122, "spd": 120, "spe": 80},
+            stats={'atk': 105, 'def': 128, 'spa': 127, 'spd': 125, 'spe': 85},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3715,7 +3733,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Fire", "Dragon"),
             ability="Tough Claws",
             item="Charizardite X",
-            stats={"atk": 130, "def": 111, "spa": 130, "spd": 85, "spe": 100},
+            stats={'atk': 135, 'def': 116, 'spa': 135, 'spd': 90, 'spe': 105},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3778,7 +3796,7 @@ FORM_CHANGE_CONTRACTS = [
             species="Rayquaza-Mega",
             types=("Dragon", "Flying"),
             ability="Delta Stream",
-            stats={"atk": 180, "def": 100, "spa": 180, "spd": 100, "spe": 115},
+            stats={'atk': 185, 'def': 105, 'spa': 185, 'spd': 105, 'spe': 120},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3819,7 +3837,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Ground", "Fire"),
             ability="Desolate Land",
             item="Red Orb",
-            stats={"atk": 180, "def": 160, "spa": 150, "spd": 90, "spe": 90},
+            stats={'atk': 185, 'def': 165, 'spa': 155, 'spd': 95, 'spe': 95},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3840,7 +3858,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Bug", "Steel"),
             ability="Download",
             item="Burn Drive",
-            stats={"atk": 120, "def": 95, "spa": 120, "spd": 95, "spe": 99},
+            stats={'atk': 125, 'def': 100, 'spa': 125, 'spd': 100, 'spe': 104},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3861,7 +3879,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Bug", "Steel"),
             ability="Download",
             item="",
-            stats={"atk": 120, "def": 95, "spa": 120, "spd": 95, "spe": 99},
+            stats={'atk': 125, 'def': 100, 'spa': 125, 'spd': 100, 'spe': 104},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3881,7 +3899,7 @@ FORM_CHANGE_CONTRACTS = [
             species="Castform-Sunny",
             types=("Fire",),
             ability="Forecast",
-            stats={"atk": 70, "def": 70, "spa": 70, "spd": 70, "spe": 70},
+            stats={'atk': 75, 'def': 75, 'spa': 75, 'spd': 75, 'spe': 75},
         ),
         expect_battle=BattleExpectation(weather="sunnyday"),
     ),
@@ -3902,7 +3920,7 @@ FORM_CHANGE_CONTRACTS = [
             species="Cherrim-Sunshine",
             types=("Grass",),
             ability="Flower Gift",
-            stats={"atk": 60, "def": 70, "spa": 87, "spd": 78, "spe": 85},
+            stats={'atk': 65, 'def': 75, 'spa': 92, 'spd': 83, 'spe': 90},
         ),
         expect_battle=BattleExpectation(weather="sunnyday"),
     ),
@@ -3925,7 +3943,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Water",),
             ability="Schooling",
             hp=160,
-            stats={"atk": 140, "def": 130, "spa": 140, "spd": 135, "spe": 30},
+            stats={'atk': 145, 'def': 135, 'spa': 145, 'spd': 140, 'spe': 35},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3945,7 +3963,7 @@ FORM_CHANGE_CONTRACTS = [
             species="Aegislash-Blade",
             types=("Steel", "Ghost"),
             ability="Stance Change",
-            stats={"atk": 140, "def": 50, "spa": 140, "spd": 50, "spe": 60},
+            stats={'atk': 145, 'def': 55, 'spa': 145, 'spd': 55, 'spe': 65},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3967,7 +3985,7 @@ FORM_CHANGE_CONTRACTS = [
             types=("Fire", "Psychic"),
             ability="Zen Mode",
             hp=80,
-            stats={"atk": 30, "def": 105, "spa": 140, "spd": 105, "spe": 55},
+            stats={'atk': 35, 'def': 110, 'spa': 145, 'spd': 110, 'spe': 60},
         ),
     ),
     FormChangeOutcomeContract(
@@ -3988,8 +4006,8 @@ FORM_CHANGE_CONTRACTS = [
             species="Zygarde-Complete",
             types=("Dragon", "Ground"),
             ability="Power Construct",
-            hp=80,
-            stats={"atk": 100, "def": 121, "spa": 91, "spd": 95, "spe": 85},
+            hp=156,
+            stats={'atk': 105, 'def': 126, 'spa': 96, 'spd': 100, 'spe': 90},
         ),
     ),
     FormChangeOutcomeContract(
@@ -4009,7 +4027,7 @@ FORM_CHANGE_CONTRACTS = [
             species="Palafin-Hero",
             types=("Water",),
             ability="Zero to Hero",
-            stats={"atk": 160, "def": 97, "spa": 106, "spd": 87, "spe": 100},
+            stats={'atk': 165, 'def': 102, 'spa': 111, 'spd': 92, 'spe': 105},
         ),
     ),
 ]

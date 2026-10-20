@@ -42,7 +42,7 @@ class Poison(StatusCondition):
 	def at_apply(self, pokemon, battle, *, source=None, effect=None, previous=None, allow_self_inflict=False, **kwargs) -> bool:
 		if has_type(pokemon, ('poison', 'steel')) and not _source_has_ability(source, 'corrosion'):
 			return False
-		if has_ability(pokemon, self.IMMUNE_ABILITIES):
+		if has_ability(pokemon, self.IMMUNE_ABILITIES, battle=battle, source=source, effect=effect):
 			return False
 		if self._has_team_immunity(pokemon, battle):
 			return False
@@ -85,7 +85,7 @@ class BadPoison(StatusCondition):
 	def at_apply(self, pokemon, battle, *, source=None, effect=None, previous=None, allow_self_inflict=False, **kwargs) -> bool:
 		if has_type(pokemon, ('poison', 'steel')) and not _source_has_ability(source, 'corrosion'):
 			return False
-		if has_ability(pokemon, self.IMMUNE_ABILITIES):
+		if has_ability(pokemon, self.IMMUNE_ABILITIES, battle=battle, source=source, effect=effect):
 			return False
 		if self._has_team_immunity(pokemon, battle):
 			return False

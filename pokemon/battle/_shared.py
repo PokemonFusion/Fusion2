@@ -9,6 +9,29 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 _NORMALIZED_DEX_IDS: dict[int, dict[str, int]] = {}
 
 
+def weather_suppressed(battle: Any) -> bool:
+    """Derive weather suppression from current living active ability holders."""
+    participants = getattr(battle, "participants", None)
+    if participants is None:
+        return bool(getattr(battle, "suppressWeather", False))
+    try:
+        from pokemon.dex import ABILITYDEX
+    except ImportError:  # Minimal battle adapters may omit the optional dex.
+        ABILITYDEX = {}
+
+    for part in participants:
+        for pokemon in getattr(part, "active", []) or []:
+            if getattr(pokemon, "hp", 0) <= 0 or "gastroacid" in getattr(pokemon, "volatiles", {}):
+                continue
+            ability = getattr(pokemon, "ability", None)
+            if isinstance(ability, str):
+                ability = ABILITYDEX.get(_normalize_key(ability)) or ABILITYDEX.get(ability)
+            raw = getattr(ability, "raw", {}) or {}
+            if raw.get("suppressWeather") or getattr(ability, "suppressWeather", False):
+                return True
+    return False
+
+
 def _normalize_key(name: str) -> str:
     """Return a normalized MOVEDEX key in TitleKey form.
 
@@ -108,10 +131,13 @@ def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any], *, field
 
 
 def reset_tempvals(pokemon: Any) -> None:
-    """Replace a Pokemon's temporary battle flags with a plain empty dict."""
+    """Clear turn flags while retaining explicitly scoped entry state."""
 
     if hasattr(pokemon, "tempvals"):
-        setattr(pokemon, "tempvals", {})
+        previous = getattr(pokemon, "tempvals", {}) or {}
+        retained = {key: value for key, value in previous.items()
+                    if key in {"moves_used_since_entry", "stat_overrides", "entry_action_turn", "copy_state", "native_form", "sleep_turns", "slp_turns"}}
+        setattr(pokemon, "tempvals", retained)
 
 
 def get_pp(entry: Any) -> Optional[int]:

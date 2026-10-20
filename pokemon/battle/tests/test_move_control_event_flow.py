@@ -260,6 +260,9 @@ def test_foe_before_move_volatile_can_block_move():
     move.key = "tackle"
     start_hp = defender.hp
 
+    # Imprison prevents only moves the holder also knows.
+    defender.moves = [move]
+
     action = _battle_action(
         battle.participants[0],
         ActionType.MOVE,

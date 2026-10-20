@@ -27,14 +27,21 @@ def _remove_battle_item(pokemon, *, source=None, effect=None, used=False):
 
 
 def _consume_type_resist_berry(damage, *, berry_type, target=None, source=None, move=None):
-	"""Apply a one-shot resist berry reduction for super-effective hits only."""
+	"""Use eating gates; Chilan also permits neutral Normal hits."""
 
 	if not target or not move or move.type != berry_type:
 		return damage
-	if type_effectiveness(target, move) <= 1:
+	if type_effectiveness(target, move) <= (0 if berry_type == "Normal" else 1):
 		return damage
-	_remove_battle_item(target, source=source, effect=move, used=True)
-	return int(damage * 0.5)
+	from pokemon.battle.effect_context import EffectContext
+	ripen = EffectContext.key(EffectContext.ability(target)) == "ripen"
+	battle = getattr(target, "battle", None)
+	if battle and callable(getattr(battle, "eat_item", None)):
+		if not battle.eat_item(target, source=source, effect=move):
+			return damage
+	elif not _remove_battle_item(target, source=source, effect=move, used=True):
+		return damage
+	return int(damage * (0.25 if ripen else 0.5))
 
 
 def _current_field_terrain(pokemon):
@@ -103,11 +110,11 @@ class Adamantorb:
 
 class Adrenalineorb:
 	def onAfterBoost(self, boost=None, target=None, source=None, effect=None):
-		if effect and getattr(effect, "name", None) == "Intimidate" and target:
-			if hasattr(target, "boosts") and target.boosts.get("spe", 0) < 6:
-				target.boosts["spe"] += 1
-			if hasattr(target, "item"):
-				target.item = None
+		from pokemon.battle.effect_context import EffectContext
+		from pokemon.utils.boosts import apply_boost
+		if target and EffectContext.key(effect) == "intimidate" and getattr(target, "boosts", {}).get("speed", 0) < 6:
+			if _remove_battle_item(target, used=True):
+				apply_boost(target, {"spe": 1}, source=target, effect="item:adrenalineorb")
 
 
 class Aerodactylite:
@@ -130,10 +137,8 @@ class Aggronite:
 
 class Aguavberry:
 	def onEat(self, pokemon=None):
-		if not pokemon:
-			return
-		heal = pokemon.max_hp // 3
-		pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.flavor_berry(pokemon, ('Naughty', 'Lax', 'Rash', 'Naive'))
 
 	def onTryEatItem(self, pokemon=None):
 		return pokemon and pokemon.hp <= pokemon.max_hp // 2
@@ -155,7 +160,8 @@ class Airballoon:
 			self._pop(target)
 
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		self._pop(target)
+		if damage > 0:
+			self._pop(target)
 
 	def onStart(self, pokemon=None):
 		if pokemon and hasattr(pokemon, "volatiles"):
@@ -216,17 +222,17 @@ class Aspearberry:
 
 
 class Assaultvest:
-	def onDisableMove(self, pokemon=None):
-		if not pokemon:
-			return
-		for move in getattr(pokemon, "moves", []):
-			if getattr(move, "category", "") == "Status":
-				setattr(move, "disabled", True)
+	def onDisableMove(self, pokemon=None, move=None, **kwargs):
+		if move is not None:
+			from pokemon.dex import MOVEDEX
+			from pokemon.names import resolve_dex_entry
+			entry = resolve_dex_entry(MOVEDEX, getattr(move, "name", ""))
+			category = (getattr(entry, "raw", {}) or {}).get("category", getattr(move, "category", ""))
+			return category == "Status"
+		return False
 
 	def onModifySpD(self, spd, pokemon=None):
-		if pokemon:
-			return int(spd * 1.5)
-		return spd
+		return int(spd * 1.5) if pokemon else spd
 
 
 class Audinite:
@@ -269,11 +275,15 @@ class Beedrillite:
 class Berry:
 	def onEat(self, pokemon=None):
 		if pokemon:
-			heal = pokemon.max_hp // 8
-			pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+			battle = getattr(pokemon, "battle", None)
+			if battle and hasattr(battle, "heal"):
+				battle.heal(pokemon, 10, source=pokemon, effect="item:berry")
+			else:
+				pokemon.hp = min(pokemon.hp + 10, pokemon.max_hp)
 
 	def onResidual(self, pokemon=None):
-		return
+		if pokemon and 0 < pokemon.hp <= pokemon.max_hp // 2 and hasattr(pokemon, "eat_item"):
+			pokemon.eat_item()
 
 	def onTryEatItem(self, pokemon=None):
 		return True
@@ -307,17 +317,10 @@ class Bigroot:
 
 class Bitterberry:
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "confusion":
-			pokemon.setStatus(
-				0,
-				battle=getattr(pokemon, "battle", None),
-				effect="item:bitterberry",
-			)
+		return Persimberry.onEat(self, pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "confusion":
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		return Persimberry.onUpdate(self, pokemon)
 
 
 class Blackbelt:
@@ -383,26 +386,18 @@ class Blueorb:
 
 class Boosterenergy:
 	def onStart(self, pokemon=None):
-		if pokemon:
-			pokemon.volatiles = getattr(pokemon, "volatiles", {})
-			pokemon.volatiles["boosterenergy"] = True
+		self.onUpdate(pokemon)
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and "Paradox" in getattr(pokemon, "tags", []):
-			return False
-		if source and "Paradox" in getattr(source, "tags", []):
-			return False
-		return True
+		from pokemon.battle.effect_context import EffectContext
+		return not any(EffectContext.key(EffectContext.ability(mon)) in {"protosynthesis", "quarkdrive"} for mon in (pokemon, source))
 
 	def onUpdate(self, pokemon=None):
-		if not pokemon or pokemon.volatiles.get("used_booster"):
-			return
-		if ("protosynthesis" in getattr(pokemon, "abilities", [])) or (
-			"quarkdrive" in getattr(pokemon, "abilities", [])
-		):
-			pokemon.volatiles["used_booster"] = True
-			if hasattr(pokemon, "item"):
-				pokemon.item = None
+		from pokemon.battle.effect_context import EffectContext
+		from pokemon.battle.stat_activation import HighestStatActivation
+		ability = EffectContext.key(EffectContext.ability(pokemon))
+		if ability in {"protosynthesis", "quarkdrive"}:
+			HighestStatActivation(ability).activate(pokemon)
 
 
 class Brightpowder:
@@ -414,12 +409,8 @@ class Brightpowder:
 
 class Buggem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Bug" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Bug')
 
 
 class Bugmemory:
@@ -565,7 +556,7 @@ class Choiceband:
 	def onModifyMove(self, move=None, pokemon=None):
 		if pokemon:
 			pokemon.volatiles = getattr(pokemon, "volatiles", {})
-			pokemon.volatiles["choicelock"] = True
+			pokemon.volatiles.setdefault("choicelock", {"move": getattr(move, "name", None)})
 
 	def onStart(self, pokemon=None):
 		if pokemon and getattr(pokemon, "volatiles", {}).get("choicelock"):
@@ -576,7 +567,7 @@ class Choicescarf:
 	def onModifyMove(self, move=None, pokemon=None):
 		if pokemon:
 			pokemon.volatiles = getattr(pokemon, "volatiles", {})
-			pokemon.volatiles["choicelock"] = True
+			pokemon.volatiles.setdefault("choicelock", {"move": getattr(move, "name", None)})
 
 	def onModifySpe(self, spe, pokemon=None):
 		if pokemon and not getattr(pokemon, "volatiles", {}).get("dynamax"):
@@ -592,7 +583,7 @@ class Choicespecs:
 	def onModifyMove(self, move=None, pokemon=None):
 		if pokemon:
 			pokemon.volatiles = getattr(pokemon, "volatiles", {})
-			pokemon.volatiles["choicelock"] = True
+			pokemon.volatiles.setdefault("choicelock", {"move": getattr(move, "name", None)})
 
 	def onModifySpA(self, spa, pokemon=None, target=None, move=None):
 		if pokemon and not getattr(pokemon, "volatiles", {}).get("dynamax"):
@@ -648,14 +639,16 @@ class Colburberry:
 
 class Cornerstonemask:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Ogerpon") and move.type == "Rock":
+		from pokemon.battle.native_forms import OgerponForm
+		if user and move and OgerponForm.mask_matches(user, "Cornerstone"):
 			return int(base_power * 1.2)
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Ogerpon"):
+		from pokemon.battle.native_forms import OgerponForm
+		if pokemon and OgerponForm.native(pokemon):
 			return False
-		if source and source.name.startswith("Ogerpon"):
+		if source and OgerponForm.native(source):
 			return False
 		return True
 
@@ -679,29 +672,22 @@ class Crucibellite:
 class Custapberry:
 	def onEat(self, pokemon=None):
 		if pokemon:
-			pokemon.volatiles = getattr(pokemon, "volatiles", {})
 			pokemon.volatiles["custap"] = True
 
 	def onFractionalPriority(self, pokemon=None):
-		if pokemon and pokemon.volatiles.get("custap"):
-			pokemon.volatiles.pop("custap", None)
-			return 0.1
+		from pokemon.battle.effect_context import EffectContext
+		if pokemon:
+			threshold = pokemon.max_hp // (2 if EffectContext.key(EffectContext.ability(pokemon)) == "gluttony" else 4)
+			if 0 < pokemon.hp <= threshold and pokemon.eat_item():
+				pokemon.volatiles.pop("custap", None)
+				return .1
 		return 0
-
-	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.hp <= pokemon.max_hp // 4:
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
 
 
 class Darkgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Dark" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Dark')
 
 
 class Darkmemory:
@@ -728,9 +714,11 @@ class Deepseatooth:
 
 
 class Destinyknot:
-	def onAttract(self, pokemon=None, source=None):
-		if pokemon and source and hasattr(source, "volatiles"):
-			source.volatiles["attract"] = True
+	def onAttract(self, pokemon=None, source=None, effect=None):
+		if pokemon and source and "attract" not in getattr(source, "volatiles", {}):
+			battle = getattr(pokemon, "battle", None)
+			if battle:
+				battle.apply_volatile_status(source, "attract", source=pokemon, effect="item:destinyknot")
 
 
 class Diancite:
@@ -774,12 +762,8 @@ class Dragonfang:
 
 class Dragongem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Dragon" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Dragon')
 
 
 class Dragonmemory:
@@ -821,32 +805,22 @@ class Earthplate:
 
 class Ejectbutton:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if move and target and source and move.category != "Status" and target.hp > 0:
-			if hasattr(target, "switch_out"):
-				target.switch_out()
-			if hasattr(target, "item"):
-				target.item = None
+		from pokemon.battle.item_effects import HeldItemRules
+		if move and getattr(move, "total_damage", 0):
+			HeldItemRules.eject(target, target, source=source, effect=move)
 
 
 class Ejectpack:
 	def onAfterBoost(self, boost=None, target=None, source=None, effect=None):
-		if not boost or not target:
-			return
-		if any(v < 0 for v in boost.values()):
-			if hasattr(target, "switch_out"):
-				target.switch_out()
-			if hasattr(target, "item"):
-				target.item = None
+		from pokemon.battle.item_effects import HeldItemRules
+		if boost and any(value < 0 for value in boost.values()):
+			HeldItemRules.eject(target, target, source=source, effect=effect)
 
 
 class Electricgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Electric" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Electric')
 
 
 class Electricmemory:
@@ -876,11 +850,15 @@ class Electricseed:
 class Enigmaberry:
 	def onEat(self, pokemon=None):
 		if pokemon:
-			heal = pokemon.max_hp // 4
-			pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+			heal = max(1, pokemon.max_hp // 4)
+			battle = getattr(pokemon, "battle", None)
+			if battle:
+				battle.heal(pokemon, heal, source=pokemon, effect="item:enigmaberry")
+			else:
+				pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
 
 	def onHit(self, damage, target=None, source=None, move=None):
-		if target and move and type_effectiveness(target, move) > 1:
+		if target and target.hp > 0 and "healblock" not in getattr(target, "volatiles", {}) and move and type_effectiveness(target, move) > 1:
 			if hasattr(target, "eat_item"):
 				target.eat_item()
 
@@ -890,12 +868,14 @@ class Enigmaberry:
 
 class Eviolite:
 	def onModifyDef(self, defense, pokemon=None):
-		if pokemon and not getattr(pokemon, "fully_evolved", True):
+		from pokemon.battle.item_effects import HeldItemRules
+		if HeldItemRules.can_evolve(pokemon):
 			return int(defense * 1.5)
 		return defense
 
 	def onModifySpD(self, spd, pokemon=None):
-		if pokemon and not getattr(pokemon, "fully_evolved", True):
+		from pokemon.battle.item_effects import HeldItemRules
+		if HeldItemRules.can_evolve(pokemon):
 			return int(spd * 1.5)
 		return spd
 
@@ -916,12 +896,8 @@ class Fairyfeather:
 
 class Fairygem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Fairy" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Fairy')
 
 
 class Fairymemory:
@@ -935,12 +911,8 @@ class Fairymemory:
 
 class Fightinggem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Fighting" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Fighting')
 
 
 class Fightingmemory:
@@ -954,10 +926,8 @@ class Fightingmemory:
 
 class Figyberry:
 	def onEat(self, pokemon=None):
-		if not pokemon:
-			return
-		heal = pokemon.max_hp // 3
-		pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.flavor_berry(pokemon, ('Bold', 'Modest', 'Calm', 'Timid'))
 
 	def onTryEatItem(self, pokemon=None):
 		return pokemon and pokemon.hp <= pokemon.max_hp // 2
@@ -970,12 +940,8 @@ class Figyberry:
 
 class Firegem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Fire" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Fire')
 
 
 class Firememory:
@@ -1035,12 +1001,8 @@ class Floatstone:
 
 class Flyinggem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Flying" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Flying')
 
 
 class Flyingmemory:
@@ -1116,12 +1078,8 @@ class Gengarite:
 
 class Ghostgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Ghost" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Ghost')
 
 
 class Ghostmemory:
@@ -1145,10 +1103,15 @@ class Glalitite:
 class Goldberry:
 	def onEat(self, pokemon=None):
 		if pokemon:
-			pokemon.hp = min(pokemon.hp + 30, pokemon.max_hp)
+			battle = getattr(pokemon, "battle", None)
+			if battle and hasattr(battle, "heal"):
+				battle.heal(pokemon, 30, source=pokemon, effect="item:goldberry")
+			else:
+				pokemon.hp = min(pokemon.hp + 30, pokemon.max_hp)
 
 	def onResidual(self, pokemon=None):
-		return
+		if pokemon and 0 < pokemon.hp <= pokemon.max_hp // 2 and hasattr(pokemon, "eat_item"):
+			pokemon.eat_item()
 
 	def onTryEatItem(self, pokemon=None):
 		return pokemon and pokemon.hp < pokemon.max_hp
@@ -1156,12 +1119,8 @@ class Goldberry:
 
 class Grassgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Grass" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Grass')
 
 
 class Grassmemory:
@@ -1211,12 +1170,8 @@ class Griseousorb:
 
 class Groundgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Ground" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Ground')
 
 
 class Groundmemory:
@@ -1256,14 +1211,16 @@ class Hardstone:
 
 class Hearthflamemask:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Ogerpon") and move.type == "Fire":
+		from pokemon.battle.native_forms import OgerponForm
+		if user and move and OgerponForm.mask_matches(user, "Hearthflame"):
 			return int(base_power * 1.2)
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Ogerpon"):
+		from pokemon.battle.native_forms import OgerponForm
+		if pokemon and OgerponForm.native(pokemon):
 			return False
-		if source and source.name.startswith("Ogerpon"):
+		if source and OgerponForm.native(source):
 			return False
 		return True
 
@@ -1288,10 +1245,8 @@ class Houndoominite:
 
 class Iapapaberry:
 	def onEat(self, pokemon=None):
-		if not pokemon:
-			return
-		heal = pokemon.max_hp // 3
-		pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.flavor_berry(pokemon, ('Lonely', 'Mild', 'Gentle', 'Hasty'))
 
 	def onTryEatItem(self, pokemon=None):
 		return pokemon and pokemon.hp <= pokemon.max_hp // 2
@@ -1304,27 +1259,16 @@ class Iapapaberry:
 
 class Iceberry:
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "frz":
-			pokemon.setStatus(
-				0,
-				battle=getattr(pokemon, "battle", None),
-				effect="item:iceberry",
-			)
+		return Rawstberry.onEat(self, pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "frz":
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		return Rawstberry.onUpdate(self, pokemon)
 
 
 class Icegem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Ice" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Ice')
 
 
 class Icememory:
@@ -1443,7 +1387,7 @@ class Keeberry:
 
 class Kingsrock:
 	def onModifyMove(self, move=None, pokemon=None):
-		if move and move.category != "Status":
+		if move and move.category != "Status" and not any(s.get("volatileStatus") == "flinch" for s in getattr(move, "secondaries", [])):
 			move.secondaries = getattr(move, "secondaries", []) + [{"chance": 10, "volatileStatus": "flinch"}]
 
 
@@ -1500,18 +1444,13 @@ class Leppaberry:
 	def onEat(self, pokemon=None):
 		if not pokemon:
 			return
-		for move in getattr(pokemon, "moves", []):
-			if getattr(move, "pp", 1) == 0:
-				move.pp = min(getattr(move, "max_pp", 0), move.pp + 10)
-				break
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.berry_pp(pokemon, restore=True)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon:
-			for move in getattr(pokemon, "moves", []):
-				if getattr(move, "pp", 1) == 0:
-					if hasattr(pokemon, "eat_item"):
-						pokemon.eat_item()
-					break
+		from pokemon.battle.item_effects import HeldItemRules
+		if pokemon and HeldItemRules.berry_pp(pokemon) and hasattr(pokemon, "eat_item"):
+			pokemon.eat_item()
 
 
 class Liechiberry:
@@ -1527,13 +1466,11 @@ class Liechiberry:
 
 class Lifeorb:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
-		if source and move and move.category != "Status":
-			source.hp = max(source.hp - source.max_hp // 10, 0)
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.recoil_life_orb(source, move)
 
 	def onModifyDamage(self, damage, source=None, target=None, move=None):
-		if source and move and move.category != "Status":
-			return int(damage * 1.3)
-		return damage
+		return int(damage * 1.3) if source and move and move.category != "Status" else damage
 
 
 class Lightball:
@@ -1589,28 +1526,23 @@ class Luckyegg:
 
 class Lumberry:
 	def onAfterSetStatus(self, status=None, target=None, source=None, effect=None):
-		if target and status:
-			if hasattr(target, "setStatus"):
-				target.setStatus(
-					0,
-					battle=getattr(target, "battle", None),
-					effect="item:lumberry",
-				)
-			if hasattr(target, "item"):
-				target.item = None
+		if status:
+			self.onUpdate(target)
 
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None):
-			pokemon.setStatus(
-				0,
-				battle=getattr(pokemon, "battle", None),
-				effect="item:lumberry",
-			)
+		if not pokemon:
+			return
+		if getattr(pokemon, "status", None):
+			pokemon.setStatus(0, battle=getattr(pokemon, "battle", None), effect="item:lumberry")
+		getattr(pokemon, "volatiles", {}).pop("confusion", None)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None):
+		if pokemon and (getattr(pokemon, "status", None) or "confusion" in getattr(pokemon, "volatiles", {})):
 			if hasattr(pokemon, "eat_item"):
 				pokemon.eat_item()
+			else:
+				self.onEat(pokemon)
+				_clear_holder_item(pokemon)
 
 
 class Luminousmoss:
@@ -1663,9 +1595,8 @@ class Magnet:
 
 class Magoberry:
 	def onEat(self, pokemon=None):
-		if pokemon:
-			heal = pokemon.max_hp // 3
-			pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.flavor_berry(pokemon, ('Brave', 'Relaxed', 'Quiet', 'Sassy'))
 
 	def onTryEatItem(self, pokemon=None):
 		return pokemon and pokemon.hp <= pokemon.max_hp // 2
@@ -1781,26 +1712,19 @@ class Metalpowder:
 class Metronome:
 	def onModifyDamage(self, damage, source=None, target=None, move=None):
 		state = getattr(source, "volatiles", {}).get("metronome", {})
-		count = state.get("num_consecutive", 0)
-		if count > 5:
-			count = 5
-		modifier = 1 + 0.2 * count
-		return int(damage * modifier)
+		return int(damage * (1 + .2 * min(5, state.get("num_consecutive", 0))))
 
 	def onStart(self, pokemon=None):
 		if pokemon:
-			pokemon.volatiles = getattr(pokemon, "volatiles", {})
 			pokemon.volatiles["metronome"] = {"last_move": None, "num_consecutive": 0}
 
 	def onTryMove(self, pokemon=None, target=None, move=None):
-		if not pokemon or not move:
-			return
-		state = pokemon.volatiles.setdefault("metronome", {"last_move": None, "num_consecutive": 0})
-		if state["last_move"] == getattr(move, "id", None):
-			state["num_consecutive"] = min(state["num_consecutive"] + 1, 6)
-		else:
-			state["num_consecutive"] = 0
-			state["last_move"] = getattr(move, "id", None)
+		from pokemon.battle.effect_context import EffectContext
+		if pokemon and move:
+			state = pokemon.volatiles.setdefault("metronome", {"last_move": None, "num_consecutive": 0})
+			identity = EffectContext.key(move)
+			state["num_consecutive"] = min(5, state["num_consecutive"] + 1) if state["last_move"] == identity else 0
+			state["last_move"] = identity
 
 
 class Mewtwonitex:
@@ -1823,22 +1747,26 @@ class Mewtwonitey:
 
 class Micleberry:
 	def onEat(self, pokemon=None):
-		if pokemon:
+		if not pokemon:
+			return
+		battle = getattr(pokemon, "battle", None)
+		if battle and hasattr(battle, "add_volatile"):
+			battle.add_volatile(pokemon, "micleberry", source=pokemon, effect="item:micleberry")
+		else:
 			pokemon.volatiles = getattr(pokemon, "volatiles", {})
-			pokemon.volatiles["micleberry"] = 2
+			pokemon.volatiles["micleberry"] = {"duration": 2}
 
 	def onResidual(self, pokemon=None):
-		if pokemon and pokemon.volatiles.get("micleberry"):
-			pokemon.volatiles["micleberry"] -= 1
-			if pokemon.volatiles["micleberry"] <= 0:
-				pokemon.volatiles.pop("micleberry", None)
+		from pokemon.battle.effect_context import EffectContext
+		if not pokemon:
+			return
+		threshold = pokemon.max_hp // (2 if EffectContext.key(EffectContext.ability(pokemon)) == "gluttony" else 4)
+		if pokemon.hp <= threshold and hasattr(pokemon, "eat_item"):
+			pokemon.eat_item()
 
 	def onSourceAccuracy(self, accuracy, target=None, source=None, move=None):
-		if source and source.volatiles.get("micleberry") and not getattr(move, "ohko", False):
-			source.volatiles.pop("micleberry", None)
-			if isinstance(accuracy, (int, float)):
-				return accuracy * 1.2
-		return accuracy
+		from pokemon.dex.functions.conditions_funcs import Micleberry as Condition
+		return Condition.onSourceAccuracy(Condition(), accuracy, target=target, source=source, move=move)
 
 
 class Mindplate:
@@ -1872,17 +1800,10 @@ class Mintberry:
 
 class Miracleberry:
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None):
-			pokemon.setStatus(
-				0,
-				battle=getattr(pokemon, "battle", None),
-				effect="item:miracleberry",
-			)
+		return Lumberry.onEat(self, pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None):
-			if hasattr(pokemon, "eat_item"):
-				pokemon.eat_item()
+		return Lumberry.onUpdate(self, pokemon)
 
 
 class Miracleseed:
@@ -1893,18 +1814,15 @@ class Miracleseed:
 
 
 class Mirrorherb:
-	def onFoeAfterBoost(self, boost=None, target=None, source=None, effect=None):
-		if not boost or not target or target is source:
+	def onFoeAfterBoost(self, boost=None, target=None, source=None, effect=None, effect_owner=None):
+		from pokemon.battle.effect_context import EffectContext
+		from pokemon.utils.boosts import apply_boost
+		holder = effect_owner
+		if not boost or holder is None or holder is target or EffectContext.key(effect) in {"opportunist", "mirrorherb"}:
 			return
-		if effect and getattr(effect, "name", None) in {"Opportunist", "Mirror Herb"}:
-			return
-		gains = {stat: amount for stat, amount in boost.items() if amount > 0}
-		if not gains:
-			return
-		if hasattr(target, "boosts") and hasattr(target, "item"):
-			for stat, amt in gains.items():
-				target.boosts[stat] = target.boosts.get(stat, 0) + amt
-			target.item = None
+		gains = {stat: value for stat, value in boost.items() if value > 0}
+		if gains and _remove_battle_item(holder, used=True):
+			apply_boost(holder, gains, source=holder, effect="item:mirrorherb")
 
 
 class Mistyseed:
@@ -1931,20 +1849,14 @@ class Muscleband:
 
 class Mysteryberry:
 	def onEat(self, pokemon=None):
-		if not pokemon:
-			return
-		for move in getattr(pokemon, "moves", []):
-			if getattr(move, "pp", 0) <= 5:
-				move.pp = min(getattr(move, "max_pp", 0), move.pp + 5)
-				break
+		from pokemon.battle.item_effects import HeldItemRules
+		if pokemon:
+			HeldItemRules.berry_pp(pokemon, restore=True, amount=5)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon:
-			for move in getattr(pokemon, "moves", []):
-				if getattr(move, "pp", 0) <= 5:
-					if hasattr(pokemon, "eat_item"):
-						pokemon.eat_item()
-					break
+		from pokemon.battle.item_effects import HeldItemRules
+		if pokemon and HeldItemRules.berry_pp(pokemon) and hasattr(pokemon, "eat_item"):
+			pokemon.eat_item()
 
 
 class Mysticwater:
@@ -1963,12 +1875,8 @@ class Nevermeltice:
 
 class Normalgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status" or getattr(move, "flags", {}).get("pledgecombo"):
-			return
-		if move.type == "Normal" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Normal')
 
 
 class Occaberry:
@@ -2107,12 +2015,8 @@ class Poisonbarb:
 
 class Poisongem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Poison" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Poison')
 
 
 class Poisonmemory:
@@ -2181,9 +2085,9 @@ class Powerbracer:
 
 class Powerherb:
 	def onChargeMove(self, pokemon=None, target=None, move=None):
-		if move and getattr(move, "flags", {}).get("charge") and pokemon and hasattr(pokemon, "item"):
-			pokemon.item = None
-			return False
+		if move and getattr(move, "flags", {}).get("charge") and pokemon:
+			if _remove_battle_item(pokemon, used=True):
+				return False
 		return True
 
 
@@ -2856,12 +2760,8 @@ class Psncureberry:
 
 class Psychicgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Psychic" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Psychic')
 
 
 class Psychicmemory:
@@ -2935,17 +2835,15 @@ class Razorclaw:
 
 class Razorfang:
 	def onModifyMove(self, move=None, pokemon=None):
-		if move and move.category != "Status":
+		if move and move.category != "Status" and not any(s.get("volatileStatus") == "flinch" for s in getattr(move, "secondaries", [])):
 			move.secondaries = getattr(move, "secondaries", []) + [{"chance": 10, "volatileStatus": "flinch"}]
 
 
 class Redcard:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if move and target and source and move.category != "Status" and target.hp > 0:
-			if hasattr(source, "switch_out"):
-				source.switch_out()
-			if hasattr(target, "item"):
-				target.item = None
+		from pokemon.battle.item_effects import HeldItemRules
+		if move and getattr(move, "total_damage", 0):
+			HeldItemRules.eject(target, source, source=target, effect=move, forced=True)
 
 
 class Redorb:
@@ -2979,12 +2877,8 @@ class Rindoberry:
 
 class Rockgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Rock" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Rock')
 
 
 class Rockincense:
@@ -3006,22 +2900,25 @@ class Rockmemory:
 class Rockyhelmet:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		if source and move and move.flags.get("contact"):
+			from pokemon.battle.effect_context import EffectContext
+			if EffectContext.key(EffectContext.item(source)) == "protectivepads":
+				return
 			if hasattr(source, "hp") and hasattr(source, "max_hp"):
 				source.hp = max(source.hp - source.max_hp // 6, 0)
 
 
 class Roomservice:
 	def _activate(self, pokemon=None):
-		if pokemon and hasattr(pokemon, "boosts"):
-			pokemon.boosts["spe"] = pokemon.boosts.get("spe", 0) - 1
-		_remove_battle_item(pokemon, used=True)
+		from pokemon.utils.boosts import apply_boost
+		if pokemon and pokemon.hp > 0 and getattr(pokemon, "boosts", {}).get("speed", 0) > -6:
+			if _remove_battle_item(pokemon, used=True):
+				apply_boost(pokemon, {"spe": -1}, source=pokemon, effect="item:roomservice")
 
-	def onAnyPseudoWeatherChange(self, pokemon=None):
-		battle = getattr(pokemon, "battle", None)
-		field = getattr(battle, "field", None)
-		pseudo = getattr(field, "pseudo_weather", {})
-		if "trickroom" in pseudo:
-			self._activate(pokemon)
+	def onAnyPseudoWeatherChange(self, pokemon=None, *args, effect_owner=None):
+		holder = effect_owner or pokemon
+		field = getattr(getattr(holder, "battle", None), "field", None)
+		if "trickroom" in getattr(field, "pseudo_weather", {}):
+			self._activate(holder)
 
 	def onStart(self, pokemon=None):
 		self.onAnyPseudoWeatherChange(pokemon)
@@ -3171,9 +3068,17 @@ class Shedshell:
 
 class Shellbell:
 	def onAfterMoveSecondarySelf(self, source=None, target=None, move=None):
-		if source and move and move.category != "Status" and hasattr(source, "last_damage", None):
-			heal = source.last_damage // 8
-			source.hp = min(source.hp + heal, source.max_hp)
+		if not source or not move or move.category == "Status":
+			return
+		damage = getattr(move, "total_damage", 0)
+		if damage <= 0 or getattr(source, "hp", 0) <= 0:
+			return
+		amount = max(1, int(damage) // 8)
+		battle = getattr(source, "battle", None)
+		if battle and hasattr(battle, "heal"):
+			battle.heal(source, amount, source=source, effect="item:shellbell")
+		else:
+			source.hp = min(source.hp + amount, source.max_hp)
 
 
 class Shockdrive:
@@ -3320,12 +3225,8 @@ class Starfberry:
 
 class Steelgem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Steel" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Steel')
 
 
 class Steelixite:
@@ -3495,12 +3396,8 @@ class Wacanberry:
 
 class Watergem:
 	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
-		if target is source or not move or move.category == "Status":
-			return
-		if move.type == "Water" and source and hasattr(source, "item"):
-			source.item = None
-			if hasattr(source, "boosts"):
-				source.boosts["atk"] = source.boosts.get("atk", 0) + 1
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.consume_gem(source, target, move, 'Water')
 
 
 class Watermemory:
@@ -3531,14 +3428,16 @@ class Weaknesspolicy:
 
 class Wellspringmask:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Ogerpon") and move.type == "Water":
+		from pokemon.battle.native_forms import OgerponForm
+		if user and move and OgerponForm.mask_matches(user, "Wellspring"):
 			return int(base_power * 1.2)
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Ogerpon"):
+		from pokemon.battle.native_forms import OgerponForm
+		if pokemon and OgerponForm.native(pokemon):
 			return False
-		if source and source.name.startswith("Ogerpon"):
+		if source and OgerponForm.native(source):
 			return False
 		return True
 
@@ -3567,9 +3466,8 @@ class Widelens:
 
 class Wikiberry:
 	def onEat(self, pokemon=None):
-		if pokemon:
-			heal = pokemon.max_hp // 3
-			pokemon.hp = min(pokemon.hp + heal, pokemon.max_hp)
+		from pokemon.battle.item_effects import HeldItemRules
+		HeldItemRules.flavor_berry(pokemon, ('Adamant', 'Impish', 'Jolly', 'Careful'))
 
 	def onTryEatItem(self, pokemon=None):
 		return pokemon and pokemon.hp <= pokemon.max_hp // 2
@@ -3613,6 +3511,24 @@ class Zapplate:
 
 class Zoomlens:
 	def onSourceModifyAccuracy(self, accuracy, source=None, target=None, move=None):
-		if isinstance(accuracy, (int, float)):
-			return accuracy * 1.2
-		return accuracy
+		"""Boost only after the target has no remaining move in this turn."""
+		if isinstance(accuracy, bool) or not isinstance(accuracy, (int, float)) or target is None:
+			return accuracy
+		battle = getattr(source, "battle", None)
+		queue = getattr(battle, "queue", None)
+		will_move = getattr(queue, "will_move", None)
+		if callable(will_move):
+			eligible = not will_move(target)
+		else:
+			eligible = bool(getattr(target, "tempvals", {}).get("moved"))
+		return accuracy * 1.2 if eligible else accuracy
+
+
+class Blunderpolicy:
+	"""Activate only from an explicitly failed accuracy roll."""
+
+	def onAccuracyMiss(self, pokemon=None, target=None, move=None):
+		from pokemon.utils.boosts import apply_boost
+		if pokemon and getattr(pokemon, "boosts", {}).get("speed", 0) < 6:
+			if _remove_battle_item(pokemon, used=True):
+				apply_boost(pokemon, {"spe": 2}, source=pokemon, effect="item:blunderpolicy")

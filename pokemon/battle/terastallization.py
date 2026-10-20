@@ -27,6 +27,13 @@ class Terastallization:
     @staticmethod
     def type_for(pokemon):
         """Blank legacy configurations default to the first ordinary type."""
+        from .native_forms import NativeBattleForm, OgerponForm
+
+        if NativeBattleForm.can_tera_stellar(pokemon):
+            return "Stellar"
+        profile = OgerponForm.profile(pokemon)
+        if profile:
+            return profile[0]
         configured = str(getattr(pokemon, "tera_type", "") or "").strip()
         types = getattr(pokemon, "tera_original_types", None) or getattr(pokemon, "types", [])
         value = configured or (types[0] if types else "")
@@ -56,7 +63,10 @@ class Terastallization:
         named_forme = species.split("-")[1:2]
         item = getattr(pokemon, "item", None)
         raw = getattr(item, "raw", {}) or {}
-        if (species.startswith(("ogerpon", "terapagos"))
+        from .native_forms import NativeBattleForm, OgerponForm
+
+        if ((species.startswith("ogerpon") and not OgerponForm.profile(pokemon))
+                or (species.startswith("terapagos") and not NativeBattleForm.can_tera_stellar(pokemon))
                 or species_data.get("isMega") or species_data.get("isPrimal")
                 or forme in {"mega", "primal"} or named_forme in (["mega"], ["primal"])
                 or getattr(pokemon, "mega_evolved", False) or getattr(pokemon, "pending_mega", False)
@@ -95,9 +105,26 @@ class Terastallization:
                 return False
         except ValueError:
             return False
+        from .native_forms import NativeBattleForm, OgerponForm
+
+        native_stellar = NativeBattleForm.can_tera_stellar(pokemon)
+        native_ogerpon = OgerponForm.profile(pokemon)
         pokemon.tera_original_types = list(pokemon.types)
+        changed = (NativeBattleForm.tera_stellar(pokemon) if native_stellar else
+                   OgerponForm.terastallize(pokemon, tera_type) if native_ogerpon else True)
+        if not changed:
+            pokemon.terastallized = None
+            pokemon.tera_original_types = []
+            return False
         pokemon.types = list(pokemon.types) if tera_type == "Stellar" else [tera_type]
         pokemon.terastallized = tera_type
+        if native_ogerpon:
+            # Its guarded Start callback does nothing during the forme change;
+            # dispatch it only after defensive typing and Tera are committed.
+            from .engine import _resolve_ability
+
+            ability = _resolve_ability(pokemon.ability)
+            battle.singleEvent("Start", ability, pokemon.ability_state, pokemon)
         pokemon.stellar_boosted_types = []
         if not hasattr(battle, "tera_used"):
             battle.tera_used = set()
@@ -105,6 +132,7 @@ class Terastallization:
         battle.tera_used.add(side)
         getattr(battle, "tera_pending", {}).pop(side, None)
         battle.log_action(f"{pokemon.name} Terastallized into the {tera_type} type!")
+        battle.runEvent("AfterTerastallization", pokemon)
         return True
 
     @classmethod
@@ -188,6 +216,11 @@ def tera_blast_parameters(pokemon):
     tera = getattr(pokemon, "terastallized", None)
     if not tera:
         return "Normal", "Special", 80
+    return tera, tera_offensive_category(pokemon), 100 if tera == "Stellar" else 80
+
+
+def tera_offensive_category(pokemon):
+    """Compare staged offenses before ability/item modifiers for Tera attacks."""
     get_stat = getattr(pokemon, "getStat", None)
     boosts = getattr(pokemon, "boosts", {})
 
@@ -198,7 +231,7 @@ def tera_blast_parameters(pokemon):
         return value * (2 + stage) / 2 if stage >= 0 else value * 2 / (2 - stage)
 
     category = "Physical" if staged("atk", "attack") > staged("spa", "special_attack") else "Special"
-    return tera, category, 100 if tera == "Stellar" else 80
+    return category
 
 
 def apply_stellar_cost(pokemon, move, result):

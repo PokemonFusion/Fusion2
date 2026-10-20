@@ -9,6 +9,8 @@ sys.path.insert(0, ROOT)
 
 utils_stub = types.ModuleType("pokemon.battle.utils")
 utils_stub.apply_boost = lambda *args, **kwargs: None
+# Supply the unboosted stat dependency used by this standalone callback fixture.
+utils_stub.get_modified_stat = lambda pokemon, stat: getattr(pokemon.base_stats, stat)
 pkg_battle = types.ModuleType("pokemon.battle")
 pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.utils = utils_stub

@@ -9,6 +9,9 @@ sys.path.insert(0, ROOT)
 # stubs similar to other tests
 utils_stub = types.ModuleType("pokemon.battle.utils")
 utils_stub.apply_boost = lambda *args, **kwargs: None
+# Table-only callback fixtures are unboosted; real stage consumers have native
+# engine regressions in test_smoke_discovered_effects.
+utils_stub.get_modified_stat = lambda pokemon, stat: getattr(pokemon.base_stats, stat)
 pkg_battle = types.ModuleType("pokemon.battle")
 pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.utils = utils_stub

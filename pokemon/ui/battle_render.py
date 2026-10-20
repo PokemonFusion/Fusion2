@@ -187,6 +187,12 @@ def gender_chip(mon, *, ascii_symbols: bool = False) -> str:
 
 def display_name(mon) -> str:
 	"""Return nickname/species composite or fallback name (no ANSI)."""
+	from pokemon.battle.appearance import BattleAppearance
+
+	illusion = BattleAppearance.illusion(mon)
+	if illusion:
+		name, species = illusion["name"], illusion["species"]
+		return f"{name} ({species})" if name.lower() != species.lower() else species
 	nick = (getattr(mon, "nickname", None) or "").strip()
 	species = (getattr(mon, "species", None) or getattr(mon, "name", "") or "?").strip()
 	if nick and nick.lower() != species.lower():
@@ -765,7 +771,10 @@ def _pf1_banner(label: str, width: int, *, side: str | None = None, markers: str
 def _pf1_species(mon) -> str:
 	"""Return a species label for the PF1 identity column."""
 
-	return str(getattr(mon, "species", None) or getattr(mon, "base_species", None) or getattr(mon, "name", "") or "?")
+	from pokemon.battle.appearance import BattleAppearance
+
+	illusion = BattleAppearance.illusion(mon)
+	return illusion["species"] if illusion else str(getattr(mon, "species", None) or getattr(mon, "base_species", None) or getattr(mon, "name", "") or "?")
 
 
 def _pf1_hp_cell(mon, *, show_abs: bool) -> str:

@@ -155,7 +155,7 @@ class CloudGameplayCases(unittest.TestCase):
         self.player.db.fusion_kind = "permanent"
         self.player.db.fusion_species = "Squirtle"
         text = self.command(CmdSheetPokemon)
-        self.assertIn("(fusion)", text)
+        self.assertIn("[YOU / FUSION]", text)
         self.assertIn("2: Second Pal", text)
         self.assertIn("6: Sixth Pal", text)
         self.assertIn("Second Pal", self.command(CmdSheetPokemon, "2"))

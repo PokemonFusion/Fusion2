@@ -1406,6 +1406,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
+            marker = getattr(self.battle, "mark_initial_prompt", None)
+            if callable(marker):
+                marker()
             if self.data and getattr(self, "storage", None):
                 self.storage.set("data", self.data.to_dict())
 
@@ -1533,6 +1536,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle and hasattr(self.battle, "start_turn"):
             self.battle.start_turn()
+            marker = getattr(self.battle, "mark_initial_prompt", None)
+            if callable(marker):
+                marker()
             if self.data and getattr(self, "storage", None):
                 self.storage.set("data", self.data.to_dict())
 
@@ -1710,12 +1716,19 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if hasattr(mon, "current_hp"):
                     mon.current_hp = hp_val
 
+                # The battle checkpoint is authoritative for item removal and
+                # transfer, including an explicitly empty consumed-item slot.
+                if hasattr(poke, "item") and hasattr(mon, "held_item"):
+                    item = poke.item
+                    raw = getattr(item, "raw", {}) or {}
+                    mon.held_item = str(raw.get("name") or getattr(item, "name", item) or "")
+
                 PersistentStatus.from_pokemon(poke, battle=True).apply_to_model(mon)
 
                 if hasattr(mon, "save"):
                     update_fields = ["current_hp"]
                     meta = getattr(mon, "_meta", None)
-                    for field_name in ("status", "sleep_turns"):
+                    for field_name in ("status", "sleep_turns", "held_item"):
                         if hasattr(mon, field_name) and (
                             meta is None or any(field.name == field_name for field in meta.concrete_fields)
                         ):
@@ -1761,6 +1774,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         log_info(f"Ending battle {self.battle_id}")
 
         self.persist_debug_record(event="battle_ending")
+        from pokemon.services.post_battle_items import PostBattleItems
+
+        PostBattleItems.resolve(self)
+        restore = getattr(self.battle, "restore_transforms", None)
+        if callable(restore):
+            restore()
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
@@ -1825,7 +1844,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     delete_encounter_by_ref(ref)
                 if self.room:
                     for part in ("logic", "trainers", "temp_pokemon_ids", "encounter", "battle_result",
-                                 "data", "state", "meta", "field", "active", "last_action", "debug"):
+                                 "data", "state", "meta", "field", "active", "last_action", "debug", "post_battle_items"):
                         self.storage.delete(part)
                     battles = [bid for bid in (self.room.db.battles or []) if str(bid) != str(self.battle_id)]
                     if battles:
@@ -1912,8 +1931,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 elif "item" in declaration:
                     item = declaration["item"]
                     target = self.battle.opponent_of(actor) if _battle_norm_key(item).lower().endswith("ball") else actor
+                    target_ref = declaration.get("item_target_ref")
+                    chosen = next((mon for mon in target.pokemons if str(getattr(mon, "model_id", None)) == str(target_ref)), None) if target_ref else pokemon if target is actor else target.active[0]
+                    if chosen is None:
+                        raise ValueError("The saved item target is no longer on that side.")
                     action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon,
-                                    target_slot=slot_for(actor, pokemon) if target is actor else 0)
+                                    target_pokemon=chosen, target_slot=slot_for(target, chosen), item_move=declaration.get("item_move"))
                     position.declareItem(item)
                 elif "run" in declaration:
                     action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon)

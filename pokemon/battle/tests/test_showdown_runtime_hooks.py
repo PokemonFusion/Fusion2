@@ -90,6 +90,7 @@ def test_move_on_modify_move_runs_before_execution():
 	ally.base_stats = attacker.base_stats
 	ally.party = []
 	attacker.party = [attacker, ally]
+	battle.participants[0].pokemons.append(ally)
 	move = BattleMove(name="Beat Up", raw={"category": "Physical"})
 
 	action = _battle_action(
@@ -243,8 +244,9 @@ def test_natural_gift_uses_item_natural_gift_identity():
 	)
 	battle.use_move(action)
 
-	assert getattr(attacker.item, "natural_type", None) == "Electric"
-	assert getattr(attacker.item, "natural_power", None) == 100
+	assert getattr(belue, "natural_type", None) == "Electric"
+	assert getattr(belue, "natural_power", None) == 100
+	assert attacker.item is None
 	assert move.type == "Electric"
 	assert move.power == 100
 	assert defender.hp < start_hp
@@ -673,6 +675,7 @@ def test_wimp_out_queues_switch_after_damaging_hit():
 	modules = load_modules()
 	damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
 	battle, attacker, defender = build_battle(defender_ability=__import__("pokemon.dex.functions.abilities_funcs", fromlist=["Wimpout"]).Wimpout())
+	defender.hp = 110
 	move = modules["BattleMove"](
 		name="Tackle",
 		power=60,

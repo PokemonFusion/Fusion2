@@ -650,5 +650,5 @@ def test_room_service_consumes_when_trick_room_starts():
 
 	battle.add_pseudo_weather("trickroom", source=attacker)
 
-	assert attacker.boosts["spe"] == -1
+	assert attacker.boosts["speed"] == -1
 	assert attacker.item is None

@@ -247,7 +247,7 @@ def _invoke_stub_callbacks(raw):
 			continue
 
 
-def setup_battle(move: BattleMove, ability=None):
+def setup_battle(move: BattleMove, ability=None, *, seed=4):
 	"""Return a simple battle with ``move`` queued."""
 
 	MOVEDEX, ABILITYDEX, Stats, Ability = get_dex_data()
@@ -266,7 +266,7 @@ def setup_battle(move: BattleMove, ability=None):
 	p2.active = [target]
 	action = Action(p1, ActionType.MOVE, p2, move, move.priority)
 	p1.pending_action = action
-	battle = Battle(BattleType.WILD, [p1, p2])
+	battle = Battle(BattleType.WILD, [p1, p2], rng=random.Random(seed))
 	random.seed(0)
 	return battle, user, target
 
@@ -279,7 +279,7 @@ def _set_species(pokemon, species: str) -> None:
 	pokemon.base_species = species
 
 
-def _add_active_ally(battle, user) -> None:
+def _add_active_ally(battle, user):
 	"""Give the user's side a second active slot for doubles-only moves."""
 
 	participant = battle.participant_for(user)
@@ -297,6 +297,7 @@ def _add_active_ally(battle, user) -> None:
 	participant.max_active = max(getattr(participant, "max_active", 1), 2)
 	participant.side.active = participant.active
 	participant.side.pokemons = participant.pokemons
+	return ally
 
 
 def _add_reserve_pokemon(battle, user) -> None:
@@ -316,13 +317,17 @@ def _add_reserve_pokemon(battle, user) -> None:
 	participant.side.pokemons = participant.pokemons
 
 
-def _configure_move_preconditions(move_name: str, move: BattleMove, battle, user, target) -> None:
-	"""Set up minimal valid battle state for conditional dex moves."""
+def _configure_move_preconditions(move_name: str, move: BattleMove, battle, user, target):
+	"""Set up conditional moves and return the actual effect recipient."""
 
 	key = move_name.lower()
 	if key == "attract":
 		user.gender = "M"
 		target.gender = "F"
+	elif key == "bittermalice":
+		# The guaranteed secondary requires a successful Ghost hit. Normal
+		# immunity must block both damage and the Attack drop.
+		target.types = ["Water"]
 	elif key == "aurawheel":
 		_set_species(user, "Morpeko")
 	elif key == "captivate":
@@ -330,7 +335,6 @@ def _configure_move_preconditions(move_name: str, move: BattleMove, battle, user
 		target.gender = "F"
 	elif key == "darkvoid":
 		_set_species(user, "Darkrai")
-		move.accuracy = True
 	elif key == "disable":
 		target.last_move = BattleMove(
 			"Tackle",
@@ -381,7 +385,7 @@ def _configure_move_preconditions(move_name: str, move: BattleMove, battle, user
 			)
 		]
 	elif key == "upperhand":
-		target.last_move = BattleMove(
+		selected = BattleMove(
 			"Quick Attack",
 			power=40,
 			accuracy=100,
@@ -389,12 +393,24 @@ def _configure_move_preconditions(move_name: str, move: BattleMove, battle, user
 			type="Normal",
 			raw={"category": "Physical"},
 		)
+		participant = battle.participant_for(target)
+		participant.pending_action = Action(
+			participant, ActionType.MOVE, battle.participant_for(user),
+			selected, pokemon=target,
+		)
+	if move.raw.get("target") in {"adjacentAlly", "adjacentAllyOrSelf", "ally"}:
+		ally = _add_active_ally(battle, user)
+		action = battle.participant_for(user).pending_action
+		action.target = battle.participant_for(ally)
+		action.target_pokemon = ally
+		return ally
+	return target
 
 
 def _is_self_target(target_str: str | None) -> bool:
 	"""Return ``True`` if ``target_str`` refers to the user."""
 
-	return target_str in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+	return target_str in {"self", "allies", "allySide", "allyTeam"}
 
 
 def _verify_boosts(move_name, actor, initial, boosts):
@@ -441,7 +457,7 @@ def test_move_execution(move_name, move_entry):
 		user.hp = 50
 	if raw.get("heal") and not _is_self_target(raw.get("target")):
 		target.hp = 50
-	_configure_move_preconditions(move_name, move, battle, user, target)
+	target = _configure_move_preconditions(move_name, move, battle, user, target)
 
 	user_start = user.hp
 	target_start = target.hp
@@ -452,14 +468,34 @@ def test_move_execution(move_name, move_entry):
 		battle.start_turn()
 		battle.run_switch()
 		battle.run_after_switch()
-		battle.run_move()
+		if move_name.lower() == "upperhand":
+			# Observe flinch before the foe consumes it when attempting its move.
+			from pokemon.battle.action_queue import ActionQueue
+
+			previous_queue = getattr(battle, "queue", None)
+			battle.queue = ActionQueue([battle.participant_for(target).pending_action])
+			try:
+				battle.use_move(battle.participant_for(user).pending_action)
+			finally:
+				battle.queue = previous_queue
+		else:
+			battle.run_move()
+		if move_name.lower() == "geomancy":
+			assert "geomancy" in user.volatiles
+			assert all(value == 0 for value in user.boosts.values()), "Geomancy boosted before charging"
+			battle.run_faint()
+			battle.residual()
+			battle.end_turn()
+			battle.participant_for(user).pending_action = Action(
+				battle.participant_for(user), ActionType.MOVE,
+				battle.participant_for(user), move, pokemon=user,
+			)
+			battle.start_turn()
+			battle.run_move()
 		for attr in ("onHit", "onTry", "basePowerCallback"):
 			cb = getattr(move, attr, None)
 			if isinstance(cb, CallbackWrapper):
 				assert cb.called > 0, f"{attr} callback not invoked"
-		battle.run_faint()
-		battle.residual()
-		battle.end_turn()
 	except AssertionError as e:
 		MOVE_FAILS.append((move_name, str(e)))
 		CALLBACK_FAILS.append((move_name, str(e)))
@@ -523,6 +559,12 @@ def test_move_execution(move_name, move_entry):
 					_verify_volatile(move_name, user, self_sec["volatileStatus"])
 				if self_sec.get("heal"):
 					_verify_hp(move_name, user, user_start, 1)
+		if move_name.lower() == "upperhand":
+			battle.execute_actions([battle.participant_for(target).pending_action])
+			assert user.hp == user_start, "Upper Hand did not prevent the queued attack"
+		battle.run_faint()
+		battle.residual()
+		battle.end_turn()
 	except AssertionError as e:
 		MOVE_FAILS.append((move_name, str(e)))
 		pytest.fail(f"Move {move_name}: {e}")

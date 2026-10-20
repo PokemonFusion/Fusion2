@@ -349,7 +349,7 @@ py_dict = {
 		"gen": 3,
 		"isNonstandard": "Past",
 	},
-	"Blunderpolicy": {"name": "Blunder Policy", "spritenum": 716, "fling": {"basePower": 80}, "num": 1121, "gen": 8},
+	"Blunderpolicy": {"onAccuracyMiss": "Blunderpolicy.onAccuracyMiss", "name": "Blunder Policy", "spritenum": 716, "fling": {"basePower": 80}, "num": 1121, "gen": 8},
 	"Boosterenergy": {
 		"name": "Booster Energy",
 		"spritenum": 745,
@@ -2093,6 +2093,8 @@ py_dict = {
 		"isNonstandard": "Past",
 	},
 	"Metronome": {
+		"onTryMove": "Metronome.onTryMove",
+		"onModifyDamage": "Metronome.onModifyDamage",
 		"name": "Metronome",
 		"spritenum": 289,
 		"fling": {"basePower": 30},

@@ -101,6 +101,7 @@ class BattleLogic:
 		battle.battle_over = bool(getattr(state, "battle_over", False))
 		battle._flee_result = dict(getattr(state, "flee_result", {}) or {})
 		battle.capture_succeeded = bool(getattr(state, "capture_succeeded", False))
+		battle.failed_capture_ball = str(getattr(state, "failed_capture_ball", "") or "")
 		battle.tera_used = set(getattr(state, "tera_used", []))
 		battle.tera_pending = {key: dict(value) for key, value in getattr(state, "tera_pending", {}).items()}
 		for index, participant in enumerate(battle.participants):
@@ -134,6 +135,7 @@ class BattleLogic:
 		self.state.rewards_granted = bool(getattr(self.battle, "_rewards_granted", False))
 		self.state.battle_over = bool(getattr(self.battle, "battle_over", False))
 		self.state.capture_succeeded = bool(getattr(self.battle, "capture_succeeded", False))
+		self.state.failed_capture_ball = str(getattr(self.battle, "failed_capture_ball", "") or "")
 		self.state.tera_used = sorted(getattr(self.battle, "tera_used", set()))
 		self.state.tera_pending = {key: dict(value) for key, value in getattr(self.battle, "tera_pending", {}).items()}
 		teams = [
@@ -223,6 +225,8 @@ class BattleLogic:
 			for mon in part.pokemons:
 				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref, field=data.field)
 				mon.volatiles = restore_battle_value(mon.volatiles, pokemon_by_ref, field=data.field)
+				mon.ability_state = restore_battle_value(mon.ability_state, pokemon_by_ref, field=data.field)
+				mon.item_state = restore_battle_value(mon.item_state, pokemon_by_ref, field=data.field)
 		for name in ("weather_state", "terrain_state", "pseudo_weather"):
 			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref, field=data.field))
 		battle.field = data.field

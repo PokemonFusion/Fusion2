@@ -34,11 +34,13 @@ def _safe_get_stats(pokemon) -> Dict[str, int]:
 		return {name: getattr(base, name, 0) if base else 0 for name in STAT_KEY_MAP.values()}
 
 
-def get_modified_stat(pokemon, stat: str) -> int:
+def get_modified_stat(pokemon, stat: str, *, ignore_boosts: bool = False) -> int:
 	"""Return a stat value after applying temporary boosts."""
 
 	stat = STAT_KEY_MAP.get(stat, stat)
 	base = _safe_get_stats(pokemon).get(stat, 0)
+	overrides = (getattr(pokemon, "tempvals", {}) or {}).get("stat_overrides", {})
+	base = overrides.get(stat, base)
 	boosts = getattr(pokemon, "boosts", {})
 	if isinstance(boosts, dict):
 		boosts = {STAT_KEY_MAP.get(k, k): v for k, v in boosts.items()}
@@ -47,6 +49,8 @@ def get_modified_stat(pokemon, stat: str) -> int:
 	else:
 		stage = getattr(boosts, stat, 0)
 
+	if ignore_boosts:
+		stage = 0
 	if stat in {"accuracy", "evasion"}:
 		if stage >= 0:
 			modifier = (3 + stage) / 3

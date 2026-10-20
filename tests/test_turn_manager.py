@@ -101,7 +101,8 @@ def test_run_turn_ends_battle_when_over(monkeypatch):
     inst, _, _ = _setup_battle()
 
     for participant in getattr(inst.battle, "participants", []):
-        participant.pokemons = [object()]
+        # Cleanup restores native/copy forms on the actual battle roster.
+        participant.pokemons = list(participant.active)
 
     def fail_call(*_, **__):  # pragma: no cover - defensive guard
         raise AssertionError("Should not call post-turn helpers when battle is over")

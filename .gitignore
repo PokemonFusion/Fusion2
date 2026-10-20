@@ -58,6 +58,7 @@ server/evennia.db3-wal
 server/evennia.db3-shm
 move_ability_report.txt
 
+# Local QA backups, compressed observations and rotating battle transcripts.
 .codex-artifacts
 
 # Local pytest caches and disposable test working directories.

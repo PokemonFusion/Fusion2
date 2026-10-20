@@ -137,6 +137,7 @@ def test_life_orb_damage_and_recoil():
 		mon = DummyMon()
 		move = DummyMove(category="Physical")
 		lo = it_mod.Lifeorb()
+		move.total_damage = 10  # A qualifying dealt hit, not a miss or immunity.
 		boosted = lo.onModifyDamage(100, source=mon, target=DummyMon(), move=move)
 		assert boosted == 130
 		lo.onAfterMoveSecondarySelf(source=mon, target=DummyMon(), move=move)

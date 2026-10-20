@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from utils.safe_import import safe_import
 
-from ._shared import _normalize_key
+from ._shared import _normalize_key, weather_suppressed
+from .effect_context import EffectContext
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -82,11 +83,25 @@ def _resolve_holder_callback(holder, hook: str, registry=None):
     return None
 
 
+def _pokemon_ability(pokemon):
+    """Read the active effect without mutating the stored ability identity."""
+    from .effect_context import EffectContext
+
+    return EffectContext.ability(pokemon)
+
+
+def _pokemon_item(pokemon):
+    """Read active item effects without removing suppressed owned items."""
+    from pokemon.battle.effect_context import EffectContext
+
+    return EffectContext.item(pokemon)
+
+
 def _invoke_damage_callback(callback, dmg, target, attacker, move):
     """Invoke a damage-style callback with forgiving signatures."""
 
     try:
-        return callback(dmg, target=target, source=attacker, effect=move)
+        return callback(dmg, target=target, source=attacker, effect=move, move=move)
     except Exception:
         for attempt in (
             lambda: callback(dmg, target, attacker, move),
@@ -127,7 +142,7 @@ def _apply_pending_damage_hooks(dmg, attacker, target, move, battle, abilities_f
     if battle is not None:
         for part in getattr(battle, "participants", []):
             for poke in getattr(part, "active", []):
-                ability = getattr(poke, "ability", None)
+                ability = _pokemon_ability(poke)
                 cb = _resolve_holder_callback(ability, "onAnyDamage", abilities_funcs)
                 if callable(cb):
                     new_dmg = _invoke_damage_callback(cb, dmg, target, attacker, move)
@@ -136,13 +151,13 @@ def _apply_pending_damage_hooks(dmg, attacker, target, move, battle, abilities_f
 
     callbacks = []
 
-    ability = getattr(target, "ability", None)
+    ability = _pokemon_ability(target)
     cb = _resolve_holder_callback(ability, "onDamage", abilities_funcs)
     if callable(cb):
         prio = getattr(getattr(ability, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
         callbacks.append((prio, cb))
 
-    item = getattr(target, "item", None) or getattr(target, "held_item", None)
+    item = _pokemon_item(target)
     cb = _resolve_holder_callback(item, "onDamage", items_funcs)
     if callable(cb):
         prio = getattr(getattr(item, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
@@ -416,7 +431,8 @@ def base_damage(
 
 def _consume_stellar_boost(attacker: Pokemon, move: Move) -> None:
     """Spend a type once, retaining the shared multiplier for this move use."""
-    if not move.type or str(getattr(move, "key", getattr(move, "name", ""))).lower() == "struggle":
+    if (str(getattr(attacker, "species", "")) == "Terapagos-Stellar"
+            or not move.type or str(getattr(move, "key", getattr(move, "name", ""))).lower() == "struggle"):
         return
     move_type = str(move.type).lower()
     used = {str(typ).lower() for typ in attacker.stellar_boosted_types}
@@ -460,7 +476,7 @@ def stab_multiplier(attacker: Pokemon, move: Move, *, consume: bool = False) -> 
     if tera and str(tera).lower() == move_type:
         stab = 2.0 if has_type else 1.5
 
-    ability = getattr(attacker, "ability", None)
+    ability = _pokemon_ability(attacker)
     if ability is not None:
         cb = ability.raw.get("onModifySTAB") if hasattr(ability, "raw") else None
         if isinstance(cb, str):
@@ -489,6 +505,12 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
     eff = 1.0
     if not move.type:
         return eff
+    from .effect_context import EffectContext
+
+    field = getattr(getattr(target, "battle", None), "field", None)
+    forced_ground = bool((getattr(field, "pseudo_weather", {}) or {}).get("gravity") or (getattr(target, "volatiles", {}) or {}).get("smackdown"))
+    if str(move.type).lower() == "ground" and not forced_ground and EffectContext.key(EffectContext.item(target)) == "airballoon":
+        return 0.0
     if str(move.type).lower() == "stellar":
         return 2.0 if getattr(target, "terastallized", None) else 1.0
     chart = TYPE_CHART.get(move.type.capitalize())
@@ -496,6 +518,16 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
         return eff
     for typ in target.types:
         val = chart.get(typ.capitalize(), 0)
+        ignore = getattr(move, "ignoreImmunity", False)
+        ignored_type = (getattr(move, "ignore_immunity", {}) or {}).get(typ.capitalize(), False)
+        ignore_attack_type = ignore is True or (isinstance(ignore, dict) and ignore.get(move.type))
+        volatiles = getattr(target, "volatiles", {}) or {}
+        identified = (typ.lower() == "ghost" and str(move.type).lower() in {"normal", "fighting"}
+                      and any(volatiles.get(name) for name in ("foresight", "odorsleuth")))
+        identified = identified or (typ.lower() == "dark" and str(move.type).lower() == "psychic"
+                                    and bool(volatiles.get("miracleeye")))
+        if val == 3 and (ignore_attack_type or ignored_type or identified):
+            continue
         if val == 1:
             eff *= 2
         elif val == 2:
@@ -503,6 +535,23 @@ def type_effectiveness(target: Pokemon, move: Move) -> float:
         elif val == 3:
             eff *= 0
     return eff
+
+
+def _callback_type_effectiveness(attacker, target, move, battle):
+    """Apply the ordinary immunity events to callback-derived fixed damage."""
+    effectiveness = type_effectiveness(target, move)
+    if battle is None or not hasattr(battle, "runEvent") or not getattr(move, "type", None):
+        return effectiveness
+    immunity = battle.runEvent("Immunity", target, attacker, move, move.type)
+    if immunity is False:
+        effectiveness = 0
+    elif effectiveness == 0:
+        if battle.runEvent("NegateImmunity", target, attacker, move, move.type) is False:
+            effectiveness = 1.0
+    modified = battle.runEvent("Effectiveness", target, attacker, move, effectiveness)
+    if isinstance(modified, (int, float)):
+        effectiveness = float(modified)
+    return effectiveness
 
 
 def damage_phrase(target: Pokemon, damage: int) -> str:
@@ -549,16 +598,32 @@ def damage_calc(
     rng: Optional[random.Random] = None,
 ) -> DamageResult:
     result = DamageResult()
+    from pokemon.battle.effect_context import EffectContext
+
+    ohko = (getattr(move, "raw", {}) or {}).get("ohko")
+    if ohko:
+        user_level = int(getattr(attacker, "level", 1))
+        target_level = int(getattr(target, "level", 1))
+        ignores = getattr(battle, "_move_ignores_target_ability", lambda *args: False)(attacker, target, move)
+        if (user_level < target_level or (ohko == "Ice" and "Ice" in getattr(target, "types", []))
+                or (EffectContext.key(_pokemon_ability(target)) == "sturdy" and not ignores)):
+            result.text.append(f"{attacker.name}'s {move.name} failed!")
+            return result
     if not getattr(move, "_tera_shared_use", False):
         move._stellar_boosts = {}
     rng = rng or getattr(battle, "rng", random)
 
     # Handle multihit distribution
     numhits = 1
-    multihit = move.raw.get("multihit") if getattr(move, "raw", None) else None
-    if isinstance(multihit, list):
-        population, weights = zip(*MULTIHITCOUNT.items())
-        numhits = rng.choices(population, weights)[0]
+    multihit = getattr(move, "multihit", None)
+    if multihit is None:
+        multihit = move.raw.get("multihit") if getattr(move, "raw", None) else None
+    if isinstance(multihit, (list, tuple)):
+        if tuple(multihit) == (2, 5):
+            population, weights = zip(*MULTIHITCOUNT.items())
+            numhits = rng.choices(population, weights)[0]
+        else:
+            numhits = rng.randint(int(multihit[0]), int(multihit[1]))
     elif multihit is not None:
         numhits = multihit
 
@@ -581,108 +646,27 @@ def damage_calc(
         # Accuracy modification hooks
         # ------------------------------------------------------------------
         accuracy = move.accuracy
+        if ohko:
+            accuracy = (20 if ohko == "Ice" and "Ice" not in getattr(attacker, "types", []) else 30) + user_level - target_level
+            if any(EffectContext.key(_pokemon_ability(owner)) == "noguard" for owner in (attacker, target)):
+                accuracy = True
 
-        # User ability: onSourceModifyAccuracy
-        user_ability = getattr(attacker, "ability", None)
-        if user_ability and hasattr(user_ability, "call"):
-            try:
-                new_acc = user_ability.call(
-                    "onSourceModifyAccuracy",
-                    accuracy,
-                    source=attacker,
-                    target=target,
-                    move=move,
-                )
-            except Exception:
-                new_acc = user_ability.call("onSourceModifyAccuracy", accuracy)
-            if new_acc is not None:
-                accuracy = new_acc
+        if not ohko:
+            from .accuracy import MoveAccuracy
 
-        # Target ability: onModifyAccuracy
-        target_ability = getattr(target, "ability", None)
-        if target_ability and hasattr(target_ability, "call"):
-            try:
-                new_acc = target_ability.call(
-                    "onModifyAccuracy",
-                    accuracy,
-                    attacker=attacker,
-                    defender=target,
-                    move=move,
-                )
-            except Exception:
-                new_acc = target_ability.call("onModifyAccuracy", accuracy)
-            if new_acc is not None:
-                accuracy = new_acc
-
-        # Abilities that modify accuracy of any move
-        for owner in (attacker, target):
-            ability = getattr(owner, "ability", None)
-            if ability and hasattr(ability, "call"):
-                try:
-                    new_acc = ability.call(
-                        "onAnyModifyAccuracy",
-                        accuracy,
-                        source=attacker,
-                        target=target,
-                        move=move,
-                    )
-                except Exception:
-                    new_acc = ability.call("onAnyModifyAccuracy", accuracy)
-                if new_acc is not None:
-                    accuracy = new_acc
-
-        # Item hooks for the user and target
-        user_item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
-        if user_item and hasattr(user_item, "call"):
-            try:
-                new_acc = user_item.call(
-                    "onSourceModifyAccuracy",
-                    accuracy,
-                    source=attacker,
-                    target=target,
-                    move=move,
-                )
-            except Exception:
-                new_acc = user_item.call("onSourceModifyAccuracy", accuracy)
-            if new_acc is not None:
-                accuracy = new_acc
-
-        target_item = getattr(target, "item", None) or getattr(target, "held_item", None)
-        if target_item and hasattr(target_item, "call"):
-            try:
-                new_acc = target_item.call(
-                    "onModifyAccuracy",
-                    accuracy,
-                    user=attacker,
-                    target=target,
-                    move=move,
-                )
-            except Exception:
-                new_acc = target_item.call("onModifyAccuracy", accuracy)
-            if new_acc is not None:
-                accuracy = new_acc
-
-        if battle is not None and hasattr(battle, "runEvent"):
-            event_accuracy = battle.runEvent(
-                "Accuracy",
-                target,
-                attacker,
-                move,
-                accuracy,
-            )
-            if event_accuracy is False:
-                accuracy = 0
-            elif event_accuracy is not None and event_accuracy is not True:
-                accuracy = event_accuracy
+            accuracy = MoveAccuracy.modified(attacker, target, move, battle, base=accuracy)
 
         move.accuracy = accuracy
 
         if not accuracy_check(move, rng=rng):
             result.text.append(f"{attacker.name} uses {move.name} but it missed!")
+            item = EffectContext.item(attacker)
+            if hasattr(item, "call"):
+                item.call("onAccuracyMiss", pokemon=attacker, target=target, move=move)
             continue
 
-        fixed_damage = None
-        if getattr(move, "raw", None) and "damage" in move.raw:
+        fixed_damage = int(target.hp) if ohko else None
+        if not ohko and getattr(move, "raw", None) and "damage" in move.raw:
             raw_damage = move.raw.get("damage")
             if raw_damage == "level":
                 fixed_damage = int(getattr(attacker, "level", getattr(attacker, "num", 1)) or 1)
@@ -710,7 +694,7 @@ def damage_calc(
                         move,
                         move.type,
                     )
-                    if negate is True:
+                    if negate is False:
                         eff = 1.0
                 event_eff = battle.runEvent(
                     "Effectiveness",
@@ -754,6 +738,7 @@ def damage_calc(
             )
             if isinstance(callback_damage, (int, float)):
                 fixed_damage = max(0, int(callback_damage))
+                effectiveness = _callback_type_effectiveness(attacker, target, move, battle)
                 level = getattr(attacker, "level", getattr(attacker, "num", 1))
                 result.debug.setdefault("level", []).append(level)
                 result.debug.setdefault("power", []).append(int(getattr(move, "power", 0) or 0))
@@ -761,8 +746,11 @@ def damage_calc(
                 result.debug.setdefault("defense", []).append(0)
                 result.debug.setdefault("rand", []).append(1.0)
                 result.debug.setdefault("stab", []).append(1.0)
-                result.debug.setdefault("type_effectiveness", []).append(1.0)
+                result.debug.setdefault("type_effectiveness", []).append(effectiveness)
                 result.debug.setdefault("critical", []).append(False)
+                if effectiveness == 0:
+                    result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+                    fixed_damage = 0
                 result.debug.setdefault("damage", []).append(fixed_damage)
                 continue
 
@@ -784,14 +772,28 @@ def damage_calc(
         def_key = "defense" if move_category == "Physical" else "special_defense"
 
         # Compute both ATK & SpA so ability hooks can touch either before selection
-        atk_stat = get_modified_stat(attacker, "attack")
-        spa_stat = get_modified_stat(attacker, "special_attack")
-        def_stat = get_modified_stat(target, def_key)
+        from pokemon.battle.effect_context import EffectContext
 
-        def _run_cb(holder, name, stat):
+        ignore_offense = (EffectContext.key(_pokemon_ability(target)) == "unaware"
+                          and not getattr(move, "ignore_ability", False))
+        ignore_defense = EffectContext.key(_pokemon_ability(attacker)) == "unaware"
+        def stat_value(pokemon, name, ignore=False):
+            if ignore:
+                return get_modified_stat(pokemon, name, ignore_boosts=True)
+            return get_modified_stat(pokemon, name)
+        atk_stat = stat_value(attacker, "attack", ignore_offense)
+        spa_stat = stat_value(attacker, "special_attack", ignore_offense)
+        def_stat = stat_value(target, def_key, ignore_defense)
+
+        def _run_cb(holder, name, stat, *, owner=attacker, state_attr="ability_state"):
             """Safely invoke a stat-modifying callback."""
             if not holder or not hasattr(holder, "call"):
                 return stat
+            state = getattr(owner, state_attr, None)
+            if not isinstance(state, dict):
+                state = {}
+                setattr(owner, state_attr, state)
+            state["target"] = owner
             try:
                 new_val = holder.call(
                     name,
@@ -802,6 +804,7 @@ def damage_calc(
                     pokemon=attacker,
                     source=attacker,
                     target=target,
+                    effect_state=state,
                 )
             except TypeError:
                 try:
@@ -813,20 +816,22 @@ def damage_calc(
             return int(new_val) if isinstance(new_val, (int, float)) else stat
 
         # Attacker ability/item hooks
-        atk_stat = _run_cb(getattr(attacker, "ability", None), "onModifyAtk", atk_stat)
-        spa_stat = _run_cb(getattr(attacker, "ability", None), "onModifySpA", spa_stat)
-        atk_stat = _run_cb(getattr(attacker, "ability", None), "onAnyModifyAtk", atk_stat)
-        atk_stat = _run_cb(getattr(attacker, "ability", None), "onAllyModifyAtk", atk_stat)
-        item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
-        atk_stat = _run_cb(item, "onModifyAtk", atk_stat)
-        spa_stat = _run_cb(item, "onModifySpA", spa_stat)
+        atk_stat = _run_cb(_pokemon_ability(attacker), "onModifyAtk", atk_stat)
+        spa_stat = _run_cb(_pokemon_ability(attacker), "onModifySpA", spa_stat)
+        atk_stat = _run_cb(_pokemon_ability(attacker), "onAnyModifyAtk", atk_stat)
+        spa_stat = _run_cb(_pokemon_ability(attacker), "onAnyModifySpA", spa_stat)
+        atk_stat = _run_cb(_pokemon_ability(attacker), "onAllyModifyAtk", atk_stat)
+        item = _pokemon_item(attacker)
+        atk_stat = _run_cb(item, "onModifyAtk", atk_stat, state_attr="item_state")
+        spa_stat = _run_cb(item, "onModifySpA", spa_stat, state_attr="item_state")
 
         # Target ability hooks that modify the attacker's stats
-        opp_ability = getattr(target, "ability", None)
-        atk_stat = _run_cb(opp_ability, "onSourceModifyAtk", atk_stat)
-        spa_stat = _run_cb(opp_ability, "onSourceModifySpA", spa_stat)
-        atk_stat = _run_cb(opp_ability, "onAnyModifyAtk", atk_stat)
-        atk_stat = _run_cb(opp_ability, "onAllyModifyAtk", atk_stat)
+        opp_ability = _pokemon_ability(target)
+        atk_stat = _run_cb(opp_ability, "onSourceModifyAtk", atk_stat, owner=target)
+        spa_stat = _run_cb(opp_ability, "onSourceModifySpA", spa_stat, owner=target)
+        atk_stat = _run_cb(opp_ability, "onAnyModifyAtk", atk_stat, owner=target)
+        spa_stat = _run_cb(opp_ability, "onAnyModifySpA", spa_stat, owner=target)
+        atk_stat = _run_cb(opp_ability, "onAllyModifyAtk", atk_stat, owner=target)
 
         if battle is not None and hasattr(battle, "runEvent"):
             defense_event = "ModifyDef" if def_key == "defense" else "ModifySpD"
@@ -977,6 +982,10 @@ def damage_calc(
         from .terastallization import tera_power_floor
 
         power = tera_power_floor(attacker, move, power)
+        helping = (getattr(attacker, "volatiles", {}) or {}).get("helpinghand")
+        if helping:
+            multiplier = helping.get("multiplier", 1.5) if isinstance(helping, dict) else 1.5
+            power = int(power * multiplier)
 
         # ------------------------------------------------------------------
         # Fast-path for non-damaging moves
@@ -1023,7 +1032,7 @@ def damage_calc(
             # Weather
             if battle is not None:
                 field = getattr(battle, "field", None)
-                if field:
+                if field and not weather_suppressed(battle) and not (EffectContext.key(EffectContext.item(target)) == "utilityumbrella" and EffectContext.key(field.weather) in {"raindance", "primordialsea", "sunnyday", "desolateland"}):
                     weather_handler = getattr(field, "weather_handler", None)
                     if weather_handler:
                         cb = getattr(weather_handler, "onWeatherModifyDamage", None)
@@ -1061,7 +1070,7 @@ def damage_calc(
                         move,
                         move.type,
                     )
-                    if negate is True:
+                    if negate is False:
                         eff = 1.0
                 event_eff = battle.runEvent(
                     "Effectiveness",
@@ -1093,7 +1102,7 @@ def damage_calc(
             crit_ratio = 0
             if getattr(move, "raw", None):
                 crit_ratio = int(move.raw.get("critRatio", 0))
-            ability = getattr(attacker, "ability", None)
+            ability = _pokemon_ability(attacker)
             if ability and hasattr(ability, "call"):
                 try:
                     new_ratio = ability.call(
@@ -1103,7 +1112,7 @@ def damage_calc(
                     new_ratio = ability.call("onModifyCritRatio", crit_ratio)
                 if isinstance(new_ratio, (int, float)):
                     crit_ratio = int(new_ratio)
-            item = getattr(attacker, "item", None) or getattr(attacker, "held_item", None)
+            item = _pokemon_item(attacker)
             if item and hasattr(item, "call"):
                 try:
                     new_ratio = item.call(
@@ -1117,6 +1126,8 @@ def damage_calc(
                 crit_ratio += 2
             if getattr(attacker, "volatiles", {}).get("laserfocus"):
                 crit_ratio = max(crit_ratio, 3)
+            if getattr(attacker, "volatiles", {}).get("dragoncheer"):
+                crit_ratio += 2 if "dragon" in {str(typ).lower() for typ in attacker.types} else 1
 
             chances = {0: 1 / 24, 1: 1 / 8, 2: 1 / 2}
             crit = False
@@ -1136,10 +1147,16 @@ def damage_calc(
                 if crit_result is False:
                     crit = False
             if crit:
-                dmg = floor(dmg * 1.5)
+                # Keep critical amplification local to this hit; a mutable
+                # move-wide crit flag would leak between mixed multihits.
+                multiplier = 2.25 if EffectContext.key(_pokemon_ability(attacker)) == "sniper" else 1.5
+                dmg = floor(dmg * multiplier)
                 result.debug.setdefault("critical", []).append(True)
             else:
                 result.debug.setdefault("critical", []).append(False)
+
+            if getattr(move, "multihit_type", "") == "parentalbond" and hit_number == 2:
+                dmg = floor(dmg * .25)
 
             # Spread modifier
             if spread:
@@ -1154,7 +1171,7 @@ def damage_calc(
         # ------------------------------------------------------------------
         # Simple secondary status application (e.g., burn)
         # ------------------------------------------------------------------
-        if getattr(move, "raw", None):
+        if getattr(move, "raw", None) and not getattr(move, "_engine_secondaries", False):
             status = move.raw.get("status")
             chance = move.raw.get("statusChance", 100)
             secondary = move.raw.get("secondary")
@@ -1275,17 +1292,18 @@ def apply_damage(
     # ------------------------------------------------------------------
     # Move-local ``onSourceModifyDamage`` hooks and scoped damage events
     # ------------------------------------------------------------------
+    scoped_modifiers = battle is not None and hasattr(battle, "runEvent")
     callbacks = []
-    ability = getattr(target, "ability", None)
-    cb = _resolve_holder_callback(ability, "onSourceModifyDamage", abilities_funcs)
+    ability = _pokemon_ability(target)
+    cb = None if scoped_modifiers else _resolve_holder_callback(ability, "onSourceModifyDamage", abilities_funcs)
     if callable(cb):
         prio = getattr(getattr(ability, "raw", {}), "get", lambda *_: 0)(
             "onSourceModifyDamagePriority", 0
         )
         callbacks.append((prio, cb))
 
-    item = getattr(target, "item", None) or getattr(target, "held_item", None)
-    cb = _resolve_holder_callback(item, "onSourceModifyDamage", items_funcs)
+    item = _pokemon_item(target)
+    cb = None if scoped_modifiers else _resolve_holder_callback(item, "onSourceModifyDamage", items_funcs)
     if callable(cb):
         prio = getattr(getattr(item, "raw", {}), "get", lambda *_: 0)(
             "onSourceModifyDamagePriority", 0
@@ -1319,11 +1337,11 @@ def apply_damage(
         if isinstance(new_dmg, (int, float)):
             dmg = int(new_dmg)
 
-    if battle is not None and hasattr(battle, "runEvent"):
+    if not (getattr(move, "raw", {}) or {}).get("ohko") and battle is not None and hasattr(battle, "runEvent"):
         event_dmg = battle.runEvent(
             "ModifyDamage",
-            target,
             attacker,
+            target,
             move,
             dmg,
         )
@@ -1343,7 +1361,7 @@ def apply_damage(
     if battle is not None:
         for part in getattr(battle, "participants", []):
             for poke in getattr(part, "active", []):
-                ability = getattr(poke, "ability", None)
+                ability = _pokemon_ability(poke)
                 cb = _resolve_holder_callback(ability, "onAnyDamage", abilities_funcs)
                 if callable(cb):
                     new_dmg = _invoke_damage_callback(cb, dmg, target, attacker, move)
@@ -1359,14 +1377,19 @@ def apply_damage(
         abilities_funcs = items_funcs = None
 
     callbacks = []
+    if moves_funcs and getattr(target, "volatiles", {}).get("endure"):
+        handler = getattr(moves_funcs, "Endure", None)
+        callback = getattr(handler(), "onDamage", None) if handler else None
+        if callable(callback):
+            callbacks.append((100, callback))
 
-    ability = getattr(target, "ability", None)
+    ability = _pokemon_ability(target)
     cb = _resolve_holder_callback(ability, "onDamage", abilities_funcs)
     if callable(cb):
         prio = getattr(getattr(ability, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
         callbacks.append((prio, cb))
 
-    item = getattr(target, "item", None) or getattr(target, "held_item", None)
+    item = _pokemon_item(target)
     cb = _resolve_holder_callback(item, "onDamage", items_funcs)
     if callable(cb):
         prio = getattr(getattr(item, "raw", {}), "get", lambda *_: 0)("onDamagePriority", 0)
@@ -1387,7 +1410,7 @@ def apply_damage(
 
     # Invoke the ability's ``onTryEatItem`` hook with no item so abilities
     # implementing this callback execute at least once during tests.
-    ability = getattr(target, "ability", None)
+    ability = _pokemon_ability(target)
     cb = _resolve_holder_callback(ability, "onTryEatItem", abilities_funcs)
     if callable(cb):
         try:
@@ -1399,6 +1422,7 @@ def apply_damage(
                 cb(None)
 
     if update_hp and hasattr(target, "hp"):
+        hp_before_hit = target.hp
         target.hp = max(0, target.hp - dmg)
         if dmg > 0:
             try:
@@ -1407,7 +1431,23 @@ def apply_damage(
                     "source": attacker,
                     "move": move,
                     "damage": int(dmg),
+                    "hp_before": int(hp_before_hit),
+                    "actual_damage": int(hp_before_hit - target.hp),
+                    "critical": any(result.debug.get("critical", [])),
+                    "this_turn": True,
+                    "turn": getattr(battle, "turn_count", None),
                 }
+                if target.hp == 0:
+                    target.tempvals["faint_cause"] = {"source": attacker, "effect": move}
+                if battle is not None and hasattr(battle, "participant_for"):
+                    from .active_slots import slot_for
+
+                    source_participant = battle.participant_for(attacker)
+                    if source_participant is not None:
+                        target.tempvals["last_damaged_by"]["source_slot"] = slot_for(source_participant, attacker)
+                        target_participant = battle.participant_for(target)
+                        if target_participant is not None and source_participant in battle.opponents_of(target_participant):
+                            target.tempvals["last_opposing_damage"] = dict(target.tempvals["last_damaged_by"])
             except Exception:  # pragma: no cover - simple data containers
                 pass
             if battle is not None and hasattr(battle, "dispatcher"):
@@ -1429,9 +1469,16 @@ def apply_damage(
             from pokemon.dex.functions import abilities_funcs  # type: ignore
         except Exception:  # pragma: no cover
             abilities_funcs = None
+        if battle is not None:
+            from .delayed_moves import BideState
+
+            BideState.record_hit(battle, target, attacker, move, hp_before_hit - target.hp)
         if battle is not None and hasattr(battle, "runEvent"):
             battle.runEvent("DamagingHit", target, attacker, move, dmg)
-        ability = getattr(target, "ability", None)
+            item = EffectContext.item(target)
+            if dmg > 0 and hasattr(item, "call"):
+                item.call("onHit", hp_before_hit - target.hp, target=target, source=attacker, move=move)
+        ability = _pokemon_ability(target)
         cb = _resolve_holder_callback(ability, "onHit", abilities_funcs)
         if callable(cb):
             try:
@@ -1442,36 +1489,20 @@ def apply_damage(
                 except Exception:
                     cb(target, attacker)
 
-        # Trigger emergency switch abilities for both Pokémon. While
-        # Emergency Exit and Wimp Out normally activate on the damaged
-        # Pokémon, calling the hook for the attacker as well ensures the
-        # callback runs during tests even when the ability is attached to the
-        # wrong side.
-        for poke in (target, attacker):
-            resolved_ability = getattr(poke, "ability", None)
-            if resolved_ability and hasattr(resolved_ability, "call"):
-                try:
-                    resolved_ability.call("onEmergencyExit", pokemon=poke)
-                except Exception:
-                    resolved_ability.call("onEmergencyExit", poke)
-            elif resolved_ability is not None:
-                cb = getattr(resolved_ability, "onEmergencyExit", None)
-                if callable(cb):
-                    try:
-                        cb(pokemon=poke)
-                    except Exception:
-                        try:
-                            cb(poke)
-                        except Exception:
-                            cb()
-            tempvals = getattr(poke, "tempvals", None)
-            if tempvals is None:
-                tempvals = {}
-                setattr(poke, "tempvals", tempvals)
-            if getattr(poke, "switch_flag", False) or getattr(poke, "switch_out", False):
-                tempvals["switch_out"] = True
-                setattr(poke, "switch_flag", False)
-                setattr(poke, "switch_out", False)
+        # Only a surviving holder that actually crosses half HP qualifies.
+        # The earlier update pass lets eligible berries heal before this check.
+        maximum = getattr(target, "max_hp", 0)
+        if attacker is not target and maximum and hp_before_hit > maximum / 2 >= target.hp > 0:
+            resolved_ability = _pokemon_ability(target)
+            if hasattr(resolved_ability, "call"):
+                resolved_ability.call("onEmergencyExit", pokemon=target, battle=battle)
+            else:
+                callback = getattr(resolved_ability, "onEmergencyExit", None)
+                if callable(callback):
+                    callback(target)
+            if getattr(target, "switch_flag", False) or getattr(target, "switch_out", False):
+                target.tempvals["switch_out"] = True
+                target.switch_flag = target.switch_out = False
 
     raw_damages = list(result.debug.get("damage", []))
     result.debug["per_hit_damage"] = raw_damages

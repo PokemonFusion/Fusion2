@@ -426,6 +426,7 @@ class MoveQueueProbe:
 
     action: Any = field(default_factory=lambda: SimpleNamespace(name="queued-action"))
     prioritized: Any = None
+    deferred: Any = None
     will_move_target: Any = None
 
     def will_move(self, target):
@@ -434,6 +435,9 @@ class MoveQueueProbe:
 
     def prioritize_action(self, action):
         self.prioritized = action
+
+    def defer_action(self, action):
+        self.deferred = action
 
 
 @dataclass(frozen=True)
@@ -510,6 +514,7 @@ class MoveEventOutcomeContract:
     target_side_hazards: Mapping[str, Any] | None = None
     expect_result: Any = UNSET
     expect_queue_prioritized: Any = UNSET
+    expect_queue_deferred: Any = UNSET
     expect_called_moves: Sequence[str] | None = None
     expect_user: PokemonExpectation = field(default_factory=PokemonExpectation)
     expect_target: PokemonExpectation = field(default_factory=PokemonExpectation)
@@ -1718,6 +1723,14 @@ def canonical_stats(pokemon) -> dict[str, int]:
     )
     for key, names in attr_names.items():
         value = UNSET
+        overrides = (getattr(pokemon, "tempvals", {}) or {}).get("stat_overrides", {})
+        for name in names:
+            if name in overrides:
+                value = overrides[name]
+                break
+        if value is not UNSET:
+            result[key] = int(value)
+            continue
         for name in names:
             if hasattr(pokemon, name):
                 value = getattr(pokemon, name)
@@ -2054,6 +2067,12 @@ def run_move_event_outcome(
     )
     if game_type is not None:
         battle.gameType = game_type
+    # A declared party must belong to the actual battle participant so Assist
+    # exercises the canonical team instead of a disconnected convenience list.
+    declared_party = getattr(user_pokemon, "party", None)
+    if declared_party:
+        participant = battle.participant_for(user_pokemon)
+        participant.pokemons.extend(ally for ally in declared_party if ally is not user_pokemon)
     if target_is_ally:
         _make_target_ally(battle, user_pokemon, target_pokemon)
     for key, value in (battle_extra or {}).items():
@@ -2098,6 +2117,7 @@ def run_move_event_outcome(
         metadata={
             "move_event_result": _stable_value(event_result),
             "queue_prioritized": bool(getattr(queue, "prioritized", None)),
+            "queue_deferred": bool(getattr(queue, "deferred", None)),
             "called_moves": tuple(str(name) for name in getattr(battle, "called_moves", []) or []),
         },
     )
@@ -2601,7 +2621,7 @@ def run_item_callback_outcome(
         for key, value in (move_extra or {}).items():
             setattr(battle_move, str(key), copy.deepcopy(value))
     mutable_boosts = dict(boosts or {})
-    kwargs: dict[str, Any] = {"battle": battle}
+    kwargs: dict[str, Any] = {"battle": battle, "effect_owner": owner_pokemon}
     target_arg = _contract_side(target_side, user_pokemon, target_pokemon)
     source_arg = _contract_side(source_side, user_pokemon, target_pokemon)
     pokemon_arg = _contract_side(pokemon_side, user_pokemon, target_pokemon)
@@ -2952,6 +2972,8 @@ def assert_move_event_outcome(contract: MoveEventOutcomeContract) -> OutcomeResu
         assert result.metadata.get("move_event_result") == contract.expect_result, "move event result"
     if contract.expect_queue_prioritized is not UNSET:
         assert result.metadata.get("queue_prioritized") is contract.expect_queue_prioritized, "queue prioritized"
+    if contract.expect_queue_deferred is not UNSET:
+        assert result.metadata.get("queue_deferred") is contract.expect_queue_deferred, "queue deferred"
     if contract.expect_called_moves is not None:
         assert result.metadata.get("called_moves") == tuple(contract.expect_called_moves), "called moves"
     assert_pokemon_expectation(result, "user", contract.expect_user)

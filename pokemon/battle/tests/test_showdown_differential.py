@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 
 import pytest
@@ -1400,7 +1401,7 @@ SCENARIOS = [
         ],
     },
     {
-        "name": "moxie-does-not-boost-through-aftermath-trade",
+        "name": "moxie-does-not-boost-after-final-knockout",
         "ignore_hp_sides": ["p2"],
         "p1": {
             "team": [
@@ -1426,7 +1427,7 @@ SCENARIOS = [
         ],
     },
     {
-        "name": "beast-boost-does-not-boost-through-aftermath-trade",
+        "name": "beast-boost-does-not-boost-after-final-knockout",
         "ignore_hp_sides": ["p2"],
         "p1": {
             "team": [
@@ -1845,6 +1846,28 @@ SCENARIOS = [
         ],
     },
 ]
+
+
+def _knockout_variants():
+    """Compare a true Aftermath trade and a knockout in an ongoing battle."""
+    variants = []
+    for prefix in ("moxie", "beast-boost"):
+        original = next(scenario for scenario in SCENARIOS if scenario["name"] ==
+                        f"{prefix}-does-not-boost-after-final-knockout")
+        trade = copy.deepcopy(original)
+        trade["name"] = f"{prefix}-does-not-boost-through-aftermath-trade"
+        trade["p1"]["team"][0]["hp"] = 1
+        variants.append(trade)
+
+        ongoing = copy.deepcopy(original)
+        ongoing["name"] = f"{prefix}-boosts-after-aftermath-when-opponents-remain"
+        ongoing["p2"]["team"].append({"species": "Snorlax", "moves": ["splash"]})
+        ongoing["turns"][0]["post"] = {"p2": "switch 2"}
+        variants.append(ongoing)
+    return variants
+
+
+SCENARIOS.extend(_knockout_variants())
 
 
 @pytest.mark.parametrize(

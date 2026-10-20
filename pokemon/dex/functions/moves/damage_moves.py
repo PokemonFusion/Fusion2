@@ -3,7 +3,85 @@ import re
 from random import choice, random
 
 from pokemon.data import TYPE_CHART
-from pokemon.utils.boosts import apply_boost
+from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost
+
+
+def _effective_weight(pokemon):
+	"""Read effective weight without changing owned data."""
+	from pokemon.battle.effect_context import EffectContext
+	return EffectContext.weight(pokemon)
+
+
+def _battle_party(pokemon):
+	"""Read the owning participant rather than a missing legacy party field."""
+	from pokemon.battle.effect_context import EffectContext
+	return EffectContext.party(pokemon)
+
+
+def _battle_speed(pokemon):
+	"""Include actual speed stages and current field/ability/item effects."""
+	from pokemon.battle.effect_context import EffectContext
+	return EffectContext.speed(pokemon)
+
+
+def _species_base_attack(pokemon):
+	"""Beat Up uses each eligible member's species Attack, not trained stats."""
+	lookup = getattr(pokemon, "_lookup_species_entry", None)
+	entry = lookup(str(getattr(pokemon, "species", ""))) if callable(lookup) else None
+	stats = (getattr(entry, "raw", {}) or {}).get("baseStats", {})
+	if stats:
+		return int(stats.get("atk", 0))
+	base = getattr(pokemon, "base_stats", None)
+	return int(getattr(base, "atk", getattr(base, "attack", 0)) or 0)
+
+
+def _imprison_blocks(pokemon, move, battle=None):
+	"""Only a living opposing holder's shared moves are imprisoned."""
+	battle = battle or getattr(pokemon, "battle", None)
+	if battle is None or move is None or not hasattr(battle, "participant_for"):
+		return False
+	participant = battle.participant_for(pokemon)
+	for other in getattr(battle, "participants", []):
+		if other is participant:
+			continue
+		for holder in getattr(other, "active", []):
+			if getattr(holder, "hp", 0) <= 0 or not getattr(holder, "volatiles", {}).get("imprison"):
+				continue
+			if any(_effect_id(known) == _effect_id(move) for known in getattr(holder, "moves", [])):
+				return True
+	return False
+
+
+def _stockpile_layers(pokemon):
+	"""Read the serializable layer state, retaining legacy callback adapters."""
+	state = getattr(pokemon, "volatiles", {}).get("stockpile", {})
+	return int(state.get("layers", getattr(pokemon, "stockpile_layers", 0)) if isinstance(state, dict)
+	           else getattr(pokemon, "stockpile_layers", 0))
+
+
+def _consume_stockpile(pokemon, battle=None):
+	"""Remove the volatile through its tracked defensive-boost end callback."""
+	battle = battle or getattr(pokemon, "battle", None)
+	if battle is not None and hasattr(battle, "remove_volatile"):
+		battle.remove_volatile(pokemon, "stockpile")
+	else:
+		Stockpile().onEnd(pokemon)
+	pokemon.stockpile_layers = 0
+
+
+def _swap_stored_defense_attack(pokemon):
+	"""Swap the unboosted stat values actually consumed by battle damage."""
+	attack, defense = _stored_battle_stat(pokemon, "atk"), _stored_battle_stat(pokemon, "def")
+	if attack is not None and defense is not None:
+		_set_stored_battle_stat(pokemon, "atk", defense)
+		_set_stored_battle_stat(pokemon, "def", attack)
+
+
+def _retaliation_hit(pokemon, battle=None, *, category=None):
+	"""Load battle services only at execution, after dex initialization."""
+	from pokemon.battle.retaliation import RetaliationHit
+
+	return RetaliationHit.current(pokemon, battle, category=category)
 
 
 def type_effectiveness(target, move):
@@ -46,7 +124,8 @@ def _battle_move_from_name(name):
 		from pokemon.battle.engine import BattleMove
 	except Exception:
 		return None
-	entry = getattr(dex, "MOVEDEX", {}).get(_normalize_key(name))
+	entry = (getattr(dex, "MOVEDEX", {}).get(_normalize_key(name))
+	         or getattr(dex, "MOVEDEX", {}).get(_normalize_key(name).capitalize()))
 	if not entry:
 		return None
 	raw = copy.deepcopy(getattr(entry, "raw", {}) or {})
@@ -67,6 +146,11 @@ def _execute_called_move(called_move, user, target, battle=None, *, power_multip
 	"""Execute a nested called move used by copy/random move callbacks."""
 	if called_move is None:
 		return False
+	# Dex references need the full action pipeline; explicit custom executable
+	# effects can also be used by reduced battle adapters without a dex entry.
+	known = isinstance(called_move, str) or _battle_move_from_name(getattr(called_move, "name", "")) is not None
+	if known and battle is not None and hasattr(battle, "run_called_move"):
+		return battle.run_called_move(user, called_move, target, power_multiplier=power_multiplier)
 	move = _battle_move_from_name(called_move) if isinstance(called_move, str) else called_move
 	if move is None:
 		return False
@@ -162,6 +246,23 @@ def _is_berry(item):
 	return "berry" in _item_name(item).lower()
 
 
+def _stored_battle_stat(pokemon, stat):
+	"""Read an unboosted stat, including earlier split/swap state."""
+	from pokemon.battle.utils import _safe_get_stats
+
+	name = STAT_KEY_MAP.get(stat, stat)
+	overrides = (getattr(pokemon, "tempvals", {}) or {}).get("stat_overrides", {})
+	return overrides.get(name, _safe_get_stats(pokemon).get(name))
+
+
+def _set_stored_battle_stat(pokemon, stat, value):
+	"""Persist a temporary stat in existing battle state until that holder leaves."""
+	state = getattr(pokemon, "tempvals", None)
+	if state is None:
+		state = pokemon.tempvals = {}
+	state.setdefault("stat_overrides", {})[STAT_KEY_MAP.get(stat, stat)] = int(value)
+
+
 def _iter_other_active_pokemon(battle, user):
 	if not battle:
 		return []
@@ -249,11 +350,9 @@ class Aurawheel:
 
 class Auroraveil:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "lightclay":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "lightclay")
 
 	def onAnyModifyDamage(self, *args, **kwargs):
 		damage = args[0] if args else kwargs.get("damage")
@@ -261,6 +360,8 @@ class Auroraveil:
 		target = args[2] if len(args) > 2 else kwargs.get("target")
 		move = args[3] if len(args) > 3 else kwargs.get("move")
 		if not target or not source or not move or move.category == "Status":
+			return damage
+		if getattr(move, "infiltrates", False):
 			return damage
 		side = getattr(target, "side", None)
 		if side and getattr(side, "screens", {}).get("auroraveil"):
@@ -313,12 +414,16 @@ class Autotomize:
 		"""
 		if hasattr(user, "tempvals"):
 			user.tempvals["autotomize"] = True
+		state = getattr(user, "volatiles", {}).get("autotomize")
+		if not isinstance(state, dict):
+			state = user.volatiles["autotomize"] = {"layers": 0}
+		state["layers"] = int(state.get("layers", 0)) + 1
 		return True
 
 	def onTryHit(self, user, *args, **kwargs):
 		"""Fail if the user's Speed is already maximized."""
 		boosts = getattr(user, "boosts", {})
-		if boosts.get("spe", 0) >= 6:
+		if _boost_value(boosts, "spe") >= 6:
 			return False
 		return True
 
@@ -347,8 +452,8 @@ class Axekick:
 class Banefulbunker:
 	def onHit(self, user, target, battle):
 		"""Protect the user and poison contact attackers."""
-		if hasattr(target, "setStatus"):
-			target.setStatus("psn")
+		user.volatiles["protect"] = True
+		user.volatiles["banefulbunker"] = True
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -417,23 +522,23 @@ class Beatup:
 		"""Calculate power based on each healthy ally's base Attack."""
 		allies = getattr(move, "allies", None)
 		if allies is None:
-			party = getattr(user, "party", [user])
-			allies = [ally for ally in party if getattr(ally, "hp", 0) > 0]
+			party = _battle_party(user)
+			allies = [ally for ally in party if getattr(ally, "hp", 0) > 0 and not getattr(ally, "status", 0)]
 			move.allies = allies
 			if isinstance(getattr(move, "raw", None), dict):
 				move.raw["multihit"] = len(allies)
 			current = allies[0] if allies else user
-			base_atk = getattr(getattr(current, "base_stats", None), "atk", 0)
+			base_atk = _species_base_attack(current)
 			return 5 + (base_atk // 10)
 		if not allies:
 			allies = [user]
 		current = allies.pop(0)
-		base_atk = getattr(getattr(current, "base_stats", None), "atk", 0)
+		base_atk = _species_base_attack(current)
 		return 5 + (base_atk // 10)
 
 	def onModifyMove(self, move, user):
-		party = getattr(user, "party", [user])
-		allies = [ally for ally in party if getattr(ally, "hp", 0) > 0]
+		party = _battle_party(user)
+		allies = [ally for ally in party if getattr(ally, "hp", 0) > 0 and not getattr(ally, "status", 0)]
 		move.allies = allies
 		if isinstance(getattr(move, "raw", None), dict):
 			move.raw["multihit"] = len(allies)
@@ -466,50 +571,26 @@ class Bestow:
 
 
 class Bide:
-	def beforeMoveCallback(self, *args, **kwargs):
-		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["bide"] = {"turns": 0, "damage": 0}
-		return True
-
+	"""Keep storage and release in a checkpoint-safe per-holder state."""
+	def beforeMoveCallback(self, user=None, target=None, move=None, battle=None):
+		from pokemon.battle.delayed_moves import BideState
+		return BideState.before_move(user, move, battle) if user and battle else False
 	def onBeforeMove(self, *args, **kwargs):
-		user = args[0] if args else kwargs.get("user")
-		vol = getattr(user, "volatiles", {}).get("bide") if user else None
-		if not vol:
-			return True
-		vol["turns"] += 1
-		if vol["turns"] >= 3:
-			return True
-		user.volatiles["bide"] = vol
-		return False
-
-	def onDamage(self, *args, **kwargs):
-		user = args[0] if args else None
-		damage = args[1] if len(args) > 1 else 0
-		if user and hasattr(user, "volatiles"):
-			vol = user.volatiles.get("bide")
-			if vol:
-				vol["damage"] += damage
-				user.volatiles["bide"] = vol
+		return True
+	def onStart(self, pokemon=None, source=None, effect=None, battle=None):
+		if pokemon:
+			pokemon.volatiles["bide"] = {"turns": 1, "damage": 0}
+		return True
+	def onLockMove(self, *args, **kwargs):
+		return "bide"
+	def onDamage(self, damage, *args, **kwargs):
 		return damage
-
-	def onEnd(self, *args, **kwargs):
-		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles.pop("bide", None)
+	def onEnd(self, pokemon=None, *args, **kwargs):
+		if pokemon:
+			pokemon.volatiles.pop("bide", None)
 		return True
-
-	def onMoveAborted(self, *args, **kwargs):
-		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles.pop("bide", None)
-		return True
-
-	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["bide"] = {"turns": 0, "damage": 0}
-		return True
+	def onMoveAborted(self, pokemon=None, *args, **kwargs):
+		return self.onEnd(pokemon)
 
 
 class Bleakwindstorm:
@@ -618,13 +699,8 @@ class Bugbite:
 class Burningbulwark:
 	def onHit(self, user, target, battle):
 		"""Burn contact attackers."""
-		if hasattr(target, "setStatus"):
-			target.setStatus(
-				"brn",
-				source=user,
-				battle=battle,
-				effect="move:burningbulwark",
-			)
+		user.volatiles["protect"] = True
+		user.volatiles["burningbulwark"] = True
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -808,10 +884,8 @@ class Collisioncourse:
 class Comeuppance:
 	def damageCallback(self, *args, **kwargs):
 		user = args[0] if args else None
-		last = getattr(user, "tempvals", {}).get("last_damaged_by") if user else None
-		if isinstance(last, dict):
-			return last.get("damage", 0)
-		return 0
+		hit = _retaliation_hit(user, kwargs.get("battle"))
+		return int(hit.damage * 1.5) if hit else 0
 
 	def onModifyTarget(self, *args, **kwargs):
 		user = args[0] if args else None
@@ -821,10 +895,7 @@ class Comeuppance:
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
-		last = getattr(user, "tempvals", {}).get("last_damaged_by") if user else None
-		if not last or not last.get("this_turn"):
-			return False
-		return True
+		return _retaliation_hit(user, kwargs.get("battle")) is not None
 
 
 class Conversion:
@@ -836,18 +907,38 @@ class Conversion:
 		first = moves[0]
 		mtype = getattr(first, "type", None)
 		if not mtype:
+			resolved = _battle_move_from_name(getattr(first, "name", first))
+			mtype = getattr(resolved, "type", None)
+		if not mtype:
 			return False
+		if mtype in getattr(user, "types", []):
+			return False
+		if hasattr(user, "setType"):
+			return bool(user.setType(mtype))
 		user.types = [mtype]
 		return True
 
 
 class Conversion2:
 	def onHit(self, user, target, battle):
-		"""Change the user's type to match the target's."""
-		ttypes = getattr(target, "types", [])
-		if not ttypes:
+		"""Choose a new type resisting or immune to the target's last move."""
+		last_move = getattr(target, "last_move", None)
+		if not last_move:
 			return False
-		user.types = list(ttypes)
+		attack_type = getattr(last_move, "type", None)
+		if not attack_type:
+			resolved = _battle_move_from_name(getattr(last_move, "name", last_move))
+			attack_type = getattr(resolved, "type", None)
+		chart = TYPE_CHART.get(attack_type, {})
+		possible = [name for name in TYPE_CHART if name not in getattr(user, "types", [])
+				and name not in {"Stellar", "Typeless", "???"} and chart.get(name) in {2, 3}]
+		if not possible:
+			return False
+		rng = getattr(battle, "rng", None)
+		new_type = rng.choice(possible) if rng is not None else choice(possible)
+		if hasattr(user, "setType"):
+			return bool(user.setType(new_type))
+		user.types = [new_type]
 		return True
 
 
@@ -906,10 +997,8 @@ class Counter:
 
 	def damageCallback(self, *args, **kwargs):
 		user = args[0] if args else None
-		vol = getattr(user, "volatiles", {}).get("counter") if user else None
-		if vol:
-			return vol.get("damage", 0)
-		return 0
+		hit = _retaliation_hit(user, kwargs.get("battle"), category="Physical")
+		return hit.damage * 2 if hit else 0
 
 	def onDamagingHit(self, *args, **kwargs):
 		target = args[1] if len(args) > 1 else None
@@ -935,29 +1024,40 @@ class Counter:
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
-		vol = getattr(user, "volatiles", {}).get("counter") if user else None
-		if not vol or vol.get("slot") is None:
-			return False
-		return True
+		return _retaliation_hit(user, kwargs.get("battle"), category="Physical") is not None
 
 
 class Courtchange:
 	def onHit(self, user, target, battle):
-		"""Swap the side conditions between the two players."""
-		side1 = getattr(battle, "sides", [None, None])[0]
-		side2 = getattr(battle, "sides", [None, None])[1]
-		if not side1 or not side2:
+		"""Swap eligible canonical side states and their legacy views together."""
+		parts = getattr(battle, "participants", None)
+		sides = [part.side for part in parts] if parts else getattr(battle, "sides", [])
+		if len(sides) != 2:
 			return False
-		# Swap hazards and screens dictionaries if present
-		for attr in ("hazards", "screens"):
-			a = getattr(side1, attr, None)
-			b = getattr(side2, attr, None)
-			if a is not None and b is not None:
-				side1.__dict__[attr], side2.__dict__[attr] = b, a
-		for side in (side1, side2):
+		side1, side2 = sides
+		allowed = {"mist", "lightscreen", "reflect", "spikes", "safeguard", "tailwind", "toxicspikes",
+			"stealthrock", "waterpledge", "firepledge", "grasspledge", "stickyweb", "auroraveil",
+			"luckychant", "gmaxsteelsurge", "gmaxcannonade", "gmaxvinelash", "gmaxwildfire", "gmaxvolcalith"}
+		missing, changed = object(), False
+		for attr in ("conditions", "hazards", "screens"):
+			left, right = getattr(side1, attr, {}), getattr(side2, attr, {})
+			aliases = getattr(side1, "HAZARD_TO_CONDITION", {}) if attr == "hazards" else {}
+			for name in set(left) | set(right):
+				if aliases.get(name, name) not in allowed:
+					continue
+				before_left, before_right = left.pop(name, missing), right.pop(name, missing)
+				if before_right is not missing:
+					left[name] = before_right
+				if before_left is not missing:
+					right[name] = before_left
+				changed = True
+		for side in sides:
+			for state in getattr(side, "conditions", {}).values():
+				if isinstance(state, dict) and "target" in state:
+					state["target"] = side
 			if hasattr(side, "sync_hazard_conditions"):
 				side.sync_hazard_conditions()
-		return True
+		return changed
 
 	def onHitField(self, user, battle):
 		return self.onHit(user, None, battle)
@@ -999,7 +1099,8 @@ class Craftyshield:
 
 	def onTryHit(self, target, source, move):
 		"""Block status moves aimed at the user's side."""
-		if getattr(move, "category", "") == "Status" and getattr(move, "target", "") not in {"self", "all"}:
+		raw = getattr(move, "raw", {}) or {}
+		if getattr(move, "category", "") == "Status" and raw.get("target", getattr(move, "target", "")) not in {"self", "all"}:
 			return False
 		return True
 
@@ -1073,7 +1174,8 @@ class Defog:
 	def onHit(self, user, target, battle):
 		"""Lower the target's evasion by one stage."""
 		apply_boost(target, {"evasion": -1})
-		for side in getattr(battle, "sides", []) or []:
+		sides = [part.side for part in getattr(battle, "participants", [])] or getattr(battle, "sides", [])
+		for side in sides or []:
 			if not side:
 				continue
 			if hasattr(side, "clear_hazard"):
@@ -1083,6 +1185,14 @@ class Defog:
 				for hazard in ("spikes", "stealthrock", "toxicspikes", "stickyweb"):
 					getattr(side, "hazards", {}).pop(hazard, None)
 					getattr(side, "conditions", {}).pop(hazard, None)
+		target_side = getattr(target, "side", None)
+		for name in ("reflect", "lightscreen", "auroraveil", "safeguard", "mist"):
+			if hasattr(target_side, "remove_side_condition"):
+				target_side.remove_side_condition(name)
+			else:
+				getattr(target_side, "conditions", {}).pop(name, None)
+		if battle is not None and hasattr(battle, "clearTerrain"):
+			battle.clearTerrain()
 		return True
 
 
@@ -1186,7 +1296,14 @@ class Disable:
 	def onDisableMove(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
 		disabled = getattr(user, "volatiles", {}).get("disable") if user else None
-		return disabled
+		return disabled.get("move") if isinstance(disabled, dict) else disabled
+
+	def onResidual(self, pokemon, battle=None):
+		state = getattr(pokemon, "volatiles", {}).get("disable")
+		if isinstance(state, dict) and isinstance(state.get("duration"), int):
+			state["duration"] -= 1
+			if state["duration"] <= 0 and battle:
+				battle.remove_volatile(pokemon, "disable")
 
 	def onEnd(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
@@ -1255,7 +1372,10 @@ class Doodle:
 		ability = getattr(target, "ability", None)
 		if not ability:
 			return False
-		setattr(user, "ability", ability)
+		participant = battle.participant_for(user) if battle and hasattr(battle, "participant_for") else None
+		for ally in getattr(participant, "active", None) or [user]:
+			if getattr(ally, "hp", 0) > 0:
+				setattr(ally, "ability", ability)
 		return True
 
 
@@ -1377,11 +1497,9 @@ class Eeriespell:
 
 class Electricterrain:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "terrainextender":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "terrainextender")
 
 	def onBasePower(self, *args, **kwargs):
 		attacker = args[0] if args else None
@@ -1423,8 +1541,7 @@ class Electrify:
 			move.type = "Electric"
 
 	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		target = args[1] if len(args) > 1 else None
+		target = args[1] if len(args) > 1 else args[0] if args else kwargs.get("pokemon")
 		if target and hasattr(target, "volatiles"):
 			target.volatiles["electrify"] = True
 		return True
@@ -1437,8 +1554,8 @@ class Electrify:
 class Electroball:
 	def basePowerCallback(self, user, target, move):
 		"""Scale power based on the user's Speed compared to the target's."""
-		u_speed = getattr(getattr(user, "base_stats", None), "spe", 0) or 0
-		t_speed = getattr(getattr(target, "base_stats", None), "spe", 1) or 1
+		u_speed = _battle_speed(user)
+		t_speed = _battle_speed(target)
 		if t_speed == 0:
 			t_speed = 1
 		ratio = u_speed / t_speed
@@ -1534,20 +1651,19 @@ class Endeavor:
 		return max(0, getattr(target, "hp", 0) - getattr(user, "hp", 0))
 
 	def onTryImmunity(self, *args, **kwargs):
-		user = args[0] if args else None
-		target = args[1] if len(args) > 1 else None
+		target = args[0] if args else kwargs.get("target")
+		user = args[1] if len(args) > 1 else kwargs.get("source")
 		if not user or not target:
 			return False
 		return getattr(target, "hp", 0) > getattr(user, "hp", 0)
 
 
 class Endure:
-	def onDamage(self, *args, **kwargs):
-		damage = args[1] if len(args) > 1 else kwargs.get("damage")
-		target = args[0] if args else kwargs.get("user")
+	def onDamage(self, damage, target=None, source=None, move=None, **kwargs):
+		if move is None or getattr(move, "category", None) not in {"Physical", "Special"}:
+			return damage
 		if target and getattr(target, "volatiles", {}).get("endure"):
-			if damage >= getattr(target, "hp", 0):
-				return getattr(target, "hp", 1) - 1
+			return min(damage, max(0, getattr(target, "hp", 1) - 1))
 		return damage
 
 	def onHit(self, user, target, battle):
@@ -2153,14 +2269,7 @@ class Genesissupernova:
 
 class Geomancy:
 	def onTryMove(self, *args, **kwargs):
-		"""Apply Geomancy's stat boosts while handling its charge mechanic.
-
-		The simplified battle engine used in the tests does not run a second
-		turn for charge moves.  To ensure Geomancy's effects are still
-		observable, apply the Special Attack, Special Defense and Speed boosts
-		immediately on the first call while marking the user as "charging".
-		Subsequent calls clear the volatile and allow normal execution.
-		"""
+		"""Charge first; the ordinary second-turn move applies its boosts once."""
 
 		user = args[0] if args else kwargs.get("user")
 		if not user:
@@ -2172,10 +2281,6 @@ class Geomancy:
 			user.volatiles = vol
 			return True
 
-		# First activation: apply the boosts immediately and mark the charge
-		from pokemon.utils.boosts import apply_boost
-
-		apply_boost(user, {"spa": 2, "spd": 2, "spe": 2})
 		vol["geomancy"] = True
 		user.volatiles = vol
 		return False
@@ -2406,7 +2511,8 @@ class Gmaxsteelsurge:
 		if not pokemon:
 			return False
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
-		if item and str(item).lower() == "heavydutyboots":
+		from pokemon.battle.effect_context import EffectContext
+		if EffectContext.key(EffectContext.item(pokemon)) == "heavydutyboots":
 			return True
 		dmg = getattr(pokemon, "max_hp", 0) // 8
 		eff = type_effectiveness(pokemon, type("Move", (), {"type": "Steel"}))
@@ -2603,7 +2709,7 @@ class Gmaxwindrage:
 class Grassknot:
 	def basePowerCallback(self, user, target, move):
 		"""Scale power with the target's weight."""
-		weight = getattr(target, "weightkg", 0)
+		weight = _effective_weight(target)
 		if weight >= 200:
 			return 120
 		if weight >= 100:
@@ -2671,11 +2777,9 @@ class Grassyglide:
 
 class Grassyterrain:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "terrainextender":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "terrainextender")
 
 	def onBasePower(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
@@ -2805,7 +2909,11 @@ class Grudge:
 		source = last.get("source") if isinstance(last, dict) else None
 		move = getattr(source, "last_move", None)
 		if move and hasattr(move, "pp"):
-			move.pp = 0
+			battle = kwargs.get("battle") or getattr(pokemon, "battle", None)
+			if battle is not None and hasattr(battle, "reduce_move_pp"):
+				battle.reduce_move_pp(source, move, max(0, int(move.pp or 0)))
+			else:
+				move.pp = 0
 		return True
 
 	def onStart(self, *args, **kwargs):
@@ -2837,12 +2945,12 @@ class Guardsplit:
 	def onHit(self, user, target, battle):
 		"""Average the Defense and Sp. Def stats of user and target."""
 		for stat in ["def", "spd"]:
-			u_val = getattr(user, stat, None)
-			t_val = getattr(target, stat, None)
+			u_val = _stored_battle_stat(user, stat)
+			t_val = _stored_battle_stat(target, stat)
 			if u_val is not None and t_val is not None:
 				avg = (u_val + t_val) // 2
-				setattr(user, stat, avg)
-				setattr(target, stat, avg)
+				_set_stored_battle_stat(user, stat, avg)
+				_set_stored_battle_stat(target, stat, avg)
 		return True
 
 
@@ -2862,8 +2970,8 @@ class Guardswap:
 class Gyroball:
 	def basePowerCallback(self, user, target, move):
 		"""Increase power the slower the user is compared to the target."""
-		user_spe = getattr(getattr(user, "base_stats", None), "spe", 0)
-		target_spe = getattr(getattr(target, "base_stats", None), "spe", 0)
+		user_spe = _battle_speed(user)
+		target_spe = _battle_speed(target)
 		user_spe = max(1, user_spe)
 		power = int((25 * target_spe / user_spe) + 1)
 		return min(150, max(1, power))
@@ -2899,7 +3007,7 @@ class Haze:
 class Healbell:
 	def onHit(self, user, target, battle):
 		"""Cure status of all PokÃ©mon on the user's side."""
-		party = getattr(user, "party", [user])
+		party = _battle_party(user)
 		for mon in party:
 			if hasattr(mon, "setStatus"):
 				mon.setStatus(0)
@@ -2957,11 +3065,21 @@ class Healblock:
 			target.volatiles["healblock"] = True
 		return True
 
-	def onTryHeal(self, *args, **kwargs):
-		target = args[0] if args else None
+	def onTryHeal(self, amount=None, target=None, **kwargs):
+		"""The relay value precedes the recipient in TryHeal events."""
+		if target is None and hasattr(amount, "volatiles"):
+			target = amount
 		if target and getattr(target, "volatiles", {}).get("healblock"):
 			return False
 		return True
+
+
+def _sacrifice_has_replacement(user, battle):
+	"""Require a living inactive replacement, including while the user is trapped."""
+	part = battle.participant_for(user) if battle and hasattr(battle, "participant_for") else None
+	if part is None:
+		return False
+	return any(mon not in part.active and getattr(mon, "hp", 0) > 0 for mon in part.pokemons)
 
 
 class Healingwish:
@@ -2986,7 +3104,8 @@ class Healingwish:
 		return True
 
 	def onTryHit(self, *args, **kwargs):
-		return True
+		user = args[0] if args else None
+		return _sacrifice_has_replacement(user, kwargs.get("battle") or getattr(user, "battle", None))
 
 
 class Healpulse:
@@ -3010,8 +3129,8 @@ class Heartswap:
 class Heatcrash:
 	def basePowerCallback(self, user, target, move):
 		"""Scale power based on weight ratio."""
-		user_wt = getattr(user, "weightkg", 0)
-		target_wt = getattr(target, "weightkg", 1)
+		user_wt = _effective_weight(user)
+		target_wt = _effective_weight(target)
 		if user_wt >= target_wt * 5:
 			return 120
 		if user_wt >= target_wt * 4:
@@ -3032,8 +3151,8 @@ class Heatcrash:
 class Heavyslam:
 	def basePowerCallback(self, user, target, move):
 		"""Scale power based on weight ratio."""
-		user_wt = getattr(user, "weightkg", 0)
-		target_wt = getattr(target, "weightkg", 1)
+		user_wt = _effective_weight(user)
+		target_wt = _effective_weight(target)
 		if user_wt >= target_wt * 5:
 			return 120
 		if user_wt >= target_wt * 4:
@@ -3076,10 +3195,9 @@ class Helpinghand:
 		return True
 
 	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		target = args[1] if len(args) > 1 else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["helpinghand"] = {"target": target, "multiplier": 1.5}
+		target = args[1] if len(args) > 1 else args[0] if args else kwargs.get("pokemon")
+		if target and hasattr(target, "volatiles"):
+			target.volatiles["helpinghand"] = {"multiplier": 1.5}
 		return True
 
 	def onTryHit(self, target, source, move):
@@ -3123,18 +3241,12 @@ class Holdback:
 
 
 class Hurricane:
-	def onModifyMove(self, *args, **kwargs):
-		move = args[0] if args else kwargs.get("move")
-		battle = kwargs.get("battle")
-		if len(args) > 2:
-			battle = args[2] or battle
-		field = getattr(battle, "field", None)
-		weather = getattr(field, "weather", getattr(battle, "weather", None))
-		w = str(weather).lower()
-		if w in ("rain", "raindance", "primordialsea") and hasattr(move, "accuracy"):
+	def onModifyMove(self, move, user=None, target=None, battle=None):
+		weather = _holder_effective_weather(target, battle)
+		if weather in {"rain", "raindance", "primordialsea"}:
 			move.accuracy = True
-		elif w in ("sunnyday", "sunny", "desolateland") and isinstance(getattr(move, "accuracy", None), (int, float)):
-			move.accuracy = move.accuracy // 2
+		elif weather in {"sunnyday", "sunny", "desolateland"}:
+			move.accuracy = 50
 
 
 class Hyperspacefury:
@@ -3224,13 +3336,13 @@ class Icespinner:
 
 class Imprison:
 	def onFoeBeforeMove(self, *args, **kwargs):
-		foe = args[0] if args else None
-		if foe and getattr(foe, "volatiles", {}).get("imprison"):
-			return False
-		return True
+		pokemon = kwargs.get("pokemon")
+		return not _imprison_blocks(pokemon, kwargs.get("move"), kwargs.get("battle"))
 
 	def onFoeDisableMove(self, *args, **kwargs):
-		return True
+		pokemon = args[0] if args else kwargs.get("pokemon")
+		move = args[1] if len(args) > 1 else kwargs.get("move")
+		return _imprison_blocks(pokemon, move, kwargs.get("battle"))
 
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
@@ -3299,6 +3411,16 @@ class Instruct:
 			return False
 		if _normalize_key(getattr(move, "name", "")) == "instruct":
 			return False
+		known = _battle_move_from_name(getattr(move, "name", ""))
+		definition = known or move
+		raw = getattr(definition, "raw", {}) or {}
+		flags = raw.get("flags", {})
+		if flags.get("failinstruct") or flags.get("charge") or flags.get("recharge"):
+			return False
+		if known is not None and battle is not None and hasattr(battle, "run_called_move"):
+			before = len(getattr(battle, "called_moves", []))
+			battle.run_called_move(target, move, None, spend_pp=True)
+			return len(getattr(battle, "called_moves", [])) > before
 		return bool(_execute_called_move(move, target, target, battle))
 
 
@@ -3307,9 +3429,13 @@ class Iondeluge:
 		field = args[0] if args else kwargs.get("field")
 		if field:
 			pw = getattr(field, "pseudo_weather", {})
-			pw["iondeluge"] = True
+			if not isinstance(pw.get("iondeluge"), dict):
+				pw["iondeluge"] = {"duration": 1}
 			field.pseudo_weather = pw
 		return True
+
+	def onFieldResidual(self, field):
+		field.pseudo_weather.pop("iondeluge", None)
 
 	def onModifyType(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
@@ -3381,8 +3507,7 @@ class Kingsshield:
 		"""Protect the user and lower Attack on contact."""
 		if hasattr(user, "volatiles"):
 			user.volatiles["protect"] = True
-		if getattr(target, "made_contact", False):
-			apply_boost(target, {"atk": -1})
+			user.volatiles["kingsshield"] = True
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -3463,11 +3588,13 @@ class Lastresort:
 		if len(user.moves) < 2:
 			return False
 		has_lr = False
+		used = set((getattr(user, "tempvals", {}) or {}).get("moves_used_since_entry", []))
 		for mv in user.moves:
-			if getattr(mv, "name", "").lower() == "lastresort":
+			move_id = _normalize_key(getattr(mv, "name", mv))
+			if move_id == "lastresort":
 				has_lr = True
 				continue
-			if not getattr(mv, "used", False):
+			if move_id not in used and not getattr(mv, "used", False):
 				return False
 		return has_lr
 
@@ -3515,11 +3642,9 @@ class Leechseed:
 
 class Lightscreen:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "lightclay":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "lightclay")
 
 	def onAnyModifyDamage(self, *args, **kwargs):
 		damage = args[0] if args else kwargs.get("damage")
@@ -3527,6 +3652,8 @@ class Lightscreen:
 		target = args[2] if len(args) > 2 else kwargs.get("target")
 		move = args[3] if len(args) > 3 else kwargs.get("move")
 		if not target or not source or not move or move.category != "Special":
+			return damage
+		if getattr(move, "infiltrates", False):
 			return damage
 		side = getattr(target, "side", None)
 		if side and getattr(side, "screens", {}).get("lightscreen"):
@@ -3565,14 +3692,22 @@ class Lockon:
 	def onHit(self, user, target, battle):
 		"""Ensure the user's next move hits the target."""
 		if hasattr(user, "volatiles"):
-			user.volatiles["lockon"] = target
+			from pokemon.battle.accuracy import MoveAccuracy
+			user.volatiles["lockon"] = {"target_ref": MoveAccuracy.reference(target), "duration": 2}
 		return True
 
 	def onSourceAccuracy(self, *args, **kwargs):
-		return 100
+		return None  # MoveAccuracy resolves the matching stable target.
 
 	def onSourceInvulnerability(self, *args, **kwargs):
-		return True
+		return None  # The ordinary invulnerability gate checks the same lock.
+
+	def onResidual(self, pokemon, battle=None):
+		state = getattr(pokemon, "volatiles", {}).get("lockon")
+		if isinstance(state, dict):
+			state["duration"] = state.get("duration", 0) - 1
+			if state["duration"] <= 0:
+				pokemon.volatiles.pop("lockon", None)
 
 	def onTryHit(self, *args, **kwargs):
 		"""Always succeeds, setting up the lock-on effect."""
@@ -3582,7 +3717,7 @@ class Lockon:
 class Lowkick:
 	def basePowerCallback(self, user, target, move):
 		"""Scale power with the target's weight."""
-		wt = getattr(target, "weightkg", 0) * 10
+		wt = _effective_weight(target) * 10
 		if wt >= 2000:
 			return 120
 		if wt >= 1000:
@@ -3635,6 +3770,8 @@ class Lunardance:
 	def onSwap(self, *args, **kwargs):
 		pokemon = args[0] if args else None
 		battle = kwargs.get("battle")
+		if battle is None:
+			battle = getattr(pokemon, "battle", None)
 		if pokemon and not getattr(pokemon, "is_fainted", False):
 			move_slots = getattr(pokemon, "move_slots", None) or getattr(pokemon, "moves", [])
 			def _max_pp(slot):
@@ -3642,7 +3779,8 @@ class Lunardance:
 			needs_heal = (
 				getattr(pokemon, "hp", 0) < getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
 				or bool(getattr(pokemon, "status", 0))
-				or any(getattr(slot, "pp", 0) < _max_pp(slot) for slot in move_slots)
+				or (battle.has_depleted_pp(pokemon) if callable(getattr(battle, "has_depleted_pp", None))
+					else any(getattr(slot, "pp", 0) < _max_pp(slot) for slot in move_slots))
 			)
 			if not needs_heal:
 				return True
@@ -3652,15 +3790,19 @@ class Lunardance:
 				pokemon.clearStatus(battle=battle, effect="move:lunardance")
 			elif hasattr(pokemon, "setStatus"):
 				pokemon.setStatus(0)
-			for slot in move_slots:
-				slot.pp = _max_pp(slot)
+			if callable(getattr(battle, "restore_move_pp", None)):
+				battle.restore_move_pp(pokemon)
+			else:
+				for slot in move_slots:
+					slot.pp = _max_pp(slot)
 			if battle and hasattr(battle, "remove_slot_condition"):
 				battle.remove_slot_condition(pokemon, "lunardance")
 		return True
 
 	def onTryHit(self, *args, **kwargs):
-		"""Always succeeds to set up the healing effect."""
-		return True
+		"""Require a living inactive replacement before sacrificing the user."""
+		user = args[0] if args else None
+		return _sacrifice_has_replacement(user, kwargs.get("battle") or getattr(user, "battle", None))
 
 
 class Magiccoat:
@@ -3783,30 +3925,20 @@ class Magnitude:
 
 
 class Matblock:
-	def onSideStart(self, *args, **kwargs):
-		"""Protect the side from attacks for one turn."""
-		side = args[0] if args else kwargs.get("side")
+	"""Protect against damaging hits only on the carrier's first action turn."""
+	def onSideStart(self, side=None, *args, **kwargs):
 		if side:
-			vol = getattr(side, "volatiles", {})
-			vol["matblock"] = True
-			side.volatiles = vol
+			side.volatiles["matblock"] = True
 		return True
-
-	def onTry(self, *args, **kwargs):
-		user = args[0] if args else None
-		battle = args[3] if len(args) > 3 else kwargs.get("battle")
-		if user and getattr(user, "active_move_actions", 1) > 1:
+	def onTry(self, user=None, target=None, move=None, battle=None):
+		if user is None:
 			return False
-		if battle and getattr(battle, "queue", None) and hasattr(battle.queue, "willAct"):
-			try:
-				return bool(battle.queue.willAct())
-			except Exception:
-				return True
-		return True
-
-	def onTryHit(self, *args, **kwargs):
-		"""Protect the user's side for the first turn."""
-		return False
+		entered = getattr(user, "tempvals", {}).get("entry_action_turn")
+		return (entered == battle.turn_count if entered is not None and battle else getattr(user, "active_move_actions", 1) <= 1)
+	def onTryHit(self, target=None, source=None, move=None, **kwargs):
+		if move is None or _normalize_key(getattr(move, "name", "")) == "matblock":
+			return True
+		return (getattr(move, "category", None) or getattr(move, "raw", {}).get("category")) == "Status"
 
 
 class Maxairstream:
@@ -3990,7 +4122,7 @@ class Mefirst:
 		target = args[0] if args else None
 		source = args[1] if len(args) > 1 else kwargs.get("source")
 		battle = kwargs.get("battle")
-		move = getattr(target, "last_move", None)
+		move = battle.pending_move(target) if battle and hasattr(battle, "pending_move") else None
 		if not source or not move:
 			return False
 		raw = getattr(move, "raw", {}) or {}
@@ -4002,14 +4134,8 @@ class Mefirst:
 class Metalburst:
 	def damageCallback(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
-		last = getattr(user, "tempvals", {}).get("last_damaged_by") if user else None
-		if isinstance(last, dict):
-			dmg = last.get("damage", 0)
-			try:
-				return int(dmg * 1.5)
-			except Exception:
-				return dmg
-		return 0
+		hit = _retaliation_hit(user, kwargs.get("battle"))
+		return int(hit.damage * 1.5) if hit else 0
 
 	def onModifyTarget(self, *args, **kwargs):
 		user = args[0] if args else None
@@ -4019,10 +4145,7 @@ class Metalburst:
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
-		last = getattr(user, "tempvals", {}).get("last_damaged_by") if user else None
-		if not last or not last.get("this_turn"):
-			return False
-		return True
+		return _retaliation_hit(user, kwargs.get("battle")) is not None
 
 
 class Meteorbeam:
@@ -4044,25 +4167,22 @@ class Meteorbeam:
 class Metronome:
 	def onHit(self, user, target, battle):
 		"""Use a random move from the battle's metronome pool."""
-		pool = getattr(battle, "metronome_pool", [])
+		pool = getattr(battle, "metronome_pool", None)
+		if pool is None:
+			from pokemon.dex import MOVEDEX
+			pool = sorted({entry.raw.get("name", entry.name) for entry in MOVEDEX.values()
+			               if entry.raw.get("flags", {}).get("metronome") and not entry.raw.get("isZ") and not entry.raw.get("isMax")})
 		if not pool:
 			return False
-		move = choice(pool)
+		move = getattr(battle, "rng", None).choice(pool) if getattr(battle, "rng", None) else choice(pool)
 		return bool(_execute_called_move(move, user, target, battle))
 
 
 class Mimic:
+	"""Use isolated copy state and the canonical writer where required."""
 	def onHit(self, user, target, battle):
-		"""Copy the target's last move into the user's moveset."""
-		move = getattr(target, "last_move", None)
-		if not move or getattr(move, "name", "").lower() == "mimic":
-			return False
-		moves = getattr(user, "moves", [])
-		if moves:
-			moves[0] = move
-		else:
-			user.moves = [move]
-		return True
+		from pokemon.battle.copied_moves import BattleCopyState
+		return BattleCopyState.mimic(user, target)
 
 
 class Mindblown:
@@ -4077,9 +4197,7 @@ class Mindblown:
 class Mindreader:
 	def onHit(self, user, target, battle):
 		"""Ensure the user's next move will hit the target."""
-		if hasattr(user, "volatiles"):
-			user.volatiles["lock_on"] = target
-		return True
+		return Lockon().onHit(user, target, battle)
 
 	def onTryHit(self, *args, **kwargs):
 		return True
@@ -4134,10 +4252,8 @@ class Mirrorcoat:
 
 	def damageCallback(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
-		vol = getattr(user, "volatiles", {}).get("mirrorcoat") if user else None
-		if vol:
-			return vol.get("damage", 0)
-		return 0
+		hit = _retaliation_hit(user, kwargs.get("battle"), category="Special")
+		return hit.damage * 2 if hit else 0
 
 	def onDamagingHit(self, *args, **kwargs):
 		target = args[1] if len(args) > 1 else None
@@ -4163,10 +4279,7 @@ class Mirrorcoat:
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
-		vol = getattr(user, "volatiles", {}).get("mirrorcoat") if user else None
-		if not vol or vol.get("slot") is None:
-			return False
-		return True
+		return _retaliation_hit(user, kwargs.get("battle"), category="Special") is not None
 
 
 class Mirrormove:
@@ -4221,11 +4334,9 @@ class Mistyexplosion:
 
 class Mistyterrain:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "terrainextender":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "terrainextender")
 
 	def onBasePower(self, *args, **kwargs):
 		attacker = args[0] if args else kwargs.get("user")
@@ -4354,12 +4465,17 @@ class Naturalgift:
 	def onPrepareHit(self, *args, **kwargs):
 		user = args[0] if args else None
 		move = args[2] if len(args) > 2 else kwargs.get("move")
-		item = getattr(user, "item", None) or getattr(user, "held_item", None)
-		if not item:
+		from pokemon.battle.effect_context import EffectContext
+		item = EffectContext.item(user)
+		if not item or not _is_berry(item):
 			return False
 		if move:
 			move.type = getattr(item, "natural_type", getattr(move, "type", None))
 			move.power = getattr(item, "natural_power", getattr(move, "power", 0))
+		battle = kwargs.get("battle") or getattr(user, "battle", None)
+		if battle is not None and hasattr(battle, "remove_item"):
+			return battle.remove_item(user, source=user, effect="move:naturalgift", used=True) is not None
+		user.item = None
 		return True
 
 
@@ -4438,8 +4554,7 @@ class Obstruct:
 		"""Protect the user and harshly lower contact attackers' Defense."""
 		if hasattr(user, "volatiles"):
 			user.volatiles["protect"] = True
-		if getattr(target, "made_contact", False):
-			apply_boost(target, {"def": -2})
+			user.volatiles["obstruct"] = True
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -4545,28 +4660,35 @@ class Payback:
 
 
 class Perishsong:
-	def onEnd(self, *args, **kwargs):
-		pokemon = args[0] if args else kwargs.get("pokemon")
-		if pokemon and hasattr(pokemon, "volatiles"):
-			pokemon.volatiles.pop("perishsong", None)
-		return True
-
+	"""Apply one bounded countdown to every eligible active Pokemon."""
 	def onHitField(self, user, battle):
-		"""All active PokÃ©mon faint in three turns."""
-		for side in getattr(battle, "sides", []):
-			for mon in getattr(side, "active", []):
-				if hasattr(mon, "volatiles"):
-					mon.volatiles["perishsong"] = 3
+		from pokemon.battle.effect_context import EffectContext
+		changed = False
+		for participant in battle.participants:
+			for pokemon in participant.active:
+				if pokemon.hp <= 0 or EffectContext.key(EffectContext.ability(pokemon)) == "soundproof":
+					continue
+				if "perishsong" not in pokemon.volatiles:
+					changed = battle.apply_volatile_status(pokemon, "perishsong", source=user, effect=user.last_move) or changed
+		return changed
+	def onStart(self, pokemon=None, *args, **kwargs):
+		if pokemon:
+			pokemon.volatiles["perishsong"] = {"remaining": 4}
 		return True
-
-	def onResidual(self, *args, **kwargs):
-		pokemon = args[0] if args else None
+	def onResidual(self, pokemon=None, battle=None):
 		if not pokemon:
-			return False
-		if "perishsong" in getattr(pokemon, "volatiles", {}):
-			pokemon.volatiles["perishsong"] -= 1
-			if pokemon.volatiles["perishsong"] <= 0:
-				pokemon.hp = 0
+			return
+		state = pokemon.volatiles.get("perishsong")
+		if not isinstance(state, dict):
+			state = {"remaining": int(state or 0) + 1}
+			pokemon.volatiles["perishsong"] = state
+		state["remaining"] -= 1
+		if state["remaining"] <= 0:
+			pokemon.hp = 0
+			pokemon.volatiles.pop("perishsong", None)
+	def onEnd(self, pokemon=None, *args, **kwargs):
+		if pokemon:
+			pokemon.volatiles.pop("perishsong", None)
 		return True
 
 
@@ -4668,10 +4790,19 @@ class Poltergeist:
 
 class Powder:
 	def onStart(self, *args, **kwargs):
-		target = args[1] if len(args) > 1 else None
+		target = args[1] if len(args) > 1 else args[0] if args else kwargs.get("pokemon")
 		if target and hasattr(target, "volatiles"):
 			target.volatiles["powder"] = True
 		return True
+
+	def onBeforeMove(self, pokemon, move, battle=None):
+		"""Explode on a Fire action, then stop that action before it attacks."""
+		if str(getattr(move, "type", "")).lower() != "fire":
+			return True
+		from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+		apply_indirect_damage(pokemon, max(1, pokemon.max_hp // 4), battle=battle,
+		                      effect=IndirectEffect("powder", "Condition"))
+		return False
 
 	def onTryMove(self, *args, **kwargs):
 		"""Prevent Fire-type moves while powdered."""
@@ -4688,18 +4819,17 @@ class Powershift:
 	def onEnd(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
 		if user and hasattr(user, "volatiles"):
+			_swap_stored_defense_attack(user)
 			user.volatiles.pop("powershift", None)
 		return True
 
 	def onRestart(self, *args, **kwargs):
-		user = args[0] if args else kwargs.get("user")
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["powershift"] = True
-		return True
+		return self.onEnd(*args, **kwargs)
 
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
 		if user and hasattr(user, "volatiles"):
+			_swap_stored_defense_attack(user)
 			user.volatiles["powershift"] = True
 		return True
 
@@ -4708,12 +4838,12 @@ class Powersplit:
 	def onHit(self, user, target, battle):
 		"""Average the Attack and Sp. Atk stats of user and target."""
 		for stat in ["atk", "spa"]:
-			u_val = getattr(user, stat, None)
-			t_val = getattr(target, stat, None)
+			u_val = _stored_battle_stat(user, stat)
+			t_val = _stored_battle_stat(target, stat)
 			if u_val is not None and t_val is not None:
 				avg = (u_val + t_val) // 2
-				setattr(user, stat, avg)
-				setattr(target, stat, avg)
+				_set_stored_battle_stat(user, stat, avg)
+				_set_stored_battle_stat(target, stat, avg)
 		return True
 
 
@@ -4737,29 +4867,18 @@ class Powertrick:
 	def onEnd(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
 		if user:
-			atk = getattr(user, "atk", None)
-			defense = getattr(user, "def", getattr(user, "def_", None))
-			if atk is not None and defense is not None:
-				setattr(user, "atk", defense)
-				if hasattr(user, "def"):
-					setattr(user, "def", atk)
-				else:
-					setattr(user, "def_", atk)
+			_swap_stored_defense_attack(user)
 			if hasattr(user, "volatiles"):
 				user.volatiles.pop("powertrick", None)
 		return True
 
 	def onRestart(self, *args, **kwargs):
-		return self.onStart(*args, **kwargs)
+		return self.onEnd(*args, **kwargs)
 
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
 		if user:
-			atk = getattr(user, "atk", None)
-			defense = getattr(user, "def", None)
-			if atk is not None and defense is not None:
-				setattr(user, "atk", defense)
-				setattr(user, "def", atk)
+			_swap_stored_defense_attack(user)
 			if hasattr(user, "volatiles"):
 				user.volatiles["powertrick"] = True
 		return True
@@ -4775,20 +4894,28 @@ class Powertrip:
 
 class Present:
 	def onModifyMove(self, *args, **kwargs):
+		"""Choose a per-use healing or damage branch without changing the dex."""
 		move = args[0] if args else kwargs.get("move")
 		from random import randint
 
 		roll = randint(1, 100)
 		if move:
+			move.raw = copy.deepcopy(getattr(move, "raw", {}) or {})
+			move.raw.pop("heal", None)
+			move.raw.pop("bypassSub", None)
+			move.heal = None
 			if roll <= 20:
 				move.heal = 0.25
 				move.power = 0
+				move.raw["heal"] = [1, 4]
+				move.raw["bypassSub"] = True
 			elif roll <= 60:
 				move.power = 40
-			elif roll <= 80:
+			elif roll <= 90:
 				move.power = 80
 			else:
 				move.power = 120
+			move.raw["basePower"] = move.power
 
 
 class Protect:
@@ -4834,11 +4961,9 @@ class Psychicfangs:
 
 class Psychicterrain:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "terrainextender":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "terrainextender")
 
 	def onBasePower(self, *args, **kwargs):
 		attacker = args[0] if args else kwargs.get("user")
@@ -4959,9 +5084,14 @@ class Pursuit:
 class Quash:
 	def onHit(self, user, target, battle):
 		"""Make the target act last this turn."""
-		if hasattr(target, "tempvals"):
-			target.tempvals["quash"] = True
-		return True
+		queue = getattr(battle, "queue", None)
+		action = queue.will_move(target) if queue is not None else None
+		if action is None:
+			return False
+		changed = queue.defer_action(action) is not False
+		if changed and getattr(user, "last_move", None):
+			user.last_move._queue_changed = True
+		return changed
 
 
 class Quickguard:
@@ -4995,7 +5125,7 @@ class Quickguard:
 
 	def onTryHit(self, target, source, move):
 		"""Block priority moves for the turn."""
-		if getattr(move, "priority", 0) > 0:
+		if getattr(move, "effective_priority", getattr(move, "priority", 0)) > 0:
 			return False
 		return True
 
@@ -5142,11 +5272,9 @@ class Recycle:
 
 class Reflect:
 	def durationCallback(self, *args, **kwargs):
+		from pokemon.battle.item_effects import HeldItemRules
 		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "lightclay":
-			return 8
-		return 5
+		return HeldItemRules.field_duration(source, "lightclay")
 
 	def onAnyModifyDamage(self, *args, **kwargs):
 		damage = args[0] if args else kwargs.get("damage")
@@ -5154,6 +5282,8 @@ class Reflect:
 		target = args[2] if len(args) > 2 else kwargs.get("target")
 		move = args[3] if len(args) > 3 else kwargs.get("move")
 		if not target or not source or not move or move.category != "Physical":
+			return damage
+		if getattr(move, "infiltrates", False):
 			return damage
 		side = getattr(target, "side", None)
 		if side and getattr(side, "screens", {}).get("reflect"):
@@ -5449,10 +5579,7 @@ class Ruination:
 
 class Safeguard:
 	def durationCallback(self, *args, **kwargs):
-		source = args[1] if len(args) > 1 else kwargs.get("source")
-		item = getattr(source, "item", None) or getattr(source, "held_item", None)
-		if item and str(item).lower() == "lightclay":
-			return 8
+		"""Light Clay extends damage-reducing screens, not Safeguard."""
 		return 5
 
 	def onSetStatus(self, *args, **kwargs):
@@ -5637,37 +5764,19 @@ class Shellsidearm:
 
 
 class Shelltrap:
-	def onHit(self, user, target, battle):
-		"""Only works if the user was hit by a contact move this turn."""
-		if not getattr(user, "tempvals", {}).get("shelltrap", False):
-			return False
+	"""Arm before all actions; release only after real opposing physical damage."""
+	def priorityChargeCallback(self, user=None, *args, **kwargs):
+		if user:
+			user.volatiles["shelltrap"] = {"armed": True, "triggered": False}
+	def onStart(self, user=None, *args, **kwargs):
+		if user:
+			user.volatiles.setdefault("shelltrap", {"armed": True, "triggered": False})
 		return True
-
-	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["shelltrap"] = True
-		return True
-
-	def onTryMove(self, *args, **kwargs):
-		"""Activate Shell Trap and skip the attack on the first turn."""
-		user = args[0] if args else kwargs.get("user")
-		if not user:
-			return False
-		vol = getattr(user, "volatiles", {})
-		if vol.get("shelltrap_ready"):
-			vol.pop("shelltrap_ready", None)
-			user.volatiles = vol
-			return True
-		vol["shelltrap_ready"] = True
-		user.volatiles = vol
-		return False
-
-	def priorityChargeCallback(self, *args, **kwargs):
-		user = args[0] if args else None
-		if user and hasattr(user, "volatiles"):
-			user.volatiles["shelltrap_charge"] = True
-		return -3
+	def onTryMove(self, user=None, *args, **kwargs):
+		state = getattr(user, "volatiles", {}).get("shelltrap", {})
+		return isinstance(state, dict) and state.get("triggered", False)
+	def onHit(self, user=None, *args, **kwargs):
+		return self.onTryMove(user)
 
 
 class Shoreup:
@@ -5687,8 +5796,7 @@ class Silktrap:
 		"""Protect the user and lower Speed on contact."""
 		if hasattr(user, "volatiles"):
 			user.volatiles["protect"] = True
-		if getattr(target, "made_contact", False):
-			apply_boost(target, {"spe": -1})
+			user.volatiles["silktrap"] = True
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -5728,20 +5836,10 @@ class Simplebeam:
 
 
 class Sketch:
+	"""Use isolated copy state and the canonical writer where required."""
 	def onHit(self, user, target, battle):
-		"""Permanently copy the target's last move."""
-		move = getattr(target, "last_move", None)
-		if not move or getattr(move, "name", "").lower() == "sketch":
-			return False
-		moves = getattr(user, "moves", [])
-		if not moves:
-			user.moves = [move]
-		else:
-			for i, m in enumerate(moves):
-				if getattr(m, "name", "").lower() == "sketch":
-					moves[i] = move
-					break
-		return True
+		from pokemon.battle.copied_moves import BattleCopyState
+		return BattleCopyState.sketch(user, target)
 
 
 class Skillswap:
@@ -5889,10 +5987,12 @@ class Sleeptalk:
 		"""Use a random move if the user is asleep."""
 		if getattr(user, "status", None) != "slp":
 			return False
-		moves = [m for m in getattr(user, "moves", []) if getattr(m, "name", "").lower() not in ("sleeptalk", "rest")]
+		moves = [m for m in getattr(user, "moves", [])
+		         if _normalize_key(getattr(m, "name", "")) not in {"sleeptalk", "rest"}
+		         and not getattr(m, "raw", {}).get("flags", {}).get("nosleeptalk")]
 		if not moves:
 			return False
-		move = choice(moves)
+		move = getattr(battle, "rng", None).choice(moves) if getattr(battle, "rng", None) else choice(moves)
 		return bool(_execute_called_move(move, user, target, battle))
 
 	def onTry(self, *args, **kwargs):
@@ -5954,25 +6054,17 @@ class Soak:
 
 
 class Solarbeam:
-	def onBasePower(self, *args, **kwargs):
-		user = args[0] if args else kwargs.get("user")
-		target = args[1] if len(args) > 1 else kwargs.get("target")
-		move = args[2] if len(args) > 2 else kwargs.get("move")
-		power = getattr(move, "power", 0) if move else 0
-		weather = getattr(user, "weather", None)
-		if weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow"}:
-			return int(power * 0.5)
-		return power
+	def onBasePower(self, base_power, user=None, target=None, move=None):
+		weather = _holder_effective_weather(user, getattr(user, "battle", None))
+		return int(base_power * .5) if weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow"} else base_power
 
-	def onTryMove(self, *args, **kwargs):
-		"""Handle Solar Beam as a two-turn move."""
-		user = args[0] if args else kwargs.get("user")
+	def onTryMove(self, user, target=None, battle=None):
 		if not user:
 			return False
 		vol = getattr(user, "volatiles", {})
-		if vol.get("solarbeam"):
-			vol.pop("solarbeam", None)
-			user.volatiles = vol
+		if vol.pop("solarbeam", None):
+			return True
+		if _holder_effective_weather(user, battle) in {"sunnyday", "desolateland"}:
 			return True
 		vol["solarbeam"] = True
 		user.volatiles = vol
@@ -5980,25 +6072,17 @@ class Solarbeam:
 
 
 class Solarblade:
-	def onBasePower(self, *args, **kwargs):
-		user = args[0] if args else kwargs.get("user")
-		target = args[1] if len(args) > 1 else kwargs.get("target")
-		move = args[2] if len(args) > 2 else kwargs.get("move")
-		power = getattr(move, "power", 0) if move else 0
-		weather = getattr(user, "weather", None)
-		if weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow"}:
-			return int(power * 0.5)
-		return power
+	def onBasePower(self, base_power, user=None, target=None, move=None):
+		weather = _holder_effective_weather(user, getattr(user, "battle", None))
+		return int(base_power * .5) if weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow"} else base_power
 
-	def onTryMove(self, *args, **kwargs):
-		"""Handle Solar Blade as a two-turn move."""
-		user = args[0] if args else kwargs.get("user")
+	def onTryMove(self, user, target=None, battle=None):
 		if not user:
 			return False
 		vol = getattr(user, "volatiles", {})
-		if vol.get("solarblade"):
-			vol.pop("solarblade", None)
-			user.volatiles = vol
+		if vol.pop("solarblade", None):
+			return True
+		if _holder_effective_weather(user, battle) in {"sunnyday", "desolateland"}:
 			return True
 		vol["solarblade"] = True
 		user.volatiles = vol
@@ -6029,10 +6113,11 @@ class Sparklyswirl:
 class Speedswap:
 	def onHit(self, user, target, battle):
 		"""Swap the base Speed stats of user and target."""
-		u_speed = getattr(user, "spe", None)
-		t_speed = getattr(target, "spe", None)
+		u_speed = _stored_battle_stat(user, "spe")
+		t_speed = _stored_battle_stat(target, "spe")
 		if u_speed is not None and t_speed is not None:
-			user.spe, target.spe = t_speed, u_speed
+			_set_stored_battle_stat(user, "spe", t_speed)
+			_set_stored_battle_stat(target, "spe", u_speed)
 		return True
 
 
@@ -6052,7 +6137,8 @@ class Spikes:
 		if not getattr(pokemon, "grounded", True):
 			return True
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
-		if item and str(item).lower() == "heavydutyboots":
+		from pokemon.battle.effect_context import EffectContext
+		if EffectContext.key(EffectContext.item(pokemon)) == "heavydutyboots":
 			return True
 		side = getattr(pokemon, "side", None)
 		layers = getattr(side, "hazards", {}).get("spikes", 0) if side else 0
@@ -6078,9 +6164,7 @@ class Spikyshield:
 		"""Protect the user and damage contact attackers."""
 		if hasattr(user, "volatiles"):
 			user.volatiles["protect"] = True
-		if getattr(target, "made_contact", False):
-			damage = max(1, getattr(target, "max_hp", 1) // 8)
-			target.hp = max(0, getattr(target, "hp", 0) - damage)
+			user.volatiles["spikyshield"] = True
 		return True
 
 	def onPrepareHit(self, *args, **kwargs):
@@ -6113,28 +6197,32 @@ class Spite:
 	def onHit(self, user, target, battle):
 		"""Reduce the PP of the target's last move by 4."""
 		last_move = getattr(target, "last_move", None)
-		if last_move and hasattr(last_move, "pp"):
-			last_move.pp = max(0, last_move.pp - 4)
-		return True
+		if not last_move:
+			return False
+		if battle and hasattr(battle, "reduce_move_pp"):
+			return battle.reduce_move_pp(target, last_move, 4) > 0
+		if hasattr(last_move, "pp") and last_move.pp is not None:
+			previous = last_move.pp
+			last_move.pp = max(0, previous - 4)
+			return last_move.pp < previous
+		return False
 
 
 class Spitup:
 	def basePowerCallback(self, user, target, move):
 		"""Power depends on stockpile layers."""
-		layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0))
+		layers = _stockpile_layers(user)
 		return layers * 100 if layers else 0
 
 	def onAfterMove(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
 		if user:
-			setattr(user, "stockpile_layers", 0)
+			_consume_stockpile(user, kwargs.get("battle"))
 		return True
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
-		layers = 0
-		if user:
-			layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0))
+		layers = _stockpile_layers(user) if user else 0
 		return layers > 0
 
 
@@ -6185,7 +6273,8 @@ class Stealthrock:
 		if not pokemon:
 			return False
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
-		if item and str(item).lower() == "heavydutyboots":
+		from pokemon.battle.effect_context import EffectContext
+		if EffectContext.key(EffectContext.item(pokemon)) == "heavydutyboots":
 			return True
 		from pokemon.battle.damage import type_effectiveness
 		eff = type_effectiveness(pokemon, type("Move", (), {"type": "Rock"}))
@@ -6240,7 +6329,8 @@ class Stickyweb:
 		if not pokemon or not getattr(pokemon, "grounded", True):
 			return True
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
-		if item and str(item).lower() == "heavydutyboots":
+		from pokemon.battle.effect_context import EffectContext
+		if EffectContext.key(EffectContext.item(pokemon)) == "heavydutyboots":
 			return True
 		apply_boost(pokemon, {"spe": -1})
 		return True
@@ -6257,6 +6347,9 @@ class Stockpile:
 	def onEnd(self, *args, **kwargs):
 		user = args[0] if args else kwargs.get("user")
 		if user:
+			state = getattr(user, "volatiles", {}).get("stockpile", {})
+			if isinstance(state, dict):
+				apply_boost(user, {stat: state.get(stat, 0) for stat in ("def", "spd")})
 			setattr(user, "stockpile_layers", 0)
 			if hasattr(user, "volatiles"):
 				user.volatiles.pop("stockpile", None)
@@ -6267,8 +6360,19 @@ class Stockpile:
 
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
-		layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0)) if user else 0
+		layers = _stockpile_layers(user) if user else 0
 		if user:
+			if layers >= 3:
+				return False
+			state = getattr(user, "volatiles", {}).get("stockpile")
+			if not isinstance(state, dict):
+				state = user.volatiles["stockpile"] = {}
+			before = {stat: _boost_value(user.boosts, stat) for stat in ("def", "spd")}
+			apply_boost(user, {"def": 1, "spd": 1})
+			for stat in before:
+				if _boost_value(user.boosts, stat) != before[stat]:
+					state[stat] = state.get(stat, 0) - 1
+			state["layers"] = layers + 1
 			setattr(user, "stockpile_layers", layers + 1)
 		return True
 
@@ -6279,7 +6383,7 @@ class Stockpile:
 		user = args[0] if args else None
 		if not user:
 			return False
-		layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0))
+		layers = _stockpile_layers(user)
 		return layers < 3
 
 
@@ -6330,6 +6434,7 @@ class Struggle:
 	def onModifyMove(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
 		if move:
+			move.type = "???"
 			move.recoil = 0.25
 
 
@@ -6345,15 +6450,17 @@ class Stuffcheeks:
 		item = getattr(user, "item", None) or getattr(user, "held_item", None)
 		if not item or not _is_berry(item):
 			return False
+		before = dict(getattr(user, "boosts", {}) or {})
+		apply_boost(user, {"def": 2}, source=user, effect="move:stuffcheeks")
+		if _boost_value(before, "def") == _boost_value(getattr(user, "boosts", {}) or {}, "def"):
+			return False
 		if battle and hasattr(battle, "eat_item"):
-			if battle.eat_item(user, source=user, effect="move:stuffcheeks") is False:
-				return False
+			battle.eat_item(user, source=user, effect="move:stuffcheeks", force=True)
 		elif hasattr(user, "set_item"):
 			user.set_item(None)
 		else:
 			setattr(user, "item", None)
 			setattr(user, "held_item", None)
-		apply_boost(user, {"def": 2})
 		return True
 
 	def onTry(self, *args, **kwargs):
@@ -6412,7 +6519,8 @@ class Substitute:
 class Suckerpunch:
 	def onTry(self, *args, **kwargs):
 		target = args[1] if len(args) > 1 else kwargs.get("target")
-		move = getattr(target, "last_move", None)
+		battle = kwargs.get("battle")
+		move = battle.pending_move(target) if battle and hasattr(battle, "pending_move") else None
 		if not move:
 			return False
 		category = getattr(move, "category", "").lower()
@@ -6440,7 +6548,7 @@ class Superfang:
 class Swallow:
 	def onHit(self, *args, **kwargs):
 		user = args[0]
-		layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0))
+		layers = _stockpile_layers(user)
 		if not layers:
 			return False
 		max_hp = getattr(user, "max_hp", 0)
@@ -6451,14 +6559,12 @@ class Swallow:
 		else:
 			heal = max_hp
 		user.hp = min(getattr(user, "hp", 0) + heal, max_hp)
-		setattr(user, "stockpile_layers", 0)
+		_consume_stockpile(user, kwargs.get("battle"))
 		return True
 
 	def onTry(self, *args, **kwargs):
 		user = args[0] if args else None
-		layers = 0
-		if user:
-			layers = getattr(user, "stockpile_layers", getattr(user, "stockpile", 0))
+		layers = _stockpile_layers(user) if user else 0
 		return layers > 0
 
 
@@ -6623,11 +6729,13 @@ class Teatime:
 		"""Force all active Pokemon to consume their held Berries."""
 		for participant in getattr(battle, "participants", []) or []:
 			for mon in getattr(participant, "active", []) or []:
+				if getattr(mon, "hp", 0) <= 0:
+					continue
 				item = getattr(mon, "item", None) or getattr(mon, "held_item", None)
 				if not _is_berry(item):
 					continue
 				if hasattr(battle, "eat_item"):
-					battle.eat_item(mon, source=user, effect="move:teatime")
+					battle.eat_item(mon, source=user, effect="move:teatime", force=True)
 				elif hasattr(mon, "set_item"):
 					mon.set_item(None)
 				else:
@@ -6732,18 +6840,19 @@ class Terastarstorm:
 	def onModifyMove(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
 		user = args[1] if len(args) > 1 else kwargs.get("user")
-		tera = getattr(user, "terastallized", None)
-		if move and tera:
-			move.type = tera
-			if tera == "Stellar":
-				move.power = 120
+		if move and str(getattr(user, "species", "")) == "Terapagos-Stellar":
+			move.target = "allAdjacentFoes"
+			move.raw = dict(move.raw or {}, target="allAdjacentFoes")
 
 	def onModifyType(self, *args, **kwargs):
 		move = args[0] if args else kwargs.get("move")
 		user = args[1] if len(args) > 1 else kwargs.get("user")
-		tera = getattr(user, "terastallized", None)
-		if move and tera:
-			move.type = tera
+		if move and str(getattr(user, "species", "")) == "Terapagos-Stellar":
+			move.type = "Stellar"
+			if getattr(user, "terastallized", None):
+				from pokemon.battle.terastallization import tera_offensive_category
+				move.category = tera_offensive_category(user)
+				move.raw = dict(move.raw or {}, category=move.category)
 
 
 class Terrainpulse:
@@ -6863,18 +6972,12 @@ class Throatchop:
 
 
 class Thunder:
-	def onModifyMove(self, *args, **kwargs):
-		move = args[0] if args else kwargs.get("move")
-		battle = kwargs.get("battle")
-		if len(args) > 2:
-			battle = args[2] or battle
-		field = getattr(battle, "field", None)
-		weather = getattr(field, "weather", getattr(battle, "weather", None))
-		w = str(weather).lower()
-		if w in ("rain", "raindance", "primordialsea") and hasattr(move, "accuracy"):
+	def onModifyMove(self, move, user=None, target=None, battle=None):
+		weather = _holder_effective_weather(target, battle)
+		if weather in {"rain", "raindance", "primordialsea"}:
 			move.accuracy = True
-		elif w in ("sunnyday", "sunny", "desolateland") and isinstance(getattr(move, "accuracy", None), (int, float)):
-			move.accuracy = move.accuracy // 2
+		elif weather in {"sunnyday", "sunny", "desolateland"}:
+			move.accuracy = 50
 
 
 class Thunderclap:
@@ -6885,10 +6988,22 @@ class Thunderclap:
 class Tidyup:
 	def onHit(self, user, target, battle):
 		"""Remove hazards on the user's side and boost Attack and Speed."""
-		side = getattr(user, "side", None)
-		if side:
-			if hasattr(side, "hazards"):
-				side.hazards.clear()
+		sides = [part.side for part in getattr(battle, "participants", [])]
+		if not sides and getattr(user, "side", None) is not None:
+			sides = [user.side]
+		for side in sides:
+			for hazard in ("spikes", "toxicspikes", "stealthrock", "stickyweb", "gmaxsteelsurge"):
+				if hasattr(side, "clear_hazard"):
+					side.clear_hazard(hazard)
+				else:
+					getattr(side, "hazards", {}).pop(hazard, None)
+					getattr(side, "conditions", {}).pop(hazard, None)
+		for part in getattr(battle, "participants", []):
+			for pokemon in getattr(part, "active", []):
+				if hasattr(battle, "remove_volatile"):
+					battle.remove_volatile(pokemon, "substitute")
+				else:
+					getattr(pokemon, "volatiles", {}).pop("substitute", None)
 		apply_boost(user, {"atk": 1, "spe": 1})
 		return True
 
@@ -6931,7 +7046,8 @@ class Toxicspikes:
 		if not pokemon or not getattr(pokemon, "grounded", True):
 			return True
 		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
-		if item and str(item).lower() == "heavydutyboots":
+		from pokemon.battle.effect_context import EffectContext
+		if EffectContext.key(EffectContext.item(pokemon)) == "heavydutyboots":
 			return True
 		side = getattr(pokemon, "side", None)
 		layers = getattr(side, "hazards", {}).get("toxicspikes", 0) if side else 0
@@ -6966,43 +7082,10 @@ class Toxicspikes:
 
 
 class Transform:
+	"""Use isolated copy state and the canonical writer where required."""
 	def onHit(self, user, target, battle):
-		"""Copy the target's appearance and stats, storing originals."""
-		def _copy_stat_container(value):
-			if isinstance(value, dict):
-				return dict(value)
-			if hasattr(value, "__dict__"):
-				return value.__class__(**value.__dict__)
-			return value
-
-		backup = user.tempvals.get("transform_backup")
-		if backup is None:
-			backup = {}
-			for attr in ("species", "stats", "base_stats", "types", "moves", "ability"):
-				if hasattr(user, attr):
-					val = getattr(user, attr)
-					if attr in {"stats", "base_stats"}:
-						backup[attr] = _copy_stat_container(val)
-					elif attr == "moves":
-						backup[attr] = [m for m in val]
-					else:
-						backup[attr] = val
-			user.tempvals["transform_backup"] = backup
-
-		user.transformed = True
-		if hasattr(target, "species"):
-			user.species = target.species
-		if hasattr(target, "stats"):
-			user.stats = _copy_stat_container(target.stats)
-		if hasattr(target, "base_stats"):
-			user.base_stats = _copy_stat_container(target.base_stats)
-		if hasattr(target, "types"):
-			user.types = list(target.types)
-		if hasattr(target, "moves"):
-			user.moves = [m for m in target.moves]
-		if hasattr(target, "ability"):
-			user.ability = target.ability
-		return True
+		from pokemon.battle.copied_moves import BattleCopyState
+		return BattleCopyState.transform(user, target, battle)
 
 
 class Triattack:
@@ -7103,9 +7186,11 @@ class Trumpcard:
 class Upperhand:
 	def onTry(self, *args, **kwargs):
 		target = args[1] if len(args) > 1 else kwargs.get("target")
-		move = getattr(target, "last_move", None)
+		battle = kwargs.get("battle")
+		move = battle.pending_move(target) if battle and hasattr(battle, "pending_move") else None
 		priority = getattr(move, "priority", 0) if move else 0
-		return priority > 0
+		category = getattr(move, "category", None) or (getattr(move, "raw", {}) or {}).get("category")
+		return priority > 0 and category != "Status"
 
 
 class Uproar:
@@ -7258,47 +7343,14 @@ class Waterspout:
 
 
 class Weatherball:
-	def onModifyMove(self, *args, **kwargs):
-		move = args[0] if args else kwargs.get("move")
-		battle = kwargs.get("battle")
-		if len(args) > 2:
-			battle = args[2] or battle
-		field = getattr(battle, "field", None)
-		weather = getattr(field, "weather", getattr(battle, "weather", None))
-		w = str(weather).lower()
-		if not move:
-			return
-		if w in ("sunnyday", "sunny", "desolateland"):
-			move.power = 100
-			move.type = "Fire"
-		elif w in ("rain", "raindance", "primordialsea"):
-			move.power = 100
-			move.type = "Water"
-		elif w in ("hail", "snow"):
-			move.power = 100
-			move.type = "Ice"
-		elif w in ("sandstorm", "sand"):
-			move.power = 100
-			move.type = "Rock"
+	def onModifyMove(self, move, user=None, target=None, battle=None):
+		weather = _holder_effective_weather(user, battle)
+		types = {"sunnyday": "Fire", "sunny": "Fire", "desolateland": "Fire", "rain": "Water", "raindance": "Water", "primordialsea": "Water", "hail": "Ice", "snow": "Ice", "sandstorm": "Rock", "sand": "Rock"}
+		if weather in types:
+			move.power, move.type = 100, types[weather]
 
-	def onModifyType(self, *args, **kwargs):
-		move = args[0] if args else kwargs.get("move")
-		battle = kwargs.get("battle")
-		if len(args) > 2:
-			battle = args[2] or battle
-		field = getattr(battle, "field", None)
-		weather = getattr(field, "weather", getattr(battle, "weather", None))
-		if not move:
-			return
-		w = str(weather).lower()
-		if w in ("sunnyday", "sunny", "desolateland"):
-			move.type = "Fire"
-		elif w in ("rain", "raindance", "primordialsea"):
-			move.type = "Water"
-		elif w in ("hail", "snow"):
-			move.type = "Ice"
-		elif w in ("sandstorm", "sand"):
-			move.type = "Rock"
+	def onModifyType(self, move, user=None, target=None, battle=None):
+		self.onModifyMove(move, user, target, battle)
 
 
 class Wideguard:
@@ -7332,7 +7384,8 @@ class Wideguard:
 
 	def onTryHit(self, target, source, move):
 		"""Block moves that hit multiple targets."""
-		if getattr(move, "target", "") in {"allAdjacent", "allAdjacentFoes"}:
+		raw = getattr(move, "raw", {}) or {}
+		if raw.get("target", getattr(move, "target", "")) in {"allAdjacent", "allAdjacentFoes"}:
 			return False
 		return True
 
@@ -7437,25 +7490,39 @@ class Wringout:
 
 
 class Yawn:
-	def onEnd(self, *args, **kwargs):
-		target = args[0] if args else kwargs.get("target")
-		if target and hasattr(target, "volatiles"):
-			if target.volatiles.get("yawn") == 1:
-				if getattr(target, "status", None) is None and hasattr(target, "setStatus"):
+	"""Apply sleep only when the two-turn drowsy countdown actually expires."""
+	def onTryHit(self, target, source, move):
+		return not (getattr(target, "status", None) or "yawn" in getattr(target, "volatiles", {}))
+	def onStart(self, *args, **kwargs):
+		target = args[1] if len(args) == 2 else args[0] if args else kwargs.get("target")
+		if target:
+			target.volatiles["yawn"] = {"remaining": 2}
+		return True
+	def onResidual(self, target=None, battle=None):
+		if not target:
+			return
+		state = target.volatiles.get("yawn")
+		if not isinstance(state, dict):
+			state = {"remaining": int(state or 2)}
+			target.volatiles["yawn"] = state
+		state["remaining"] -= 1
+		if state["remaining"] <= 0:
+			target.volatiles.pop("yawn", None)
+			if not getattr(target, "status", None) and getattr(target, "hp", 0) > 0:
+				if battle:
+					battle.apply_status_condition(target, "slp", effect="move:yawn")
+				else:
 					target.setStatus("slp")
+	def onEnd(self, target=None, *args, **kwargs):
+		if target:
 			target.volatiles.pop("yawn", None)
 		return True
 
-	def onStart(self, *args, **kwargs):
-		target = args[1] if len(args) > 1 else None
-		if target and hasattr(target, "volatiles"):
-			target.volatiles["yawn"] = 2
-		return True
 
-	def onTryHit(self, target, source, move):
-		"""Fail if the target already has a status condition."""
-		if getattr(target, "status", None):
-			return False
-		if getattr(target, "volatiles", {}).get("yawn"):
-			return False
-		return True
+def _holder_effective_weather(pokemon, battle=None):
+	"""Read holder-local weather without changing the shared field."""
+	weather = getattr(pokemon, "effective_weather", None)
+	if callable(weather):
+		return str(weather()).lower()
+	field = getattr(battle, "field", None)
+	return str(getattr(field, "weather", getattr(battle, "weather", "")) or "").lower()

@@ -68,6 +68,7 @@ class Action:
 	switch_slot: Optional[int] = None
 	switch_from: Optional[Any] = None
 	player_selected: bool = False
+	item_move: Optional[str] = None
 
 
 class BattleActions:

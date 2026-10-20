@@ -3,6 +3,21 @@ import types
 import ast
 import os
 import textwrap
+from contextlib import nullcontext
+
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def fake_model_transaction_boundary(monkeypatch):
+	"""Keep this file's in-memory model doubles out of Django transactions.
+
+	Production transaction behavior is exercised by the disposable PostgreSQL
+	integration runners; these unit fixtures have no database-backed models.
+	"""
+	from django.db import transaction
+
+	monkeypatch.setattr(transaction, "atomic", lambda *args, **kwargs: nullcontext())
 
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

@@ -2,7 +2,7 @@
 
 from pokemon.data import TYPE_CHART
 
-from .damage_moves import Leechseed, Substitute
+from .damage_moves import Leechseed, Substitute, Ingrain, Perishsong, Powder, Yawn
 from .status_moves import Aquaring, Attract
 
 
@@ -28,6 +28,10 @@ VOLATILE_HANDLERS = {
 	"substitute": Substitute(),
 	"aquaring": Aquaring(),
 	"attract": Attract(),
+	"ingrain": Ingrain(),
+	"perishsong": Perishsong(),
+	"yawn": Yawn(),
+	"powder": Powder(),
 }
 
 

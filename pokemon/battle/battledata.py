@@ -162,6 +162,7 @@ class Move:
         the correct Same Type Attack Bonus.
     """
 
+    effectType = "Move"
     name: str
     priority: int = 0
     pokemon_types: Optional[List[str]] = None
@@ -228,6 +229,15 @@ class Pokemon:
             return getattr(self, "hp", 0) > 0
         return self in active and getattr(self, "hp", 0) > 0
 
+    @property
+    def happiness(self) -> int:
+        """Expose the canonical friendship value to move callbacks."""
+        return self.friendship
+
+    @happiness.setter
+    def happiness(self, value) -> None:
+        self.friendship = max(0, min(255, int(value)))
+
     def __init__(
         self,
         name: str,
@@ -246,7 +256,9 @@ class Pokemon:
         gender: str = "N",
         types: Optional[List[str]] = None,
         tera_type: str = "",
+        friendship: int = 70,
     ):
+        self.friendship = max(0, min(255, int(friendship)))
         self.name = name
         self.species = name
         self.base_species = name
@@ -386,6 +398,14 @@ class Pokemon:
             foes.extend(list(getattr(opponent, "active", []) or []))
         return [poke for poke in foes if poke is not None and getattr(poke, "hp", 0) > 0]
 
+    def hasAbility(self, ability) -> bool:
+        """Query active named abilities through suppression and current ownership."""
+        from .effect_context import EffectContext
+
+        choices = ability if isinstance(ability, (list, tuple, set)) else [ability]
+        active = EffectContext.key(EffectContext.ability(self))
+        return bool(active) and any(active == EffectContext.key(choice) for choice in choices)
+
     def allies(self):
         """Return allied active Pokemon excluding ``self`` when in battle."""
 
@@ -461,8 +481,16 @@ class Pokemon:
         """Return the active field weather in the Showdown callback shape."""
 
         battle = getattr(self, "battle", None)
+        from ._shared import weather_suppressed
+
+        if weather_suppressed(battle):
+            return ""
         field = getattr(battle, "field", None)
         weather = getattr(field, "weather", None) or getattr(self, "weather", None)
+        from .effect_context import EffectContext
+
+        if str(weather).lower() in {"sunnyday", "desolateland", "raindance", "primordialsea"} and EffectContext.key(EffectContext.item(self)) == "utilityumbrella":
+            return ""
         return str(weather).lower() if weather else ""
 
     def _battle_stats(self) -> Dict[str, int]:
@@ -483,6 +511,10 @@ class Pokemon:
         }.get(str(stat), str(stat))
         stat_attr = "def_" if key == "def" else key
 
+        overrides = (getattr(self, "tempvals", {}) or {}).get("stat_overrides", {})
+        override_key = {"atk": "attack", "def": "defense", "spa": "special_attack",
+                        "spd": "special_defense", "spe": "speed"}.get(key, key)
+
         stats_obj = getattr(self, "base_stats", None)
         value = None
         if isinstance(stats_obj, dict):
@@ -493,19 +525,26 @@ class Pokemon:
             value = getattr(self, key, None)
         if value is None and key == "hp":
             value = getattr(self, "max_hp", getattr(self, "hp", 0))
+        value = overrides.get(override_key, value)
         try:
             value = int(value)
         except (TypeError, ValueError):
             value = 0
 
         if key != "hp" and not unboosted and not unmodified:
-            stage = int(getattr(self, "boosts", {}).get(key, 0) or 0)
+            boosts = getattr(self, "boosts", {})
+            stage = int(boosts.get(key, boosts.get(override_key, 0)) or 0)
             stage = max(-6, min(6, stage))
             if stage >= 0:
                 value = int(value * (2 + stage) / 2)
             else:
                 value = int(value * 2 / (2 - stage))
         return value
+
+    def getBestStat(self, unboosted: bool = False, unmodified: bool = False) -> str:
+        """Return the highest non-HP battle stat, with canonical tie order."""
+        order = ("atk", "def", "spa", "spd", "spe")
+        return max(order, key=lambda stat: self.getStat(stat, unboosted, unmodified))
 
     def _lookup_species_types(self) -> List[str]:
         """Return this Pokémon's types inferred from the Pokédex.
@@ -664,6 +703,8 @@ class Pokemon:
 
         if status_key in {None, "", 0}:
             self.status = 0
+            self.tempvals.pop("sleep_turns", None)
+            self.tempvals.pop("slp_turns", None)
             self.toxic_counter = 0
             self.status_state = {}
             if battle_obj and previous_key not in {None, "", 0}:
@@ -805,17 +846,42 @@ class Pokemon:
         self.ability_state = {"id": getattr(ability, "name", ability)}
         return old
 
-    def formeChange(self, new_forme, *, battle=None, source=None) -> bool:
-        """Apply a lightweight battle-time forme change."""
+    def formeChange(self, new_forme, *, battle=None, source=None, preserve_ability=False) -> bool:
+        """Apply a battle forme, optionally retaining its form-changing ability."""
 
         if not new_forme:
             return False
 
         battle_obj = battle or getattr(self, "battle", None)
         entry = self._lookup_species_entry(str(new_forme))
+        if not entry:
+            return False
+
+        from types import SimpleNamespace
+
+        from pokemon.dex.entities import Stats
+        from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
+
+        data = SimpleNamespace(species=str(new_forme), level=self.level,
+                               ivs=self.ivs, evs=self.evs, nature=self.nature)
+        stats = get_stats(data)
+        maximum = get_max_hp(data)
+        if not stats or maximum <= 0:
+            return False
+        previous_species = str(self.species)
+        data.species = previous_species
+        previous_maximum = get_max_hp(data) if self._lookup_species_entry(previous_species) else self.max_hp
+        damage = self.max_hp - self.hp
+        conscious = self.hp > 0
 
         self.species = str(new_forme)
         self.name = str(new_forme)
+        self.base_stats = Stats(**stats)
+        # Native HP-changing forms retain damage, not the old HP fraction.
+        # Ordinary forms with identical HP leave the existing HP pool alone.
+        if maximum != previous_maximum:
+            self.max_hp = maximum
+            self.hp = max(1, maximum - damage) if conscious else 0
 
         if entry:
             types = getattr(entry, "types", None)
@@ -824,35 +890,10 @@ class Pokemon:
             if types:
                 self.types = [str(t).title() for t in types if t]
 
-            base_stats = getattr(entry, "baseStats", None)
-            if base_stats is None:
-                raw = getattr(entry, "raw", None)
-                if isinstance(raw, dict):
-                    base_stats = raw.get("baseStats")
-            if base_stats is None:
-                stats = getattr(entry, "base_stats", None)
-                if stats is not None:
-                    base_stats = {
-                        "hp": getattr(stats, "hp", 0),
-                        "attack": getattr(stats, "attack", getattr(stats, "atk", 0)),
-                        "defense": getattr(stats, "defense", getattr(stats, "def_", 0)),
-                        "special_attack": getattr(stats, "special_attack", getattr(stats, "spa", 0)),
-                        "special_defense": getattr(stats, "special_defense", getattr(stats, "spd", 0)),
-                        "speed": getattr(stats, "speed", getattr(stats, "spe", 0)),
-                    }
-            if base_stats is None and isinstance(entry, dict):
-                base_stats = entry.get("baseStats")
-            if isinstance(base_stats, dict):
-                try:
-                    StatsCls = safe_import("pokemon.dex.entities").Stats
-                except Exception:  # pragma: no cover - Stats class optional
-                    from types import SimpleNamespace as StatsCls  # type: ignore
-                self.base_stats = StatsCls(**base_stats)
-
             abilities = getattr(entry, "abilities", None)
             if abilities is None and isinstance(entry, dict):
                 abilities = entry.get("abilities")
-            if isinstance(abilities, dict):
+            if isinstance(abilities, dict) and not preserve_ability:
                 next_ability = abilities.get("0") or abilities.get(0)
                 if next_ability:
                     self.setAbility(
@@ -951,8 +992,13 @@ class Pokemon:
             "toxic_counter": self.toxic_counter,
             "tempvals": snapshot_battle_value(detached_mapping(self.tempvals)),
             "volatiles": snapshot_battle_value(detached_mapping(self.volatiles)),
+            "ability_state": snapshot_battle_value({key: value for key, value in self.ability_state.items()
+                                                     if key not in {"target", "source", "sourceEffect"}}),
+            "item_state": snapshot_battle_value({key: value for key, value in self.item_state.items()
+                                                  if key not in {"target", "source", "sourceEffect"}}),
             "choice_locked_move": self.choice_locked_move,
             "gender": self.gender,
+            "friendship": self.friendship,
         }
 
         if self.model_id:
@@ -981,6 +1027,8 @@ class Pokemon:
                 "terastallized": self.terastallized,
                 "tera_original_types": list(self.tera_original_types),
                 "stellar_boosted_types": list(self.stellar_boosted_types),
+                "transformed": bool(getattr(self, "transformed", False)),
+                "bond_triggered": bool(getattr(self, "bond_triggered", False)),
             }
         )
 
@@ -1014,6 +1062,7 @@ class Pokemon:
         types = data.get("types")
         tera_type = data.get("tera_type", "")
         gender = data.get("gender", "N")
+        friendship = data.get("friendship", data.get("happiness"))
         slots = None
         if model_id:
             ref_kind, ref_identifier = parse_pokemon_ref(model_id)
@@ -1032,13 +1081,16 @@ class Pokemon:
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     species = data.get("species") or getattr(poke, "species", name)
                     level = getattr(poke, "level", 1)
-                    ability = getattr(poke, "ability", ability)
+                    if "ability" not in data:
+                        ability = getattr(poke, "ability", ability)
                     if "item" not in data:
                         item = getattr(poke, "item", getattr(poke, "held_item", item))
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
                     gender = getattr(poke, "gender", gender)
+                    if friendship is None:
+                        friendship = getattr(poke, "friendship", 70)
                     types = getattr(poke, "type_", types)
                     if "tera_type" not in data:
                         tera_type = getattr(poke, "tera_type", tera_type)
@@ -1113,9 +1165,16 @@ class Pokemon:
             nature=nature,
             model_id=model_id,
             gender=gender,
+            friendship=70 if friendship is None else friendship,
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
-        obj.name = name
+        disguised = (data.get("ability_state", {}) or {}).get("illusion")
+        native_form = (data.get("tempvals", {}) or {}).get("native_form")
+        obj.name = data.get("name", name) if data.get("transformed") or disguised or native_form else name
+        if "types" in data and data["types"] is not None:
+            obj.types = list(data["types"])
+        obj.transformed = bool(data.get("transformed", False))
+        obj.bond_triggered = bool(data.get("bond_triggered", False))
         obj.tera_type = tera_type
         obj.tera_original_types = list(data.get("tera_original_types", []))
         obj.stellar_boosted_types = list(data.get("stellar_boosted_types", []))
@@ -1134,6 +1193,8 @@ class Pokemon:
                 setattr(move, "pp", move_data["pp"])
         obj.tempvals = detached_mapping(data.get("tempvals", {}))
         obj.volatiles = detached_mapping(data.get("volatiles", {}))
+        obj.ability_state = detached_mapping(data.get("ability_state", {}))
+        obj.item_state = detached_mapping(data.get("item_state", {}))
         obj.choice_locked_move = data.get("choice_locked_move")
         obj.boosts = detached_mapping(
             data.get(
