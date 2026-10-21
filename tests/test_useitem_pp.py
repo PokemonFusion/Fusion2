@@ -375,11 +375,11 @@ def test_unimplemented_field_item_does_not_consume_inventory():
 	caller = DummyCaller(FakePokemon(), remove_counter)
 	cmd = cmd_mod.CmdUseItem()
 	cmd.caller = caller
-	cmd.args = "Potion=Pikachu"
+	cmd.args = "Leftovers=Pikachu"
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert "Potion is not usable outside battle yet." in caller.msgs[-1]
+	assert "Leftovers is not usable outside battle yet." in caller.msgs[-1]
 	assert "+heal at a Pokemon Center" in caller.msgs[-1]
 	assert "+item <item> during battle" in caller.msgs[-1]
 

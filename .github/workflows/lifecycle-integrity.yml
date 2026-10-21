@@ -26,6 +26,7 @@ on:
       - 'commands/player/cmd_account.py'
       - 'commands/player/cmd_learn_evolve.py'
       - 'commands/player/cmd_party.py'
+      - 'commands/player/cmd_inventory.py'
       - 'commands/player/cmd_battle_concede.py'
       - 'commands/player/cmd_gym.py'
       - 'world/hunt_system.py'
@@ -101,6 +102,10 @@ jobs:
         run: python tests/integration/capture_ether_cases.py
       - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL
         run: python tests/integration/capture_pp_item_cases.py
+      - name: Field medicine commands, exact targets, rollback and concurrent debits
+        run: python tests/integration/field_item_cases.py
+      - name: Battle medicine, reserve revival and PP snapshot regressions
+        run: python tests/integration/remaining_item_cases.py
       - name: Capture nickname input and Fusion character sheets on PostgreSQL
         run: python tests/integration/ui_cases.py
       - name: Adventure battle startup, concession and capture replay recovery

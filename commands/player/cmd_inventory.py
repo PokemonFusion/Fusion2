@@ -368,14 +368,20 @@ class CmdUseItem(Command):
       +use Rare Candy=Charizard
       +use PP Up=2
       +use PP Max=2
+      +use Potion=3
+      +use Revive=6
+      +use Ether=3/Water Gun
+      +use Max Elixir=fusion
 
     Notes:
-      Field use currently supports Rare Candy, PP Up and PP Max. PP items
-      prompt for a move; reply with +use <move name or number>. They increase
-      PP capacity. Targets accept party slots or unambiguous Pokemon names.
+      Field medicine heals HP, cures status, revives fainted Pokemon and
+      restores PP. Targets accept canonical party slots, unambiguous names,
+      full Pokemon IDs or your current Fusion. Ether and Max Ether accept
+      /<move name or slot>; omitting it selects the first depleted active move.
+      Elixirs restore all active moves. Herbs also lower friendship on success.
+      PP Up and PP Max prompt for a move and increase PP capacity.
       Battle items use +battle/item while a battle is waiting for your action.
-      Potions and PP-restoring items currently require battle use. Outside
-      battle, +heal restores your party at a Pokemon Center.
+      +heal restores your party at a Pokemon Center.
     """
 
     key = "+use"
@@ -466,6 +472,31 @@ class CmdUseItem(Command):
             )
             return
 
+        from pokemon.services.field_items import FieldMedicineUse
+
+        if FieldMedicineUse.supports(item_name):
+            display_name = _display_item_name(item_data, canonical)
+            if not parsed.target_query:
+                self.caller.msg(f"Usage: +use {display_name}=<party slot, Pokemon name or fusion>[/<move>]")
+                return
+            target_query, separator, move = parsed.target_query.partition("/")
+            if not target_query.strip() or (separator and not move.strip()):
+                self.caller.msg("Specify a Pokemon target and, after '/', a move name or slot.")
+                return
+            try:
+                used = FieldMedicineUse(self.caller).use(
+                    item_name, target_query.strip(), move=move.strip() if separator else None
+                )
+            except ValueError as error:
+                self.caller.msg(str(error))
+                return
+            if used is not None:
+                self.caller.msg(
+                    f"Used {display_name} on {target_query.strip()}." if used else
+                    f"{display_name} had no effect. No item was consumed."
+                )
+            return
+
         target = None
         if parsed.target_query is not None:
             target, error = _resolve_use_target(self.caller, parsed.target_query)
@@ -514,7 +545,7 @@ class CmdUseItem(Command):
 
         self.caller.msg(
             f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
-            "Supported field items: Rare Candy, PP Up and PP Max. "
+            "Supported field items include medicine, PP restoratives, Rare Candy, PP Up and PP Max. "
             "Use +heal at a Pokemon Center to restore your party; "
             "battle items use +item <item> during battle."
         )

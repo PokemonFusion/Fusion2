@@ -225,10 +225,13 @@ class CloudGameplayCases(unittest.TestCase):
         self.assertIn("grew to level", self.command(CmdUseItem, "Rare Candy=1"))
         self.assertEqual(self.player.trainer.get_item_quantity("Rare Candy"), 0)
         self.player.trainer.add_item("Potion", 1)
+        self.owned.current_hp = 1
+        self.owned.save(update_fields=["current_hp"])
         text = self.command(CmdUseItem, "Potion=1")
-        self.assertIn("not usable outside battle", text)
-        self.assertIn("+heal at a Pokemon Center", text)
-        self.assertEqual(self.player.trainer.get_item_quantity("Potion"), 1)
+        self.assertIn("Used Potion", text)
+        self.owned.refresh_from_db()
+        self.assertEqual(self.owned.current_hp, min(get_max_hp(self.owned), 21))
+        self.assertEqual(self.player.trainer.get_item_quantity("Potion"), 0)
         self.assertIn("temporarily unavailable", self.command(CmdTradePokemon, "anything=anyone"))
 
 

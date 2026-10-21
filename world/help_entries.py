@@ -474,12 +474,24 @@ Most maintenance commands are used outside battle.
 +use PP Up=2           Increase a move's maximum PP (prompts for the move).
 +use PP Max=2          Increase PP capacity with a PP Max (prompts for a move).
 
-These are the currently supported field-use items. Targets can also be
-unambiguous Pokemon names. At the PP prompt, use +use <move name or number>.
-PP Up and PP Max increase PP capacity. Ether and Elixir restore PP in battle.
++use Potion=3          Heal the Pokemon in canonical party slot 3.
++use Full Heal=3       Cure a persistent status condition.
++use Revive=6          Revive the fainted Pokemon in party slot 6.
++use Energy Root=3     Heal with an herb (also lowers friendship on success).
++use Ether=3/Water Gun Restore PP for a selected active move.
++use Max Ether=3/4     Fully restore PP in active move slot 4.
++use Elixir=fusion     Restore PP to all moves of your current Fusion.
 
-Potions, status medicine and PP-restoring items currently use +item <item>
-during battle. Outside battle, +heal restores your party at a Pokemon Center.
+Medicine targets accept canonical party slots (including gaps), unambiguous
+Pokemon names, full Pokemon IDs, or fusion for your current Fusion. Eggs and
+boxed Pokemon cannot use medicine. Ether and Max Ether restore the first
+depleted active move if no /move is supplied. Elixirs restore all active moves.
+An ineffective use consumes no item and applies no herbal friendship penalty.
+Each successful medicine use consumes one item. Energy Powder/Heal Powder
+lower friendship by 5 below 200 or 10 at 200+; Energy Root by 10/15 and Revival
+Herb by 15/20, with a floor of zero.
+PP Up and PP Max increase PP capacity; at their prompt use +use <move name or number>.
+During battle use +item <item>. +heal restores your party at a Pokemon Center.
 Escape Rope field use is not implemented.
 
 # Evolution
