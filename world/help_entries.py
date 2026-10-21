@@ -514,8 +514,20 @@ Escape Rope field use is not implemented.
 
 # Evolution
 
-+evolve <pokemon_id> [item]    Attempt to evolve a Pokemon. Some evolutions may
++evolve <pokemon_id> [item] [=<target>]
+                            Attempt to evolve a Pokemon. Some evolutions may
                                need an item or other condition.
+
+For Milcery, first equip Berry, Clover, Flower, Love, Ribbon, Star or Strawberry
+Sweet with +hold <slot>=<complete Sweet name>. Then +evolve <pokemon_id> is PF2's
+spin equivalent and selects Vanilla Cream. Copy the full ID from +party <slot>.
+To choose a listed cream, use e.g.
++evolve <pokemon_id>=Alcremie-Ruby-Cream. Other allowed cream suffixes are
+Matcha-Cream, Mint-Cream, Lemon-Cream, Salted-Cream, Ruby-Swirl, Caramel-Swirl
+and Rainbow-Swirl (all with the Alcremie- prefix). The held Sweet is consumed
+once; do not supply a second bag Sweet to +evolve. +party <slot> shows the saved
+cream and Sweet decoration. Gmax is not an evolution target. Eggs, reserved
+Pokemon and Pokemon in battle cannot use this route.
 		""",
 	},
 	{

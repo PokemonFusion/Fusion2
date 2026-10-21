@@ -670,6 +670,14 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 		f"{THEME['muted']}({xp_progress})|n"
 	)
 	lines.append(str(top))
+	identifier = getattr(pokemon, "unique_id", None)
+	if identifier:
+		lines.append(f"{THEME['muted']}ID|n: {THEME['value']}{identifier}|n")
+	from pokemon.evolution_forms import AlcremieEvolution
+
+	appearance = AlcremieEvolution.describe(pokemon)
+	if appearance:
+		lines.append(f"{THEME['muted']}Appearance|n: {THEME['value']}{appearance}|n")
 
 	lines.append(
 		f"{THEME['muted']}HP|n: {THEME['value']}{hp}|n/{max_hp} {_hp_bar(hp, max_hp)}   "

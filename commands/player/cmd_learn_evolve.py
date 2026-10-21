@@ -194,9 +194,14 @@ class CmdEvolvePokemon(Command):
     Examples:
       +evolve abc123
       +evolve abc123 Fire Stone
+      +evolve abc123=Alcremie-Ruby-Cream
 
     Notes:
       Some Pokemon need an item or other evolution condition.
+      For Milcery, equip a Sweet with +hold first. +evolve performs the spin
+      equivalent; no target selects Vanilla Cream. Only listed Alcremie
+      cosmetic targets are supported. +party <slot> shows the full ID needed
+      by +evolve and the saved decoration afterward.
     """
 
     key = "+evolve"
@@ -233,6 +238,10 @@ class CmdEvolvePokemon(Command):
             self.caller.msg("Evolution failed; no item was consumed and the Pokemon was unchanged.")
             return
         if result:
-            self.caller.msg(f"{pokemon.name} evolved into {result}!")
+            from pokemon.evolution_forms import AlcremieEvolution
+
+            appearance = AlcremieEvolution.describe(pokemon)
+            detail = f" ({appearance})" if appearance else ""
+            self.caller.msg(f"{pokemon.name} evolved into {result}{detail}!")
         else:
             self.caller.msg("That evolution request was already completed. Use =<target> for the next stage.")

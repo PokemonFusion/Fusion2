@@ -13,8 +13,10 @@ from pokemon.data.evolution import (
     get_evolution_items,
 )
 from pokemon.items import GAMEPLAY_ITEMS
+from pokemon.evolution_forms import AlcremieEvolution
 from pokemon.names import normalize_name
 from pokemon.services.placement import PlacementError, PlacementService
+from utils.locks import require_no_battle_lock
 
 
 class EvolutionError(ValueError):
@@ -82,6 +84,8 @@ class EvolutionService:
                 self.placement._check_reservation(placement, False)
                 if pokemon.is_egg:
                     raise EvolutionError("Eggs cannot evolve or hold items.")
+                if not require_no_battle_lock(self.caller):
+                    raise EvolutionError("You cannot do that during battle.")
                 yield pokemon, trainer, storage
                 transaction.on_commit(trainer._sync_character_inventory)
         except (OwnedPokemon.DoesNotExist, PlacementError) as error:
@@ -152,6 +156,12 @@ class EvolutionService:
                 return None
             context = self._context(pokemon, storage)
             options = evolution_options(pokemon.species, level=pokemon.level, item=display, context=context)
+            cream = None
+            sweet = AlcremieEvolution.sweet(context.held_item)
+            if any(normalize_name(option.name) == "alcremie" for option in options):
+                cream = AlcremieEvolution.select(target)
+                if cream:
+                    target = "Alcremie"
             if target:
                 options = [e for e in options if normalize_name(e.name) == normalize_name(target)]
             if len(options) != 1:
@@ -166,6 +176,8 @@ class EvolutionService:
             result = attempt_evolution(pokemon, item=display, context=context, target=options[0].name)
             if not result:
                 raise EvolutionError("Evolution conditions changed; try again.")
+            if cream:
+                AlcremieEvolution.decorate(pokemon, cream, sweet)
             pokemon.flags = [f for f in pokemon.flags if not f.startswith("evo:")] + [receipt]
             pokemon.save()
             return result

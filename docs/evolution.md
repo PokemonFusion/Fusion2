@@ -53,6 +53,7 @@ Both the source's `evos` and the target's `prevo` must agree on the exact form.
 | Lycanroc-Dusk | Own Tempo and dusk; Own Tempo cannot select the normal branches |
 | Toxtricity | Amped/Low-Key branch follows the stored nature |
 | Kleavor | `Black Augurite`, preserving the checked-in data's spelling and handling its misplaced item field |
+| Alcremie | Milcery holds one of the seven Sweets; explicit `+evolve` replaces spinning, with an optional allowed cream target |
 
 Everstone blocks evolution. Eggs and fusion-reserved Pokemon cannot evolve or
 hold items. Room attributes are server-managed context, not player-supplied
@@ -66,6 +67,15 @@ remain, the player must use `=<target>`. This is PF2's explicit selection policy
 for data branches (including cosmetic/rare variants); it does not simulate
 cartridge random personality rolls or version exclusivity.
 
+For Milcery, equip Berry, Clover, Flower, Love, Ribbon, Star or Strawberry Sweet
+with `+hold <slot>=<complete Sweet name>`. Find the full ID on `+party <slot>`,
+then use `+evolve <pokemon-id>` for
+Vanilla Cream or `+evolve <pokemon-id>=Alcremie-Ruby-Cream` (or another listed
+cream). The held Sweet is consumed once; bag copies remain untouched. The cream
+and Sweet decoration persist and appear on `+party <slot>`. All nine creams and
+the non-plot action/persistence rules are listed in
+[Alcremie evolution](alcremie-evolution.md). No Gmax target is available here.
+
 ## Explicitly unsupported
 
 These fail closed, even at level 100 or with a supplied item. Unknown future
@@ -77,7 +87,6 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Malamar: console upside-down | No PF2 equivalent is defined |
 | Sirfetch'd: 3 critical hits in a battle | No persisted evolution counter |
 | Runerigus: 49 HP lost and Dusty Bowl sculpture | No persisted journey/damage evidence |
-| Alcremie: spin with a Sweet | No spin action/form protocol |
 | Urshifu: either tower | No tower completion evidence |
 | Wyrdeer/Overqwil: Agile/Strong move uses | No style-use history |
 | Ursaluna: Peat Block and full moon | No authoritative lunar state |
@@ -115,6 +124,9 @@ already empty slot is a no-op. No schema migration is needed.
 - `python tests/integration/evolution_cases.py` for real ORM success, rollback,
   invalid conditions, carried-object compatibility, replacement, removal, retries,
   inventory aliases, synthesized item requirements, and cache behavior.
+- `python tests/integration/alcremie_cases.py`, with `PF2_TEST_POSTGRES_DSN` set,
+  for all 63 Sweet/cream combinations, actual ID discovery/commands, SQL reloads,
+  held-item consumption, cosmetic persistence, failure controls and concurrent retries.
 - Set `PF2_TEST_POSTGRES_DSN` to an expendable test database to also run competing
   evolution/equip/remove requests across independent connections. The harness
   creates and drops only a random test schema and does not run migrations.
