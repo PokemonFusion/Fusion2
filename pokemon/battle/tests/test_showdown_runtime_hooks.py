@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from .helpers import build_battle, load_modules, physical_move
+from .helpers import build_battle, load_modules
 
 
 def _battle_action(actor, action_type, **kwargs):
@@ -253,11 +253,10 @@ def test_natural_gift_uses_item_natural_gift_identity():
 
 
 def test_red_orb_primal_forme_activates_on_switch_in():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Groudon", ability="Drought")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Groudon"
 	red_orb = Item.from_dict(
 		"Red Orb",
 		{"name": "Red Orb", "onPrimal": "Redorb.onPrimal"},
@@ -273,11 +272,10 @@ def test_red_orb_primal_forme_activates_on_switch_in():
 
 
 def test_blue_orb_primal_forme_activates_on_switch_in():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Kyogre", ability="Drizzle")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Kyogre"
 	blue_orb = Item.from_dict(
 		"Blue Orb",
 		{"name": "Blue Orb", "onPrimal": "Blueorb.onPrimal"},
@@ -293,11 +291,10 @@ def test_blue_orb_primal_forme_activates_on_switch_in():
 
 
 def test_forced_forme_item_applies_on_switch_in():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Genesect", ability="Download")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Genesect"
 	burn_drive = Item.from_dict(
 		"Burn Drive",
 		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
@@ -313,12 +310,10 @@ def test_forced_forme_item_applies_on_switch_in():
 
 
 def test_set_item_applies_forced_forme_immediately():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Genesect", ability="Download")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Genesect"
-	attacker.species = "Genesect"
 	burn_drive = Item.from_dict(
 		"Burn Drive",
 		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
@@ -330,12 +325,10 @@ def test_set_item_applies_forced_forme_immediately():
 
 
 def test_take_item_reverts_forced_forme_to_base_species():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Genesect", ability="Download")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Genesect"
-	attacker.species = "Genesect"
 	burn_drive = Item.from_dict(
 		"Burn Drive",
 		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},

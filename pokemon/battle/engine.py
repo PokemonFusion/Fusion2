@@ -2693,6 +2693,32 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if item and isinstance(getattr(item, "raw", None), dict):
             self._register_callbacks(item.raw, pokemon, registry=item_registry, item_key=_effect_key(item))
 
+    @staticmethod
+    def _item_forme_is_eligible(pokemon, forme: str) -> bool:
+        """Restrict item forms to their native species and required ability."""
+
+        from pokemon.dex import POKEDEX
+        from pokemon.names import resolve_dex_entry
+
+        from .effect_context import EffectContext
+
+        if getattr(pokemon, "transformed", False):
+            return False
+
+        def base_species(species):
+            entry = resolve_dex_entry(POKEDEX, str(species or ""))
+            raw = getattr(entry, "raw", {}) or {}
+            return EffectContext.key(raw.get("baseSpecies") or raw.get("name"))
+
+        required = base_species(forme)
+        current = getattr(pokemon, "species", None)
+        native = getattr(pokemon, "base_species", None) or current
+        if not required or base_species(native) != required or base_species(current) != required:
+            return False
+
+        ability = {"arceus": "multitype", "silvally": "rkssystem"}.get(required)
+        return not ability or EffectContext.key(EffectContext.ability(pokemon)) == ability
+
     def _apply_item_forme_effects(self, pokemon, *, source=None) -> None:
         """Apply held-item forme changes that take effect on battle entry."""
 
@@ -2704,8 +2730,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         forms = {"blueorb": ("Kyogre", "Kyogre-Primal"), "redorb": ("Groudon", "Groudon-Primal"),
                  "rustedsword": ("Zacian", "Zacian-Crowned"), "rustedshield": ("Zamazenta", "Zamazenta-Crowned")}
         change = forms.get(EffectContext.key(item))
-        if change and getattr(pokemon, "species", pokemon.name) == change[0]:
-            pokemon.formeChange(change[1], battle=self, source=source)
+        if change:
+            if not self._item_forme_is_eligible(pokemon, change[1]):
+                return
+            if getattr(pokemon, "species", None) == change[0]:
+                pokemon.formeChange(change[1], battle=self, source=source)
 
         from .native_forms import OgerponForm
 
@@ -2716,7 +2745,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if (
             forced_forme
             and hasattr(pokemon, "formeChange")
-            and getattr(pokemon, "name", None) != forced_forme
+            and getattr(pokemon, "species", None) != forced_forme
+            and self._item_forme_is_eligible(pokemon, forced_forme)
         ):
             try:
                 pokemon.formeChange(forced_forme, battle=self, source=source)
