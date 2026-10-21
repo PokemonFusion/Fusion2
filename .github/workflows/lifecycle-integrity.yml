@@ -72,10 +72,12 @@ jobs:
         run: python tests/integration/evolution_cases.py
       - name: Alcremie Sweets, cosmetic reloads and ordinary command flow
         run: python tests/integration/alcremie_cases.py
+      - name: Existing trade-held item equivalents, player commands and safe retries
+        run: python tests/integration/trade_held_cases.py
       - name: NPC challenge constructor failure and persistent cleanup retries
         run: python tests/integration/trainer_challenge_cases.py
       - name: Evolution conditions and commands
-        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py
+        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_trade_held_evolution.py tests/test_trade_safety.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims
         run: python tests/integration/recovery_cases.py
       - name: Battle EXP, HP, PP and post-win healing on PostgreSQL

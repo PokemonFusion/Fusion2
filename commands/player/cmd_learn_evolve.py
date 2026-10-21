@@ -202,6 +202,10 @@ class CmdEvolvePokemon(Command):
       equivalent; no target selects Vanilla Cream. Only listed Alcremie
       cosmetic targets are supported. +party <slot> shows the full ID needed
       by +evolve and the saved decoration afterward.
+      Existing trade-held items use +hold then +evolve without a bag item.
+      For example, Scyther holding Metal Coat evolves into Scizor. Ownership
+      and placement stay the same; the held copy is consumed once. +trade
+      remains unavailable. Non-item trade evolutions remain unsupported.
     """
 
     key = "+evolve"

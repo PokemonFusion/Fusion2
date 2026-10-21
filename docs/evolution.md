@@ -54,6 +54,7 @@ Both the source's `evos` and the target's `prevo` must agree on the exact form.
 | Toxtricity | Amped/Low-Key branch follows the stored nature |
 | Kleavor | `Black Augurite`, preserving the checked-in data's spelling and handling its misplaced item field |
 | Alcremie | Milcery holds one of the seven Sweets; explicit `+evolve` replaces spinning, with an optional allowed cream target |
+| Existing trade-held items | Exact allowlisted source/target/item triples; `+hold` then `+evolve` consumes the held item without transferring ownership |
 
 Everstone blocks evolution. Eggs and fusion-reserved Pokemon cannot evolve or
 hold items. Room attributes are server-managed context, not player-supplied
@@ -76,6 +77,12 @@ and Sweet decoration persist and appear on `+party <slot>`. All nine creams and
 the non-plot action/persistence rules are listed in
 [Alcremie evolution](alcremie-evolution.md). No Gmax target is available here.
 
+The 14 existing trade-held items support 17 exact transitions through the
+[non-transfer evolution equivalent](trade-held-evolution.md). Equip the required
+item, then `+evolve <pokemon-id>` without supplying a bag item. Ownership,
+canonical placement and bag copies stay unchanged. Actual trading remains
+disabled pending #722/#725; this route does not add a transfer or trade callback.
+
 ## Explicitly unsupported
 
 These fail closed, even at level 100 or with a supplied item. Unknown future
@@ -83,7 +90,7 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 
 | Condition | Reason |
 | --- | --- |
-| All `trade`, including held-item and partner-species trade | Trading and trade-equivalent substitutes are outside this slice |
+| Non-item, partner-species and unlisted `trade` transitions | Actual trading remains disabled; only the explicit existing held-item allowlist has a non-transfer equivalent |
 | Malamar: console upside-down | No PF2 equivalent is defined |
 | Sirfetch'd: 3 critical hits in a battle | No persisted evolution counter |
 | Runerigus: 49 HP lost and Dusty Bowl sculpture | No persisted journey/damage evidence |
@@ -98,8 +105,8 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Shedinja (dex only records a level) | Requires an additional Pokemon, spare party slot, and Poké Ball transaction |
 | Palafin (dex only records a level) | No Union Circle equivalent |
 
-All current `other` rules are deliberately unsupported for these reasons. This
-slice does not fabricate completion flags or expose command overrides for them.
+Other `other` rules remain unsupported; Milcery's listed Sweet route is the
+explicit exception. No completion flags or command overrides grant eligibility.
 
 ## Integrity and retries
 
@@ -127,16 +134,20 @@ already empty slot is a no-op. No schema migration is needed.
 - `python tests/integration/alcremie_cases.py`, with `PF2_TEST_POSTGRES_DSN` set,
   for all 63 Sweet/cream combinations, actual ID discovery/commands, SQL reloads,
   held-item consumption, cosmetic persistence, failure controls and concurrent retries.
+- `python tests/integration/trade_held_cases.py`, with an explicit test DSN,
+  for all 17 existing trade-held mappings, ID discovery/equip/evolve/reload,
+  ownership and placement preservation, rollback, retries and competing requests.
 - Set `PF2_TEST_POSTGRES_DSN` to an expendable test database to also run competing
   evolution/equip/remove requests across independent connections. The harness
   creates and drops only a random test schema and does not run migrations.
-- The existing PostgreSQL lifecycle CI runs both integration scripts plus the
+- The existing PostgreSQL lifecycle CI runs these integration scripts plus the
   focused evolution/command tests.
 
 The merged workflow retains the battle progression, status, capture, medicine,
 nickname/Fusion display and Adventure/gym recovery checks introduced in #721.
-Evolution adds 27 real-model PostgreSQL cases, including Black Augurite through
+The existing evolution/equip suite has 28 real-model PostgreSQL cases, including Black Augurite through
 the real command, retries, accented/gender-symbol source names, legacy inventory
-aliases and preservation of saved HP, PP, EXP, EVs and major status. Together
-the ten production-model PostgreSQL suites exercise 144 cases. Disposable-schema
-tests do not validate a running game or replace live gameplay acceptance.
+aliases and preservation of saved HP, PP, EXP, EVs and major status. The separate
+Sweet and trade-held suites extend that coverage as described above.
+Disposable-schema tests do not validate a running game or replace live gameplay
+acceptance.

@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from pokemon.names import normalize_name
 from pokemon.evolution_forms import AlcremieEvolution
+from pokemon.evolution_items import TradeHeldEvolution
 
 from ..dex import POKEDEX
 
@@ -120,9 +121,12 @@ def evolution_options(species, *, level, item=None, context=None):
         kind = raw.get("evoType", "level")
         condition = raw.get("evoCondition", "")
         sweet_evolution = AlcremieEvolution.eligible(current, evo, context.held_item)
+        trade_held_evolution = TradeHeldEvolution.eligible(current, evo, context.held_item)
         if key == "kleavor":
             condition = ""
-        if (kind not in SUPPORTED_TYPES and not sweet_evolution) or key in UNSUPPORTED_TARGETS:
+        if (
+            kind not in SUPPORTED_TYPES and not sweet_evolution and not trade_held_evolution
+        ) or key in UNSUPPORTED_TARGETS:
             continue
         if level < (evo.evo_level or 0) or (not sweet_evolution and not context.meets(condition)):
             continue
@@ -225,7 +229,11 @@ def attempt_evolution(pokemon, *, item=None, context=None, target=None):
         pokemon.name = result
     if hasattr(pokemon, "type_"):
         pokemon.type_ = ", ".join(data.types)
-    if data.raw.get("evoType") == "levelHold" or AlcremieEvolution.eligible(source, data, context.held_item):
+    if (
+        data.raw.get("evoType") == "levelHold"
+        or AlcremieEvolution.eligible(source, data, context.held_item)
+        or TradeHeldEvolution.eligible(source, data, context.held_item)
+    ):
         pokemon.held_item = ""
     # Stats are calculated from species on demand; invalidate legacy overrides.
     for attr in ("_cached_stats", "_types_override"):

@@ -528,6 +528,21 @@ and Rainbow-Swirl (all with the Alcremie- prefix). The held Sweet is consumed
 once; do not supply a second bag Sweet to +evolve. +party <slot> shows the saved
 cream and Sweet decoration. Gmax is not an evolution target. Eggs, reserved
 Pokemon and Pokemon in battle cannot use this route.
+
+Existing trade-held items have a direct, non-transfer evolution equivalent:
+equip with +hold, copy the full ID from +party <slot>, then +evolve <pokemon_id>
+without a bag item. Clamperl: Deep Sea Scale -> Gorebyss / Deep Sea Tooth ->
+Huntail; Seadra: Dragon Scale -> Kingdra; Porygon: Up-Grade -> Porygon2;
+Porygon2: Dubious Disc -> Porygon-Z; Electabuzz: Electirizer -> Electivire;
+Magmar: Magmarizer -> Magmortar; Poliwhirl/Slowpoke: King's Rock ->
+Politoed/Slowking; Onix/Scyther/Nohface: Metal Coat -> Steelix/Scizor/Kitsunoh;
+Feebas: Prism Scale -> Milotic; Rhydon: Protector -> Rhyperior; Dusclops:
+Reaper Cloth -> Dusknoir; Spritzee: Sachet -> Aromatisse; Swirlix: Whipped Dream
+-> Slurpuff. Only the held copy is consumed; bag copies, owner and party/box
+placement stay unchanged. Eggs, Fusion reservations, battles and Everstone
+still block evolution. At the same level, explicitly choose =Porygon-Z after
+equipping Dubious Disc for Porygon's second evolution. +trade remains disabled;
+non-item and partner-species trade evolutions are unsupported.
 		""",
 	},
 	{
