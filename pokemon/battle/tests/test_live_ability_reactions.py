@@ -36,9 +36,12 @@ def test_tera_shell_reduces_full_hp_damage_without_making_neutral_hits_immune(hp
 
 def test_mycelium_might_status_move_ignores_limber_but_not_innate_typing():
     battle, user, target = build_battle(attacker_ability="Mycelium Might", defender_ability="Limber")
+    # Seed the real 90% accuracy roll; this test isolates ability/type immunity.
+    battle.rng = random.Random(1)
     battle.use_move(action(battle, user, target, "Thunder Wave"))
     assert target.status == "par"
     battle, user, target = build_battle(attacker_ability="Mycelium Might", defender_ability="Limber", defender_types=["Electric"])
+    battle.rng = random.Random(1)
     battle.use_move(action(battle, user, target, "Thunder Wave"))
     assert target.status != "par"
 
