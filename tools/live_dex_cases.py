@@ -207,7 +207,8 @@ def move_cases(dex):
             before_turns.append(turn("+attack Splash", "+attack " + setup_move))
         if move_key in {"belch", "recycle"}:
             # Let an actual held berry be consumed naturally on battle entry.
-            a = replace(a, item="Oran Berry", hp_fraction=.35)
+            # Recycle must finish above half HP to retain the restored berry.
+            a = replace(a, item="Oran Berry", hp_fraction=.49 if move_key == "recycle" else .35)
         if move_key == "teatime":
             a = replace(a, item="Oran Berry", hp_fraction=.8)
         if move_key in {"attract", "captivate"}:
@@ -321,6 +322,9 @@ def move_cases(dex):
                                {"type": "pp_cost", "side": "A", "move": name, "value": 1}))
         if move_key in {"fling", "stuffcheeks", "teatime"}:
             assertions.append({"type": "item", "side": "A", "value": ""})
+        if move_key == "recycle":
+            assertions.extend(({"type": "item", "side": "A", "value": "", "initial": True},
+                               {"type": "item", "side": "A", "value": "Oran Berry"}))
         if move_key == "fling":
             assertions.append({"type": "damage", "side": "B"})
         if move_key == "stuffcheeks":

@@ -39,3 +39,28 @@ An item callback existing in `pokemon/dex/functions/items_funcs.py` is not enoug
 
 Use the offline battle testing workflow in [offline-battle-testing.md](offline-battle-testing.md)
 for targeted held-item outcome tests and exhaustive item smoke checks.
+
+## Item support evidence
+
+The current [per-item reconciliation](testing/battle-item-support-2026-10-21.json)
+accounts for all 576 loaded definitions: 283 retained battle/reward items have
+declared outcome proof from the final local-player sweep; 293 definitions have
+explicit scope exclusions. Each retained item links to exact checks and archived
+evidence hashes. This is a battle-scope classification, so an excluded field item
+is not thereby declared unsupported in every part of the game.
+
+The [#757 closeout report](testing/item-support-closeout-2026-10-21.md) separates
+fresh automated checks from historical ordinary-player evidence and publication
+or deployment. Its matrix freezes 18 batches with exact item/check lists, at most
+25 items and 50 battle templates each. New defects require separate bounded work.
+
+The original [failure matrix](testing/battle-item-matrix-2026-10-20.json),
+[post-repair sweep](testing/full-battle-items-postrepair-2026-10-20.md) and
+[final post-form-repair sweep](testing/full-battle-postformfix-2026-10-20.md)
+remain historical snapshots. Read them in that order; their results describe
+their own builds. Callback resolution, assignment smoke, full Mega/Z systems,
+acquisition and untested combinations do not become supported through this index.
+
+Player-facing command/help availability remains coordinated through
+[#731](https://github.com/PokemonFusion/Fusion2/issues/731). This reconciliation
+changes test fixtures and evidence navigation; it adds no player commands or items.

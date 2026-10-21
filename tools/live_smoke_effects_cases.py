@@ -114,7 +114,9 @@ def probes():
     add("Bestow", a=(actor(("Bestow",), item="Lagging Tail"),),
         assertions=(check("item", value=""), check("item", "B", value="Lagging Tail")))
     add("Corrosive Gas", b=(idle(item="Lagging Tail"),), assertions=(check("item", "B", value=""),))
-    add("Recycle", a=(actor(("Recycle",), item="Oran Berry", hp_fraction=.2),),
+    # Entry consumes the berry and heals above half HP, so the restored item
+    # survives the turn. At .2 HP a second legal consumption hides restoration.
+    add("Recycle", a=(actor(("Recycle",), item="Oran Berry", hp_fraction=.49),),
         assertions=(check("item", value="Oran Berry"),), rules=({"type": "recycle"},))
     add("Natural Gift", a=(actor(("Natural Gift",), item="Cheri Berry"),),
         assertions=(check("damage", "B"), check("item", value="")), rules=({"type": "executed_type", "value": "Fire"},))

@@ -317,3 +317,41 @@ supported in combat, it needs at least one semantic contract for the expected
 state change. Use the dex smoke tests for broad "all entries load and can be
 exercised" coverage, and Showdown differential cases for mechanics where final
 state parity matters.
+
+## Reusable item verification fixtures
+
+The [current item support matrix](testing/battle-item-support-2026-10-21.json)
+links every retained item to declared normal-flow evidence and fixes the exact
+item/check lists and budgets for future reruns. Generate or verify it with:
+
+```powershell
+..\evenv\Scripts\python.exe -B tools/reconcile_item_support.py --check
+```
+
+When the retained local archives are available, rehash them without starting a
+server, logging in, or changing saved evidence:
+
+```powershell
+..\evenv\Scripts\python.exe -B tools/reconcile_item_support.py --check --evidence-root .codex-artifacts/full-items-postformfix-20261020 --compare-local-source
+```
+
+The matrix uses LF-normalized text identity so Git checkout newline conversion
+does not change its meaning. Compressed evidence archives retain exact byte
+hashes. The optional local source comparison checks raw bytes, including newline
+format, separately from the portable matrix.
+
+The checked-in catalog and supplemental Recycle cases start at 49% HP. The berry
+is consumed on entry and heals above half HP; Recycle can then restore a held
+berry that survives the completed turn. Starting at 20% can legally consume it
+again, which is a negative fixture control rather than a restoration defect.
+
+The paired Mycelium Might runner uses Good as Gold for a persistent status-bypass
+positive, Limber for a completed-turn cure negative, and an Electric target for
+innate paralysis immunity. Both negative triggers are explicitly excluded from
+positive-effect claims. The single-move immunity regression separately seeds the
+real Thunder Wave accuracy roll; it does not disable accuracy checks.
+
+Run `pokemon/battle/tests/test_reusable_probe_fixtures.py` for current native
+entry/action/residual proof. These automated tests do not establish a fresh live
+player run. The [closeout report](testing/item-support-closeout-2026-10-21.md)
+records that distinction and the affected and mandatory-suite commands/results.

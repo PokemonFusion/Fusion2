@@ -51,6 +51,7 @@ class Trigger:
     turn_repeats: int = 1
     probabilistic: bool = False
     target_reserve: bool = False
+    positive_trigger: bool = True
 
 
 def boosts(side, **values):
@@ -64,6 +65,22 @@ def volatile(side, name, present=True):
 
 
 TRIGGERS = (
+    # Good as Gold proves persistent status bypass. Limber can legally cure
+    # paralysis on update after the move's temporary ability bypass ends.
+    Trigger("Mycelium Might", "Thunder Wave", "outcomes", owner_species="Toedscruel",
+            target_species="Gholdengo", target_ability="Good as Gold", label="status-through-good-as-gold",
+            assertions=({"type": "status", "side": "B", "value": "par"},),
+            control_assertions=({"type": "not_status", "side": "B", "value": "par"},)),
+    Trigger("Mycelium Might", "Thunder Wave", "outcomes", owner_species="Toedscruel",
+            target_species="Persian", target_ability="Limber", label="limber-cure-negative",
+            positive_trigger=False,
+            assertions=({"type": "not_status", "side": "B", "value": "par"},),
+            control_assertions=({"type": "not_status", "side": "B", "value": "par"},)),
+    Trigger("Mycelium Might", "Thunder Wave", "outcomes", owner_species="Toedscruel",
+            target_species="Pikachu", target_ability="No Ability", label="innate-type-negative",
+            positive_trigger=False,
+            assertions=({"type": "not_status", "side": "B", "value": "par"},),
+            control_assertions=({"type": "not_status", "side": "B", "value": "par"},)),
     *(Trigger(ability, "False Swipe", "outcomes", side, owner_species=species, label="contact-window",
               turn_repeats=4, probabilistic=True,
               assertions=({"type": "damage", "side": side, "after_turn": 1},
@@ -535,6 +552,7 @@ def run(output, selected=None):
                 if not selected and variant.key in previous:
                     continue
                 row = {"key": variant.key, "ability": trigger.ability, "trigger": asdict(trigger),
+                       "positive_trigger": trigger.positive_trigger,
                        "status": "needs_diagnosis", "started_utc": now()}
                 baseline = runner.run_case(control)
                 if baseline["status"] not in {"smoke_completed", "outcome_verified"}:
