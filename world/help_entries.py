@@ -492,6 +492,24 @@ lower friendship by 5 below 200 or 10 at 200+; Energy Root by 10/15 and Revival
 Herb by 15/20, with a floor of zero.
 PP Up and PP Max increase PP capacity; at their prompt use +use <move name or number>.
 During battle use +item <item>. +heal restores your party at a Pokemon Center.
+
++use Oran Berry=3      Feed an existing recovery berry to a party Pokemon.
++use Berry Juice=3     Restore up to 20 HP.
++use Leppa Berry=3/4   Restore up to 10 PP in active move slot 4.
++use Pomeg Berry=3     Lower HP EVs by up to 10 and raise friendship.
+
+Feedable HP items: Oran (10 HP), Sitrus (1/4 max HP), Figy/Wiki/Mago/Aguav/
+Iapapa (1/3 max HP), and Berry Juice (20 HP). Field flavor recovery does not
+apply combat-only confusion. Cheri/Chesto/Pecha/Rawst/Aspear cure paralysis/
+sleep/poison or toxic/burn/freeze; Lum cures any major saved condition.
+Leppa uses the same move selector and caps as Ether. Recovery cannot revive.
+Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato reduce HP/Atk/Def/SpA/SpD/Spe EVs
+by up to 10, floored at zero. EV berries add friendship: 10 below 100, 5 below
+200, or 2 at 200+, capped at 255. They work if either effect is useful, including
+friendship at zero EVs. Pomeg preserves missing HP after max HP falls, keeps
+living Pokemon at least at 1 HP and leaves fainted Pokemon fainted.
+Other combat-trigger, confusion-only and contest berries cannot be fed with
++use. These field rules do not change held berry consumption during battle.
 Escape Rope field use is not implemented.
 
 # Evolution

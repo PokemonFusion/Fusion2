@@ -1,0 +1,867 @@
+{
+  "issue": 754,
+  "baseline_commit": "87bb3c041502977ad537774a26fe9bb2bc0c5bc9",
+  "implementation_at_verification": "local working tree",
+  "proof": "automated ordinary command parser/function with production models in disposable PostgreSQL",
+  "public_deployment_verified": false,
+  "live_field_player_session_verified": false,
+  "feedable_items": 21,
+  "ev_reduction": 10,
+  "friendship_policy": {
+    "below_100": 10,
+    "below_200": 5,
+    "at_200_or_higher": 2,
+    "cap": 255
+  },
+  "integration_tests": {
+    "field_berry_cases": 26,
+    "field_item_cases": 23,
+    "cloud_gameplay_cases": 9,
+    "remaining_item_cases": 8,
+    "status_item_cases": 9,
+    "capture_pp_item_cases": 16
+  },
+  "focused_command_tests": 17,
+  "mandatory_gate": [
+    {
+      "name": "combined",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1356,
+      "seconds": 192.31
+    },
+    {
+      "name": "repeat",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1356,
+      "seconds": 189.17
+    },
+    {
+      "name": "battle-first",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1366,
+      "seconds": 181.57
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "commands/player/cmd_inventory.py",
+      "sha256": "21801029A2260D0E7762433994842C230DEAC4174E724EB6BDEB18F546319FF1"
+    },
+    {
+      "path": "pokemon/services/field_items.py",
+      "sha256": "2EE42F63DAEE9D6B8294A99CC67E178D2749529CDA45144D0468602953768E2E"
+    },
+    {
+      "path": "pokemon/services/field_berries.py",
+      "sha256": "1E6A9F480BD9ED7F70ED3296838FDAAF565A1A307777FE66FC3CB45BE5425D41"
+    },
+    {
+      "path": "tests/integration/field_berry_cases.py",
+      "sha256": "7946BEE4049A20DB95F193E94D5EF45508F55A9E97C65D312E635338E464738D"
+    },
+    {
+      "path": "world/help_entries.py",
+      "sha256": "00E19734C26882C1925DBDE87B916A333CEEBDD295583EE561C078E470C964E1"
+    },
+    {
+      "path": ".github/workflows/lifecycle-integrity.yml",
+      "sha256": "722397119188B19CB68FA8C5A4CC401C400A25EF738B5313F0CE4831A116E32F"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_ability_reactions.py",
+      "sha256": "0499B4E9C422E1D280D7036740A0EEEFAAB88CC97AABE62E9B0C762B52D8CD6C"
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "pokemon/battle/__init__.py",
+      "sha256": "6B466071C5CB60567323C3183EE3E88EDD68D1BB1BE34A6E68D5605F2AE13C5B"
+    },
+    {
+      "path": "pokemon/battle/_shared.py",
+      "sha256": "B47904E5901030C30243099904305D9C0BBD8FBC16A579C230673C297CB34C36"
+    },
+    {
+      "path": "pokemon/battle/accuracy.py",
+      "sha256": "E7CB6624FBC126336F9FEE85C83BB2F34B7622F0893F637FE964A042EF614752"
+    },
+    {
+      "path": "pokemon/battle/action_queue.py",
+      "sha256": "59B6467F939BCE71C11F8BAE73F795B388C50C638EF5C7C65CFBAFC45FEEC957"
+    },
+    {
+      "path": "pokemon/battle/actionqueue.py",
+      "sha256": "818726DAA2649D54559A57B8378B5161C0EC7CC9359C46BEA8448F39B94A013F"
+    },
+    {
+      "path": "pokemon/battle/actions.py",
+      "sha256": "F8493C8B480C761A7A8AA7E715DA971B10D8CE1AD628CF737F8E5147FBABA81F"
+    },
+    {
+      "path": "pokemon/battle/active_slots.py",
+      "sha256": "73BE14A3F0E82A23F938CD338ED71D24E9876767A44E93EBFEF430C568BFC66C"
+    },
+    {
+      "path": "pokemon/battle/ai.py",
+      "sha256": "B16C267AFBDCA3FF6E60866920C375AE778C041E1C0FA4391F46130297412A45"
+    },
+    {
+      "path": "pokemon/battle/ai_action_scoring.py",
+      "sha256": "59EC29FC9A4A50FDCC2B7F117C9079D46F919A3338BFD364060C0B78593F6E19"
+    },
+    {
+      "path": "pokemon/battle/ai_actions.py",
+      "sha256": "BDC6E75F4DAF5293FD9676DA1CF63CF9A6C00F558F45F7882EB84482904A9D1E"
+    },
+    {
+      "path": "pokemon/battle/ai_profiles.py",
+      "sha256": "777127146118C35C5D6A539485C8A710D6F5B33CF805AB27A680ECA8AB21010B"
+    },
+    {
+      "path": "pokemon/battle/ai_scoring.py",
+      "sha256": "37CE6F9A83D97ED0C2B08739235ABD04A3F9F7237DED570A213869C8E1391023"
+    },
+    {
+      "path": "pokemon/battle/appearance.py",
+      "sha256": "418BF36050C95C6B134CEB3BB833C0C1D9FFDF7A7137CC5EBFA94123E6669682"
+    },
+    {
+      "path": "pokemon/battle/battledata.py",
+      "sha256": "109E2815FB83449E0D18FD191557377D4F6AB00F2405F5F7F9E0FE477CA2903A"
+    },
+    {
+      "path": "pokemon/battle/battleinstance.py",
+      "sha256": "4B33D171F46C5AC302B09E828C16FEA2CB1A273B381F5EDBBF9D8FAF31EF5041"
+    },
+    {
+      "path": "pokemon/battle/callbacks.py",
+      "sha256": "FD6C9FD2F9B94995638B7B28F986CA7919838130565CB8D2C39C2C6CF7474FF8"
+    },
+    {
+      "path": "pokemon/battle/called_moves.py",
+      "sha256": "D1AB338BA7DAECA6745111BFB51EE3A7D558E17999DA03D2ED3F679DC78F7EA1"
+    },
+    {
+      "path": "pokemon/battle/capture.py",
+      "sha256": "A42043C6ADD9DEE9175AC29C419712C5071E0FCFBB48930B7F79EF0BE2C1BFCB"
+    },
+    {
+      "path": "pokemon/battle/compat.py",
+      "sha256": "B2A2AAB7932DD89EED6BDE6A20CA69F2EC1FC6CE29F5E0E5853B9BFA91FC610C"
+    },
+    {
+      "path": "pokemon/battle/conditions.py",
+      "sha256": "2C91D91ACD6FE223FA1742FF3462AF0694B9D3F29E9D2B57DCA9EDF00EB8579F"
+    },
+    {
+      "path": "pokemon/battle/contracts.py",
+      "sha256": "817E26380B511EC5D1308E70F217D2C11C85CF902E8D5AF7F94D714B19985888"
+    },
+    {
+      "path": "pokemon/battle/copied_moves.py",
+      "sha256": "2276D6C162D96DA6018AE315B0FAFB4331B0269D244BE0B95B0471EA0C08F1EB"
+    },
+    {
+      "path": "pokemon/battle/damage.py",
+      "sha256": "CB6F06B4B772A326B09518A45FA5494EEDC7929055CD55AE49FEF8B8B73E64E0"
+    },
+    {
+      "path": "pokemon/battle/delayed_moves.py",
+      "sha256": "118F30160D1BAE86CC6AF5C97C41C3F09200FAF22F7353BFBBA37BC9564F4B2D"
+    },
+    {
+      "path": "pokemon/battle/effect_context.py",
+      "sha256": "17BB8B3B5328B65DE0727E77742B6E248067616864959F84B34D46522D78EDEB"
+    },
+    {
+      "path": "pokemon/battle/engine.py",
+      "sha256": "63862F26DA0DA7EA09134E086B42C443D1E5932F1B40A2D65B4042EC3BFAAE3E"
+    },
+    {
+      "path": "pokemon/battle/error_handling.py",
+      "sha256": "4DB9BC1B20FBDBE678CD923662D0844E165B65022A806366CEF642DC77395FE9"
+    },
+    {
+      "path": "pokemon/battle/events.py",
+      "sha256": "D26A7253FBD19B7603DE5A42A433EAD0A01D468B1EA1B20362309895346345DD"
+    },
+    {
+      "path": "pokemon/battle/handler.py",
+      "sha256": "68C1EE96DF4D7B2C5CD6D2F1784B0D007D1FE5E1DDC742BE2559D3FB3F53E5C3"
+    },
+    {
+      "path": "pokemon/battle/indirect_damage.py",
+      "sha256": "836C93C29CD557BF357F8BA130250ABFEFCFC0F5209A8C941C46C0EE503240FD"
+    },
+    {
+      "path": "pokemon/battle/interface.py",
+      "sha256": "EB0FE7D0490A29F4ADDBA11B957C95AC1AA82C762EC486788C4468558B21022F"
+    },
+    {
+      "path": "pokemon/battle/item_effects.py",
+      "sha256": "8DD531A865FBF93B5B2FED82435EC0F4137AD80E9D78BE8B84EBF7A4D40D61F6"
+    },
+    {
+      "path": "pokemon/battle/legal_actions.py",
+      "sha256": "A58549788D1DB4D33D36A3F3BEBBEE992F720AAD7C2C35F3379C70137DCAF02F"
+    },
+    {
+      "path": "pokemon/battle/logic.py",
+      "sha256": "3666767A4B67E0562322B9BC988DDA5449C97E1EE871200810986FF19D40641A"
+    },
+    {
+      "path": "pokemon/battle/messaging.py",
+      "sha256": "EB3EEB933B11F912477A7B65B0BA56D743E285DA396832FED16F2AEB1E232D8C"
+    },
+    {
+      "path": "pokemon/battle/native_forms.py",
+      "sha256": "46B982826CB6013068D1DF5EF83BE5F8A88F7A968C06E758954CAC6752193EC0"
+    },
+    {
+      "path": "pokemon/battle/participants.py",
+      "sha256": "046CCFA64CDB4F5532C0DA7EF5D4D208E3FC8656E86A0AB676C5784654B5AAD0"
+    },
+    {
+      "path": "pokemon/battle/persistence.py",
+      "sha256": "6ABCD190137407A0F5C7218E4C5FB1B2EBDD7198EA74279412B4ACD1434EA94F"
+    },
+    {
+      "path": "pokemon/battle/player_choices.py",
+      "sha256": "7181E3293F2FF1F9B7371473A7F5A5AFD033C206F13E90B08A852EFC34A7BE5E"
+    },
+    {
+      "path": "pokemon/battle/pokemon_factory.py",
+      "sha256": "E2306B4ECA8AEEE8561C017D06D57E4EA6F46A6F63D2D92EA3CCEBA0FEAEDE48"
+    },
+    {
+      "path": "pokemon/battle/protection.py",
+      "sha256": "ECAB4ADC1F4351683A1D14600A6105440B8F79467A2A5DC6DCD0C8088EE8175E"
+    },
+    {
+      "path": "pokemon/battle/pvp.py",
+      "sha256": "341CD38199A9F3176FC6E89A0472D2ABA0FD0C00BB411272234322757E49782D"
+    },
+    {
+      "path": "pokemon/battle/random_source.py",
+      "sha256": "4552A9C4D272C5F6C1A4997C8049444C69A8101F3E1590C464A1D81B26C7AFED"
+    },
+    {
+      "path": "pokemon/battle/registry.py",
+      "sha256": "7FF8AE7477BE1D48BEC912D7FD4AB9E19412C9E76456B73A59042D3E931C0A0B"
+    },
+    {
+      "path": "pokemon/battle/retaliation.py",
+      "sha256": "3840AD3B0D2A1A513453AB527F7F7AFC6FD1C177F563D1C8EA143992BB0E28EE"
+    },
+    {
+      "path": "pokemon/battle/setup.py",
+      "sha256": "4B48054807D38D8429DB24820FB9A0D95B6C90B680C819DD9D4DD5E69CE55BE8"
+    },
+    {
+      "path": "pokemon/battle/simulator-doc.txt",
+      "sha256": "0077D58456C21535F4B46907E47996C2E56D81AA87D923AFD2D84418401480D2"
+    },
+    {
+      "path": "pokemon/battle/stat_activation.py",
+      "sha256": "163D1C2184285141ABB4DBCAC3932ECB8BA3C7C9DDCA3CB466A0345C5F2492A1"
+    },
+    {
+      "path": "pokemon/battle/state.py",
+      "sha256": "A7F794300CBE975C3750588526E6774844BEEF32FB57376B95AA5B3097E8FA2A"
+    },
+    {
+      "path": "pokemon/battle/status/__init__.py",
+      "sha256": "5CAC4BAC7CBA23FDA1B969D88C1FBF2450D1834936DA333F5209DDE3CFC10FED"
+    },
+    {
+      "path": "pokemon/battle/status/burn.py",
+      "sha256": "B2394F51C69B7A8356D336B512888E2C124F49AAA79AB29294DF31CCE4894A49"
+    },
+    {
+      "path": "pokemon/battle/status/freeze.py",
+      "sha256": "FC3338A69EAF2C2E69C77EC9586D75A46D05EEFDA9EECDA6BB9C41ACD0B855C5"
+    },
+    {
+      "path": "pokemon/battle/status/paralysis.py",
+      "sha256": "905BA84F7974FE134F5DFA1DC97EE5A3CD1F110C6FAA0DC91860EED2C91AED10"
+    },
+    {
+      "path": "pokemon/battle/status/poison.py",
+      "sha256": "6BFD8354530D26349F394D8C721517BB2E5D8C7E84D519E12C182ACE14089487"
+    },
+    {
+      "path": "pokemon/battle/status/sleep.py",
+      "sha256": "2F19A899F4BA1DAE00A782833A2429BBD2341B44220FB55B65EED52041C15607"
+    },
+    {
+      "path": "pokemon/battle/status/status_core.py",
+      "sha256": "90D2A809B1ED3A8D29FFFB1DB64A65251EEEE71D10566464B63F8AB6D437F75B"
+    },
+    {
+      "path": "pokemon/battle/storage.py",
+      "sha256": "5B676E7D22F890793F64DD54529A6941E011DC717EEBD764767CABF9C1DA10DE"
+    },
+    {
+      "path": "pokemon/battle/terastallization.py",
+      "sha256": "20F89C323EB7976D1F24F12D97A69A66FFE9010F027650121D04C029AD4DEE91"
+    },
+    {
+      "path": "pokemon/battle/tests/__init__.py",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "pokemon/battle/tests/differential.py",
+      "sha256": "9A84739857D4596FF654A8A18122AB87FF9A0FC75F8E14566A24D104F3655A24"
+    },
+    {
+      "path": "pokemon/battle/tests/helpers.py",
+      "sha256": "5AC43E49576D49F26627DEA799CCBA3C272D81C694DB0D28275420CA8728BCA0"
+    },
+    {
+      "path": "pokemon/battle/tests/outcome_harness.py",
+      "sha256": "2EC38FBD8FD7A5E24D3221EDCFE12D7C1112E8CE7E5D1DA9B8E407C017ECC671"
+    },
+    {
+      "path": "pokemon/battle/tests/showdown_diff_runner.js",
+      "sha256": "F9304A1E718837648A35D84DE6C577630B9F837EFC02E54EA81FA3C37E7D840D"
+    },
+    {
+      "path": "pokemon/battle/tests/test_ability_type_modifiers.py",
+      "sha256": "AFFC28D5E353828223DC1E69E0373B142F9CD280EC84E117C2C3831E473297D3"
+    },
+    {
+      "path": "pokemon/battle/tests/test_additional_item_effects.py",
+      "sha256": "6693B636DC5A23AE9F82177DD3C398BBF3B55F8D0EA3BD5881A065F2B0103AF0"
+    },
+    {
+      "path": "pokemon/battle/tests/test_boost_switch_pp_event_flow.py",
+      "sha256": "99728B2C4F5A269240D18792C168178A6957324F675E8D59ADB6CAABCE9894C7"
+    },
+    {
+      "path": "pokemon/battle/tests/test_boost_volatile_trigger_context.py",
+      "sha256": "FEC8AF0F5A90E0C2BC0BD1841D3BC2AB3B55C35621184064233FED669F3DD8F6"
+    },
+    {
+      "path": "pokemon/battle/tests/test_callback_registration_arity.py",
+      "sha256": "7DB903EA433239D7775E12C3225E33D33FBEF39B34EECF25A089A06E15A65BC8"
+    },
+    {
+      "path": "pokemon/battle/tests/test_callback_registry.py",
+      "sha256": "BB7A18425647EF4C3BD6459B93F042ACFB3CA4CBFC42B0F65CB15B31F2FEDA14"
+    },
+    {
+      "path": "pokemon/battle/tests/test_called_move_execution.py",
+      "sha256": "537C18524C812F1F522C9232727DE2B1E31BFE0606F84AC58836B12ECE05129A"
+    },
+    {
+      "path": "pokemon/battle/tests/test_constant_ability_hooks.py",
+      "sha256": "129067B581EE27AD08DCDE592BE1FDCCC8597004D2DBA0F45DA15389C26D6C92"
+    },
+    {
+      "path": "pokemon/battle/tests/test_consumable_form_guards.py",
+      "sha256": "1B87BDAA3E0B0A99DFCB8E306F8E9AB7ACAAD4B5853D5686181B211F776D84D2"
+    },
+    {
+      "path": "pokemon/battle/tests/test_copied_move_persistence.py",
+      "sha256": "7C5E3FA485AC027981665AD6C2321668383AA209258290F6A344B6416CC5638D"
+    },
+    {
+      "path": "pokemon/battle/tests/test_damage_event_flow.py",
+      "sha256": "B3394415692A96DC8A9AEB0B14C251FFC94D70B11FD1439709A655941877FA5A"
+    },
+    {
+      "path": "pokemon/battle/tests/test_damage_modifier_ownership.py",
+      "sha256": "DE646FC440B28E5D7285BC84867A43ADEE781B12F82EA17B6DFCA63542AB0E48"
+    },
+    {
+      "path": "pokemon/battle/tests/test_delayed_move_lifecycles.py",
+      "sha256": "BCB44698BC546ACAAA8C23479C345D6AC2AE311C484B228041531137D3D34C32"
+    },
+    {
+      "path": "pokemon/battle/tests/test_diagnosed_ability_paths.py",
+      "sha256": "BB5AC000618FD9FEE344F5F289036EE4DC994B7BA26C5E4721C6827A7B23BECC"
+    },
+    {
+      "path": "pokemon/battle/tests/test_diagnosed_item_effects.py",
+      "sha256": "FAE35B06CFBEE4F3078F4DFD364069463F15996BFC787B608008D22F8145695B"
+    },
+    {
+      "path": "pokemon/battle/tests/test_event_dispatcher.py",
+      "sha256": "156987461D18FFBA7017FC3CCFAFCAF484C4C139C3537E41C3519EF900348546"
+    },
+    {
+      "path": "pokemon/battle/tests/test_exhaustive_dex_smoke.py",
+      "sha256": "B10E7FA89E6F19CC9FFFF325705464258701DB60C1C72F2D385F8DC8556EE4D9"
+    },
+    {
+      "path": "pokemon/battle/tests/test_field_condition_messages.py",
+      "sha256": "AA3B7D7D6EBF01363490B88643E0BC68EED83298FDC96CB20762B6561C1CE554"
+    },
+    {
+      "path": "pokemon/battle/tests/test_field_side_event_flow.py",
+      "sha256": "6A94EF6D4E0A8F47A68D2E35BFDC671E0CDC5852C0A7ACA10D51CA94C708B4D3"
+    },
+    {
+      "path": "pokemon/battle/tests/test_field_stat_ability_paths.py",
+      "sha256": "711BFBC504304B7FF1EAA22E2BECE6BA752FDBDF73E055791802CE2217CE31B9"
+    },
+    {
+      "path": "pokemon/battle/tests/test_five_diagnosed_live_defects.py",
+      "sha256": "86174FF65489C4821E1B620576285973DC4B85041268A17A00E89A3AAC525C61"
+    },
+    {
+      "path": "pokemon/battle/tests/test_flash_fire_fly_live_regressions.py",
+      "sha256": "BDA646968609BAC57D4753FAA685939ECAD6351689E6BC0ACE899325C785C7B7"
+    },
+    {
+      "path": "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+      "sha256": "1079A86AC58C110A5D58FBE28148DB752656FECC1FB79262E97FCF52F46F3C24"
+    },
+    {
+      "path": "pokemon/battle/tests/test_generated_move_callbacks.py",
+      "sha256": "101A443E8AB11F9076AE4BC248B0FFE646340A0F38054E648777F0D10F7B3D75"
+    },
+    {
+      "path": "pokemon/battle/tests/test_heal_event_flow.py",
+      "sha256": "00276D86E669FC4CDDDBC90144BD6C73BA631553A46F8DBB3C6F4DC7AAAA2804"
+    },
+    {
+      "path": "pokemon/battle/tests/test_hit_gate_event_flow.py",
+      "sha256": "68B48A27457D5C84F8C65F1CFF5853BF1BBB08476ECCDF329CDBE50322BF9058"
+    },
+    {
+      "path": "pokemon/battle/tests/test_item_core_runtime.py",
+      "sha256": "B5C4F1A97A3A4103A7675CCFEA7FE238D987D4C22EFDDA957078D78A025193A2"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_ability_move_context.py",
+      "sha256": "3185FD7CB2F0670D85BF953DFD16A7ED80EE722F255BA95B23E50A481566F95F"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_ability_reactions.py",
+      "sha256": "A6BD6B0CE7808DD9A52C637457AB74A0977CAC4481F65EED88E2CF69D9D04580",
+      "sha256_after": "0499B4E9C422E1D280D7036740A0EEEFAAB88CC97AABE62E9B0C762B52D8CD6C",
+      "permitted_change": "Seed the real 90-percent accuracy roll in the existing Mycelium Might/Limber immunity fixture; runtime mechanics unchanged."
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_ability_trigger_resolution.py",
+      "sha256": "A2A76429865EBB2C7787E4DE47B7B9BCFA47FAFE3BFE746B0030AFEFA81D47E7"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_accuracy_and_secondary_consumers.py",
+      "sha256": "B595BDB3CBB3837008AA7699D8DEC9BDCE66EDB808841F82037B105586D2241B"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_checkpoint_effect_consumers.py",
+      "sha256": "ABB74A590F28383C379EFC52B91B3D2DB9E19E5ACA0F85457068ABB23D0312BA"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_move_state_persistence.py",
+      "sha256": "B14BC5694EC4C8A40AF7EE9AD95E96A4AEA0D51CB63DF1278496DDC9D42619AA"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_side_protection.py",
+      "sha256": "F2C9EAB58D7EB7E11CF7CCCD4E361CFAEEE8CEA5FD3F1B7BD63F4F503EAE92E6"
+    },
+    {
+      "path": "pokemon/battle/tests/test_live_trigger_lifecycle.py",
+      "sha256": "200251B8A762F30A32A900160A250B5F1D946BFFA6DA1DD170AA1ABB964546C5"
+    },
+    {
+      "path": "pokemon/battle/tests/test_move_abort_message_flow.py",
+      "sha256": "92C19D6E28A6C4EC25A0C70C384DD3EA1B6B7C5971A0991EB5065BE7E6B7DDA2"
+    },
+    {
+      "path": "pokemon/battle/tests/test_move_control_event_flow.py",
+      "sha256": "00C416F695DD8DBD6EBC5E0AA12868A88735456BADA288F244FA3EC4FAF52B91"
+    },
+    {
+      "path": "pokemon/battle/tests/test_move_pp_persistence.py",
+      "sha256": "F3CF665A580D9D41CAAD708BF46FAEFDC574D08D602CC580A8A09C33B8FB3E09"
+    },
+    {
+      "path": "pokemon/battle/tests/test_move_pp_serialization.py",
+      "sha256": "979325288EAEC09174F4D71EE82076ECE8FDAD9973ABEE14ECCD303042315FD3"
+    },
+    {
+      "path": "pokemon/battle/tests/test_move_resolution_event_flow.py",
+      "sha256": "871DF9E0EDFA90D6D9FDF204FF736AEBBE72CD4D13AB3A71CFBB7FC4DC43A77B"
+    },
+    {
+      "path": "pokemon/battle/tests/test_named_ability_damage.py",
+      "sha256": "33F5959CB7CC161C774EB34EE6956A974A88B8BB8A7BB7FA46590D462C6EE189"
+    },
+    {
+      "path": "pokemon/battle/tests/test_native_ability_lifecycles.py",
+      "sha256": "A53FFEBE305894A708BB36C4EF285AF1254820BB2556B8B6DE010977CE2F796D"
+    },
+    {
+      "path": "pokemon/battle/tests/test_native_form_and_postbattle_items.py",
+      "sha256": "2E0805816D0670B58B853A1C49A775DEAD659CF32821FFDF1B3E565C6D36F228"
+    },
+    {
+      "path": "pokemon/battle/tests/test_offline_outcome_harness.py",
+      "sha256": "7D376DC84490903A3D538DB31242DB87A2C6B5BA2166E1D30D84F45054D9B56B"
+    },
+    {
+      "path": "pokemon/battle/tests/test_ohko_execution_rules.py",
+      "sha256": "4C9AA2E8DEC72DCF638FBDD06C2F50BEE109AEDF1B3CA42CEF33169F0C5A8816"
+    },
+    {
+      "path": "pokemon/battle/tests/test_pending_action_effects.py",
+      "sha256": "F479DDDB83FB6B066B69B6F1FA5C734D42F4BD9F567271C1DA5865D7020AD58E"
+    },
+    {
+      "path": "pokemon/battle/tests/test_post_hit_after_move_flow.py",
+      "sha256": "77B9FCF80B2DCE537887D5E623794EC1A153E21E964D32E4A75FAED8921D51F0"
+    },
+    {
+      "path": "pokemon/battle/tests/test_pressure_live_regressions.py",
+      "sha256": "0B203522F86E030C605DCAEC824CD64021CA4DA4939DECE76C7251EFC965C7E7"
+    },
+    {
+      "path": "pokemon/battle/tests/test_remaining_item_effects.py",
+      "sha256": "1EBF13E9355E18CE2EA507210FF632775C04E8CB322B66D7D97D2E8EADD6DAC0"
+    },
+    {
+      "path": "pokemon/battle/tests/test_retaliation_live_regressions.py",
+      "sha256": "66A47A3811AAC3FB3F400B9AFE13010AAA99F2B9AB18E3DE24D41425D73ED2A0"
+    },
+    {
+      "path": "pokemon/battle/tests/test_sacrifice_revival_lifecycle.py",
+      "sha256": "CC7A690C721AB456973D82FEBD44CAB0CFB7C235EEE87FC273052AFEAF242323"
+    },
+    {
+      "path": "pokemon/battle/tests/test_scoped_holder_event_flow.py",
+      "sha256": "590DDE19D6074895EF433684C550ECB296E962FC3BD55AB5C6C5756E1C9BCA02"
+    },
+    {
+      "path": "pokemon/battle/tests/test_scripted_move_legality.py",
+      "sha256": "9F38341098F3801154EAAC4CB39662BC82AF7618E38075ED27610A90296BEA45"
+    },
+    {
+      "path": "pokemon/battle/tests/test_secondary_power_abilities.py",
+      "sha256": "1B421AE3FC88AF7B1A4B41C3A083DF91553AF5C5CE94F5DBC683F862E8B2BAD7"
+    },
+    {
+      "path": "pokemon/battle/tests/test_showdown_differential.py",
+      "sha256": "DE2E86E926F9E5F32106D5F980EBB4A8A927D7208815013542632876EE947577"
+    },
+    {
+      "path": "pokemon/battle/tests/test_showdown_event_core.py",
+      "sha256": "05E56D3891FC36E46665C659883022DB7F052445FA78BE605DF95A5F269DAA4E"
+    },
+    {
+      "path": "pokemon/battle/tests/test_showdown_runtime_hooks.py",
+      "sha256": "C36D5DCC3C0E5ED3E996390CF5BAB4AFAA0706FF90ECC7A0311D996C23CD8ED4"
+    },
+    {
+      "path": "pokemon/battle/tests/test_smoke_discovered_effects.py",
+      "sha256": "B155AD49B36381BF0010FD4D7B41D32E8FE8F91002A8B5475DD629DC985C88B0"
+    },
+    {
+      "path": "pokemon/battle/tests/test_snow_weather_live.py",
+      "sha256": "B51FBB2998E63D5FF0DBCD22D73FF056376EE98EE5A64682F7C03F656C5B87FD"
+    },
+    {
+      "path": "pokemon/battle/tests/test_special_move_preconditions.py",
+      "sha256": "8DFF09155A4002B5108317017C65F430DF601367A7146DCD7034C189B0785803"
+    },
+    {
+      "path": "pokemon/battle/tests/test_stateful_power_context.py",
+      "sha256": "B0E5D72DC8DE4A1B6BE95252ADA789AEEE229A7457326BA81A03583A48974F03"
+    },
+    {
+      "path": "pokemon/battle/tests/test_status_burn.py",
+      "sha256": "C191DDEEFD3ED2F3A09FE596F3937A20B103016985FF2A45F60849C2FA443DC2"
+    },
+    {
+      "path": "pokemon/battle/tests/test_status_freeze.py",
+      "sha256": "12D388CCACDEED085C64EAE51BD81105D34A04E02B2B27E35D2033E3D7F2260F"
+    },
+    {
+      "path": "pokemon/battle/tests/test_status_paralysis.py",
+      "sha256": "5EC17DD65CF97D70071D240CCE6A4467BCD6492C80BA5EA18BE495B53DADB790"
+    },
+    {
+      "path": "pokemon/battle/tests/test_status_poison.py",
+      "sha256": "D2F96B41B89D96826C6F12E607F7F73BCA0A563E971D439EF313F7DF2D928B29"
+    },
+    {
+      "path": "pokemon/battle/tests/test_status_sleep.py",
+      "sha256": "7262E7C0E22D19526D77928EC3435AA098E79611AD1B23CDCCF0D6D5F4E7F09E"
+    },
+    {
+      "path": "pokemon/battle/tests/test_target_trap_drag_flow.py",
+      "sha256": "367E7262C6D66A4A4506392594BF70E61F381957A8B321439FC23096F2409B6F"
+    },
+    {
+      "path": "pokemon/battle/tests/test_toxic_chain_trigger_context.py",
+      "sha256": "E99F4485D7840C07763978C5FC368FD5FB41101C1F0F06806E4F50085A3EEF5A"
+    },
+    {
+      "path": "pokemon/battle/tests/test_try_move_event_flow.py",
+      "sha256": "39C4B070B0433FA31276BE8522B5C9869E9CCA06ACCFA3EABDE7A49AB4AC2A03"
+    },
+    {
+      "path": "pokemon/battle/tests/test_turn_order_event_flow.py",
+      "sha256": "9F668A4241199858C92950EF7558888BB9549E2A726A8AC2E085A122C0F649CC"
+    },
+    {
+      "path": "pokemon/battle/tests/test_weather_damage_guards.py",
+      "sha256": "698CAD50884222757AB3272FE809399723C19811604D524037C41569CDE6B60E"
+    },
+    {
+      "path": "pokemon/battle/tests/test_wonder_guard_natural_matchups.py",
+      "sha256": "AAF0A35D5044D8C84C4550CD6B245CEE31BB533FC79B2875D070CA9DD0B80F88"
+    },
+    {
+      "path": "pokemon/battle/tests/test_zen_mode_lifecycle.py",
+      "sha256": "623140F7B58A31102EACBD5AF6D4FB6C2CD379E11D678C5CDCD6D82B129A0C5B"
+    },
+    {
+      "path": "pokemon/battle/turn.py",
+      "sha256": "3AD795B398B38FB8A0970AEB88BCA23A1589F2794AF5FD453EFF945B5C953CA0"
+    },
+    {
+      "path": "pokemon/battle/turnorder.py",
+      "sha256": "D3B0AA94C30AD5C21F0E52AC5756486165C081B0A3EB30B68B6300B2A19E5B49"
+    },
+    {
+      "path": "pokemon/battle/turns.py",
+      "sha256": "12FA9833AEE548780117BC2AC353C78173C1C1D4B6FFE8F4EB9162D406A65294"
+    },
+    {
+      "path": "pokemon/battle/utils.py",
+      "sha256": "B38B5E2416E78791AD2046F652FD975E010FB707B703668353F73472294D4D23"
+    },
+    {
+      "path": "pokemon/battle/watchers.py",
+      "sha256": "CCF33E77C20155018CA3D4C423AF758817A97E0A98BF49F7ED02A95D0345F52A"
+    },
+    {
+      "path": "pokemon/dex/functions/items_funcs.py",
+      "sha256": "3DC94F02534F28E147747630DCC0C0417B1A1112DCFE7002D62C423B0E151B46"
+    },
+    {
+      "path": "pokemon/dex/items/itemsdex.py",
+      "sha256": "F68A205F060CC75B64B5883671D089764D1D275BE35AD2F54E141A94258535F3"
+    },
+    {
+      "path": "pokemon/helpers/berry_system.py",
+      "sha256": "A09A282559340514C248D575ABBF4497ECA5F2CCAECDD6557B7BA4F77BE46517"
+    }
+  ],
+  "walkthrough": [
+    {
+      "command": "+use Oran Berry=3",
+      "output": "Used Oran Berry on 3.",
+      "before": {
+        "current_hp": 1,
+        "status": "psn",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 11,
+        "status": "psn",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "pp": [
+        0,
+        0
+      ],
+      "max_hp": 191,
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Pecha Berry=3",
+      "output": "Used Pecha Berry on 3.",
+      "before": {
+        "current_hp": 11,
+        "status": "psn",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 11,
+        "status": "",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "pp": [
+        0,
+        0
+      ],
+      "max_hp": 191,
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Leppa Berry=3/Water Gun",
+      "output": "Used Leppa Berry on 3.",
+      "before": {
+        "current_hp": 11,
+        "status": "",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 11,
+        "status": "",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "pp": [
+        0,
+        10
+      ],
+      "max_hp": 191,
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Pomeg Berry=3",
+      "output": "Used Pomeg Berry on 3.",
+      "before": {
+        "current_hp": 11,
+        "status": "",
+        "evs": [
+          252,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 10,
+        "status": "",
+        "evs": [
+          242,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "friendship": 80
+      },
+      "pp": [
+        0,
+        10
+      ],
+      "max_hp": 190,
+      "remaining_item": 0
+    }
+  ],
+  "initial_mandatory_gate": [
+    {
+      "name": "combined",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1356,
+      "seconds": 194.89
+    },
+    {
+      "name": "repeat",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1356,
+      "seconds": 195.13
+    },
+    {
+      "name": "battle-first",
+      "failed": 1,
+      "passed": 4332,
+      "skipped": 4014,
+      "warnings": 1367,
+      "seconds": 187.5,
+      "failure": "Existing unseeded Thunder Wave accuracy fixture in test_mycelium_might_status_move_ignores_limber_but_not_innate_typing"
+    }
+  ],
+  "fixture_diagnosis": {
+    "ability_file_tests_passed": 27,
+    "no_field_services_imported": true,
+    "seed_1_normal_status": "par",
+    "seed_1_electric_status": 0,
+    "seed_2_normal_status": 0,
+    "seed_2_reason": "Thunder Wave missed at its unchanged 90-percent accuracy"
+  },
+  "disposable_schemas_remaining": 0,
+  "disposable_postgres_stopped": true,
+  "mandatory_runner_exit": 0,
+  "github": {
+    "issue": 754,
+    "state": "closed",
+    "evidence_comment": "https://github.com/PokemonFusion/Fusion2/issues/754#issuecomment-6306300833",
+    "tracker": 747,
+    "tracker_state": "open",
+    "completed_children": 7,
+    "total_children": 15,
+    "remaining_open": [
+      755,
+      756,
+      757,
+      758,
+      759,
+      760,
+      761,
+      762
+    ]
+  },
+  "publication_boundary": {
+    "scope": "Nine #754 berry implementation, test, help, CI and report files",
+    "excluded_local_work": [
+      "pokemon/battle/tests/test_live_ability_reactions.py"
+    ],
+    "full_suite_validation": "Tested working-tree snapshot included the excluded local RNG seed; full-suite counts are not a fresh-checkout assertion for the berry commit alone.",
+    "field_validation": "Berry/medicine PostgreSQL and focused command results are independent of the excluded battle test fixture."
+  }
+}

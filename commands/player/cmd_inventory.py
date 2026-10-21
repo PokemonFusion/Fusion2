@@ -372,6 +372,9 @@ class CmdUseItem(Command):
       +use Revive=6
       +use Ether=3/Water Gun
       +use Max Elixir=fusion
+      +use Oran Berry=3
+      +use Leppa Berry=3/Water Gun
+      +use Pomeg Berry=3
 
     Notes:
       Field medicine heals HP, cures status, revives fainted Pokemon and
@@ -380,6 +383,12 @@ class CmdUseItem(Command):
       /<move name or slot>; omitting it selects the first depleted active move.
       Elixirs restore all active moves. Herbs also lower friendship on success.
       PP Up and PP Max prompt for a move and increase PP capacity.
+      Recovery berries and Berry Juice share medicine limits. Leppa restores
+      one active move. Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato lower the matching
+      HP/Atk/Def/SpA/SpD/Spe EVs by up to 10 and raise friendship by 10 below
+      100, 5 below 200, or 2 at 200+ (cap 255). Either useful effect allows use.
+      An ineffective use consumes nothing. EV berries do not revive Pokemon.
+      Other combat-trigger and contest berries have no manual field route.
       Battle items use +battle/item while a battle is waiting for your action.
       +heal restores your party at a Pokemon Center.
     """
@@ -472,9 +481,12 @@ class CmdUseItem(Command):
             )
             return
 
+        from pokemon.services.field_berries import FieldBerryUse
         from pokemon.services.field_items import FieldMedicineUse
 
-        if FieldMedicineUse.supports(item_name):
+        field_service = next((service for service in (FieldMedicineUse, FieldBerryUse)
+                              if service.supports(item_name)), None)
+        if field_service is not None:
             display_name = _display_item_name(item_data, canonical)
             if not parsed.target_query:
                 self.caller.msg(f"Usage: +use {display_name}=<party slot, Pokemon name or fusion>[/<move>]")
@@ -484,7 +496,7 @@ class CmdUseItem(Command):
                 self.caller.msg("Specify a Pokemon target and, after '/', a move name or slot.")
                 return
             try:
-                used = FieldMedicineUse(self.caller).use(
+                used = field_service(self.caller).use(
                     item_name, target_query.strip(), move=move.strip() if separator else None
                 )
             except ValueError as error:
@@ -545,7 +557,7 @@ class CmdUseItem(Command):
 
         self.caller.msg(
             f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
-            "Supported field items include medicine, PP restoratives, Rare Candy, PP Up and PP Max. "
+            "Supported field items include medicine, recovery/EV berries, Berry Juice, Rare Candy, PP Up and PP Max. "
             "Use +heal at a Pokemon Center to restore your party; "
             "battle items use +item <item> during battle."
         )

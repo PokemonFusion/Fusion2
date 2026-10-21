@@ -17,6 +17,8 @@ class FieldMedicineUse:
         """Bind the character, never a client-provided trainer or Pokemon."""
         self.caller = caller
 
+    selected_move_items = {"ether", "maxether"}
+
     @classmethod
     def supports(cls, item):
         """Share the battle medicine allowlist without adding new item families."""
@@ -34,6 +36,8 @@ class FieldMedicineUse:
                     or str(p["pokemon_id"]) == fusion_id]
         text = query.strip()
         key = normalize_name(text)
+        if not key:
+            raise FieldMedicineError("Specify a Pokemon target.")
         if text.isdigit():
             matches = [p for p in eligible if p["location_type"] == "party" and p["slot"] == int(text)]
         elif key in {"fusion", "self", "me"}:
@@ -63,12 +67,10 @@ class FieldMedicineUse:
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import UserStorage
         from pokemon.models.trainer import Trainer
-        from utils.pokemon_utils import build_battle_pokemon_from_model
-
         if not self.supports(item):
-            raise FieldMedicineError("That item is not field medicine.")
-        if move is not None and normalize_name(item) not in {"ether", "maxether"}:
-            raise FieldMedicineError("Only Ether and Max Ether accept a move selector.")
+            raise FieldMedicineError("That item cannot be used in the field.")
+        if move is not None and normalize_name(item) not in self.selected_move_items:
+            raise FieldMedicineError("That item does not accept a move selector.")
         pokemon = None
         try:
             storage = UserStorage.objects.get(user_id=self.caller.pk)
@@ -82,15 +84,12 @@ class FieldMedicineUse:
                 self._refresh(pokemon, row)
                 pokemon, placement = PlacementService(storage)._pokemon(pokemon, storage)
                 if pokemon.trainer_id != trainer.pk or pokemon.is_egg:
-                    raise FieldMedicineError("Medicine requires an eligible owned party Pokemon; eggs cannot use it.")
+                    raise FieldMedicineError("Field items require an eligible owned party Pokemon; eggs cannot use them.")
                 if placement is None or placement.location_type not in {"party", "fusion"}:
                     raise FieldMedicineError("That Pokemon is no longer in your party or current Fusion.")
                 if not trainer.has_item(item):
                     raise FieldMedicineError("You don't have any of that item to use.")
-                snapshot = build_battle_pokemon_from_model(pokemon)
-                return BattleMedicineUse(snapshot, trainer, move=move).use(
-                    item, lambda: trainer.remove_item(item)
-                )
+                return self._apply(item, pokemon, trainer, move=move)
         except (UserStorage.DoesNotExist, Trainer.DoesNotExist,
                 OwnedPokemon.DoesNotExist, PlacementError) as error:
             raise FieldMedicineError("That Pokemon is no longer an eligible owned party member.") from error
@@ -101,3 +100,12 @@ class FieldMedicineUse:
                 if row is not None:
                     self._refresh(pokemon, row)
                     OwnedPokemon.cache_instance(pokemon)
+
+    def _apply(self, item, pokemon, trainer, *, move=None):
+        """Reuse medicine effects only after the shared field checks and locks."""
+        from utils.pokemon_utils import build_battle_pokemon_from_model
+
+        snapshot = build_battle_pokemon_from_model(pokemon)
+        return BattleMedicineUse(snapshot, trainer, move=move).use(
+            item, lambda: trainer.remove_item(item)
+        )
