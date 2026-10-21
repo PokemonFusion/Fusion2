@@ -7,6 +7,19 @@ Pokemon UUIDs, or `fusion`/`self`/`me` for the current reserved Fusion. Eggs,
 boxed Pokemon, foreign owners and inactive Fusion reservations are ineligible.
 An effective use consumes one item; invalid or ineffective uses consume none.
 
+## Healing food, drinks and revival equivalents
+
+The [14-item effect/price and acquisition table](field-food-medicine.md) adds
+Fresh Water (30 HP), Soda Pop (50), Lemonade (70), Moomoo Milk (100), Sweet Heart
+(20), seven major-status foods, and two revival equivalents to the same field
+medicine service. For example, use `+use Fresh Water=3` or `+use Max Honey=6`.
+Max Honey revives one eligible fainted target to full HP. `+use Sacred Ash=party`
+revives eligible fainted canonical party members with one item; living members,
+eggs, boxes and all Fusion reservations are untouched. These equivalents are
+field-only, accept no move selector, and add no story/Max Soup/Gigantamax unlock.
+They are opt-in existing shop/reward stock; no live shop or automatic grant is
+created. Inventory and itemdex show full names, descriptions and metadata.
+
 ## Existing berry feeding allowlist
 
 | Items | Field effect |

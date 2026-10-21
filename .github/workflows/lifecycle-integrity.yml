@@ -108,6 +108,8 @@ jobs:
         run: python tests/integration/capture_pp_item_cases.py
       - name: Field medicine commands, exact targets, rollback and concurrent debits
         run: python tests/integration/field_item_cases.py
+      - name: Food and drink medicine equivalents, shop-to-use and atomic party revival
+        run: python tests/integration/field_food_cases.py
       - name: Field berry feeding, EV reduction, friendship and transactional persistence
         run: python tests/integration/field_berry_cases.py
       - name: Battle medicine, reserve revival and PP snapshot regressions

@@ -512,6 +512,20 @@ Other combat-trigger, confusion-only and contest berries cannot be fed with
 +use. These field rules do not change held berry consumption during battle.
 Escape Rope field use is not implemented.
 
++use Fresh Water=3    Restore up to 30 HP (Soda Pop 50, Lemonade 70,
+                     Moomoo Milk 100, Sweet Heart 20).
++use Lava Cookie=3    Cure a major saved status (also Old Gateau,
+                     Casteliacone, Lumiose Galette, Shalour Sable,
+                     Big Malasada and Pewter Crunchies).
++use Max Honey=6      Revive one fainted target to full HP; no unlock effect.
++use Sacred Ash=party Revive eligible fainted canonical party members with
+                     one item. Living members, eggs, boxes and all Fusion
+                     reservations remain untouched.
+These equivalents use field medicine checks, accept no /move selector and
+cannot be used during battle. Ineffective uses and failed writes consume nothing.
+Buy only from shops/rewards deliberately configured to offer them; adding the
+definitions does not stock a room or grant a player anything.
+
 # Evolution
 
 +evolve <pokemon_id> [item] [=<target>]

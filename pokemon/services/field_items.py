@@ -53,6 +53,10 @@ class FieldMedicineUse:
             raise FieldMedicineError("Choose an owned party Pokemon by slot, name or full ID, or your current Fusion.")
         return matches[0]["pokemon_id"]
 
+    def _targets(self, storage, query, item):
+        """Resolve one target by default; party medicines override the selection."""
+        return [self._target(storage, query)]
+
     @staticmethod
     def _refresh(pokemon, row):
         """Bypass Evennia's identity map and discard stale derived relations."""
@@ -71,35 +75,40 @@ class FieldMedicineUse:
             raise FieldMedicineError("That item cannot be used in the field.")
         if move is not None and normalize_name(item) not in self.selected_move_items:
             raise FieldMedicineError("That item does not accept a move selector.")
-        pokemon = None
+        pokemon_targets = []
         try:
             storage = UserStorage.objects.get(user_id=self.caller.pk)
             with PlacementService(storage).locked() as storage:
                 trainer = Trainer.objects.select_for_update().get(user_id=storage.user_id)
                 if not require_no_battle_lock(self.caller):
                     return None
-                identifier = self._target(storage, target)
-                row = OwnedPokemon.objects.select_for_update().filter(pk=identifier).values().get()
-                pokemon = OwnedPokemon.objects.get(pk=identifier)
-                self._refresh(pokemon, row)
-                pokemon, placement = PlacementService(storage)._pokemon(pokemon, storage)
-                if pokemon.trainer_id != trainer.pk or pokemon.is_egg:
-                    raise FieldMedicineError("Field items require an eligible owned party Pokemon; eggs cannot use them.")
-                if placement is None or placement.location_type not in {"party", "fusion"}:
-                    raise FieldMedicineError("That Pokemon is no longer in your party or current Fusion.")
+                for identifier in self._targets(storage, target, item):
+                    row = OwnedPokemon.objects.select_for_update().filter(pk=identifier).values().get()
+                    pokemon = OwnedPokemon.objects.get(pk=identifier)
+                    self._refresh(pokemon, row)
+                    pokemon_targets.append(pokemon)
+                    pokemon, placement = PlacementService(storage)._pokemon(pokemon, storage)
+                    if pokemon.trainer_id != trainer.pk or pokemon.is_egg:
+                        raise FieldMedicineError("Field items require an eligible owned party Pokemon; eggs cannot use them.")
+                    if placement is None or placement.location_type not in {"party", "fusion"}:
+                        raise FieldMedicineError("That Pokemon is no longer in your party or current Fusion.")
                 if not trainer.has_item(item):
                     raise FieldMedicineError("You don't have any of that item to use.")
-                return self._apply(item, pokemon, trainer, move=move)
+                return self._apply_targets(item, pokemon_targets, trainer, move=move)
         except (UserStorage.DoesNotExist, Trainer.DoesNotExist,
                 OwnedPokemon.DoesNotExist, PlacementError) as error:
             raise FieldMedicineError("That Pokemon is no longer an eligible owned party member.") from error
         finally:
             # atomic() rolls back rows, not shared Evennia model instances.
-            if pokemon is not None:
+            for pokemon in pokemon_targets:
                 row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().first()
                 if row is not None:
                     self._refresh(pokemon, row)
                     OwnedPokemon.cache_instance(pokemon)
+
+    def _apply_targets(self, item, pokemon_targets, trainer, *, move=None):
+        """Preserve the existing single-target effect dispatch by default."""
+        return bool(pokemon_targets) and self._apply(item, pokemon_targets[0], trainer, move=move)
 
     def _apply(self, item, pokemon, trainer, *, move=None):
         """Reuse medicine effects only after the shared field checks and locks."""

@@ -375,6 +375,9 @@ class CmdUseItem(Command):
       +use Oran Berry=3
       +use Leppa Berry=3/Water Gun
       +use Pomeg Berry=3
+      +use Fresh Water=3
+      +use Max Honey=6
+      +use Sacred Ash=party
 
     Notes:
       Field medicine heals HP, cures status, revives fainted Pokemon and
@@ -389,6 +392,10 @@ class CmdUseItem(Command):
       100, 5 below 200, or 2 at 200+ (cap 255). Either useful effect allows use.
       An ineffective use consumes nothing. EV berries do not revive Pokemon.
       Other combat-trigger and contest berries have no manual field route.
+      Healing foods/drinks and status foods use the same field medicine rules.
+      Max Honey revives one fainted target to full HP; Sacred Ash=party revives
+      eligible fainted party members with one item, excluding eggs/boxes/Fusion.
+      These equivalents are field-only and accept no move selector.
       Battle items use +battle/item while a battle is waiting for your action.
       +heal restores your party at a Pokemon Center.
     """
@@ -482,14 +489,16 @@ class CmdUseItem(Command):
             return
 
         from pokemon.services.field_berries import FieldBerryUse
+        from pokemon.services.field_food import FieldFoodUse
         from pokemon.services.field_items import FieldMedicineUse
 
-        field_service = next((service for service in (FieldMedicineUse, FieldBerryUse)
+        field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse)
                               if service.supports(item_name)), None)
         if field_service is not None:
             display_name = _display_item_name(item_data, canonical)
             if not parsed.target_query:
-                self.caller.msg(f"Usage: +use {display_name}=<party slot, Pokemon name or fusion>[/<move>]")
+                selector = "party" if getattr(item_data, "target_scope", "") == "party" else "<party slot, Pokemon name or fusion>[/<move>]"
+                self.caller.msg(f"Usage: +use {display_name}={selector}")
                 return
             target_query, separator, move = parsed.target_query.partition("/")
             if not target_query.strip() or (separator and not move.strip()):

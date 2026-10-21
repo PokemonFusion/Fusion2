@@ -191,6 +191,11 @@ _CATEGORY_RULES: List[tuple[str, str]] = [
 def _categorise_item(name: str) -> str:
         """Return a best-effort category label for ``name``."""
 
+        from pokemon.items import get_gameplay_item
+
+        item = get_gameplay_item(_strip(name))
+        if item and getattr(item, "category", ""):
+                return item.category
         lowered = name.lower()
         for token, category in _CATEGORY_RULES:
                 if token in lowered:

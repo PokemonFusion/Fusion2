@@ -284,6 +284,12 @@ def format_item_details(name, details):
 
 	if name != display_name:
 		lines.append(f"Dex Key: {name}")
+	category = _get(details, "category")
+	if category:
+		lines.append(f"Category: {category}")
+	price = _get(details, "price")
+	if price is not None:
+		lines.append(f"Reference price: ${price}")
 
 	generation = _get(details, "gen")
 	if generation is not None:
