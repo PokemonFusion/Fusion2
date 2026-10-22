@@ -100,6 +100,8 @@ def _fusion_boost_enabled() -> bool:
 def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemon:
     """Return a battle-ready ``Pokemon`` object from a stored model."""
 
+    from pokemon.hyper_training import HyperTraining
+
     if Pokemon is None:
         raise RuntimeError("Battle modules not available")
 
@@ -197,6 +199,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         gender=getattr(model, "gender", "N"),
         tera_type=getattr(model, "tera_type", ""),
         friendship=getattr(model, "friendship", 70),
+        hyper_training=HyperTraining.trained(model),
     )
     battle_poke.name = name
     status = PersistentStatus() if full_heal else PersistentStatus.from_pokemon(model)

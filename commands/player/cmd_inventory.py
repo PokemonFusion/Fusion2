@@ -324,6 +324,8 @@ class CmdUseItem(Command):
       +use Health Feather=fusion
       +use Ability Capsule=3
       +use Ability Patch=fusion
+      +use Bottle Cap=3/Atk
+      +use Gold Bottle Cap=fusion
       +use Fresh Water=3
       +use Max Honey=6
       +use Sacred Ash=party
@@ -363,6 +365,11 @@ class CmdUseItem(Command):
       Both use the saved native species/form slots; special abilities, absent
       destinations and single-ability Capsule uses have no effect. Invalid
       saved abilities and transformed/locked forms cannot use these items.
+      Hyper Training requires level 50+. Bottle Cap needs /<stat name>:
+      HP/Atk/Def/SpA/SpD/Spe. Gold Bottle Cap trains all remaining eligible
+      stats with one copy and no selector. Trained stats use effective IV 31;
+      genetic IVs remain unchanged. Perfect/already-trained stats spend none.
+      Training preserves HP deficit/fainting and appears on +party <slot>.
       Other combat-trigger and contest berries have no manual field route.
       Healing foods/drinks and status foods use the same field medicine rules.
       Max Honey revives one fainted target to full HP; Sacred Ash=party revives
@@ -437,19 +444,24 @@ class CmdUseItem(Command):
         from pokemon.services.field_progression import FieldRareCandyUse
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_abilities import FieldAbilityUse
+        from pokemon.services.field_hyper_training import FieldHyperTrainingUse
 
         field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse,
-                                                     FieldRareCandyUse, FieldTrainingUse, FieldAbilityUse)
+                                                     FieldRareCandyUse, FieldTrainingUse, FieldAbilityUse,
+                                                     FieldHyperTrainingUse)
                               if service.supports(item_name)), None)
         if field_service is not None:
             display_name = _display_item_name(item_data, canonical)
             if not parsed.target_query:
                 selector = "party" if getattr(item_data, "target_scope", "") == "party" else "<party slot, Pokemon name or fusion>[/<move>]"
+                if hasattr(field_service, "usage_target"):
+                    selector = field_service.usage_target(item_name)
                 self.caller.msg(f"Usage: +use {display_name}={selector}")
                 return
             target_query, separator, move = parsed.target_query.partition("/")
             if not target_query.strip() or (separator and not move.strip()):
-                self.caller.msg("Specify a Pokemon target and, after '/', a move name or slot.")
+                label = getattr(field_service, "selection_label", "move name or slot")
+                self.caller.msg(f"Specify a Pokemon target and, after '/', a {label}.")
                 return
             try:
                 service = field_service(self.caller)
@@ -489,7 +501,7 @@ class CmdUseItem(Command):
 
         self.caller.msg(
             f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
-            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Ability Capsule/Patch, Rare Candy, PP Up and PP Max. "
+            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. "
             "Use +heal at a Pokemon Center to restore your party; "
             "battle items use +item <item> during battle."
         )

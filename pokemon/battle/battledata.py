@@ -257,7 +257,11 @@ class Pokemon:
         types: Optional[List[str]] = None,
         tera_type: str = "",
         friendship: int = 70,
+        hyper_training: Optional[List[str]] = None,
     ):
+        from pokemon.hyper_training import HyperTraining
+
+        self.hyper_training = HyperTraining.canonical(hyper_training)
         self.friendship = max(0, min(255, int(friendship)))
         self.name = name
         self.species = name
@@ -863,7 +867,8 @@ class Pokemon:
         from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 
         data = SimpleNamespace(species=str(new_forme), level=self.level,
-                               ivs=self.ivs, evs=self.evs, nature=self.nature)
+                               ivs=self.ivs, evs=self.evs, nature=self.nature,
+                               hyper_training=self.hyper_training)
         stats = get_stats(data)
         maximum = get_max_hp(data)
         if not stats or maximum <= 0:
@@ -1022,6 +1027,7 @@ class Pokemon:
                 "max_hp": self.max_hp,
                 "moves": [_move_payload(m, index) for index, m in enumerate(self.moves)],
                 "ivs": list(self.ivs),
+                "hyper_training": list(self.hyper_training),
                 "evs": list(self.evs),
                 "nature": self.nature,
                 "types": list(self.types),
@@ -1059,6 +1065,7 @@ class Pokemon:
         ability = data.get("ability")
         item = data.get("item")
         ivs = data.get("ivs")
+        hyper_training = data.get("hyper_training")
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
         types = data.get("types")
@@ -1088,6 +1095,9 @@ class Pokemon:
                     if "item" not in data:
                         item = getattr(poke, "item", getattr(poke, "held_item", item))
                     ivs = getattr(poke, "ivs", ivs)
+                    from pokemon.hyper_training import HyperTraining
+
+                    hyper_training = HyperTraining.trained(poke)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
                     gender = getattr(poke, "gender", gender)
@@ -1168,6 +1178,7 @@ class Pokemon:
             model_id=model_id,
             gender=gender,
             friendship=70 if friendship is None else friendship,
+            hyper_training=hyper_training,
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
         disguised = (data.get("ability_state", {}) or {}).get("illusion")

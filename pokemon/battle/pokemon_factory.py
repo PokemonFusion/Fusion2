@@ -52,6 +52,9 @@ def _calc_stats_from_model(poke):
 		"spd": ivs_list[4],
 		"spe": ivs_list[5],
 	}
+	from pokemon.hyper_training import HyperTraining
+
+	ivs = HyperTraining.effective(ivs, poke)
 	evs = {
 		"hp": evs_list[0],
 		"atk": evs_list[1],

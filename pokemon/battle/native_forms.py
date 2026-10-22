@@ -34,12 +34,14 @@ class NativeBattleForm:
         """Calculate a reversible form, preserving damage and the first backup."""
         from pokemon.dex.entities import Stats
         from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
+        from pokemon.hyper_training import HyperTraining
 
         previous = {"species": str(pokemon.species), "name": pokemon.name,
                     "types": list(pokemon.types), "ability": str(getattr(pokemon.ability, "name", pokemon.ability)),
                     "max_hp": pokemon.max_hp}
         data = SimpleNamespace(species=species, level=pokemon.level,
-                               ivs=pokemon.ivs, evs=pokemon.evs, nature=pokemon.nature)
+                               ivs=pokemon.ivs, evs=pokemon.evs, nature=pokemon.nature,
+                               hyper_training=HyperTraining.trained(pokemon))
         stats = get_stats(data)
         maximum = get_max_hp(data)
         if not stats or not maximum:

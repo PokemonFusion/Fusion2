@@ -72,6 +72,9 @@ def _calculate_from_data(pokemon):
                         "special_defense": ivs_attr[4],
                         "speed": ivs_attr[5],
                 }
+        from pokemon.hyper_training import HyperTraining
+
+        ivs = HyperTraining.effective(ivs, pokemon)
         if isinstance(evs_attr, dict):
                 evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs_attr.items()}
                 evs = {stat: evs.get(stat, 0) for stat in STAT_KEY_MAP.values()}

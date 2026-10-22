@@ -608,6 +608,13 @@ def _maybe_stat_breakdown(pokemon: PokemonLike) -> str | None:
 		table.add_row(*row_iv)
 	if row_ev:
 		table.add_row(*row_ev)
+	from pokemon.hyper_training import HyperTraining
+
+	trained = HyperTraining.trained(pokemon)
+	if trained and ivs:
+		table.add_row(*_row(HyperTraining.effective(ivs, pokemon), f"{THEME['muted']}Effective IV|n"))
+		labels = [HyperTraining.labels[HyperTraining.stats.index(stat)] for stat in trained]
+		return str(table) + "\nHyper Trained: " + ", ".join(labels) + ". IV row remains genetic."
 	return str(table)
 
 

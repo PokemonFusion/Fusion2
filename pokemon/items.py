@@ -109,7 +109,21 @@ FIELD_RECOVERY_ITEMS = {
 }
 
 
+HYPER_TRAINING_ITEMS = {
+    "bottlecap": GameplayItem(
+        "Bottle Cap", "Hyper Training at level 50+: +use Bottle Cap=<target>/<HP|Atk|Def|SpA|SpD|Spe>. "
+        "One eligible stat uses effective IV 31; genetic IVs stay unchanged. Consumes one bag copy on useful training."
+    ),
+    "goldbottlecap": GameplayItem(
+        "Gold Bottle Cap", "Hyper Training at level 50+: +use Gold Bottle Cap=<target>. "
+        "One copy trains all remaining eligible stats to effective IV 31 without changing genetic IVs. "
+        "No effect when every stat is already trained or genetically perfect."
+    ),
+}
+
+
 GAMEPLAY_ITEMS = {
+    **HYPER_TRAINING_ITEMS,
     "leaderscrest": HeldQualificationItem(
         "Leader's Crest", "Marks authored leader Bisharp opponents. Your Bisharp must personally KO three "
         "qualifying leaders in won NPC/wild battles, then gain a level and use +evolve. "

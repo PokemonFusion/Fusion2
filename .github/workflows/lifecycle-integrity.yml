@@ -130,6 +130,8 @@ jobs:
         run: python tests/integration/field_training_cases.py
       - name: Ability item native slots, reversible Patch, evolution and atomic field use
         run: python tests/integration/ability_item_cases.py
+      - name: Bottle Cap Hyper Training, genetic IV preservation, battle reload and atomic use
+        run: python tests/integration/hyper_training_cases.py
       - name: PP capacity prompts, atomic use and legacy raw bonuses on PostgreSQL
         run: python tests/integration/pp_capacity_cases.py
       - name: Battle medicine, reserve revival and PP snapshot regressions

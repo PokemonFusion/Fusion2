@@ -219,9 +219,10 @@ leave a free effect or spend a useless item. See the
 [training acceptance report](testing/field-training-2026-10-22.md) for actual
 commands, SQL reload, caps, rollback and concurrent-use evidence.
 
-No training definitions, battle feeding, Pretty Feather use, nature mints,
-Bottle Cap or ability-item routes are added here. Existing EV-lowering berry
-amounts, friendship and HP behavior remain separate and covered by regressions.
+Vitamins and feathers use this EV-specific service; ability-changing items and
+Bottle Caps use the separate routes below. Pretty Feather, nature mints and
+battle training remain unsupported. Existing EV-lowering berry amounts,
+friendship and HP behavior remain separate and covered by regressions.
 
 ## Ability Capsule and Ability Patch
 
@@ -271,6 +272,54 @@ HP, status, identity, placement, held item, EVs/IVs, friendship, level, moves an
 cosmetic flags are unchanged. Fainted eligible targets remain fainted. See the
 [ability-item acceptance report](testing/ability-items-2026-10-22.md) for commands,
 reloads, evolution/native-form cases, rollback and competing-use evidence.
+
+## Bottle Caps and Hyper Training
+
+`+use Bottle Cap=3/Atk` trains one selected stat. Full stat names and the exact
+aliases `HP`, `Atk`, `Def`, `SpA`, `SpD`, `Spe`, `SpAtk` and `SpDef` are accepted;
+numbers, partial names and move names are not stat selectors. A Bottle Cap
+always requires a selector. `+use Gold Bottle Cap=3` trains every remaining
+eligible stat with one copy and accepts no selector. Targets also accept exact
+unambiguous names, full IDs and the current Fusion under shared field rules.
+
+The selected Generation-9 rule requires **level 50 or higher**, with consistent
+saved level/EXP. See the primary reference's
+[Hyper Training level policy](https://github.com/kwsch/PKHeX/blob/master/PKHeX.Core/PKM/Interfaces/IHyperTrain.cs)
+and [perfect-IV eligibility checks](https://github.com/kwsch/PKHeX/blob/master/PKHeX.Core/Legality/Verifiers/HyperTrainingVerifier.cs).
+An eligible stat has genetic IV below 31 and is not already Hyper Trained.
+Gold Bottle Cap skips genetically perfect and previously trained stats and
+consumes nothing if no eligible stats remain. Training applies effective IV 31
+for stat calculation; it can be useful before rounding changes a displayed stat.
+Fainted targets can train but remain at zero HP. Living targets preserve their
+absolute HP deficit when maximum HP changes, matching the field EV convention.
+
+**Persistent contract:** the existing `OwnedPokemon.flags` array stores one
+`hypertrained:<canonical stat>` marker per trained stat. The six keys are `hp`,
+`attack`, `defense`, `special_attack`, `special_defense` and `speed`. Existing
+flags are preserved. No schema change, migration or retroactive training is
+required; old rows with no markers retain genetic stat behavior. Invalid saved
+IV/EV arrays, invalid training markers, unknown/battle-only species, item/ability-locked
+forms, transformed targets, inconsistent level/EXP, eggs, foreign/boxed/inactive reservations and battle locks cannot
+spend a cap. Training flags, adjusted HP and one inventory debit commit together,
+with post-write rollback, commit-aware caches and fresh concurrent-use checks.
+
+Genetic `ivs` remain untouched in SQL and battle snapshots. The overlay is
+applied by common stat helpers, battle construction and native-form recalculation,
+and is carried independently in battle checkpoints. Legacy owned checkpoints
+without the new optional `hyper_training` key recover it from the owned flags;
+standalone old snapshots default to no overlay. Battle-level scaling retains
+training even if the temporary battle level is below 50. Evolution preserves
+the markers. Genetic/Hidden Power and future inheritance inputs are not replaced
+with trained values; no breeding or Hidden Power implementation is added.
+
+`+party <slot>` continues to show genetic IVs and adds an Effective IV row and
+the Hyper Trained stat labels. Inventory/itemdex describe both existing caps
+and the route. The existing competitive dex retains their Generation-7 IDs
+795/796 and Fling power 30. No new price, shop stock, world grant, plot unlock,
+NPC or live availability claim is added; current obtainability stays in #772.
+Mints, breeding and broader training systems remain separate. See the
+[Hyper Training acceptance report](testing/hyper-training-2026-10-22.md) for
+ordinary commands, SQL/session rebuilds, genetic preservation and failure proof.
 
 ## Limits
 
