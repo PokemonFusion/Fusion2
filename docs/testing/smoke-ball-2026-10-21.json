@@ -1,0 +1,322 @@
+{
+  "issue": 759,
+  "completed_utc": "2026-10-22T00:04:22.404288+00:00",
+  "result": "passed_held_smoke_ball_normal_flee_and_capture_separation",
+  "baseline_commit": "3ee87190e195836aed9bfd70fb7ab885a041cb07",
+  "python": "3.12.4",
+  "source_sha256_lf": {
+    ".github/workflows/lifecycle-integrity.yml": "29f54fe0b86b46290d8d00def4119a0aed6cae5e3ef8cb09c290f65dce499b2a",
+    "commands/player/cmd_battle_flee.py": "f57811dd2668f23b99e88faf4f9e0aef8b721db02ae51247486d677027e09530",
+    "commands/player/cmd_battle_item.py": "fc40c45d3768f20cdd9a06d4cd2f547b9b2dbecaf5aa6f6fbddd8079d71f7b7c",
+    "commands/player/cmd_party.py": "7be9be03eef85ddb997f4f3f8d738ad79154031985318d8df7db43620368e43a",
+    "docs/combat-items.md": "8d6ac4f06ec6617b9a1737bb03033fd8ba5ade099cecf054c1539810d2014539",
+    "docs/smoke-ball.md": "772cdb31cb45da78cb33b71ee5f087e2ab43a288e976a0079ed79bb72ce9b331",
+    "pokemon/battle/actionqueue.py": "2d0091e3f6e8e73b93d463250c57425f1e87cc4b77d613f8bfb4a6293130c5ff",
+    "pokemon/battle/active_slots.py": "0330d31f25e8acfa92c46cff771d2b323383dd0ba2f6fc89a681f56a8c2ec0bb",
+    "pokemon/battle/battledata.py": "01cf62c70eb0298ad5617c72348e323bddde50adbb15ea0d62170d3ff643d60f",
+    "pokemon/battle/battleinstance.py": "7bcb79f9424a1944716105c826ad05b28827c1ddb7ce0dc9f6c6a4e103fbc1ea",
+    "pokemon/battle/effect_context.py": "4b1a9939293ab7a83fd9503adcd54295c04e5dc67f73f0d71184981aa32fd475",
+    "pokemon/battle/engine.py": "273b4059f564e12537ca15af4941a0e95274c278fa2c5fc5a15bd2420cf8d736",
+    "pokemon/battle/logic.py": "1ea712a0a3322db23f88f7e23b4ebc72353d50c509029ffa973b1578a96fc988",
+    "pokemon/battle/player_choices.py": "4ca77e470422b90137432a19da4ac19af65611dd0836c68120b213af28e9a347",
+    "pokemon/battle/state.py": "6526b312474c15c5262756817ccf79bb4410933c8abbb6779fd59d38a49d63b1",
+    "pokemon/battle/turn.py": "5864e4b182b0b109a77c3e27d751865176bcc75986330d4650eccbe72370b415",
+    "pokemon/battle/turns.py": "91b7c00a29f38f161a6b7fd8a314f9abab76fe927c88014042a48b440b0aa167",
+    "pokemon/data/item_prices.csv": "fe19ff5131d9821abfa9173e8a9df1f27f5864540e2fb903246346db6ec10392",
+    "pokemon/items.py": "dd19c0dcb9b7c3cb08503b4350f563c88757c071eb6ffb515d5640d06c8f2d88",
+    "pokemon/middleware.py": "9e9d613144230807debad09b844ecf782095c089b3d37c7facebc38d2b82ae6d",
+    "pokemon/names.py": "645fd0c2cbdd67bd002391cb8634b7faf1da51280b2bd7bc534e8babf70cb8a3",
+    "pokemon/services/capture.py": "4e91de87ed5c9f85c9a82737e4fa276a2217e07cc0cb6e27f89fa0117cc1472a",
+    "pokemon/services/evolution.py": "a6a6d83fa1cf617590520e04ea00fe8b10848fca91c744c2e2461cbd3ff1f93f",
+    "tests/integration/isolated_postgres.py": "4b38423ba6d7ccf08cbdfe9d022e26f0d399415adc3ef9df30d89945dcc1270b",
+    "tests/integration/smoke_ball_cases.py": "250704f3039bde38c6e0318e6bb252b11252be3b4275fe3bce3a3b822b836b40",
+    "tests/test_smoke_ball.py": "0743d5574e0ac4e82b2e53c241000eba6f738eddbb32a3eba7d74f65df32baa7",
+    "tools/run_mandatory_tests.py": "74e942d278967cf2065d0d4c3c3a47c2117723c32bb106cfa5c4de15191b0d94",
+    "world/help_entries.py": "fd0fdd61487c1d9e89232b78bc053c2fbf1778f7224fab2d7ed734cd6a3ade51"
+  },
+  "frozen_python_sources_verified": 954,
+  "dependencies": {
+    "747": "existing-item gate satisfied; all ten P1/P2 children closed",
+    "752": "closed",
+    "757": "closed; historical matrix remains pinned"
+  },
+  "definition": {
+    "canonical_key": "smokeball",
+    "display_name": "Smoke Ball",
+    "category": "Held Items",
+    "reference_price": 4000,
+    "source": "existing item_prices.csv",
+    "supplemental": true,
+    "competitive_ITEMDEX_modified": false,
+    "consumed": false,
+    "isPokeball": false,
+    "automatic_grants_or_live_stock": false
+  },
+  "policy": {
+    "route": "+hold <slot>=Smoke Ball before battle; +flee / +battle/flee during battle",
+    "eligible": "living acting owner-held active Pokemon, wild battle with flee_allowed=True",
+    "traps_bypassed": [
+      "Arena Trap",
+      "Shadow Tag",
+      "Magnet Pull"
+    ],
+    "effective_item": "EffectContext.item; item_suppressed, Klutz, Magic Room and Embargo disable effect",
+    "klutz_suppressed": "normal effective ability rules restore eligibility",
+    "restricted": [
+      "trainer/NPC",
+      "PvP",
+      "scripted battle",
+      "explicitly no-flee wild battle"
+    ],
+    "checkpoint": "BattleState.flee_allowed; old snapshots default True; explicit item/ability suppression flags persist",
+    "unrelated_holders": "bag, bench, allied, foreign and foe copies cannot supply the actor's effect",
+    "capture": "exact canonical isPokeball metadata at command, choices, queue, restore and final dispatch",
+    "item_command": "reject with held/+hold/+flee guidance before any action/debit",
+    "reusable": "held copy survives escape and SQL reload; normal removal returns one bag copy",
+    "plot_only_or_new_capture_items": false
+  },
+  "ordinary_player_flow": {
+    "proof_kind": "local automated ordinary commands, queues, engine and production models",
+    "transport": "captured client output and model-backed character resolver",
+    "fixture_setup": "tagged new owners, bag stock and controlled wild/NPC selection; separate from commands",
+    "walkthroughs": [
+      {
+        "trap": "Arena Trap",
+        "commands": [
+          "+inventory",
+          "+itemdex Smoke Ball",
+          "+hold 1=Smoke Ball",
+          "+party 1",
+          "rebuild checkpoint",
+          "+flee",
+          "+hold 1="
+        ],
+        "flee_result": {
+          "success": true,
+          "reason": "smokeball",
+          "message": "smoke-player-39478c30ee7c43c2b8afcd554737b188 fled from the battle!"
+        },
+        "held_reusable": true,
+        "unrelated_state_unchanged": true,
+        "capture_receipts": 0,
+        "capture_balls_unchanged": true
+      },
+      {
+        "trap": "Magnet Pull",
+        "commands": [
+          "+inventory",
+          "+itemdex Smoke Ball",
+          "+hold 1=Smoke Ball",
+          "+party 1",
+          "rebuild checkpoint",
+          "+flee",
+          "+hold 1="
+        ],
+        "flee_result": {
+          "success": true,
+          "reason": "smokeball",
+          "message": "smoke-player-2287f5fb3c5944b88ecb73257a5db91a fled from the battle!"
+        },
+        "held_reusable": true,
+        "unrelated_state_unchanged": true,
+        "capture_receipts": 0,
+        "capture_balls_unchanged": true
+      },
+      {
+        "trap": "Shadow Tag",
+        "commands": [
+          "+inventory",
+          "+itemdex Smoke Ball",
+          "+hold 1=Smoke Ball",
+          "+party 1",
+          "rebuild checkpoint",
+          "+flee",
+          "+hold 1="
+        ],
+        "flee_result": {
+          "success": true,
+          "reason": "smokeball",
+          "message": "smoke-player-ffd45370cc6047588ba5ffa529afafa3 fled from the battle!"
+        },
+        "held_reusable": true,
+        "unrelated_state_unchanged": true,
+        "capture_receipts": 0,
+        "capture_balls_unchanged": true
+      }
+    ],
+    "live_login_performed": false
+  },
+  "production_model_checks": {
+    "suites": {
+      "battle_recovery": {
+        "passed": 36,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 28.683,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\battle_recovery-final.log",
+        "log_sha256": "1a92338ec6aff3796c582416ff756074eb17a6efd06089936227af7b218ff4ac",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py battle_recovery_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/battle_recovery_cases.py"
+      },
+      "player_doubles": {
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 13.98,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\player_doubles-final.log",
+        "log_sha256": "2f5e19752b6609351173d17b4bde653027c5a62f407c959f771521c93dd78c78",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py player_doubles_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/player_doubles_cases.py"
+      },
+      "capture_pp_item": {
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 2.021,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\capture_pp_item-final.log",
+        "log_sha256": "4c03f4d2b76b3fb1a8253e2afb1f006308bde435a983b7ab41a6c58b750ddba2",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py capture_pp_item_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/capture_pp_item_cases.py"
+      },
+      "remaining_item": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 1.669,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\remaining_item-final.log",
+        "log_sha256": "a1a606ac3be9e939b616b3c68ddd7ace9dd13a4a407cff414a458af1fde36c24",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py remaining_item_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/remaining_item_cases.py"
+      },
+      "adventure_lifecycle": {
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 3.245,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\adventure_lifecycle-final.log",
+        "log_sha256": "1f3035e414be703e545a598e6b2869a6908122b4b8597c2ebc909655dfb6ee73",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py adventure_lifecycle_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/adventure_lifecycle_cases.py"
+      },
+      "evolution": {
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 3.419,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\evolution-final.log",
+        "log_sha256": "103000c577e26f5ec0d2320c9bf9ec88c68d7b4c1d40fe0d85620e492d6ea83a",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py evolution_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/evolution_cases.py"
+      },
+      "capture_ether": {
+        "passed": 21,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 2.853,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\capture_ether-final.log",
+        "log_sha256": "b46861d63cd998f6a262e342cc1a331a63586fba66c1fc1e494768acf7eaed9c",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py capture_ether_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/capture_ether_cases.py"
+      },
+      "smoke_ball": {
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 7.742,
+        "log": ".codex-artifacts\\smoke-ball-20261021\\smoke-final.log",
+        "log_sha256": "efea5f9c548e5438fbd64f236c960a0c77b0b36fa57d70761580a1dcd117d746",
+        "command": "python -B .codex-artifacts/smoke-ball-20261021/run_case.py smoke_ball_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/smoke_ball_cases.py"
+      }
+    },
+    "total_passed": 145,
+    "database": "fresh private loopback PostgreSQL 16.9 with explicit DSN and isolated schemas",
+    "log_wrapper": "only logging destination and argv are adapted; gameplay operations are real"
+  },
+  "focused_pytest": {
+    "passed": 157,
+    "failed": 0,
+    "exit_code": 0,
+    "command": "python -B -m pytest tests/test_smoke_ball.py tests/test_battle_run_actions.py tests/test_battle_item_command.py tests/test_battle_flee_command.py tests/test_player_doubles.py tests/test_capture.py tests/test_capture_persistence.py tests/test_item_capture.py tests/test_gameplay_items.py tests/test_itemdex_command.py tests/test_item_store_safety.py tests/test_hold_command_safety.py tests/test_help_pipe_escaping.py pokemon/battle/tests/test_live_trigger_lifecycle.py -q --run-callback-tests -o addopts= -p no:cacheprovider --basetemp=.pytest-basetemp-759-final",
+    "environment": {
+      "PF2_NO_EVENNIA": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "log_sha256": "38fa5ad26f03b952b0765e642a83ec0ce8d8ef5b27a3d315a57debc828fba6ae"
+  },
+  "capture_metadata_inspection": {
+    "definitions_checked": 28,
+    "canonical_keys_resolve": true,
+    "complete_display_names_resolve": true,
+    "proof_scope": "read-only metadata/classifier inspection; real capture behavior has separate command/model tests"
+  },
+  "mandatory_gate": {
+    "command": "python -B tools/run_mandatory_tests.py",
+    "runs": [
+      {
+        "name": "combined",
+        "passed": 4465,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 273.33,
+        "exit_code": 0
+      },
+      {
+        "name": "repeat",
+        "passed": 4465,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 267.58,
+        "exit_code": 0
+      },
+      {
+        "name": "battle-first",
+        "passed": 4465,
+        "skipped": 4014,
+        "warnings": 1401,
+        "duration_seconds": 203.42,
+        "exit_code": 0
+      }
+    ],
+    "exit_code": 0,
+    "log_sha256": "22bb0a3e94bae69023d400f0c0f357472c1add1e420777d23487fb6952a43fe2",
+    "warnings": "existing model-reload and pytest-cache permission warnings retained",
+    "skips": "4014 per process remain outside enabled gate scope; PG proof is separate"
+  },
+  "preliminary_diagnoses": [
+    "Initial focused selection named a nonexistent doubles test; corrected before executing tests.",
+    "Integration fixture read a completed session's released engine, assigned abilities only at runtime before model restore, expected incorrect removal text, and checked other owners' receipts. Fixtures corrected without changing gameplay rules.",
+    "Local log rollover met an existing open Windows file; wrapper redirects only test log destinations without stopping any process.",
+    "Three unittest.main scripts inherited wrapper filename as selector; wrapper now resets argv.",
+    "One runner worker could not decode Windows CP1252 output; rerun with explicit PYTHONIOENCODING=utf-8 passed all 21 cases."
+  ],
+  "cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_smoke_ball_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_cluster_stopped": true
+  },
+  "boundaries": {
+    "unrelated_work_included": false,
+    "plot_only_content": false,
+    "migration_runner": false,
+    "existing_service_restart": false,
+    "game_database": false,
+    "live_login": false,
+    "hosted_ci_confirmed": false,
+    "main_merge": false,
+    "deployed": false
+  }
+}

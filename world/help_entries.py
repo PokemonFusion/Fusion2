@@ -426,6 +426,11 @@ refresh the battle view.
 +battle/concede                  Forfeit an active battle after confirmation.
 +concede yes                     Confirm concession without the prompt.
 
+Equip Smoke Ball before battle with +hold <slot>=Smoke Ball. Its acting holder
+can +flee from eligible wild encounters, including trapping abilities, without
+consuming it. Item suppression, trainer/PvP and no-flee restrictions still apply.
+Use +flee for this held effect; +item Smoke Ball does not throw a capture ball.
+
 # Battle Information
 
 +battleui              Redraw your current battle view.

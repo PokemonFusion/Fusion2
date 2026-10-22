@@ -64,3 +64,13 @@ acquisition and untested combinations do not become supported through this index
 Player-facing command/help availability remains coordinated through
 [#731](https://github.com/PokemonFusion/Fusion2/issues/731). This reconciliation
 changes test fixtures and evidence navigation; it adds no player commands or items.
+
+## Supplemental held escape item
+
+[Smoke Ball](smoke-ball.md) is a supplemental gameplay definition added after
+the historical 576-definition reconciliation above. Its living acting holder
+uses the normal `+flee` route in eligible wild encounters. It is reusable and
+uses effective-item suppression; trainer/PvP and persisted server no-flee rules
+take precedence. Capture routing requires canonical `isPokeball` metadata.
+This addition has separate [command/model and regression evidence](testing/smoke-ball-2026-10-21.md);
+it does not rewrite the pinned #757 matrix or expand plot-only item scope.

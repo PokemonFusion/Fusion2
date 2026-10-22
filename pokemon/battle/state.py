@@ -35,6 +35,7 @@ class BattleState:
 	reward_id: str = field(default_factory=lambda: str(uuid4()))
 	rewards_granted: bool = False
 	battle_over: bool = False
+	flee_allowed: bool = True
 	ending: bool = False
 	flee_result: Dict = field(default_factory=dict)
 	flee_attempts: Dict[str, int] = field(default_factory=dict)

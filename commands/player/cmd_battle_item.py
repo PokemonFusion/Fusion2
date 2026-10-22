@@ -5,6 +5,7 @@ from __future__ import annotations
 from evennia import Command
 
 from pokemon.names import normalize_name
+from pokemon.items import is_capture_ball
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
@@ -57,6 +58,10 @@ class CmdBattleItem(Command):
             self.caller.msg("Usage: +battle/item <item>")
             return
 
+        if normalize_name(item_name) == "smokeball":
+            self.caller.msg("Smoke Ball is a held item. Equip it with +hold before battle and use +flee.")
+            return
+
         if not self.caller.has_item(item_name):
             self.caller.msg(f"You do not have any {item_name}.")
             return
@@ -92,7 +97,7 @@ class CmdBattleItem(Command):
             return
 
         participant = _get_participant(inst, self.caller)
-        is_ball = normalize_name(item_name).endswith("ball")
+        is_ball = is_capture_ball(item_name)
         target = inst.battle.opponent_of(participant) if is_ball else participant
         action = Action(
             participant,

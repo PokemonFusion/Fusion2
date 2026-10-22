@@ -841,6 +841,10 @@ class TurnProcessor:
 		"""Execute a flee attempt and return ``True`` on success."""
 
 		from .engine import BattleType
+		from .effect_context import EffectContext
+
+		if getattr(self, "battle_over", False):
+			return False
 
 		participant = getattr(action, "actor", None)
 		pokemon = getattr(action, "pokemon", None)
@@ -858,7 +862,7 @@ class TurnProcessor:
 		type_value = getattr(battle_type, "value", battle_type)
 		trainer_name = getattr(participant, "name", "Trainer") if participant else "Trainer"
 
-		if type_value != BattleType.WILD.value:
+		if type_value != BattleType.WILD.value or getattr(self, "flee_allowed", True) is not True:
 			message = f"{trainer_name} can't run from this battle!"
 			self._emit_battle_message(message)
 			result["reason"] = "restricted"
@@ -869,6 +873,13 @@ class TurnProcessor:
 				setattr(participant, "flee_attempts", attempts + 1)
 			return False
 
+		if (participant not in self.participants or pokemon is None or getattr(pokemon, "hp", 0) <= 0
+				or not any(mon is pokemon for mon in participant.active)
+				or not any(mon is pokemon for mon in participant.pokemons)):
+			result["reason"] = "invalid"
+			setattr(self, "_flee_result", result)
+			return False
+
 		if participant is not None:
 			attempts = int(getattr(participant, "flee_attempts", 0))
 		else:
@@ -877,7 +888,10 @@ class TurnProcessor:
 		ability_key = self._ability_key(getattr(pokemon, "ability", None))
 		if getattr(pokemon, "ability_suppressed", False):
 			ability_key = ""
-		if ability_key == "runaway":
+		if EffectContext.key(EffectContext.item(pokemon)) == "smokeball":
+			success = True
+			reason = "smokeball"
+		elif ability_key == "runaway":
 			success = True
 			reason = "runaway"
 		else:
@@ -1045,6 +1059,7 @@ class TurnProcessor:
 	def execute_item(self, action: Action) -> None:
 		"""Handle item usage during battle."""
 		from pokemon.names import normalize_name
+		from pokemon.items import is_capture_ball
 
 		from .engine import BattleType
 
@@ -1052,7 +1067,7 @@ class TurnProcessor:
 			return
 		item_key = normalize_name(action.item)
 		target = action.target
-		if item_key.endswith("ball"):
+		if is_capture_ball(action.item):
 			if target not in self.participants or target.has_lost or not target.active:
 				opponents = self.opponents_of(action.actor)
 				target = opponents[0] if opponents else None
@@ -1063,7 +1078,7 @@ class TurnProcessor:
 		if not target or not target.active:
 			return
 
-		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
+		if is_capture_ball(action.item) and getattr(self.type, "value", self.type) == BattleType.WILD.value:
 			target_poke = target.active[0]
 			try:
 				from pokemon.dex.functions import pokedex_funcs

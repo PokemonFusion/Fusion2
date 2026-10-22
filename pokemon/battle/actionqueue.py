@@ -178,13 +178,14 @@ class ActionQueue:
 
 	def queue_item(self, item_name: str, target: str | None = None, caller=None, *, actor=None) -> None:
 		"""Queue medicine on the user's side and capture balls on the opponent."""
+		from pokemon.items import is_capture_ball
 
 		if callable(getattr(self, "choices_for", None)):
 			return self._queue_controlled_choice(caller, "item", item_name, target, actor=actor)
 		own_position, _ = self._get_position_for_trainer(caller or self.captainA)
 		if not own_position:
 			return
-		is_ball = _battle_norm_key(item_name).lower().endswith("ball")
+		is_ball = is_capture_ball(item_name)
 		if not is_ball:
 			target = own_position
 		elif target is None:

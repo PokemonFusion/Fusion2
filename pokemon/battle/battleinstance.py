@@ -1930,7 +1930,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     position.declareSwitch(slot)
                 elif "item" in declaration:
                     item = declaration["item"]
-                    target = self.battle.opponent_of(actor) if _battle_norm_key(item).lower().endswith("ball") else actor
+                    from pokemon.items import is_capture_ball
+
+                    target = self.battle.opponent_of(actor) if is_capture_ball(item) else actor
                     target_ref = declaration.get("item_target_ref")
                     chosen = next((mon for mon in target.pokemons if str(getattr(mon, "model_id", None)) == str(target_ref)), None) if target_ref else pokemon if target is actor else target.active[0]
                     if chosen is None:

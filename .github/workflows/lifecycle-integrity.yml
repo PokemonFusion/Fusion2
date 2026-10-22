@@ -28,6 +28,8 @@ on:
       - 'commands/player/cmd_party.py'
       - 'commands/player/cmd_inventory.py'
       - 'commands/player/cmd_battle_concede.py'
+      - 'commands/player/cmd_battle_flee.py'
+      - 'commands/player/cmd_battle_item.py'
       - 'commands/player/cmd_gym.py'
       - 'world/hunt_system.py'
       - 'typeclasses/accounts.py'
@@ -92,6 +94,8 @@ jobs:
         run: python tests/integration/production_gym_cases.py
       - name: Player doubles commands, targets and complete battle
         run: python tests/integration/player_doubles_cases.py
+      - name: Smoke Ball equip, normal flee, suppression, capture separation and rebuilds
+        run: python tests/integration/smoke_ball_cases.py
       - name: Tera commands, Stellar boosts and transactional checkpoint rollback
         run: python tests/integration/terastallization_cases.py
       - name: Move and species name variants on PostgreSQL

@@ -999,6 +999,8 @@ class Pokemon:
             "choice_locked_move": self.choice_locked_move,
             "gender": self.gender,
             "friendship": self.friendship,
+            "item_suppressed": bool(getattr(self, "item_suppressed", False)),
+            "ability_suppressed": bool(getattr(self, "ability_suppressed", False)),
         }
 
         if self.model_id:
@@ -1174,6 +1176,8 @@ class Pokemon:
         if "types" in data and data["types"] is not None:
             obj.types = list(data["types"])
         obj.transformed = bool(data.get("transformed", False))
+        obj.item_suppressed = data.get("item_suppressed", False) is True
+        obj.ability_suppressed = data.get("ability_suppressed", False) is True
         obj.bond_triggered = bool(data.get("bond_triggered", False))
         obj.tera_type = tera_type
         obj.tera_original_types = list(data.get("tera_original_types", []))

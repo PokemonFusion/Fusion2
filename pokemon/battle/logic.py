@@ -99,6 +99,7 @@ class BattleLogic:
 		battle.award_txp = bool(getattr(state, "txp", True))
 		battle._rewards_granted = bool(getattr(state, "rewards_granted", False))
 		battle.battle_over = bool(getattr(state, "battle_over", False))
+		battle.flee_allowed = getattr(state, "flee_allowed", True) is True
 		battle._flee_result = dict(getattr(state, "flee_result", {}) or {})
 		battle.capture_succeeded = bool(getattr(state, "capture_succeeded", False))
 		battle.failed_capture_ball = str(getattr(state, "failed_capture_ball", "") or "")
@@ -134,6 +135,7 @@ class BattleLogic:
 		self.data.field = self.battle.field
 		self.state.rewards_granted = bool(getattr(self.battle, "_rewards_granted", False))
 		self.state.battle_over = bool(getattr(self.battle, "battle_over", False))
+		self.state.flee_allowed = getattr(self.battle, "flee_allowed", True) is True
 		self.state.capture_succeeded = bool(getattr(self.battle, "capture_succeeded", False))
 		self.state.failed_capture_ball = str(getattr(self.battle, "failed_capture_ball", "") or "")
 		self.state.tera_used = sorted(getattr(self.battle, "tera_used", set()))

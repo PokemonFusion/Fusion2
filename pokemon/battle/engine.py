@@ -1517,6 +1517,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.sides = [getattr(part, "side", None) for part in participants]
         self.turn_count = 0
         self.battle_over = False
+        self.flee_allowed = True
         self.dispatcher = EventDispatcher(allow_arity_fallback=False)
         from .battledata import Field
 

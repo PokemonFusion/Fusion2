@@ -36,6 +36,20 @@ class FieldRecoveryItem(GameplayItem):
                 "targetScope": self.target_scope, "fieldOnly": True}
 
 
+@dataclass(frozen=True)
+class HeldEscapeItem(GameplayItem):
+    """Describe a reusable held escape effect without capture capability."""
+
+    price: int = 4000
+    category: str = "Held Items"
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Expose ordinary item interfaces and an explicit non-capture flag."""
+        return {**super().raw, "price": self.price, "category": self.category,
+                "isPokeball": False, "heldEffect": "escape", "consumed": False}
+
+
 FIELD_RECOVERY_ITEMS = {
     "freshwater": FieldRecoveryItem("Fresh Water", "Field use: restores up to 30 HP to one living Pokemon.",
                                    price=200, effect="heal", amount=30),
@@ -71,6 +85,10 @@ FIELD_RECOVERY_ITEMS = {
 GAMEPLAY_ITEMS = {
     "everstone": GameplayItem("Everstone", "Prevents the holder from evolving."),
     "blackaugurite": GameplayItem("Black Augurite", "Evolves Scyther into Kleavor."),
+    "smokeball": HeldEscapeItem(
+        "Smoke Ball", "Held: guarantees the acting holder's escape from eligible wild battles with +flee. "
+        "Reusable; item suppression and trainer/scripted no-flee restrictions still apply. Not a capture ball."
+    ),
     **FIELD_RECOVERY_ITEMS,
 }
 
@@ -78,3 +96,13 @@ GAMEPLAY_ITEMS = {
 def get_gameplay_item(name: object) -> GameplayItem | None:
     """Resolve complete normalized names; prefixes remain invalid."""
     return GAMEPLAY_ITEMS.get(normalize_name(name))
+
+
+def is_capture_ball(name: object) -> bool:
+    """Require complete canonical capture metadata instead of a name suffix."""
+    from pokemon.dex import ITEMDEX
+    from pokemon.names import resolve_dex_entry
+
+    item = resolve_dex_entry(ITEMDEX, getattr(name, "name", name))
+    raw = item if isinstance(item, dict) else getattr(item, "raw", {})
+    return bool(raw and raw.get("isPokeball") is True)

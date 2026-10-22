@@ -151,11 +151,14 @@ class CmdSetHoldItem(Command):
 
     Examples:
       +hold 1=Oran Berry
+      +hold 1=Smoke Ball
       +hold 1=
 
     Notes:
       Uses trainer inventory, or an exact carried item. Replaced and removed
       items return to trainer inventory. An empty item removes the held item.
+      Smoke Ball lets its acting holder escape eligible wild battles with
+      +flee. It is reusable; suppression and encounter restrictions still apply.
     """
 
     key = "+hold"

@@ -28,6 +28,9 @@ class CmdBattleFlee(Command):
 
     Notes:
       Fleeing is intended for wild battles; trainer battles may require +concede.
+      A living acting holder of an effective Smoke Ball is guaranteed to escape
+      eligible wild battles without consuming it. Suppression and server-authored
+      no-flee restrictions still apply; a bag or benched copy does not help.
     """
 
     key = "+battle/flee"
