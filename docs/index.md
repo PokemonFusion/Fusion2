@@ -43,6 +43,9 @@ See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
 battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
+See [design/mega-evolution.md](design/mega-evolution.md) and its
+[per-stone rollout](design/mega-stones.md) for the proposed non-plot Mega route.
+This is a design plan; ordinary `+mega` activation remains deferred.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current

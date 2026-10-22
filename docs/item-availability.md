@@ -41,6 +41,9 @@ Leader's Crest is an opponent qualification for Bisharp's Kingambit route. Your
 Pokémon must defeat the required authored leaders; buying or holding your own
 Crest does not replace those victories. Mega Stones, Z-Crystals and berries
 without a feeding effect do not imply that Mega/Z activation or growing works.
+The [Mega activation design](design/mega-evolution.md) describes a proposed
+Venusaurite route and optional supply recipe. It enables no current command or
+stock; [all existing stone pairs remain deferred](design/mega-stones.md).
 
 The **October 22, 2026** server configuration inspection found no enabled item
 shops and no Rare Candy dispenser. The inspected server also predates the recent

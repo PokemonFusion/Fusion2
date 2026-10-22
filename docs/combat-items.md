@@ -85,3 +85,12 @@ This is a qualification role, with no new held combat-stat effect. Private
 per-Pokemon evidence uses the existing battle receipts and evolution guards;
 `+party <slot>` shows progress. Separate [command/model and regression evidence](testing/leader-crest-2026-10-21.md)
 covers this later addition without changing the historical #757 matrix.
+
+## Planned Mega activation
+
+The [#774 activation contract](design/mega-evolution.md) selects Venusaurite as
+the first non-plot `+mega` slice and defines side use, native identity, Tera,
+suppression and cleanup rules. The [per-stone plan](design/mega-stones.md) assigns
+all 47 canonical stones to bounded implementation work; Crucibellite is excluded
+CAP content. All pairs remain deferred. Closing the design issue adds no player
+command and does not change the historical battle-support classifications.
