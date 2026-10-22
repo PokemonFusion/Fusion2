@@ -223,6 +223,55 @@ No training definitions, battle feeding, Pretty Feather use, nature mints,
 Bottle Cap or ability-item routes are added here. Existing EV-lowering berry
 amounts, friendship and HP behavior remain separate and covered by regressions.
 
+## Ability Capsule and Ability Patch
+
+Use `+use Ability Capsule=3` or `+use Ability Patch=fusion` with the shared
+fresh owned-party/current-Fusion, egg, placement/reservation, ambiguity and
+battle checks. Both are single-target field consumables with no move selector
+or arbitrary ability argument. The selected policy follows Scarlet/Violet's
+reversible Patch model, as represented by the
+[reference ability-change rules](https://github.com/kwsch/PKHeX/blob/master/PKHeX.Core/Legality/Verifiers/Ability/AbilityChangeRules.cs).
+
+| Item | Current canonical slot | Result |
+| --- | --- | --- |
+| Ability Capsule | Ordinary 0 | Ordinary 1, if distinct and present |
+| Ability Capsule | Ordinary 1 | Ordinary 0, if distinct and present |
+| Ability Capsule | Hidden H or special S | No effect |
+| Ability Patch | Ordinary 0 or 1 | Hidden H, if distinct and present |
+| Ability Patch | Hidden H | Ordinary 0, if distinct and present |
+| Ability Patch | Special S | No effect |
+
+Patch reversal always chooses slot 0; use Capsule afterward to select slot 1.
+A Pokémon with one ordinary ability can use Patch if it has a distinct hidden
+ability, but cannot use Capsule. A species/form without a distinct hidden slot
+cannot use Patch. Missing/identical destinations have no effect and spend none.
+Special event/evolution abilities such as Rockruff's Own Tempo, Greninja's
+Battle Bond and Zygarde's Power Construct are not ordinary/hidden slots and
+these items cannot create or remove them.
+
+Eligibility comes only from the freshly saved exact canonical species/form's
+dex ability slots. Nicknames, temporary transformations and base-species fallback
+cannot supply another species' abilities. Native regional and gender forms
+retain their own slots. Unknown species, battle-only forms, item/ability-locked
+forms and active transformed instances are rejected. Cached native-family
+metadata, if present, must agree with the saved canonical family. No form or
+required item is changed to make a use legal.
+
+The model stores an ability name rather than an independent slot index. A name
+must therefore match exactly one normalized canonical slot, and its destination
+must also be unambiguous. Empty, foreign or ambiguous saved abilities are
+rejected unchanged rather than silently repaired. All checked-in dex ability
+names currently map uniquely within each species/form. Evolution's existing
+slot mapping can consequently preserve the changed ordinary/hidden slot.
+
+One useful ability change and one bag debit commit together; failed/partial
+debits and failed saves roll both back and restore model/inventory caches.
+Waiting commands re-read the current slot and inventory under the shared locks.
+HP, status, identity, placement, held item, EVs/IVs, friendship, level, moves and
+cosmetic flags are unchanged. Fainted eligible targets remain fainted. See the
+[ability-item acceptance report](testing/ability-items-2026-10-22.md) for commands,
+reloads, evolution/native-form cases, rollback and competing-use evidence.
+
 ## Limits
 
 The berry service uses an explicit 30-item field allowlist (29 berries and Berry Juice), not

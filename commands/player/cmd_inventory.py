@@ -322,6 +322,8 @@ class CmdUseItem(Command):
       +use Pomeg Berry=3
       +use Protein=3
       +use Health Feather=fusion
+      +use Ability Capsule=3
+      +use Ability Patch=fusion
       +use Fresh Water=3
       +use Max Honey=6
       +use Sacred Ash=party
@@ -356,6 +358,11 @@ class CmdUseItem(Command):
       add 1 EV to those same stats. Caps are 252 per stat and 510 total;
       partial increases use one item, capped or invalid EVs use none.
       Training preserves HP deficit and fainting; it accepts no move selector.
+      Ability Capsule switches ordinary ability slots 0/1. Ability Patch
+      switches an ordinary slot to hidden H, or hidden H back to ordinary 0.
+      Both use the saved native species/form slots; special abilities, absent
+      destinations and single-ability Capsule uses have no effect. Invalid
+      saved abilities and transformed/locked forms cannot use these items.
       Other combat-trigger and contest berries have no manual field route.
       Healing foods/drinks and status foods use the same field medicine rules.
       Max Honey revives one fainted target to full HP; Sacred Ash=party revives
@@ -429,9 +436,10 @@ class CmdUseItem(Command):
         from pokemon.services.field_items import FieldMedicineUse
         from pokemon.services.field_progression import FieldRareCandyUse
         from pokemon.services.field_training import FieldTrainingUse
+        from pokemon.services.field_abilities import FieldAbilityUse
 
         field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse,
-                                                     FieldRareCandyUse, FieldTrainingUse)
+                                                     FieldRareCandyUse, FieldTrainingUse, FieldAbilityUse)
                               if service.supports(item_name)), None)
         if field_service is not None:
             display_name = _display_item_name(item_data, canonical)
@@ -481,7 +489,7 @@ class CmdUseItem(Command):
 
         self.caller.msg(
             f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
-            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Rare Candy, PP Up and PP Max. "
+            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Ability Capsule/Patch, Rare Candy, PP Up and PP Max. "
             "Use +heal at a Pokemon Center to restore your party; "
             "battle items use +item <item> during battle."
         )
