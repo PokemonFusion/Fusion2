@@ -7,7 +7,36 @@ from pokemon.names import normalize_name
 from pokemon.services.field_items import FieldMedicineError, FieldMedicineUse
 
 
-class FieldRareCandyUse(FieldMedicineUse):
+class FieldProgressionUse(FieldMedicineUse):
+    """Keep progression notices and shared caches behind transaction commit."""
+
+    def notify_success(self, item, target):
+        """Do not announce progression if a containing operation rolls back."""
+        message = self.success_message(item, target)
+
+        def notify():
+            """A disconnected transport cannot undo the committed effect."""
+            self.caller.msg(message)
+
+        transaction.on_commit(notify, robust=True)
+
+    def _resync(self, pokemon):
+        """Do not publish uncommitted fields to shared caches in a parent use."""
+        if connection.in_atomic_block:
+            from pokemon.models.core import OwnedPokemon
+
+            OwnedPokemon.flush_cached_instance(pokemon)
+
+            def resync():
+                """Refresh held references only after the parent commits."""
+                super(FieldProgressionUse, self)._resync(pokemon)
+
+            transaction.on_commit(resync, robust=True)
+        else:
+            super()._resync(pokemon)
+
+
+class FieldRareCandyUse(FieldProgressionUse):
     """Consume one Rare Candy and persist one level gain under shared locks."""
 
     selected_move_items = set()
@@ -65,31 +94,6 @@ class FieldRareCandyUse(FieldMedicineUse):
     def success_message(self, item, target):
         """Describe the committed level without resolving the target again."""
         return f"{self.result_name} grew to level {self.result_level}."
-
-    def notify_success(self, item, target):
-        """Do not announce a level if a containing operation rolls back."""
-        message = self.success_message(item, target)
-
-        def notify():
-            """A disconnected transport cannot undo the committed effect."""
-            self.caller.msg(message)
-
-        transaction.on_commit(notify, robust=True)
-
-    def _resync(self, pokemon):
-        """Do not publish uncommitted fields to shared caches in a parent use."""
-        if connection.in_atomic_block:
-            from pokemon.models.core import OwnedPokemon
-
-            OwnedPokemon.flush_cached_instance(pokemon)
-
-            def resync():
-                """Refresh held references only after the parent commits."""
-                super(FieldRareCandyUse, self)._resync(pokemon)
-
-            transaction.on_commit(resync, robust=True)
-        else:
-            super()._resync(pokemon)
 
     def _show_moves(self, identifier, names):
         """Retain ordinary learned-move notices and full-moveset prompts."""

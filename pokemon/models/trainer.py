@@ -103,7 +103,7 @@ class Trainer(models.Model):
                 user = getattr(self, "user", None)
                 if not user:
                         return
-                character = getattr(user, "typeclass", None)
+                character = getattr(user, "typeclass", None) or user
                 if not character:
                         return
                 updater = getattr(character, "_update_inventory_cache_from_trainer", None)

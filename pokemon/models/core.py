@@ -1,7 +1,6 @@
 """Core models for Pokémon, including base and owned Pokémon classes."""
 
 import logging
-import math
 import uuid
 
 from django.contrib.postgres.fields import ArrayField
@@ -11,9 +10,6 @@ from evennia.utils.idmapper.models import SharedMemoryModel
 
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
-
-# Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
-MAX_PP_MULTIPLIER = 1.6
 
 logger = logging.getLogger(__name__)
 
@@ -378,49 +374,10 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		return self._apply_pp_boost(move_name, 3)
 
 	def _apply_pp_boost(self, move_name: str, count: int) -> bool:
-		try:
-			from pokemon.dex import MOVEDEX  # type: ignore
-		except ImportError:
-			logger.debug("MOVEDEX unavailable while applying PP boost.", exc_info=True)
-			return False
+		"""Apply one Up or a Max using raw bonus PP and strict persistence."""
+		from pokemon.services.pp_capacity import PokemonPPCapacity
 
-		from pokemon.names import find_named, resolve_dex_entry
-
-		move = find_named(self.learned_moves.all(), move_name)
-		if not move:
-			return False
-
-		slots = self.activemoveslot_set.filter(move=move)
-		boost, _ = self.pp_boosts.get_or_create(move=move)
-		entry = resolve_dex_entry(MOVEDEX, move.name)
-		base_pp = entry.get("pp") if isinstance(entry, dict) else getattr(entry, "pp", None)
-		if base_pp is None:
-			return False
-		max_bonus = math.floor(base_pp * MAX_PP_MULTIPLIER) - base_pp
-		if boost.bonus_pp + count > max_bonus:
-			return False
-		boost.bonus_pp += count
-		boost.save()
-
-		updated = []
-		for slot in slots:
-			if base_pp is not None:
-				slot.current_pp = base_pp + boost.bonus_pp
-				updated.append(slot)
-		if updated:
-			try:
-				slots.bulk_update(updated, ["current_pp"])
-			except (AttributeError, TypeError):  # pragma: no cover
-				for slot in updated:
-					try:
-						slot.save()
-					except AttributeError:
-						logger.debug("Unable to save slot in PP boost fallback.", exc_info=True)
-		try:
-			self.save()
-		except (AttributeError, TypeError):
-			logger.debug("Unable to persist PP boost state.", exc_info=True)
-		return True
+		return PokemonPPCapacity.apply(self, move_name, maximize=count == 3)
 
 
 class EncounterPokemon(BasePokemon):

@@ -167,13 +167,6 @@ def _trainer_has_item(trainer, item_key: str, amount: int = 1) -> bool:
     return True
 
 
-def _consume_trainer_item(trainer, item_key: str) -> bool:
-    remover = getattr(trainer, "remove_item", None)
-    if not callable(remover):
-        return False
-    return bool(remover(item_key))
-
-
 class CmdInventory(Command):
     """Show items in your inventory.
 
@@ -335,7 +328,11 @@ class CmdUseItem(Command):
       full Pokemon IDs or your current Fusion. Ether and Max Ether accept
       /<move name or slot>; omitting it selects the first depleted active move.
       Elixirs restore all active moves. Herbs also lower friendship on success.
-      PP Up and PP Max prompt for a move and increase PP capacity.
+      PP Up and PP Max prompt for an exact active move name or displayed slot.
+      PP Up adds one fifth of base PP, up to three times; PP Max fills the cap.
+      Each raises current PP by the capacity gain. Use +use cancel to cancel.
+      Targets use the same fresh owned-party/current-Fusion checks as medicine.
+      An expired or changed target/moveset needs a new prompt. Eggs cannot use it.
       Rare Candy uses the same fresh target checks and atomically raises one
       level with one bag item, up to level 100. Eggs, boxes, foreign Pokemon
       and inactive Fusion reservations cannot use it. Failed uses spend none.
@@ -370,50 +367,21 @@ class CmdUseItem(Command):
 
         pending = getattr(self.caller.ndb, "pending_pp_item", None)
 
-        if pending:
-            move_sel = args.strip()
-            if not move_sel:
-                self.caller.msg("Please specify which move to apply the item to.")
-                return
-            pokemon = pending["pokemon"]
-            item = pending["item"]
-            display_name = _display_item_name(None, item)
-            if not _trainer_has_item(trainer, item):
-                self.caller.msg(f"You don't have any {display_name} to use.")
+        if pending and "=" not in args:
+            if args.casefold() == "cancel":
                 self.caller.ndb.pending_pp_item = None
+                self.caller.msg("PP item selection cancelled. No item was consumed.")
                 return
-            slots = list(pokemon.activemoveslot_set.order_by("slot"))
-            move_name = None
-            if move_sel.isdigit():
-                idx = int(move_sel) - 1
-                if 0 <= idx < len(slots):
-                    move_name = slots[idx].move.name
-            else:
-                for s in slots:
-                    from pokemon.names import normalize_name
+            from pokemon.services.field_pp import FieldPPCapacityUse
 
-                    if normalize_name(s.move.name) == normalize_name(move_sel):
-                        move_name = s.move.name
-                        break
-            if not move_name:
-                self.caller.msg("Invalid move selection.")
+            service = FieldPPCapacityUse(self.caller)
+            try:
+                used = service.confirm(pending, args)
+            except ValueError as error:
+                self.caller.msg(str(error))
                 return
-            if item == "ppup":
-                applied = pokemon.apply_pp_up(move_name)
-                fail_msg = "That move's PP can't be raised any further."
-            else:
-                applied = pokemon.apply_pp_max(move_name)
-                fail_msg = "That move already has maximum PP."
-            if not applied:
-                self.caller.msg(fail_msg)
-                self.caller.ndb.pending_pp_item = None
-                return
-            if not _consume_trainer_item(trainer, item):
-                self.caller.msg(f"Unable to consume {display_name} after applying its effect. Please contact staff.")
-                self.caller.ndb.pending_pp_item = None
-                return
-            self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
-            self.caller.ndb.pending_pp_item = None
+            if used:
+                service.notify_success(pending["item"], pending["pokemon_id"])
             return
 
         if not args:
@@ -472,36 +440,23 @@ class CmdUseItem(Command):
                 self.caller.msg(f"{display_name} had no effect. No item was consumed.")
             return
 
-        target = None
+        if item_name in {"ppup", "ppmax"}:
+            if not parsed.target_query:
+                self.caller.msg(f"Usage: +use {_display_item_name(item_data, canonical)}=<party slot or Pokemon name>")
+                return
+            from pokemon.services.field_pp import FieldPPCapacityUse
+
+            try:
+                FieldPPCapacityUse(self.caller).use(item_name, parsed.target_query)
+            except ValueError as error:
+                self.caller.msg(str(error))
+            return
+
         if parsed.target_query is not None:
-            target, error = _resolve_use_target(self.caller, parsed.target_query)
+            _target, error = _resolve_use_target(self.caller, parsed.target_query)
             if error:
                 self.caller.msg(error)
                 return
-
-        if item_name in {"ppup", "ppmax"}:
-            if target is None:
-                self.caller.msg(f"Usage: +use {_display_item_name(item_data, canonical)}=<party slot or Pokemon name>")
-                return
-            if not _trainer_has_item(trainer, item_name):
-                self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
-                return
-            pokemon = target.pokemon
-            if not pokemon:
-                self.caller.msg("That item needs a Pokemon target.")
-                return
-            slots = list(pokemon.activemoveslot_set.order_by("slot"))
-            if not slots:
-                self.caller.msg("That Pokémon knows no moves.")
-                return
-            self.caller.ndb.pending_pp_item = {"pokemon": pokemon, "item": item_name.replace(" ", "")}
-            lines = ["Choose a move to increase PP:"]
-            for s in slots:
-                max_pp = pokemon.get_max_pp(s.move.name)
-                lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
-            lines.append("Use +use <move name or number> to select.")
-            self.caller.msg("\n".join(lines))
-            return
 
         if not _trainer_has_item(trainer, item_name):
             self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")

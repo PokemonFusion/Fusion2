@@ -353,9 +353,8 @@ class FieldItemCases(unittest.TestCase):
 
     def test_existing_pp_capacity_prompts_and_rare_candy_remain_usable(self):
         """The legacy field items still work; restoratives honor their real boosts."""
-        # Preserve PF2's existing +1/+3 capacity progression; this issue wires
-        # restoratives to the stored boost rather than changing that policy.
-        for item, maximum in [("PP Up", 36), ("PP Max", 39)]:
+        # Capacity boosts remain raw PP; restoratives honor the corrected cap.
+        for item, maximum in [("PP Up", 42), ("PP Max", 56)]:
             self.give(item, 1)
             self.command(f"{item}=3")
             self.assertIn("Choose a move", self.messages[-1])

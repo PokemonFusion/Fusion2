@@ -22,7 +22,46 @@ level 100 is a free no-op. A fresh intentional second use can buy another level,
 while competing commands cannot both spend the same final copy. HP, status,
 friendship, held items and unrelated progression are preserved. Learning retains
 the normal free-slot/stored-move behavior; replacement prompts open only after
-commit. PP Up and PP Max keep their existing separate route pending #765.
+commit.
+
+## PP Up and PP Max
+
+Start with `+use PP Up=3` or `+use PP Max=fusion`, then choose a move using
+`+use <exact displayed move slot or full move name>`. Active slots retain gaps:
+if the prompt lists 1 and 3, `+use 3` selects 3 and `+use 2` is invalid. Move
+names ignore punctuation, spaces and case, but ambiguous names are rejected.
+Use `+use cancel` to cancel; another `+use <item>=<target>` starts a fresh use.
+
+Each PP Up advances one of three stages, adding a cumulative fifth of base PP
+per stage, rounded down with integer arithmetic. PP Max fills the remaining
+boost to three stages. Tackle's base 35 becomes 42, 49, then 56; PP Max reaches
+56 from any legal stage. Current PP increases by the capacity difference and
+retains already-spent PP. NULL current PP retains the existing full-capacity
+initialization convention. Base PP below 5 and dex `noPPBoosts` moves (Sketch,
+Revival Blessing, Struggle and Trump Card) cannot use either item.
+
+Prompts contain stable Pokemon, placement, move-row and boost identities.
+Confirmation rechecks ownership, party/current Fusion, egg state, battle guard,
+active move identities, boost state and actual inventory under the shared field
+locks. Target/move/boost changes require a fresh prompt. Inventory, raw bonus PP
+and affected active current PP commit together. A failed debit/save consumes
+nothing; successful prompts cannot be replayed even with more stock. Inventory
+cache updates and success messages follow commit.
+
+### Saved bonus compatibility
+
+`MovePPBoost.bonus_pp` continues to mean raw extra PP throughout battle, field
+restoration and move management. Existing values are never bulk multiplied or
+silently rewritten. A 25-PP move with raw bonus 15 still has 40 PP. Legal stages
+can use PP Up normally. An in-range but nonstandard saved bonus (for example
+Tackle +1 or +3) cannot reveal how many old items were spent: PP Up rejects it
+without cost, while one explicit PP Max fills the remaining capacity to +21.
+Already-maxed, out-of-range and unboostable rows are left unchanged; invalid
+rows need staff investigation. There is no automatic refund or migration.
+
+The [PP-capacity acceptance report](testing/pp-capacity-2026-10-22.md) records
+the source/disposable-fixture audit and SQL reload evidence. No existing human
+or game database was queried or modified for legacy recovery.
 
 ## Healing food, drinks and revival equivalents
 
