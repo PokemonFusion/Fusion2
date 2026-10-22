@@ -181,9 +181,51 @@ EV berries can be fed to fainted eligible members and never revive or cure them.
 HP/status/PP, EVs, friendship and inventory remain durable and atomic; a failed
 write rolls back the debit, and waiting uses recheck fresh saved values.
 
+## Vitamins and feathers
+
+The twelve existing training items use `+use <item>=<party slot, exact name,
+full ID or current Fusion>`, for example `+use Protein=3` or
+`+use Health Feather=fusion`. They share the medicine/berry owned-target,
+egg, battle, current-Fusion, reservation and ambiguity checks and the same
+placement/trainer transaction. They accept no move selector or party-wide target.
+
+| Stat (stored EV index) | Vitamin (up to +10 EVs) | Feather (+1 EV) |
+| --- | --- | --- |
+| HP (0) | HP Up | Health Feather |
+| Attack (1) | Protein | Muscle Feather |
+| Defense (2) | Iron | Resist Feather |
+| Special Attack (3) | Calcium | Genius Feather |
+| Special Defense (4) | Zinc | Clever Feather |
+| Speed (5) | Carbos | Swift Feather |
+
+The current-generation supplement policy permits vitamins above 100 EVs,
+up to **252 per stat and 510 total**, using the existing EV validators and
+the existing item callbacks' +10/+1 amounts. This follows the
+[official Sword/Shield supplement policy](https://swordshield.pokemon.com/en-gb/gameplay/features-raise-pokemon/)
+which allows supplements to reach maximum base points. A use adds the minimum
+of its amount, remaining stat capacity and remaining total capacity. For example,
+Protein at 250 Attack adds 2 EVs; at 252 Attack it has no effect. A useful EV
+increase consumes exactly one bag item even if rounding leaves a displayed stat
+unchanged. Capped or invalid saved EVs consume nothing and are never silently
+repaired. Friendship, held items, IVs, nature, level and moves are unchanged;
+this is the bounded EV-training route, with no separate friendship-only use.
+
+Stats refresh immediately. As with EV berries, preserve the absolute HP deficit
+when max HP changes: living HP becomes old HP plus the max-HP difference,
+clamped to 1..new maximum; fainted HP stays zero. A non-HP increase does not heal
+an ordinary injured target. Inventory, EVs and adjusted HP commit together;
+failed debits (including partial writes), failed saves and competing uses cannot
+leave a free effect or spend a useless item. See the
+[training acceptance report](testing/field-training-2026-10-22.md) for actual
+commands, SQL reload, caps, rollback and concurrent-use evidence.
+
+No training definitions, battle feeding, Pretty Feather use, nature mints,
+Bottle Cap or ability-item routes are added here. Existing EV-lowering berry
+amounts, friendship and HP behavior remain separate and covered by regressions.
+
 ## Limits
 
-This is an explicit 30-item field allowlist (29 berries and Berry Juice), not
+The berry service uses an explicit 30-item field allowlist (29 berries and Berry Juice), not
 generic support for every `isBerry` entry. Persim/Bitter (confusion-only), Enigma
 (damage-triggered), resist, stat-boost, accuracy, retaliation and other combat
 berries remain held-only. Contest/flavor-only berries such as Razz and Bluk have
