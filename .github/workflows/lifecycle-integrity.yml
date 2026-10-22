@@ -38,6 +38,8 @@ on:
       - 'pytest.ini'
       - 'Makefile'
       - 'tools/run_mandatory_tests.py'
+      - 'tools/audit_item_availability.py'
+      - 'docs/testing/item-stat-type-plan-2026-10-22.json'
       - 'docs/offline-battle-testing.md'
       - 'tests/**'
       - 'services/battle/commit_adapter.py'
@@ -134,6 +136,13 @@ jobs:
         run: python tests/integration/hyper_training_cases.py
       - name: Existing incense equip, battle power, suppression and checkpoint persistence
         run: python tests/integration/incense_cases.py
+      - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
+        run: python tests/integration/item_availability_cases.py
+      - name: Bounded current stat and type item command replays
+        run: |
+          for batch in stat-type-1 stat-type-2 stat-type-3 stat-type-4; do
+            PF2_ITEM_SUPPORT_BATCH="$batch" python tests/integration/item_stat_batch_cases.py || exit 1
+          done
       - name: PP capacity prompts, atomic use and legacy raw bonuses on PostgreSQL
         run: python tests/integration/pp_capacity_cases.py
       - name: Battle medicine, reserve revival and PP snapshot regressions

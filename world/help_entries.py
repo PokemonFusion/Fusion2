@@ -401,6 +401,7 @@ battle commands such as +attack, +switch, +item, or +flee.
 +movesets         Manage saved movesets at a Pokemon Center.
 +store            Open an item shop when one is present.
 +vend [amount]    Use a nearby vending machine.
+help item availability  Explain item sources, stock and supported use routes.
 		""",
 	},
 	{
@@ -639,6 +640,43 @@ players need usable Pokemon and must not already be in battle.
 +status list                 List battles you are in or watching.
 +status next                 Move your status focus to the next watched battle.
 +status prev                 Move your status focus to the previous watched battle.
+		""",
+	},
+	{
+		"key": "item availability",
+		"aliases": ["item sources", "finding items", "obtainable items"],
+		"category": "Guide",
+		"text": """
+Use +store in a configured shop, choose Buy items, then enter a displayed name
+and amount, such as Potion 1. The shop needs stock and you need enough money.
+Use +vend <machine name> 1 at a dispenser; one request may give a bundle.
++inventory shows owned copies. +itemdex descriptions do not prove shop stock.
+
+The authored Alpha Meadow Survey gives a Potion on your first completion.
+Use +adventure/list and +adventure/info alpha_meadow to inspect the route.
+Use +adventure/claim for a pending completed reward; repeats do not farm it.
+The alpha build recipe includes Rare Candy vending, but a recipe does not
+guarantee that its dispenser exists in the current world.
+
+Outside battle, examples include +use Potion=3, +use Oran Berry=3,
++use Ether=3/Water Gun and +use Pomeg Berry=3. +use PP Up=3 asks you to select
+an active move. Only eligible useful field effects consume a copy.
+Use +party 3 to inspect your Pokemon and its full ID. Equip held items with
++hold 3=Leftovers; +hold 3= returns an uneaten copy. Bag copies do not activate
+held effects. Use +evolve <full-id> Fire Stone for a matching bag evolution.
+Milcery's Sweet and trade-held equivalents must be equipped before +evolve.
+
+Smoke Ball uses +hold before battle and +flee in eligible wild battles.
+Manual +item battle feeding of foods/berries is not implemented; their field
+or held routes are separate. Mega/Z activation and berry growing are deferred.
+Leader's Crest qualifies authored opponent victories, not a bag-item shortcut.
+The Itemfinder mysterious-item message currently grants no inventory item.
+
+Stock and deployed commands can differ from the item catalog. The October 22
+audit found no enabled shops or Candy dispenser on the inspected older server
+build. This is a dated observation; consult current world availability.
+
+See the repository's docs/item-availability.md for examples and audit limits.
 		""",
 	},
 	{
