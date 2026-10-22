@@ -157,21 +157,6 @@ def _resolve_use_target(caller, query: str) -> tuple[_ResolvedUseTarget | None, 
     return None, f"No Pokemon target found for '{raw}'."
 
 
-def _growth_rate_for_pokemon(pokemon) -> str:
-    growth = getattr(pokemon, "growth_rate", None)
-    if growth:
-        return growth
-    species_name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
-    if species_name:
-        from pokemon.dex import POKEDEX
-        from pokemon.names import resolve_dex_entry
-
-        entry = resolve_dex_entry(POKEDEX, species_name)
-        if entry:
-            return (getattr(entry, "raw", {}) or {}).get("growthRate", "medium_fast")
-    return "medium_fast"
-
-
 def _trainer_has_item(trainer, item_key: str, amount: int = 1) -> bool:
     checker = getattr(trainer, "has_item", None)
     if callable(checker):
@@ -187,41 +172,6 @@ def _consume_trainer_item(trainer, item_key: str) -> bool:
     if not callable(remover):
         return False
     return bool(remover(item_key))
-
-
-def _apply_rare_candy(caller, trainer, pokemon, item_key: str) -> None:
-    if not _trainer_has_item(trainer, item_key):
-        caller.msg("You don't have any Rare Candy to use.")
-        return
-
-    level = getattr(pokemon, "computed_level", getattr(pokemon, "level", 1))
-    if level >= 100:
-        caller.msg(f"{pokemon.name} is already level 100.")
-        return
-
-    from pokemon.models.stats import add_experience, exp_for_level
-
-    growth = _growth_rate_for_pokemon(pokemon)
-    target_exp = exp_for_level(level + 1, growth)
-    current_exp = int(getattr(pokemon, "total_exp", 0) or 0)
-    gained = max(0, target_exp - current_exp)
-
-    if gained:
-        add_experience(pokemon, gained, rate=growth, caller=caller)
-    elif hasattr(pokemon, "set_level"):
-        pokemon.set_level(level + 1)
-    else:
-        pokemon.level = level + 1
-    if hasattr(pokemon, "save"):
-        try:
-            pokemon.save()
-        except Exception:
-            pass
-    new_level = getattr(pokemon, "computed_level", getattr(pokemon, "level", level + 1))
-    if not _consume_trainer_item(trainer, item_key):
-        caller.msg("Unable to consume Rare Candy after applying its effect. Please contact staff.")
-        return
-    caller.msg(f"{pokemon.name} grew to level {new_level}.")
 
 
 class CmdInventory(Command):
@@ -386,6 +336,9 @@ class CmdUseItem(Command):
       /<move name or slot>; omitting it selects the first depleted active move.
       Elixirs restore all active moves. Herbs also lower friendship on success.
       PP Up and PP Max prompt for a move and increase PP capacity.
+      Rare Candy uses the same fresh target checks and atomically raises one
+      level with one bag item, up to level 100. Eggs, boxes, foreign Pokemon
+      and inactive Fusion reservations cannot use it. Failed uses spend none.
       Recovery berries and Berry Juice share medicine limits. Leppa restores
       one active move. Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato lower the matching
       HP/Atk/Def/SpA/SpD/Spe EVs by up to 10 and raise friendship by 10 below
@@ -491,8 +444,9 @@ class CmdUseItem(Command):
         from pokemon.services.field_berries import FieldBerryUse
         from pokemon.services.field_food import FieldFoodUse
         from pokemon.services.field_items import FieldMedicineUse
+        from pokemon.services.field_progression import FieldRareCandyUse
 
-        field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse)
+        field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse, FieldRareCandyUse)
                               if service.supports(item_name)), None)
         if field_service is not None:
             display_name = _display_item_name(item_data, canonical)
@@ -505,17 +459,17 @@ class CmdUseItem(Command):
                 self.caller.msg("Specify a Pokemon target and, after '/', a move name or slot.")
                 return
             try:
-                used = field_service(self.caller).use(
+                service = field_service(self.caller)
+                used = service.use(
                     item_name, target_query.strip(), move=move.strip() if separator else None
                 )
             except ValueError as error:
                 self.caller.msg(str(error))
                 return
-            if used is not None:
-                self.caller.msg(
-                    f"Used {display_name} on {target_query.strip()}." if used else
-                    f"{display_name} had no effect. No item was consumed."
-                )
+            if used:
+                service.notify_success(display_name, target_query.strip())
+            elif used is not None:
+                self.caller.msg(f"{display_name} had no effect. No item was consumed.")
             return
 
         target = None
@@ -547,17 +501,6 @@ class CmdUseItem(Command):
                 lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
             lines.append("Use +use <move name or number> to select.")
             self.caller.msg("\n".join(lines))
-            return
-
-        if item_name == "rarecandy":
-            if target is None:
-                self.caller.msg("Usage: +use Rare Candy=<target>")
-                return
-            pokemon = target.pokemon
-            if not pokemon:
-                self.caller.msg("That item needs a Pokemon target.")
-                return
-            _apply_rare_candy(self.caller, trainer, pokemon, item_name)
             return
 
         if not _trainer_has_item(trainer, item_name):

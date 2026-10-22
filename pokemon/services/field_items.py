@@ -101,14 +101,28 @@ class FieldMedicineUse:
         finally:
             # atomic() rolls back rows, not shared Evennia model instances.
             for pokemon in pokemon_targets:
-                row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().first()
-                if row is not None:
-                    self._refresh(pokemon, row)
-                    OwnedPokemon.cache_instance(pokemon)
+                self._resync(pokemon)
+
+    def _resync(self, pokemon):
+        """Restore the shared instance from persisted fields after an attempt."""
+        from pokemon.models.core import OwnedPokemon
+
+        row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().first()
+        if row is not None:
+            self._refresh(pokemon, row)
+            OwnedPokemon.cache_instance(pokemon)
 
     def _apply_targets(self, item, pokemon_targets, trainer, *, move=None):
         """Preserve the existing single-target effect dispatch by default."""
         return bool(pokemon_targets) and self._apply(item, pokemon_targets[0], trainer, move=move)
+
+    def success_message(self, item, target):
+        """Describe a completed field use without another mutable target read."""
+        return f"Used {item} on {target}."
+
+    def notify_success(self, item, target):
+        """Publish the result after the field service completes."""
+        self.caller.msg(self.success_message(item, target))
 
     def _apply(self, item, pokemon, trainer, *, move=None):
         """Reuse medicine effects only after the shared field checks and locks."""

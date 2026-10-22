@@ -293,11 +293,31 @@ def test_ppup_at_max():
 	assert any("already" in m.lower() or "further" in m.lower() for m in caller.msgs)
 
 
-def test_rare_candy_levels_target_slot():
+def _rare_candy_boundary(monkeypatch, error=None):
+	"""Capture command delegation; real effects belong to PostgreSQL coverage."""
+	from pokemon.services.field_progression import FieldRareCandyUse
+
+	calls = []
+
+	def use(service, item, target, *, move=None):
+		"""Represent the shared service outcome without faking its effect."""
+		calls.append((item, target, move))
+		if error:
+			raise ValueError(error)
+		return True
+
+	monkeypatch.setattr(FieldRareCandyUse, "use", use)
+	monkeypatch.setattr(FieldRareCandyUse, "success_message", lambda *args: "Pika grew to level 6.")
+	monkeypatch.setattr(FieldRareCandyUse, "notify_success", lambda service, *args: service.caller.msg("Pika grew to level 6."))
+	return calls
+
+
+def test_rare_candy_delegates_name_to_field_boundary(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	calls = _rare_candy_boundary(monkeypatch)
 
 	poke = FakePokemon()
 	caller = DummyCaller(poke, remove_counter)
@@ -307,17 +327,17 @@ def test_rare_candy_levels_target_slot():
 	cmd.args = "Rare Candy=Pikachu"
 	cmd.func()
 
-	assert remove_counter[0] == 1
-	assert poke.level == 6
-	assert poke.saved is True
+	assert calls == [("rarecandy", "Pikachu", None)]
+	assert remove_counter[0] == 0
 	assert any("grew to level 6" in msg for msg in caller.msgs)
 
 
-def test_rare_candy_compatibility_target_first_flow():
+def test_rare_candy_compatibility_target_first_flow(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	calls = _rare_candy_boundary(monkeypatch)
 
 	poke = FakePokemon()
 	caller = DummyCaller(poke, remove_counter)
@@ -327,8 +347,8 @@ def test_rare_candy_compatibility_target_first_flow():
 	cmd.args = "1=Rare Candy"
 	cmd.func()
 
-	assert remove_counter[0] == 1
-	assert poke.level == 6
+	assert calls == [("rarecandy", "1", None)]
+	assert remove_counter[0] == 0
 	assert any("grew to level 6" in msg for msg in caller.msgs)
 
 
@@ -345,14 +365,15 @@ def test_rare_candy_requires_target_slot():
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "Usage: +use Rare Candy=<target>"
+	assert "Usage: +use Rare Candy=<party slot" in caller.msgs[-1]
 
 
-def test_rare_candy_does_not_apply_without_inventory():
+def test_rare_candy_does_not_apply_without_inventory(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	_rare_candy_boundary(monkeypatch, "You don't have any of that item to use.")
 
 	poke = FakePokemon()
 	caller = DummyCaller(poke, remove_counter, has_item=False)
@@ -363,7 +384,7 @@ def test_rare_candy_does_not_apply_without_inventory():
 
 	assert remove_counter[0] == 0
 	assert poke.level == 5
-	assert caller.msgs[-1] == "You don't have any Rare Candy to use."
+	assert caller.msgs[-1] == "You don't have any of that item to use."
 
 
 def test_unimplemented_field_item_does_not_consume_inventory():
@@ -414,11 +435,12 @@ def test_use_item_invalid_item_name_fails_before_target_lookup():
 	assert "No such item 'Not An Item' exists." in caller.msgs[-1]
 
 
-def test_use_item_invalid_target_fails_before_item_removal():
+def test_use_item_invalid_target_fails_before_item_removal(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	_rare_candy_boundary(monkeypatch, "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion.")
 
 	caller = DummyCaller(FakePokemon(), remove_counter)
 	cmd = cmd_mod.CmdUseItem()
@@ -427,7 +449,7 @@ def test_use_item_invalid_target_fails_before_item_removal():
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "No Pokemon target found for 'Missingno'."
+	assert "Choose an owned party Pokemon" in caller.msgs[-1]
 
 
 def test_use_item_ambiguous_two_item_names_fails():

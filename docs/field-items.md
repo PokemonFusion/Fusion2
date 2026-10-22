@@ -7,6 +7,23 @@ Pokemon UUIDs, or `fusion`/`self`/`me` for the current reserved Fusion. Eggs,
 boxed Pokemon, foreign owners and inactive Fusion reservations are ineligible.
 An effective use consumes one item; invalid or ineffective uses consume none.
 
+## Rare Candy
+
+`+use Rare Candy=3` raises the eligible target by one level, up to level 100.
+The same canonical slots, unambiguous names, full UUIDs and current-Fusion
+aliases apply. For example, use `+use Rare Candy=<full Pokemon ID>` or
+`+use Rare Candy=fusion`; the older `+use 3=Rare Candy` order also works.
+Eggs, boxes, foreign owners and inactive Fusion reservations cannot use it.
+
+One bag debit, the next-level EXP threshold, saved level and level-up learning
+commit together. Failed debit/write/learning attempts consume nothing and grant
+no level or moves. Inconsistent saved level/EXP is rejected for staff review;
+level 100 is a free no-op. A fresh intentional second use can buy another level,
+while competing commands cannot both spend the same final copy. HP, status,
+friendship, held items and unrelated progression are preserved. Learning retains
+the normal free-slot/stored-move behavior; replacement prompts open only after
+commit. PP Up and PP Max keep their existing separate route pending #765.
+
 ## Healing food, drinks and revival equivalents
 
 The [14-item effect/price and acquisition table](field-food-medicine.md) adds
