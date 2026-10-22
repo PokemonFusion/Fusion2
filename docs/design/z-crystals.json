@@ -1,0 +1,580 @@
+{
+  "date": "2026-10-22",
+  "source_baseline": "4f0995b1b53e3b5a040d27092e48da05c67aa2d8",
+  "design_issue": 775,
+  "ordinary_supported": 0,
+  "generic": 18,
+  "signature": 17,
+  "items": [
+    {
+      "item": "Aloraichium Z",
+      "zMove": "Stoked Sparksurfer",
+      "zMoveFrom": "Thunderbolt",
+      "itemUser": [
+        "Raichu-Alola"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 805
+    },
+    {
+      "item": "Buginium Z",
+      "zMove": true,
+      "zMoveType": "Bug",
+      "status": "deferred implementation",
+      "implementation_issue": 800
+    },
+    {
+      "item": "Darkinium Z",
+      "zMove": true,
+      "zMoveType": "Dark",
+      "status": "deferred implementation",
+      "implementation_issue": 800
+    },
+    {
+      "item": "Decidium Z",
+      "zMove": "Sinister Arrow Raid",
+      "zMoveFrom": "Spirit Shackle",
+      "itemUser": [
+        "Decidueye"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 805
+    },
+    {
+      "item": "Dragonium Z",
+      "zMove": true,
+      "zMoveType": "Dragon",
+      "status": "deferred implementation",
+      "implementation_issue": 800
+    },
+    {
+      "item": "Eevium Z",
+      "zMove": "Extreme Evoboost",
+      "zMoveFrom": "Last Resort",
+      "itemUser": [
+        "Eevee"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 807
+    },
+    {
+      "item": "Electrium Z",
+      "zMove": true,
+      "zMoveType": "Electric",
+      "status": "deferred implementation",
+      "implementation_issue": 800
+    },
+    {
+      "item": "Fairium Z",
+      "zMove": true,
+      "zMoveType": "Fairy",
+      "status": "deferred implementation",
+      "implementation_issue": 800
+    },
+    {
+      "item": "Fightinium Z",
+      "zMove": true,
+      "zMoveType": "Fighting",
+      "status": "deferred implementation",
+      "implementation_issue": 800
+    },
+    {
+      "item": "Firium Z",
+      "zMove": true,
+      "zMoveType": "Fire",
+      "status": "deferred implementation",
+      "implementation_issue": 801
+    },
+    {
+      "item": "Flyinium Z",
+      "zMove": true,
+      "zMoveType": "Flying",
+      "status": "deferred implementation",
+      "implementation_issue": 801
+    },
+    {
+      "item": "Ghostium Z",
+      "zMove": true,
+      "zMoveType": "Ghost",
+      "status": "deferred implementation",
+      "implementation_issue": 801
+    },
+    {
+      "item": "Grassium Z",
+      "zMove": true,
+      "zMoveType": "Grass",
+      "status": "deferred implementation",
+      "implementation_issue": 801
+    },
+    {
+      "item": "Groundium Z",
+      "zMove": true,
+      "zMoveType": "Ground",
+      "status": "deferred implementation",
+      "implementation_issue": 801
+    },
+    {
+      "item": "Icium Z",
+      "zMove": true,
+      "zMoveType": "Ice",
+      "status": "deferred implementation",
+      "implementation_issue": 801
+    },
+    {
+      "item": "Incinium Z",
+      "zMove": "Malicious Moonsault",
+      "zMoveFrom": "Darkest Lariat",
+      "itemUser": [
+        "Incineroar"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 805
+    },
+    {
+      "item": "Kommonium Z",
+      "zMove": "Clangorous Soulblaze",
+      "zMoveFrom": "Clanging Scales",
+      "itemUser": [
+        "Kommo-o",
+        "Kommo-o-Totem"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 807
+    },
+    {
+      "item": "Lunalium Z",
+      "zMove": "Menacing Moonraze Maelstrom",
+      "zMoveFrom": "Moongeist Beam",
+      "itemUser": [
+        "Lunala",
+        "Necrozma-Dawn-Wings"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 808
+    },
+    {
+      "item": "Lycanium Z",
+      "zMove": "Splintered Stormshards",
+      "zMoveFrom": "Stone Edge",
+      "itemUser": [
+        "Lycanroc",
+        "Lycanroc-Midnight",
+        "Lycanroc-Dusk"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 807
+    },
+    {
+      "item": "Marshadium Z",
+      "zMove": "Soul-Stealing 7-Star Strike",
+      "zMoveFrom": "Spectral Thief",
+      "itemUser": [
+        "Marshadow"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 808
+    },
+    {
+      "item": "Mewnium Z",
+      "zMove": "Genesis Supernova",
+      "zMoveFrom": "Psychic",
+      "itemUser": [
+        "Mew"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 807
+    },
+    {
+      "item": "Mimikium Z",
+      "zMove": "Let's Snuggle Forever",
+      "zMoveFrom": "Play Rough",
+      "itemUser": [
+        "Mimikyu",
+        "Mimikyu-Busted",
+        "Mimikyu-Totem",
+        "Mimikyu-Busted-Totem"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 806
+    },
+    {
+      "item": "Normalium Z",
+      "zMove": true,
+      "zMoveType": "Normal",
+      "status": "deferred implementation",
+      "implementation_issue": 799
+    },
+    {
+      "item": "Pikanium Z",
+      "zMove": "Catastropika",
+      "zMoveFrom": "Volt Tackle",
+      "itemUser": [
+        "Pikachu"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 806
+    },
+    {
+      "item": "Pikashunium Z",
+      "zMove": "10,000,000 Volt Thunderbolt",
+      "zMoveFrom": "Thunderbolt",
+      "itemUser": [
+        "Pikachu-Original",
+        "Pikachu-Hoenn",
+        "Pikachu-Sinnoh",
+        "Pikachu-Unova",
+        "Pikachu-Kalos",
+        "Pikachu-Alola",
+        "Pikachu-Partner"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 806
+    },
+    {
+      "item": "Poisonium Z",
+      "zMove": true,
+      "zMoveType": "Poison",
+      "status": "deferred implementation",
+      "implementation_issue": 802
+    },
+    {
+      "item": "Primarium Z",
+      "zMove": "Oceanic Operetta",
+      "zMoveFrom": "Sparkling Aria",
+      "itemUser": [
+        "Primarina"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 805
+    },
+    {
+      "item": "Psychium Z",
+      "zMove": true,
+      "zMoveType": "Psychic",
+      "status": "deferred implementation",
+      "implementation_issue": 802
+    },
+    {
+      "item": "Rockium Z",
+      "zMove": true,
+      "zMoveType": "Rock",
+      "status": "deferred implementation",
+      "implementation_issue": 802
+    },
+    {
+      "item": "Snorlium Z",
+      "zMove": "Pulverizing Pancake",
+      "zMoveFrom": "Giga Impact",
+      "itemUser": [
+        "Snorlax"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 806
+    },
+    {
+      "item": "Solganium Z",
+      "zMove": "Searing Sunraze Smash",
+      "zMoveFrom": "Sunsteel Strike",
+      "itemUser": [
+        "Solgaleo",
+        "Necrozma-Dusk-Mane"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 808
+    },
+    {
+      "item": "Steelium Z",
+      "zMove": true,
+      "zMoveType": "Steel",
+      "status": "deferred implementation",
+      "implementation_issue": 802
+    },
+    {
+      "item": "Tapunium Z",
+      "zMove": "Guardian of Alola",
+      "zMoveFrom": "Nature's Madness",
+      "itemUser": [
+        "Tapu Koko",
+        "Tapu Lele",
+        "Tapu Bulu",
+        "Tapu Fini"
+      ],
+      "status": "deferred implementation",
+      "implementation_issue": 808
+    },
+    {
+      "item": "Ultranecrozium Z",
+      "zMove": "Light That Burns the Sky",
+      "zMoveFrom": "Photon Geyser",
+      "itemUser": [
+        "Necrozma-Ultra"
+      ],
+      "status": "deferred Ultra/native-form prerequisite",
+      "implementation_issue": null
+    },
+    {
+      "item": "Waterium Z",
+      "zMove": true,
+      "zMoveType": "Water",
+      "status": "deferred implementation",
+      "implementation_issue": 802
+    }
+  ],
+  "implementation_issues": [
+    {
+      "key": "z-engine",
+      "parent": 775,
+      "title": "[Items][P3] Implement guarded Normalium Z / Tackle action effects",
+      "dependencies": [],
+      "scope": "Implement only held Normalium Z + actual active Tackle -> 100-power Physical Normal Breakneck Blitz under docs/design/z-moves.md. No public command registration yet.",
+      "criteria": [
+        "Validate fresh canonical owned party/current Fusion, current conscious human actor and actual active move/positive PP, matching SQL/runtime reusable held crystal, supported Wild/Trainer/PvP singles/doubles and legal target. Reject eggs, box/foreign/stale/nickname/Transform/Imposter/Mega/Primal/Ultra/Dynamax and bag-only cases.",
+        "One bound reservation/use per team, independent opponent; bind battle/turn/controller/actor/owned ID/source move/target/crystal. Invalid input queues nothing; repeats cannot overwrite/duplicate or advance turns. Other crystals/moves/status Z remain rejected.",
+        "Use a separate transient move descriptor without mutating dex/learned slots. Exact first effect: BP100, Physical Normal, priority0, non-contact, ordinary accuracy bypass, normal immunity/redirection/Substitute/semi-invulnerability; personal Protect quarter damage minimum1 only if otherwise effective. Test actual damage and relevant guard/ability controls.",
+        "Ordinary pre-action prevention consumes no source PP or Z use; once begun, debit one source PP even against Pressure and spend Z before effect. Immunity/protection/no target after beginning still spend. No crystal debit. Whole-turn failure restores effects/resources/RNG/messages.",
+        "Use existing complete-turn action consumers and meaningful side/target/PP/negative tests; preserve regular moves, items, rewards and Tera. Durable integration/public acceptance are dependent gates, not enabled by this issue alone."
+      ],
+      "items": [],
+      "number": 797,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/797"
+    },
+    {
+      "key": "z-state",
+      "parent": 775,
+      "title": "[Items][P3] Persist Z declarations and integrate battle mechanic budgets",
+      "dependencies": [
+        "z-engine"
+      ],
+      "scope": "Implement the versioned team Z ledger, bound queued action and complete-turn rollback/end/rebuild contract; no transformations or schema/live operations.",
+      "criteria": [
+        "Persist team z_used and bound pending MOVE identity/source slot+ID/PP/target/crystal for both sides/full roster. Rebuild before/after activation repeatedly without replay, recharge, source-slot replacement or dex inference.",
+        "Missing legacy data defaults unused only without prior-use evidence; corrupted/conflicting/unbound declarations fail closed through recovery. Old ordinary moves remain ordinary despite held crystals.",
+        "Tera/Mega/Z budgets separate; same-actor active/pending conflicts reject both orders, different eligible allies may use different mechanics together. Preserve #715 held-crystal Tera rejection. No dependency on shipping the entire Mega system; exercise present Tera and provide integration seam for #785.",
+        "Fault after PP/damage, after another actor's move, checkpoint write and end/retry: full runtime/SQL/RNG/messages/actions roll back. Switch/faint/revive/reconnect retain used budget; end/flee/concede/abort clears only on committed ending. New battle alone resets.",
+        "Disposable PostgreSQL session/checkpoint tests plus existing Tera/Primal/medicine/capture/progression regressions pass. Keep public command gated on acceptance; do not implement Ultra Burst or enable metadata-only pairs."
+      ],
+      "items": [],
+      "number": 798,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/798"
+    },
+    {
+      "key": "z-player",
+      "parent": 775,
+      "title": "[Items][P3] Accept the Normalium Z player command and opt-in source",
+      "dependencies": [
+        "z-engine",
+        "z-state"
+      ],
+      "scope": "Register proposed +zmove [actor] <active move slot or full name>=<target> only for Normalium Z/Tackle after private gates. Provide discovery and optional single-offer Counter.",
+      "criteria": [
+        "No-argument discovery queues nothing; exact gapped slot/full-name and ordinary singles/doubles actor/target selection queues one MOVE, no second +attack. Wrong owner/stale menus/unsupported pairs/invalid targets spend no action, PP, use or item.",
+        "Normal shop recipe: Normalium Z only, selected PF2 price10000/finite stock1/no automatic refill; deliberate public hub/return exit, duplicate prevention and no running-world population. Use actual +store Buy menu, bag/itemdex and +hold before battle.",
+        "Walk ordinary acquire->equip->command->real full-turn damage/PP/used budget->switch/repeated checkpoint->end->return crystal in singles and both doubles sides/current Fusion. Include Protect/immunity/prevention, side contention, no-effect/funds/stock/rollback controls and unchanged reusable ownership.",
+        "Publish source/move/item allowlist and help with only accepted route. Run focused effects, disposable PostgreSQL command/session/commerce cases and mandatory three-order gate. Separate local proof from released live #782 and configured supply #781."
+      ],
+      "items": [],
+      "number": 799,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/799"
+    },
+    {
+      "key": "z-generic1",
+      "parent": 775,
+      "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (1)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Buginium Z, Darkinium Z, Dragonium Z, Electrium Z, Fairium Z, Fightinium Z. Each starts with one explicitly reviewed ordinary source move; publish exact source mapping before implementation, not an all-move claim.",
+      "criteria": [
+        "Choose a legal actually learnable native holder/source move per crystal and reviewed Gen7 Z power/category/type/priority/target mapping. Variable/fixed/multi-hit/charging/called/spread or status moves stay deferred without explicit tests; generic BP1 metadata is never actual power.",
+        "Prove meaningful complete-turn effects and type/ability/protection/prevention/PP negatives per named pair, correct side budget and doubles targeting. No copied native identity or wrong crystal/source eligibility.",
+        "Extend only these accepted Counter offers at PF2 price10000/stock1 each. Ordinary purchase/equip/+zmove/SQL PP/checkpoint/end/return proof per pair, stock/funds/rollback and shared-ledger contention. No live stocking.",
+        "Publish partial source-move allowlists and deferred status/other-source limits; preserve previous pairs. Required ability/move defects become bounded prerequisites, never weakened acceptance. Run affected SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Buginium Z",
+        "Darkinium Z",
+        "Dragonium Z",
+        "Electrium Z",
+        "Fairium Z",
+        "Fightinium Z"
+      ],
+      "number": 800,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/800"
+    },
+    {
+      "key": "z-generic2",
+      "parent": 775,
+      "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (2)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Firium Z, Flyinium Z, Ghostium Z, Grassium Z, Groundium Z, Icium Z. Each starts with one explicitly reviewed ordinary source move; publish exact source mapping before implementation, not an all-move claim.",
+      "criteria": [
+        "Choose a legal actually learnable native holder/source move per crystal and reviewed Gen7 Z power/category/type/priority/target mapping. Variable/fixed/multi-hit/charging/called/spread or status moves stay deferred without explicit tests; generic BP1 metadata is never actual power.",
+        "Prove meaningful complete-turn effects and type/ability/protection/prevention/PP negatives per named pair, correct side budget and doubles targeting. No copied native identity or wrong crystal/source eligibility.",
+        "Extend only these accepted Counter offers at PF2 price10000/stock1 each. Ordinary purchase/equip/+zmove/SQL PP/checkpoint/end/return proof per pair, stock/funds/rollback and shared-ledger contention. No live stocking.",
+        "Publish partial source-move allowlists and deferred status/other-source limits; preserve previous pairs. Required ability/move defects become bounded prerequisites, never weakened acceptance. Run affected SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Firium Z",
+        "Flyinium Z",
+        "Ghostium Z",
+        "Grassium Z",
+        "Groundium Z",
+        "Icium Z"
+      ],
+      "number": 801,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/801"
+    },
+    {
+      "key": "z-generic3",
+      "parent": 775,
+      "title": "[Items][P3] Accept 5 generic Z-Crystal damage slices (3)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Poisonium Z, Psychium Z, Rockium Z, Steelium Z, Waterium Z. Each starts with one explicitly reviewed ordinary source move; publish exact source mapping before implementation, not an all-move claim.",
+      "criteria": [
+        "Choose a legal actually learnable native holder/source move per crystal and reviewed Gen7 Z power/category/type/priority/target mapping. Variable/fixed/multi-hit/charging/called/spread or status moves stay deferred without explicit tests; generic BP1 metadata is never actual power.",
+        "Prove meaningful complete-turn effects and type/ability/protection/prevention/PP negatives per named pair, correct side budget and doubles targeting. No copied native identity or wrong crystal/source eligibility.",
+        "Extend only these accepted Counter offers at PF2 price10000/stock1 each. Ordinary purchase/equip/+zmove/SQL PP/checkpoint/end/return proof per pair, stock/funds/rollback and shared-ledger contention. No live stocking.",
+        "Publish partial source-move allowlists and deferred status/other-source limits; preserve previous pairs. Required ability/move defects become bounded prerequisites, never weakened acceptance. Run affected SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Poisonium Z",
+        "Psychium Z",
+        "Rockium Z",
+        "Steelium Z",
+        "Waterium Z"
+      ],
+      "number": 802,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/802"
+    },
+    {
+      "key": "z-status1",
+      "parent": 775,
+      "title": "[Items][P3] Accept bounded Z status boosts and self-healing effects",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Select at most six existing source moves with simple zMove boost, heal or clearnegativeboost metadata, name them in a reviewed matrix before code, and implement only that list.",
+      "criteria": [
+        "Freeze source move/crystal/holder, exact pre-base-effect Z bonus order, boost caps/HP and failure/prevention/PP rules from primary mechanics. No blanket support for all zMove metadata or contest stats.",
+        "Test actual bonus plus base effect/no-effect and prevention/blocked-base cases, both side budgets and doubles target changes; no bonus when the action cannot begin. Source PP/use commit with effects and roll back together.",
+        "Normal discovery/command/SQL/checkpoint/cleanup acceptance per selected move, modern field/held effects preserved, mandatory gate. Other status effects remain deferred until their separate gate."
+      ],
+      "items": [],
+      "number": 803,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/803"
+    },
+    {
+      "key": "z-status2",
+      "parent": 775,
+      "title": "[Items][P3] Accept bounded special Z status effects and move restrictions",
+      "dependencies": [
+        "z-status1"
+      ],
+      "scope": "Review and implement at most six named remaining status effects: replacement healing, redirection, crit2 and type-dependent Curse; explicitly map supported moves and defer anything else.",
+      "criteria": [
+        "Specify each source/crystal/native holder and exact effect/order/duration; replacement healing is slot-bound across switching/rebuild, redirect follows actual targeting, crit uses real damage and Curse branches by reviewed current type. No broad battle rewrite.",
+        "Review Encore/Disable/Taunt/choice/Assault Vest/Imprison restrictions and called/locked/charging moves explicitly; select documented PF2 rules and fail unsupported combinations before input spends an action. Never infer compatibility from callback presence.",
+        "Complete-turn positive/negative, doubles, source PP/used ledger, replay/rollback/rebuild/end tests plus ordinary command/SQL proof per accepted mapping. Publish remaining limitations and run mandatory gate."
+      ],
+      "items": [],
+      "number": 804,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/804"
+    },
+    {
+      "key": "z-signature1",
+      "parent": 775,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (1)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Aloraichium Z, Decidium Z, Incinium Z, Primarium Z after exact holder/source/effect review. Unsupported native-form access remains behind a named prerequisite; do not create quest or form shortcuts.",
+      "criteria": [
+        "Exact native Alolan Raichu/Decidueye/Incineroar/Primarina and source move checks; Stoked Sparksurfer paralysis and the three signature damage effects.",
+        "Bind signature native owned origin/current form and exact active source move against itemUser/zMoveFrom; wrong species/form/nickname/Transform/copied ability/zero PP fail safely. Metadata-only itemUser forms are not accepted routes.",
+        "Publish immutable reviewed stats/power/category/priority/target/effects per signature, meaningful battle controls and ordinary acquisition/hold/+zmove/SQL/checkpoint/end proof. Test HP/status/stages/PP/use/doubles/rollback, preserving earlier generic and status lists.",
+        "Only accepted offers extend optional Counter at PF2 price10000/stock1 each; no live stock. Missing native lifecycle or move consumers get bounded prerequisite issues and remain explicitly deferred. Run focused SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Aloraichium Z",
+        "Decidium Z",
+        "Incinium Z",
+        "Primarium Z"
+      ],
+      "number": 805,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/805"
+    },
+    {
+      "key": "z-signature2",
+      "parent": 775,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (2)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Pikanium Z, Pikashunium Z, Snorlium Z, Mimikium Z after exact holder/source/effect review. Unsupported native-form access remains behind a named prerequisite; do not create quest or form shortcuts.",
+      "criteria": [
+        "Pikachu/native cap-form eligibility without inventing acquisition, signature crit/contact and no ordinary Giga Impact recharge; exact Mimikyu native/busted allowed-form lifecycle.",
+        "Bind signature native owned origin/current form and exact active source move against itemUser/zMoveFrom; wrong species/form/nickname/Transform/copied ability/zero PP fail safely. Metadata-only itemUser forms are not accepted routes.",
+        "Publish immutable reviewed stats/power/category/priority/target/effects per signature, meaningful battle controls and ordinary acquisition/hold/+zmove/SQL/checkpoint/end proof. Test HP/status/stages/PP/use/doubles/rollback, preserving earlier generic and status lists.",
+        "Only accepted offers extend optional Counter at PF2 price10000/stock1 each; no live stock. Missing native lifecycle or move consumers get bounded prerequisite issues and remain explicitly deferred. Run focused SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Pikanium Z",
+        "Pikashunium Z",
+        "Snorlium Z",
+        "Mimikium Z"
+      ],
+      "number": 806,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/806"
+    },
+    {
+      "key": "z-signature3",
+      "parent": 775,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (3)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Eevium Z, Kommonium Z, Lycanium Z, Mewnium Z after exact holder/source/effect review. Unsupported native-form access remains behind a named prerequisite; do not create quest or form shortcuts.",
+      "criteria": [
+        "Extreme Evoboost stat caps, Soulblaze damage/boost and spread targeting, Stormshards terrain removal, Genesis Supernova terrain: real effects and no-effect/blocked controls.",
+        "Bind signature native owned origin/current form and exact active source move against itemUser/zMoveFrom; wrong species/form/nickname/Transform/copied ability/zero PP fail safely. Metadata-only itemUser forms are not accepted routes.",
+        "Publish immutable reviewed stats/power/category/priority/target/effects per signature, meaningful battle controls and ordinary acquisition/hold/+zmove/SQL/checkpoint/end proof. Test HP/status/stages/PP/use/doubles/rollback, preserving earlier generic and status lists.",
+        "Only accepted offers extend optional Counter at PF2 price10000/stock1 each; no live stock. Missing native lifecycle or move consumers get bounded prerequisite issues and remain explicitly deferred. Run focused SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Eevium Z",
+        "Kommonium Z",
+        "Lycanium Z",
+        "Mewnium Z"
+      ],
+      "number": 807,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/807"
+    },
+    {
+      "key": "z-signature4",
+      "parent": 775,
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (4)",
+      "dependencies": [
+        "z-player"
+      ],
+      "scope": "Enable only Lunalium Z, Solganium Z, Marshadium Z, Tapunium Z after exact holder/source/effect review. Unsupported native-form access remains behind a named prerequisite; do not create quest or form shortcuts.",
+      "criteria": [
+        "Native/fused holder prerequisites stay separate; Searing/Menacing ability bypass, Soul-Stealing actual boosts and damage, Guardian of Alola HP-fraction/protection/rounding controls. No new fusion or plot routes.",
+        "Bind signature native owned origin/current form and exact active source move against itemUser/zMoveFrom; wrong species/form/nickname/Transform/copied ability/zero PP fail safely. Metadata-only itemUser forms are not accepted routes.",
+        "Publish immutable reviewed stats/power/category/priority/target/effects per signature, meaningful battle controls and ordinary acquisition/hold/+zmove/SQL/checkpoint/end proof. Test HP/status/stages/PP/use/doubles/rollback, preserving earlier generic and status lists.",
+        "Only accepted offers extend optional Counter at PF2 price10000/stock1 each; no live stock. Missing native lifecycle or move consumers get bounded prerequisite issues and remain explicitly deferred. Run focused SQL/effects and mandatory gate."
+      ],
+      "items": [
+        "Lunalium Z",
+        "Solganium Z",
+        "Marshadium Z",
+        "Tapunium Z"
+      ],
+      "number": 808,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/808"
+    }
+  ]
+}

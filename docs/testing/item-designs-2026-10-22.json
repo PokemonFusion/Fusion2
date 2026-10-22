@@ -1,0 +1,238 @@
+{
+  "date": "2026-10-22",
+  "issues": [
+    775,
+    776
+  ],
+  "classification": "design and follow-ups only",
+  "z_catalog": {
+    "total": 35,
+    "generic": 18,
+    "signature": 17,
+    "planned_owners": 34,
+    "ultra_deferred": 1,
+    "supported": 0
+  },
+  "created_issues": [
+    {
+      "parent": 775,
+      "number": 797,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/797",
+      "title": "[Items][P3] Implement guarded Normalium Z / Tackle action effects",
+      "dependencies": [],
+      "items": []
+    },
+    {
+      "parent": 775,
+      "number": 798,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/798",
+      "title": "[Items][P3] Persist Z declarations and integrate battle mechanic budgets",
+      "dependencies": [
+        "z-engine"
+      ],
+      "items": []
+    },
+    {
+      "parent": 775,
+      "number": 799,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/799",
+      "title": "[Items][P3] Accept the Normalium Z player command and opt-in source",
+      "dependencies": [
+        "z-engine",
+        "z-state"
+      ],
+      "items": []
+    },
+    {
+      "parent": 775,
+      "number": 800,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/800",
+      "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (1)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Buginium Z",
+        "Darkinium Z",
+        "Dragonium Z",
+        "Electrium Z",
+        "Fairium Z",
+        "Fightinium Z"
+      ]
+    },
+    {
+      "parent": 775,
+      "number": 801,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/801",
+      "title": "[Items][P3] Accept 6 generic Z-Crystal damage slices (2)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Firium Z",
+        "Flyinium Z",
+        "Ghostium Z",
+        "Grassium Z",
+        "Groundium Z",
+        "Icium Z"
+      ]
+    },
+    {
+      "parent": 775,
+      "number": 802,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/802",
+      "title": "[Items][P3] Accept 5 generic Z-Crystal damage slices (3)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Poisonium Z",
+        "Psychium Z",
+        "Rockium Z",
+        "Steelium Z",
+        "Waterium Z"
+      ]
+    },
+    {
+      "parent": 775,
+      "number": 803,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/803",
+      "title": "[Items][P3] Accept bounded Z status boosts and self-healing effects",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": []
+    },
+    {
+      "parent": 775,
+      "number": 804,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/804",
+      "title": "[Items][P3] Accept bounded special Z status effects and move restrictions",
+      "dependencies": [
+        "z-status1"
+      ],
+      "items": []
+    },
+    {
+      "parent": 775,
+      "number": 805,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/805",
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (1)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Aloraichium Z",
+        "Decidium Z",
+        "Incinium Z",
+        "Primarium Z"
+      ]
+    },
+    {
+      "parent": 775,
+      "number": 806,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/806",
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (2)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Pikanium Z",
+        "Pikashunium Z",
+        "Snorlium Z",
+        "Mimikium Z"
+      ]
+    },
+    {
+      "parent": 775,
+      "number": 807,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/807",
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (3)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Eevium Z",
+        "Kommonium Z",
+        "Lycanium Z",
+        "Mewnium Z"
+      ]
+    },
+    {
+      "parent": 775,
+      "number": 808,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/808",
+      "title": "[Items][P3] Accept four existing signature Z-Crystal routes (4)",
+      "dependencies": [
+        "z-player"
+      ],
+      "items": [
+        "Lunalium Z",
+        "Solganium Z",
+        "Marshadium Z",
+        "Tapunium Z"
+      ]
+    },
+    {
+      "parent": 776,
+      "number": 809,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/809",
+      "title": "[Items][P3] Persist one Oran Berry bed and atomic growth operations",
+      "dependencies": [],
+      "items": []
+    },
+    {
+      "parent": 776,
+      "number": 810,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/810",
+      "title": "[Items][P3] Add ordinary Oran growing commands and opt-in nursery content",
+      "dependencies": [
+        "berry-state"
+      ],
+      "items": []
+    },
+    {
+      "parent": 776,
+      "number": 811,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/811",
+      "title": "[Items][P3] Add the bounded Razz Berry field snack equivalent",
+      "dependencies": [],
+      "items": []
+    },
+    {
+      "parent": 776,
+      "number": 812,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/812",
+      "title": "[Items][P3] Accept durable Oran growth and independent Razz snack player slices",
+      "dependencies": [
+        "berry-player",
+        "berry-snack"
+      ],
+      "items": []
+    }
+  ],
+  "local_links_checked": 13,
+  "source_sha256_normalized_lf": {
+    "pokemon/dex/items/itemsdex.py": "12c62cb5642b9bb51c748d242458afae79bdd21fa64ee8e7dfb775a1f41a7c8f",
+    "pokemon/dex/moves/movesdex.py": "cd01fc0c804bbdb520497b630a87c2b0bf7d8c16d66ec1d669d24e2c6a9fcb9b",
+    "pokemon/helpers/berry_system.py": "d3fb75bb555fab80c569b69dbb4185980d56481bb9b7f16c4c3b08bae5eb64c3",
+    "tests/test_berry_system.py": "a5e1f16f7c4b249e9f5b94f9bc98e0b4dc5092a27b04602b051ba756fee94387",
+    "pokemon/services/field_items.py": "ec27f28b3abb212ed039962316dbf43a4a133870cf60a740dacf03a18bb04448",
+    "pokemon/services/field_berries.py": "c66a86d5e7a42de629760609db2284fd4faa5e341655d72ca0d3eec68441e50b",
+    "pokemon/services/field_food.py": "7b36893c49d239a2ccd36d28245e7fe867dcf7930eb07cac83e82ccf1d46a30b",
+    "commands/cmdsets/battle.py": "feb2be065729a8a1443b53cea459252d60169293577558405f214b026d7f59ec",
+    "pokemon/battle/player_choices.py": "83a9c65c2b62eaee86972fed717504fd2b331f46e72c36e00019899b43f0d972",
+    "docs/design/z-moves.md": "aa8b0b85a31e606ef0b85512455ae8e099bdca8d1c882d469f53da6602267744",
+    "docs/design/z-crystals.md": "3be09180109c52aaadce7d9bafe88957459f596149372cbfa5095fc5beb77b1e",
+    "docs/design/z-crystals.json": "e6e826c18d56372188cff2f98b053f31cbe19d42aea80567c2ccc238ec1ebfac",
+    "docs/design/berry-player-routes.md": "30a981a34dd4d143a6f47975f720708377e18ee9258f9aaf53467ad7812cccd8"
+  },
+  "runtime_changes": false,
+  "player_acceptance": false,
+  "live_operations": false,
+  "notes": [
+    "Separate #783 fixture changes are not part of either design commit",
+    "No helper test is accepted as player farming proof",
+    "No source-move metadata is accepted as a Z command route"
+  ]
+}

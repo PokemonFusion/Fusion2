@@ -46,6 +46,10 @@ commands and the dated limits of authored stock and current-world evidence.
 See [design/mega-evolution.md](design/mega-evolution.md) and its
 [per-stone rollout](design/mega-stones.md) for the proposed non-plot Mega route.
 This is a design plan; ordinary `+mega` activation remains deferred.
+See [design/z-moves.md](design/z-moves.md) and its
+[crystal inventory](design/z-crystals.md) for the planned Z-Move slice, and
+[design/berry-player-routes.md](design/berry-player-routes.md) for the separate
+Oran growing/Razz snack contracts. These routes require their implementation gates.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current

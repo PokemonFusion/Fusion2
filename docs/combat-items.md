@@ -94,3 +94,8 @@ suppression and cleanup rules. The [per-stone plan](design/mega-stones.md) assig
 all 47 canonical stones to bounded implementation work; Crucibellite is excluded
 CAP content. All pairs remain deferred. Closing the design issue adds no player
 command and does not change the historical battle-support classifications.
+
+The separate [Z-Crystal contract](design/z-moves.md) proposes one Normalium
+Z/Tackle action slice. Its [35-crystal inventory](design/z-crystals.md) remains
+fully deferred, with explicit partial move/effect gates and an Ultra-form
+prerequisite. No Z command is enabled by completing the design.

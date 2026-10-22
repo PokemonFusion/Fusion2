@@ -44,6 +44,10 @@ without a feeding effect do not imply that Mega/Z activation or growing works.
 The [Mega activation design](design/mega-evolution.md) describes a proposed
 Venusaurite route and optional supply recipe. It enables no current command or
 stock; [all existing stone pairs remain deferred](design/mega-stones.md).
+The [Z-Crystal plan](design/z-crystals.md) and
+[berry growing/flavor-use design](design/berry-player-routes.md) likewise add no
+current sources or commands. Growing, a Razz snack and Z activation have separate
+implementation and released-player acceptance gates.
 
 The **October 22, 2026** server configuration inspection found no enabled item
 shops and no Rare Candy dispenser. The inspected server also predates the recent
