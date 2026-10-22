@@ -125,12 +125,12 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Basculegion: 294 recoil without fainting | No persisted recoil streak |
 | Pawmot/Rabsca/Brambleghast: Let's Go steps | No persisted Let's Go activity |
 | Annihilape: Rage Fist uses | No persisted move-use count |
-| Gholdengo: 999 Coins | No supported coin inventory/counter |
 | Shedinja (dex only records a level) | Requires an additional Pokemon, spare party slot, and Poké Ball transaction |
 | Palafin (dex only records a level) | No Union Circle equivalent |
 
 Other `other` rules remain unsupported; Milcery's listed Sweet route and the
-exact Peat Block, qualified Kingambit and two Kubfu Scroll transitions are
+exact Peat Block, qualified Kingambit, two Kubfu Scroll transitions and the
+[999-coin Chest Gimmighoul equivalent](gimmighoul-evolution.md) are
 explicit exceptions. No completion flags or command overrides grant eligibility.
 
 ## Integrity and retries

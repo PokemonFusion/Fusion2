@@ -218,6 +218,8 @@ class CmdEvolvePokemon(Command):
       Kubfu uses a bag Scroll of Darkness for Urshifu (Single Strike), or
       Scroll of Waters for Urshifu-Rapid-Strike. One bag copy is consumed.
       No tower completion is required; an optional target must match the item.
+      Chest Gimmighoul at level 2–100 uses +evolve <id> Gimmighoul Coin.
+      This PF2 manual equivalent consumes 999 bag coins; Roaming is deferred.
     """
 
     key = "+evolve"
@@ -254,10 +256,16 @@ class CmdEvolvePokemon(Command):
             self.caller.msg("Evolution failed; no item was consumed and the Pokemon was unchanged.")
             return
         if result:
-            from pokemon.evolution_forms import AlcremieEvolution
+            from django.db import transaction
 
-            appearance = AlcremieEvolution.describe(pokemon)
-            detail = f" ({appearance})" if appearance else ""
-            self.caller.msg(f"{pokemon.name} evolved into {result}{detail}!")
+            def notify():
+                """Only describe the saved transition after its containing commit."""
+                from pokemon.evolution_forms import AlcremieEvolution
+
+                appearance = AlcremieEvolution.describe(pokemon)
+                detail = f" ({appearance})" if appearance else ""
+                self.caller.msg(f"{pokemon.name} evolved into {result}{detail}!")
+
+            transaction.on_commit(notify, robust=True)
         else:
             self.caller.msg("That evolution request was already completed. Use =<target> for the next stage.")

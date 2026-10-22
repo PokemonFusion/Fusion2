@@ -131,6 +131,11 @@ HYPER_TRAINING_ITEMS = {
 
 
 GAMEPLAY_ITEMS = {
+    "gimmighoulcoin": EvolutionItem(
+        "Gimmighoul Coin",
+        "PF2 manual evolution: use +evolve <full-id> Gimmighoul Coin on native Chest Gimmighoul at level 2–100. Consumes 999 bag coins; Roaming and held-only coins do not qualify.",
+        price=10,
+    ),
     **HYPER_TRAINING_ITEMS,
     "leaderscrest": HeldQualificationItem(
         "Leader's Crest", "Marks authored leader Bisharp opponents. Your Bisharp must personally KO three "

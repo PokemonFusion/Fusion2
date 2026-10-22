@@ -3,6 +3,31 @@
 from pokemon.names import normalize_name
 
 
+class GimmighoulEvolution:
+    """Admit the reviewed manual Chest-form, 999-bag-coin equivalent only."""
+
+    item = "Gimmighoul Coin"
+    quantity = 999
+    condition = "Level up with 999 Coins in the bag"
+
+    @classmethod
+    def eligible(cls, source, target, item, level, ability):
+        """Require exact native metadata and legal saved level/ability, never prose flags."""
+        return bool(
+            normalize_name(source.name) == "gimmighoul"
+            and source.raw.get("baseForme") == "Chest"
+            and not source.raw.get("forme") and not source.raw.get("baseSpecies")
+            and normalize_name(target.name) == "gholdengo"
+            and not target.raw.get("forme") and not target.raw.get("baseSpecies")
+            and target.raw.get("evoType") == "other"
+            and target.raw.get("evoCondition") == cls.condition
+            and target.raw.get("evoItem") is None
+            and normalize_name(item) == normalize_name(cls.item)
+            and type(level) is int and 2 <= level <= 100
+            and normalize_name(ability) == "rattled"
+        )
+
+
 class KubfuEvolution:
     """Select exactly one reviewed Urshifu branch with a real bag Scroll."""
 

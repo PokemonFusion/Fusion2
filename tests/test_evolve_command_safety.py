@@ -11,6 +11,12 @@ import pytest
 
 def load_command(monkeypatch, filename):
     """Load a command with a small Evennia shell and an observable service."""
+    from django.db import transaction
+
+    # This parser fixture replaces the entire transaction-owning service. Run
+    # its success callback immediately; real commit/rollback is proved by the
+    # guarded PostgreSQL suites, never an offline database connection here.
+    monkeypatch.setattr(transaction, "on_commit", lambda callback, **kwargs: callback())
     evennia = ModuleType("evennia")
     evennia.Command = type("Command", (), {})
     monkeypatch.setitem(sys.modules, "evennia", evennia)

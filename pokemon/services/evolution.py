@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from copy import copy
 from hashlib import sha256
 
-from django.db import transaction
+from django.db import connection, transaction
 
 from pokemon.data.evolution import (
     EvolutionContext,
@@ -14,6 +14,7 @@ from pokemon.data.evolution import (
 )
 from pokemon.items import GAMEPLAY_ITEMS
 from pokemon.evolution_forms import AlcremieEvolution
+from pokemon.evolution_items import GimmighoulEvolution
 from pokemon.names import normalize_name
 from pokemon.services.placement import PlacementError, PlacementService
 from utils.locks import require_no_battle_lock
@@ -94,11 +95,21 @@ class EvolutionService:
             # Model instances are not rolled back by transaction.atomic(). This also
             # handles stale references from Evennia's identity mapper after success.
             if pokemon is not None:
-                row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().get()
-                for instance in (pokemon, cached, mon):
-                    if instance is not None:
-                        self._restore_row(instance, row)
-                OwnedPokemon.cache_instance(cached)
+                def resync():
+                    """Publish fresh committed fields to retained references."""
+                    row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().get()
+                    for instance in (pokemon, cached, mon):
+                        if instance is not None:
+                            self._restore_row(instance, row)
+                    OwnedPokemon.cache_instance(cached)
+
+                if connection.in_atomic_block:
+                    for instance in (pokemon, cached, mon):
+                        if instance is not None:
+                            OwnedPokemon.flush_cached_instance(instance)
+                    transaction.on_commit(resync, robust=True)
+                else:
+                    resync()
 
     @staticmethod
     def _restore_row(pokemon, row):
@@ -177,8 +188,20 @@ class EvolutionService:
                     "It doesn't seem to be able to evolve right now (condition or target unavailable)."
                 )
             if item_key:
-                if not trainer.remove_item(item_key):
-                    raise EvolutionError(f"You do not have a {display}.")
+                quantity = 1
+                if normalize_name(options[0].name) == "gholdengo":
+                    from pokemon.data.evolution import lookup_species
+                    from pokemon.models.stats import level_for_exp
+
+                    growth = lookup_species(pokemon.species).raw.get("growthRate", "medium_fast")
+                    if pokemon.total_exp < 0 or level_for_exp(pokemon.total_exp, growth) != pokemon.level:
+                        raise EvolutionError("Invalid saved level/EXP; no coins were consumed.")
+                    quantity = GimmighoulEvolution.quantity
+                consumed = trainer.remove_item(item_key, quantity) if quantity != 1 else trainer.remove_item(item_key)
+                if not consumed:
+                    message = (f"You need {quantity} {display} in your bag." if quantity != 1
+                               else f"You do not have a {display}.")
+                    raise EvolutionError(message)
             result = attempt_evolution(pokemon, item=display, context=context, target=options[0].name)
             if not result:
                 raise EvolutionError("Evolution conditions changed; try again.")
