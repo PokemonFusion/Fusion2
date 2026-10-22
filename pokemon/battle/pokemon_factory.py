@@ -101,6 +101,7 @@ def create_battle_pokemon(
 	template_key: str = "",
 	move_names: list[str] | None = None,
 	tera_type: str = "",
+	held_item: str = "",
 ) -> Pokemon:
 	"""Return a ``Pokemon`` battle object for the given species/level."""
 
@@ -125,6 +126,7 @@ def create_battle_pokemon(
 			ability=getattr(inst, "ability", ""),
 			ivs=ivs_list,
 			evs=evs_list,
+			held_item=held_item,
 			current_hp=max_hp,
 			move_names=move_names,
 			move_pp=[move.pp for move in moves],
@@ -132,6 +134,10 @@ def create_battle_pokemon(
 			template_key=template_key,
 		)
 	except Exception:
+		if held_item:
+			# An authored acquisition cannot claim a persistent item on a fallback
+			# runtime with no encounter identity.
+			raise
 		encounter = SimpleNamespace(current_hp=max_hp, held_item="", encounter_id=None)
 
 	return Pokemon(

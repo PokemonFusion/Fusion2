@@ -307,15 +307,16 @@ class AcquisitionCases(unittest.TestCase):
         EVIDENCE.append({"label": "expected-restriction", "commands": ["+store", "Potion 1"],
                          "finding": "An empty or absent shop grants nothing", "before": before, "after": self.state()})
 
-    def test_itemfinder_message_grants_no_item(self):
-        """Reproduce the placeholder through +hunt and retain its honest gap."""
+    def test_unconfigured_itemfinder_rate_grants_no_item(self):
+        """A rate without an explicitly reviewed source gives no phantom promise."""
         self.room.db.allow_hunting, self.room.db.itemfinder_rate = True, 100
         self.room.db.noitem = False
+        self.room.db.npc_chance, self.room.db.encounter_rate = 0, 0
         before = self.state()
-        self.assertEqual(self.command("hunt"), "You found a mysterious item!")
+        self.assertEqual(self.command("hunt"), "You didn't find any Pokémon.")
         self.assertEqual(self.state(), before)
-        EVIDENCE.append({"label": "command-effect-gap", "commands": ["+hunt"],
-                         "finding": "Itemfinder displays an item but creates no inventory or held item",
+        EVIDENCE.append({"label": "expected-restriction", "commands": ["+hunt"],
+                         "finding": "No named finder source grants nothing and makes no item promise",
                          "before": before, "after": self.state()})
 
     def test_hunt_chart_held_item_is_not_an_acquisition_source(self):
