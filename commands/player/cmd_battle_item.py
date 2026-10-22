@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from evennia import Command
 
-from pokemon.names import normalize_name
 from pokemon.items import is_capture_ball
+from pokemon.services.battle_items import BattleItemCapability
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
@@ -35,6 +35,11 @@ class CmdBattleItem(Command):
 
     Notes:
       This queues an item as your battle action. Field-use items use +use.
+      Supported: battle medicine (including revival and PP restoration) and
+      capture balls in wild battles. Field-only foods, berries and other
+      unsupported items are rejected without queuing or spending an action.
+      A supported medicine that has no effect still spends its queued action,
+      but consumes no item. Smoke Ball uses +hold before battle, then +flee.
     """
 
     key = "+battle/item"
@@ -58,8 +63,10 @@ class CmdBattleItem(Command):
             self.caller.msg("Usage: +battle/item <item>")
             return
 
-        if normalize_name(item_name) == "smokeball":
-            self.caller.msg("Smoke Ball is a held item. Equip it with +hold before battle and use +flee.")
+        try:
+            BattleItemCapability.validate(item_name)
+        except ValueError as error:
+            self.caller.msg(str(error))
             return
 
         if not self.caller.has_item(item_name):
@@ -96,6 +103,11 @@ class CmdBattleItem(Command):
                 self.caller.msg(str(error))
             return
 
+        try:
+            BattleItemCapability.validate(item_name, battle=inst.battle)
+        except ValueError as error:
+            self.caller.msg(str(error))
+            return
         participant = _get_participant(inst, self.caller)
         is_ball = is_capture_ball(item_name)
         target = inst.battle.opponent_of(participant) if is_ball else participant

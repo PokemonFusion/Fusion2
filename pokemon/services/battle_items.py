@@ -13,6 +13,38 @@ class ItemUnavailable(Exception):
     """An item debit failed; roll back any partial inventory changes."""
 
 
+class BattleItemCapability:
+    """One manual-use policy for input, saved choices and final battle dispatch."""
+
+    @staticmethod
+    def validate(item, *, battle=None):
+        """Reject unsupported uses without inspecting target effect or spending."""
+        from pokemon.items import is_capture_ball
+
+        if normalize_name(item) == "smokeball":
+            raise ValueError("Smoke Ball is a held item. Equip it with +hold before battle and use +flee.")
+        if BattleMedicineUse.supports(item):
+            return
+        if is_capture_ball(item):
+            if battle is not None and getattr(getattr(battle, "type", None), "name", "") != "WILD":
+                raise ValueError("Poké Balls can only be used against wild Pokémon.")
+            return
+        raise ValueError("That item has no supported manual battle use. Use +use outside battle for field items "
+                         "or +hold before battle for held items.")
+
+    @classmethod
+    def invalid_pending(cls, battle):
+        """Find deferred item actions without changing any participant state."""
+        for participant in battle.participants:
+            pending = getattr(participant, "pending_action", None)
+            for action in pending if isinstance(pending, list) else [pending] if pending else []:
+                if getattr(action, "item", None) or getattr(getattr(action, "action_type", None), "name", "") == "ITEM":
+                    try:
+                        cls.validate(action.item, battle=battle)
+                    except ValueError as error:
+                        yield participant, action, str(error)
+
+
 class BattlePPRestoration:
     """Restore the first depleted active move, using stored PP when owned."""
 

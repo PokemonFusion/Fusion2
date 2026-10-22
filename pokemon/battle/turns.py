@@ -1065,6 +1065,13 @@ class TurnProcessor:
 
 		if getattr(action, "item_executed", False):
 			return
+		from pokemon.services.battle_items import BattleItemCapability
+
+		try:
+			BattleItemCapability.validate(action.item, battle=self)
+		except ValueError as error:
+			self.log_action(str(error))
+			return
 		item_key = normalize_name(action.item)
 		target = action.target
 		if is_capture_ball(action.item):
@@ -1331,6 +1338,12 @@ class TurnProcessor:
 		self.check_victory()
 
 	def run_turn(self) -> None:
+		from pokemon.services.battle_items import BattleItemCapability
+
+		# A deferred invalid item must fail before turn counters, conditions,
+		# transformations, opponents or residual effects can advance.
+		for _, _, error in BattleItemCapability.invalid_pending(self):
+			raise ValueError(error)
 		logger.info("Run turn %s begin", self.turn_count + 1)
 		self.dispatcher.dispatch("turn_start", battle=self)
 		self.start_turn()

@@ -182,6 +182,13 @@ class ActionQueue:
 
 		if callable(getattr(self, "choices_for", None)):
 			return self._queue_controlled_choice(caller, "item", item_name, target, actor=actor)
+		from pokemon.services.battle_items import BattleItemCapability
+
+		try:
+			BattleItemCapability.validate(item_name, battle=self.battle)
+		except ValueError as error:
+			self._msg_to(caller or self.captainA, str(error))
+			return False
 		own_position, _ = self._get_position_for_trainer(caller or self.captainA)
 		if not own_position:
 			return

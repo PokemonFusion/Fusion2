@@ -7,6 +7,28 @@ Pokemon UUIDs, or `fusion`/`self`/`me` for the current reserved Fusion. Eggs,
 boxed Pokemon, foreign owners and inactive Fusion reservations are ineligible.
 An effective use consumes one item; invalid or ineffective uses consume none.
 
+## Battle item boundary
+
+`+item` / `+battle/item` accepts the existing 21 battle medicines (including
+reserve revival, Ether/Max Ether and Elixir/Max Elixir) and capture balls in wild
+battles. It rejects unsupported items before reserving an actor, persisting a
+declaration, changing a turn or consuming stock. Fresh Water and Oran Berry
+retain their supported `+use` field routes and cannot be manually fed in battle.
+Held items use `+hold` before battle; Smoke Ball holders escape with `+flee`.
+
+Command choices, public queue entry, restored/deferred declarations and final
+dispatch share the same capability policy. Invalid old item choices are removed
+before turn readiness, while valid sibling choices remain queued. In doubles,
+supported items still require an owned actor such as `+item A2 Potion=3`.
+Wild-only capture restrictions and selected reserve/move targets remain intact.
+
+Capability is distinct from effect. A supported Potion used on a full-health
+target still spends the queued battle action, but consumes no item; unsupported
+manual use never queues an action. This repair preserves that existing no-effect
+turn policy and adds no battle feeding, new item definitions or plot items.
+See the [battle-item validation report](testing/battle-item-validation-2026-10-22.md)
+for ordinary-command/SQL, restore, actor-selection and regression evidence.
+
 ## Rare Candy
 
 `+use Rare Candy=3` raises the eligible target by one level, up to level 100.

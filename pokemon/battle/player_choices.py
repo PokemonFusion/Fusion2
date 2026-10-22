@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pokemon.helpers.party_helpers import get_battle_switch_choices, resolve_battle_switch_choice
 from pokemon.items import is_capture_ball
-from pokemon.names import normalize_name
 
 from ._shared import _normalize_key
 from .active_slots import slot_for
@@ -147,15 +146,14 @@ class PlayerChoices:
 
     def item(self, item_name, target=None, *, actor=None):
         """Queue medicine for this actor or a ball against the wild opponent."""
-        if normalize_name(item_name) == "smokeball":
-            raise ValueError("Smoke Ball is a held item. Equip it with +hold before battle and use +flee.")
+        from pokemon.services.battle_items import BattleItemCapability
+
+        BattleItemCapability.validate(item_name, battle=self.battle)
         position, pokemon = self.actor(actor)
         self._check(position, pokemon)
         if not self.participant.has_item(item_name):
             raise ValueError(f"You do not have any {item_name}.")
         is_ball = is_capture_ball(item_name)
-        if is_ball and self.battle.type.name != "WILD":
-            raise ValueError("Poké Balls can only be used against wild Pokémon.")
         owner = self.battle.opponent_of(self.participant) if is_ball else self.participant
         target_pokemon = owner.active[0] if is_ball and owner.active else pokemon
         item_move = None

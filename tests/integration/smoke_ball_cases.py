@@ -253,19 +253,18 @@ class SmokeBallCases(unittest.TestCase):
         self.assertFalse(CaptureReceipt.objects.filter(storage=self.player.storage).exists())
 
     def test_restored_legacy_item_declaration_never_captures_or_debits(self):
-        """Old saved Smoke Ball item actions remain harmless at final dispatch."""
+        """Old saved Smoke Ball actions are discarded before reserving a turn."""
         self.start()
         bag = self.inventory()
         holder = self.session.battle.participants[0].active[0]
         self.session.state.declare["A1"] = {"item": "Smoke Ball", "target": "B1",
                                             "trainer": str(self.player.id), "pokemon": holder.model_id}
         self.rebuild()
-        action = self.session.battle.participants[0].pending_action
-        self.assertIs(action.target, self.session.battle.participants[0])
-        self.session.battle.execute_item(action)
+        self.assertIsNone(self.session.battle.participants[0].pending_action)
+        self.assertNotIn("A1", self.session.state.declare)
+        self.assertIsNone(self.session.data.turndata.positions["A1"].turninit.item)
         self.assertEqual(self.inventory(), bag)
         self.assertFalse(CaptureReceipt.objects.filter(storage=self.player.storage).exists())
-        self.assertFalse(self.session.battle.battle_over)
 
     def test_real_capture_command_still_targets_wild_debits_and_places(self):
         """A real Master Ball keeps normal capture behavior through +item."""

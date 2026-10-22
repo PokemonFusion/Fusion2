@@ -208,6 +208,10 @@ class TurnManager:
 
 		if not self.battle:
 			return
+		guard = getattr(self, "_discard_unsupported_item_choices", None)
+		if callable(guard) and guard():
+			self._set_player_control(True)
+			return
 
 		log_info(f"Running turn for battle {self.battle_id}")
 		debug_hook = getattr(self, "persist_debug_record", None)

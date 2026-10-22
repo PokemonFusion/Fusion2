@@ -1880,6 +1880,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Restore all valid slot choices without overwriting a sibling's action."""
         from .active_slots import slot_for
         from .legal_actions import LegalActions
+        from pokemon.services.battle_items import BattleItemCapability
+
+        self._discard_unsupported_item_choices()
 
         positions = self.data.turndata.positions
         trainer_info = self.storage.get("trainers", {}) or {}
@@ -1936,6 +1939,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     item = declaration["item"]
                     from pokemon.items import is_capture_ball
 
+                    BattleItemCapability.validate(item, battle=self.battle)
                     target = self.battle.opponent_of(actor) if is_capture_ball(item) else actor
                     target_ref = declaration.get("item_target_ref")
                     chosen = next((mon for mon in target.pokemons if str(getattr(mon, "model_id", None)) == str(target_ref)), None) if target_ref else pokemon if target is actor else target.active[0]
@@ -2049,6 +2053,52 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         from .player_choices import PlayerChoices
         return PlayerChoices(self, caller)
 
+    def _discard_unsupported_item_choices(self):
+        """Free invalid saved/deferred item slots before any turn can advance."""
+        from pokemon.services.battle_items import BattleItemCapability
+
+        if not self.battle or not self.data or not self.state:
+            return False
+        positions = self.data.turndata.positions
+        invalid = {}
+        for name, position in positions.items():
+            declaration = self.state.declare.get(name, {})
+            items = [declaration["item"]] if isinstance(declaration, Mapping) and "item" in declaration else []
+            position_item = getattr(getattr(position, "turninit", None), "item", None)
+            if position_item is not None:
+                items.append(position_item)
+            for item in items:
+                try:
+                    BattleItemCapability.validate(item, battle=self.battle)
+                except ValueError as error:
+                    invalid[name] = str(error)
+        bad_actions = set()
+        for participant, action, error in BattleItemCapability.invalid_pending(self.battle):
+            bad_actions.add(id(action))
+            pokemon = action.pokemon or (participant.active[0] if participant.active else None)
+            name, _ = self._position_for_pokemon(pokemon, positions)
+            if name:
+                invalid[name] = error
+        if not invalid and not bad_actions:
+            return False
+        rejected_pokemon = {id(positions[name].pokemon) for name in invalid}
+        for participant in self.battle.participants:
+            pending = participant.pending_action
+            actions = pending if isinstance(pending, list) else [pending] if pending else []
+            kept = [action for action in actions if id(action) not in bad_actions and id(
+                action.switch_from or action.pokemon or (participant.active[0] if participant.active else None)
+            ) not in rejected_pokemon]
+            participant.pending_action = kept if len(kept) > 1 else kept[0] if kept else None
+        for name, error in invalid.items():
+            self.state.declare.pop(name, None)
+            positions[name].removeDeclare()
+            self.msg(f"Saved item action at {name} was discarded: {error} Choose an action again.")
+        # Save both declaration views, including legacy PositionData.turninit,
+        # so a second rebuild cannot resurrect the rejected action.
+        self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
+        self.storage.set("data", self.data.to_dict())
+        return True
+
     def _missing_action_positions(self) -> list[str]:
         """Use the same authoritative declarations for readiness and feedback."""
         if not self.data:
@@ -2061,6 +2111,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def is_turn_ready(self) -> bool:
         """Return whether every required battle position has declared an action."""
+        self._discard_unsupported_item_choices()
         if self.data:
             missing = self._missing_action_positions()
             if missing:

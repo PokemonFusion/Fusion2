@@ -97,6 +97,8 @@ class FakeParticipant:
 
 
 class FakeBattle:
+	type = types.SimpleNamespace(name="WILD")
+
 	def __init__(self, participants):
 		self.participants = participants
 
@@ -156,3 +158,25 @@ def test_battleitem_persists_declare_via_queue_item(item_name, player_index):
 	assert player.pending_action.target is (enemy if item_name == "Poke Ball" else player)
 	assert inst.queued == [(item_name, None)]
 	assert caller.removed_items == []
+
+
+@pytest.mark.parametrize("item_name", ["Fresh Water", "Oran Berry", "PP Up", "Rare Candy", "Leftovers", "Light Ball", "Smoke Ball", "Unknown Item"])
+def test_unsupported_battleitem_never_queues_or_debits(item_name):
+	"""Unsupported commands stop before mutating even the compatibility queue."""
+	e, b, bi = setup_modules()
+	try:
+		cmd_mod = load_cmd_module()
+		poke = types.SimpleNamespace()
+		player, enemy = FakeParticipant("Player", poke), FakeParticipant("Enemy", poke)
+		inst = FakeInstance(FakeBattle([player, enemy]))
+		caller = DummyCaller()
+		player.player, caller.ndb.battle_instance = caller, inst
+		cmd = cmd_mod.CmdBattleItem()
+		cmd.caller, cmd.args = caller, item_name
+		cmd.func()
+		assert player.pending_action is None
+		assert inst.queued == []
+		assert caller.removed_items == []
+		assert "+use" in caller.msgs[-1] or "+flee" in caller.msgs[-1]
+	finally:
+		restore_modules(e, b, bi)
