@@ -210,6 +210,9 @@ class CmdEvolvePokemon(Command):
       Ursaring uses a Peat Block from your bag for ordinary Ursaluna. PF2's
       explicit item action replaces the full-moon condition; no moon flag,
       time or region is needed. Held-only copies and Bloodmoon are excluded.
+      Bisharp must personally KO three authored Crest-bearing Bisharp leaders
+      in won NPC/wild battles, then gain a level. +party <slot> shows progress.
+      Use +evolve without a bag item; your Crest/held item is not consumed.
     """
 
     key = "+evolve"

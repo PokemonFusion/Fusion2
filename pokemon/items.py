@@ -50,6 +50,20 @@ class EvolutionItem(GameplayItem):
 
 
 @dataclass(frozen=True)
+class HeldQualificationItem(GameplayItem):
+    """Identify encounter qualification without a consumable evolution effect."""
+
+    price: int = 1500
+    category: str = "Held Items"
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Expose ordinary display/equip metadata, with no capture capability."""
+        return {**super().raw, "price": self.price, "category": self.category,
+                "isPokeball": False, "qualificationOnly": True}
+
+
+@dataclass(frozen=True)
 class HeldEscapeItem(GameplayItem):
     """Describe a reusable held escape effect without capture capability."""
 
@@ -96,6 +110,11 @@ FIELD_RECOVERY_ITEMS = {
 
 
 GAMEPLAY_ITEMS = {
+    "leaderscrest": HeldQualificationItem(
+        "Leader's Crest", "Marks authored leader Bisharp opponents. Your Bisharp must personally KO three "
+        "qualifying leaders in won NPC/wild battles, then gain a level and use +evolve. "
+        "No player-held or bag Crest is required or consumed; +party <slot> shows progress.",
+    ),
     "everstone": GameplayItem("Everstone", "Prevents the holder from evolving."),
     "blackaugurite": GameplayItem("Black Augurite", "Evolves Scyther into Kleavor."),
     "peatblock": EvolutionItem(

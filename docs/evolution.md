@@ -56,6 +56,7 @@ Both the source's `evos` and the target's `prevo` must agree on the exact form.
 | Alcremie | Milcery holds one of the seven Sweets; explicit `+evolve` replaces spinning, with an optional allowed cream target |
 | Existing trade-held items | Exact allowlisted source/target/item triples; `+hold` then `+evolve` consumes the held item without transferring ownership |
 | Ordinary Ursaluna | Exact Ursaring source and a bag Peat Block; explicit item-use equivalent replaces the lunar condition |
+| Kingambit | Native owned Bisharp's private evidence of three leader victories, then a stored level above the third-KO floor; no bag item |
 
 Everstone blocks evolution. Eggs and fusion-reserved Pokemon cannot evolve or
 hold items. Room attributes are server-managed context, not player-supplied
@@ -91,6 +92,15 @@ and consumes one real bag item. Held-only copies and arbitrary flags do not
 activate it, and Bloodmoon cannot be selected. The bounded rule, opt-in shop
 acquisition and preservation limits are in [Peat Block evolution](peat-block-evolution.md).
 
+For Kingambit, the actual native Bisharp must personally finish three qualifying
+leader Bisharp in committed NPC/wild victories, then gain a level. Opponent
+identity comes from an originally Crest-bearing server encounter that still
+holds its Crest at KO. Private durable faint/victory receipts track the actual
+owned Pokemon; completion flags, a bag Crest and EXP Share do not grant credit.
+`+party <slot>` shows progress; use `+evolve <full-id>` when ready. Your held item
+and bag stock are not consumed. See [Kingambit qualification](kingambit-evolution.md)
+for PF2's direct-move, native identity, victory and level-trigger limits.
+
 ## Explicitly unsupported
 
 These fail closed, even at level 100 or with a supplied item. Unknown future
@@ -107,13 +117,12 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Basculegion: 294 recoil without fainting | No persisted recoil streak |
 | Pawmot/Rabsca/Brambleghast: Let's Go steps | No persisted Let's Go activity |
 | Annihilape: Rage Fist uses | No persisted move-use count |
-| Kingambit: defeat leading Bisharp | No persisted qualifying battle history |
 | Gholdengo: 999 Coins | No supported coin inventory/counter |
 | Shedinja (dex only records a level) | Requires an additional Pokemon, spare party slot, and Poké Ball transaction |
 | Palafin (dex only records a level) | No Union Circle equivalent |
 
 Other `other` rules remain unsupported; Milcery's listed Sweet route and the
-exact Peat Block transition are explicit exceptions. No completion flags or
+exact Peat Block and qualified Kingambit transitions are explicit exceptions. No completion flags or
 command overrides grant eligibility.
 
 ## Integrity and retries

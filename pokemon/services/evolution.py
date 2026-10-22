@@ -127,7 +127,13 @@ class EvolutionService:
         room = getattr(self.caller, "location", None)
         db = getattr(room, "db", None)
         stats = get_stats(pokemon)
+        kingambit_ready = False
+        if normalize_name(pokemon.species) == "bisharp":
+            from pokemon.services.leader_crest import LeaderCrestProgress
+
+            kingambit_ready = LeaderCrestProgress.read(self.caller, pokemon).ready(pokemon.level)
         return EvolutionContext(
+            kingambit_ready=kingambit_ready,
             friendship=pokemon.friendship,
             moves=moves,
             move_types=move_types,

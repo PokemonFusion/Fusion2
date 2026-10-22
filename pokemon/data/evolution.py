@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pokemon.names import normalize_name
 from pokemon.evolution_forms import AlcremieEvolution
-from pokemon.evolution_items import PeatBlockEvolution, TradeHeldEvolution
+from pokemon.evolution_items import KingambitEvolution, PeatBlockEvolution, TradeHeldEvolution
 
 from ..dex import POKEDEX
 
@@ -57,6 +57,7 @@ class EvolutionContext:
     party_species: tuple = ()
     party_types: tuple = ()
     stats: dict = field(default_factory=dict)
+    kingambit_ready: bool = False
 
     def meets(self, condition):
         """Evaluate only enumerated conditions, not arbitrary dex prose."""
@@ -125,15 +126,16 @@ def evolution_options(species, *, level, item=None, context=None):
         sweet_evolution = AlcremieEvolution.eligible(current, evo, context.held_item)
         trade_held_evolution = TradeHeldEvolution.eligible(current, evo, context.held_item)
         peat_evolution = PeatBlockEvolution.eligible(current, evo, item)
+        kingambit_evolution = KingambitEvolution.eligible(current, evo, context.kingambit_ready)
         if key == "kleavor":
             condition = ""
         if (
             kind not in SUPPORTED_TYPES and not sweet_evolution
-            and not trade_held_evolution and not peat_evolution
+            and not trade_held_evolution and not peat_evolution and not kingambit_evolution
         ) or key in UNSUPPORTED_TARGETS:
             continue
         if level < (evo.evo_level or 0) or (
-            not sweet_evolution and not peat_evolution and not context.meets(condition)
+            not sweet_evolution and not peat_evolution and not kingambit_evolution and not context.meets(condition)
         ):
             continue
         gender = raw.get("gender")

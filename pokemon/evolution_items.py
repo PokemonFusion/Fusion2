@@ -3,6 +3,25 @@
 from pokemon.names import normalize_name
 
 
+class KingambitEvolution:
+    """Admit only the reviewed native transition with private server evidence."""
+
+    condition = "Defeat 3 Bisharp leading Pawniard and level-up"
+
+    @classmethod
+    def eligible(cls, source, target, ready):
+        """Leave all other conditions/forms fail-closed and consume no item."""
+        return bool(
+            ready is True and normalize_name(source.name) == "bisharp"
+            and normalize_name(target.name) == "kingambit"
+            and not source.raw.get("forme") and not source.raw.get("baseSpecies")
+            and not target.raw.get("forme") and not target.raw.get("baseSpecies")
+            and target.raw.get("evoType") == "other"
+            and target.raw.get("evoCondition") == cls.condition
+            and target.raw.get("evoItem") is None
+        )
+
+
 class PeatBlockEvolution:
     """Replace only ordinary Ursaluna's lunar condition with explicit bag use."""
 

@@ -1,0 +1,568 @@
+{
+  "issue": 761,
+  "completed_utc": "2026-10-22T01:24:43.119062+00:00",
+  "result": "passed",
+  "baseline_commit": "de17205faac5bbbc3a9431a33143638f5ad4f689",
+  "python": "3.12.4",
+  "source_sha256_lf": {
+    ".github/workflows/lifecycle-integrity.yml": "b21a1bebe83a41b3632c1fed5d040a0515fffdc3ca63151a1ebc6615a85f5b6b",
+    "commands/player/cmd_battle_attack.py": "326e8834e9e72e2d416dc27ce885441be51b77efc885c4a3d896f692411d13a1",
+    "commands/player/cmd_battle_retry.py": "9e2426c951e7f703723d95109b04b65f9605f7df7f9fa14165655a51067a4778",
+    "commands/player/cmd_challenge.py": "82a2176ffe0702790fe8e95eee991296c5b029b4d6b12e6f32409096e44db0ec",
+    "commands/player/cmd_inventory.py": "79280017f864164b0a43d04e65fd273a8fc6ef5372d52d2ca27884f5112ff6f5",
+    "commands/player/cmd_learn_evolve.py": "6f5126231bf8a6bdfeea1bf7314f395cc79970a30041e67939123ce1b1066bd5",
+    "commands/player/cmd_sheet.py": "c56a1e317bf3cefcce1bd7b6fc12460813ed1b1c1aed9ea284233b7ce1fa8351",
+    "docs/combat-items.md": "c0b28f8866359a03fa6a8c94ecd9fa7ab13b337b52b96ad2619f4eb19790a53f",
+    "docs/evolution.md": "8885f893f3cbde4354f9353f0badd25b1e55ed3d1f4d85b66cdef8890ecb70dc",
+    "docs/kingambit-evolution.md": "5123d1938f4968acc5b8d1e38197ef9a0bbc6380c1dfef25ce706db193311b25",
+    "pokemon/battle/battleinstance.py": "b130bee372296b1a2f3006d93f4e7af840e6e419abb7362732884983a28f1a6d",
+    "pokemon/battle/damage.py": "e6a822809b6cd3c3ebc6739483f2392594237805aa2678cbe27ea618e4169ec8",
+    "pokemon/battle/engine.py": "dd1e137b744130f74f6c9a4ddcac6d4a507baac116bf2426dfcd707b6a28675a",
+    "pokemon/battle/logic.py": "1ea712a0a3322db23f88f7e23b4ebc72353d50c509029ffa973b1578a96fc988",
+    "pokemon/battle/pokemon_factory.py": "658d6d65ceb98872303c783022e8ea4425d91cb309de5025311ad0ed035b382d",
+    "pokemon/battle/turn.py": "5864e4b182b0b109a77c3e27d751865176bcc75986330d4650eccbe72370b415",
+    "pokemon/data/evolution.py": "00f6fa89686cead0666395304769906616e28789d4457e45e7f269ea357367ed",
+    "pokemon/dex/pokedex/paldea.py": "8c8814c7bb2b39c057e1980fcb4dc2d8e7d9dafc58847640add4cf35202a942f",
+    "pokemon/dex/pokedex/unova.py": "6df5f42f2e08af2b74d3cfde1deafcf63e91a4fd06ae4b33319f43e2c357c3d5",
+    "pokemon/evolution_items.py": "6a11de0aaac74da5b3317e8d8f564fa4595ebe7df35644228c3db3e7b262f46a",
+    "pokemon/items.py": "0fc4dd123744f247e06dd841861b20f95fb7daf2c821a6644d1fc58a91f01262",
+    "pokemon/models/core.py": "e807802c0c5eecbefe7819480697d267c4f56ad7edb3d569e23aedfa92193847",
+    "pokemon/models/stats.py": "c741ebcf874f321b9affb868e31704c17e557cb4d508a4e2ce5e773b5b80043a",
+    "pokemon/models/storage.py": "7710c178eceb551294b30bc302931ed883899c7687f4421e4ac32c4552060c3a",
+    "pokemon/models/trainer.py": "b25af6ac140457b8a4cafca7264e5152ae6eb06f54fdaa40c734143ad993817d",
+    "pokemon/services/battle_rewards.py": "4c62b5c178c22fdf4de538bf7b2bf552aafa67f736f3eecd12f9f65682ff04d5",
+    "pokemon/services/evolution.py": "9b7d8bdf2320ea82d447bf700225e0480f90aae4e5a981a9fb86818a57c55cf6",
+    "pokemon/services/leader_crest.py": "2739f0a5f51d48dca49655d2d7a2ec75c5de12c995eb1bd7e02310269ef1a7f1",
+    "pokemon/services/placement.py": "5fa4d9e2b80c2b1a9eab6330e8d9907d497ca23e3da6f93a24e78ee3270930b9",
+    "pokemon/services/trainer_challenges.py": "66118c86c457f60a47848c721dc6b244cc6dd46da42991cee135c779cf4c0d51",
+    "pokemon/services/trainer_encounters.py": "ea32d538ba95357c2a00ba4eb53e323f23eabfbeddd0a670e7f17c324010bc25",
+    "pokemon/user.py": "7016b47bbf45c9a0d192d6c9a0b5e606454494db2f59670a8b4f816aee599168",
+    "tests/integration/adventure_lifecycle_cases.py": "3976ae1acfb269c6dc2868148207e3713cff988f13b2a66aeca0fe8f2f282775",
+    "tests/integration/alcremie_cases.py": "40f1930fa62063ef850ab390aeca401d73a7016c448adb7ddc0c78ce3acccb65",
+    "tests/integration/battle_recovery_cases.py": "9bbf181cb7e93a609bd35607695c250b644927e00080b38de93ab08cff7a4dc2",
+    "tests/integration/evolution_cases.py": "0a518b97cd4108b3af250c5f042c9e28042eb65e7cd1b2cb8c820057da9b71e9",
+    "tests/integration/field_food_cases.py": "499cc9853a3c0b6ac2d1a3cee32a5ee5d351dcd843317e516818ba50d3c2f849",
+    "tests/integration/isolated_postgres.py": "4b38423ba6d7ccf08cbdfe9d022e26f0d399415adc3ef9df30d89945dcc1270b",
+    "tests/integration/leader_crest_cases.py": "a598992bd866b9f4285af522732cdf0d51a90ee6f62d1e88bfa27ef5fe6e59ba",
+    "tests/integration/peat_block_cases.py": "d8d1a20b581c75b0bb6b883b4507ed2a67eda48df34a7b913d87733b19e5153d",
+    "tests/integration/player_doubles_cases.py": "e910d6a6c69f4bfa965c72c77ba1a34e0e1e403723eeb3c840cd909098501a45",
+    "tests/integration/progression_cases.py": "ab2b1f9c663286ff68caaaac3d58f7de44ba0d3f9ee544ea15f04e87ad0fd63d",
+    "tests/integration/remaining_item_cases.py": "6bcba49a27f2b103bae3415f34cb169ba56b4158610f32c20f565476b2da56ab",
+    "tests/integration/smoke_ball_cases.py": "250704f3039bde38c6e0318e6bb252b11252be3b4275fe3bce3a3b822b836b40",
+    "tests/integration/trade_held_cases.py": "2f039b6bb8b02853907f3560167cb6d53c2d60c85702c8116ee3f5dd428380f1",
+    "tests/integration/trainer_challenge_cases.py": "db45702de62eb83cdf951be9365a604ace2f0f7af3bfdb37e5d896aa6d131a43",
+    "tests/integration/ui_cases.py": "4b577086f4d96956e6c487db89441742a8f0e1ea6e9924cb9026d554f27aa750",
+    "tests/test_leader_crest.py": "125a36b4a46d8e1ef79411f85a39cb3f7db3f1a61a411c2e0a80e48a89ba6d50",
+    "tools/run_mandatory_tests.py": "74e942d278967cf2065d0d4c3c3a47c2117723c32bb106cfa5c4de15191b0d94",
+    "utils/display.py": "f32ed8c1d65cfdf340a4b5d9e66c0a0ff86d89d8c2660f99b0c31887af835ae5",
+    "world/help_entries.py": "569d029957089f1726479eaa3af9c0032ded3d6f0c2a23eb24990720077a1590"
+  },
+  "frozen_python_sources_verified": 959,
+  "dependencies": {
+    "747": "all ten existing-item P1/P2 children closed in their bounded scopes",
+    "755": "closed; existing atomic evolution/equip guards retained",
+    "756": "closed; exact rule exception pattern retained"
+  },
+  "selected_policy": {
+    "recorded_before_implementation": true,
+    "contract": "docs/kingambit-evolution.md",
+    "source": "actual native owned living untransformed active canonical-party Bisharp",
+    "leader": "real native NPC/wild EncounterPokemon originally holding Crest and still possessing it at KO",
+    "attribution": "personal direct Physical/Special lethal move, matching source/move/turn damage ledger",
+    "required": "three distinct encounter UUIDs sealed by faint and committed whole-encounter victory receipts",
+    "level": "current stored level above maximum pre-EXP KO level among accepted first three; third-KO EXP may satisfy",
+    "saturation": "three; replay/later results cannot raise floor",
+    "level_100_substitute": false,
+    "player_crest_required": false,
+    "held_or_bag_item_consumption": 0,
+    "excluded": [
+      "PvP",
+      "scripted/no progression",
+      "capture",
+      "flee",
+      "loss/draw",
+      "abort",
+      "other/benched/foreign Pokemon",
+      "missing or residual-only attribution",
+      "transforms",
+      "originally nonleader with moved-in Crest",
+      "removed Crest",
+      "Fusion reservations",
+      "arbitrary flags/text"
+    ],
+    "suppression": "physical held possession still counts",
+    "canon_reference": "https://bulbapedia.bulbagarden.net/wiki/Leader%27s_Crest#Effect",
+    "reference_checked": "2026-10-21",
+    "reference_kind": "secondary community reference",
+    "explicit_PF2_adaptations": [
+      "committed whole-encounter victory",
+      "original leader identity",
+      "direct damaging move"
+    ]
+  },
+  "definition": {
+    "key": "leaderscrest",
+    "name": "Leader's Crest",
+    "category": "Held Items",
+    "supplemental": true,
+    "reference_price": 1500,
+    "new_combat_stat_effect": false,
+    "intentional_route": "existing opt-in NPC template species Bisharp/held_item Leader's Crest through placed +challenge",
+    "wild": "same rule when deliberately server-configured",
+    "live_population_or_grants": false
+  },
+  "persistence": {
+    "infra": "existing BattleRewards faint plans, character Attributes and receipt claim locks",
+    "transaction": "existing full-turn checkpoint, then character/trainer/owned victory claim",
+    "private_evidence": "owner and Pokemon UUID, versioned three encounter UUIDs and level floor",
+    "cache_rollback_repair": "qualification, receipt and pending-index reads use db_attributes SQL db_value, bypass stale Evennia Attribute identity map",
+    "evolution": "existing storage/trainer/fresh owned locks; private readiness with exact Kingambit rule",
+    "preserved": [
+      "ID",
+      "owner",
+      "canonical placement",
+      "mirrors",
+      "held item",
+      "bag items",
+      "HP/status",
+      "EXP",
+      "IV/EV",
+      "friendship",
+      "moves/PP",
+      "unrelated flags"
+    ],
+    "changes": [
+      "species",
+      "ability slot mapping",
+      "derived stats/types",
+      "existing evolution receipt"
+    ],
+    "schema_or_migration": false
+  },
+  "ordinary_player_flow": {
+    "proof_kind": "automated production ordinary commands/models with captured transport",
+    "walkthroughs": [
+      {
+        "held_crest": true,
+        "held_after": "Leader's Crest",
+        "bag_after": 1,
+        "victories": [
+          {
+            "count": 1,
+            "level_floor": 52,
+            "battle_id": "79205757-4bff-4357-ad5e-9cd81689bfef"
+          },
+          {
+            "count": 2,
+            "level_floor": 52,
+            "battle_id": "26ca649e-cd79-4f54-bcb1-0d00f02b8564"
+          },
+          {
+            "count": 3,
+            "level_floor": 52,
+            "battle_id": "9c79a4f8-6e6b-498a-90d6-52187756f30a"
+          }
+        ],
+        "id": "a22e9318-e225-46b8-ae21-579f3fcef9fd",
+        "commands": [
+          "+challenge <authored leader NPC>",
+          "+attack Brick Break",
+          "repeat for three victories",
+          "+party 3",
+          "+use Rare Candy=3",
+          "+evolve a22e9318-e225-46b8-ae21-579f3fcef9fd",
+          "+party 3 after SQL reload"
+        ],
+        "evolution_output": "Kingambit evolved into Kingambit!",
+        "same_identity_state_and_placement": true
+      },
+      {
+        "held_crest": false,
+        "held_after": "Leftovers",
+        "bag_after": 0,
+        "victories": [
+          {
+            "count": 1,
+            "level_floor": 52,
+            "battle_id": "3766d8de-8f31-447d-9b6e-35e523be2901"
+          },
+          {
+            "count": 2,
+            "level_floor": 52,
+            "battle_id": "b080a6e4-1a0d-489e-b223-2c16c51aa2b7"
+          },
+          {
+            "count": 3,
+            "level_floor": 52,
+            "battle_id": "456908fa-aab9-4aff-858f-737b401dd965"
+          }
+        ],
+        "id": "415efc3f-bef7-4b3f-9473-266269faf814",
+        "commands": [
+          "+challenge <authored leader NPC>",
+          "+attack Brick Break",
+          "repeat for three victories",
+          "+party 3",
+          "+use Rare Candy=3",
+          "+evolve 415efc3f-bef7-4b3f-9473-266269faf814",
+          "+party 3 after SQL reload"
+        ],
+        "evolution_output": "Kingambit evolved into Kingambit!",
+        "same_identity_state_and_placement": true
+      }
+    ],
+    "live_login": false,
+    "fixture_setup": "separate disposable players, native Pokemon, authored NPC/room/template and controlled encounter selection"
+  },
+  "production_model_checks": {
+    "suites": {
+      "leader_crest": {
+        "suite": "leader_crest",
+        "exit_code": 0,
+        "passed": 29,
+        "duration_seconds": 28.422,
+        "log": "leader_crest-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "leader_crest_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "60d5d8c3bbbd5f8d571f6b5360e2dd2baff07672f4f3862ada9473a73c77655b",
+        "equivalent_ci_command": "python -B tests/integration/leader_crest_cases.py"
+      },
+      "battle_recovery": {
+        "suite": "battle_recovery",
+        "exit_code": 0,
+        "passed": 36,
+        "duration_seconds": 28.937,
+        "log": "battle_recovery-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "battle_recovery_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "e2c6301e976dc227b9ad5bfeeef1fe6a084c6b9d9567b171a7ca13286c7ac3e0",
+        "equivalent_ci_command": "python -B tests/integration/battle_recovery_cases.py"
+      },
+      "progression": {
+        "suite": "progression",
+        "exit_code": 0,
+        "passed": 11,
+        "duration_seconds": 9.797,
+        "log": "progression-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "progression_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "42002eea0596a1ffbed81355d4ee49d433ac01ce7ffee6469a2b82efe8154f0f",
+        "equivalent_ci_command": "python -B tests/integration/progression_cases.py"
+      },
+      "trainer_challenge": {
+        "suite": "trainer_challenge",
+        "exit_code": 0,
+        "passed": 10,
+        "duration_seconds": 10.266,
+        "log": "trainer_challenge-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "trainer_challenge_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "106d66589f25eafc7e3b338a717123297a8dd2b72fd37c310f594e84808605c9",
+        "equivalent_ci_command": "python -B tests/integration/trainer_challenge_cases.py"
+      },
+      "player_doubles": {
+        "suite": "player_doubles",
+        "exit_code": 0,
+        "passed": 10,
+        "duration_seconds": 22.125,
+        "log": "player_doubles-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "player_doubles_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "cdb3a56f8f8532cc2dc33df612f4cabd432b0af308602ab45aa45ada6d50b8e4",
+        "equivalent_ci_command": "python -B tests/integration/player_doubles_cases.py"
+      },
+      "adventure_lifecycle": {
+        "suite": "adventure_lifecycle",
+        "exit_code": 0,
+        "passed": 9,
+        "duration_seconds": 10.328,
+        "log": "adventure_lifecycle-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "adventure_lifecycle_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "14f9861b3be10be10654790bf170ff377bc7f480ec77cb2e045e06ba70fdd7e4",
+        "equivalent_ci_command": "python -B tests/integration/adventure_lifecycle_cases.py"
+      },
+      "evolution": {
+        "suite": "evolution",
+        "exit_code": 0,
+        "passed": 28,
+        "duration_seconds": 9.578,
+        "log": "evolution-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "evolution_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "23ca9d8ff98151d6596b15c83295597cb5780c61809c639bb4c43e339c8903d0",
+        "equivalent_ci_command": "python -B tests/integration/evolution_cases.py"
+      },
+      "alcremie": {
+        "suite": "alcremie",
+        "exit_code": 0,
+        "passed": 76,
+        "duration_seconds": 26.922,
+        "log": "alcremie-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "alcremie_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "38301dd88e6150fad041a13aa8da7ced9f6913277888c6ce01c0cc3672090286",
+        "equivalent_ci_command": "python -B tests/integration/alcremie_cases.py"
+      },
+      "trade_held": {
+        "suite": "trade_held",
+        "exit_code": 0,
+        "passed": 33,
+        "duration_seconds": 17.031,
+        "log": "trade_held-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "trade_held_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "1777625fe28bb9aa99a00b6971e4afb936aa8572a5d4fc4b7670ec17a7787f31",
+        "equivalent_ci_command": "python -B tests/integration/trade_held_cases.py"
+      },
+      "peat_block": {
+        "suite": "peat_block",
+        "exit_code": 0,
+        "passed": 29,
+        "duration_seconds": 14.453,
+        "log": "peat_block-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "peat_block_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "bae00f06599c113c194dd9e999317db433b70d7f81eb1b360132bc48c5d0b610",
+        "equivalent_ci_command": "python -B tests/integration/peat_block_cases.py"
+      },
+      "ui": {
+        "suite": "ui",
+        "exit_code": 0,
+        "passed": 14,
+        "duration_seconds": 10.078,
+        "log": "ui-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "ui_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "460326f7cb46089bece09a341e958dfe0d0dfbe5cbe64e2864351a014e30dca1",
+        "equivalent_ci_command": "python -B tests/integration/ui_cases.py"
+      },
+      "smoke_ball": {
+        "suite": "smoke_ball",
+        "exit_code": 0,
+        "passed": 17,
+        "duration_seconds": 18.219,
+        "log": "smoke_ball-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "smoke_ball_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "7c1f8b9f64f1b2cd59b53ab2388e3a42cb325702b9b7550073e1429ae1d90dfe",
+        "equivalent_ci_command": "python -B tests/integration/smoke_ball_cases.py"
+      },
+      "remaining_item": {
+        "suite": "remaining_item",
+        "exit_code": 0,
+        "passed": 8,
+        "duration_seconds": 8.235,
+        "log": "remaining_item-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "remaining_item_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "419a9ba60e956a00e2693e2a54d7ee8d70f79f133c435774276858000e60f5d1",
+        "equivalent_ci_command": "python -B tests/integration/remaining_item_cases.py"
+      },
+      "field_food": {
+        "suite": "field_food",
+        "exit_code": 0,
+        "passed": 70,
+        "duration_seconds": 20.375,
+        "log": "field_food-final.log",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\leader-crest-20261021\\run_case.py",
+          "field_food_cases.py"
+        ],
+        "failed": 0,
+        "skipped": 0,
+        "log_sha256": "4b72e020d00de9632528f08cdc808f39b8ceb7047f534e52c74c6ddba308e440",
+        "equivalent_ci_command": "python -B tests/integration/field_food_cases.py"
+      }
+    },
+    "total_passed": 380,
+    "database": "fresh private loopback PostgreSQL 16.9, isolated test schemas",
+    "wrapper": "only argv and test log destinations adapted"
+  },
+  "focused_pytest": {
+    "suite": "focused",
+    "exit_code": 0,
+    "passed": 222,
+    "duration_seconds": 18.047,
+    "log": "focused-final.log",
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "-m",
+      "pytest",
+      "tests/test_leader_crest.py",
+      "tests/test_evolution.py",
+      "tests/test_evolution_conditions.py",
+      "tests/test_alcremie_evolution.py",
+      "tests/test_trade_held_evolution.py",
+      "tests/test_peat_block_evolution.py",
+      "tests/test_evolve_command_safety.py",
+      "tests/test_hold_command_safety.py",
+      "tests/test_gameplay_items.py",
+      "tests/test_itemdex_command.py",
+      "tests/test_item_store_safety.py",
+      "tests/test_help_pipe_escaping.py",
+      "tests/test_battle_run_actions.py",
+      "tests/test_item_capture.py",
+      "tests/test_test_import_isolation.py",
+      "-q",
+      "--run-callback-tests",
+      "-o",
+      "addopts=",
+      "-p",
+      "no:cacheprovider",
+      "--basetemp=.pytest-basetemp-761-focused-final"
+    ],
+    "failed": 0,
+    "log_sha256": "743fe625882084f0b5d15c61f05ea4376988cd515d3f8308eddaa15037ecf0b1",
+    "environment": {
+      "PF2_NO_EVENNIA": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    }
+  },
+  "mandatory_gate": {
+    "command": "python -B tools/run_mandatory_tests.py",
+    "runs": [
+      {
+        "name": "combined",
+        "passed": 4535,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 216.97,
+        "exit_code": 0
+      },
+      {
+        "name": "repeat",
+        "passed": 4535,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 210.02,
+        "exit_code": 0
+      },
+      {
+        "name": "battle-first",
+        "passed": 4535,
+        "skipped": 4014,
+        "warnings": 1401,
+        "duration_seconds": 205.59,
+        "exit_code": 0
+      }
+    ],
+    "exit_code": 0,
+    "log_sha256": "394b9cd6762a6a414d726444def557bae1f1ca40aad0c1bee56267b26843b3ae",
+    "warnings": "existing model-reload/cache warnings retained; skips remain outside enabled scope"
+  },
+  "preliminary_diagnoses": [
+    "description assertion and missing ContentType transport/factory import were fixture errors",
+    "checkpoint injection moved after actual player/AI declaration storage",
+    "capture control corrected from field +use to battle +item",
+    "rollback of an existing private Attribute exposed stale model cache; direct SQL evidence reads fixed it",
+    "late-marker probe found cached rolled-back claimed marker skipped retry; receipt and pending-index reads now use SQL too",
+    "permanent 29-case suite fails after actual evidence, marker and pending-index SQL writes and requires exact recovery",
+    "first gate superseded after this finding; complete final frozen-source runs provide closure evidence"
+  ],
+  "cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_leader_crest_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_cluster_stopped": true
+  },
+  "boundaries": {
+    "unrelated_work": false,
+    "plot_only_content": false,
+    "generated_dex_edits": false,
+    "historical_reports_edited": false,
+    "migration_runner": false,
+    "existing_service_restart": false,
+    "game_database": false,
+    "live_login": false,
+    "hosted_ci_confirmed": false,
+    "main_merge": false,
+    "deployed": false,
+    "battle_runtime_modified": "only bounded qualification receipt hooks"
+  }
+}

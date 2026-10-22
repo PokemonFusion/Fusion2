@@ -5276,6 +5276,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 evs if self.award_xp else {}, txp if self.award_txp else 0,
                                 getattr(opponent, "participating_pokemon", None),
                             )
+                            from pokemon.services.leader_crest import LeaderCrestProgress
+
+                            candidate = LeaderCrestProgress.candidate(self, poke)
+                            if candidate is not None:
+                                payload["kingambit_defeat"] = candidate
                             identity = getattr(poke, "model_id", None) or str(part.pokemons.index(poke))
                             delivery.deliver(opponent.player, f"faint:{part.team}:{identity}", payload, caller=self,
                                              before_claim=lambda: self.on_faint(poke))

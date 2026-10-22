@@ -63,6 +63,16 @@ class BattleRewards:
         return bool(getattr(character, "pk", None) and getattr(character, "_meta", None)
                     and getattr(character, "attributes", None))
 
+    @staticmethod
+    def stored_attribute(character, key, *, category=None, default=None):
+        """Read committed/in-transaction SQL, bypassing rolled-back identity caches."""
+        from evennia.utils.dbserialize import from_pickle
+
+        value = character.db_attributes.filter(db_key=key, db_category=category, db_attrtype=None).values_list(
+            "db_value", flat=True,
+        ).first()
+        return from_pickle(value) if value is not None else default
+
     def key(self, event):
         """Give one logical effect a stable bounded Attribute key."""
         return self.battle_id + ":" + hashlib.sha256(event.encode()).hexdigest()
@@ -82,11 +92,11 @@ class BattleRewards:
         key = self.key(event)
         with transaction.atomic():
             character = self._lock(player)
-            receipt = character.attributes.get(key, category=CATEGORY)
+            receipt = self.stored_attribute(character, key, category=CATEGORY)
             if receipt is None:
                 character.attributes.add(key, {"battle_id": self.battle_id, "event": event,
                                                "payload": payload, "claimed": False}, category=CATEGORY)
-                pending = list(character.attributes.get(PENDING_KEY, default=[]))
+                pending = list(self.stored_attribute(character, PENDING_KEY, default=[]))
                 character.attributes.add(PENDING_KEY, [*pending, key])
         return key
 
@@ -104,7 +114,7 @@ class BattleRewards:
         try:
             with transaction.atomic():
                 character = self._lock(player)
-                receipt = character.attributes.get(key, category=CATEGORY)
+                receipt = self.stored_attribute(character, key, category=CATEGORY)
                 if not receipt or receipt["battle_id"] != self.battle_id:
                     raise ValueError("This reward receipt does not belong to this battle.")
                 if receipt["claimed"]:
@@ -123,10 +133,16 @@ class BattleRewards:
                     award_trainer_xp(player, payload["txp"], caller=buffered)
                 if payload.get("money"):
                     trainer.add_money(payload["money"])
+                if "kingambit" in payload:
+                    from pokemon.services.leader_crest import EVENT, LeaderCrestProgress
+
+                    if receipt["event"] != EVENT:
+                        raise ValueError("Kingambit progress requires a committed victory receipt.")
+                    LeaderCrestProgress.apply(character, trainer, payload["kingambit"])
                 # Replacing the whole detached mapping avoids mutating an
                 # autosaving SaverDict before the transaction is complete.
                 character.attributes.add(key, {**dict(receipt), "claimed": True}, category=CATEGORY)
-                pending = list(character.attributes.get(PENDING_KEY, default=[]))
+                pending = list(self.stored_attribute(character, PENDING_KEY, default=[]))
                 character.attributes.add(PENDING_KEY, [entry for entry in pending if entry != key])
                 transaction.on_commit(buffered.publish, robust=True)
                 # Keep the existing character's trainer view consistent only
@@ -161,7 +177,7 @@ class BattleRewards:
         """Read the bounded pending index without loading completed receipt history."""
         character = cls.character(player)
         character.attributes.reset_cache()
-        return list(character.attributes.get(PENDING_KEY, default=[]))
+        return list(cls.stored_attribute(character, PENDING_KEY, default=[]))
 
     @staticmethod
     def faint_plan(player, exp, evs, txp, participants):

@@ -74,3 +74,14 @@ uses effective-item suppression; trainer/PvP and persisted server no-flee rules
 take precedence. Capture routing requires canonical `isPokeball` metadata.
 This addition has separate [command/model and regression evidence](testing/smoke-ball-2026-10-21.md);
 it does not rewrite the pinned #757 matrix or expand plot-only item scope.
+
+## Supplemental leader qualification item
+
+[Leader's Crest](kingambit-evolution.md) marks authored native Bisharp leaders.
+An owned Bisharp personally defeats three distinct qualifying leaders in won
+NPC/wild encounters, gains the required level, then uses ordinary `+evolve`.
+The player's Bisharp needs no Crest; equipped and bag copies are preserved.
+This is a qualification role, with no new held combat-stat effect. Private
+per-Pokemon evidence uses the existing battle receipts and evolution guards;
+`+party <slot>` shows progress. Separate [command/model and regression evidence](testing/leader-crest-2026-10-21.md)
+covers this later addition without changing the historical #757 matrix.

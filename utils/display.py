@@ -678,6 +678,11 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	appearance = AlcremieEvolution.describe(pokemon)
 	if appearance:
 		lines.append(f"{THEME['muted']}Appearance|n: {THEME['value']}{appearance}|n")
+	from pokemon.services.leader_crest import LeaderCrestProgress
+
+	leader_progress = LeaderCrestProgress.describe(caller, pokemon)
+	if leader_progress:
+		lines.append(leader_progress)
 
 	lines.append(
 		f"{THEME['muted']}HP|n: {THEME['value']}{hp}|n/{max_hp} {_hp_bar(hp, max_hp)}   "

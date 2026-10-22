@@ -1771,6 +1771,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             self.state.ending = True
             self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
         self.retry_battle_rewards()
+        from pokemon.services.leader_crest import LeaderCrestProgress
+
+        if LeaderCrestProgress.record_result(self):
+            self.retry_battle_rewards()
         log_info(f"Ending battle {self.battle_id}")
 
         self.persist_debug_record(event="battle_ending")

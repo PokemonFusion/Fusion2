@@ -543,6 +543,12 @@ full-moon requirement with this explicit item action: no time/region/moon flag
 is needed. A held-only copy does not activate it. Bloodmoon is not a target.
 Peat Block acquisition uses shops/rewards deliberately configured to offer it.
 
+For Kingambit, your native Bisharp must personally finish three authored
+Crest-bearing Bisharp leaders in won NPC/wild battles, then gain a level.
++party <slot> shows the count and next level. Use +evolve <full ID> without a
+bag item. Your Crest/held item is not consumed. PvP, losses, flee/capture,
+aborted battles, EXP Share, transformed holders and fake flags give no credit.
+
 For Milcery, first equip Berry, Clover, Flower, Love, Ribbon, Star or Strawberry
 Sweet with +hold <slot>=<complete Sweet name>. Then +evolve <pokemon_id> is PF2's
 spin equivalent and selects Vanilla Cream. Copy the full ID from +party <slot>.
