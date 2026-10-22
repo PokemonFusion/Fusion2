@@ -124,6 +124,8 @@ jobs:
         run: python tests/integration/field_food_cases.py
       - name: Field berry feeding, EV reduction, friendship and transactional persistence
         run: python tests/integration/field_berry_cases.py
+      - name: Legacy recovery berry field routes, guards, rollback and final-copy use
+        run: python tests/integration/legacy_berry_cases.py
       - name: PP capacity prompts, atomic use and legacy raw bonuses on PostgreSQL
         run: python tests/integration/pp_capacity_cases.py
       - name: Battle medicine, reserve revival and PP snapshot regressions

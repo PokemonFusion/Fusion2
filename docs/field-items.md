@@ -103,6 +103,8 @@ created. Inventory and itemdex show full names, descriptions and metadata.
 | Items | Field effect |
 | --- | --- |
 | Oran Berry | Restore up to 10 HP |
+| Berry | Restore up to 10 HP |
+| Gold Berry | Restore up to 30 HP |
 | Sitrus Berry | Restore up to 1/4 maximum HP, rounded down |
 | Figy, Wiki, Mago, Aguav, Iapapa Berry | Restore up to 1/3 maximum HP, rounded down |
 | Berry Juice | Restore up to 20 HP |
@@ -113,13 +115,20 @@ created. Inventory and itemdex show full names, descriptions and metadata.
 | Aspear Berry | Cure freeze |
 | Lum Berry | Cure any of those major persistent conditions |
 | Leppa Berry | Restore up to 10 PP to one current active move |
+| Mystery Berry | Restore up to 5 PP to one current active move |
+| Burnt Berry | Cure freeze |
+| Ice Berry | Cure burn |
+| Mint Berry | Cure sleep and clear its saved remaining turns |
+| Miracle Berry | Cure major persistent status, including toxic poison |
+| PRZ Cure Berry | Cure paralysis |
+| PSN Cure Berry | Cure poison or toxic poison |
 | Pomeg, Kelpsy, Qualot, Hondew, Grepa, Tamato Berry | Reduce the corresponding EV and increase friendship as below |
 
 HP recovery requires a living, injured target and is capped at its calculated
 maximum HP. Manual feeding can be used above the automatic held activation
 threshold. Status cures require the matching saved condition on a living target.
-Leppa requires a living target with a depleted active move. Use
-`+use Leppa Berry=3/Water Gun` or `+use Leppa Berry=3/4`: move numbers retain
+Leppa and Mystery require a living target with a depleted active move. Use
+`+use Leppa Berry=3/Water Gun` or `+use Mystery Berry=3/4`: move numbers retain
 canonical active-slot gaps. Without `/move`, restore the first depleted active
 move. Stored PP boosts and current dex data determine its cap; other moves are
 untouched. Examples: `+use Oran Berry=3`, `+use Lum Berry=fusion`.
@@ -129,6 +138,20 @@ Their nature-based confusion is a combat-only volatile and is not introduced or
 persisted by field feeding. Lum's field use cures persistent status, not a
 nonexistent out-of-battle confusion state. The existing held effects retain
 their normal thresholds, nature/confusion rules, triggers and consumption.
+
+The nine legacy names are existing definitions. Their field mapping follows
+the reviewed [reference item implementation](https://github.com/smogon/pokemon-showdown/blob/master/data/items.ts)
+and the existing medicine/berry policy. Burnt thaws, while Ice cures burn;
+the names do not imply the opposite. Miracle cures saved major status but does
+not invent persistent field confusion. Bitter Berry and Persim Berry only cure
+combat confusion and remain unavailable through `+use`.
+
+Bag feeding consumes one bag copy, never the stored held item, and does not
+require a held activation threshold. Existing held callbacks are unchanged:
+PF2 currently also lets held Burnt cure burn and restricts held PSN Cure to
+ordinary poison. Those held differences are preserved separately from the
+reviewed field mapping. See the [legacy berry acceptance report](testing/legacy-berries-2026-10-22.md)
+for per-item ordinary commands, SQL reload and regression evidence.
 
 ## EV berries
 
@@ -160,7 +183,7 @@ write rolls back the debit, and waiting uses recheck fresh saved values.
 
 ## Limits
 
-This is an explicit 21-item field allowlist (20 berries and Berry Juice), not
+This is an explicit 30-item field allowlist (29 berries and Berry Juice), not
 generic support for every `isBerry` entry. Persim/Bitter (confusion-only), Enigma
 (damage-triggered), resist, stat-boost, accuracy, retaliation and other combat
 berries remain held-only. Contest/flavor-only berries such as Razz and Bluk have

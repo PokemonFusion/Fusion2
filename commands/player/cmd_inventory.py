@@ -317,6 +317,8 @@ class CmdUseItem(Command):
       +use Max Elixir=fusion
       +use Oran Berry=3
       +use Leppa Berry=3/Water Gun
+      +use Mystery Berry=3/4
+      +use Gold Berry=fusion
       +use Pomeg Berry=3
       +use Fresh Water=3
       +use Max Honey=6
@@ -337,7 +339,13 @@ class CmdUseItem(Command):
       level with one bag item, up to level 100. Eggs, boxes, foreign Pokemon
       and inactive Fusion reservations cannot use it. Failed uses spend none.
       Recovery berries and Berry Juice share medicine limits. Leppa restores
-      one active move. Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato lower the matching
+      10 PP and Mystery Berry restores 5 PP to one active move, selected by
+      /<move name or real slot>, or the first depleted move if omitted.
+      Berry/Gold Berry heal 10/30 HP. Burnt thaws freeze; Ice cures burn;
+      Mint cures sleep; PRZ Cure handles paralysis; PSN Cure handles poison
+      or toxic poison. Miracle cures major saved status, as Lum does.
+      Bitter/Persim are confusion-only held berries with no field effect.
+      Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato lower the matching
       HP/Atk/Def/SpA/SpD/Spe EVs by up to 10 and raise friendship by 10 below
       100, 5 below 200, or 2 at 200+ (cap 255). Either useful effect allows use.
       An ineffective use consumes nothing. EV berries do not revive Pokemon.

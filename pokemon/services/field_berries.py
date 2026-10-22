@@ -10,7 +10,7 @@ from pokemon.services.field_items import FieldMedicineError, FieldMedicineUse
 class _BerryMedicineUse(BattleMedicineUse):
     """Share durable medicine effects without invoking held-item consumption."""
 
-    healing = {"oranberry": 10, "berryjuice": 20}
+    healing = {"oranberry": 10, "berryjuice": 20, "berry": 10, "goldberry": 30}
     fractions = {
         "sitrusberry": 4,
         "figyberry": 3, "wikiberry": 3, "magoberry": 3,
@@ -21,13 +21,16 @@ class _BerryMedicineUse(BattleMedicineUse):
         "pechaberry": {"psn", "tox"}, "rawstberry": {"brn"},
         "aspearberry": {"frz"},
         "lumberry": {"brn", "psn", "tox", "frz", "slp", "par"},
+        "burntberry": {"frz"}, "iceberry": {"brn"}, "mintberry": {"slp"},
+        "miracleberry": {"brn", "psn", "tox", "frz", "slp", "par"},
+        "przcureberry": {"par"}, "psncureberry": {"psn", "tox"},
     }
-    pp_items = {"leppaberry": (10, False)}
+    pp_items = {"leppaberry": (10, False), "mysteryberry": (5, False)}
     revivals = set()
     herbs = {}
 
     def __init__(self, pokemon, trainer=None, *, move=None):
-        """Use the repaired held berries' fixed and fractional recovery amounts."""
+        """Use the reviewed berries' fixed and fractional recovery amounts."""
         super().__init__(pokemon, trainer, move=move)
         self.healing = {
             **type(self).healing,
@@ -39,7 +42,7 @@ class _BerryMedicineUse(BattleMedicineUse):
 class FieldBerryUse(FieldMedicineUse):
     """Feed allowlisted berries through the same owned-target transaction."""
 
-    selected_move_items = {"leppaberry"}
+    selected_move_items = {"leppaberry", "mysteryberry"}
     ev_stats = {
         "pomegberry": 0, "kelpsyberry": 1, "qualotberry": 2,
         "hondewberry": 3, "grepaberry": 4, "tamatoberry": 5,
@@ -62,8 +65,15 @@ class FieldBerryUse(FieldMedicineUse):
             return self._reduce_evs(key, pokemon, trainer)
         snapshot = build_battle_pokemon_from_model(pokemon)
         return _BerryMedicineUse(snapshot, trainer, move=move).use(
-            key, lambda: trainer.remove_item(key)
+            key, lambda: self._consume(trainer, key)
         )
+
+    @staticmethod
+    def _consume(trainer, item):
+        """Roll back a failed debit even if its writer made a partial change."""
+        if not trainer.remove_item(item):
+            raise FieldMedicineError("The berry could not be consumed. Nothing was changed.")
+        return True
 
     def _reduce_evs(self, item, pokemon, trainer):
         """Remove up to ten EVs and raise friendship once, without reviving."""
@@ -84,8 +94,7 @@ class FieldBerryUse(FieldMedicineUse):
         friendship = min(255, friendship + gain)
         if updated == evs[index] and friendship == pokemon.friendship:
             return False
-        if not trainer.remove_item(item):
-            return False
+        self._consume(trainer, item)
         old_max, old_hp = get_max_hp(pokemon), pokemon.current_hp
         evs[index] = updated
         pokemon.evs, pokemon.friendship = evs, friendship
