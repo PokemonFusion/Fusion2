@@ -37,6 +37,8 @@
 See [code-map.md](code-map.md) for more details on the codebase layout.
 See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
 battle validation workflow.
+See [held-incense.md](held-incense.md) for the five existing incense boosters,
+ordinary equip/battle routes and current bounded acceptance evidence.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current

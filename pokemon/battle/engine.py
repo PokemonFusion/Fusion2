@@ -421,11 +421,14 @@ def _apply_move_damage(
             except Exception:
                 pass
 
+    from .effect_context import EffectContext
+
     for owner in (user, target):
         ability = _resolve_ability(getattr(owner, "ability", None))
         if not ability:
             ability = None
-        item = getattr(owner, "item", None) or getattr(owner, "held_item", None)
+        # Suppression keeps the owned item but disables its offensive hooks.
+        item = EffectContext.item(owner)
 
         # onAnyBasePower applies to moves used by any Pokemon on the field.
         new_power = None
@@ -485,7 +488,11 @@ def _apply_move_damage(
                     new_power = ability.call("onBasePower", battle_move.power)
                 except Exception:
                     new_power = None
-        if new_power is None and item and hasattr(item, "call"):
+        if isinstance(new_power, (int, float)):
+            battle_move.power = int(new_power)
+        # Ability and held-item power results compose; a no-op ability result
+        # must not skip the item hook (for example Sand Force in clear weather).
+        if item and hasattr(item, "call"):
             try:
                 new_power = item.call(
                     "onBasePower", battle_move.power, user=owner, target=target,
