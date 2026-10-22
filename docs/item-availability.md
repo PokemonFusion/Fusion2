@@ -27,6 +27,8 @@ the Adventure does not give another first-clear Potion.
 | Sweet or trade-held evolution item | `+hold 3=Strawberry Sweet`, then `+evolve <full-pokemon-id>` | Equip the real copy first; see [evolution](evolution.md) |
 | Reusable held effect | `+hold 3=Leftovers` or `+hold 3=Odd Incense` | The acting holder needs the item; suppression can disable it |
 | Smoke Ball | `+hold 3=Smoke Ball`, then `+flee` in battle | Eligible wild battles only; trainer/PvP restrictions still apply |
+| Gimmighoul Coin | `+evolve <full-pokemon-id> Gimmighoul Coin` | Native Chest form at level 2–100; consumes 999 bag coins; [PF2 manual equivalent](gimmighoul-evolution.md) |
+| Rage Candy Bar / Hopo Berry | `+use Rage Candy Bar=3`, `+use Hopo Berry=3/Water Gun` | [Field-only status/selected-move PP equivalents](recovery-equivalents.md); no held Hopo effect |
 
 Use `+party 3` to inspect the target and copy its full ID. Use `+hold 3=` to
 return an uneaten held item to your bag. Having a bag copy does not activate a
@@ -53,7 +55,12 @@ The **October 22, 2026** server configuration inspection found no enabled item
 shops and no Rare Candy dispenser. The inspected server also predates the recent
 item repairs. These are dated limits, not a promise of current stock everywhere.
 Ask where an item is available before planning around its description. The
-Itemfinder “mysterious item” message currently grants no item.
+The old Itemfinder message-only result has been replaced by an explicitly
+configured [Potion finder](hunt-item-sources.md). The same guide specifies one
+opt-in Rattata/Oran Berry wild source; default charts grant no held item.
+The [six-item Supply Corner](item-supply-route.md) is an optional, duplicate-safe
+authored source with finite stock. These current-code routes do not prove that
+the inspected running world has been configured or released with them.
 
 The [acquisition audit](testing/item-availability-2026-10-22.md) and
 [per-item index](testing/item-availability-index-2026-10-22.json) distinguish

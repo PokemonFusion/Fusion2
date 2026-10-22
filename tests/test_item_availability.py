@@ -56,8 +56,8 @@ def test_index_separates_supported_effects_from_uninspected_stock_and_deferred_s
     assert "pokeball" not in rows and not any(key.startswith("tr0") for key in rows)
     assert "potion" in rows and "leaderscrest" in rows and "goldbottlecap" in rows
     assert rows["potion"]["world_availability"]["status"] == "unverified"
-    assert rows["potion"]["authored_acquisition"][0]["kind"] == "adventure_first_clear"
-    assert not rows["freshwater"]["authored_acquisition"]
+    assert any(source["kind"] == "adventure_first_clear" for source in rows["potion"]["authored_acquisition"])
+    assert any(source["kind"] == "opt_in_recipe_shop" for source in rows["freshwater"]["authored_acquisition"])
     assert rows["rarecandy"]["authored_acquisition"][0]["kind"] == "alpha_recipe_vendor"
     assert rows["charizarditex"]["support_status"] == "deferred"
     assert rows["charizarditex"]["followups"] == [774]
@@ -71,3 +71,16 @@ def test_index_separates_supported_effects_from_uninspected_stock_and_deferred_s
         assert any("Intentionally excluded" in limit for limit in rows[key]["limits"])
     assert result["historical_matrix"]["status"] == "historical_observations_not_a_fresh_replay"
     assert all(len(row["definition_sha256"]) == 64 for row in rows.values())
+
+
+def test_new_recovery_and_coin_routes_remain_separate_from_world_availability():
+    """Current effects and documented recipes never become a live availability claim."""
+    rows = {row["key"]: row for row in ItemAvailabilityAudit().build()["items"]}
+    for key in ("ragecandybar", "hopoberry"):
+        assert any(route["command"] == "+use" for route in rows[key]["routes"])
+        assert not any(route["command"] == "+item" for route in rows[key]["routes"])
+        assert rows[key]["world_availability"]["status"] == "unverified"
+    assert any("999" in route["limit"] for route in rows["gimmighoulcoin"]["routes"] if route["kind"] == "evolution")
+    for key in ("potion", "oranberry", "freshwater", "firestone", "leftovers", "smokeball"):
+        assert any(source["kind"] == "opt_in_recipe_shop" for source in rows[key]["authored_acquisition"])
+        assert not rows[key]["world_availability"]["sources"]

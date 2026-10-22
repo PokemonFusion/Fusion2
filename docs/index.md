@@ -50,6 +50,10 @@ See [design/z-moves.md](design/z-moves.md) and its
 [crystal inventory](design/z-crystals.md) for the planned Z-Move slice, and
 [design/berry-player-routes.md](design/berry-player-routes.md) for the separate
 Oran growing/Razz snack contracts. These routes require their implementation gates.
+See [gimmighoul-evolution.md](gimmighoul-evolution.md) for the 999-coin Chest
+equivalent, [recovery-equivalents.md](recovery-equivalents.md) for two field-only
+medicines, [hunt-item-sources.md](hunt-item-sources.md) for reviewed hunt sources,
+and [item-supply-route.md](item-supply-route.md) for optional six-item supply.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current

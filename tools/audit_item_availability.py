@@ -76,6 +76,8 @@ class ItemAvailabilityAudit:
         from pokemon.services.field_pp import FieldPPCapacityUse
         from pokemon.services.field_progression import FieldRareCandyUse
         from pokemon.services.field_training import FieldTrainingUse
+        from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
+        from pokemon.services.item_supply import ItemSupplyRoute
 
         matrix = json.loads((ROOT / MATRIX).read_text(encoding="utf-8"))
         historical = {normalize_name(row["item"]): row for row in matrix["items"]}
@@ -87,6 +89,7 @@ class ItemAvailabilityAudit:
         scoped.update(GAMEPLAY_ITEMS)
         required = {normalize_name(required_item(species)) for species in POKEDEX.values() if required_item(species)}
         required.update({"blackaugurite", "peatblock", "scrollofdarkness", "scrollofwaters"})
+        supply = {normalize_name(offer["item"]): offer for offer in ItemSupplyRoute.recipe()["offers"]}
         services = [(FieldMedicineUse, "medicine", "field-medicine-2026-10-20"),
                     (FieldBerryUse, "berry", "legacy-berries-2026-10-22"),
                     (FieldFoodUse, "food", "field-food-2026-10-21"),
@@ -94,7 +97,8 @@ class ItemAvailabilityAudit:
                     (FieldAbilityUse, "ability", "ability-items-2026-10-22"),
                     (FieldHyperTrainingUse, "hyper_training", "hyper-training-2026-10-22"),
                     (FieldPPCapacityUse, "pp_capacity", "pp-capacity-2026-10-22"),
-                    (FieldRareCandyUse, "level", "rare-candy-2026-10-22")]
+                    (FieldRareCandyUse, "level", "rare-candy-2026-10-22"),
+                    (FieldRecoveryEquivalentUse, "field_recovery_equivalent", "item-followups-2026-10-22")]
         rows = []
         for key in sorted(scoped):
             name, raw, source = definitions[key]
@@ -110,6 +114,9 @@ class ItemAvailabilityAudit:
             if key in required:
                 routes.append({"kind": "evolution", "command": "+evolve",
                                "limit": "Species, level, held/bag source and context conditions still apply"})
+                if key == "gimmighoulcoin":
+                    routes[-1].update(evidence_report="item-followups-2026-10-22",
+                        limit="PF2 manual Chest Gimmighoul equivalent, level 2–100, exactly 999 bag coins; Roaming remains deferred")
             if key.endswith("sweet"):
                 routes.append({"kind": "alcremie", "command": "+hold then +evolve", "limit": "Owned eligible Milcery; optional reviewed cream target"})
             if old.get("scope") == "retained":
@@ -133,9 +140,27 @@ class ItemAvailabilityAudit:
             if raw.get("isBerry") and not field:
                 limits.append("No field feeding/growing route; a held trigger may be supported separately")
                 followups.append(776)
-            if field and not BattleMedicineUse.supports(key) and any(route["kind"] in {"berry", "food"} for route in field):
-                limits.append("Intentionally excluded from manual battle use by the reviewed #773 policy; rejects before spending an action")
+            if field and not BattleMedicineUse.supports(key) and any(route["kind"] in {"berry", "food", "field_recovery_equivalent"} for route in field):
+                limits.append("Intentionally excluded from manual battle use by the reviewed item policy; rejects before spending an action")
             authored = []
+            if key in supply:
+                offer = supply[key]
+                authored.append({"kind": "opt_in_recipe_shop", "source": "world/item_supply.json",
+                    "name": "Item Supply Corner", "price": offer["price"], "initial_stock": offer["quantity"],
+                    "refill": "none", "entry": "supplies at the explicitly configured public hub",
+                    "limit": "Recipe is not automatically installed or live stock; current-world reachability/stock remains separately verified"})
+            if key == "potion":
+                authored.append({"kind": "opt_in_itemfinder", "source": "pokemon/services/itemfinder.py",
+                    "item": "Potion", "quantity": 1, "reference_rate_percent": 5,
+                    "limit": "Requires reviewed named room source, enabled hunting and noitem false; no world population inferred"})
+            if key == "oranberry":
+                authored.append({"kind": "opt_in_wild_held", "source": "pokemon/services/wild_held_items.py",
+                    "species": "Rattata", "reference_chance_percent": 5,
+                    "limit": "Explicit held_item/held_item_chance chart; noitem still applies; capture retains current uneaten item only"})
+            if key in {"gimmighoulcoin", "ragecandybar", "hopoberry"}:
+                authored.append({"kind": "documented_reference_shop", "source": "docs/gimmighoul-evolution.md"
+                    if key == "gimmighoulcoin" else "docs/recovery-equivalents.md",
+                    "limit": "Deliberate optional reference recipe only; no installed location, current stock or live walkthrough inferred"})
             if key == "rarecandy":
                 authored.append({"kind": "alpha_recipe_vendor", "source": "world/alpha_test_zone.ev",
                                  "name": "Alpha Candy Dispenser", "command": "+vend Alpha Candy Dispenser 1",
