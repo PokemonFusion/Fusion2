@@ -61,6 +61,13 @@ def test_index_separates_supported_effects_from_uninspected_stock_and_deferred_s
     assert rows["rarecandy"]["authored_acquisition"][0]["kind"] == "alpha_recipe_vendor"
     assert rows["charizarditex"]["support_status"] == "deferred"
     assert rows["charizarditex"]["followups"] == [774]
-    assert 773 in rows["oranberry"]["followups"]
+    assert 773 not in rows["oranberry"]["followups"]
+    assert any(route["command"] == "+item" for route in rows["oranberry"]["routes"])
+    assert any(route["kind"] == "food" for route in rows["freshwater"]["routes"])
+    assert not any(route["kind"] == "medicine" for route in rows["freshwater"]["routes"])
+    for key in ("pomegberry", "figyberry", "sacredash"):
+        assert 773 not in rows[key]["followups"]
+        assert not any(route["command"] == "+item" for route in rows[key]["routes"])
+        assert any("Intentionally excluded" in limit for limit in rows[key]["limits"])
     assert result["historical_matrix"]["status"] == "historical_observations_not_a_fresh_replay"
     assert all(len(row["definition_sha256"]) == 64 for row in rows.values())

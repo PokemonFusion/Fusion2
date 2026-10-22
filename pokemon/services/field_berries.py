@@ -5,38 +5,18 @@ from django.core.exceptions import ValidationError
 from pokemon.names import normalize_name
 from pokemon.services.battle_items import BattleMedicineUse
 from pokemon.services.field_items import FieldMedicineError, FieldMedicineUse
+from pokemon.services.recovery_effects import BERRY_FRACTIONS, BERRY_HEALING, BERRY_PP, BERRY_STATUSES
 
 
 class _BerryMedicineUse(BattleMedicineUse):
     """Share durable medicine effects without invoking held-item consumption."""
 
-    healing = {"oranberry": 10, "berryjuice": 20, "berry": 10, "goldberry": 30}
-    fractions = {
-        "sitrusberry": 4,
-        "figyberry": 3, "wikiberry": 3, "magoberry": 3,
-        "aguavberry": 3, "iapapaberry": 3,
-    }
-    statuses = {
-        "cheriberry": {"par"}, "chestoberry": {"slp"},
-        "pechaberry": {"psn", "tox"}, "rawstberry": {"brn"},
-        "aspearberry": {"frz"},
-        "lumberry": {"brn", "psn", "tox", "frz", "slp", "par"},
-        "burntberry": {"frz"}, "iceberry": {"brn"}, "mintberry": {"slp"},
-        "miracleberry": {"brn", "psn", "tox", "frz", "slp", "par"},
-        "przcureberry": {"par"}, "psncureberry": {"psn", "tox"},
-    }
-    pp_items = {"leppaberry": (10, False), "mysteryberry": (5, False)}
+    healing = BERRY_HEALING
+    fractions = BERRY_FRACTIONS
+    statuses = BERRY_STATUSES
+    pp_items = BERRY_PP
     revivals = set()
     herbs = {}
-
-    def __init__(self, pokemon, trainer=None, *, move=None):
-        """Use the reviewed berries' fixed and fractional recovery amounts."""
-        super().__init__(pokemon, trainer, move=move)
-        self.healing = {
-            **type(self).healing,
-            **{key: max(1, pokemon.max_hp // divisor)
-               for key, divisor in self.fractions.items()},
-        }
 
 
 class FieldBerryUse(FieldMedicineUse):

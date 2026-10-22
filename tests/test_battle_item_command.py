@@ -131,7 +131,7 @@ class DummyCaller:
 		self.msgs.append(text)
 
 
-@pytest.mark.parametrize("item_name", ["potion", "Super Potion", "Antidote", "Poke Ball"])
+@pytest.mark.parametrize("item_name", ["potion", "Super Potion", "Antidote", "Poke Ball", "Fresh Water", "Oran Berry", "Max Honey", "Mystery Berry"])
 @pytest.mark.parametrize("player_index", [0, 1])
 def test_battleitem_persists_declare_via_queue_item(item_name, player_index):
 	e, b, bi = setup_modules()
@@ -160,7 +160,7 @@ def test_battleitem_persists_declare_via_queue_item(item_name, player_index):
 	assert caller.removed_items == []
 
 
-@pytest.mark.parametrize("item_name", ["Fresh Water", "Oran Berry", "PP Up", "Rare Candy", "Leftovers", "Light Ball", "Smoke Ball", "Unknown Item"])
+@pytest.mark.parametrize("item_name", ["Sacred Ash", "Pomeg Berry", "Figy Berry", "Persim Berry", "PP Up", "Rare Candy", "Leftovers", "Light Ball", "Smoke Ball", "Unknown Item"])
 def test_unsupported_battleitem_never_queues_or_debits(item_name):
 	"""Unsupported commands stop before mutating even the compatibility queue."""
 	e, b, bi = setup_modules()

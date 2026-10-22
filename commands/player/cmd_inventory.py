@@ -374,8 +374,11 @@ class CmdUseItem(Command):
       Healing foods/drinks and status foods use the same field medicine rules.
       Max Honey revives one fainted target to full HP; Sacred Ash=party revives
       eligible fainted party members with one item, excluding eggs/boxes/Fusion.
-      These equivalents are field-only and accept no move selector.
-      Battle items use +battle/item while a battle is waiting for your action.
+      These field equivalents accept no move selector. During battle, use
+      +item Fresh Water=3 or +item Max Honey=3; Sacred Ash stays field-only.
+      Recovery berries use +item Oran Berry=3 or +item Leppa Berry=3/Water Gun.
+      Flavor/EV and confusion-only berries remain excluded from +item.
+      Bag feeding preserves held copies and does not invoke eating callbacks.
       +heal restores your party at a Pokemon Center.
     """
 

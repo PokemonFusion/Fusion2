@@ -1,4 +1,4 @@
-"""Transactional PP restoration for battle items."""
+"""Transactional manual battle medicine, including reviewed recovery equivalents."""
 
 from __future__ import annotations
 
@@ -7,6 +7,10 @@ from django.db import transaction
 from pokemon.names import normalize_name
 from pokemon.services.move_management import _get_move_pp_from_dex, _get_movedex
 from pokemon.services.pokemon_refs import parse_pokemon_ref
+from pokemon.services.recovery_effects import (
+    BATTLE_BERRY_FRACTIONS, BATTLE_FOOD_HEALING, BATTLE_REVIVAL_FOODS,
+    BATTLE_STATUS_FOODS, BERRY_HEALING, BERRY_PP, BERRY_STATUSES,
+)
 
 
 class ItemUnavailable(Exception):
@@ -198,6 +202,15 @@ class BattleMedicineUse:
         "elixir": (10, True),
         "maxelixir": (None, True),
     }
+    # Preserve the original generic +use dispatch. Berry/food field services
+    # still own their wider feeding rules and move-selector validation.
+    standard_items = frozenset(healing) | frozenset(statuses) | revivals | frozenset(pp_items)
+    healing = {**healing, **BERRY_HEALING, **BATTLE_FOOD_HEALING}
+    fractions = BATTLE_BERRY_FRACTIONS
+    statuses = {**statuses, **BERRY_STATUSES,
+                **dict.fromkeys(BATTLE_STATUS_FOODS, statuses["fullheal"])}
+    revivals = revivals | BATTLE_REVIVAL_FOODS
+    pp_items = {**pp_items, **BERRY_PP}
     herbs = {
         "energypowder": (5, 10),
         "healpowder": (5, 10),
@@ -206,15 +219,22 @@ class BattleMedicineUse:
     }
 
     def __init__(self, pokemon, trainer=None, *, battle=None, move=None):
+        """Resolve fractional HP against this target without changing class tables."""
         self.pokemon, self.trainer = pokemon, trainer
         self.battle, self.move = battle, move
+        self.healing = {
+            **type(self).healing,
+            **{key: max(1, pokemon.max_hp // divisor)
+               for key, divisor in self.fractions.items()},
+        }
 
     @classmethod
     def supports(cls, item):
-        """Recognize only the existing medicine family."""
+        """Recognize standard medicine and the named recovery-equivalent subset."""
         key = normalize_name(item)
         return (
-            key in cls.healing or key in cls.statuses or key in cls.revivals or key in cls.pp_items
+            key in cls.healing or key in cls.fractions or key in cls.statuses
+            or key in cls.revivals or key in cls.pp_items
         )
 
     def _owned(self, identifier):
@@ -223,17 +243,25 @@ class BattleMedicineUse:
         from pokemon.models.storage import PokemonPlacement, UserStorage
 
         storage = UserStorage.objects.select_for_update().get(user_id=self.trainer.user_id)
-        owned = OwnedPokemon.objects.select_for_update().get(pk=identifier)
+        row = OwnedPokemon.objects.select_for_update().filter(pk=identifier).values().get()
+        owned = OwnedPokemon.objects.get(pk=identifier)
+        # Evennia's identity map may return the pre-queue model instance.
+        # Apply the independently fetched locked row, including current owner,
+        # egg state and friendship, before checking eligibility or saving.
+        for name, value in row.items():
+            setattr(owned, name, value)
+        owned._state.fields_cache.clear()
         placement = (
             PokemonPlacement.objects.select_for_update()
             .filter(pokemon=owned, storage=storage)
+            .values("location_type")
             .first()
         )
         if owned.trainer_id != self.trainer.pk or owned.is_egg or placement is None:
             raise ValueError("Medicine requires an eligible owned party member.")
-        if placement.location_type not in {"party", "fusion"}:
+        if placement["location_type"] not in {"party", "fusion"}:
             raise ValueError("Medicine cannot target a boxed or reserved Pokemon.")
-        if placement.location_type == "fusion":
+        if placement["location_type"] == "fusion":
             character = self.trainer.user
             if str(getattr(character.db, "fusion_id", "")) != str(owned.pk):
                 raise ValueError("That Fusion reservation is not this character's battler.")
@@ -244,13 +272,19 @@ class BattleMedicineUse:
         self._snapshot_update = None
         kind, identifier = parse_pokemon_ref(getattr(self.pokemon, "model_id", None))
         if kind == "owned" and identifier:
-            with transaction.atomic():
-                owned = self._owned(identifier)
-                used = self._apply(normalize_name(item), consume_item, owned)
+            try:
+                with transaction.atomic():
+                    owned = self._owned(identifier)
+                    used = self._apply(normalize_name(item), consume_item, owned)
+            except ItemUnavailable:
+                return False
             if used and self._snapshot_update is not None:
                 self._snapshot_update()
             return used
-        return self._apply(normalize_name(item), consume_item)
+        try:
+            return self._apply(normalize_name(item), consume_item)
+        except ItemUnavailable:
+            return False
 
     def _apply(self, key, consume_item, owned=None):
         pokemon = self.pokemon
@@ -275,7 +309,7 @@ class BattleMedicineUse:
         if (hp, status) == (old_hp, old_status):
             return False
         if not consume_item():
-            return False
+            raise ItemUnavailable
         friendship = getattr(owned or pokemon, "friendship", 70)
         if key in self.herbs:
             low, high = self.herbs[key]

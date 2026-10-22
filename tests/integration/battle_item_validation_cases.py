@@ -26,8 +26,10 @@ class ItemPlayer(SessionTransport):
         return User.remove_item(self, name, quantity)
 
 
-class BattleItemValidationCases(unittest.TestCase):
-    """Prove rejection before actions, with supported battle-use controls."""
+class ItemSessionFixture(unittest.TestCase):
+    """Share real +item transport, sessions, inventory and checkpoint fixtures."""
+
+    fixture_level = 20
 
     def setUp(self):
         """Create tagged ordinary players with production party/move/HP data."""
@@ -44,7 +46,7 @@ class BattleItemValidationCases(unittest.TestCase):
             self.players.append(player)
             roster = []
             for species in ("Squirtle", "Eevee", "Pikachu"):
-                roster.append(create_owned_pokemon(species, player.trainer, 20, nature="Hardy",
+                roster.append(create_owned_pokemon(species, player.trainer, self.fixture_level, nature="Hardy",
                               ivs=[0] * 6, evs=[0] * 6, active_move_names=["Splash", "Tackle", "Water Gun"]))
             self.owned.append(roster)
         self.player, self.mon = self.players[0], self.owned[0][0]
@@ -155,13 +157,16 @@ class BattleItemValidationCases(unittest.TestCase):
         EVIDENCE.append({"label": label, "command": "+item " + args, "before": before,
                          "after": self.snapshot(), "messages": player.messages[start:]})
 
-    def test_fresh_water_and_oran_rejected_without_any_action_or_state_change(self):
+class BattleItemValidationCases(ItemSessionFixture):
+    """Unsupported item families stay rejected at every action boundary."""
+
+    def test_sacred_ash_and_ev_berry_rejected_without_any_action_or_state_change(self):
         """Reproduce the audit: unsupported stocked items cannot waste turn 1."""
         self.state(current_hp=1)
-        for item in ("Fresh Water", "Oran Berry"):
+        for item in ("Sacred Ash", "Pomeg Berry"):
             self.give(item)
         self.start()
-        for args in ("Fresh Water", "A1 Fresh Water=1", "Oran Berry", "A1 ORAN-BERRY=1"):
+        for args in ("Sacred Ash", "A1 Sacred Ash=1", "Pomeg Berry", "A1 POMEG-BERRY=1"):
             before = self.snapshot()
             self.record("unsupported-player-item", args)
             self.assertEqual(self.snapshot(), before)
@@ -180,12 +185,12 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_direct_choices_and_public_queue_share_policy(self):
         """Bypassing the command cannot persist an unsupported declaration."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.start()
         before = self.snapshot()
         with self.assertRaisesRegex(ValueError, "supported manual battle"):
-            self.session.choices_for(self.player).item("Fresh Water", actor="A1")
-        self.assertFalse(self.session.queue_item("Fresh Water", caller=self.player, actor="A1"))
+            self.session.choices_for(self.player).item("Sacred Ash", actor="A1")
+        self.assertFalse(self.session.queue_item("Sacred Ash", caller=self.player, actor="A1"))
         self.assertEqual(self.snapshot(), before)
 
     def test_supported_item_with_missing_stock_does_not_queue(self):
@@ -199,15 +204,15 @@ class BattleItemValidationCases(unittest.TestCase):
     def test_potion_after_rejection_uses_same_turn_and_only_one_copy(self):
         """A rejected input leaves the actor free for a supported healing action."""
         self.state(current_hp=1)
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.give("Potion")
         self.start()
-        self.record("unsupported-before-potion", "Fresh Water")
+        self.record("unsupported-before-potion", "Sacred Ash")
         self.record("supported-potion", "Potion")
         self.assertEqual(self.session.battle.turn_count, 2)
         self.assertEqual(OwnedPokemon.objects.filter(pk=self.mon.pk).values_list("current_hp", flat=True).get(), 21)
         self.assertEqual(self.player.trainer.get_item_quantity("Potion"), 1)
-        self.assertEqual(self.player.trainer.get_item_quantity("Fresh Water"), 2)
+        self.assertEqual(self.player.trainer.get_item_quantity("Sacred Ash"), 2)
 
     def test_supported_no_effect_keeps_existing_action_cost_without_debit(self):
         """A full-health Potion is supported, so its queued no-effect turn remains."""
@@ -254,16 +259,16 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_capture_after_rejection_and_rebuild_keeps_exact_ball_route(self):
         """A genuine wild capture still consumes its ball and saves one catch."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.give("Master Ball")
         self.start()
-        self.record("unsupported-before-capture", "Fresh Water")
+        self.record("unsupported-before-capture", "Sacred Ash")
         self.rebuild()
         battle = self.session.battle
         self.record("supported-wild-capture", "Master Ball")
         self.assertTrue(battle.capture_succeeded)
         self.assertEqual(self.player.trainer.get_item_quantity("Master Ball"), 1)
-        self.assertEqual(self.player.trainer.get_item_quantity("Fresh Water"), 2)
+        self.assertEqual(self.player.trainer.get_item_quantity("Sacred Ash"), 2)
         self.assertEqual(CaptureReceipt.objects.filter(storage=self.player.storage).count(), 1)
         self.assertEqual(OwnedPokemon.objects.filter(trainer=self.player.trainer).count(), 4)
 
@@ -279,19 +284,19 @@ class BattleItemValidationCases(unittest.TestCase):
     def test_doubles_rejection_preserves_sibling_and_all_actor_choices(self):
         """Unsupported A2/B2 inputs cannot erase queued A1/B1 actions."""
         for player in self.players:
-            self.give("Fresh Water", player=player)
+            self.give("Sacred Ash", player=player)
             self.give("Potion", player=player)
         self.state(self.owned[0][1], current_hp=1)
         self.state(self.owned[1][1], current_hp=1)
         self.start("pvp", doubles=True)
         self.command("A1 Splash", "attack")
         before = self.snapshot()
-        self.record("doubles-A2-rejected", "A2 Fresh Water=2")
+        self.record("doubles-A2-rejected", "A2 Sacred Ash=2")
         self.assertEqual(self.snapshot(), before)
         self.command("A2 Potion=2")
         self.command("B1 Splash", "attack", self.players[1])
         before = self.snapshot()
-        self.record("doubles-B2-rejected", "B2 Fresh Water=2", self.players[1])
+        self.record("doubles-B2-rejected", "B2 Sacred Ash=2", self.players[1])
         self.assertEqual(self.snapshot(), before)
         self.record("doubles-B2-potion", "B2 Potion=2", self.players[1])
         self.assertEqual(self.session.battle.turn_count, 2)
@@ -309,7 +314,7 @@ class BattleItemValidationCases(unittest.TestCase):
             self.record("actor-or-capture-rejected", args)
             self.assertEqual(self.snapshot(), before)
 
-    def inject(self, item="Fresh Water", *, pending=True, declaration=True, position=True):
+    def inject(self, item="Sacred Ash", *, pending=True, declaration=True, position=True):
         """Fixture a legacy invalid input in any of the three saved action views."""
         actor = self.session.battle.participants[0]
         pokemon = actor.active[0]
@@ -326,17 +331,17 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_restored_bad_doubles_choice_preserves_valid_sibling(self):
         """Discard one old A2 item without losing A1's paid-in-PP move choice."""
-        self.give("Oran Berry")
+        self.give("Pomeg Berry")
         self.give("Potion")
         self.start("pvp", doubles=True)
         self.command("A1 Splash", "attack")
         actor = self.session.battle.participants[0]
         pokemon = actor.active[1]
         good = actor.pending_action
-        bad = Action(actor, ActionType.ITEM, actor, item="Oran Berry", pokemon=pokemon, target_pokemon=pokemon)
+        bad = Action(actor, ActionType.ITEM, actor, item="Pomeg Berry", pokemon=pokemon, target_pokemon=pokemon)
         actor.pending_action = [good, bad]
-        self.session.state.declare["A2"] = {"item": "Oran Berry", "trainer": str(self.player.id), "pokemon": pokemon.model_id}
-        self.session.data.turndata.positions["A2"].declareItem("Oran Berry")
+        self.session.state.declare["A2"] = {"item": "Pomeg Berry", "trainer": str(self.player.id), "pokemon": pokemon.model_id}
+        self.session.data.turndata.positions["A2"].declareItem("Pomeg Berry")
         before = self.snapshot()
         self.rebuild()
         after = self.snapshot()
@@ -349,7 +354,7 @@ class BattleItemValidationCases(unittest.TestCase):
         self.command("B2 Splash", "attack", self.players[1])
         self.assertEqual(self.session.battle.turn_count, 2)
         self.assertEqual(self.mon.activemoveslot_set.get(slot=1).current_pp, 39)
-        self.assertEqual(self.player.trainer.get_item_quantity("Oran Berry"), 2)
+        self.assertEqual(self.player.trainer.get_item_quantity("Pomeg Berry"), 2)
 
     def assert_discarded(self, before):
         """A stale input is removed, with turn, bags and Pokemon state preserved."""
@@ -363,7 +368,7 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_restored_unsupported_declaration_cannot_resurrect_on_second_rebuild(self):
         """Old field-only declarations free the actor before restored readiness."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.start()
         self.inject()
         before = self.snapshot()
@@ -377,16 +382,16 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_readiness_discards_stale_input_before_auto_opponent_or_turn(self):
         """A ready-looking old item never grants the opponent a free action."""
-        self.give("Oran Berry")
+        self.give("Pomeg Berry")
         self.start()
-        self.inject("Oran Berry")
+        self.inject("Pomeg Berry")
         before = self.snapshot()
         self.assertFalse(self.session.is_turn_ready())
         self.assert_discarded(before)
 
     def test_direct_session_turn_discards_invalid_deferred_action(self):
         """Direct turn entry shares the guard before disabling player control."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.start()
         self.inject()
         before = self.snapshot()
@@ -396,7 +401,7 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_deferred_pending_only_and_position_only_are_discarded(self):
         """Orphan legacy pending and PositionData views cannot bypass checks."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.start()
         for pending, position in ((True, False), (False, True)):
             self.inject(pending=pending, declaration=False, position=position)
@@ -406,7 +411,7 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_direct_engine_turn_rejects_before_counter_or_effects(self):
         """A caller bypassing session readiness still cannot spend the turn."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.start()
         self.inject()
         before = self.snapshot()
@@ -428,7 +433,7 @@ class BattleItemValidationCases(unittest.TestCase):
 
     def test_final_dispatch_rejects_unsupported_without_no_effect_or_debit(self):
         """Even an action constructed outside the queue cannot invoke a field item."""
-        self.give("Fresh Water")
+        self.give("Sacred Ash")
         self.start()
         action = self.inject()
         before = self.snapshot()
@@ -462,26 +467,34 @@ class BattleItemValidationCases(unittest.TestCase):
         self.assert_discarded(before)
 
 
+def load_runtime():
+    """Load production modules after the disposable database guard is active."""
+    global User, ObjectDB, BattleSession, Action, ActionType, BattleType, battle_handler
+    global create_battle_pokemon, create_owned_pokemon, get_max_hp, OwnedPokemon
+    global ActiveMoveslot, MovePPBoost, CaptureReceipt, PokemonPlacement, COMMANDS
+    import evennia
+    from evennia.commands.command import Command
+    from evennia.commands.cmdset import CmdSet
+    from evennia.objects.models import ObjectDB
+    from pokemon.battle.battleinstance import BattleSession
+    from pokemon.battle.engine import Action, ActionType, BattleType
+    from pokemon.battle.handler import battle_handler
+    from pokemon.battle.pokemon_factory import create_battle_pokemon
+    from pokemon.helpers.pokemon_helpers import create_owned_pokemon, get_max_hp
+    from pokemon.models.core import OwnedPokemon
+    from pokemon.models.moves import ActiveMoveslot, MovePPBoost
+    from pokemon.models.storage import CaptureReceipt, PokemonPlacement
+    from pokemon.user import User
+    with patch.object(evennia, "Command", Command), patch.object(evennia, "CmdSet", CmdSet):
+        from commands.player import cmd_battle_attack, cmd_battle_item
+    COMMANDS = {"item": (cmd_battle_item, cmd_battle_item.CmdBattleItem),
+                "attack": (cmd_battle_attack, cmd_battle_attack.CmdBattleAttack)}
+
+
 if __name__ == "__main__":
     with IsolatedPostgres() as database:
         database.create_model_tables()
-        import evennia
-        from evennia.commands.command import Command
-        from evennia.commands.cmdset import CmdSet
-        from evennia.objects.models import ObjectDB
-        from pokemon.battle.battleinstance import BattleSession
-        from pokemon.battle.engine import Action, ActionType, BattleType
-        from pokemon.battle.handler import battle_handler
-        from pokemon.battle.pokemon_factory import create_battle_pokemon
-        from pokemon.helpers.pokemon_helpers import create_owned_pokemon, get_max_hp
-        from pokemon.models.core import OwnedPokemon
-        from pokemon.models.moves import ActiveMoveslot, MovePPBoost
-        from pokemon.models.storage import CaptureReceipt, PokemonPlacement
-        from pokemon.user import User
-        with patch.object(evennia, "Command", Command), patch.object(evennia, "CmdSet", CmdSet):
-            from commands.player import cmd_battle_attack, cmd_battle_item
-        COMMANDS = {"item": (cmd_battle_item, cmd_battle_item.CmdBattleItem),
-                    "attack": (cmd_battle_attack, cmd_battle_attack.CmdBattleAttack)}
+        load_runtime()
         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(BattleItemValidationCases))
         if os.environ.get("PF2_BATTLE_ITEM_EVIDENCE"):
             Path(os.environ["PF2_BATTLE_ITEM_EVIDENCE"]).write_text(json.dumps(EVIDENCE, indent=2) + "\n", encoding="utf-8")

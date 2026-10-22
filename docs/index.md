@@ -39,6 +39,8 @@ See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
 battle validation workflow.
 See [held-incense.md](held-incense.md) for the five existing incense boosters,
 ordinary equip/battle routes and current bounded acceptance evidence.
+See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
+battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the

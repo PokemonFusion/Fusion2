@@ -527,8 +527,9 @@ Escape Rope field use is not implemented.
 +use Sacred Ash=party Revive eligible fainted canonical party members with
                      one item. Living members, eggs, boxes and all Fusion
                      reservations remain untouched.
-These equivalents use field medicine checks, accept no /move selector and
-cannot be used during battle. Ineffective uses and failed writes consume nothing.
+These equivalents use field medicine checks and accept no /move selector.
+During battle, use +item Fresh Water=3 or +item Max Honey=3. Sacred Ash stays
+field-only. Ineffective uses and failed writes consume nothing.
 Buy only from shops/rewards deliberately configured to offer them; adding the
 definitions does not stock a room or grant a player anything.
 
@@ -667,8 +668,12 @@ held effects. Use +evolve <full-id> Fire Stone for a matching bag evolution.
 Milcery's Sweet and trade-held equivalents must be equipped before +evolve.
 
 Smoke Ball uses +hold before battle and +flee in eligible wild battles.
-Manual +item battle feeding of foods/berries is not implemented; their field
-or held routes are separate. Mega/Z activation and berry growing are deferred.
+Manual +item supports the recovery foods above (except Sacred Ash), Oran,
+Sitrus, Berry Juice, Cheri/Chesto/Pecha/Rawst/Aspear/Lum/Leppa, and legacy
+Berry/Gold/Burnt/Ice/Mint/Miracle/PRZ Cure/PSN Cure/Mystery berries.
+Use +item A1 Leppa Berry=3/Water Gun for selected-move PP. Flavor/EV berries
+stay field/held-only. Bag effects do not invoke held eating callbacks.
+Mega/Z activation and berry growing are deferred.
 Leader's Crest qualifies authored opponent victories, not a bag-item shortcut.
 The Itemfinder mysterious-item message currently grants no inventory item.
 

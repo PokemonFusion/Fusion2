@@ -21,8 +21,8 @@ class FieldMedicineUse:
 
     @classmethod
     def supports(cls, item):
-        """Share the battle medicine allowlist without adding new item families."""
-        return BattleMedicineUse.supports(item)
+        """Keep food/berry feeding with their specialized field services."""
+        return normalize_name(item) in BattleMedicineUse.standard_items
 
     def _target(self, storage, query):
         """Match a real party slot, exact name/UUID, or the current Fusion."""

@@ -30,9 +30,12 @@ the Adventure does not give another first-clear Potion.
 
 Use `+party 3` to inspect the target and copy its full ID. Use `+hold 3=` to
 return an uneaten held item to your bag. Having a bag copy does not activate a
-held effect. Manual `+item` battle use currently supports the reviewed battle
-medicine; foods and berries can have field or held effects without manual battle
-feeding. Unsupported battle items are rejected before spending an action.
+held effect. Manual `+item` battle use supports standard medicine and the
+[32 reviewed recovery foods/berries](battle-recovery-items.md), for example
+`+item Fresh Water=3` and `+item A1 Leppa Berry=3/Water Gun`. Flavor/EV berries
+and Sacred Ash remain excluded. Unsupported battle items are rejected before
+spending an action. The linked #772 acquisition snapshots remain dated evidence;
+#773's report records this later capability extension separately.
 
 Leader's Crest is an opponent qualification for Bisharp's Kingambit route. Your
 Pokémon must defeat the required authored leaders; buying or holding your own

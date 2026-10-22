@@ -7,7 +7,7 @@ from pokemon.services.field_items import FieldMedicineError, FieldMedicineUse
 
 
 class _FoodMedicineUse(BattleMedicineUse):
-    """Reuse durable medicine effects without adding battle item support."""
+    """Retain field food effects, including field-only whole-party Sacred Ash."""
 
     healing = {key: item.amount for key, item in FIELD_RECOVERY_ITEMS.items() if item.effect == "heal"}
     statuses = {key: BattleMedicineUse.statuses["fullheal"]
@@ -15,6 +15,7 @@ class _FoodMedicineUse(BattleMedicineUse):
     revivals = {key for key, item in FIELD_RECOVERY_ITEMS.items() if item.effect == "revive"}
     herbs = {}
     pp_items = {}
+    fractions = {}
 
 
 class FieldFoodUse(FieldMedicineUse):

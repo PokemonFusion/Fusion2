@@ -72,6 +72,7 @@ class ItemAvailabilityAudit:
         from pokemon.services.field_berries import FieldBerryUse
         from pokemon.services.field_food import FieldFoodUse
         from pokemon.services.field_hyper_training import FieldHyperTrainingUse
+        from pokemon.services.field_items import FieldMedicineUse
         from pokemon.services.field_pp import FieldPPCapacityUse
         from pokemon.services.field_progression import FieldRareCandyUse
         from pokemon.services.field_training import FieldTrainingUse
@@ -86,7 +87,7 @@ class ItemAvailabilityAudit:
         scoped.update(GAMEPLAY_ITEMS)
         required = {normalize_name(required_item(species)) for species in POKEDEX.values() if required_item(species)}
         required.update({"blackaugurite", "peatblock", "scrollofdarkness", "scrollofwaters"})
-        services = [(BattleMedicineUse, "medicine", "field-medicine-2026-10-20"),
+        services = [(FieldMedicineUse, "medicine", "field-medicine-2026-10-20"),
                     (FieldBerryUse, "berry", "legacy-berries-2026-10-22"),
                     (FieldFoodUse, "food", "field-food-2026-10-21"),
                     (FieldTrainingUse, "training", "field-training-2026-10-22"),
@@ -101,6 +102,11 @@ class ItemAvailabilityAudit:
             field = [{"kind": kind, "command": "+use", "evidence_report": report}
                      for service, kind, report in services if service.supports(key)]
             routes, limits, followups = list(field), [], []
+            if BattleMedicineUse.supports(key):
+                routes.append({"kind": "manual_battle_medicine", "command": "+item",
+                               "evidence_report": "battle-recovery-foods-2026-10-22"
+                               if key not in BattleMedicineUse.standard_items else "battle-item-validation-2026-10-22",
+                               "limit": "Named medicine only; owned roster target, effect and battle rules still apply"})
             if key in required:
                 routes.append({"kind": "evolution", "command": "+evolve",
                                "limit": "Species, level, held/bag source and context conditions still apply"})
@@ -128,8 +134,7 @@ class ItemAvailabilityAudit:
                 limits.append("No field feeding/growing route; a held trigger may be supported separately")
                 followups.append(776)
             if field and not BattleMedicineUse.supports(key) and any(route["kind"] in {"berry", "food"} for route in field):
-                limits.append("Manual battle use rejects before spending an action")
-                followups.append(773)
+                limits.append("Intentionally excluded from manual battle use by the reviewed #773 policy; rejects before spending an action")
             authored = []
             if key == "rarecandy":
                 authored.append({"kind": "alpha_recipe_vendor", "source": "world/alpha_test_zone.ev",

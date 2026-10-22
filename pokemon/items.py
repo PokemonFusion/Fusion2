@@ -5,6 +5,13 @@ from dataclasses import dataclass
 from pokemon.names import normalize_name
 
 
+BATTLE_RECOVERY_FOODS = frozenset({
+    "freshwater", "sodapop", "lemonade", "moomoomilk", "sweetheart",
+    "lavacookie", "oldgateau", "casteliacone", "lumiosegalette", "shaloursable",
+    "bigmalasada", "pewtercrunchies", "maxhoney",
+})
+
+
 @dataclass(frozen=True)
 class GameplayItem:
     """Share a complete display name and description across item interfaces."""
@@ -33,7 +40,8 @@ class FieldRecoveryItem(GameplayItem):
         """Expose the same metadata interface used by itemdex and inventory."""
         return {**super().raw, "price": self.price, "category": self.category,
                 "effect": self.effect, "amount": self.amount,
-                "targetScope": self.target_scope, "fieldOnly": True}
+                "targetScope": self.target_scope,
+                "fieldOnly": normalize_name(self.name) not in BATTLE_RECOVERY_FOODS}
 
 
 @dataclass(frozen=True)
@@ -78,31 +86,31 @@ class HeldEscapeItem(GameplayItem):
 
 
 FIELD_RECOVERY_ITEMS = {
-    "freshwater": FieldRecoveryItem("Fresh Water", "Field use: restores up to 30 HP to one living Pokemon.",
+    "freshwater": FieldRecoveryItem("Fresh Water", "Field or battle use: restores up to 30 HP to one living Pokemon.",
                                    price=200, effect="heal", amount=30),
-    "sodapop": FieldRecoveryItem("Soda Pop", "Field use: restores up to 50 HP to one living Pokemon.",
+    "sodapop": FieldRecoveryItem("Soda Pop", "Field or battle use: restores up to 50 HP to one living Pokemon.",
                                 price=300, effect="heal", amount=50),
-    "lemonade": FieldRecoveryItem("Lemonade", "Field use: restores up to 70 HP to one living Pokemon.",
+    "lemonade": FieldRecoveryItem("Lemonade", "Field or battle use: restores up to 70 HP to one living Pokemon.",
                                  price=400, effect="heal", amount=70),
-    "moomoomilk": FieldRecoveryItem("Moomoo Milk", "Field use: restores up to 100 HP to one living Pokemon.",
+    "moomoomilk": FieldRecoveryItem("Moomoo Milk", "Field or battle use: restores up to 100 HP to one living Pokemon.",
                                    price=600, effect="heal", amount=100),
-    "sweetheart": FieldRecoveryItem("Sweet Heart", "Field use: restores up to 20 HP to one living Pokemon.",
+    "sweetheart": FieldRecoveryItem("Sweet Heart", "Field or battle use: restores up to 20 HP to one living Pokemon.",
                                    price=3000, effect="heal", amount=20),
-    "lavacookie": FieldRecoveryItem("Lava Cookie", "Field use: cures one living Pokemon's major status condition.",
+    "lavacookie": FieldRecoveryItem("Lava Cookie", "Field or battle use: cures one living Pokemon's major status condition.",
                                    price=350, effect="status"),
-    "oldgateau": FieldRecoveryItem("Old Gateau", "Field use: cures one living Pokemon's major status condition.",
+    "oldgateau": FieldRecoveryItem("Old Gateau", "Field or battle use: cures one living Pokemon's major status condition.",
                                   price=350, effect="status"),
-    "casteliacone": FieldRecoveryItem("Casteliacone", "Field use: cures one living Pokemon's major status condition.",
+    "casteliacone": FieldRecoveryItem("Casteliacone", "Field or battle use: cures one living Pokemon's major status condition.",
                                      price=350, effect="status"),
-    "lumiosegalette": FieldRecoveryItem("Lumiose Galette", "Field use: cures one living Pokemon's major status condition.",
+    "lumiosegalette": FieldRecoveryItem("Lumiose Galette", "Field or battle use: cures one living Pokemon's major status condition.",
                                        price=350, effect="status"),
-    "shaloursable": FieldRecoveryItem("Shalour Sable", "Field use: cures one living Pokemon's major status condition.",
+    "shaloursable": FieldRecoveryItem("Shalour Sable", "Field or battle use: cures one living Pokemon's major status condition.",
                                      price=350, effect="status"),
-    "bigmalasada": FieldRecoveryItem("Big Malasada", "Field use: cures one living Pokemon's major status condition.",
+    "bigmalasada": FieldRecoveryItem("Big Malasada", "Field or battle use: cures one living Pokemon's major status condition.",
                                     price=350, effect="status"),
-    "pewtercrunchies": FieldRecoveryItem("Pewter Crunchies", "Field use: cures one living Pokemon's major status condition.",
+    "pewtercrunchies": FieldRecoveryItem("Pewter Crunchies", "Field or battle use: cures one living Pokemon's major status condition.",
                                         price=250, effect="status"),
-    "maxhoney": FieldRecoveryItem("Max Honey", "Field use: revives one fainted Pokemon to full HP. No unlock effect.",
+    "maxhoney": FieldRecoveryItem("Max Honey", "Field or battle use: revives one fainted Pokemon to full HP. No unlock effect.",
                                  price=4000, effect="revive"),
     "sacredash": FieldRecoveryItem("Sacred Ash", "Field use with =party: revives eligible fainted party Pokemon to full HP.",
                                   price=50000, effect="revive", target_scope="party"),

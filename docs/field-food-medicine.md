@@ -3,7 +3,7 @@
 ## Selected PF2 rules
 
 All 14 names are included after the existing-item phase gate in #747. These are
-field-only medicine equivalents through the shared `+use` service, with category
+field medicine equivalents through the shared `+use` service, with category
 `Medicine`. Prices below retain the checked-in `pokemon/data/item_prices.csv`
 reference costs. Recovery amounts and context rules are the selected PF2 policy.
 No redundant brand is silently omitted.
@@ -30,7 +30,7 @@ toxic poison, freeze, sleep or paralysis; curing sleep also clears saved sleep
 turns. They do not heal HP or restore PP. HP foods/drinks and revival equivalents
 preserve saved major status/sleep, PP, friendship and other progression state,
 matching the existing field medicine boundary. None acts as a held berry or
-changes a battle item effect. Max Honey only revives; it introduces no Max Soup,
+invokes held-item effects. Max Honey only revives; it introduces no Max Soup,
 raid, Gigantamax, Fusion or story unlock.
 
 ## Player commands and limits
@@ -56,8 +56,10 @@ Concurrent/repeated completed uses recheck current state and cannot spend twice
 for the same revival. Fixed-amount HP medicines may be used again while injury
 remains, with one item consumed per effective use, as with Potion.
 
-All routes are blocked during battle. These field-only definitions do not add
-`+battle/item` support. No cooking, crafting, plot-only/key/quest item, acquisition
+All `+use` routes are blocked during battle. #773 adds separate manual `+item`
+support for the 13 single-target equivalents; Sacred Ash remains field-only.
+See [the named battle allowlist and failure policy](battle-recovery-items.md).
+No cooking, crafting, plot-only/key/quest item, acquisition
 auto-grant or generational transformation is added.
 
 ## Intentional acquisition

@@ -36,8 +36,10 @@ class CmdBattleItem(Command):
     Notes:
       This queues an item as your battle action. Field-use items use +use.
       Supported: battle medicine (including revival and PP restoration) and
-      capture balls in wild battles. Field-only foods, berries and other
-      unsupported items are rejected without queuing or spending an action.
+      reviewed recovery foods/berries (including Leppa/Mystery selected-move
+      PP) and capture balls in wild battles. Use +item Max Honey=3 to revive
+      a reserve, or +item A1 Leppa Berry=3/Water Gun. Flavor/EV berries,
+      Sacred Ash and other unsupported items are rejected before queuing.
       A supported medicine that has no effect still spends its queued action,
       but consumes no item. Smoke Ball uses +hold before battle, then +flee.
     """

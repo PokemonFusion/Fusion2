@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from pokemon.items import FIELD_RECOVERY_ITEMS, get_gameplay_item
+from pokemon.items import BATTLE_RECOVERY_FOODS, FIELD_RECOVERY_ITEMS, get_gameplay_item
 from pokemon.middleware import format_item_details, get_item_by_name
 from pokemon.names import normalize_name
 
@@ -25,7 +25,7 @@ def test_complete_names_costs_categories_and_context_are_exposed(key, item):
     assert "Category: Medicine" in details
     assert f"Reference price: ${item.price}" in details
     assert item.desc in details
-    assert item.raw["fieldOnly"] is True
+    assert item.raw["fieldOnly"] is (key not in BATTLE_RECOVERY_FOODS)
     assert item.target_scope == ("party" if key == "sacredash" else "single")
 
 
@@ -46,7 +46,7 @@ def test_shared_effects_are_useful_capped_and_consume_once(key, item):
     target.setStatus = lambda value, **kwargs: setattr(target, "status", value)
     debits = []
     assert FieldFoodUse.supports(key)
-    assert not BattleMedicineUse.supports(key), "Field additions must not silently enable battle use"
+    assert BattleMedicineUse.supports(key) is (key in BATTLE_RECOVERY_FOODS)
     assert _FoodMedicineUse(target).use(key, lambda: debits.append(key) or True)
     assert debits == [key]
     assert target.hp == (min(80, 1 + item.amount) if item.effect == "heal" else 80 if item.effect == "revive" else 1)
