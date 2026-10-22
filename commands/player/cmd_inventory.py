@@ -377,6 +377,9 @@ class CmdUseItem(Command):
       These field equivalents accept no move selector. During battle, use
       +item Fresh Water=3 or +item Max Honey=3; Sacred Ash stays field-only.
       Recovery berries use +item Oran Berry=3 or +item Leppa Berry=3/Water Gun.
+      Rage Candy Bar cures major status through +use only. Hopo Berry restores
+      up to 10 PP through +use Hopo Berry=3/<actual move slot or full name>.
+      Both are field-only; held Hopo and plot/lure uses have no added effect.
       Flavor/EV and confusion-only berries remain excluded from +item.
       Bag feeding preserves held copies and does not invoke eating callbacks.
       +heal restores your party at a Pokemon Center.
@@ -448,10 +451,11 @@ class CmdUseItem(Command):
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_abilities import FieldAbilityUse
         from pokemon.services.field_hyper_training import FieldHyperTrainingUse
+        from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
 
         field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse,
                                                      FieldRareCandyUse, FieldTrainingUse, FieldAbilityUse,
-                                                     FieldHyperTrainingUse)
+                                                     FieldHyperTrainingUse, FieldRecoveryEquivalentUse)
                               if service.supports(item_name)), None)
         if field_service is not None:
             display_name = _display_item_name(item_data, canonical)

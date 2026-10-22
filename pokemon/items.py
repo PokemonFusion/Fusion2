@@ -130,7 +130,22 @@ HYPER_TRAINING_ITEMS = {
 }
 
 
+FIELD_RECOVERY_EQUIVALENTS = {
+    "ragecandybar": FieldRecoveryItem(
+        "Rage Candy Bar", "Field use: cures one living owned Pokemon's major status. "
+        "PF2 medicinal equivalent; no story unlock or HP restoration.",
+        price=350, effect="status",
+    ),
+    "hopoberry": FieldRecoveryItem(
+        "Hopo Berry", "Field use: restores up to 10 PP to one selected active move. "
+        "Use +use Hopo Berry=<target>/<move name or actual slot>. No held or lure effect.",
+        price=300, effect="pp", amount=10, category="Berries",
+    ),
+}
+
+
 GAMEPLAY_ITEMS = {
+    **FIELD_RECOVERY_EQUIVALENTS,
     "gimmighoulcoin": EvolutionItem(
         "Gimmighoul Coin",
         "PF2 manual evolution: use +evolve <full-id> Gimmighoul Coin on native Chest Gimmighoul at level 2–100. Consumes 999 bag coins; Roaming and held-only coins do not qualify.",

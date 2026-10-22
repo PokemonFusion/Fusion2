@@ -125,7 +125,7 @@ class BattleRecoveryFoodCases(fixtures.ItemSessionFixture):
         items = ("Figy Berry", "Wiki Berry", "Mago Berry", "Aguav Berry", "Iapapa Berry",
                  "Pomeg Berry", "Kelpsy Berry", "Qualot Berry", "Hondew Berry", "Grepa Berry",
                  "Tamato Berry", "Sacred Ash", "Persim Berry", "Bitter Berry", "Razz Berry",
-                 "Lansat Berry", "PP Up", "Rare Candy", "Leftovers")
+                 "Lansat Berry", "PP Up", "Rare Candy", "Leftovers", "Rage Candy Bar", "Hopo Berry")
         for item in items:
             self.give(item)
         self.start()
