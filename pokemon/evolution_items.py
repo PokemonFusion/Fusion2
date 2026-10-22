@@ -1,6 +1,29 @@
-"""Explicit PF2 non-transfer equivalents for existing trade-held item rules."""
+"""Explicit, bounded PF2 equivalents for reviewed item evolution rules."""
 
 from pokemon.names import normalize_name
+
+
+class PeatBlockEvolution:
+    """Replace only ordinary Ursaluna's lunar condition with explicit bag use."""
+
+    item = "Peat Block"
+    condition = "Peat Block when there's a full moon"
+
+    @classmethod
+    def eligible(cls, source, target, item):
+        """Reject other forms, item identities and unreviewed dex metadata."""
+        return bool(
+            normalize_name(source.name) == "ursaring"
+            and normalize_name(target.name) == "ursaluna"
+            and normalize_name(item) == normalize_name(cls.item)
+            and not source.raw.get("forme")
+            and not target.raw.get("forme")
+            and not source.raw.get("baseSpecies")
+            and not target.raw.get("baseSpecies")
+            and target.raw.get("evoType") == "other"
+            and target.raw.get("evoCondition") == cls.condition
+            and target.raw.get("evoItem") is None
+        )
 
 
 class TradeHeldEvolution:

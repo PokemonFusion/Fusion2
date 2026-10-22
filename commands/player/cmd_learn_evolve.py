@@ -194,6 +194,7 @@ class CmdEvolvePokemon(Command):
     Examples:
       +evolve abc123
       +evolve abc123 Fire Stone
+      +evolve abc123 Peat Block
       +evolve abc123=Alcremie-Ruby-Cream
 
     Notes:
@@ -206,6 +207,9 @@ class CmdEvolvePokemon(Command):
       For example, Scyther holding Metal Coat evolves into Scizor. Ownership
       and placement stay the same; the held copy is consumed once. +trade
       remains unavailable. Non-item trade evolutions remain unsupported.
+      Ursaring uses a Peat Block from your bag for ordinary Ursaluna. PF2's
+      explicit item action replaces the full-moon condition; no moon flag,
+      time or region is needed. Held-only copies and Bloodmoon are excluded.
     """
 
     key = "+evolve"

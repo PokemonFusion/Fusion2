@@ -537,6 +537,12 @@ definitions does not stock a room or grant a player anything.
                             Attempt to evolve a Pokemon. Some evolutions may
                                need an item or other condition.
 
+For ordinary Ursaluna, copy Ursaring's full ID from +party <slot> and use
++evolve <pokemon_id> Peat Block. This consumes one bag copy. PF2 replaces the
+full-moon requirement with this explicit item action: no time/region/moon flag
+is needed. A held-only copy does not activate it. Bloodmoon is not a target.
+Peat Block acquisition uses shops/rewards deliberately configured to offer it.
+
 For Milcery, first equip Berry, Clover, Flower, Love, Ribbon, Star or Strawberry
 Sweet with +hold <slot>=<complete Sweet name>. Then +evolve <pokemon_id> is PF2's
 spin equivalent and selects Vanilla Cream. Copy the full ID from +party <slot>.

@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pokemon.names import normalize_name
 from pokemon.evolution_forms import AlcremieEvolution
-from pokemon.evolution_items import TradeHeldEvolution
+from pokemon.evolution_items import PeatBlockEvolution, TradeHeldEvolution
 
 from ..dex import POKEDEX
 
@@ -86,9 +86,11 @@ class EvolutionContext:
 
 
 def required_item(evo):
-    """Include the dex's Kleavor spelling/field exception without editing data."""
+    """Provide reviewed supplemental requirements without editing the dex."""
     if normalize_name(evo.name) == "kleavor":
         return "Black Augurite"
+    if normalize_name(evo.name) == "ursaluna":
+        return PeatBlockEvolution.item
     return evo.raw.get("evoItem")
 
 
@@ -122,13 +124,17 @@ def evolution_options(species, *, level, item=None, context=None):
         condition = raw.get("evoCondition", "")
         sweet_evolution = AlcremieEvolution.eligible(current, evo, context.held_item)
         trade_held_evolution = TradeHeldEvolution.eligible(current, evo, context.held_item)
+        peat_evolution = PeatBlockEvolution.eligible(current, evo, item)
         if key == "kleavor":
             condition = ""
         if (
-            kind not in SUPPORTED_TYPES and not sweet_evolution and not trade_held_evolution
+            kind not in SUPPORTED_TYPES and not sweet_evolution
+            and not trade_held_evolution and not peat_evolution
         ) or key in UNSUPPORTED_TARGETS:
             continue
-        if level < (evo.evo_level or 0) or (not sweet_evolution and not context.meets(condition)):
+        if level < (evo.evo_level or 0) or (
+            not sweet_evolution and not peat_evolution and not context.meets(condition)
+        ):
             continue
         gender = raw.get("gender")
         if gender in {"M", "F"} and context.gender != gender:
@@ -139,7 +145,7 @@ def evolution_options(species, *, level, item=None, context=None):
             region = "Hisui"
         if region and normalize_name(context.region) != normalize_name(region):
             continue
-        if kind == "useItem":
+        if kind == "useItem" or peat_evolution:
             if not item or not required_item(evo) or normalize_name(item) != normalize_name(required_item(evo)):
                 continue
         elif item:  # Never spend a supplied item on an unrelated level evolution.

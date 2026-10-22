@@ -37,6 +37,19 @@ class FieldRecoveryItem(GameplayItem):
 
 
 @dataclass(frozen=True)
+class EvolutionItem(GameplayItem):
+    """Describe a bag evolution item; eligibility stays in reviewed rules."""
+
+    price: int
+    category: str = "Evolution Items"
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Share reference price and inventory category with normal interfaces."""
+        return {**super().raw, "price": self.price, "category": self.category}
+
+
+@dataclass(frozen=True)
 class HeldEscapeItem(GameplayItem):
     """Describe a reusable held escape effect without capture capability."""
 
@@ -85,6 +98,12 @@ FIELD_RECOVERY_ITEMS = {
 GAMEPLAY_ITEMS = {
     "everstone": GameplayItem("Everstone", "Prevents the holder from evolving."),
     "blackaugurite": GameplayItem("Black Augurite", "Evolves Scyther into Kleavor."),
+    "peatblock": EvolutionItem(
+        "Peat Block", "Use +evolve <id> Peat Block on Ursaring for ordinary Ursaluna. "
+        "PF2 replaces the full-moon condition with explicit item use. "
+        "Consumes one bag copy; held-only copies do not activate it. No Bloodmoon form.",
+        price=10000,
+    ),
     "smokeball": HeldEscapeItem(
         "Smoke Ball", "Held: guarantees the acting holder's escape from eligible wild battles with +flee. "
         "Reusable; item suppression and trainer/scripted no-flee restrictions still apply. Not a capture ball."

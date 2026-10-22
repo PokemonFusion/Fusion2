@@ -55,6 +55,7 @@ Both the source's `evos` and the target's `prevo` must agree on the exact form.
 | Kleavor | `Black Augurite`, preserving the checked-in data's spelling and handling its misplaced item field |
 | Alcremie | Milcery holds one of the seven Sweets; explicit `+evolve` replaces spinning, with an optional allowed cream target |
 | Existing trade-held items | Exact allowlisted source/target/item triples; `+hold` then `+evolve` consumes the held item without transferring ownership |
+| Ordinary Ursaluna | Exact Ursaring source and a bag Peat Block; explicit item-use equivalent replaces the lunar condition |
 
 Everstone blocks evolution. Eggs and fusion-reserved Pokemon cannot evolve or
 hold items. Room attributes are server-managed context, not player-supplied
@@ -83,6 +84,13 @@ item, then `+evolve <pokemon-id>` without supplying a bag item. Ownership,
 canonical placement and bag copies stay unchanged. Actual trading remains
 disabled pending #722/#725; this route does not add a transfer or trade callback.
 
+For ordinary Ursaluna, copy Ursaring's full ID from `+party <slot>` and use
+`+evolve <pokemon-id> Peat Block`. PF2 deliberately selects an explicit item-use
+equivalent instead of a lunar simulation: it requires no moon/time/region state,
+and consumes one real bag item. Held-only copies and arbitrary flags do not
+activate it, and Bloodmoon cannot be selected. The bounded rule, opt-in shop
+acquisition and preservation limits are in [Peat Block evolution](peat-block-evolution.md).
+
 ## Explicitly unsupported
 
 These fail closed, even at level 100 or with a supplied item. Unknown future
@@ -96,7 +104,6 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Runerigus: 49 HP lost and Dusty Bowl sculpture | No persisted journey/damage evidence |
 | Urshifu: either tower | No tower completion evidence |
 | Wyrdeer/Overqwil: Agile/Strong move uses | No style-use history |
-| Ursaluna: Peat Block and full moon | No authoritative lunar state |
 | Basculegion: 294 recoil without fainting | No persisted recoil streak |
 | Pawmot/Rabsca/Brambleghast: Let's Go steps | No persisted Let's Go activity |
 | Annihilape: Rage Fist uses | No persisted move-use count |
@@ -105,8 +112,9 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Shedinja (dex only records a level) | Requires an additional Pokemon, spare party slot, and Poké Ball transaction |
 | Palafin (dex only records a level) | No Union Circle equivalent |
 
-Other `other` rules remain unsupported; Milcery's listed Sweet route is the
-explicit exception. No completion flags or command overrides grant eligibility.
+Other `other` rules remain unsupported; Milcery's listed Sweet route and the
+exact Peat Block transition are explicit exceptions. No completion flags or
+command overrides grant eligibility.
 
 ## Integrity and retries
 
@@ -137,6 +145,9 @@ already empty slot is a no-op. No schema migration is needed.
 - `python tests/integration/trade_held_cases.py`, with an explicit test DSN,
   for all 17 existing trade-held mappings, ID discovery/equip/evolve/reload,
   ownership and placement preservation, rollback, retries and competing requests.
+- `python tests/integration/peat_block_cases.py`, with an explicit test DSN,
+  for shop/evolution flow, SQL reload, exact species/form/item restrictions,
+  missing/spoofed context, rollback and competing completion/reservation requests.
 - Set `PF2_TEST_POSTGRES_DSN` to an expendable test database to also run competing
   evolution/equip/remove requests across independent connections. The harness
   creates and drops only a random test schema and does not run migrations.
