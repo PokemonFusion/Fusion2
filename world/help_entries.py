@@ -543,6 +543,13 @@ full-moon requirement with this explicit item action: no time/region/moon flag
 is needed. A held-only copy does not activate it. Bloodmoon is not a target.
 Peat Block acquisition uses shops/rewards deliberately configured to offer it.
 
+Kubfu uses +evolve <full ID> Scroll of Darkness for Urshifu (Single Strike), or
++evolve <full ID> Scroll of Waters for Urshifu-Rapid-Strike. One bag copy is
+consumed on success. No tower completion, extra level or friendship condition
+is required. Optional =Urshifu or =Urshifu-Rapid-Strike must match the Scroll.
+Held-only copies do not activate evolution, and evolved Urshifu cannot switch
+style with a Scroll. Acquisition uses deliberately configured shops/rewards.
+
 For Kingambit, your native Bisharp must personally finish three authored
 Crest-bearing Bisharp leaders in won NPC/wild battles, then gain a level.
 +party <slot> shows the count and next level. Use +evolve <full ID> without a

@@ -117,6 +117,18 @@ GAMEPLAY_ITEMS = {
     ),
     "everstone": GameplayItem("Everstone", "Prevents the holder from evolving."),
     "blackaugurite": GameplayItem("Black Augurite", "Evolves Scyther into Kleavor."),
+    "scrollofdarkness": EvolutionItem(
+        "Scroll of Darkness", "Use +evolve <id> Scroll of Darkness on Kubfu for Urshifu (Single Strike). "
+        "PF2's non-plot item route replaces tower completion. Consumes one bag copy; "
+        "held-only copies do not activate it. The Waters Scroll selects the other style.",
+        price=10000,
+    ),
+    "scrollofwaters": EvolutionItem(
+        "Scroll of Waters", "Use +evolve <id> Scroll of Waters on Kubfu for Urshifu-Rapid-Strike. "
+        "PF2's non-plot item route replaces tower completion. Consumes one bag copy; "
+        "held-only copies do not activate it. The Darkness Scroll selects the other style.",
+        price=10000,
+    ),
     "peatblock": EvolutionItem(
         "Peat Block", "Use +evolve <id> Peat Block on Ursaring for ordinary Ursaluna. "
         "PF2 replaces the full-moon condition with explicit item use. "

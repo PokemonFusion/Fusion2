@@ -3,6 +3,39 @@
 from pokemon.names import normalize_name
 
 
+class KubfuEvolution:
+    """Select exactly one reviewed Urshifu branch with a real bag Scroll."""
+
+    transitions = {
+        "urshifu": ("Scroll of Darkness", "Defeat the Single Strike Tower",
+                    {"baseForme": "Single-Strike", "baseSpecies": None, "forme": None}),
+        "urshifurapidstrike": ("Scroll of Waters", "Defeat the Rapid Strike Tower",
+                               {"baseForme": None, "baseSpecies": "Urshifu", "forme": "Rapid-Strike"}),
+    }
+
+    @classmethod
+    def required_item(cls, target):
+        """Expose a complete bag requirement without rewriting generated data."""
+        rule = cls.transitions.get(normalize_name(target.name))
+        return rule[0] if rule else None
+
+    @classmethod
+    def eligible(cls, source, target, item):
+        """Reject mismatched items and any unreviewed source/form/condition."""
+        rule = cls.transitions.get(normalize_name(target.name))
+        return bool(
+            rule and normalize_name(source.name) == "kubfu"
+            and not source.raw.get("forme") and not source.raw.get("baseSpecies")
+            and not source.raw.get("baseForme")
+            and normalize_name(item) == normalize_name(rule[0])
+            and target.raw.get("evoType") == "other"
+            and target.raw.get("evoCondition") == rule[1]
+            and target.raw.get("evoItem") is None
+            and not target.raw.get("battleOnly") and not target.raw.get("changesFrom")
+            and all(target.raw.get(field) == expected for field, expected in rule[2].items())
+        )
+
+
 class KingambitEvolution:
     """Admit only the reviewed native transition with private server evidence."""
 

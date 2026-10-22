@@ -57,6 +57,7 @@ Both the source's `evos` and the target's `prevo` must agree on the exact form.
 | Existing trade-held items | Exact allowlisted source/target/item triples; `+hold` then `+evolve` consumes the held item without transferring ownership |
 | Ordinary Ursaluna | Exact Ursaring source and a bag Peat Block; explicit item-use equivalent replaces the lunar condition |
 | Kingambit | Native owned Bisharp's private evidence of three leader victories, then a stored level above the third-KO floor; no bag item |
+| Urshifu styles | Native Kubfu uses a bag Scroll of Darkness for Single Strike (`Urshifu`), or Scroll of Waters for `Urshifu-Rapid-Strike`; consumes one copy |
 
 Everstone blocks evolution. Eggs and fusion-reserved Pokemon cannot evolve or
 hold items. Room attributes are server-managed context, not player-supplied
@@ -101,6 +102,14 @@ owned Pokemon; completion flags, a bag Crest and EXP Share do not grant credit.
 and bag stock are not consumed. See [Kingambit qualification](kingambit-evolution.md)
 for PF2's direct-move, native identity, victory and level-trigger limits.
 
+For Kubfu, use `+evolve <full-id> Scroll of Darkness` for Single Strike, or
+`+evolve <full-id> Scroll of Waters` for Rapid Strike. The actual bag item selects
+the branch; an optional exact target must agree. PF2's functional consumable
+Scrolls replace tower completion without requiring plot flags, extra levels or
+friendship. Held-only copies and already evolved Urshifu cannot activate the
+route. See the [Kubfu item contract](kubfu-evolution.md) for acquisition,
+consumption, preservation and form limits.
+
 ## Explicitly unsupported
 
 These fail closed, even at level 100 or with a supplied item. Unknown future
@@ -112,7 +121,6 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Malamar: console upside-down | No PF2 equivalent is defined |
 | Sirfetch'd: 3 critical hits in a battle | No persisted evolution counter |
 | Runerigus: 49 HP lost and Dusty Bowl sculpture | No persisted journey/damage evidence |
-| Urshifu: either tower | No tower completion evidence |
 | Wyrdeer/Overqwil: Agile/Strong move uses | No style-use history |
 | Basculegion: 294 recoil without fainting | No persisted recoil streak |
 | Pawmot/Rabsca/Brambleghast: Let's Go steps | No persisted Let's Go activity |
@@ -122,8 +130,8 @@ These fail closed, even at level 100 or with a supplied item. Unknown future
 | Palafin (dex only records a level) | No Union Circle equivalent |
 
 Other `other` rules remain unsupported; Milcery's listed Sweet route and the
-exact Peat Block and qualified Kingambit transitions are explicit exceptions. No completion flags or
-command overrides grant eligibility.
+exact Peat Block, qualified Kingambit and two Kubfu Scroll transitions are
+explicit exceptions. No completion flags or command overrides grant eligibility.
 
 ## Integrity and retries
 

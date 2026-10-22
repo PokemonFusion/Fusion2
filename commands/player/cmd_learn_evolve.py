@@ -195,6 +195,8 @@ class CmdEvolvePokemon(Command):
       +evolve abc123
       +evolve abc123 Fire Stone
       +evolve abc123 Peat Block
+      +evolve abc123 Scroll of Darkness
+      +evolve abc123 Scroll of Waters=Urshifu-Rapid-Strike
       +evolve abc123=Alcremie-Ruby-Cream
 
     Notes:
@@ -213,6 +215,9 @@ class CmdEvolvePokemon(Command):
       Bisharp must personally KO three authored Crest-bearing Bisharp leaders
       in won NPC/wild battles, then gain a level. +party <slot> shows progress.
       Use +evolve without a bag item; your Crest/held item is not consumed.
+      Kubfu uses a bag Scroll of Darkness for Urshifu (Single Strike), or
+      Scroll of Waters for Urshifu-Rapid-Strike. One bag copy is consumed.
+      No tower completion is required; an optional target must match the item.
     """
 
     key = "+evolve"
