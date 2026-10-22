@@ -40,10 +40,9 @@ def node_start(caller, raw_input=None):
         return None, None
 
     text = "Welcome to the item store."
-    options = [
-        {"desc": "Buy items", "goto": "node_buy"},
-        {"desc": "Sell items", "goto": "node_sell"},
-    ]
+    options = [{"desc": "Buy items", "goto": "node_buy"}]
+    if not getattr(room.db, "store_buy_only", False):
+        options.append({"desc": "Sell items", "goto": "node_sell"})
     if caller.check_permstring("Builders"):
         options.append({"desc": "Edit inventory", "goto": "node_edit"})
     options.append({"key": ("quit", "q"), "desc": "Leave", "goto": "node_quit"})
@@ -82,6 +81,17 @@ def node_buy(caller, raw_input=None):
         caller.msg("You must purchase at least one item.")
         return node_buy(caller)
 
+    from pokemon.services.item_shop import ShopPurchase, ShopPurchaseError
+
+    if ShopPurchase.supports(caller):
+        try:
+            ShopPurchase(caller).buy(item_name, amount)
+        except ShopPurchaseError as error:
+            caller.msg(str(error))
+        except Exception:
+            caller.msg("Purchase failed; no money, stock or items were changed.")
+        return node_buy(caller)
+
     store_key, data = _normalize_store_key(store, item_name)
     if not data or data.get("quantity", 0) < amount:
         caller.msg("The store doesn't have that many.")
@@ -118,6 +128,9 @@ def node_sell(caller, raw_input=None):
     """Handle selling items back to the store."""
 
     room = caller.location
+    if getattr(room.db, "store_buy_only", False):
+        caller.msg("This counter only sells its authored finite stock; it does not buy items.")
+        return node_start(caller)
     store = room.db.store_inventory or {}
     trainer = getattr(caller, "trainer", None)
     if not trainer:
