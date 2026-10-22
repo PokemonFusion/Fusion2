@@ -499,7 +499,7 @@ class HyperTrainingCases(unittest.TestCase):
             left = item + "=3" + ("/HP" if item == "Bottle Cap" else "")
             right = item + "=3" + ("/Atk" if item == "Bottle Cap" else "")
             self.race(lambda: self.command(left), lambda: self.command(right))
-            trained = HyperTraining.trained(self.mon)
+            trained = HyperTraining.trained(self.reload())
             self.assertEqual(len(trained), 1 if item == "Bottle Cap" else 6)
             self.assertEqual(self.trainer.get_item_quantity(item), 0)
             self.assertEqual(self.snapshot()["pokemon"]["ivs"], [0, 1, 2, 3, 4, 5])
@@ -532,12 +532,57 @@ class HyperTrainingCases(unittest.TestCase):
     def test_gold_and_single_cap_contention_preserves_eligible_set(self):
         """Gold-first keeps the single cap; single-first leaves Gold only the rest."""
         self.prepare()
+        before = self.snapshot()["pokemon"]
+        old_max = get_max_hp(self.mon)
         for item in ITEMS:
             self.give(item)
+        retained = self.mon
         self.race(lambda: self.command("Gold Bottle Cap=3"), lambda: self.command("Bottle Cap=3/HP"))
-        self.assertEqual(HyperTraining.trained(self.mon), list(STATS))
+        self.assert_committed_caps(before, old_max, retained)
         self.assertEqual(self.trainer.get_item_quantity("Gold Bottle Cap"), 0)
         self.assertIn(self.trainer.get_item_quantity("Bottle Cap"), (0, 1))
+
+    def assert_committed_caps(self, before, old_max, retained):
+        """Check committed SQL and fresh models; retained objects are diagnostic only."""
+        row = self.snapshot()["pokemon"]
+        expected = {"ordinary-hyper-fixture", *("hypertrained:" + stat for stat in STATS)}
+        self.assertEqual(set(row["flags"]), expected)
+        self.assertEqual(HyperTraining.trained(self.reload()), list(STATS))
+        self.assertEqual(self.mon.flags, row["flags"])
+        for key, value in before.items():
+            if key not in {"flags", "current_hp"}:
+                self.assertEqual(row[key], value, key)
+        self.assertEqual(row["ivs"], [0, 1, 2, 3, 4, 5])
+        self.assertEqual(row["current_hp"], before["current_hp"] + get_max_hp(self.mon) - old_max)
+        EVIDENCE.append({"label": "committed-cap-contention", "test": self.id(),
+                         "retained_flags": list(retained.flags), "sql_flags": row["flags"],
+                         "reloaded_flags": list(self.mon.flags), "genetic_ivs": row["ivs"],
+                         "hp_before": before["current_hp"], "hp_after": row["current_hp"],
+                         "gold_remaining": self.trainer.get_item_quantity("Gold Bottle Cap"),
+                         "single_remaining": self.trainer.get_item_quantity("Bottle Cap")})
+
+    def cap_serial_order(self, gold_first):
+        """Exercise each legal order explicitly with exact debits and committed flags."""
+        self.prepare()
+        before = self.snapshot()["pokemon"]
+        old_max = get_max_hp(self.mon)
+        for item in ITEMS:
+            self.give(item)
+        retained = self.mon
+        inputs = ("Gold Bottle Cap=3", "Bottle Cap=3/HP")
+        for args in inputs if gold_first else reversed(inputs):
+            self.command(args)
+        self.assert_committed_caps(before, old_max, retained)
+        self.assertEqual(self.trainer.get_item_quantity("Gold Bottle Cap"), 0)
+        self.assertEqual(self.trainer.get_item_quantity("Bottle Cap"), int(gold_first))
+
+    def test_gold_then_single_cap_serialized(self):
+        """A committed Gold use leaves a later no-effect single cap untouched."""
+        self.cap_serial_order(True)
+
+    def test_single_then_gold_cap_serialized(self):
+        """A committed single use lets Gold train the five remaining stats."""
+        self.cap_serial_order(False)
 
     def test_evolution_ev_training_berry_and_healing_keep_overlay(self):
         """Use existing player routes after training without replacing genetics."""
