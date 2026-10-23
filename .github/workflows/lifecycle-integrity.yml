@@ -155,6 +155,8 @@ jobs:
         run: python tests/integration/ui_cases.py
       - name: Adventure battle startup, concession and capture replay recovery
         run: python tests/integration/adventure_lifecycle_cases.py
+      - name: Non-combat Adventure survey commands, reconnect, expiry and optional encounters
+        run: python tests/integration/adventure_player_cases.py
       - name: Fresh install and three upgrade histories on PostgreSQL
         run: python tests/integration/recovery_migrations.py
       - name: Merged migration graph

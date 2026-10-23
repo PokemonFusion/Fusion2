@@ -2,7 +2,13 @@
 
 These steps test the Adventure changes against a running game. Run every in-game command separately and inspect the response before continuing. Do not paste a whole playthrough while a battle is waiting for input.
 
-Record the exact code commit loaded by the test game before beginning. This checklist does not perform deployment, migrations, or reloads. The complete branch also requires the merged migration history through `0044_owned_pokemon_status`; see [the branch validation record](../alpha-reliability-validation.md) and [gym recovery](../gym-recovery.md).
+Record the exact code commit and its required migration leaf loaded by the test
+game before beginning. This checklist does not perform deployment, migrations,
+or reloads. The original Adventure participation prerequisite is
+`0040_adventure_participation`; later code may require more migrations. Use the
+chosen release's complete schema requirements rather than this original
+checklist as a release plan. See the dated [branch validation record](../alpha-reliability-validation.md),
+[gym recovery](../gym-recovery.md) and [September closeout](september-closeout-2026-10-23.md).
 
 ## 1. Prepare the test environment
 
@@ -274,6 +280,31 @@ These are separate short wild-route replays on a character that has already clea
 - **Flee:** start another run, go north, choose `wild`, and use `+flee` when prompted. Flee attempts can fail; wait for a successful escape. Confirm the encounter objective is checked and the stored result is `flee`.
 
 Finish and leave each survey normally. Neither replay grants an extra first-clear Potion. Use the stored-record commands in step 10 to verify the outcomes.
+
+## 11a. Survey without an encounter
+
+On a character that already earned its first-clear Potion, return to Adventure
+Hall and run each command separately:
+
+```text
++adventure/start alpha_meadow
+north
+north
++adventure/search
+south
+south
++adventure/objectives
++adventure/leave
++adventure/claim
++inventory
+```
+
+**Expected:** the survey completes with reach/search/return checked. The
+encounter is visibly optional and remains unchecked; no battle starts and no
+encounter outcome is invented. The character returns to Adventure Hall and
+receives no repeat first-clear Potion. Choosing an encounter in other runs
+still requires its result to resolve before completion. This route requires
+the October 23 non-combat repair; older loaded builds are not proof of it.
 
 ## 12. Finish and report
 

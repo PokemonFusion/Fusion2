@@ -2,6 +2,11 @@
 
 Reviewed October 15, 2026 against main `b31ed36`.
 
+This is a dated branch record. The [October 23 September closeout](testing/september-closeout-2026-10-23.md)
+reconciles the later source, regression checks and retained local player
+acceptance. The historical pending table below is not the current issue status;
+it remains intact as evidence of what this October 15 run did not verify.
+
 ## Scope
 
 This branch completes the existing Alpha Meadow Adventure participation,

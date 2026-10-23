@@ -64,6 +64,9 @@ medicines, [hunt-item-sources.md](hunt-item-sources.md) for reviewed hunt source
 and [item-supply-route.md](item-supply-route.md) for optional six-item supply.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
+See the [September closeout](testing/september-closeout-2026-10-23.md) for the
+current issue reconciliation, Adventure survey/room-pool repairs and the
+separate fresh regression and dated player-protocol evidence.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current
 offline battle proof coverage inventory.
 See [move-inventory-audit-2026-06-22.md](move-inventory-audit-2026-06-22.md)

@@ -51,10 +51,14 @@ type-changing economy or editor.
   restores ordinary runtime types and clears temporary Stellar state without
   writing battle types into owned Pokemon records.
 
-Scripted battles and species-specific Ogerpon/Terapagos transformations are
-rejected in this release. Mega/Primal forms, transformed Pokemon and active
-Dynamax are incompatible. Dynamax, Z-Moves and special-species Tera behavior
-remain separate work.
+Scripted battles remain outside this route. Native Ogerpon and Terapagos now
+use reviewed native-form exceptions; see the dated
+[Ogerpon acceptance](testing/ogerpon-tera-full-sweep-2026-10-19.md) and
+[Terapagos acceptance](testing/teraform-zero-local-2026-10-18.md). Unproved,
+prebuilt or copied forms do not qualify. Mega/Primal forms, transformed Pokémon,
+active Dynamax and holders of Mega Stones or Z-Crystals are incompatible with
+Tera. The same actor cannot stack Mega/Tera/Z; the bounded
+[Mega](mega-evolution.md) and [Z](z-moves.md) routes have their own gates.
 
 The rule references are [the official Tera Blast introduction](https://www.pokemon.co.jp/ex/sv/ja/battle/220822_02/),
 [the primary simulator's damage and Tera implementation](https://github.com/smogon/pokemon-showdown/blob/master/sim/battle-actions.ts),
@@ -93,3 +97,7 @@ No migration is required. Activating the code on the running game requires an
 approved service restart. Automated command tests do not substitute for live
 player acceptance. Nothing in this PR installs a new gym or changes an existing
 trainer's AI profile.
+
+The [September closeout](testing/september-closeout-2026-10-23.md) separates
+fresh command/database regressions from retained October 17 local player and
+real-reload evidence. It does not assert a new live deployment.

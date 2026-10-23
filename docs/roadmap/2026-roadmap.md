@@ -32,6 +32,11 @@ This roadmap is based on a repository audit of the current implementation. Exist
 
 September focuses on making the systems that already exist trustworthy, complete enough for normal player use, and safe to build on.
 
+**October 23 closeout:** the [criterion-by-criterion September record](../testing/september-closeout-2026-10-23.md)
+reconciles issues #705–#717, current regression checks, retained dated player
+acceptance and the bounded Adventure repairs. The sections below retain the
+original scope; local acceptance and remote deployment are separate evidence.
+
 ## Battle and Test Foundation
 
 - `[TEST]` Fix battle test-suite order/import isolation so mandatory suites can run reliably together.

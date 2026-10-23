@@ -71,8 +71,11 @@ illegal/stale targets, switched-in targets, one remaining slot, and a complete
 doubles battle through terminal cleanup. The trainer-challenge integration
 suite also checks an ordinary player's configured NPC doubles launch.
 
-These are automated local checks. Live ordinary-player acceptance remains
-pending activation of this branch on staging. After that activation:
+The [September closeout](testing/september-closeout-2026-10-23.md) records fresh
+command/PostgreSQL regressions and retained October 16 ordinary-player Telnet
+acceptance, including a completed doubles battle and both cleared locks. The
+dated protocol evidence is local; it does not claim a new remote deployment.
+For a later intentionally released build, the repeat walkthrough is:
 
 1. With two ordinary accounts, create/join/start a doubles PvP request and
    confirm four named positions. Check an insufficient-party rejection.

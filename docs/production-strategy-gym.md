@@ -139,3 +139,7 @@ An allowed rematch after cooldown expiry and injected reward-delivery failures
 remain disposable-PostgreSQL evidence; live cooldown timestamps and live delivery
 were not manipulated. This is automated local player-protocol acceptance, not
 human balance/fun playtesting or remote deployment acceptance.
+
+The [September closeout](testing/september-closeout-2026-10-23.md) reconciles
+this retained local protocol evidence with fresh production-model PostgreSQL
+configuration, strategy, claim/concurrency and player-flow regressions.
