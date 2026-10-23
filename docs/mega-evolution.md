@@ -1,6 +1,7 @@
-# Using Venusaurite in battle
+# Using Mega Stones in battle
 
-Native **Venusaur holding Venusaurite** is the first accepted player Mega pair.
+The **47 canonical stone pairs** in the [per-stone matrix](design/mega-stones.md)
+are accepted locally. Native Venusaur holding Venusaurite remains an example.
 Use `+mega` before a normal move in existing Wild, Trainer or PvP singles/doubles.
 There is one reusable activation per team per battle. Opposing teams have
 independent uses; two active Pokemon on your team share yours.
@@ -42,14 +43,24 @@ held-state conflicts stop the whole turn for recovery, without granting a copy.
 Mega and Tera have separate team budgets on different eligible allies; the same
 actor cannot stack them, and the existing held-Mega-Stone Tera exclusion remains.
 
-Other stones, Rayquaza's required-move route, CAP, NPC Mega AI and four-human
-multi-battles remain deferred in this first slice. No Ring, Key Stone, quest,
+Rayquaza's required-move route, CAP, NPC Mega AI and four-human multi-battles
+remain deferred. Parental Bond supports ordinary single-target damaging moves
+with two distinct hits, a quarter-strength second formula hit, one PP charge and
+per-hit contact/substitute/secondary effects. Status, existing multihit, spread,
+Struggle, charge/future/Z/Max, OHKO, recoil/drain/self-switch/self-destruct and
+custom damage/Hit/AfterHit callback classes retain their ordinary single-use
+behavior and receive no added hit in this bounded route. Eligible fixed damage
+such as Seismic Toss retains its fixed damage on each hit. No Ring, Key Stone, quest,
 tower or story unlock is required. `+use`, `+item` and `+evolve` do not activate
 a Mega Stone.
 
-The [acceptance report](testing/mega-core-2026-10-23.md) distinguishes automated
+The [first-pair report](testing/mega-core-2026-10-23.md) and
+[per-stone expansion report](testing/mega-stones-2026-10-23.md) distinguishes automated
 production-command/SQL/effect checks from live login, deployment and public
 availability. The optional `world/mega_stone_counter.json` is installed only
 through `ItemCounter(...).install(reviewed_hub)`; it does not populate the world
 or change the six-item Supply Corner. The earlier #782 live release did not
-include this later feature.
+include this later feature. Each accepted optional offer costs 10,000 and
+starts with one copy. An older Venusaurite-only Counter receipt fails the
+extended recipe's drift check; reinstalling never silently adds or refills
+stock. Any existing-world source change needs a separately reviewed operation.

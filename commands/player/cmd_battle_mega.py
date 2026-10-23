@@ -14,7 +14,8 @@ class CmdBattleMega(Command):
       +mega [acting slot] cancel
 
     Choose Mega before +attack. Doubles require your A1/A2 or B1/B2 actor.
-    Initially only native Venusaur holding Venusaurite is accepted. One use per
+    The 47 canonical stone pairs in +itemdex use their matching native holder.
+    Rayquaza and CAP remain deferred. One use per
     side per battle, separate from Tera on a different ally. No ring, quest,
     activation fee or bag debit. Invalid input keeps your reservation; a legal
     switch, item or flee cancels it. The stone stays reusable after battle.

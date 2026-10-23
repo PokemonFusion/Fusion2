@@ -5,6 +5,7 @@ from copy import deepcopy
 from pokemon.names import normalize_name
 
 from .owned_battle_actor import BattleOwnershipChanged, OwnedBattleActor
+from .mega_pairs import MEGA_PAIRS
 from .terastallization import Terastallization
 
 
@@ -12,7 +13,7 @@ class MegaEvolution:
     """Only explicitly accepted native stone pairs can activate through players."""
 
     version = 1
-    pairs = {"venusaurite": ("Venusaur", "Venusaur-Mega")}
+    pairs = MEGA_PAIRS
 
     @staticmethod
     def dex_profile(stone):
@@ -188,7 +189,9 @@ class MegaEvolution:
             ):
                 raise RuntimeError("Validated Mega Evolution failed to apply its form.")
             pokemon.name = display_name
-            pokemon.setAbility(ability, battle=battle, source=pokemon, is_from_forme_change=True)
+            pokemon.setAbility(
+                ability, battle=battle, source=pokemon, is_from_forme_change=True, run_start=False
+            )
             pokemon.mega_evolved = True
             pokemon.mega_evolution_forme = request["target"]
             from pokemon.dex.entities import Stats
@@ -196,8 +199,22 @@ class MegaEvolution:
             pokemon.base_stats = Stats(**cls.species_stats(pokemon))
             pokemon.stats = pokemon._battle_stats()
             battle.register_handlers(pokemon)
+            battle.start_owned_ability(pokemon)
             battle.mega_used.add(request["team"])
             battle.log_action(f"{display_name} Mega Evolved into {request['target']}!")
+
+    @classmethod
+    def prepare_entry(cls, pokemon):
+        """Reset temporary changed/copied abilities before normal Mega reentry."""
+        profile = getattr(pokemon, "mega_profile", None)
+        if not profile or getattr(pokemon, "transformed", False):
+            return
+        from .engine import _resolve_ability
+
+        _, target, form = cls.dex_profile(profile["stone"])
+        if str(pokemon.species) != target:
+            raise ValueError("Mega reentry profile does not match the current form.")
+        pokemon.ability = _resolve_ability(form["abilities"]["0"])
 
     @classmethod
     def lock(cls, battle):

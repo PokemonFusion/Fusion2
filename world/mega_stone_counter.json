@@ -6,6 +6,242 @@
   "return_exit": "back",
   "buy_only": true,
   "refill": "none",
-  "description": "The sign lists Venusaurite at 10,000, finite stock one. Use +store, Buy items, then Venusaurite 1. Check +inventory and +itemdex Venusaurite; equip with +hold <party slot>=Venusaurite outside battle. A native Venusaur can reserve +mega before its ordinary +attack; doubles require your actor slot. One reusable Mega use per side per battle, with no ring, quest, fee or bag debit. Return the stone with +hold <party slot>= after battle. Other stone pairs remain deferred. The back exit returns to the selected public hub. No automatic refill or resale.",
-  "offers": [{"item": "Venusaurite", "price": 10000, "quantity": 1}]
+  "description": "The sign lists 47 accepted canonical Mega Stones at 10,000 each, finite stock one each. Use +store, Buy items, then the full stone name and 1. Check +inventory and +itemdex; equip with +hold <party slot>=<stone> outside battle. A matching native holder can reserve +mega before its ordinary +attack; doubles require your actor slot. One reusable Mega use per side per battle, with no ring, quest, fee or bag debit. Return the stone with +hold <party slot>= after battle. Rayquaza and CAP remain deferred. The back exit returns to the selected public hub. No automatic refill or resale.",
+  "offers": [
+    {
+      "item": "Abomasite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Absolite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Aerodactylite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Aggronite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Alakazite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Altarianite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Ampharosite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Audinite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Banettite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Beedrillite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Blastoisinite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Blazikenite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Cameruptite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Charizardite X",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Charizardite Y",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Diancite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Galladite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Garchompite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Gardevoirite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Gengarite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Glalitite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Gyaradosite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Heracronite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Houndoominite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Kangaskhanite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Latiasite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Latiosite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Lopunnite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Lucarionite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Manectite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Mawilite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Medichamite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Metagrossite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Mewtwonite X",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Mewtwonite Y",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Pidgeotite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Pinsirite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Sablenite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Salamencite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Sceptilite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Scizorite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Sharpedonite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Slowbronite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Steelixite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Swampertite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Tyranitarite",
+      "price": 10000,
+      "quantity": 1
+    },
+    {
+      "item": "Venusaurite",
+      "price": 10000,
+      "quantity": 1
+    }
+  ]
 }

@@ -837,17 +837,20 @@ class Pokemon:
         battle=None,
         is_from_forme_change: bool = False,
         is_transform: bool = False,
+        run_start: bool = True,
     ):
         """Assign a battle ability using the active battle runtime when available."""
 
         battle_obj = battle or getattr(self, "battle", None)
         if battle_obj and hasattr(battle_obj, "set_ability"):
+            start_options = {"run_start": False} if not run_start else {}
             return battle_obj.set_ability(
                 self,
                 ability,
                 source=source,
                 is_from_forme_change=is_from_forme_change,
                 is_transform=is_transform,
+                **start_options,
             )
         old = getattr(self, "ability", None)
         self.ability = ability

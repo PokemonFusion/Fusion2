@@ -1367,10 +1367,13 @@ class Harvest:
 
 class Healer:
 	def onResidual(self, pokemon=None):
+		"""Use the rollback-owned battle RNG for eligible living active allies."""
 		if not pokemon:
 			return
+		rng = getattr(getattr(pokemon, "battle", None), "rng", None)
 		for ally in pokemon.allies():
-			if ally.status and random() < 0.3:
+			if (ally is not pokemon and getattr(ally, "hp", 0) > 0 and ally.status
+					and (rng.random() if rng is not None else random()) < 0.3):
 				ally.setStatus(0)
 
 
@@ -2166,13 +2169,14 @@ class Owntempo:
 
 class Parentalbond:
 	def onPrepareHit(self, move=None, pokemon=None, target=None):
-		if move and move.category != "Status" and not getattr(move, "multihit", False):
+		"""Only supported single-target attacks gain the reusable second hit."""
+		from pokemon.battle.parental_bond import ParentalBondAttack
+		if ParentalBondAttack.eligible(move):
 			move.multihit = 2
 			move.multihit_type = "parentalbond"
 
 	def onSourceModifySecondaries(self, secondaries, source=None, target=None, move=None):
-		if move and getattr(move, "multihit_type", "") == "parentalbond" and getattr(move, "hit", 1) == 2:
-			return []
+		"""Ordinary eligible secondary effects roll independently on each real hit."""
 		return secondaries
 
 
@@ -2346,7 +2350,8 @@ class Powerspot:
 class Prankster:
 	def onModifyPriority(self, priority, pokemon=None, target=None, move=None):
 		if move and move.category == "Status":
-			return priority + 0.1
+			move.pranksterBoosted = True
+			return priority + 1
 		return priority
 
 
@@ -3305,7 +3310,8 @@ class Tanglinghair:
 
 class Technician:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if move and getattr(move, "base_power", 0) <= 60:
+		"""Qualify the actual positive current power supplied by the engine hook."""
+		if move and 0 < base_power <= 60:
 			return int(base_power * 1.5)
 		return base_power
 
@@ -3473,17 +3479,35 @@ class Toxicdebris:
 
 class Trace:
 	def _copy(self, pokemon):
-		foes = [f for f in pokemon.foes() if f.ability not in {"trace", None}]
-		if foes:
-			choice_foe = choice(foes)
-			pokemon.ability = choice_foe.ability
+		"""Choose an eligible living foe and install its executable owned effect."""
+		from pokemon.battle.effect_context import EffectContext
+		from pokemon.battle.engine import _resolve_ability
+		battle = getattr(pokemon, "battle", None)
+		if not battle or EffectContext.key(EffectContext.ability(pokemon)) != "trace":
+			return
+		if EffectContext.key(EffectContext.item(pokemon)) == "abilityshield":
+			return
+		foes = []
+		for foe in pokemon.foes():
+			ability = _resolve_ability(EffectContext.ability(foe))
+			if (getattr(foe, "hp", 0) > 0 and ability
+					and EffectContext.key(ability) not in {"trace", "noability"}
+					and not (getattr(ability, "raw", {}) or {}).get("flags", {}).get("notrace")):
+				foes.append((foe, ability))
+		if not foes:
+			return
+		foe, ability = battle.rng.choice(foes)
+		pokemon.setAbility(ability, source=foe, battle=battle,
+						   is_from_forme_change=True, run_start=False)
+		battle.register_handlers(pokemon)
+		battle.start_owned_ability(pokemon)
 
 	def onStart(self, pokemon=None):
 		if pokemon:
 			self._copy(pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.ability == "trace":
+		if pokemon:
 			self._copy(pokemon)
 
 

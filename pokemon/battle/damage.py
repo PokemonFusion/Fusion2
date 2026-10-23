@@ -1156,7 +1156,8 @@ def damage_calc(
             else:
                 result.debug.setdefault("critical", []).append(False)
 
-            if getattr(move, "multihit_type", "") == "parentalbond" and hit_number == 2:
+            if (getattr(move, "multihit_type", "") == "parentalbond"
+                    and (getattr(move, "parental_bond_hit", hit_number) == 2)):
                 dmg = floor(dmg * .25)
 
             # Spread modifier

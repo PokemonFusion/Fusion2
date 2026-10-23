@@ -43,10 +43,11 @@ Leader's Crest is an opponent qualification for Bisharp's Kingambit route. Your
 Pokémon must defeat the required authored leaders; buying or holding your own
 Crest does not replace those victories. Mega Stones, Z-Crystals and berries
 without a feeding effect do not imply that Mega/Z activation or growing works.
-The later [Venusaurite slice](mega-evolution.md) supplies ordinary `+mega` before
+The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` before
 `+attack`, native/held validation, durable form state and an optional finite
 10,000-price Counter recipe. Its local automated acceptance is separate from
-deployment and permanent public stock; [other stone pairs remain gated](design/mega-stones.md).
+deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
+records accepted effects, source limits and the remaining CAP/required-move exclusions.
 The [Z-Crystal plan](design/z-crystals.md) retains its implementation gates.
 The later [berry nursery](berry-nursery.md) adds one private durable Oran bed and
 the independent `+berry snack Razz Berry=<target>` HP equivalent. Its optional

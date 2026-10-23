@@ -364,7 +364,7 @@ def _ability_try_hit_blocks(target, source, move, battle) -> bool:
 
 
 def _apply_move_damage(
-    user, target, battle_move: "BattleMove", battle, *, spread: bool = False
+    user, target, battle_move: "BattleMove", battle, *, spread: bool = False, update_hp=True
 ):
     """Construct a temporary :class:`pokemon.dex.entities.Move` from ``battle_move``.
 
@@ -411,7 +411,9 @@ def _apply_move_damage(
     # relevant handlers here before building the temporary :class:`Move`
     # used for damage computation.
 
-    user_ability = _resolve_ability(getattr(user, "ability", None))
+    from .effect_context import EffectContext
+
+    user_ability = _resolve_ability(EffectContext.ability(user))
     if user_ability and hasattr(user_ability, "call") and not getattr(battle_move, "_ability_move_prepared", False):
         try:
             user_ability.call("onModifyMove", battle_move, user=user, target=target, battle=battle)
@@ -424,7 +426,7 @@ def _apply_move_damage(
     from .effect_context import EffectContext
 
     for owner in (user, target):
-        ability = _resolve_ability(getattr(owner, "ability", None))
+        ability = _resolve_ability(EffectContext.ability(owner))
         if not ability:
             ability = None
         # Suppression keeps the owned item but disables its offensive hooks.
@@ -524,7 +526,7 @@ def _apply_move_damage(
             )
             if same_team:
                 for ally in getattr(part, "active", []):
-                    ability = _resolve_ability(getattr(ally, "ability", None))
+                    ability = _resolve_ability(EffectContext.ability(ally))
                     if not ability:
                         continue
                     try:
@@ -569,7 +571,10 @@ def _apply_move_damage(
     # Defensive abilities may further adjust the power of incoming moves via
     # ``onSourceBasePower``.  This hook is separate from ``onBasePower`` above,
     # which applies when the ability's owner uses a move.
-    target_ability = _resolve_ability(getattr(target, "ability", None))
+    target_ability = _resolve_ability(EffectContext.ability(target))
+    ignores_ability = getattr(battle, "_move_ignores_target_ability", None)
+    if callable(ignores_ability) and ignores_ability(user, target, battle_move):
+        target_ability = None
     if target_ability:
         try:
             new_power = target_ability.call(
@@ -625,7 +630,7 @@ def _apply_move_damage(
         setattr(move, "raw", raw)
         setattr(move, "flags", dict(raw.get("flags", {}) or {}))
 
-    for attr in ("multihit", "multihit_type"):
+    for attr in ("multihit", "multihit_type", "parental_bond_hit"):
         if hasattr(battle_move, attr):
             setattr(move, attr, getattr(battle_move, attr))
 
@@ -659,7 +664,8 @@ def _apply_move_damage(
     if getattr(battle_move, "_gem_power_applied", False):
         move.power = battle_move.power
     hp_before = getattr(target, "hp", 0)
-    result = apply_damage(user, target, move, battle=battle, spread=spread)
+    damage_options = {"update_hp": False} if not update_hp else {}
+    result = apply_damage(user, target, move, battle=battle, spread=spread, **damage_options)
     ledger = (getattr(target, "tempvals", {}) or {}).get("last_damaged_by", {})
     actual_damage = ledger.get("actual_damage", 0) if ledger.get("source") is user and ledger.get("move") is move else max(0, hp_before - getattr(target, "hp", 0))
     battle_move.total_damage = getattr(battle_move, "total_damage", 0) + actual_damage
@@ -920,6 +926,11 @@ class BattleMove:
             result = invoke_callback(self.onTry, user, target, self, battle=battle)
             if result is False:
                 return
+        if (getattr(self, "pranksterBoosted", False)
+                and str(self.category).lower() == "status" and target is not user
+                and not user.is_ally(target) and "Dark" in getattr(target, "types", [])):
+            battle.log_action(f"{target.name} is immune to the Prankster-boosted {self.name}!")
+            return
         from .called_moves import CalledMoveExecutor
 
         if CalledMoveExecutor(battle).reflect(user, target, self):
@@ -1811,7 +1822,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move_type = _normalize_key(relayVar or getattr(effect, "type", None)).lower()
         if move_type != "ground":
             return None
-        ability = _resolve_ability(getattr(target, "ability", None)) or getattr(target, "ability", None)
+        from .effect_context import EffectContext
+        ability = _resolve_ability(EffectContext.ability(target))
         if _effect_key(ability) != "levitate":
             return None
         if self._move_ignores_target_ability(source, target, effect):
@@ -2892,6 +2904,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         """Trigger events when ``pokemon`` enters the field."""
         part = self.participant_for(pokemon)
         pokemon.battle = self
+        from .mega_evolution import MegaEvolution
+
+        MegaEvolution.prepare_entry(pokemon)
         if part is not None:
             pokemon.side = part.side
         pokemon.ability_state = self.init_effect_state(getattr(pokemon, "ability", None), target=pokemon, source=source)
@@ -3060,7 +3075,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if opp is part or opp.has_lost:
                     continue
                 for pokemon in part.active:
-                    ability = _resolve_ability(getattr(pokemon, "ability", None))
+                    from .effect_context import EffectContext
+                    ability = _resolve_ability(EffectContext.ability(pokemon))
+                    if EffectContext.key(ability) == "shadowtag":
+                        # Voluntary switch legality queries the live owner, not
+                        # a sticky flag left behind after departure/suppression.
+                        continue
                     if not ability or not hasattr(ability, "call"):
                         continue
                     for foe in opp.active:
@@ -3669,8 +3689,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def _is_trapped(self, pokemon) -> bool:
         """Return whether ``pokemon`` is prevented from switching out."""
+        from .effect_context import EffectContext
+
+        owner = self.participant_for(pokemon)
+        if (owner is not None and "Ghost" not in getattr(pokemon, "types", [])
+                and EffectContext.key(EffectContext.item(pokemon)) != "shedshell"
+                and EffectContext.key(EffectContext.ability(pokemon)) != "shadowtag"):
+            if any(getattr(foe, "hp", 0) > 0
+                   and EffectContext.key(EffectContext.ability(foe)) == "shadowtag"
+                   for part in self.opponents_of(owner) for foe in part.active):
+                return True
         trapped = bool(getattr(pokemon, "trapped", False) or getattr(pokemon, "maybe_trapped", False))
         for holder, relation in self._switch_control_holders(pokemon, include_foes=True):
+            if EffectContext.key(holder) == "shadowtag":
+                continue
             hook = "onFoeTrapPokemon" if relation == "foe" else "onTrapPokemon"
             try:
                 result = self._call_effect_event(holder, hook, pokemon, battle=self)
@@ -4034,6 +4066,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         source=None,
         is_from_forme_change: bool = False,
         is_transform: bool = False,
+        run_start: bool = True,
     ):
         """Assign a new ability to ``pokemon`` through explicit start/end hooks."""
 
@@ -4050,9 +4083,37 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             self.singleEvent("End", old_ability, old_state, pokemon, source)
         pokemon.ability = resolved
         pokemon.ability_state = self.init_effect_state(resolved, target=pokemon, source=source)
-        if resolved:
+        if resolved and run_start:
             self.singleEvent("Start", resolved, pokemon.ability_state, pokemon, source)
         return old_ability
+
+    def start_owned_ability(self, pokemon) -> None:
+        """Start an explicitly installed ability with named owner context.
+
+        Public Mega and Trace own this boundary. Propagate unexpected failures
+        to their whole-turn transaction; do not replay entry or item events.
+        Other ability installation paths retain their existing defaults.
+        """
+        from .effect_context import EffectContext
+        import inspect
+
+        ability = _resolve_ability(EffectContext.ability(pokemon))
+        raw_start = (getattr(ability, "raw", {}) or {}).get("onStart")
+        if not raw_start:
+            return
+        callback = resolve_callback_from_modules(raw_start, "pokemon.dex.functions.abilities_funcs")
+        if not callable(callback):
+            raise RuntimeError("The installed ability Start callback is unavailable.")
+        owner = getattr(callback, "__self__", None)
+        if owner is not None:
+            owner.effect_state = pokemon.ability_state
+        context = {"pokemon": pokemon, "target": pokemon, "source": pokemon,
+                   "user": pokemon, "battle": self, "effect_state": pokemon.ability_state}
+        signature = inspect.signature(callback)
+        if not any(p.kind == inspect.Parameter.VAR_KEYWORD for p in signature.parameters.values()):
+            context = {key: value for key, value in context.items() if key in signature.parameters}
+        signature.bind(**context)
+        callback(**context)
 
     def _pokemon_has_item(self, pokemon) -> bool:
         """Return whether ``pokemon`` is currently holding an item."""
@@ -4870,6 +4931,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
+        if getattr(action.move, "multihit_type", "") == "parentalbond":
+            from .parental_bond import ParentalBondAttack
+
+            ParentalBondAttack.execute(self, user, target, action.move)
+            return
+
         sub = getattr(target, "volatiles", {}).get("substitute")
         move_flags = getattr(action.move, "flags", None) or action.move.raw.get("flags", {})
         bypasses_substitute = bool(
@@ -5338,6 +5405,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             part.record_participation(replacement)
                         if getattr(part, "side", None) is not None:
                             part.side.active = part.active
+                        if getattr(replacement, "mega_profile", None):
+                            self.on_enter_battle(replacement)
+                            self._log_switch_in(part, replacement)
+                            continue
                         self.register_handlers(replacement)
                         self.dispatcher.dispatch(
                             "pre_start", pokemon=replacement, battle=self
@@ -5410,10 +5481,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     _log_status_damage(status, poke)
 
                 # Ability and item residual callbacks
-                ability = _resolve_ability(getattr(poke, "ability", None))
+                from .effect_context import EffectContext
+                ability = _resolve_ability(EffectContext.ability(poke))
                 if ability and hasattr(ability, "call"):
                     try:
-                        ability.call("onResidual", poke, self)
+                        ability.call("onResidual", pokemon=poke, battle=self,
+                                     effect_state=getattr(poke, "ability_state", {}))
                     except Exception:
                         pass
 
@@ -5463,7 +5536,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         weather_handler.onWeather(poke)
                     except Exception:
                         pass
-                ability = _resolve_ability(getattr(poke, "ability", None))
+                ability = _resolve_ability(EffectContext.ability(poke))
                 if ability and hasattr(ability, "call"):
                     try:
                         ability.call("onWeather", pokemon=poke)

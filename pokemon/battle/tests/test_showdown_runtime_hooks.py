@@ -35,7 +35,8 @@ def test_ability_call_resolves_string_callback():
 	)
 	move = SimpleNamespace(category="Status")
 
-	assert ability.call("onModifyPriority", 0, pokemon=object(), move=move) == 0.1
+	assert ability.call("onModifyPriority", 0, pokemon=object(), move=move) == 1
+	assert move.pranksterBoosted is True
 
 
 def test_eat_item_consumes_berry_and_sets_flags():

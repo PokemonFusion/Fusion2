@@ -1128,46 +1128,53 @@ for control in ("owner", "egg", "box"):
     add_case("lock_rechecks_" + control, "lock_owner_change", control)
 
 
+def load_runtime():
+    """Bind production adapters for this suite and the per-stone acceptance suite."""
+    global BattleSession, battle_handler, BattleType, POKEDEX, resolve_dex_entry
+    global OwnedPokemon, create_owned_pokemon, PlacementService, create_battle_pokemon
+    acquisition.load_runtime()
+    import evennia
+    from evennia.commands.command import Command
+    from evennia.commands.cmdset import CmdSet
+
+    with patch.object(evennia, "Command", Command), patch.object(evennia, "CmdSet", CmdSet):
+        from commands.player import (
+            cmd_battle_mega,
+            cmd_battle_tera,
+            cmd_pvp,
+            cmd_battle_item,
+            cmd_battle_switch,
+        )
+    from pokemon.battle.battleinstance import BattleSession
+    from django.contrib.contenttypes.models import ContentType
+
+    ContentType.objects.get_for_model(acquisition.ObjectDB)
+    from pokemon.battle.handler import battle_handler
+    from pokemon.battle.engine import BattleType
+    from pokemon.dex import POKEDEX
+    from pokemon.names import resolve_dex_entry
+    from pokemon.models.core import OwnedPokemon
+    from pokemon.helpers.pokemon_helpers import create_owned_pokemon
+    from pokemon.services.placement import PlacementService
+    from pokemon.battle.pokemon_factory import create_battle_pokemon
+
+    acquisition.COMMANDS.update(
+        {
+            "mega": (cmd_battle_mega, cmd_battle_mega.CmdBattleMega),
+            "tera": (cmd_battle_tera, cmd_battle_tera.CmdBattleTera),
+            "item": (cmd_battle_item, cmd_battle_item.CmdBattleItem),
+            "switch": (cmd_battle_switch, cmd_battle_switch.CmdBattleSwitch),
+            "create": (cmd_pvp, cmd_pvp.CmdPvpCreate),
+            "join": (cmd_pvp, cmd_pvp.CmdPvpJoin),
+            "start": (cmd_pvp, cmd_pvp.CmdPvpStart),
+        }
+    )
+
+
 if __name__ == "__main__":
     with IsolatedPostgres() as database:
         database.create_model_tables()
-        acquisition.load_runtime()
-        import evennia
-        from evennia.commands.command import Command
-        from evennia.commands.cmdset import CmdSet
-
-        with patch.object(evennia, "Command", Command), patch.object(evennia, "CmdSet", CmdSet):
-            from commands.player import (
-                cmd_battle_mega,
-                cmd_battle_tera,
-                cmd_pvp,
-                cmd_battle_item,
-                cmd_battle_switch,
-            )
-        from pokemon.battle.battleinstance import BattleSession
-        from django.contrib.contenttypes.models import ContentType
-
-        ContentType.objects.get_for_model(acquisition.ObjectDB)
-        from pokemon.battle.handler import battle_handler
-        from pokemon.battle.engine import BattleType
-        from pokemon.dex import POKEDEX
-        from pokemon.names import resolve_dex_entry
-        from pokemon.models.core import OwnedPokemon
-        from pokemon.helpers.pokemon_helpers import create_owned_pokemon
-        from pokemon.services.placement import PlacementService
-        from pokemon.battle.pokemon_factory import create_battle_pokemon
-
-        acquisition.COMMANDS.update(
-            {
-                "mega": (cmd_battle_mega, cmd_battle_mega.CmdBattleMega),
-                "tera": (cmd_battle_tera, cmd_battle_tera.CmdBattleTera),
-                "item": (cmd_battle_item, cmd_battle_item.CmdBattleItem),
-                "switch": (cmd_battle_switch, cmd_battle_switch.CmdBattleSwitch),
-                "create": (cmd_pvp, cmd_pvp.CmdPvpCreate),
-                "join": (cmd_pvp, cmd_pvp.CmdPvpJoin),
-                "start": (cmd_pvp, cmd_pvp.CmdPvpStart),
-            }
-        )
+        load_runtime()
         try:
             result = unittest.TextTestRunner(verbosity=2).run(
                 unittest.defaultTestLoader.loadTestsFromTestCase(MegaEvolutionCases)

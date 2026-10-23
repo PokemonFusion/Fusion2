@@ -1,9 +1,11 @@
 # Mega Evolution activation contract (#774)
 
-Status: **first Venusaurite slice implemented in #784–#787**. See the
-[player guide](../mega-evolution.md) and [local acceptance report](../testing/mega-core-2026-10-23.md).
-Other pairs retain their individual gates; deployment and public stock remain
-separate. The original design contract below uses source baseline
+Status: **47 canonical stone pairs implemented locally** in #784–#796. See the
+[player guide](../mega-evolution.md), [first-pair report](../testing/mega-core-2026-10-23.md)
+and [per-stone expansion](../testing/mega-stones-2026-10-23.md). The first-pair
+contract below remains the original foundation; the current stone matrix records
+the accepted expansion. Source population and deployment remain separate.
+Deployment and public stock remain separate. The original design contract below uses source baseline
 `1c36da6f449ce837455a65a1fa616013eee95c62`,
 October 22, 2026. The [per-stone rollout](mega-stones.md) assigns every existing
 stone to an implementation issue and keeps actual support separate from plans.
