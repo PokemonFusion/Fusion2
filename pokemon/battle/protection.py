@@ -15,6 +15,8 @@ class MoveProtection:
         """Apply one eligible shield counter, retaining ordinary bypass rules."""
         if holder is source or getattr(move, "breaksProtect", False):
             return False
+        if getattr(move, "_z_paid", False) and move.category != "Status":
+            return False
         state = getattr(holder, "volatiles", {}) or {}
         guard = next((name for name in cls.named if state.get(name)), None)
         if not guard and not state.get("protect"):

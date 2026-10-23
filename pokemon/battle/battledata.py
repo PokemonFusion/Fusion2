@@ -1013,6 +1013,9 @@ class Pokemon:
             "friendship": self.friendship,
             "item_suppressed": bool(getattr(self, "item_suppressed", False)),
             "ability_suppressed": bool(getattr(self, "ability_suppressed", False)),
+            "z_profile": snapshot_battle_value(getattr(self, "z_profile", None)),
+            "z_activated": bool(getattr(self, "z_activated", False)),
+            "z_guard_crystal": getattr(self, "z_guard_crystal", None),
         }
 
         if self.model_id:
@@ -1201,6 +1204,9 @@ class Pokemon:
         obj.mega_profile = snapshot_battle_value(data["mega_profile"]) if data.get("mega_profile") else None
         obj.mega_evolved = bool(data.get("mega_evolved", False))
         obj.mega_guard_stone = data.get("mega_guard_stone")
+        obj.z_profile = snapshot_battle_value(data["z_profile"]) if data.get("z_profile") else None
+        obj.z_activated = data.get("z_activated", False)
+        obj.z_guard_crystal = data.get("z_guard_crystal")
         if "types" in data and data["types"] is not None:
             obj.types = list(data["types"])
         obj.transformed = bool(data.get("transformed", False))

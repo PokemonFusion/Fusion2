@@ -113,9 +113,20 @@ class BattleLogic:
 		battle.mechanic_controllers = dict(getattr(state, "pokemon_control", {}))
 		battle.mega_used = set(getattr(state, "mega_used", []))
 		battle.mega_pending = {key: dict(value) for key, value in getattr(state, "mega_pending", {}).items()}
+		z_used, z_pending = getattr(state, "z_used", []), getattr(state, "z_pending", {})
+		from collections.abc import Mapping, MutableSequence
+
+		if (not isinstance(z_used, (list, tuple, MutableSequence)) or any(side not in {"A", "B"} for side in z_used)
+				or len(z_used) != len(set(z_used)) or not isinstance(z_pending, Mapping)
+				or any(side not in {"A", "B"} or not isinstance(value, Mapping) for side, value in z_pending.items())):
+			raise ValueError("Corrupt Z side ledger requires recovery.")
+		battle.z_used = set(z_used)
+		battle.z_pending = {key: dict(value) for key, value in getattr(state, "z_pending", {}).items()}
 		from .mega_evolution import MegaEvolution
+		from .z_moves import ZMoves
 
 		MegaEvolution.recover(battle)
+		ZMoves.recover(battle, state.declare)
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
@@ -154,6 +165,8 @@ class BattleLogic:
 		self.state.mechanic_turn = getattr(self.battle, "mechanic_turn", 0)
 		self.state.mega_used = sorted(getattr(self.battle, "mega_used", set()))
 		self.state.mega_pending = {key: dict(value) for key, value in getattr(self.battle, "mega_pending", {}).items()}
+		self.state.z_used = sorted(getattr(self.battle, "z_used", set()))
+		self.state.z_pending = {key: dict(value) for key, value in getattr(self.battle, "z_pending", {}).items()}
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

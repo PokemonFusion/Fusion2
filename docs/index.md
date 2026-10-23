@@ -50,7 +50,8 @@ See the [Mega Stone player guide](mega-evolution.md),
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,
 its optional source and the 47 locally accepted canonical pairs.
 See [design/z-moves.md](design/z-moves.md) and its
-[crystal inventory](design/z-crystals.md) for the planned Z-Move slice, and
+[crystal inventory](design/z-crystals.md) plus [Z-Move guide](z-moves.md) for the
+18 accepted generic damage pairs and later gates, and
 [design/berry-player-routes.md](design/berry-player-routes.md) for the separate
 Oran growing/Razz snack contracts. The [berry nursery guide](berry-nursery.md)
 describes their implemented commands, optional source and release requirements.

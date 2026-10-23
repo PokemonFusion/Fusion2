@@ -21,8 +21,10 @@ class CalledMoveExecutor:
         if user is None or depth >= 8:
             return False
         name = selected if isinstance(selected, str) else getattr(selected, "name", "")
+        if getattr(selected, "_z_paid", False) or getattr(selected, "isZ", False):
+            return False
         move = _battle_move_from_name(name)
-        if move is None:
+        if move is None or move.raw.get("isZ"):
             return False
         if spend_pp:
             from .copied_moves import BattleCopyState

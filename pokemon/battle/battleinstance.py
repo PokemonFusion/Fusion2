@@ -1653,7 +1653,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
     def _sync_player_pokemon_state(self, *, strict=False) -> None:
         """Keep protected Mega ownership checks locked through their owned writes."""
-        guarded = any(getattr(poke, "mega_guard_stone", None)
+        guarded = any(getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None)
                       for participant in getattr(self.battle, "participants", [])
                       for poke in participant.pokemons)
         if guarded:
@@ -1714,7 +1714,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 mon = lookup.get(str(ref_identifier))
                 if not mon:
                     continue
-                if getattr(poke, "mega_guard_stone", None):
+                source_guard = getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None)
+                if source_guard:
                     from pokemon.battle.owned_battle_actor import OwnedBattleActor
                     from pokemon.models.core import OwnedPokemon
                     from pokemon.names import normalize_name
@@ -1722,9 +1723,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     guard = OwnedPokemon.objects.select_for_update().filter(pk=mon.pk).values("held_item", "trainer__user_id", "is_egg").get()
                     expected_owner = getattr(self.battle, "mechanic_controllers", {}).get(str(poke.model_id))
                     if (str(guard["trainer__user_id"]) != str(expected_owner) or guard["is_egg"]
-                            or normalize_name(guard["held_item"]) != poke.mega_guard_stone
-                            or OwnedBattleActor.item_key(poke) != poke.mega_guard_stone):
-                        raise ValueError("Mega held ownership changed; battle recovery is required before synchronization.")
+                            or normalize_name(guard["held_item"]) != source_guard
+                            or OwnedBattleActor.item_key(poke) != source_guard):
+                        raise ValueError("Reusable held ownership changed; battle recovery is required before synchronization.")
 
                 max_hp = getattr(mon, "current_hp", 0)
                 get_max_hp = getattr(mon, "get_max_hp", None)
@@ -1802,6 +1803,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .mega_evolution import MegaEvolution
 
             MegaEvolution.validate_roster(self.battle)
+            from .z_moves import ZMoves
+
+            ZMoves.validate_roster(self.battle)
         log_info(f"Ending battle {self.battle_id}")
 
         self.persist_debug_record(event="battle_ending")
@@ -1815,6 +1819,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .mega_evolution import MegaEvolution
 
             MegaEvolution.cleanup(self.battle)
+            from .z_moves import ZMoves
+
+            ZMoves.cleanup(self.battle)
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
@@ -1932,7 +1939,22 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                     raise ValueError("The saved choice belongs to another trainer.")
                 if declaration.get("pokemon") and str(declaration["pokemon"]) != str(pokemon.model_id):
                     raise ValueError("The acting Pokemon has changed.")
-                if "move" in declaration:
+                if "z" in declaration:
+                    from .z_moves import ZMoves
+                    from copy import deepcopy
+
+                    request = deepcopy(dict(declaration["z"]))
+                    target_mon = getattr(positions.get(request["target"]), "pokemon", None)
+                    source = next((move for move in pokemon.moves if _battle_norm_key(move.name) == _battle_norm_key(request["source"])), None)
+                    if source is None or target_mon is None:
+                        raise ValueError("The saved Z source/target is missing.")
+                    action = Action(actor, ActionType.MOVE, self.battle.participant_for(target_mon),
+                                    move=source, pokemon=pokemon, target_pokemon=target_mon,
+                                    target_slot=slot_for(self.battle.participant_for(target_mon), target_mon),
+                                    z_request=request)
+                    ZMoves.refresh(self.battle, action)
+                    position.declareAttack(request["target"], declaration["move"])
+                elif "move" in declaration:
                     key = _battle_norm_key(declaration["move"])
                     target_name = declaration.get("target", "B1" if name[0] == "A" else "A1")
                     target_mon = getattr(positions.get(target_name), "pokemon", None)
@@ -1989,6 +2011,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 action.player_selected = not actor.is_ai
                 restored_actions[actor].append(action)
             except (ValueError, TypeError, IndexError, StopIteration) as error:
+                if isinstance(declaration, Mapping) and "z" in declaration:
+                    raise ValueError(f"Saved Z input at {name} requires battle recovery: {error}") from error
                 self.state.declare.pop(name, None)
                 if position is not None:
                     position.removeDeclare()
@@ -2021,6 +2045,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         messages = BufferedMessages(self)
         original_log = self.battle.log_action
         self.battle.log_action = messages.msg
+        turn_started = False
         try:
             with transaction.atomic():
                 ObjectDB.objects.select_for_update().get(pk=self.room.id)
@@ -2030,6 +2055,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 from .mega_evolution import MegaEvolution
 
                 MegaEvolution.validate_roster(self.battle)
+                from .z_moves import ZMoves
+
+                ZMoves.validate_roster(self.battle)
+                turn_started = True
                 self.battle.run_turn()
                 self._sync_player_pokemon_state(strict=True)
                 self._sync_active_battle_state()
@@ -2045,6 +2074,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 self.storage.set("state", self._compact_state_for_persist(self.state.to_dict()))
                 transaction.on_commit(messages.publish, robust=True)
         except Exception:
+            if not turn_started:
+                self.battle.log_action = original_log
+                raise
             # Runtime Pokemon and pending actions are mutable. SQL rollback
             # alone is insufficient; restore the same legal inputs and RNG.
             self.room.attributes.reset_cache()

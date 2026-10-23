@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional, Sequence, cast
+from typing import Any, Dict, Optional, Sequence, cast
 
 from pokemon.battle.contracts import BattleContextProtocol
 from pokemon.battle.participants import BattleParticipant
@@ -69,6 +69,7 @@ class Action:
 	switch_from: Optional[Any] = None
 	player_selected: bool = False
 	item_move: Optional[str] = None
+	z_request: Optional[Dict[str, Any]] = None
 
 
 class BattleActions:

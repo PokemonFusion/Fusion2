@@ -191,6 +191,13 @@ class LegalActions:
         """Revalidate a queued choice; only choose a replacement before turn ordering."""
         from .engine import ActionType
 
+        if getattr(action, "z_request", None) is not None:
+            from .z_moves import ZMoves
+
+            if not self.is_active():
+                return None
+            return ZMoves.refresh(self.battle, action)
+
         if not self.is_active():
             return None
         legal = self.moves() + self.switches(reserved=reserved)

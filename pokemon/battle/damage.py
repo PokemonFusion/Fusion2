@@ -1164,6 +1164,12 @@ def damage_calc(
             if spread:
                 dmg = int(dmg * 0.75)
 
+            if getattr(move, "_z_paid", False):
+                from .z_moves import ZMoves
+
+                if ZMoves.protected(target, move, battle) and dmg > 0:
+                    dmg = max(1, dmg // 4)
+
             # Minimum damage if it's a damaging move
             if dmg < 1 and isinstance(power, (int, float)) and power > 0:
                 dmg = 1

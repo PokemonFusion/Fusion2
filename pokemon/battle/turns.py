@@ -280,7 +280,9 @@ class TurnProcessor:
 	def lock_choices(self) -> None:
 		"""Apply locked-in transformations like Mega Evolution or Terastallization."""
 		from .terastallization import Terastallization
+		from .z_moves import ZMoves
 
+		ZMoves.lock(self)
 		Terastallization.lock(self)
 		from .mega_evolution import MegaEvolution
 
@@ -1341,6 +1343,7 @@ class TurnProcessor:
 				self.dispatcher.dispatch("end_turn", pokemon=poke, battle=self)
 		self.check_victory()
 		self.mechanic_turn = getattr(self, "mechanic_turn", 0) + 1
+		self.z_pending = {}
 
 	def run_turn(self) -> None:
 		from pokemon.services.battle_items import BattleItemCapability

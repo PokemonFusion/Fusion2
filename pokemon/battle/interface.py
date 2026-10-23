@@ -221,6 +221,11 @@ def display_battle_interface(
 			output += f"\n{side}: Mega reserved for {request.get('target')} (choose +attack)."
 	for side in sorted(getattr(getattr(session, "battle", None), "mega_used", set())):
 		output += f"\n{side}: Mega Evolution use spent."
+	for side, request in getattr(getattr(session, "battle", None), "z_pending", {}).items():
+		if side == viewer_team:
+			output += f"\n{side}: Z-Move queued from {request.get('source')} toward {request.get('target')}."
+	for side in sorted(getattr(getattr(session, "battle", None), "z_used", set())):
+		output += f"\n{side}: Z-Move use spent."
 	return output
 
 

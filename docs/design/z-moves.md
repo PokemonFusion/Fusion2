@@ -1,6 +1,9 @@
 # Non-plot Z-Crystal activation contract (#775)
 
-Status: **design for implementation; no ordinary Z-Move route is enabled**.
+Status: **18 explicit generic damage pairs implemented and accepted locally**.
+See the [player guide](../z-moves.md) and [qualification](../testing/z-core-2026-10-23.md).
+The first-slice rules below remain the contract; later combinations are gated
+by the current matrix. This does not assert deployment or live stock.
 Inspected October 22, 2026 at `4f0995b1b53e3b5a040d27092e48da05c67aa2d8`.
 The [catalog and implementation gates](z-crystals.md) separate all 18 existing
 generic and 17 signature crystals. Metadata and equip support prove no activation.
@@ -149,8 +152,9 @@ boundary. The explicit allowlist, conservative native/transformation checks,
 command syntax and cross-mechanic policy are PF2 design choices; this is not a
 claim of complete cartridge or simulator compatibility.
 
-Local `itemsdex.py` has 35 crystal definitions; Tackle has 40 power and no
-explicit Z-power field. No ordinary Z command or durable Z action/side ledger
-was found. This task adds documentation and implementation issues only. It
-does not alter generated dex data, implement Ultra Burst, broaden #715 or
-claim that any crystal currently works in ordinary play.
+At the October 22 design baseline, local `itemsdex.py` had 35 crystal
+definitions; Tackle had 40 power and no explicit Z-power field. No ordinary Z
+command or durable Z action/side ledger was found. That design closure added
+documentation and implementation issues. The current guide and qualification
+above supersede that baseline for the 18 named generic pairs. Generated dex
+data and Ultra Burst remain outside this implementation.

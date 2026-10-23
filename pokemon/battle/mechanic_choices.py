@@ -42,6 +42,10 @@ class MechanicChoices:
                 for name in ("mega", "z", "tera")
                 for suffix in ("_used", "_pending")
             }
+            old_declarations = deepcopy(session.state.declare)
+            old_actions = choices.participant.pending_action
+            old_positions = {name: deepcopy(position.turninit)
+                             for name, position in session.data.turndata.positions.items()}
             try:
                 character = BattleRewards.character(choices.caller)
                 if (
@@ -60,6 +64,10 @@ class MechanicChoices:
             except Exception:
                 for name, value in previous.items():
                     setattr(battle, name, value)
+                session.state.declare = old_declarations
+                choices.participant.pending_action = old_actions
+                for name, turninit in old_positions.items():
+                    session.data.turndata.positions[name].turninit = turninit
                 session.logic.sync_runtime_state()
                 session.room.attributes.reset_cache()
                 raise

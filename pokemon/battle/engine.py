@@ -630,7 +630,7 @@ def _apply_move_damage(
         setattr(move, "raw", raw)
         setattr(move, "flags", dict(raw.get("flags", {}) or {}))
 
-    for attr in ("multihit", "multihit_type", "parental_bond_hit"):
+    for attr in ("multihit", "multihit_type", "parental_bond_hit", "_z_paid"):
         if hasattr(battle_move, attr):
             setattr(move, attr, getattr(battle_move, attr))
 
@@ -3253,6 +3253,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def deduct_pp(self, pokemon, move: BattleMove, target=None) -> None:
         """Spend PP, including surcharges from the move's opposing targets."""
+        if getattr(move, "_z_paid", False):
+            return
         if getattr(move, "_called_use", False):
             return
         if _effect_key(move) == "bide" and getattr(pokemon, "volatiles", {}).get("bide"):
@@ -3773,6 +3775,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _passes_side_protection(self, target, source, move) -> bool:
         """Check each target's active side shields without cancelling spread peers."""
         raw = getattr(move, "raw", {}) or {}
+        if getattr(move, "_z_paid", False) and move.category != "Status":
+            return True
         if target is source or getattr(move, "breaksProtect", False) or raw.get("breaksProtect") or raw.get("flags", {}).get("bypassprotect"):
             return True
         participant = self.participant_for(target)
@@ -4661,6 +4665,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if not called and self.status_prevents_move(user, action.move):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
             return
+        if getattr(action, "z_request", None) is not None:
+            from .z_moves import ZMoves
+
+            ZMoves.begin(self, action)
         from .effect_context import EffectContext
 
         if action.move.beforeMoveCallback:
@@ -4997,6 +5005,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             move._stellar_boosts = action.move._stellar_boosts
             move._tera_shared_use = True
             move._engine_secondaries = True
+            move._z_paid = getattr(action.move, "_z_paid", False)
             dmg_result = apply_damage(user, target, move, battle=self, update_hp=False)
             from .terastallization import apply_stellar_cost
 

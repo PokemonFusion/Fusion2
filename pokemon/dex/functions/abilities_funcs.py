@@ -46,6 +46,13 @@ def _prepare_type_change(move, pokemon, flag):
 	setattr(pokemon, flag, True)
 
 
+def _damaging_z(move):
+	"""Type-conversion abilities cannot change a damaging Z descriptor."""
+	raw = getattr(move, "raw", {}) or {}
+	return bool((getattr(move, "isZ", False) or raw.get("isZ"))
+		and (getattr(move, "category", None) or raw.get("category")) != "Status")
+
+
 class Adaptability:
 	def onModifySTAB(self, stab, source=None, target=None, move=None):
 		"""Increase STAB multiplier from 1.5x to 2x."""
@@ -1190,6 +1197,8 @@ class Galvanize:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if move and move.type == "Normal":
 			move.type = "Electric"
 			move.typeChangerBoosted = True
@@ -1772,6 +1781,8 @@ class Liquidooze:
 
 class Liquidvoice:
 	def onModifyType(self, move, user=None):
+		if _damaging_z(move):
+			return
 		if move and move.flags.get("sound"):
 			move.type = "Water"
 
@@ -2061,6 +2072,8 @@ class Normalize:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if not move or move.type == "Normal" or move.category == "Status":
 			return
 		block = {
@@ -2263,6 +2276,8 @@ class Pixilate:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if move and move.type == "Normal":
 			ban = {
 				"judgment",
@@ -2613,6 +2628,8 @@ class Refrigerate:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if move and move.type == "Normal":
 			ban = {
 				"judgment",

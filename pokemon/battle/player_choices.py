@@ -92,6 +92,12 @@ class PlayerChoices:
 
         return MechanicChoices.mega(self, actor=actor, cancel=cancel)
 
+    def zmove(self, selector, target=None, *, actor=None):
+        """Queue one explicitly paid-at-resolution Z source through owned checks."""
+        from .z_moves import ZMoves
+
+        return ZMoves.queue(self, selector, target, actor=actor)
+
     def target_labels(self, targets):
         """Label legal target identities using the current field positions."""
         return {name: pos.pokemon for name, pos in self.session.data.turndata.positions.items()
@@ -186,7 +192,7 @@ class PlayerChoices:
         self._store(position, pokemon, action, declaration,
                     lambda pos: pos.declareItem(item_name), f"{position} ({pokemon.name}) prepares {item_name} → {target}.")
 
-    def _store(self, position, pokemon, action, declaration, declare, message):
+    def _store(self, position, pokemon, action, declaration, declare, message, *, commit_aware=False):
         """Save one choice atomically in memory before allowing turn advancement."""
         session = self.session
         pos = session.data.turndata.positions[position]
@@ -220,5 +226,11 @@ class PlayerChoices:
                 setattr(self.battle, name + "_pending", value)
             session.logic.sync_runtime_state()
             raise
-        self.caller.msg(message)
-        session.maybe_run_turn(actor=self.caller)
+        if commit_aware:
+            from django.db import transaction
+
+            transaction.on_commit(lambda: self.caller.msg(message), robust=True)
+            transaction.on_commit(lambda: session.maybe_run_turn(actor=self.caller), robust=True)
+        else:
+            self.caller.msg(message)
+            session.maybe_run_turn(actor=self.caller)

@@ -92,10 +92,11 @@ The [#774 activation contract](design/mega-evolution.md) selects Venusaurite as
 the first non-plot `+mega` slice and defines side use, native identity, Tera,
 suppression and cleanup rules. The [per-stone plan](design/mega-stones.md) assigns
 all 47 canonical stones to bounded implementation work; Crucibellite is excluded
-CAP content. All pairs remain deferred. Closing the design issue adds no player
-command and does not change the historical battle-support classifications.
+CAP content. The [Mega guide](mega-evolution.md) and
+[per-pair acceptance](testing/mega-stones-2026-10-23.md) now record all 47
+locally accepted canonical pairs. Historical battle-support classifications
+remain dated evidence; deployment and live availability are separate.
 
-The separate [Z-Crystal contract](design/z-moves.md) proposes one Normalium
-Z/Tackle action slice. Its [35-crystal inventory](design/z-crystals.md) remains
-fully deferred, with explicit partial move/effect gates and an Ultra-form
-prerequisite. No Z command is enabled by completing the design.
+The [Z-Move guide](z-moves.md) describes the 18 accepted generic damage
+pairs and `+zmove`, including Normalium Z/Tackle. The [35-crystal inventory](design/z-crystals.md) retains
+explicit partial move/effect gates; other pairs and Ultra remain deferred.

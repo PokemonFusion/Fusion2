@@ -79,7 +79,7 @@ class Terastallization:
                 or species_data.get("isMega") or species_data.get("isPrimal")
                 or forme in {"mega", "primal"} or named_forme in (["mega"], ["primal"])
                 or getattr(pokemon, "mega_evolved", False) or getattr(pokemon, "pending_mega", False)
-                or raw.get("megaStone") or getattr(pokemon, "transformed", False)
+                or raw.get("megaStone") or raw.get("zMove") or getattr(pokemon, "transformed", False)
                 or "dynamax" in getattr(pokemon, "volatiles", {})):
             raise ValueError("Terastallization does not support that form or transformation yet.")
         tera_type = cls.type_for(pokemon)
