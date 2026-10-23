@@ -774,8 +774,9 @@ def damage_calc(
         # Compute both ATK & SpA so ability hooks can touch either before selection
         from pokemon.battle.effect_context import EffectContext
 
+        target_ability_ignored = bool(getattr(battle, "_move_ignores_target_ability", lambda *args: False)(attacker, target, move))
         ignore_offense = (EffectContext.key(_pokemon_ability(target)) == "unaware"
-                          and not getattr(move, "ignore_ability", False))
+                          and not target_ability_ignored)
         ignore_defense = EffectContext.key(_pokemon_ability(attacker)) == "unaware"
         def stat_value(pokemon, name, ignore=False):
             if ignore:
@@ -826,7 +827,7 @@ def damage_calc(
         spa_stat = _run_cb(item, "onModifySpA", spa_stat, state_attr="item_state")
 
         # Target ability hooks that modify the attacker's stats
-        opp_ability = _pokemon_ability(target)
+        opp_ability = None if target_ability_ignored else _pokemon_ability(target)
         atk_stat = _run_cb(opp_ability, "onSourceModifyAtk", atk_stat, owner=target)
         spa_stat = _run_cb(opp_ability, "onSourceModifySpA", spa_stat, owner=target)
         atk_stat = _run_cb(opp_ability, "onAnyModifyAtk", atk_stat, owner=target)

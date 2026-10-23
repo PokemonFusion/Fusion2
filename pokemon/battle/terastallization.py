@@ -64,6 +64,15 @@ class Terastallization:
         item = getattr(pokemon, "item", None)
         raw = getattr(item, "raw", {}) or {}
         from .native_forms import NativeBattleForm, OgerponForm
+        from .owned_battle_actor import OwnedBattleActor
+
+        if OwnedBattleActor.incompatible(battle, participant, pokemon, mechanic="tera"):
+            raise ValueError("Terastallization cannot stack with that actor's other battle mechanic.")
+        if isinstance(item, str):
+            from pokemon.dex import ITEMDEX
+            from pokemon.names import resolve_dex_entry
+
+            raw = getattr(resolve_dex_entry(ITEMDEX, item), "raw", {}) or {}
 
         if ((species.startswith("ogerpon") and not OgerponForm.profile(pokemon))
                 or (species.startswith("terapagos") and not NativeBattleForm.can_tera_stellar(pokemon))

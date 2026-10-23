@@ -45,6 +45,10 @@ class BattleState:
 	failed_capture_ball: str = ""
 	tera_used: List[str] = field(default_factory=list)
 	tera_pending: Dict[str, Dict[str, str]] = field(default_factory=dict)
+	mechanic_version: int = 1
+	mechanic_turn: int = 0
+	mega_used: List[str] = field(default_factory=list)
+	mega_pending: Dict[str, Dict] = field(default_factory=dict)
 
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this state."""

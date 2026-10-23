@@ -45,9 +45,10 @@ See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
 See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
 PF2-Dev purchase/effect/reconnect proof, fixture cleanup and remaining feedback.
-See [design/mega-evolution.md](design/mega-evolution.md) and its
-[per-stone rollout](design/mega-stones.md) for the proposed non-plot Mega route.
-This is a design plan; ordinary `+mega` activation remains deferred.
+See the [Venusaurite player guide](mega-evolution.md),
+[activation contract](design/mega-evolution.md) and
+[per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,
+its optional source and the remaining stone gates.
 See [design/z-moves.md](design/z-moves.md) and its
 [crystal inventory](design/z-crystals.md) for the planned Z-Move slice, and
 [design/berry-player-routes.md](design/berry-player-routes.md) for the separate

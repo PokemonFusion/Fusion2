@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "key": "mega-stone-counter-v1",
+  "room": "Mega Stone Counter",
+  "entrance": "megastones",
+  "return_exit": "back",
+  "buy_only": true,
+  "refill": "none",
+  "description": "The sign lists Venusaurite at 10,000, finite stock one. Use +store, Buy items, then Venusaurite 1. Check +inventory and +itemdex Venusaurite; equip with +hold <party slot>=Venusaurite outside battle. A native Venusaur can reserve +mega before its ordinary +attack; doubles require your actor slot. One reusable Mega use per side per battle, with no ring, quest, fee or bag debit. Return the stone with +hold <party slot>= after battle. Other stone pairs remain deferred. The back exit returns to the selected public hub. No automatic refill or resale.",
+  "offers": [{"item": "Venusaurite", "price": 10000, "quantity": 1}]
+}

@@ -1652,6 +1652,18 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         )
 
     def _sync_player_pokemon_state(self, *, strict=False) -> None:
+        """Keep protected Mega ownership checks locked through their owned writes."""
+        guarded = any(getattr(poke, "mega_guard_stone", None)
+                      for participant in getattr(self.battle, "participants", [])
+                      for poke in participant.pokemons)
+        if guarded:
+            from django.db import transaction
+
+            with transaction.atomic():
+                return BattleSession._sync_player_pokemon_rows(self, strict=strict)
+        return BattleSession._sync_player_pokemon_rows(self, strict=strict)
+
+    def _sync_player_pokemon_rows(self, *, strict=False) -> None:
         """Persist battle results back to the owning player models.
 
         ``BattleSession`` creates temporary battle representations of a
@@ -1702,6 +1714,17 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 mon = lookup.get(str(ref_identifier))
                 if not mon:
                     continue
+                if getattr(poke, "mega_guard_stone", None):
+                    from pokemon.battle.owned_battle_actor import OwnedBattleActor
+                    from pokemon.models.core import OwnedPokemon
+                    from pokemon.names import normalize_name
+
+                    guard = OwnedPokemon.objects.select_for_update().filter(pk=mon.pk).values("held_item", "trainer__user_id", "is_egg").get()
+                    expected_owner = getattr(self.battle, "mechanic_controllers", {}).get(str(poke.model_id))
+                    if (str(guard["trainer__user_id"]) != str(expected_owner) or guard["is_egg"]
+                            or normalize_name(guard["held_item"]) != poke.mega_guard_stone
+                            or OwnedBattleActor.item_key(poke) != poke.mega_guard_stone):
+                        raise ValueError("Mega held ownership changed; battle recovery is required before synchronization.")
 
                 max_hp = getattr(mon, "current_hp", 0)
                 get_max_hp = getattr(mon, "get_max_hp", None)
@@ -1775,6 +1798,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if LeaderCrestProgress.record_result(self):
             self.retry_battle_rewards()
+        if self.battle:
+            from .mega_evolution import MegaEvolution
+
+            MegaEvolution.validate_roster(self.battle)
         log_info(f"Ending battle {self.battle_id}")
 
         self.persist_debug_record(event="battle_ending")
@@ -1784,6 +1811,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         restore = getattr(self.battle, "restore_transforms", None)
         if callable(restore):
             restore()
+        if self.battle:
+            from .mega_evolution import MegaEvolution
+
+            MegaEvolution.cleanup(self.battle)
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
@@ -1819,6 +1850,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Bind one durable identity to fresh and reconstructed battle engines."""
         from pokemon.services.battle_rewards import BattleRewards
 
+        if self.battle:
+            self.battle.mechanic_session_id = str(self.battle_id)
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
         metadata = getattr(self, "encounter_metadata", {}) or {}
@@ -1949,7 +1982,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                                     target_pokemon=chosen, target_slot=slot_for(target, chosen), item_move=declaration.get("item_move"))
                     position.declareItem(item)
                 elif "run" in declaration:
-                    action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon)
+                    action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon, priority=9)
                     position.declareRun()
                 else:
                     raise ValueError("The saved action is not supported.")
@@ -1990,9 +2023,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         self.battle.log_action = messages.msg
         try:
             with transaction.atomic():
+                ObjectDB.objects.select_for_update().get(pk=self.room.id)
                 ids = sorted(BattleRewards.character(player).pk for player in controllers.values()
                              if BattleRewards.supports(player))
                 list(ObjectDB.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+                from .mega_evolution import MegaEvolution
+
+                MegaEvolution.validate_roster(self.battle)
                 self.battle.run_turn()
                 self._sync_player_pokemon_state(strict=True)
                 self._sync_active_battle_state()

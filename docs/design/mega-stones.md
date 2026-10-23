@@ -1,14 +1,17 @@
 # Existing Mega Stone rollout (#774)
 
-Status: **planned; zero ordinary-player pairs enabled by this design**. Source
+Status: **one implemented pair: Venusaurite**. The
+[local acceptance](../testing/mega-core-2026-10-23.md) covers #784–#787;
+46 other canonical pairs retain their gates. Source inventory/design
 baseline: `1c36da6f449ce837455a65a1fa616013eee95c62`, October 22, 2026. Read the
 [activation contract](mega-evolution.md) before implementing any pair. The
 [machine-readable inventory](mega-stones.json) retains native/Mega base stats.
 
 ## Implementation issues
 
-All issues below are open implementation work. Closing #774 accepts the design,
-not any runtime feature. Complete the first four gates before extending the
+The first four issues supply the accepted Venusaurite slice; later batches remain
+implementation work. Closing #774 originally accepted the design alone.
+Complete the first four gates before extending the
 allowlist. Each later batch requires real per-pair effects and ordinary player
 purchase/equip/activation/rebuild/cleanup evidence; callback presence is insufficient.
 
@@ -37,8 +40,8 @@ separate because its actual Parental Bond multi-hit effects need dedicated proof
 
 ## Per-item status
 
-All 47 canonical checked-in stones remain **deferred implementation**, including
-Venusaurite. Their target stats/types/abilities are observations of local data,
+Venusaurite now has bounded ordinary command/effect/SQL acceptance; the other
+46 canonical stones remain **deferred implementation**. Their target stats/types/abilities are observations of local data,
 not verified player support. The CAP definition Crucibellite is excluded and
 has no implementation issue. All 48 pairs preserve native HP base stats.
 
@@ -91,7 +94,7 @@ has no implementation issue. All 48 pairs preserve native HP base stats.
 | Steelixite | Steelix | Steelix-Mega | Steel / Ground | Sand Force | Deferred / [#794](https://github.com/PokemonFusion/Fusion2/issues/794) |
 | Swampertite | Swampert | Swampert-Mega | Water / Ground | Swift Swim | Deferred / [#789](https://github.com/PokemonFusion/Fusion2/issues/789) |
 | Tyranitarite | Tyranitar | Tyranitar-Mega | Rock / Dark | Sand Stream | Deferred / [#789](https://github.com/PokemonFusion/Fusion2/issues/789) |
-| Venusaurite | Venusaur | Venusaur-Mega | Grass / Poison | Thick Fat | Deferred / [#786](https://github.com/PokemonFusion/Fusion2/issues/786) |
+| Venusaurite | Venusaur | Venusaur-Mega | Grass / Poison | Thick Fat | Implemented locally / [receipt](../testing/mega-core-2026-10-23.md) |
 
 ## Availability and exclusions
 

@@ -343,6 +343,10 @@ class Pokemon:
         self.terastallized = None
         self.tera_original_types = []
         self.stellar_boosted_types = []
+        self.native_origin = None
+        self.mega_profile = None
+        self.mega_evolved = False
+        self.mega_guard_stone = None
         self.stats = self._battle_stats()
 
     @property
@@ -1037,6 +1041,10 @@ class Pokemon:
                 "stellar_boosted_types": list(self.stellar_boosted_types),
                 "transformed": bool(getattr(self, "transformed", False)),
                 "bond_triggered": bool(getattr(self, "bond_triggered", False)),
+                "native_origin": snapshot_battle_value(getattr(self, "native_origin", None)),
+                "mega_profile": snapshot_battle_value(getattr(self, "mega_profile", None)),
+                "mega_evolved": bool(getattr(self, "mega_evolved", False)),
+                "mega_guard_stone": getattr(self, "mega_guard_stone", None),
             }
         )
 
@@ -1073,6 +1081,7 @@ class Pokemon:
         gender = data.get("gender", "N")
         friendship = data.get("friendship", data.get("happiness"))
         slots = None
+        native_origin = data.get("native_origin")
         if model_id:
             ref_kind, ref_identifier = parse_pokemon_ref(model_id)
             try:
@@ -1089,7 +1098,8 @@ class Pokemon:
                     poke = OwnedPokemon.objects.get(unique_id=ref_identifier)
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     species = data.get("species") or getattr(poke, "species", name)
-                    level = getattr(poke, "level", 1)
+                    level = data.get("level", getattr(poke, "level", 1)) if native_origin or data.get("mega_profile") else getattr(poke, "level", 1)
+                    native_origin = native_origin or {"ref": model_id, "species": str(poke.species)}
                     if "ability" not in data:
                         ability = getattr(poke, "ability", ability)
                     if "item" not in data:
@@ -1183,7 +1193,11 @@ class Pokemon:
         )
         disguised = (data.get("ability_state", {}) or {}).get("illusion")
         native_form = (data.get("tempvals", {}) or {}).get("native_form")
-        obj.name = data.get("name", name) if data.get("transformed") or disguised or native_form else name
+        obj.name = data.get("name", name) if data.get("transformed") or disguised or native_form or data.get("mega_profile") else name
+        obj.native_origin = detached_mapping(native_origin) if native_origin else None
+        obj.mega_profile = snapshot_battle_value(data["mega_profile"]) if data.get("mega_profile") else None
+        obj.mega_evolved = bool(data.get("mega_evolved", False))
+        obj.mega_guard_stone = data.get("mega_guard_stone")
         if "types" in data and data["types"] is not None:
             obj.types = list(data["types"])
         obj.transformed = bool(data.get("transformed", False))

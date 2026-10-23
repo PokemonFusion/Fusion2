@@ -214,6 +214,13 @@ def display_battle_interface(
 		tera = getattr(mon, "terastallized", None)
 		if tera:
 			output += f"\n{label}: Tera {tera} ({getattr(mon, 'name', 'Pokemon')})"
+		if getattr(mon, "mega_evolved", False):
+			output += f"\n{label}: Mega {mon.species} ({mon.name})"
+	for side, request in getattr(getattr(session, "battle", None), "mega_pending", {}).items():
+		if side == viewer_team:
+			output += f"\n{side}: Mega reserved for {request.get('target')} (choose +attack)."
+	for side in sorted(getattr(getattr(session, "battle", None), "mega_used", set())):
+		output += f"\n{side}: Mega Evolution use spent."
 	return output
 
 

@@ -282,12 +282,16 @@ class TurnProcessor:
 		from .terastallization import Terastallization
 
 		Terastallization.lock(self)
+		from .mega_evolution import MegaEvolution
+
+		MegaEvolution.lock(self)
 		for part in self.participants:
 			if part.has_lost:
 				continue
 			for poke in part.active:
 				if getattr(poke, "pending_mega", False):
-					self.perform_mega_evolution(poke)
+					if not getattr(self, "mechanic_battle_id", None):
+						self.perform_mega_evolution(poke)
 					poke.pending_mega = False
 
 	def select_actions(self) -> List[Action]:
@@ -1336,6 +1340,7 @@ class TurnProcessor:
 			for poke in part.active:
 				self.dispatcher.dispatch("end_turn", pokemon=poke, battle=self)
 		self.check_victory()
+		self.mechanic_turn = getattr(self, "mechanic_turn", 0) + 1
 
 	def run_turn(self) -> None:
 		from pokemon.services.battle_items import BattleItemCapability

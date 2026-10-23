@@ -86,6 +86,12 @@ class PlayerChoices:
             raise
         self.caller.msg(message)
 
+    def mega(self, *, actor=None, cancel=False):
+        """Use the room-locked, commit-aware native Mega reservation boundary."""
+        from .mechanic_choices import MechanicChoices
+
+        return MechanicChoices.mega(self, actor=actor, cancel=cancel)
+
     def target_labels(self, targets):
         """Label legal target identities using the current field positions."""
         return {name: pos.pokemon for name, pos in self.session.data.turndata.positions.items()
@@ -125,6 +131,15 @@ class PlayerChoices:
     def switch_choices(self):
         """Expose stable party slots and the reserved Fusion choice to prompts."""
         return get_battle_switch_choices(self.caller, self.participant.pokemons)
+
+    def run(self, *, actor=None):
+        """Queue one owned flee attempt without overwriting a sibling's choice."""
+        position, pokemon = self.actor(actor)
+        self._check(position, pokemon)
+        action = Action(self.participant, ActionType.RUN, self.battle.opponent_of(self.participant),
+                        priority=9, pokemon=pokemon)
+        self._store(position, pokemon, action, {"run": "1"}, lambda pos: pos.declareRun(),
+                    f"{position} ({pokemon.name}) prepares to flee.")
 
     def switch(self, party_slot, *, actor=None):
         """Reserve one conscious bench member for the specified active slot."""
@@ -181,17 +196,29 @@ class PlayerChoices:
         # Legacy single commands may have supplied this same actor's action.
         actions = [old for old in actions if (old.switch_from or old.pokemon) is not pokemon]
         actions.append(action)
+        from copy import deepcopy
+
+        reservations = {name: deepcopy(getattr(self.battle, name + "_pending", {}))
+                        for name in ("mega", "tera", "z")}
         declaration = {**declaration, "trainer": str(self.caller.id), "pokemon": getattr(pokemon, "model_id", None)}
         action.player_selected = True
         try:
+            if action.action_type is not ActionType.MOVE:
+                from .mechanic_choices import MechanicChoices
+
+                MechanicChoices.cancel_nonmove(self.battle, self.participant, pokemon)
             declare(pos)
             session.state.declare[position] = declaration
             self.participant.pending_action = actions if len(actions) > 1 else action
+            session.logic.sync_runtime_state()
             session.storage.set("state", session._compact_state_for_persist(session.logic.state.to_dict()))
         except Exception:
             pos.turninit = previous_position
             session.state.declare.pop(position, None)
             self.participant.pending_action = previous
+            for name, value in reservations.items():
+                setattr(self.battle, name + "_pending", value)
+            session.logic.sync_runtime_state()
             raise
         self.caller.msg(message)
         session.maybe_run_turn(actor=self.caller)

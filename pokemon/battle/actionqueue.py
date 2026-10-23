@@ -208,8 +208,10 @@ class ActionQueue:
 			"queued item",
 		)
 
-	def queue_run(self, caller=None) -> None:
+	def queue_run(self, caller=None, *, actor=None) -> None:
 		"""Queue a flee attempt and run the turn if ready."""
+		if callable(getattr(self, "choices_for", None)):
+			return self._queue_controlled_choice(caller, "run", actor=actor)
 
 		self._queue_action(
 			caller,

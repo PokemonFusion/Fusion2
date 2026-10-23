@@ -202,6 +202,8 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         hyper_training=HyperTraining.trained(model),
     )
     battle_poke.name = name
+    battle_poke.native_origin = ({"ref": str(model_id), "species": str(getattr(model, "species", battle_poke.species))}
+                                 if model_id else None)
     status = PersistentStatus() if full_heal else PersistentStatus.from_pokemon(model)
     status.apply_to_battle(battle_poke)
     if slots is not None:
@@ -222,6 +224,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
                     "speed": battle_poke.getStat("spe", True, True) * 11 // 10,
                 }
                 battle_poke.base_stats = Stats(**boosted)
+                battle_poke.native_origin["stat_scale"] = 110
                 battle_poke.stats = battle_poke._battle_stats()
             except Exception:
                 logger.debug("Unable to apply active fusion battle stat boost.", exc_info=True)

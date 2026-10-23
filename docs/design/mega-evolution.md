@@ -1,8 +1,10 @@
 # Mega Evolution activation contract (#774)
 
-Status: **design accepted for implementation; ordinary-player Mega activation
-is still deferred**. This document adds no command, item, world stock or battle
-behavior. Source baseline: `1c36da6f449ce837455a65a1fa616013eee95c62`,
+Status: **first Venusaurite slice implemented in #784–#787**. See the
+[player guide](../mega-evolution.md) and [local acceptance report](../testing/mega-core-2026-10-23.md).
+Other pairs retain their individual gates; deployment and public stock remain
+separate. The original design contract below uses source baseline
+`1c36da6f449ce837455a65a1fa616013eee95c62`,
 October 22, 2026. The [per-stone rollout](mega-stones.md) assigns every existing
 stone to an implementation issue and keeps actual support separate from plans.
 

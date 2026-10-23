@@ -105,6 +105,17 @@ class BattleLogic:
 		battle.failed_capture_ball = str(getattr(state, "failed_capture_ball", "") or "")
 		battle.tera_used = set(getattr(state, "tera_used", []))
 		battle.tera_pending = {key: dict(value) for key, value in getattr(state, "tera_pending", {}).items()}
+		if (type(getattr(state, "mechanic_version", 1)) is not int or getattr(state, "mechanic_version", 1) != 1
+				or type(getattr(state, "mechanic_turn", 0)) is not int or getattr(state, "mechanic_turn", 0) < 0):
+			raise ValueError("Unsupported or corrupt battle mechanic checkpoint.")
+		battle.mechanic_battle_id = getattr(state, "reward_id", None)
+		battle.mechanic_turn = getattr(state, "mechanic_turn", 0)
+		battle.mechanic_controllers = dict(getattr(state, "pokemon_control", {}))
+		battle.mega_used = set(getattr(state, "mega_used", []))
+		battle.mega_pending = {key: dict(value) for key, value in getattr(state, "mega_pending", {}).items()}
+		from .mega_evolution import MegaEvolution
+
+		MegaEvolution.recover(battle)
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
@@ -140,6 +151,9 @@ class BattleLogic:
 		self.state.failed_capture_ball = str(getattr(self.battle, "failed_capture_ball", "") or "")
 		self.state.tera_used = sorted(getattr(self.battle, "tera_used", set()))
 		self.state.tera_pending = {key: dict(value) for key, value in getattr(self.battle, "tera_pending", {}).items()}
+		self.state.mechanic_turn = getattr(self.battle, "mechanic_turn", 0)
+		self.state.mega_used = sorted(getattr(self.battle, "mega_used", set()))
+		self.state.mega_pending = {key: dict(value) for key, value in getattr(self.battle, "mega_pending", {}).items()}
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

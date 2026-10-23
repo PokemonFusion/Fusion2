@@ -11,6 +11,7 @@ from commands.player.cmd_battle_item import CmdBattleItem
 from commands.player.cmd_battle_retry import CmdBattleRetry
 from commands.player.cmd_battle_switch import CmdBattleSwitch
 from commands.player.cmd_battle_tera import CmdBattleTera
+from commands.player.cmd_battle_mega import CmdBattleMega
 from commands.player.cmd_challenge import CmdChallenge
 from commands.player.cmd_effects import CmdEffects, CmdEffectsAdminReveal
 from commands.player.cmd_showbattle import CmdShowBattle
@@ -33,6 +34,7 @@ class BattleCmdSet(CmdSet):
             CmdChallenge,
             CmdBattleAttack,
             CmdBattleTera,
+            CmdBattleMega,
             CmdBattleSwitch,
             CmdBattleItem,
             CmdBattleConcede,
