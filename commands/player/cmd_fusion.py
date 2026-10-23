@@ -59,7 +59,8 @@ def _get_slot_pokemon(caller, slot: int):
         return getter(slot)
     storage = getattr(caller, "storage", None)
     try:
-        party = list(storage.get_party()) if storage else []
+        slots = getattr(storage, "get_party_slots", None)
+        party = list(slots() if callable(slots) else storage.get_party()) if storage else []
     except Exception:
         party = []
     return party[slot - 1] if 0 <= slot - 1 < len(party) else None
@@ -195,7 +196,7 @@ class CmdPermFuse(Command):
         if error:
             self.caller.msg(error)
             return
-        ok, message = activate_permanent_fusion(self.caller, pokemon)
+        ok, message = activate_permanent_fusion(self.caller, pokemon, slot=slot)
         self.caller.msg(message if ok else f"|r{message}|n")
 
 

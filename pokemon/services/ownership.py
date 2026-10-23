@@ -56,6 +56,26 @@ def assert_character_free(character):
         raise OwnershipError("Finish your battle before transferring or reserving Pokemon.")
 
 
+def fusion_references(character):
+    """Normalize saved Fusion UUIDs for every custody guard, including old starters."""
+    active = BattleRewards.stored_attribute(character, "fusion_id")
+    forms = BattleRewards.stored_attribute(character, "fusion_forms") or []
+    if isinstance(forms, dict):
+        forms = list(forms.values())
+    elif isinstance(forms, (str, bytes)):
+        forms = [forms]
+    if not isinstance(forms, (list, tuple)):
+        raise OwnershipError("Invalid saved Fusion references; ask staff to inspect them.")
+    references = set()
+    for value in [active, *forms]:
+        if value:
+            try:
+                references.add(str(UUID(str(value))))
+            except (ValueError, TypeError):
+                references.add(str(value))
+    return references
+
+
 def claim_battle(character, battle_id):
     """Serialize roster admission with transfer, storage and reservation writers.
 
@@ -78,14 +98,20 @@ def claim_battle(character, battle_id):
                 PlacementService(storage)._pokemon(placement.pokemon, storage)
             active = BattleRewards.stored_attribute(character, "fusion_id")
             if active:
+                from django.core.exceptions import ValidationError
                 from pokemon.models.core import OwnedPokemon
 
                 try:
                     pokemon = fresh_owned(active, lock=True)
                     _, placement = PlacementService(storage)._pokemon(pokemon, storage)
-                except (OwnedPokemon.DoesNotExist, ValueError) as error:
+                except (OwnedPokemon.DoesNotExist, ValueError, ValidationError) as error:
                     raise OwnershipError("Your saved Fusion needs staff review before battling.") from error
-                if placement is None or placement.location_type != "fusion":
+                # Old chargen recorded permanent forms while retaining a party
+                # slot. They remain owner-checked, unavailable for transfer, and
+                # are normalized by the next atomic Fusion transition (#723).
+                kind = BattleRewards.stored_attribute(character, "fusion_kind")
+                compatible_party = placement is not None and placement.location_type == "party" and kind in (None, "permanent")
+                if placement is None or (placement.location_type != "fusion" and not compatible_party):
                     raise OwnershipError("Your saved Fusion placement needs staff review before battling.")
         character.attributes.reset_cache()
         character.attributes.add("battle_lock", battle_id)
@@ -96,13 +122,7 @@ def assert_transferable(character, pokemon, placement, *, token=None):
     assert_character_free(character)
     if placement is None or placement.location_type not in ("party", "box"):
         raise OwnershipError("Pokemon must be in your party or a box and cannot be reserved for Fusion.")
-    active = BattleRewards.stored_attribute(character, "fusion_id")
-    forms = BattleRewards.stored_attribute(character, "fusion_forms", default=[]) or []
-    if isinstance(forms, dict):
-        forms = forms.values()
-    elif isinstance(forms, (str, bytes)):
-        forms = [forms]
-    if str(pokemon.pk) in {str(value) for value in [active, *forms] if value}:
+    if str(pokemon.pk) in fusion_references(character):
         raise OwnershipError("Pokemon is reserved for an active or unlocked Fusion form.")
     if any(str(flag).lower() in {"breeding", "breeding_parent", "carrying_egg"}
            for flag in (pokemon.flags or [])):

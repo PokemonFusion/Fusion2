@@ -56,7 +56,7 @@ trade-held evolution equivalents remain supported. Automatic placement inherits
 the existing unbounded box policy, documented in the
 [write contract](../operations/pokemon-transfers.md).
 
-The subsequent #723 cohort must cover older party-placed permanent Fusion starters
-and atomic form transitions before October's combined player readiness is claimed.
-Foreign/missing Fusion references require inspection rather than invented ownership.
+The subsequent [#723 cohort](october-fusion-2026-10-23.md) verifies older party-placed
+permanent Fusion starters, atomic form transitions and same-account character
+authority. Foreign/missing Fusion references require inspection rather than invented ownership.
 Plot-only assets and unrelated work are outside this change.

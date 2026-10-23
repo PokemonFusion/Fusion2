@@ -102,6 +102,11 @@ class PlacementService:
         """Only the fusion return path may consume a fusion reservation."""
         if current and current.location_type == "fusion" and not allow_fusion:
             raise PlacementError("Pokemon is reserved for fusion.")
+        if current and not allow_fusion:
+            from pokemon.services.ownership import fusion_references
+
+            if str(current.pokemon_id) in fusion_references(current.storage.user):
+                raise PlacementError("Pokemon is reserved for an active or unlocked Fusion form.")
 
     def _box(self, pokemon, storage, current, box=None, *, allow_fusion=False):
         """Allocate a unique positive box position, preserving successful retries."""

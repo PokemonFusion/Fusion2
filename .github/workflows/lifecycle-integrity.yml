@@ -75,6 +75,8 @@ jobs:
         run: python tests/integration/placement_cases.py
       - name: Cross-owner consent, reservations, atomic swaps and competing writers
         run: python tests/integration/ownership_cases.py
+      - name: Atomic Fusion commands, legacy starter compatibility and bounded recovery
+        run: python tests/integration/fusion_cases.py
       - name: Ownership fresh install, upgrade and guarded invalid-data rollback
         run: python tests/integration/ownership_migrations.py
       - name: Evolution and held-item transactions and concurrent retries
