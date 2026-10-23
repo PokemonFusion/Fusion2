@@ -58,9 +58,11 @@ finite tagged QA shops, actual purchases/effects and reconnect. Those disposable
 shops were removed afterward; the walkthrough does not establish permanent
 public stock. Confirm where an item is available before planning around it.
 
-The walkthrough also found party-sheet PP denominators and evolution success
-wording that disagree with correct saved effects; these remain tracked in #814.
-Use the PP selection prompt for current boosted capacity until that display fix.
+After PP Up or PP Max, `+party 3` and `+party/moves 3` show the current PP and
+boosted maximum. Evolution notices identify the original species or nickname
+before the destination species. The later [feedback repair](testing/item-feedback-2026-10-22.md)
+corrects the two display defects found in that walkthrough; its automated
+command/SQL evidence is separate from the earlier released-build evidence.
 Use `+store` then **Buy items** (`1`) to view stock; the older room hint
 `+store/list` opens that same menu. Close it with `q` before taking an exit.
 

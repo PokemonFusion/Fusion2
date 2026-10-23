@@ -242,6 +242,7 @@ class CmdEvolvePokemon(Command):
             return
         from pokemon.services.evolution import EvolutionError, EvolutionService
 
+        original_name = pokemon.name
         try:
             result = EvolutionService(self.caller).evolve(
                 pokemon, item=parts[1] if len(parts) > 1 else None,
@@ -264,7 +265,7 @@ class CmdEvolvePokemon(Command):
 
                 appearance = AlcremieEvolution.describe(pokemon)
                 detail = f" ({appearance})" if appearance else ""
-                self.caller.msg(f"{pokemon.name} evolved into {result}{detail}!")
+                self.caller.msg(f"{original_name} evolved into {result}{detail}!")
 
             transaction.on_commit(notify, robust=True)
         else:

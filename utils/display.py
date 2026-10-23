@@ -745,20 +745,24 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 			except Exception:
 				qs = list(slots_qs)
 		bonuses = getattr(pokemon, "pp_bonuses", {}) or {}
+		get_max_pp = getattr(pokemon, "get_max_pp", None)
 		for slot_obj in qs[:4]:
 			move_obj = getattr(slot_obj, "move", None)
 			if not move_obj:
 				continue
 			mname = getattr(move_obj, "name", str(move_obj))
 			cur_pp = getattr(slot_obj, "current_pp", None)
-			norm = re.sub(r"[\s'\-]", "", mname.lower())
-			dex_entry = MOVEDEX.get(norm)
-			base_pp = getattr(dex_entry, "pp", None)
-			if base_pp is None and isinstance(dex_entry, dict):
-				base_pp = dex_entry.get("pp")
 			max_pp = None
-			if base_pp is not None:
-				max_pp = int(base_pp) + int(bonuses.get(norm, 0))
+			if callable(get_max_pp):
+				max_pp = get_max_pp(mname)
+			else:
+				norm = re.sub(r"[\s'\-]", "", mname.lower())
+				dex_entry = MOVEDEX.get(norm)
+				base_pp = getattr(dex_entry, "pp", None)
+				if base_pp is None and isinstance(dex_entry, dict):
+					base_pp = dex_entry.get("pp")
+				if base_pp is not None:
+					max_pp = int(base_pp) + int(bonuses.get(norm, 0))
 			if cur_pp is None:
 				cur_pp = max_pp
 			moves_display.append(SimpleNamespace(name=mname, current_pp=cur_pp, max_pp=max_pp))

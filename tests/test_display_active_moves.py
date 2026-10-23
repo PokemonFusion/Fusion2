@@ -149,6 +149,24 @@ def test_sheet_displays_active_moves_with_pp():
 	assert "Ember (10/25 PP)" in sheet
 
 
+@pytest.mark.parametrize("mode", ["full", "moves"])
+def test_sheet_uses_owned_capacity_instead_of_transient_bonus(mode):
+	"""A stale display-only bonus cannot override the owned capacity reader."""
+	mon = DummyPokemon()
+	mon.pp_bonuses = {"tackle": 1, "ember": 2}
+	mon.get_max_pp = lambda name: {"Tackle": 56, "Ember": 30}[name]
+	sheet = display.display_pokemon_sheet(None, mon, slot=1, mode=mode)
+	assert "Tackle (20/56 PP)" in sheet
+	assert "Ember (10/30 PP)" in sheet
+
+
+def test_sheet_without_owned_reader_preserves_runtime_bonus():
+	"""Non-model display adapters still support their explicit runtime bonuses."""
+	mon = DummyPokemon()
+	mon.pp_bonuses = {"tackle": 7}
+	assert "Tackle (20/42 PP)" in display.display_pokemon_sheet(None, mon)
+
+
 @pytest.mark.parametrize("growth", ["medium_fast", "fast", "slow", "medium_slow", "fluctuating", "erratic"])
 @pytest.mark.parametrize("progress, expected", [(0, 0), (0.5, 49), (1, 99)])
 def test_sheet_xp_progress_is_within_current_level(growth, progress, expected):
