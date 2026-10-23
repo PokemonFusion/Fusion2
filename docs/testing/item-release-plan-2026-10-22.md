@@ -1,9 +1,11 @@
 # Released-build item walkthrough plan (#782)
 
-Status: **pending release approval and live execution**. This plan closes no
-live acceptance criterion. The item implementations and local command/SQL
-evidence are published separately; read the latest immutable candidate SHA in
-#782 before any operational step. Never deploy a moving branch tip by accident.
+Status: **approved and executed for #782** at pinned candidate
+`af0eca6e63924c9108c3adbce389cc875be4c702`. The separate
+[released-player report](item-live-2026-10-22.md) records the actual commands,
+nine named item outcomes, reload retry, remaining feedback defects and verified
+fixture cleanup. Sections below preserve the pre-approval observations and plan.
+This one-time approval does not authorize later deployments or permanent sources.
 
 ## Fresh read-only observations
 
@@ -21,8 +23,8 @@ No new item feature in this batch needs a migration, but advancing that older
 checkout to the complete current staging build would also bring this existing
 gym schema change. It must not be silently applied as an item fix.
 
-No release, migration, service reload/restart, live shop setup, account grant,
-character change or live item walkthrough occurred during this task. The
+At that pre-approval inspection, no release, migration, service reload/restart,
+live shop setup, account grant, character change or live walkthrough had occurred. The
 earlier no-shop source snapshot remains dated evidence, not a refreshed claim
 about all current sources. Zero live batches are newly accepted here.
 

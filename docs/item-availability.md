@@ -51,16 +51,26 @@ The [Z-Crystal plan](design/z-crystals.md) and
 current sources or commands. Growing, a Razz snack and Z activation have separate
 implementation and released-player acceptance gates.
 
-The **October 22, 2026** server configuration inspection found no enabled item
-shops and no Rare Candy dispenser. The inspected server also predates the recent
-item repairs. These are dated limits, not a promise of current stock everywhere.
-Ask where an item is available before planning around its description. The
+The **October 22, 2026, 20:04 UTC** configuration snapshot found no enabled item
+shops or Rare Candy dispenser on the older checkout. A later approved PF2-Dev
+release and [nine-item live walkthrough](testing/item-live-2026-10-22.md) verified
+finite tagged QA shops, actual purchases/effects and reconnect. Those disposable
+shops were removed afterward; the walkthrough does not establish permanent
+public stock. Confirm where an item is available before planning around it.
+
+The walkthrough also found party-sheet PP denominators and evolution success
+wording that disagree with correct saved effects; these remain tracked in #814.
+Use the PP selection prompt for current boosted capacity until that display fix.
+Use `+store` then **Buy items** (`1`) to view stock; the older room hint
+`+store/list` opens that same menu. Close it with `q` before taking an exit.
+
 The old Itemfinder message-only result has been replaced by an explicitly
 configured [Potion finder](hunt-item-sources.md). The same guide specifies one
 opt-in Rattata/Oran Berry wild source; default charts grant no held item.
 The [six-item Supply Corner](item-supply-route.md) is an optional, duplicate-safe
-authored source with finite stock. These current-code routes do not prove that
-the inspected running world has been configured or released with them.
+authored source with finite stock. The released QA walkthrough verifies only
+the nine named items at its deliberately authored sources, which were cleaned up.
+Finder/wild-held sources and permanent world population require their own checks.
 
 The [acquisition audit](testing/item-availability-2026-10-22.md) and
 [per-item index](testing/item-availability-index-2026-10-22.json) distinguish

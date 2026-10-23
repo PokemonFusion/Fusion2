@@ -43,6 +43,8 @@ See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
 battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
+See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
+PF2-Dev purchase/effect/reconnect proof, fixture cleanup and remaining feedback.
 See [design/mega-evolution.md](design/mega-evolution.md) and its
 [per-stone rollout](design/mega-stones.md) for the proposed non-plot Mega route.
 This is a design plan; ordinary `+mega` activation remains deferred.
