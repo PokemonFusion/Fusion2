@@ -92,6 +92,51 @@ class ZMoveCases(unittest.TestCase):
             getattr(self.session.battle.participants[0].active[0], "z_activated", False)
         )
 
+    def test_paid_history_requires_matching_proof_and_legacy_absence_stays_absent(self):
+        """A historical move is restored only when both identity and use agree."""
+        from pokemon.battle.logic import BattleLogic
+
+        self.equip()
+        self.launch()
+        self.resolve()
+        saved=self.session.logic.to_dict()
+        # Locate actors by actual production snapshot shape, not a mutable ref.
+        def actors(value):
+            if isinstance(value,dict):
+                if value.get("model_id") == "owned:"+str(self.mon.pk) and "moves" in value:
+                    yield value
+                for child in value.values():
+                    yield from actors(child)
+            elif isinstance(value,list):
+                for child in value:
+                    yield from actors(child)
+        absent=deepcopy(saved)
+        for actor in actors(absent):
+            actor.pop("last_move",None)
+        restored=BattleLogic.from_dict(absent)
+        self.assertIsNone(restored.battle.participants[0].active[0].last_move)
+        legacy=deepcopy(saved)
+        for actor in actors(legacy):
+            actor["last_move"].pop("z_source",None)
+            actor["last_move"].pop("z_crystal",None)
+        restored=BattleLogic.from_dict(legacy)
+        self.assertEqual(restored.battle.participants[0].active[0].last_move._pp_move_name,"Tackle")
+        self.assertTrue(restored.battle.participants[0].active[0].last_move._z_paid)
+        forged=deepcopy(saved)
+        found=False
+        for actor in actors(forged):
+            actor["last_move"]["z_source"]="Ember"
+            found=True
+        self.assertTrue(found)
+        with self.assertRaises(ValueError):
+            BattleLogic.from_dict(forged)
+        orphan=deepcopy(saved)
+        for actor in actors(orphan):
+            actor["z_profile"]=None
+            actor["z_activated"]=False
+        with self.assertRaises(ValueError):
+            BattleLogic.from_dict(orphan)
+
     def test_sleep_prevention_keeps_source_pp_and_side_unused(self):
         """The ordinary source prevention pass precedes the Z payment boundary."""
         core.OwnedPokemon.objects.filter(pk=self.mon.pk).update(status="slp", sleep_turns=3)
@@ -106,9 +151,10 @@ class ZMoveCases(unittest.TestCase):
 
     def test_invalid_source_target_and_duplicate_input_queue_nothing_extra(self):
         """Unsupported pairs, stale labels and no-overwrite leave resources alone."""
+        self.mon = self.fixture_native("Eevee", ["Tackle", "Tail Whip"], 3)
         self.equip()
         self.launch()
-        for args in ("Growl=B1", "3=B1", "Tackle=A9", "Tack=B1", "0=B1"):
+        for args in ("Tail Whip=B1", "3=B1", "Tackle=A9", "Tack=B1", "0=B1"):
             before = self.observation()
             self.record("zmove", args)
             self.assertEqual(self.observation(), before)
@@ -555,6 +601,16 @@ class ZMoveCases(unittest.TestCase):
             self.assertEqual(
                 (exit_row.db_location_id, exit_row.db_destination_id), (origin.pk, destination.pk)
             )
+            character=self.player.character
+            character.move_to(origin,quiet=True,move_hooks=False)
+            traversal=exit_row.exit_command()
+            traversal.caller,traversal.obj=character,exit_row
+            traversal.func()
+            character.refresh_from_db()
+            self.assertEqual(character.db_location_id,destination.pk)
+            core.EVIDENCE.append({"case":self._testMethodName,"event":"actual-counter-exit-command",
+                                  "command":exit_row.key,"origin":origin.pk,"destination":destination.pk,
+                                  "saved_player_location":character.db_location_id})
 
     def test_native_pixilate_player_keeps_normal_z_immunity_and_pays_source(self):
         """An actual native hidden ability cannot convert a paid Normalium action."""
@@ -633,6 +689,27 @@ class ZMoveCases(unittest.TestCase):
         self.session.execute_persistent_turn()
         self.assertEqual(ActiveMoveslot.objects.get(pokemon=self.mon, slot=1).current_pp, 0)
         self.assertFalse(self.session.battle.z_used)
+
+
+    def test_spite_after_z_rebuild_drains_the_original_source_pp(self):
+        """A reconstructed Z history keeps its underlying Tackle PP ownership."""
+        from pokemon.models.moves import ActiveMoveslot
+
+        self.foe = self.fixture_native("Mew", ["Splash", "Spite"], 1, side=1, level=100)
+        self.equip()
+        self.launch()
+        with patch.object(self.session,"maybe_run_turn"):
+            self.record("zmove","Tackle=B1")
+            self.record("attack","Splash B1",side=1)
+        self.session.execute_persistent_turn()
+        self.assertEqual(ActiveMoveslot.objects.get(pokemon=self.mon,slot=1).current_pp,34)
+        self.rebuild()
+        with patch.object(self.session,"maybe_run_turn"):
+            self.record("attack","Growl B1")
+            self.record("attack","Spite A1",side=1)
+        self.session.execute_persistent_turn()
+        self.assertEqual(ActiveMoveslot.objects.get(pokemon=self.mon,slot=1).current_pp,30)
+        self.assertEqual(self.session.battle.z_used,{"A"})
 
 
 for _variant in (

@@ -666,6 +666,11 @@ def damage_calc(
             continue
 
         fixed_damage = int(target.hp) if ohko else None
+        if getattr(move, "_z_paid", False) and (getattr(move, "raw", {}) or {}).get("zGuardian"):
+            from .z_moves import ZMoves
+
+            hp75 = 3 * int(target.hp) // 4
+            fixed_damage = max(1, (hp75 + 1) // 4 if ZMoves.protected(target, move, battle) else hp75)
         if not ohko and getattr(move, "raw", None) and "damage" in move.raw:
             raw_damage = move.raw.get("damage")
             if raw_damage == "level":

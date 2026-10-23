@@ -977,6 +977,9 @@ class BattleMove:
             if not sum(result.debug.get("damage", [])):
                 self._primary_hit_successful = False
                 return
+            from .z_effects import ZEffects
+
+            ZEffects.hit(battle, user, self, max(0, pre_hp - target.hp))
         else:
             boosts = self.raw.get("boosts") if self.raw else None
             if boosts:
@@ -2920,6 +2923,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.dispatcher.dispatch("pre_start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
         self.reveal_entry_ability(pokemon)
+        from .z_effects import ZEffects
+
+        ZEffects.switch_in(self, pokemon)
         self.runEvent("SwitchIn", pokemon, source, effect or getattr(self, "effect", None))
         self.dispatcher.dispatch("switch_in", pokemon=pokemon, battle=self)
         self._run_slot_swap_events(pokemon, source=source, effect=effect)
@@ -4523,9 +4529,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if not key and getattr(action.move, "name", None):
             key = _normalize_key(action.move.name)
         ensure_movedex_aliases(MOVEDEX)
-        dex_move = MOVEDEX.get(key) if key else None
+        private_z = getattr(action.move, "_z_paid", False)
+        dex_move = MOVEDEX.get(key) if key and not private_z else None
         dex_raw = get_raw(dex_move) if dex_move else {}
-        if not dex_move or not dex_raw:
+        if not private_z and (not dex_move or not dex_raw):
             try:
                 from pokemon import dex as _dex_mod
 
@@ -4634,7 +4641,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     action.move.pp = getattr(cached_move, "pp", None)
                     break
 
-        if action.move.pp is not None and action.move.pp <= 0:
+        if action.move.pp is not None and action.move.pp <= 0 and not private_z:
             return
         emergency_move = _normalize_key(action.move.key or action.move.name).lower() == "struggle"
         if not emergency_move:
@@ -4669,6 +4676,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             from .z_moves import ZMoves
 
             ZMoves.begin(self, action)
+            if action.move._z_profile.target == "allAdjacentFoes":
+                from .z_spread import ZSpread
+
+                ZSpread.execute(self, action)
+                return
         from .effect_context import EffectContext
 
         if action.move.beforeMoveCallback:
@@ -4727,7 +4739,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             modified_part = self.participant_for(target)
             if modified_part is not None:
                 target_part = modified_part
-            redirected = target if action.move.tracks_target else self.runEvent(
+            redirected = target if action.move.tracks_target or getattr(action.move, "_z_spread_part", False) else self.runEvent(
                 "RedirectTarget",
                 target,
                 user,
@@ -4972,6 +4984,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
         if target is not user and sub and not bypasses_substitute:
+            if getattr(action.move, "_z_paid", False) and _ability_try_hit_blocks(target, user, action.move, self):
+                self._notify_move_aborted(user, target, action.move)
+                return
             Move = _get_move_class()
 
             from .damage import apply_damage
@@ -5014,6 +5029,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             substitute_hp = sub.get("hp", 0) if isinstance(sub, dict) else dmg
             actual_substitute_damage = min(max(0, substitute_hp), max(0, dmg))
             action.move.total_damage += actual_substitute_damage
+            from .z_effects import ZEffects
+
+            ZEffects.hit(self, user, action.move, actual_substitute_damage)
             if actual_substitute_damage > 0:
                 HeldItemRules.commit_gem(user, action.move)
             if isinstance(sub, dict):
@@ -5083,15 +5101,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             except Exception:
                 action.move.onBeforeMove(user, target)
         from .legal_actions import LegalActions
+        z_part = getattr(action.move, "_z_spread_part", False)
         spread_targets = (LegalActions(self, action.actor, user).targets(action.move)
-                          if action.move.raw.get("target") in {"allAdjacent", "allAdjacentFoes", "allies"} else [])
+                          if not z_part and action.move.raw.get("target") in {"allAdjacent", "allAdjacentFoes", "allies"} else [])
         if action.move.raw.get("target") == "allies" and action.move.onHit:
             # Group support handlers already visit the user's party once.
             spread_targets = []
         # Some callbacks affect the whole group on the primary hit. Retain each
         # target's original state so those effects also get an accurate summary.
         spread_before = {id(mon): _MoveResultState.capture(mon) for mon in spread_targets}
-        action.move._spread = len(spread_targets) > 1
+        if not z_part:
+            action.move._spread = len(spread_targets) > 1
         executed = self._do_move(user, target, action.move)
         if not executed:
             try:
@@ -5160,7 +5180,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if getattr(pokemon, "hp", 0) > 0:
                     self.dispatcher.dispatch("update", pokemon=pokemon, battle=self)
         self.runEvent("AfterMoveSecondary", target, user, action.move)
-        self.runEvent("AfterMoveSecondarySelf", user, target, action.move)
+        if not z_part:
+            self.runEvent("AfterMoveSecondarySelf", user, target, action.move)
 
         if action.move.onUseMoveMessage:
             invoke_callback(
@@ -5182,6 +5203,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 move=action.move,
             )
 
+        if z_part:
+            return
         if action.move.onAfterMove:
             invoke_callback(action.move.onAfterMove, user, target, battle=self)
         self.runEvent("AfterMove", user, target, action.move)
@@ -5425,6 +5448,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         self.dispatcher.dispatch(
                             "start", pokemon=replacement, battle=self
                         )
+                        from .z_effects import ZEffects
+
+                        ZEffects.switch_in(self, replacement)
                         self.dispatcher.dispatch(
                             "switch_in", pokemon=replacement, battle=self
                         )

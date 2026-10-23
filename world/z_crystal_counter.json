@@ -6,7 +6,7 @@
   "return_exit": "back",
   "buy_only": true,
   "refill": "none",
-  "description": "The sign lists 18 generic Z-Crystals, each at 10,000 with finite stock one. Use +store and Buy items; for example Normalium Z 1. Check +inventory and +itemdex, then equip with +hold <party slot>=<crystal> outside battle. Each crystal accepts only its reviewed active source; +zmove [actor] lists your actual choices. For Normalium Z use +zmove [actor] Tackle=<target>. This queues one move without a second +attack, with one Z use per side per battle and one source PP after prevention. No ring, quest or crystal consumption. Return it with +hold <party slot>= after battle. Other source moves, status and signatures remain deferred. The back exit returns to the selected public hub. No automatic refill or resale.",
+  "description": "The sign lists 34 reviewed Z-Crystals, each at 10,000 with finite stock one. Use +store and Buy items; for example Normalium Z 1. Check +inventory and +itemdex, then equip with +hold <party slot>=<crystal> outside battle. Each crystal accepts only its reviewed active source and native holder; +zmove [actor] lists your actual choices. For Normalium Z use +zmove [actor] Tackle=<target>. This queues one move without a second +attack, with one Z use per side per battle and one source PP after prevention. No ring, quest or crystal consumption. Return it with +hold <party slot>= after battle. Other source moves, fused Necrozma and Ultra remain deferred. The back exit returns to the selected public hub. No automatic refill or resale.",
   "offers": [
     {"item": "Normalium Z", "price": 10000, "quantity": 1},
     {"item": "Buginium Z", "price": 10000, "quantity": 1},
@@ -25,6 +25,22 @@
     {"item": "Psychium Z", "price": 10000, "quantity": 1},
     {"item": "Rockium Z", "price": 10000, "quantity": 1},
     {"item": "Steelium Z", "price": 10000, "quantity": 1},
-    {"item": "Waterium Z", "price": 10000, "quantity": 1}
+    {"item": "Waterium Z", "price": 10000, "quantity": 1},
+    {"item": "Aloraichium Z", "price": 10000, "quantity": 1},
+    {"item": "Decidium Z", "price": 10000, "quantity": 1},
+    {"item": "Incinium Z", "price": 10000, "quantity": 1},
+    {"item": "Primarium Z", "price": 10000, "quantity": 1},
+    {"item": "Pikanium Z", "price": 10000, "quantity": 1},
+    {"item": "Pikashunium Z", "price": 10000, "quantity": 1},
+    {"item": "Snorlium Z", "price": 10000, "quantity": 1},
+    {"item": "Mimikium Z", "price": 10000, "quantity": 1},
+    {"item": "Eevium Z", "price": 10000, "quantity": 1},
+    {"item": "Kommonium Z", "price": 10000, "quantity": 1},
+    {"item": "Lycanium Z", "price": 10000, "quantity": 1},
+    {"item": "Mewnium Z", "price": 10000, "quantity": 1},
+    {"item": "Lunalium Z", "price": 10000, "quantity": 1},
+    {"item": "Solganium Z", "price": 10000, "quantity": 1},
+    {"item": "Marshadium Z", "price": 10000, "quantity": 1},
+    {"item": "Tapunium Z", "price": 10000, "quantity": 1}
   ]
 }

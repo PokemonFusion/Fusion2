@@ -12,7 +12,7 @@ class CalledMoveExecutor:
         self.battle = battle
 
     def execute(self, user, selected, target=None, *, power_multiplier=1.0, reflected=False,
-                spend_pp=False):
+                spend_pp=False, single_target=False):
         """Execute a fresh action; instructed repeats spend their learned PP."""
         from pokemon.dex.functions.moves.damage_moves import _battle_move_from_name
         from .actions import Action, ActionType
@@ -37,6 +37,8 @@ class CalledMoveExecutor:
                 return False
         move._called_use = not spend_pp
         move.has_bounced = reflected
+        if single_target:
+            move.raw = dict(move.raw, target="normal")
         if power_multiplier != 1:
             move.power = int(move.power * power_multiplier)
             move.raw = copy.deepcopy(move.raw)
@@ -74,6 +76,8 @@ class CalledMoveExecutor:
         if not (((ability == "magicbounce" or rebound) and not ignores)
                 or "magiccoat" in getattr(target, "volatiles", {})):
             return False
-        self.execute(target, move, user, reflected=True)
+        paid_status = getattr(move, "_z_paid", False) and move.category == "Status"
+        selected = getattr(move, "_pp_move_name", move.name) if paid_status else move
+        self.execute(target, selected, user, reflected=True, single_target=paid_status)
         self.battle.log_action(f"{target.name} reflected {move.name}!")
         return True

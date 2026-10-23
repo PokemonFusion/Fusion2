@@ -800,8 +800,15 @@ class Disguise:
 
 	def _break_disguise(self, pokemon):
 		"""Retain the ability while changing to the matching busted form."""
+		native, nickname = str(pokemon.species), pokemon.name
 		form = "Mimikyu-Busted-Totem" if "totem" in str(pokemon.species).lower() else "Mimikyu-Busted"
 		pokemon.formeChange(form, preserve_ability=True)
+		if not getattr(pokemon, "transformed", False):
+			origin = dict(getattr(pokemon, "native_origin", None) or {})
+			origin["disguise_busted"] = {"ref": str(pokemon.model_id), "species": native, "form": form}
+			pokemon.native_origin = origin
+		if nickname != native:
+			pokemon.name = nickname
 		pokemon.volatiles.pop("disguise_busted", None)
 		pokemon.hp = max(0, pokemon.hp - pokemon.max_hp // 8)
 

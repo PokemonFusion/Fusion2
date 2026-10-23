@@ -97,6 +97,6 @@ CAP content. The [Mega guide](mega-evolution.md) and
 locally accepted canonical pairs. Historical battle-support classifications
 remain dated evidence; deployment and live availability are separate.
 
-The [Z-Move guide](z-moves.md) describes the 18 accepted generic damage
-pairs and `+zmove`, including Normalium Z/Tackle. The [35-crystal inventory](design/z-crystals.md) retains
+The [Z-Move guide](z-moves.md) describes the 42 accepted generic/status/signature
+mappings and `+zmove`, including Normalium Z/Tackle. The [35-crystal inventory](design/z-crystals.md) retains
 explicit partial move/effect gates; other pairs and Ultra remain deferred.

@@ -1,0 +1,88 @@
+"""Eight bounded Z status sources, reviewed before implementation."""
+
+from .z_profiles import ZProfile
+
+
+STATUS_PAIRS = (
+    ZProfile(
+        "Normalium Z",
+        "Splash",
+        "Z-Splash",
+        0,
+        "Normal",
+        "Status",
+        target="self",
+        kind="status",
+        intrinsic="boost",
+        bonus=(("atk", 3),),
+    ),
+    ZProfile(
+        "Normalium Z",
+        "Growl",
+        "Z-Growl",
+        0,
+        "Normal",
+        "Status",
+        target="allAdjacentFoes",
+        kind="status",
+        intrinsic="boost",
+        bonus=(("def", 1),),
+    ),
+    ZProfile(
+        "Normalium Z",
+        "Swords Dance",
+        "Z-Swords Dance",
+        0,
+        "Normal",
+        "Status",
+        target="self",
+        kind="status",
+        intrinsic="clearnegative",
+    ),
+    ZProfile(
+        "Icium Z",
+        "Haze",
+        "Z-Haze",
+        0,
+        "Ice",
+        "Status",
+        target="all",
+        kind="status",
+        intrinsic="heal",
+    ),
+    ZProfile(
+        "Darkinium Z",
+        "Memento",
+        "Z-Memento",
+        0,
+        "Dark",
+        "Status",
+        kind="status",
+        intrinsic="healreplacement",
+    ),
+    ZProfile(
+        "Ghostium Z",
+        "Destiny Bond",
+        "Z-Destiny Bond",
+        0,
+        "Ghost",
+        "Status",
+        target="self",
+        kind="status",
+        intrinsic="redirect",
+    ),
+    ZProfile(
+        "Flyinium Z",
+        "Tailwind",
+        "Z-Tailwind",
+        0,
+        "Flying",
+        "Status",
+        target="allySide",
+        kind="status",
+        intrinsic="crit2",
+    ),
+    ZProfile(
+        "Ghostium Z", "Curse", "Z-Curse", 0, "Ghost", "Status", kind="status", intrinsic="curse"
+    ),
+)

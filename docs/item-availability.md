@@ -48,7 +48,13 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The [Z-Crystal plan](design/z-crystals.md) retains its implementation gates.
+The later [Z route](z-moves.md) accepts 42 explicit source mappings on 34
+existing crystals through `+zmove`, including eight status sources and 16
+signatures. The [matrix](design/z-crystals.md) names the exact native/source
+limits; other moves, fused Necrozma and Ultra remain deferred. Its optional
+10,000-price/stock1 Counter and configured native hunt/capture routes have
+local automated [acceptance](testing/z-special-2026-10-23.md), separate from
+live deployment, authored chart availability and permanent public stock.
 The later [berry nursery](berry-nursery.md) adds one private durable Oran bed and
 the independent `+berry snack Razz Berry=<target>` HP equivalent. Its optional
 100-per-berry, five-copy source is checked-in content, with local command/SQL

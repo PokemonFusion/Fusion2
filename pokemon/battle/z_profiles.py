@@ -1,6 +1,6 @@
 """Reviewed transient Z definitions; learned moves and the shared dex stay ordinary."""
 
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass
 
 from pokemon.names import normalize_name, resolve_dex_entry
@@ -27,7 +27,7 @@ class ZProfile:
     intrinsic: str = ""
     bonus: tuple = ()
 
-    def descriptor(self, source):
+    def descriptor(self, source, pokemon=None):
         """Build a private runtime move after the ordinary source prevention pass."""
         from pokemon.battle.engine import BattleMove
         from pokemon.dex import MOVEDEX
@@ -35,8 +35,16 @@ class ZProfile:
         if self.kind == "status":
             raw = deepcopy(resolve_dex_entry(MOVEDEX, self.source).raw)
             raw.pop("zMove", None)
+            # The ordinary fallback treats an absent protect flag as true.
+            # Reviewed status copies use the source metadata's actual flag.
+            raw["flags"] = deepcopy(raw.get("flags", {}))
+            raw["flags"].setdefault("protect", 0)
             raw["name"] = "Z-" + self.source
             raw["isZ"] = normalize_name(self.crystal)
+            if self.intrinsic == "curse" and pokemon is not None:
+                raw["target"] = "normal" if "Ghost" in pokemon.types else "self"
+                if "Ghost" not in pokemon.types:
+                    raw.pop("volatileStatus", None)
             name = raw["name"]
         else:
             flags = {}
@@ -60,17 +68,32 @@ class ZProfile:
             }
             if self.ignore_ability:
                 raw["ignoreAbility"] = True
+            if self.intrinsic == "paralysis":
+                raw["secondary"] = {"chance": 100, "status": "par"}
+            if self.category == "Status" and self.bonus:
+                raw["boosts"] = dict(self.bonus)
+            if self.intrinsic == "soulblaze":
+                # Truthy no-op secondary exposes the reviewed Sheer Force
+                # interaction without copying Clanging Scales' Defense drop.
+                raw["secondary"] = {"chance": 100}
+            if self.intrinsic == "guardian":
+                raw["zGuardian"] = True
             name = self.name
-        move = BattleMove(
-            name,
-            key=normalize_name(self.source if self.kind == "status" else name),
-            power=raw.get("basePower", 0),
-            type=raw["type"],
-            priority=raw.get("priority", 0),
-            accuracy=raw.get("accuracy", True),
-            pp=source.pp,
-            raw=raw,
-        )
+        if self.kind == "status":
+            # The ordinary engine has already bound the base callbacks.
+            move = copy(source)
+            move.name, move.raw, move.flags = name, raw, deepcopy(raw.get("flags", {}))
+        else:
+            move = BattleMove(
+                name,
+                key=normalize_name(name),
+                power=self.power,
+                type=self.move_type,
+                priority=0,
+                accuracy=True,
+                pp=source.pp,
+                raw=raw,
+            )
         move.isZ = True
         move._pp_move_name = self.source
         move._z_paid = True
@@ -91,12 +114,14 @@ class ZProfiles:
     def get(cls, crystal, source):
         """Resolve only a specifically qualified pair, never every zMove field."""
         from .z_generic_pairs import GENERIC_PAIRS
+        from .z_status_pairs import STATUS_PAIRS
+        from .z_signature_pairs import SIGNATURE_PAIRS
 
         key = normalize_name(crystal), normalize_name(source)
         return cls.accepted.get(key) or next(
             (
                 profile
-                for profile in GENERIC_PAIRS
+                for profile in (*GENERIC_PAIRS, *STATUS_PAIRS, *SIGNATURE_PAIRS)
                 if (normalize_name(profile.crystal), normalize_name(profile.source)) == key
             ),
             None,

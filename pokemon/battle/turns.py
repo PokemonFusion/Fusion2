@@ -1342,6 +1342,9 @@ class TurnProcessor:
 			for poke in part.active:
 				self.dispatcher.dispatch("end_turn", pokemon=poke, battle=self)
 		self.check_victory()
+		from .z_effects import ZEffects
+
+		ZEffects.end_turn(self)
 		self.mechanic_turn = getattr(self, "mechanic_turn", 0) + 1
 		self.z_pending = {}
 

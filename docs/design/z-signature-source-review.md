@@ -52,3 +52,14 @@ it does not donate ordinary trapping, recoil, recharge, stage theft, spread or
 secondary effects. Generic and status lists remain independently bounded.
 All real effects, immunity/protection, current targets, PP, budgets, rollback,
 rebuild, source purchase and cleanup gates must pass before a row is released.
+
+## Subsequent native qualification (2026-10-23)
+
+The review above preceded implementation. The previously gated native cap and
+Totem subsets now pass the existing authored hunt, ordinary capture and source
+teaching routes in disposable SQL. Both native Disguise-to-Busted lifecycles
+also pass actual damage, reconnect, paid input and owned cleanup. Those native
+gates are satisfied without a new form feature; configured live availability
+is not asserted. Fused Necrozma remains deferred behind #820 and Ultra remains
+outside this rollout. The [final receipt](../testing/z-special-2026-10-23.md)
+records exact acceptance and diagnostics.

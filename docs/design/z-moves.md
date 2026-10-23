@@ -1,7 +1,8 @@
 # Non-plot Z-Crystal activation contract (#775)
 
-Status: **18 explicit generic damage pairs implemented and accepted locally**.
-See the [player guide](../z-moves.md) and [qualification](../testing/z-core-2026-10-23.md).
+Status: **42 explicit generic/status/signature mappings on 34 crystals accepted locally**.
+See the [player guide](../z-moves.md), [foundation](../testing/z-core-2026-10-23.md)
+and [status/signature qualification](../testing/z-special-2026-10-23.md).
 The first-slice rules below remain the contract; later combinations are gated
 by the current matrix. This does not assert deployment or live stock.
 Inspected October 22, 2026 at `4f0995b1b53e3b5a040d27092e48da05c67aa2d8`.

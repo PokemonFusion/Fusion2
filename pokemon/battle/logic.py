@@ -127,6 +127,9 @@ class BattleLogic:
 
 		MegaEvolution.recover(battle)
 		ZMoves.recover(battle, state.declare)
+		from .z_effects import ZEffects
+
+		ZEffects.recover(battle, getattr(state, "z_effects", {}))
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
@@ -167,6 +170,9 @@ class BattleLogic:
 		self.state.mega_pending = {key: dict(value) for key, value in getattr(self.battle, "mega_pending", {}).items()}
 		self.state.z_used = sorted(getattr(self.battle, "z_used", set()))
 		self.state.z_pending = {key: dict(value) for key, value in getattr(self.battle, "z_pending", {}).items()}
+		from .z_effects import ZEffects
+
+		self.state.z_effects = ZEffects.freeze(self.battle)
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)
@@ -256,6 +262,7 @@ class BattleLogic:
 				mon.volatiles = restore_battle_value(mon.volatiles, pokemon_by_ref, field=data.field)
 				mon.ability_state = restore_battle_value(mon.ability_state, pokemon_by_ref, field=data.field)
 				mon.item_state = restore_battle_value(mon.item_state, pokemon_by_ref, field=data.field)
+				mon.last_move = restore_battle_value(getattr(mon, "last_move", None), pokemon_by_ref, field=data.field)
 		for name in ("weather_state", "terrain_state", "pseudo_weather"):
 			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref, field=data.field))
 		battle.field = data.field

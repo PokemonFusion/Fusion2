@@ -18,6 +18,14 @@ class ZMoves:
 
     version = 1
 
+    @staticmethod
+    def has_z_history(pokemon):
+        """Treat a saved paid name/marker as evidence, never infer from a held item."""
+        move = getattr(pokemon, "last_move", None)
+        return bool(getattr(move, "_z_paid", False) or getattr(move, "isZ", False)
+                    or (getattr(move, "raw", {}) or {}).get("isZ")
+                    or str(getattr(move, "name", "")).startswith("Z-"))
+
     @classmethod
     def validate_request(cls, request):
         """Reject malformed or partial proof before any resource mutation."""
@@ -73,6 +81,11 @@ class ZMoves:
 
         entry = resolve_dex_entry(POKEDEX, row["species"])
         raw = getattr(entry, "raw", {}) or {}
+        disguise = (getattr(pokemon, "native_origin", {}) or {}).get("disguise_busted")
+        busted = (row["species"] in {"Mimikyu", "Mimikyu-Totem"}
+                  and disguise == {"ref": str(pokemon.model_id), "species": row["species"],
+                                  "form": str(pokemon.species)}
+                  and str(pokemon.species) == ("Mimikyu-Busted-Totem" if row["species"] == "Mimikyu-Totem" else "Mimikyu-Busted"))
         if (
             not raw
             or raw.get("num", 0) <= 0
@@ -81,7 +94,7 @@ class ZMoves:
             or raw.get("requiredItem")
             or raw.get("requiredItems")
             or str(raw.get("forme", "")).lower().startswith(("mega", "primal", "ultra"))
-            or str(pokemon.species) != row["species"]
+            or str(pokemon.species) != row["species"] and not busted
             or getattr(pokemon, "transformed", False)
         ):
             raise ValueError(
@@ -182,6 +195,12 @@ class ZMoves:
         """Use the reviewed target class, including signatures whose source differs."""
         from .legal_actions import LegalActions
 
+        if profile.target in {"self", "all", "allySide", "allyTeam"} or (
+            profile.intrinsic == "curse" and "Ghost" not in pokemon.types
+        ):
+            return [pokemon]
+        if profile.intrinsic == "curse":
+            return LegalActions(battle, participant, pokemon).targets(SimpleNamespace(raw={"target": "adjacentFoe"}))
         return LegalActions(battle, participant, pokemon).targets(
             SimpleNamespace(raw={"target": profile.target})
         )
@@ -315,7 +334,7 @@ class ZMoves:
                     continue
                 cls.native(profile, pokemon, row)
                 lines.append(
-                    f"{slot.slot}: {slot.move.name} ({current}/{maximum} PP) → {profile.name}, {profile.move_type} {profile.category} {profile.power}."
+                    f"{slot.slot}: {slot.move.name} ({current}/{maximum} PP), {profile.crystal} → {profile.name}, {profile.move_type} {profile.category} {profile.power}."
                 )
         side = Terastallization.side(choices.battle, choices.participant)
         budget = (
@@ -365,6 +384,8 @@ class ZMoves:
 
         target = action.target_pokemon
         locked = getattr(action, "z_locked", False)
+        profile = ZProfiles.get(request["crystal"], request["source"])
+        dynamic_target = bool(profile and (profile.intrinsic == "curse" or profile.target in {"self", "all", "allySide", "allyTeam"}))
         if locked:
             # Legal earlier actions (Spite, Disable, Encore or Taunt) may
             # prevent this actor after the whole roster passed preflight.
@@ -389,12 +410,23 @@ class ZMoves:
                     )
                     return None
             target = active_at(action.target, action.target_slot or 0)
+            if dynamic_target:
+                options = cls.targets(battle, action.actor, action.pokemon, profile)
+                if target not in options:
+                    target = (options[0] if len(options) == 1 else battle.rng.choice(options)) if options else None
+                if target is not None:
+                    from .active_slots import slot_for
+
+                    action.target = battle.participant_for(target)
+                    action.target_slot = slot_for(action.target, target)
             if target is None or target.hp <= 0:
                 return action
         fresh, source, profile = cls.binding(
             battle, action.actor, action.pokemon, request["source_slot"], target
         )
         ignored = {"pp", "target_ref", "slot"} if locked else {"pp"}
+        if locked and dynamic_target:
+            ignored.add("target")
         if any(fresh.get(key) != value for key, value in request.items() if key not in ignored):
             raise BattleOwnershipChanged(
                 "The bound Z action changed; refresh/recovery is required."
@@ -458,8 +490,12 @@ class ZMoves:
             history = pokemon.tempvals.setdefault("moves_used_since_entry", [])
             if normalize_name(request["source"]) not in history:
                 history.append(normalize_name(request["source"]))
-            action.move = profile.descriptor(action.move)
+            action.move = profile.descriptor(action.move, pokemon)
+            pokemon.last_move = action.move
             battle.log_action(f"{pokemon.name} unleashed {profile.name} with {request['source']}!")
+            from .z_effects import ZEffects
+
+            ZEffects.start(battle, pokemon, profile, action.move)
         return profile
 
     @classmethod
@@ -472,6 +508,7 @@ class ZMoves:
                 getattr(mon, "z_profile", None)
                 or getattr(mon, "z_activated", False)
                 or getattr(mon, "z_guard_crystal", None)
+            or cls.has_z_history(mon)
                 for part in battle.participants
                 for mon in part.pokemons
             )
@@ -497,7 +534,7 @@ class ZMoves:
                 if pending and pending.get("pokemon") != Terastallization.identifier(pokemon):
                     pending = None
                 if not profile and not marker and not pending:
-                    if getattr(pokemon, "z_guard_crystal", None):
+                    if getattr(pokemon, "z_guard_crystal", None) or cls.has_z_history(pokemon):
                         raise ValueError("Unbound Z source guard requires recovery.")
                     continue
                 if (
@@ -574,6 +611,17 @@ class ZMoves:
                         raise ValueError("Multiple Z activations on one side require recovery.")
                     activated.add(side)
                     pokemon.z_guard_crystal = request["crystal"]
+                    history = getattr(pokemon, "last_move", None)
+                    matches = normalize_name(getattr(history, "name", "")) == normalize_name(accepted.name)
+                    if cls.has_z_history(pokemon) and not matches:
+                        raise ValueError("Paid Z history conflicts with its activated source.")
+                    if matches:
+                        # Older explicit move references may predate the two
+                        # source fields. Only this validated name/profile pair
+                        # can supply them; absent history remains absent.
+                        history._pp_move_name = accepted.source
+                        history._z_profile = accepted
+                        history._z_paid = history.isZ = True
                 if pending:
                     slot_label = side + str(Terastallization.slot(participant, pokemon) + 1)
                     declaration = declarations.get(slot_label, {})
@@ -597,6 +645,7 @@ class ZMoves:
                 pokemon.z_profile = None
                 pokemon.z_activated = False
         battle.z_pending = {}
+        battle.z_replacement = {}
 
     @staticmethod
     def protected(target, move, battle):

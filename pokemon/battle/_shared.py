@@ -102,7 +102,12 @@ def snapshot_battle_value(value: Any) -> Any:
     if not isinstance(battle_move, type):
         battle_move = Move
     if isinstance(value, (Move, battle_move)):
-        return {"__pf2_move_ref__": value.name, "key": getattr(value, "key", None), "pp": getattr(value, "pp", None)}
+        saved = {"__pf2_move_ref__": value.name, "key": getattr(value, "key", None), "pp": getattr(value, "pp", None)}
+        if getattr(value, "_z_paid", False):
+            profile = getattr(value, "_z_profile", None)
+            saved["z_source"] = getattr(value, "_pp_move_name", None)
+            saved["z_crystal"] = getattr(profile, "crystal", None) or getattr(value, "raw", {}).get("isZ")
+        return saved
     if isinstance(value, Mapping):
         return {key: snapshot_battle_value(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -122,6 +127,16 @@ def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any], *, field
             from .engine import MOVEDEX, BattleMove
 
             name = value["__pf2_move_ref__"]
+            if "z_source" in value or "z_crystal" in value:
+                from pokemon.names import normalize_name
+                from .z_profiles import ZProfiles
+
+                profile = ZProfiles.get(value.get("z_crystal"), value.get("z_source"))
+                if profile is None or normalize_name(name) != normalize_name(profile.name):
+                    raise ValueError("Invalid paid Z move-history source.")
+                source_raw = get_raw(MOVEDEX.get(_normalize_key(profile.source)))
+                source = BattleMove(profile.source, pp=value.get("pp"), raw=source_raw)
+                return profile.descriptor(source)
             key = value.get("key") or _normalize_key(name)
             raw = get_raw(MOVEDEX.get(_normalize_key(key)))
             return BattleMove(name, key=key, pp=value.get("pp"), raw=raw,

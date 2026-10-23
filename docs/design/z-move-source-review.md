@@ -72,8 +72,8 @@ does not undo a started bonus. Caps and ordinary HP calculation still apply.
 The selected PF2 restriction policy is conservative: the source must be an
 otherwise legal active move. No Z bypass for Encore, Disable, Taunt, choice,
 Assault Vest or Imprison restrictions. Called, locked charging/recharge, variable,
-fixed, multi-hit and spread sources remain deferred unless a named signature
-explicitly accepts its own behavior. Invalid combinations fail before queuing.
+fixed, multi-hit and spread sources remain deferred unless a named status or
+signature mapping explicitly accepts its own behavior. Invalid combinations fail before queuing.
 This is a bounded PF2 policy, not a claim to implement every cartridge exception.
 
 ## Signature and release gates
