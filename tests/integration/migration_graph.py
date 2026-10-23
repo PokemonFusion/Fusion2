@@ -46,10 +46,11 @@ with patch(
     from django.db.migrations.state import ModelState
 
     from pokemon.models.gym import GymVictory
+    from pokemon.models.ownership import OwnershipTransfer, PokemonReservation
     from pokemon.models.trainer import GymLeaderProfile
 
     state = loader.project_state()
-    for model in (GymLeaderProfile, GymVictory):
+    for model in (GymLeaderProfile, GymVictory, OwnershipTransfer, PokemonReservation):
         expected = ModelState.from_model(model)
         actual = state.models["pokemon", model._meta.model_name]
         assert set(actual.fields) == set(expected.fields), model.__name__

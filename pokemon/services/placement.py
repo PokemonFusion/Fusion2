@@ -32,13 +32,14 @@ class PlacementService:
             storage.refresh_from_db()
             yield storage
 
-    def _pokemon(self, mon, storage):
+    def _pokemon(self, mon, storage, *, reservation_token=None):
         """Lock and validate persisted ownership, never a cached trainer value."""
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import PokemonPlacement
 
-        pokemon = OwnedPokemon.objects.select_for_update().get(pk=mon.pk)
-        pokemon.refresh_from_db()
+        from pokemon.services.ownership import assert_unreserved, fresh_owned
+
+        pokemon = fresh_owned(mon.pk, lock=True)
         if not pokemon.trainer_id or pokemon.trainer.user_id != storage.user_id:
             raise PlacementError("Pokemon does not belong to this storage's trainer.")
         placement = PokemonPlacement.objects.filter(pokemon=pokemon).first()
@@ -64,6 +65,7 @@ class PlacementService:
             expected = (set(), {storage.pk}, {placement.box_id})
         if (active, stored, boxed) != expected:
             raise PlacementError("Conflicting legacy membership; staff review is required.")
+        assert_unreserved(pokemon.pk, token=reservation_token)
         return pokemon, placement
 
     def _write(self, pokemon, storage, current, location, *, slot=None, box=None, position=None):

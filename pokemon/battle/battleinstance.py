@@ -595,8 +595,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             return
 
         if hasattr(trainer, "db"):
-            trainer.db.battle_id = self.battle_id
             set_battle_lock(trainer, self.battle_id)
+            trainer.db.battle_id = self.battle_id
 
         ndb = getattr(trainer, "ndb", None)
         if ndb is not None:

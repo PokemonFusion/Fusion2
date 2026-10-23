@@ -4,6 +4,7 @@ on:
     paths:
       - 'pokemon/**'
       - 'utils/fusion.py'
+      - 'utils/locks.py'
       - 'utils/pokemon_utils.py'
       - 'utils/display.py'
       - 'utils/inventory_view.py'
@@ -72,6 +73,10 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Real ORM transactions, deferred constraints and concurrent writers
         run: python tests/integration/placement_cases.py
+      - name: Cross-owner consent, reservations, atomic swaps and competing writers
+        run: python tests/integration/ownership_cases.py
+      - name: Ownership fresh install, upgrade and guarded invalid-data rollback
+        run: python tests/integration/ownership_migrations.py
       - name: Evolution and held-item transactions and concurrent retries
         run: python tests/integration/evolution_cases.py
       - name: Alcremie Sweets, cosmetic reloads and ordinary command flow

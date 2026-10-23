@@ -38,8 +38,10 @@ error. Battle tracking cleanup runs only after the outermost commit.
 
 The old `+trade` command is intentionally blocked before any mutation: it moved
 Pokemon across owners before changing the trainer, with non-atomic compensation.
-A correct transfer protocol belongs to the deferred trading work. No trading,
-Daycare, breeding or marketplace implementation is included here.
+A shared [ownership-transfer and reservation service](pokemon-transfers.md) now
+provides the October foundation (#722). Consent UI (#725), Daycare, breeding and
+marketplace player routes are separate work. The `+trade` command remains disabled
+until that consent UI is accepted.
 
 ## Staff audit and rollout
 
