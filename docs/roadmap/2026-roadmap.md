@@ -133,8 +133,11 @@ The goal is to make new gyms primarily a content-authoring task rather than a ne
 
 ## Adoption
 
-- `[DECISION]` Confirm whether Adoption was a core PF1 player capability.
-- `[BUILD]` Implement an Adoption MVP only if PF1 parity requires it.
+Adoption is **deferred from beta**, per the project owner's October 23 decision
+in #724. The [source review and decision](../design/adoption-beta-decision.md)
+confirm PF1's coded donate/browse/buy capability and document the economy and
+custody reasons for deferral. There is no active Adoption build requirement;
+consent trading and the marketplace remain the beta ownership-exchange work.
 
 ### October Exit Condition
 
@@ -254,7 +257,7 @@ PF2 should not be declared closed beta until all of the following are true:
 - [ ] Catching, party/storage, move learning, evolution, and held-item transitions do not have known duplication or loss defects.
 - [ ] Trading requires recipient consent and completes safely.
 - [ ] Breeding, Daycare, and player Marketplace MVPs are player accessible and recoverable.
-- [ ] Adoption has been resolved against PF1 parity and implemented if required.
+- [x] Adoption parity decision recorded: deferred from beta (#724).
 - [ ] At least one strategy-oriented gym is fully player accessible with correct victory, loss, rematch, and badge behavior.
 - [ ] Combat AI selects legal actions, handles core battle state correctly, supports switching and doubles targeting, and can execute the first gym's intended strategy.
 - [ ] Fusion creation/state transitions are persistent, recoverable, and adequately explained during onboarding.
@@ -274,6 +277,7 @@ PF2 should not be declared closed beta until all of the following are true:
 
 The following are not required to declare PF2 closed beta:
 
+- Adoption (explicit October 23 decision; a future proposal needs separate scope)
 - Multiple complete leagues
 - Large numbers of finished gyms
 - Faction/reputation systems
