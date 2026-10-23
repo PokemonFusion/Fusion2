@@ -1,0 +1,626 @@
+{
+  "version": 1,
+  "parent": 820,
+  "review_date": "2026-10-23",
+  "baseline": "ec1203c47564c8e712831d8764394a4300a9b629",
+  "status": "design-complete-implementation-open",
+  "runtime_enabled": false,
+  "primary_form_source": "https://press.pokemon.com/en/MORE-NEW-DETAILS-ANNOUNCED-FOR-POKEMON-ULTRA-SUN-AND-POKEMON-ULT-65344",
+  "policy_origin": "PF2-selected ownership/storage/PP/command policy; primary source verifies only native pairs and source moves. No complete cartridge/GO-parity claim.",
+  "forms": [
+    {
+      "base": "Necrozma",
+      "companion": "Solgaleo",
+      "target": "Necrozma-Dusk-Mane",
+      "source": "Sunsteel Strike",
+      "crystal": "Solganium Z",
+      "signature": "Searing Sunraze Smash",
+      "types": [
+        "Psychic",
+        "Steel"
+      ],
+      "ability": "Prism Armor",
+      "stats": {
+        "hp": 97,
+        "atk": 157,
+        "def": 127,
+        "spa": 113,
+        "spd": 109,
+        "spe": 77
+      },
+      "ordinary_source_base_pp": 5,
+      "current_runtime_enabled": false,
+      "implementation_gate": 830
+    },
+    {
+      "base": "Necrozma",
+      "companion": "Lunala",
+      "target": "Necrozma-Dawn-Wings",
+      "source": "Moongeist Beam",
+      "crystal": "Lunalium Z",
+      "signature": "Menacing Moonraze Maelstrom",
+      "types": [
+        "Psychic",
+        "Ghost"
+      ],
+      "ability": "Prism Armor",
+      "stats": {
+        "hp": 97,
+        "atk": 113,
+        "def": 109,
+        "spa": 157,
+        "spd": 127,
+        "spe": 77
+      },
+      "ordinary_source_base_pp": 5,
+      "current_runtime_enabled": false,
+      "implementation_gate": 830
+    }
+  ],
+  "commands": {
+    "status": "proposed-unregistered",
+    "center_only": true,
+    "human_form_only": true,
+    "inspect": "+necrozma inspect <host slot or full owned UUID>",
+    "combine": "+necrozma combine <host slot or full owned UUID>=<companion slot or full owned UUID>/<move slot>",
+    "separate": "+necrozma separate <host slot or full owned UUID>",
+    "confirmation": "explicit yes/no; server-bound exact terms/character/lifecycle/version; fresh locked commit validation",
+    "preview_expiry_seconds": 300,
+    "selectors": [
+      "canonical-party-slot",
+      "full-owned-UUID"
+    ],
+    "boxed_selector": "full-owned-UUID",
+    "nickname_selection": false
+  },
+  "ownership": {
+    "owner": "character Trainer/OwnedPokemon.trainer; not account",
+    "host_identity": "retain existing owned UUID, owner and current party/box placement",
+    "companion_identity": "retain exact owned UUID/owner and freeze saved fields",
+    "companion_placement": "new canonical combined state with active NecrozmaCombination link",
+    "trainer_fusion_reused": false,
+    "eligible_source_locations": [
+      "party",
+      "box"
+    ],
+    "active_role_limit": "one active link per member across host and companion roles",
+    "ordinary_inventory_debit": 0,
+    "quest_requirement": false,
+    "new_key_item": false
+  },
+  "transaction": {
+    "service": "one owner-validated native-form service; existing PlacementService/PP/move helpers",
+    "lock_order": [
+      "character",
+      "storage",
+      "trainer",
+      "owned UUIDs sorted",
+      "placements/link/resources stable keys"
+    ],
+    "existing_writer_rule": "never acquire character after already locking storage; reconcile battle start/shared reservation lock graph before activation",
+    "atomic": [
+      "form/stats/cache",
+      "companion placement/mirrors",
+      "source binding/resource",
+      "active link",
+      "durable outcome receipt"
+    ],
+    "receipts": "bind exact request and lifecycle; return historical outcome without resurrecting released sources or undoing newer cycles",
+    "legacy": "audit and fail closed; no inferred companions or automatic data repair"
+  },
+  "separation": {
+    "fainted_host_allowed": true,
+    "statused_host_allowed": true,
+    "host_placement": "retain current legal party/box placement",
+    "companion_return": [
+      "previous party slot if free",
+      "first free canonical party slot",
+      "owner box"
+    ],
+    "originally_boxed": "prefer still-valid prior box; allocate new legal position",
+    "no_legal_destination": "full rollback; retain valid combination",
+    "eviction": false,
+    "party_compaction": false,
+    "old_slot_reserved": false
+  },
+  "resources": {
+    "health": "current host absolute HP deficit via normal stat helpers; fainted0/conscious>=1; preserve current status/sleep",
+    "companion": "no HP/status/PP/items/EXP/genetic mutation while reserved",
+    "host_progression": "retain own EXP/level/EVs/friendship/Hyper Training/flags/held item; no partner rewards",
+    "source_slot": "selected actual1..4 including empty; bind active moveset, save only displaced slot identity/current PP",
+    "form_move_bank": "per host/source, survives separated cycles; first legitimate introduction base PP5 once; preserve zero/boost history thereafter",
+    "pp_capacity": "existing PPCapacity/MovePPBoost",
+    "write_through": [
+      "ordinary attack",
+      "Z attack",
+      "field/battle PP recovery",
+      "healing",
+      "PP Up",
+      "PP Max",
+      "battle synchronization"
+    ],
+    "slot_edits": "lock mutating active/saved moveset/teach/learn/forget operations while linked; reads and non-slot base knowledge/EXP remain valid",
+    "restore": "remove temporary source learned/slot exposure; persist bank; restore only displaced slot or empty gap; preserve other current PP/progression",
+    "dormant_healing": false,
+    "missing_prior_use_resource": "fail closed; never initialize/refill"
+  },
+  "battle": {
+    "formats": [
+      "human-wild-single",
+      "human-trainer-single",
+      "human-pvp-single",
+      "two-controller-doubles"
+    ],
+    "proof": [
+      "live link UUID/version",
+      "both owned UUIDs/owner",
+      "canonical combined placement",
+      "current host species/source binding"
+    ],
+    "companion_actions": false,
+    "combination_survives": [
+      "switch",
+      "faint",
+      "revival",
+      "reconnect",
+      "end",
+      "flee",
+      "concede"
+    ],
+    "supported_initial": [
+      "ordinary attacks/items/flee",
+      "two exact existing Z signatures"
+    ],
+    "unsupported_initial": [
+      "Mega",
+      "Tera",
+      "Dynamax",
+      "Ultra",
+      "AI Z activation",
+      "new formats"
+    ],
+    "unfused_native_signature_identity": "preserve existing native profile/fingerprint and queued/used checkpoints",
+    "z_exception": "only exact target/crystal/source with live pair proof; never blanket changesFrom waiver"
+  },
+  "issues": [
+    {
+      "key": "A",
+      "issue": 825,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/825",
+      "title": "[Items][P3] Add canonical Necrozma pair and companion reservations",
+      "depends_on": [],
+      "coordinates_with": [],
+      "kind": "implementation",
+      "state_at_design_publication": "open",
+      "scope": "Add the data/integrity foundation only; no public combine command, fused Z eligibility or live migration.",
+      "acceptance_criteria": [
+        "Add an active NecrozmaCombination binding this character's storage, distinct host/companion UUIDs, exact base/target pair, lifecycle/version, chosen active-set/slot binding and return hint. Add the canonical combined companion placement, never reuse trainer-Fusion placement or a hidden box.",
+        "Define durable per-host/per-source form PP resources and idempotent operation receipts. Live pair foreign keys protect both members; separated-history receipts use retained UUID/outcome data and cannot permanently prevent ordinary later release or resurrect a deleted member.",
+        "Enforce exactly one canonical placement, one active membership across either pair role, matching owner/storage/species/form, reciprocal companion/link state, placement NULL shape and synchronized legacy mirrors. Extend the existing PostgreSQL deferred checks and placement audit; no parallel ownership source.",
+        "Audit legacy/directly granted fused rows, missing companions, role reuse and inconsistent resource/move state. Fail before migration writes on ambiguous data; never invent, delete or automatically separate sources.",
+        "Use isolated production-model PostgreSQL constraint/outer-transaction/upgrade tests, including actual installed deferred checks and invalid bulk-write commits. Preserve existing placement/capture/trainer-Fusion regressions. Migration files may be prepared; execution against a game database requires separate approval."
+      ]
+    },
+    {
+      "key": "B",
+      "issue": 826,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/826",
+      "title": "[Items][P3] Enforce Necrozma reservations across conflicting operations",
+      "depends_on": [
+        825
+      ],
+      "coordinates_with": [
+        722,
+        723
+      ],
+      "kind": "implementation",
+      "state_at_design_publication": "open",
+      "scope": "Wire shared fresh eligibility and lock ordering before any player activation; coordinate #722/#723 without implementing their unrelated transfer/Fusion features.",
+      "acceptance_criteria": [
+        "Apply one shared role-aware eligibility hook under fresh locks to both linked members. Companion is inspectable but cannot move, battle, receive field/learning/held-item writes, release, transfer/list, enter Daycare/breeding or trainer-Fusion. Permit only the contract's reviewed host operations.",
+        "Reject combining sources referenced by current/unlocked trainer-Fusion state, any conflicting reservation, foreign/same-account-alt owner, egg, unconscious source, stale/partial battle references or invalid placement. Preserve trainer Fusion IDs/forms/fighter EXP unchanged.",
+        "Reconcile character\u2192storage\u2192trainer\u2192UUID-ordered sources\u2192placement/link/resources with existing storage-first writers and battle start. An already storage-locked writer must not acquire a later character lock. Make battle-start versus combine a serialized race, not a command-time lock check.",
+        "Block directly created/captured owned fused forms without a valid live pair; a static itemUser/form row, copied appearance or unsupported encounter cannot fabricate a second owned source. Retain ordinary native/base captures and NPC encounter behavior; failed capture cannot debit a ball or strand rows.",
+        "Expose a compatible reservation boundary for #722 and #723; do not add another owner-transfer writer or re-enable +trade. Guard release, box operations, current field/evolution/move writers and trainer-Fusion paths that exist now, including service-level bypass attempts.",
+        "Run independent-connection PostgreSQL races against placement/release/Fusion/field use/battle entry and supported transfer reservations, plus negative ordinary inputs and deferred-integrity checks. Prove legal host use, companion freeze, no deadlock/loss/duplication and unchanged unrelated behavior."
+      ]
+    },
+    {
+      "key": "C",
+      "issue": 827,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/827",
+      "title": "[Items][P3] Implement atomic Necrozma combine and separate",
+      "depends_on": [
+        825,
+        826
+      ],
+      "coordinates_with": [],
+      "kind": "implementation",
+      "state_at_design_publication": "open",
+      "scope": "Implement the private service for exactly Necrozma+Solgaleo\u2192Dusk-Mane and Necrozma+Lunala\u2192Dawn-Wings. Public registration and fused Z remain gated.",
+      "acceptance_criteria": [
+        "Re-read the caller's current human/Center/battle state and both real owned party/box sources inside the transaction. Keep host UUID/owner/current canonical placement; reserve the unchanged companion with the canonical combined placement. No item/energy/quest cost, source grant, third Pok\u00e9mon, or trainer-Fusion writer.",
+        "Commit form/ability/stat cache updates, companion placement/mirrors, exact active source-slot setup, first-use resource or saved PP restoration, displaced-slot snapshot, live link and operation receipt together. Use reviewed host stats/HP helpers and canonical move/capacity services; companion moves/PP are never copied.",
+        "Retain host genetics/nature/nickname/EXP/EVs/friendship/flags/Hyper Training/held item. Preserve current absolute HP deficit, fainted zero and status/sleep state on form changes; never replay an old HP/PP/progression snapshot. Companion fields stay frozen.",
+        "Separate even a fainted/statused host; restore base Necrozma on the same row, persist/remove only the bound temporary source exposure and restore its displaced slot, release exactly that companion and remove the active link in the same commit.",
+        "Return previous party slot if free, then first free slot, then an owner box; an originally boxed companion prefers its still-valid old box. Handle full parties/deleted hints via PlacementService without eviction/slot compaction; no legal destination means full rollback and retained valid pair.",
+        "Bind request UUID/terms/version/lifecycle. Exact retries return committed history without repeating effects; changed partner requires separation; stale separation from an older cycle cannot undo a newer pair or resurrect released rows.",
+        "Inject failure after every durable write and outer rollback, checking fresh SQL, shared-instance caches, mirrors, resources, receipts and success silence. Exercise both forms, party/box sources and independent-connection combine/combine, combine/separate and separate/separate contention."
+      ]
+    },
+    {
+      "key": "D",
+      "issue": 828,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/828",
+      "title": "[Items][P3] Preserve Necrozma form-move slots and PP across player routes",
+      "depends_on": [
+        827
+      ],
+      "coordinates_with": [],
+      "kind": "implementation",
+      "state_at_design_publication": "open",
+      "scope": "Integrate the two source-slot/resource bindings with ordinary PP/move/progression writers. Current get_valid_moves only reads level-up entries and returns neither fused form's R-coded source move.",
+      "acceptance_criteria": [
+        "Keep exactly the selected actual active-set slot 1\u20134, including an empty gap, bound to Sunsteel Strike or Moongeist Beam. Use canonical ActiveMoveslot/MovesetSlot/temporary learned identity; do not edit generated learnsets, copy companion knowledge or expose arbitrary R-coded moves.",
+        "Give each host/source resource base PP5 once on first legitimate introduction. Preserve remaining/zero PP across reconnect, separation, changing companions and later cycles. Existing PPCapacity/MovePPBoost remain authoritative; missing/conflicting prior-use data must fail closed rather than reinitialize.",
+        "Commit actual attack/Z PP debit and active resource history together. Integrate field/battle Ether/Elixir/Leppa, healing, PP Up/Max and battle synchronization without double debit, over-capacity, free restore or stale mirror. Dormant form PP and the hidden displaced ordinary move cannot be healed or selected.",
+        "Lock active/saved moveset editing/switching, forgetting, mutating teach/learn prompts and source replacement while linked. Preserve read-only views. New base-Necrozma level-up knowledge/EXP may persist, but active-set changes/prompts are deferred; never lose earned progression.",
+        "On separation retain the form resource/bonus history, remove only its temporary learned/slot exposure and restore only the displaced original slot/current PP or empty state. Other spent PP, newly earned base knowledge and progression persist; copied runtime moves never overwrite the canonical binding.",
+        "Test real ordinary PP/healing/progression commands, zero/boosted PP repeated cycles, parent rollback/faults/concurrency, gapped/empty slots and failed source substitutions with independent SQL. Preserve current Rare Candy/PP items/medicine/learning and native Lunala/Solgaleo source routes."
+      ]
+    },
+    {
+      "key": "E",
+      "issue": 829,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/829",
+      "title": "[Items][P3] Add the ordinary Necrozma combine/separate player flow",
+      "depends_on": [
+        827,
+        828
+      ],
+      "coordinates_with": [],
+      "kind": "implementation",
+      "state_at_design_publication": "open",
+      "scope": "Implement the proposed +necrozma command classes, inspection and review flow. Keep public mutation registration gated until this issue and the dependent battle/Z acceptance both pass.",
+      "acceptance_criteria": [
+        "Implement read-only discovery and inspect, combine <host>=<companion>/<slot>, and separate <host>; accept canonical gapped party slots or full owned UUIDs for boxed sources, never ambiguous nicknames/account-wide authority. No N-Solarizer/Lunarizer, Ring, plot quest or new currency.",
+        "At a fresh Pok\u00e9mon Center in human form, preview exact source names/UUIDs/placements, selected form/slot and displaced PP, frozen held items, resource policy and companion return policy. Require explicit yes/no confirmation using a server-bound current-terms/lifecycle/version request expiring after5 minutes.",
+        "Revalidate all authority, location, battle/placement/reservation and exact terms at commit; stale/duplicate/cancelled/expired/foreign/same-account-alt input changes nothing. Publish one accurate success only after outer commit, with old/new names, retained pair identity and actual return location.",
+        "Expose host/companion association, read-only companion status and owned counts in appropriate party/storage/detail surfaces without treating the reserved companion as an actionable party/box member or changing trainer-Fusion labels. Explain source-slot editing limits and no PP refill.",
+        "Exercise configured ordinary acquisition of both native base sources, real command/menu confirmation, form inspection, canonical storage moves, field items, reconnect, separation/full-party fallback and restored source rows in disposable PostgreSQL. Keep fixture/staff setup separate from ordinary input.",
+        "Provide exact help and current supported/deferred docs, plus positive/negative/rollback/replay transport and fresh SQL evidence for both forms. Do not claim public activation, fused Z, live source availability or deployment from metadata/command tests."
+      ]
+    },
+    {
+      "key": "F",
+      "issue": 830,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/830",
+      "title": "[Items][P3] Accept fused Necrozma battles and existing Z signatures",
+      "depends_on": [
+        826,
+        828,
+        829
+      ],
+      "coordinates_with": [],
+      "kind": "implementation",
+      "state_at_design_publication": "open",
+      "scope": "Qualify ordinary battles plus exactly Dawn-Wings/Lunalium/Moongeist Beam and Dusk-Mane/Solganium/Sunsteel Strike through valid live combination provenance; no blanket form whitelist.",
+      "acceptance_criteria": [
+        "Build the host from its unchanged owned UUID, current fused species/stats/types/Prism Armor and canonical source slot/PP. The companion never enters a roster, chooses an action, receives EXP or changes in synchronization. Entry/reconnect/mutation/PP/end-sync validate both owned sources, matching canonical link/reservation and lifecycle/version.",
+        "Add only the live-pair-proved changesFrom/native eligibility exception. A raw owned fused row, itemUser tuple, nickname, copied ability/Transform or forged/stale/missing companion proof cannot qualify. No direct fused capture/grant shortcut.",
+        "Reuse the existing two200-power signatures, one actual source PP, reusable crystal and side budget, protection/type/nonbreakable-ability rules, prevention, rollback and checkpoint history. Keep existing native Lunala/Solgaleo Z profile identities/fingerprints stable; do not invalidate their earlier queued/used checkpoints.",
+        "Preserve combination across switch/faint/revival/reconnect/end/flee/concede; only explicit field separation removes it. Persist host PP/HP/status/progression to the correct row and resource once; preserve every companion field.",
+        "Initial combined-host support is ordinary moves/items/flee and those two Z signatures. Reject Mega/Tera/Dynamax/Ultra stacking before queuing in this bounded slice, leaving all existing unfused/native behavior intact. No AI activation/new format/new crystal or Counter expansion.",
+        "Run acquire\u2192combine\u2192+hold\u2192ordinary attack and +zmove\u2192meaningful effects/SQL PP/use\u2192switch/rebuild/end\u2192separate/return flows for both forms, with ability/protection/immunity/source-zero/corrupt/current-owner/side-budget/fault controls. Rerun native Lunala/Solgaleo, existing Mega/Tera/Z and item regressions plus full mandatory gate before public mutation activation."
+      ]
+    },
+    {
+      "key": "G",
+      "issue": 831,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/831",
+      "title": "[Items][QA] Verify Necrozma lifecycle on an intentionally released build",
+      "depends_on": [
+        829,
+        830
+      ],
+      "coordinates_with": [],
+      "kind": "released-acceptance",
+      "state_at_design_publication": "open",
+      "scope": "Prepare and complete integrated acceptance after local gates; select the deliberately released candidate and obtain exact deployment/migration/restart authorization separately.",
+      "acceptance_criteria": [
+        "Publish immutable implementation commits, the two-form native/source/status matrix, complete local ordinary-command/SQL/effect/concurrency/rollback/rebuild/end receipts and mandatory test results. Check the full original contract, including companion freeze, source PP cycles and unchanged native signatures.",
+        "Choose a named environment/released SHA and inspect its schema/source state read-only. Prepare exact migration/deployment/reload/stock steps if needed and ask separately for any unapproved operation; this issue is not authorization to execute them.",
+        "Use disposable tagged ordinary characters and real base source acquisition, with separate staff preparation/observation and a protected-data baseline. Walk real Center movement, combine confirmation, inspection, battle/source PP/Z, reconnect, field items and separation for both forms, including full-party/boxed return.",
+        "Record exact commands, expected/observed results and relevant independent SQL/current proof; distinguish staff/setup, automated transport and ordinary live socket evidence. Do not use a directly granted fused row as native acquisition proof or touch human characters/Pok\u00e9mon.",
+        "Retain failed/unsupported checks, fix through bounded prerequisites, rerun affected gates and complete cleanup of only tagged fixtures. Verify protected rows unchanged and no unresolved pair/reservation/source-resource leftovers.",
+        "Mark live/released acceptance only after the actual walkthrough, with operator authorization and cleanup evidence. Keep new forms/Z disabled or explicitly unreleased if prerequisites or release approval remain missing. Ultra, plots, unrelated features and permanent source grants remain out."
+      ]
+    }
+  ],
+  "activation_gates": {
+    "public_mutation_local": [
+      825,
+      826,
+      827,
+      828,
+      829,
+      830
+    ],
+    "released_live_acceptance": 831,
+    "release_authorization": "separate exact approval for any deployment/migration/restart or game-data setup"
+  },
+  "exclusions": [
+    "trainer/Pokemon Fusion reinterpretation",
+    "general species splicing",
+    "Ultra/Ultra Burst/Ultranecrozium",
+    "plot/key/quest unlocks",
+    "new energy/currency/item definitions",
+    "base-species acquisition expansion",
+    "Counter offers/refill",
+    "automatic ambiguous-data repair",
+    "unrelated trading UI",
+    "live operations in this design"
+  ],
+  "source_review": {
+    "baseline": "ec1203c47564c8e712831d8764394a4300a9b629",
+    "species": {
+      "Necrozma": {
+        "name": "Necrozma",
+        "num": 800,
+        "baseSpecies": null,
+        "forme": null,
+        "changesFrom": null,
+        "battleOnly": null,
+        "types": [
+          "Psychic"
+        ],
+        "abilities": {
+          "0": "Prism Armor"
+        },
+        "baseStats": {
+          "hp": 97,
+          "atk": 107,
+          "def": 101,
+          "spa": 127,
+          "spd": 89,
+          "spe": 79
+        },
+        "requiredItem": null,
+        "ordinary_level100_form_source_moves": [],
+        "raw_form_source_learnset": {}
+      },
+      "Solgaleo": {
+        "name": "Solgaleo",
+        "num": 791,
+        "baseSpecies": null,
+        "forme": null,
+        "changesFrom": null,
+        "battleOnly": null,
+        "types": [
+          "Psychic",
+          "Steel"
+        ],
+        "abilities": {
+          "0": "Full Metal Body"
+        },
+        "baseStats": {
+          "hp": 137,
+          "atk": 137,
+          "def": 107,
+          "spa": 113,
+          "spd": 89,
+          "spe": 97
+        },
+        "requiredItem": null,
+        "ordinary_level100_form_source_moves": [
+          "sunsteelstrike"
+        ],
+        "raw_form_source_learnset": {
+          "sunsteelstrike": [
+            "9L0",
+            "8L0",
+            "7L1",
+            "7S0",
+            "7S1",
+            "7S2"
+          ]
+        }
+      },
+      "Lunala": {
+        "name": "Lunala",
+        "num": 792,
+        "baseSpecies": null,
+        "forme": null,
+        "changesFrom": null,
+        "battleOnly": null,
+        "types": [
+          "Psychic",
+          "Ghost"
+        ],
+        "abilities": {
+          "0": "Shadow Shield"
+        },
+        "baseStats": {
+          "hp": 137,
+          "atk": 113,
+          "def": 89,
+          "spa": 137,
+          "spd": 107,
+          "spe": 97
+        },
+        "requiredItem": null,
+        "ordinary_level100_form_source_moves": [
+          "moongeistbeam"
+        ],
+        "raw_form_source_learnset": {
+          "moongeistbeam": [
+            "9L0",
+            "8L0",
+            "7L1",
+            "7S0",
+            "7S1",
+            "7S2"
+          ]
+        }
+      },
+      "Necrozma-Dusk-Mane": {
+        "name": "Necrozma-Dusk-Mane",
+        "num": 800,
+        "baseSpecies": "Necrozma",
+        "forme": "Dusk-Mane",
+        "changesFrom": "Necrozma",
+        "battleOnly": null,
+        "types": [
+          "Psychic",
+          "Steel"
+        ],
+        "abilities": {
+          "0": "Prism Armor"
+        },
+        "baseStats": {
+          "hp": 97,
+          "atk": 157,
+          "def": 127,
+          "spa": 113,
+          "spd": 109,
+          "spe": 77
+        },
+        "requiredItem": null,
+        "ordinary_level100_form_source_moves": [],
+        "raw_form_source_learnset": {
+          "sunsteelstrike": [
+            "9R",
+            "8R",
+            "7R"
+          ]
+        }
+      },
+      "Necrozma-Dawn-Wings": {
+        "name": "Necrozma-Dawn-Wings",
+        "num": 800,
+        "baseSpecies": "Necrozma",
+        "forme": "Dawn-Wings",
+        "changesFrom": "Necrozma",
+        "battleOnly": null,
+        "types": [
+          "Psychic",
+          "Ghost"
+        ],
+        "abilities": {
+          "0": "Prism Armor"
+        },
+        "baseStats": {
+          "hp": 97,
+          "atk": 113,
+          "def": 109,
+          "spa": 157,
+          "spd": 127,
+          "spe": 77
+        },
+        "requiredItem": null,
+        "ordinary_level100_form_source_moves": [],
+        "raw_form_source_learnset": {
+          "moongeistbeam": [
+            "9R",
+            "8R",
+            "7R"
+          ]
+        }
+      },
+      "Necrozma-Ultra": {
+        "name": "Necrozma-Ultra",
+        "num": 800,
+        "baseSpecies": "Necrozma",
+        "forme": "Ultra",
+        "changesFrom": null,
+        "battleOnly": [
+          "Necrozma-Dawn-Wings",
+          "Necrozma-Dusk-Mane"
+        ],
+        "types": [
+          "Psychic",
+          "Dragon"
+        ],
+        "abilities": {
+          "0": "Neuroforce"
+        },
+        "baseStats": {
+          "hp": 97,
+          "atk": 167,
+          "def": 97,
+          "spa": 167,
+          "spd": 97,
+          "spe": 129
+        },
+        "requiredItem": "Ultranecrozium Z",
+        "ordinary_level100_form_source_moves": [],
+        "raw_form_source_learnset": {
+          "moongeistbeam": [
+            "9R",
+            "8R",
+            "7R"
+          ],
+          "sunsteelstrike": [
+            "9R",
+            "8R",
+            "7R"
+          ]
+        }
+      }
+    },
+    "source_moves": {
+      "Sunsteel Strike": {
+        "name": "Sunsteel Strike",
+        "pp": 5,
+        "basePower": 100,
+        "type": "Steel",
+        "category": "Physical",
+        "target": "normal",
+        "ignoreAbility": true
+      },
+      "Moongeist Beam": {
+        "name": "Moongeist Beam",
+        "pp": 5,
+        "basePower": 100,
+        "type": "Ghost",
+        "category": "Special",
+        "target": "normal",
+        "ignoreAbility": true
+      }
+    },
+    "source_sha256": {
+      "pokemon/models/storage.py": "81afa3bd5d38b99d17fb89219f9e26e35620be22ab8350e7ac5db4eec5506b20",
+      "pokemon/services/placement.py": "5d9bbff1120e0cf1e4c5d26a4e05a7f225d267d627bf22ebab82715989d06280",
+      "pokemon/migrations/0041_placement_integrity_triggers.py": "73c433bc9ef1c354ef18d878fa7cf3d21d7cdae2f0f8a946e096fa184d8b2610",
+      "pokemon/services/placement_audit.py": "4ab9ada2308f8915cef2274159e15837c3e0c7da6962ac097d1c254fc54805df",
+      "pokemon/models/core.py": "385b2cca90fcf9640ecf62a723e857a2876b788f045754b430a308a4ae9b1664",
+      "pokemon/models/moves.py": "848445d5c6fd7d199420592bdaf0b6f879c2c93fd7d6b7571e8d7bdb4cd5891a",
+      "pokemon/services/move_management.py": "3faaa1f0cb4f3bf7ed7d4d83a3f810390a13c2ec34862f7f1d2b9ab01b7cedc6",
+      "pokemon/data/generation.py": "7d5c367caa1cad91a3b0fc7270979ab24064298d82145d6c5800f78900172da3",
+      "utils/fusion.py": "094b0dd204e045026f39bbce7ec307cff6ac036ca39b76485fd7e8f60b92b3aa",
+      "utils/locks.py": "84ac0377b772b141933636ef8e6266b5e1b2cdaa934999885d5c7472036957cf",
+      "utils/pokemon_utils.py": "7c7b20104d1438ed803230d7ed5a1a8fafb1a3e08fce5d440a2e96548d54cd74",
+      "pokemon/battle/owned_battle_actor.py": "51eb108d609770b24ee4514e089e3ed5d8acf6d9450c6f403803631a2a3c4e4a",
+      "pokemon/battle/z_moves.py": "e59c8100960cce39380c81cc196fbb19f60e86c13d8dde780e1c800339b54dca",
+      "pokemon/battle/z_signature_pairs.py": "03421685294a98fd06922af6a97687e5a80104a0971b12cb18a4ea77ee7706a5",
+      "commands/player/cmd_learn_evolve.py": "fcb3dd1add0c3cf7140e5d838d8e0fc5c28602f2bf26b398853feb2fd8e40ffb",
+      "pokemon/dex/pokedex/alola.py": "f118f83e276f3596d32c0b0e9fc0b29f4d328c776f9b877e5d7cfce7ae3be7cc",
+      "pokemon/data/learnsets/learnsets.py": "5ace8ca8d474b89bf7832bd609edd85b23a1f8941bd4a155e7d64d41377472a1",
+      "pokemon/dex/moves/movesdex.py": "862cc9142c9af4e32a6b1110f9b696c729fcbf93f9631aa329d355dcd04ce419",
+      "pokemon/services/pp_capacity.py": "666ff1732581f24d1f49d072d9481f13d2e8278a2cd61b7a5ed8bae01b68d80e",
+      "pokemon/helpers/pokemon_helpers.py": "0ea863bf9e6737b7977720bb6d3523070afcb754cf997ba185e07382419dc829"
+    },
+    "current_signature_native": {
+      "Solganium Z": [
+        "Solgaleo"
+      ],
+      "Lunalium Z": [
+        "Lunala"
+      ]
+    },
+    "current_signature_fingerprints": {
+      "Solganium Z": "cdd04dcef8a3f54994f987bddcb670a4279611402c66106acee554b64ff9577b",
+      "Lunalium Z": "d9bc5e51f0209fabb8c54f9696eb626fdb47b4a0262ac20e12a3e5c2562a92e9"
+    }
+  }
+}

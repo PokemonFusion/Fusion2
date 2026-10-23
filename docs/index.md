@@ -51,7 +51,10 @@ See the [Mega Stone player guide](mega-evolution.md),
 its optional source and the 47 locally accepted canonical pairs.
 See [design/z-moves.md](design/z-moves.md) and its
 [crystal inventory](design/z-crystals.md) plus [Z-Move guide](z-moves.md) for the
-42 accepted generic/status/signature mappings and remaining gates, and
+42 accepted generic/status/signature mappings and remaining gates. The
+[Necrozma combine/separate plan](design/necrozma-combination.md) scopes a safe
+non-plot lifecycle and its open implementation issues; it enables no new holder
+or command. See
 [design/berry-player-routes.md](design/berry-player-routes.md) for the separate
 Oran growing/Razz snack contracts. The [berry nursery guide](berry-nursery.md)
 describes their implemented commands, optional source and release requirements.

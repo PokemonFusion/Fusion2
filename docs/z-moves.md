@@ -63,4 +63,8 @@ Native Mimikyu may use Mimikium before or after its real Disguise break; both
 intact and matching Busted Totem lifecycles are accepted. The seven listed
 Pikachu cap forms and both Totem holders have configured ordinary hunt/capture/
 teaching proof. Actual live species availability still depends on authored
-charts. Fused Necrozma and Ultra remain outside this route.
+charts. Fused Necrozma remains outside this route: its
+[combine/separate contract](design/necrozma-combination.md) is designed, while
+[#825–#831](design/necrozma-combination.md#delivery-gates) still require
+implementation and acceptance. The proposed `+necrozma` commands are unavailable.
+Ultra remains excluded.
