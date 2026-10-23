@@ -1,7 +1,9 @@
 # Bounded berry growing and flavor-use contracts (#776)
 
-Status: **design for implementation**. Neither player growing nor flavor snacks
-are enabled by this document. Inspected October 22, 2026 at
+Status: **bounded implementation accepted in #809–#812**; see the
+[player guide](../berry-nursery.md) and [local SQL acceptance](../testing/berry-player-routes-2026-10-22.md).
+Applying the migration, deploying the commands, installing public stock and real
+timed live growth remain release work. The original contract below was inspected at
 `4f0995b1b53e3b5a040d27092e48da05c67aa2d8`. #767's legacy field feeding is
 complete and stays independent. The existing `BerryPlant` dataclass has only
 in-memory stage/elapsed/watering state and two unit tests; it supplies no durable
@@ -166,7 +168,12 @@ models, database, stock or characters.
 | [#811](https://github.com/PokemonFusion/Fusion2/issues/811) | Add the bounded Razz Berry field snack equivalent | #776 design |
 | [#812](https://github.com/PokemonFusion/Fusion2/issues/812) | Accept durable Oran growth and independent Razz snack player slices | #810, #811 |
 
-All four issues remain open. #809/#810 finish durable Oran growing; #811
-implements the independent Razz snack; #812 accepts each named slice without
-claiming full agriculture or contests. See the
-[design validation receipt](../testing/item-designs-2026-10-22.md).
+The bounded implementation supplies #809/#810's durable Oran growing and #811's
+independent Razz snack. #812's receipt accepts local production-command/SQL,
+reconnect, replay and contention evidence without claiming live timed growth,
+full agriculture or contests. The [original design validation receipt](../testing/item-designs-2026-10-22.md)
+remains historical design evidence. Lock order is room → character → storage →
+trainer → bed; inventory is written under the trainer lock. Cycle callbacks bind
+the UUID observed before waiting for locks. Bed state is read directly from SQL,
+inventory caches retain their existing commit-aware updates, and successful
+mutation notices use `transaction.on_commit`.

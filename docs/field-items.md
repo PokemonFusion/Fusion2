@@ -10,10 +10,11 @@ An effective use consumes one item; invalid or ineffective uses consume none.
 ## Battle item boundary
 
 `+item` / `+battle/item` accepts the existing 21 battle medicines (including
-reserve revival, Ether/Max Ether and Elixir/Max Elixir) and capture balls in wild
-battles. It rejects unsupported items before reserving an actor, persisting a
-declaration, changing a turn or consuming stock. Fresh Water and Oran Berry
-retain their supported `+use` field routes and cannot be manually fed in battle.
+reserve revival, Ether/Max Ether and Elixir/Max Elixir), the later
+[32 reviewed recovery foods/berries](battle-recovery-items.md), and capture balls
+in wild battles. It rejects unsupported items before reserving an actor,
+persisting a declaration, changing a turn or consuming stock. Fresh Water and
+Oran Berry retain their `+use` field routes and their reviewed manual battle use.
 Held items use `+hold` before battle; Smoke Ball holders escape with `+flee`.
 
 Command choices, public queue entry, restored/deferred declarations and final
@@ -25,7 +26,8 @@ Wild-only capture restrictions and selected reserve/move targets remain intact.
 Capability is distinct from effect. A supported Potion used on a full-health
 target still spends the queued battle action, but consumes no item; unsupported
 manual use never queues an action. This repair preserves that existing no-effect
-turn policy and adds no battle feeding, new item definitions or plot items.
+turn policy. The later #773 extension supplies only its named battle foods and
+berries; it adds no new item definitions or plot items.
 See the [battle-item validation report](testing/battle-item-validation-2026-10-22.md)
 for ordinary-command/SQL, restore, actor-selection and regression evidence.
 
@@ -99,6 +101,11 @@ They are opt-in existing shop/reward stock; no live shop or automatic grant is
 created. Inventory and itemdex show full names, descriptions and metadata.
 
 ## Existing berry feeding allowlist
+
+The separate [nursery feature](berry-nursery.md) grows Oran Berry through
+`+berry` and deliberately feeds Razz through `+berry snack Razz Berry=<target>`
+for up to 10 HP outside battle. It does not implicitly register a Razz `+use`
+alias, held effect, EV effect or another flavor berry.
 
 | Items | Field effect |
 | --- | --- |

@@ -16,6 +16,7 @@ from commands.debug.command import (
 	CmdUseMove,
 )
 from commands.player.cmd_account import CmdTradePokemon
+from commands.player.cmd_berry import CmdBerry
 from commands.player.cmd_alpha import CmdAlphaLearnMove, CmdAlphaPokemon, alpha_test_commands_enabled
 from commands.player.cmd_fusion import (
 	CmdFusionFight,
@@ -84,6 +85,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdAddItem,
 			CmdGiveItem,
 			CmdUseItem,
+			CmdBerry,
 			CmdTempFuse,
 			CmdPermFuse,
 			CmdUnfuse,
