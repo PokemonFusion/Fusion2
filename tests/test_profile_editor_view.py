@@ -42,7 +42,7 @@ def test_select_profile_character_stays_with_account_characters():
     account = DummyAccount([ash, misty])
 
     assert select_profile_character(account, "2") is misty
-    assert select_profile_character(account, "999") is ash
+    assert select_profile_character(account, "999") is None
 
 
 def test_profile_character_choices_mark_selected_character():

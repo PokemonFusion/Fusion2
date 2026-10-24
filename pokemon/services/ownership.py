@@ -43,7 +43,8 @@ def fresh_owned(pokemon_id, *, lock=False):
     for key, value in row.items():
         setattr(pokemon, key, value)
     pokemon._state.fields_cache.clear()
-    for key in ("_cached_stats", "_prefetched_objects_cache"):
+    for key in ("_cached_stats", "_prefetched_objects_cache", "_pf2_active_fusion",
+                "_pf2_fusion_kind", "_pf2_fusion_xp", "_pf2_fusion_level"):
         pokemon.__dict__.pop(key, None)
     return pokemon
 

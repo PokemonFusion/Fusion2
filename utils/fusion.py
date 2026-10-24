@@ -453,8 +453,9 @@ def get_active_fusion_pokemon(character) -> Any | None:
 def get_battle_party_with_fusion(character, base_party: Iterable | None = None) -> list:
     """Return the battle party including the active fusion form when enabled."""
 
-    storage = getattr(character, "storage", None)
     if base_party is None:
+        from utils.character_reads import existing_storage
+        storage = existing_storage(character)
         try:
             party = list(storage.get_party()) if storage is not None else []
         except Exception:

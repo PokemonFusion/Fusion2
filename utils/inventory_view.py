@@ -35,7 +35,10 @@ def gather_inventory_pairs(char) -> ItemPairs:
         db_inventory = getattr(db, "inventory", None)
 
         sources: list[Iterable] = []
-        trainer = getattr(char, "trainer", None)
+        from utils.character_reads import existing_trainer, persistent_character
+        trainer = existing_trainer(char)
+        if trainer is None and persistent_character(char):
+                return []
         lister = getattr(trainer, "list_inventory", None)
         if callable(lister):
                 from pokemon.middleware import get_item_by_name

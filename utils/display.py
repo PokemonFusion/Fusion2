@@ -170,6 +170,8 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
 
         width = 60
         char = character
+        from utils.character_reads import existing_trainer, refresh_character_reads
+        refresh_character_reads(char)
         db = getattr(char, "db", SimpleNamespace())
         fusion = _active_fusion_sheet(char) if getattr(db, "fusion_id", None) else None
 
@@ -357,7 +359,7 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 return None
 
         wallet_value = _first_attr("money", "wallet", "cash", "credits", "pokedollars")
-        trainer = getattr(char, "trainer", None)
+        trainer = existing_trainer(char)
         if trainer is not None and getattr(trainer, "money", None) is not None:
                 wallet_value = trainer.money
         bank_value = _first_attr("bank", "savings", "account")

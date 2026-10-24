@@ -116,6 +116,9 @@ class CmdSheet(Command):
     def func(self):
         """Execute the command."""
         caller = self.caller
+        from utils.character_reads import existing_trainer, persistent_character
+        if persistent_character(caller) and existing_trainer(caller) is None:
+            caller.msg("Trainer setup is incomplete; no data was created.")
         if self.screen_reader_switch:
             caller.attributes.add("sheet_screen_reader", True)
         if self.disable_screen_reader:
@@ -157,8 +160,9 @@ class CmdSheet(Command):
         if isinstance(self.slot, int):
             try:
                 party = _party_slots(caller)
-            except Exception:  # pragma: no cover - best effort compatibility
-                party = []
+            except ValueError as error:
+                caller.msg(str(error))
+                return
 
             if not any(party):
                 caller.msg("You have no Pokémon in your party.")
@@ -239,7 +243,11 @@ class CmdSheetPokemon(Command):
         from utils.party_view import PartyView
 
         caller = self.caller
-        view = PartyView(caller)
+        try:
+            view = PartyView(caller)
+        except ValueError as error:
+            caller.msg(str(error))
+            return
         if self.slot is None and not self.show_all:
             caller.msg(view.render())
             return

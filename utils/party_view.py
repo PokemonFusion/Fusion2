@@ -67,6 +67,8 @@ class PartyView:
     def __init__(self, caller):
         """Overlay the active Fusion while retaining canonical selectors."""
         self.caller = caller
+        from utils.character_reads import refresh_character_reads
+        refresh_character_reads(caller)
         slots = get_party_slots(caller)
         self.roster = get_battle_party_with_fusion(caller, [mon for mon in slots if mon])
         fused = get_active_fusion_pokemon(caller)

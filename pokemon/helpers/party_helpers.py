@@ -40,14 +40,20 @@ def _iter_party_storage(storage) -> Iterable:
 def get_active_party(character) -> List:
         """Return a list of the character's active Pokémon."""
 
-        storage = getattr(character, "storage", None)
+        from utils.character_reads import existing_storage, persistent_character, read_party_slots
+        if persistent_character(character):
+                return [mon for mon in read_party_slots(character) if mon]
+        storage = existing_storage(character)
         return list(_iter_party_storage(storage))
 
 
 def get_party_slots(character) -> List:
         """Return six player-facing party positions without closing empty gaps."""
 
-        storage = getattr(character, "storage", None)
+        from utils.character_reads import existing_storage, persistent_character, read_party_slots
+        if persistent_character(character):
+                return read_party_slots(character)
+        storage = existing_storage(character)
         getter = getattr(storage, "get_party_slots", None)
         party = list(getter() if callable(getter) else get_active_party(character))
         return (party + [None] * 6)[:6]
