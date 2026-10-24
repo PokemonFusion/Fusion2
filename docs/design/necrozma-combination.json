@@ -3,7 +3,7 @@
   "parent": 820,
   "review_date": "2026-10-23",
   "baseline": "ec1203c47564c8e712831d8764394a4300a9b629",
-  "status": "local-implementation-accepted-released-socket-qa-open",
+  "status": "local-repair-qualified-replacement-released-socket-qa-open",
   "runtime_enabled": true,
   "primary_form_source": "https://press.pokemon.com/en/MORE-NEW-DETAILS-ANNOUNCED-FOR-POKEMON-ULTRA-SUN-AND-POKEMON-ULT-65344",
   "policy_origin": "PF2-selected ownership/storage/PP/command policy; primary source verifies only native pairs and source moves. No complete cartridge/GO-parity claim.",
@@ -343,7 +343,7 @@
         "Retain failed/unsupported checks, fix through bounded prerequisites, rerun affected gates and complete cleanup of only tagged fixtures. Verify protected rows unchanged and no unresolved pair/reservation/source-resource leftovers.",
         "Mark live/released acceptance only after the actual walkthrough, with operator authorization and cleanup evidence. Keep new forms/Z disabled or explicitly unreleased if prerequisites or release approval remain missing. Ultra, plots, unrelated features and permanent source grants remain out."
       ],
-      "implementation_status": "awaiting-separate-release-approval-and-socket-acceptance"
+      "implementation_status": "replacement-release-awaiting-exact-approval-and-socket-rerun"
     }
   ],
   "activation_gates": {
@@ -647,6 +647,17 @@
     "released_acceptance_issue": 831,
     "released_acceptance_complete": false,
     "shared_game_deployed": false,
-    "receipt": "../testing/necrozma-items-2026-10-24.md"
+    "receipt": "../testing/necrozma-items-2026-10-24.md",
+    "released_walkthrough_attempt": {
+      "candidate": "02c81c0d62364d48d3cdae6d8b57023d8ed99249",
+      "result": "failed-ordinary-zero-pp-attack",
+      "receipt": "../testing/necrozma-released-local-2026-10-24.md"
+    },
+    "pp_repair": {
+      "commit": "e3557aadced7fc5897b7024d1377047117735a64",
+      "receipt": "../testing/necrozma-pp-repair-2026-10-24.json",
+      "replacement_release_plan": "../testing/necrozma-retry-release-plan-2026-10-24.md",
+      "released_accepted": false
+    }
   }
 }

@@ -1,6 +1,9 @@
 # Native Necrozma released-build plan (#831)
 
-Status: **awaiting separate operator approval; not executed**.
+Status: **explicitly approved and executed; candidate failed an additional
+ordinary zero-PP attack check**. See the [actual released local receipt](necrozma-released-local-2026-10-24.md).
+The original plan below is retained as the exact approved scope; it does not
+authorize a replacement candidate.
 The [local implementation receipt](necrozma-items-2026-10-24.md) closes #825–#830;
 this plan does not close #831 or authorize itself. The [JSON](necrozma-release-plan-2026-10-24.json)
 contains exact candidate/configuration, complete reviewable controller sources

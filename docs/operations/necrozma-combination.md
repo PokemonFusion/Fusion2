@@ -48,7 +48,7 @@ schema intact until a separately reviewed data-preserving recovery plan exists.
 ## Operator approval
 
 `AGENTS.md` requires separate approval for migrations, existing-service restarts
-and game-data operations. The current approval covers only the explicit
+and game-data operations. The original rehearsal approval covered only the explicit
 `tests/integration/necrozma_migrations.py` runner in task-owned loopback PostgreSQL
 and random disposable schemas. It does not authorize a game deployment.
 
@@ -57,6 +57,14 @@ environment/source/schema read-only, and prepare exact deployment, migration,
 reload and tagged-source/player setup commands. Obtain separate approval for
 unapproved operations. Preserve existing human characters, Pokémon and sessions.
 Do not install permanent stock or default sources for this feature.
+
+October 24 update: the exact local plan for `02c81c0` was separately approved
+and executed. That instance was stopped and its schema removed after an
+additional ordinary zero-PP attack check failed. See the
+[released local receipt](../testing/necrozma-released-local-2026-10-24.md).
+The approval covered that candidate and isolated environment; a replacement
+candidate still requires its own exact release authorization. PF2-Dev stayed
+unchanged.
 
 The released walkthrough must acquire both native sources through ordinary
 configured routes, then exercise actual Center movement, review/confirmation,

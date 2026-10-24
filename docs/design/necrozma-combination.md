@@ -7,6 +7,9 @@ dependencies and validation inventory. Closing #820 records this bounded plan;
 its original static receipt does not claim implementation. The October 24
 [local runtime receipt](../testing/necrozma-items-2026-10-24.md) now qualifies
 the two native lifecycles and their existing signatures in the [current Z matrix](z-crystals.md).
+The subsequent [released local walkthrough](../testing/necrozma-released-local-2026-10-24.md)
+exposed an ordinary zero-PP move-legality gap. Its original candidate failed
+acceptance; #831 remains open for a qualified replacement and released rerun.
 
 ## Native forms and entry point
 

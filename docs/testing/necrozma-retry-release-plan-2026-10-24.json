@@ -1,0 +1,259 @@
+{
+  "tag": "necrozma-release-05e2205bda484d27a13099e03698300c",
+  "candidate": "e3557aadced7fc5897b7024d1377047117735a64",
+  "repository": "H:\\PokemonFusionProject\\fusion2-necrozma-items",
+  "source": "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\source",
+  "ports": {
+    "telnet": 53241,
+    "http": 53242,
+    "web": 53243,
+    "amp": 53244,
+    "websocket": 53245
+  },
+  "source_manifest_sha256": "429efb890d91e9ff73bf3a0bb70579137e6ee3b9257424adc708d8fd2cb2ec73",
+  "qa_settings_sha256": "cdfbd4f6a3e5c6e0a67f0ea2d63b3234d892f368c0cd7578487fe4e598ea1edb",
+  "source_is_pinned_uncommitted_candidate": false,
+  "scope": "New named local release from published commit; task-only loopback PostgreSQL random schema; no existing service, game database, PF2-Dev release, permanent source or human player changes",
+  "status": "awaiting-exact-replacement-release-approval",
+  "issue": 831,
+  "executed": false,
+  "operator_approval": null,
+  "prior_failed_candidate": "02c81c0d62364d48d3cdae6d8b57023d8ed99249",
+  "prior_receipt": "necrozma-released-local-2026-10-24.json",
+  "shared_server_deployment": false,
+  "validation": {
+    "831-pp-player": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/necrozma_player_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 91.79,
+        "log_sha256": "c1147823b6db7a465098291562b0192c0ab7e85089ef88943ef8cb8ffbae4731",
+        "unittest_counts": [
+          "15"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      }
+    ],
+    "831-pp-focused": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "tests/test_necrozma_database.py",
+          "tests/test_move_management_services.py",
+          "tests/test_move_learning.py",
+          "tests/test_pp_capacity.py",
+          "tests/test_player_doubles.py",
+          "tests/test_terastallization.py",
+          "tests/test_guide_entries.py",
+          "tests/test_pokemon_helper_create.py",
+          "tests/test_temporary_pokemon.py",
+          "tests/test_turn_manager.py",
+          "tests/test_movesets_menu.py",
+          "tests/test_moveset_command.py",
+          "tests/test_alpha_command_gating.py",
+          "pokemon/battle/tests/test_move_pp_persistence.py",
+          "pokemon/battle/tests/test_z_special_effects.py",
+          "-o",
+          "addopts=",
+          "--run-callback-tests",
+          "--basetemp",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\pytest-focused",
+          "-o",
+          "cache_dir=H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\pytest-cache"
+        ],
+        "exit_code": 0,
+        "seconds": 159.09,
+        "log_sha256": "e55a95691124db6e0f5e6a938df7853142913ca0e34d7f58269740618fd879d3",
+        "unittest_counts": [],
+        "pytest_counts": [
+          "181"
+        ],
+        "skips": []
+      }
+    ],
+    "831-pp-compat": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/player_doubles_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 31.84,
+        "log_sha256": "5c33929f95bd284be610c99f3c508ebf043f6be420f00193b08dcc68ba56031d",
+        "unittest_counts": [
+          "10"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/capture_pp_item_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 12.2,
+        "log_sha256": "f433af759cdee87f1756397f4ad12d6622ec83e23108b6a43d798e14b5ae9799",
+        "unittest_counts": [
+          "16"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/battle_recovery_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 51.42,
+        "log_sha256": "b5cc1e0302f4c329010c46d2dd9f8918bd003ed50d0847d8f8735f7cfaa98f49",
+        "unittest_counts": [
+          "36"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/z_move_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 76.29,
+        "log_sha256": "36786002b2487f06f606e6482200cb4ea410307dd58d6359537b09fd67eec285",
+        "unittest_counts": [
+          "37"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/z_generic_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 202.8,
+        "log_sha256": "74973c2e2b4bedbbe43f88ba019642b1f1d607fc75bffa6f8d585f0c0d43feda",
+        "unittest_counts": [
+          "17"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/z_status_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 124.3,
+        "log_sha256": "7b4a91c3f7d6cb45b73846f597f5a6430414f4bf9400a74c866aabd1932acaca",
+        "unittest_counts": [
+          "20"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/z_signature_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 220.05,
+        "log_sha256": "6d77cbca20bb0753470aac1ee8cb5d4785bc08f510c528e45a7cb9923d9b6c7a",
+        "unittest_counts": [
+          "22"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      },
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/z_native_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 45.28,
+        "log_sha256": "b0e7f320b3c903ade852ee9ad02134696bafaf373142662c0a2a65270f753396",
+        "unittest_counts": [
+          "9"
+        ],
+        "pytest_counts": [],
+        "skips": []
+      }
+    ],
+    "831-pp-mandatory": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tools/run_mandatory_tests.py"
+        ],
+        "exit_code": 0,
+        "seconds": 3196.64,
+        "log_sha256": "488aef14e4fc0061f8bdd22d1be4598a81439f5200dcef836892b7968688276e",
+        "unittest_counts": [],
+        "pytest_counts": [
+          "4933",
+          "4933",
+          "4933"
+        ],
+        "skips": [
+          "4014",
+          "4014",
+          "4014"
+        ]
+      }
+    ]
+  },
+  "reviewed_controller_sources": {
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\prepare_retry.py": "\"\"\"Prepare a reviewable frozen local release, without touching any database/service.\"\"\"\nimport hashlib\nimport json\nfrom pathlib import Path\nimport subprocess\nimport sys\nfrom uuid import uuid4\nimport zipfile\n\nART = Path(__file__).resolve().parent\nROOT = Path(r'H:\\PokemonFusionProject\\fusion2-necrozma-items')\nRELEASE = ART / 'released-retry'\nSOURCE = RELEASE / 'source'\ncandidate = sys.argv[1]\nassert len(candidate) == 40 and all(c in '0123456789abcdef' for c in candidate)\nassert subprocess.check_output(['git','rev-parse',candidate+'^{commit}'],cwd=ROOT,text=True).strip() == candidate\nassert not SOURCE.exists(), 'Never overwrite a prepared release'\nRELEASE.mkdir(exist_ok=True)\narchive = RELEASE / 'source.zip'\nsubprocess.run(['git','archive','--format=zip','--output='+str(archive),candidate],cwd=ROOT,check=True)\nSOURCE.mkdir()\nwith zipfile.ZipFile(archive) as bundle:\n    for entry in bundle.infolist():\n        target = (SOURCE / entry.filename).resolve()\n        assert target.is_relative_to(SOURCE.resolve()) and '..' not in Path(entry.filename).parts\n    bundle.extractall(SOURCE)\nmanifest = json.loads((ART / '831-pp-python-source.json').read_text())\nassert all(hashlib.sha256((SOURCE / path).read_text(encoding='utf-8').encode()).hexdigest()==digest\n    for path,digest in manifest.items())\n(RELEASE/'source-manifest.json').write_text(json.dumps(manifest,indent=2))\nold = ART.parent / 'october-live-final-20261024'\nsettings = (old/'source/server/conf/qa_october_settings.py').read_text()\nsettings = settings.replace('October QA','Native Necrozma QA').replace('october','necrozma')\n(SOURCE/'server/conf/qa_necrozma_settings.py').write_text(settings,encoding='utf-8')\nfor name in ('staff.py','staff_transport.py'):\n    content=(old/name).read_text().replace('qa_october_settings','qa_necrozma_settings')\n    content=content.replace('October','Necrozma').replace('october_qa','necrozma_qa')\n    (RELEASE/name).write_text(content,encoding='utf-8')\nplan = {'tag':'necrozma-release-'+uuid4().hex,'candidate':candidate,\n    'repository':str(ROOT),'source':str(SOURCE),\n    'ports':{'telnet':53241,'http':53242,'web':53243,'amp':53244,'websocket':53245},\n    'source_manifest_sha256':hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest(),\n    'qa_settings_sha256':hashlib.sha256((SOURCE/'server/conf/qa_necrozma_settings.py').read_bytes()).hexdigest(),\n    'source_is_pinned_uncommitted_candidate':False,\n    'scope':'New named local release from published commit; task-only loopback PostgreSQL random schema; no existing service, game database, PF2-Dev release, permanent source or human player changes'}\n(RELEASE/'plan.json').write_text(json.dumps(plan,indent=2))\nprint('Prepared immutable local release',candidate,'with',len(manifest),'verified Python source files; no service/database operations.')\n\n\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\release_supervise_retry.py": "\"\"\"Approved-only fresh local released instance; clean up only its schema/processes.\"\"\"\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport secrets\nimport socket\nimport subprocess\nimport sys\nimport time\n\nART = Path(__file__).resolve().parent\nRELEASE = ART / 'released-retry'\nPLAN = json.loads((RELEASE/'plan.json').read_text())\nSOURCE = Path(PLAN['source'])\nassert SOURCE.resolve() == (RELEASE/'source').resolve()\napproval = json.loads((RELEASE/'operator-approval.json').read_text())\nassert approval['candidate'] == PLAN['candidate'] and approval['tag'] == PLAN['tag']\nassert approval['approved_local_release_and_tagged_qa'] is True\nos.environ['PF2_TEST_POSTGRES_DSN'] = json.loads((ART/'postgres-fixture.json').read_text())['dsn']\nos.environ['PYTHONDONTWRITEBYTECODE']='1'\nsys.path.insert(0,str(SOURCE/'tests/integration'))\nsys.path.insert(0,str(SOURCE))\nfrom isolated_postgres import IsolatedPostgres\n\n\ndef save(name,value):\n    \"\"\"Keep credentials/config private; public output contains no login secrets.\"\"\"\n    (RELEASE/name).write_text(json.dumps(value,indent=2),encoding='utf-8')\n\n\ndef cli(action,env):\n    \"\"\"Only this clone's different AMP port can receive its start/stop command.\"\"\"\n    with (RELEASE/('cli-'+action+'.log')).open('w',encoding='utf-8') as output:\n        return subprocess.run([sys.executable,'-B','-m','evennia.server.evennia_launcher',\n            '--settings','qa_necrozma_settings.py',action],cwd=SOURCE,env=env,\n            stdout=output,stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),timeout=180)\n\n\nmanifest=json.loads((RELEASE/'source-manifest.json').read_text())\nassert all(hashlib.sha256((SOURCE/path).read_text(encoding='utf-8').encode()).hexdigest()==digest\n    for path,digest in manifest.items())\nassert hashlib.sha256((SOURCE/'server/conf/qa_necrozma_settings.py').read_bytes()).hexdigest()==PLAN['qa_settings_sha256']\nfor port in PLAN['ports'].values():\n    with socket.socket() as probe:\n        probe.bind(('127.0.0.1',port))\ndatabase = IsolatedPostgres()\ndatabase.__enter__()\nattempted=False\nstopped=False\ntry:\n    # This is a new release operation requiring its own explicit approval;\n    # the earlier rehearsal-only approval is deliberately insufficient.\n    from django.db import connection\n    from django.db.migrations.executor import MigrationExecutor\n    executor=MigrationExecutor(connection)\n    target=executor.loader.graph.leaf_nodes()\n    executor.migrate(target)\n    assert not MigrationExecutor(connection).migration_plan(target)\n    with connection.cursor() as cursor:\n        cursor.execute('SELECT current_schema()')\n        assert cursor.fetchone()[0]==database.schema\n        cursor.execute('SELECT count(*) FROM objects_objectdb')\n        assert cursor.fetchone()[0]==0\n    config=dict(connection.settings_dict)\n    config['OPTIONS']=dict(config['OPTIONS'],application_name=PLAN['tag'])\n    save('runtime-private.json',{'tag':PLAN['tag'],'candidate':PLAN['candidate'],\n        'schema':database.schema,'database':config,'ports':PLAN['ports'],\n        'secret_key':secrets.token_urlsafe(64),\n        'staff_username':'NativeQAStaff'+secrets.token_hex(4),'staff_password':secrets.token_urlsafe(32)})\n    env=os.environ.copy()\n    env.pop('PF2_NO_EVENNIA',None)\n    env.update(PYTHONPATH=str(SOURCE),DJANGO_SETTINGS_MODULE='server.conf.qa_necrozma_settings',PYTHONIOENCODING='utf-8')\n    with (RELEASE/'staff-init.log').open('w',encoding='utf-8') as output:\n        result=subprocess.run([sys.executable,'-B',str(RELEASE/'staff.py'),'init'],cwd=SOURCE,env=env,\n            stdout=output,stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))\n    assert result.returncode==0,'New private operator init failed'\n    save('supervisor-state.json',{'phase':'starting','pid':os.getpid(),'candidate':PLAN['candidate'],\n        'schema':database.schema,'source':str(SOURCE),'ports':PLAN['ports']})\n    try:\n        attempted=True\n        assert cli('start',env).returncode==0,'Private release startup failed'\n        deadline=time.monotonic()+180\n        while time.monotonic()<deadline:\n            try:\n                with socket.create_connection(('127.0.0.1',PLAN['ports']['telnet']),timeout=2):\n                    pass\n                from evennia.objects.models import ObjectDB\n                assert ObjectDB.objects.filter(pk=2).exists()\n                break\n            except (OSError,AssertionError):\n                time.sleep(.5)\n        else:\n            raise RuntimeError('New QA loopback server did not become ready')\n        save('supervisor-state.json',{'phase':'ready','pid':os.getpid(),'candidate':PLAN['candidate'],\n            'schema':database.schema,'ports':PLAN['ports'],'source_manifest_sha256':PLAN['source_manifest_sha256']})\n        print('LOCAL_NATIVE_RELEASE_READY '+PLAN['candidate'],flush=True)\n        while not (RELEASE/'cleanup-requested').exists():\n            time.sleep(.5)\n    finally:\n        if attempted:\n            cli('stop',env)\n        open_ports=[]\n        for _ in range(60):\n            open_ports=[]\n            for name in ('telnet','http','web','amp','websocket'):\n                try:\n                    with socket.create_connection(('127.0.0.1',PLAN['ports'][name]),timeout=.2):\n                        open_ports.append(name)\n                except OSError:\n                    pass\n            if not open_ports:\n                break\n            time.sleep(.5)\n        assert not open_ports,'Retain schema until remaining task listeners are reviewed'\n        stopped=True\n        save('supervisor-state.json',{'phase':'stopped','candidate':PLAN['candidate'],\n            'schema':database.schema,'ports_closed':True,'existing_services_changed':False})\nfinally:\n    if not attempted or stopped:\n        database.close()\n        print('Private release stopped; its generated schema dropped.',flush=True)\n    else:\n        print('Private schema retained for explicit task-process cleanup.',flush=True)\n\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\release_world_retry.py": "\"\"\"Separate tagged operator setup in the approved disposable released QA world.\"\"\"\nimport hashlib\nimport json\nfrom pathlib import Path\n\nfrom django.conf import settings\nfrom django.db import connection, transaction\nfrom evennia import create_object\nfrom evennia.objects.models import ObjectDB\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.models.onboarding import OnboardingCompletion\nfrom pokemon.models.trainer import Trainer\n\nART=Path(r'H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024')\nRELEASE=ART/'released-retry'\nplan=json.loads((RELEASE/'plan.json').read_text())\nconfig=json.loads((RELEASE/'runtime-private.json').read_text())\napproval=json.loads((RELEASE/'operator-approval.json').read_text())\nassert config['tag']==plan['tag']==approval['tag']\nassert config['candidate']==plan['candidate']==approval['candidate']\nassert approval['approved_local_release_and_tagged_qa'] is True\nassert Path(settings.GAME_DIR).resolve()==Path(plan['source']).resolve()\nwith connection.cursor() as cursor:\n    cursor.execute('SELECT current_schema()')\n    assert cursor.fetchone()[0]==config['schema']\nnames=['NativeDusk'+plan['tag'][-6:],'NativeDawn'+plan['tag'][-6:]]\nplayers=[ObjectDB.objects.get(db_key=name,db_typeclass_path='pokemon.user.User') for name in names]\nfor player in players:\n    assert not player.account.is_superuser\n    assert set(player.permissions.all())=={'player'} and set(player.account.permissions.all())=={'player'}\n    assert OnboardingCompletion.objects.filter(character=player).count()==1\n    assert OwnedPokemon.objects.filter(trainer__user=player).count()==1\nbefore={str(p.pk):list(OwnedPokemon.objects.filter(trainer__user=p).values()) for p in players}\nassert not ObjectDB.objects.filter(db_tags__db_key=plan['tag']).exclude(pk__in=[p.pk for p in players]).exists(), 'One native world setup only'\nwith transaction.atomic():\n    center=create_object('typeclasses.rooms.Room',key='Native Necrozma QA Center')\n    center.db.desc='Disposable native-combination Center and finite item counter. Source trails and the battle arena are outside.'\n    center.db.is_pokemon_center=True\n    center.db.is_item_shop=True\n    center.db.store_inventory={name:{'price':price,'quantity':quantity} for name,price,quantity in (\n        ('Master Ball',1000,20),('Solganium Z',10000,2),('Lunalium Z',10000,2),\n        ('Ether',1200,8),('PP Up',9800,2),('PP Max',15000,2),('Revive',1500,4),('Potion',200,8))}\n    arena=create_object('typeclasses.rooms.Room',key='Native Necrozma QA Arena')\n    arena.db.desc='Ordinary consenting player battles; west returns to the Center.'\n    limbo=ObjectDB.objects.get(pk=2)\n    objects=[center,arena]\n    routes=[('qa route',limbo,center),('limbo',center,limbo),('east',center,arena),('west',arena,center)]\n    for species,trail,level in (('Necrozma','crystal trail',50),('Solgaleo','sun trail',50),\n                               ('Lunala','moon trail',50),('Eevee','meadow trail',5)):\n        room=create_object('typeclasses.rooms.Room',key='Native QA '+species+' Trail')\n        room.db.allow_hunting=True\n        room.db.npc_chance=0\n        room.db.encounter_rate=100\n        room.db.hunt_chart=[{'name':species,'min_level':level,'max_level':level,'weight':1}]\n        objects.append(room)\n        routes.extend([(trail,center,room),('center',room,center)])\n    for key,source,destination in routes:\n        objects.append(create_object('typeclasses.exits.Exit',key=key,location=source,destination=destination))\n    for obj in objects+players:\n        obj.tags.add(plan['tag'])\n    Trainer.objects.filter(user_id__in=[p.pk for p in players]).update(money=500000)\n    # A separate untouched sentinel proves protected non-participant rows stay\n    # unchanged. No native sources, fused rows or bag items are granted.\n    sentinel=create_object('typeclasses.rooms.Room',key='Native QA Protected Sentinel')\n    sentinel.db.desc='Read-only protected row outside every QA player route.'\n    sentinel.tags.add(plan['tag']+'-protected')\nrecord={'kind':'separate approved staff setup','candidate':plan['candidate'],'tag':plan['tag'],\n    'players':names,'onboarding_before_fixture_changes':before,'ordinary_accounts_elevated':False,\n    'objects':[{'id':obj.pk,'key':obj.key} for obj in objects],\n    'stock':dict(center.db.store_inventory),'wallet_fixture_per_player':500000,\n    'source_grants':0,'fused_grants':0,'permanent_sources':False,'existing_game_database_connected':False,\n    'protected_sentinel':{'id':sentinel.pk,'key':sentinel.key,'description':sentinel.db.desc}}\n(RELEASE/'staff-prerequisites.json').write_text(json.dumps(record,indent=2,default=str),encoding='utf-8')\nprint('NATIVE_QA_WORLD_READY',center.pk,arena.pk,'source grants 0; ordinary permissions unchanged')\n\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\release_preconditions_retry.py": "\"\"\"Explicit labelled PP/HP preconditions, only for approved tagged native QA hosts.\"\"\"\nimport json\nfrom pathlib import Path\n\nfrom django.conf import settings\nfrom django.db import connection\nfrom evennia.objects.models import ObjectDB\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.models.moves import ActiveMoveslot\nfrom pokemon.models.necrozma import NecrozmaCombination\nfrom pokemon.services.ownership import assert_character_free, locked_owners\nfrom pokemon.services.necrozma_guards import current_pair\n\nART=Path(r'H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024')\nRELEASE=ART/'released-retry'\nplan=json.loads((RELEASE/'plan.json').read_text())\nconfig=json.loads((RELEASE/'runtime-private.json').read_text())\napproval=json.loads((RELEASE/'operator-approval.json').read_text())\nassert config['candidate']==plan['candidate']==approval['candidate']\nassert config['tag']==plan['tag']==approval['tag']\nassert approval['approved_local_release_and_tagged_qa'] is True\nassert Path(settings.GAME_DIR).resolve()==Path(plan['source']).resolve()\nwith connection.cursor() as cursor:\n    cursor.execute('SELECT current_schema()')\n    assert cursor.fetchone()[0]==config['schema']\nassert QA_ACTION in {'deplete-pp','faint-host'}\nassert QA_PLAYER in ['NativeDusk'+plan['tag'][-6:],'NativeDawn'+plan['tag'][-6:]]\nowner=ObjectDB.objects.get(db_key=QA_PLAYER,db_typeclass_path='pokemon.user.User',db_tags__db_key=plan['tag'])\nassert not owner.account.is_superuser and set(owner.permissions.all())=={'player'}\nwith locked_owners((owner.pk,)) as (characters,storages,trainers):\n    assert_character_free(characters[owner.pk])\n    pair=NecrozmaCombination.objects.get(storage=storages[owner.pk])\n    assert current_pair(pair.host_id)\n    before=list(OwnedPokemon.objects.filter(pk__in=[pair.host_id,pair.companion_id]).values())\n    pp_before=list(ActiveMoveslot.objects.filter(pokemon_id=pair.host_id,slot=pair.move_slot).values())\n    if QA_ACTION=='deplete-pp':\n        ActiveMoveslot.objects.filter(pokemon_id=pair.host_id,slot=pair.move_slot).update(current_pp=0)\n    else:\n        OwnedPokemon.objects.filter(pk=pair.host_id).update(current_hp=0)\n    assert current_pair(pair.host_id)\n    after=list(OwnedPokemon.objects.filter(pk__in=[pair.host_id,pair.companion_id]).values())\n    pp_after=list(ActiveMoveslot.objects.filter(pokemon_id=pair.host_id,slot=pair.move_slot).values())\nrecord={'kind':'separate approved staff precondition, not ordinary earned damage/PP',\n    'action':QA_ACTION,'player':QA_PLAYER,'lifecycle':str(pair.pk),'host':str(pair.host_id),\n    'companion':str(pair.companion_id),'before':before,'after':after,\n    'pp_before':pp_before,'pp_after':pp_after,'source_grants':0}\npath=RELEASE/'staff-field-preconditions.json'\nrecords=json.loads(path.read_text()) if path.exists() else []\nrecords.append(record)\npath.write_text(json.dumps(records,indent=2,default=str),encoding='utf-8')\nprint('NATIVE_QA_PRECONDITION',QA_PLAYER,QA_ACTION,'only its tagged paired host')\n\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\postgres_fixture.py": "\"\"\"Operate only the new task-owned loopback PostgreSQL test cluster.\"\"\"\nimport json\nimport os\nfrom pathlib import Path\nimport socket\nimport subprocess\nimport sys\n\nROOT = Path(__file__).resolve().parent\nDATA = ROOT / 'postgres'\nBIN = Path(r'C:\\Program Files\\PostgreSQL\\16\\bin')\nSTATE = ROOT / 'postgres-fixture.json'\n\n\ndef command(*args):\n    with (ROOT / 'cluster-control.log').open('a', encoding='utf-8') as output:\n        subprocess.run(args, stdout=output, stderr=subprocess.STDOUT, check=True,\n                       creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)\n\n\nif sys.argv[1] == 'start':\n    assert not DATA.exists(), 'Never reuse or overwrite an unrelated cluster'\n    with socket.socket() as listener:\n        listener.bind(('127.0.0.1', 0))\n        port = listener.getsockname()[1]\n    command(str(BIN / 'initdb.exe'), '-D', str(DATA), '-U', 'pf2_october_test',\n            '-A', 'trust', '--encoding=UTF8', '--locale=C')\n    state = {'port': port, 'dsn': f'postgresql://pf2_october_test@127.0.0.1:{port}/postgres',\n             'data': str(DATA), 'stopped': False}\n    STATE.write_text(json.dumps(state, indent=2), encoding='utf-8')\n    command(str(BIN / 'pg_ctl.exe'), '-D', str(DATA), '-l', str(ROOT / 'postgres.log'),\n            '-o', f'-h 127.0.0.1 -p {port}', '-w', 'start')\n    print('Started new task-owned loopback test cluster')\nelif sys.argv[1] == 'launch':\n    state = json.loads(STATE.read_text(encoding='utf-8'))\n    assert Path(state['data']).resolve() == DATA.resolve()\n    assert (DATA / 'PG_VERSION').read_text().strip() == '16'\n    assert not (DATA / 'postmaster.pid').exists()\n    result = subprocess.run([str(BIN / 'pg_ctl.exe'), '-D', str(DATA), 'status'], capture_output=True)\n    assert result.returncode == 3, 'Only launch our prepared, stopped task fixture'\n    with socket.socket() as listener:\n        listener.bind(('127.0.0.1', state['port']))\n    command(str(BIN / 'pg_ctl.exe'), '-D', str(DATA), '-l', str(ROOT / 'postgres.log'),\n            '-o', f\"-h 127.0.0.1 -p {state['port']}\", '-w', 'start')\n    state['stopped'] = False\n    STATE.write_text(json.dumps(state, indent=2), encoding='utf-8')\n    print('Started only prepared task-owned loopback test fixture')\nelif sys.argv[1] == 'resume':\n    state = json.loads(STATE.read_text(encoding='utf-8'))\n    assert Path(state['data']).resolve() == DATA.resolve() and state['stopped']\n    assert (DATA / 'PG_VERSION').read_text().strip() == '16'\n    assert not (DATA / 'postmaster.pid').exists()\n    command(str(BIN / 'pg_ctl.exe'), '-D', str(DATA), '-l', str(ROOT / 'postgres.log'),\n            '-o', f\"-h 127.0.0.1 -p {state['port']}\", '-w', 'start')\n    state['stopped'] = False\n    STATE.write_text(json.dumps(state, indent=2), encoding='utf-8')\n    print('Resumed only this task-owned test cluster for the complete test gate')\nelif sys.argv[1] == 'stop':\n    import psycopg2\n    state = json.loads(STATE.read_text(encoding='utf-8'))\n    assert Path(state['data']).resolve() == DATA.resolve()\n    with psycopg2.connect(state['dsn']) as connection:\n        with connection.cursor() as cursor:\n            cursor.execute(\"SELECT nspname FROM pg_namespace WHERE nspname NOT IN ('public', 'information_schema') AND nspname NOT LIKE 'pg_%'\")\n            assert not cursor.fetchall(), 'A disposable schema was not cleaned up'\n            cursor.execute(\"SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p')\")\n            assert cursor.fetchone()[0] == 0, 'Test tables escaped into the public schema'\n    command(str(BIN / 'pg_ctl.exe'), '-D', str(DATA), '-m', 'fast', '-w', 'stop')\n    state.update(stopped=True, disposable_schemas_remaining=0, public_tables=0)\n    STATE.write_text(json.dumps(state, indent=2), encoding='utf-8')\n    print('Stopped only task-owned cluster; no disposable schemas remain')\nelse:\n    raise SystemExit('Use start or stop')\n\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\staff.py": "\"\"\"Separate tagged staff prerequisites/observations for the new private QA world.\"\"\"\nimport json\nimport os\nfrom pathlib import Path\nimport sys\n\nART = Path(__file__).resolve().parent\nSOURCE = ART / 'source'\nsys.path.insert(0, str(SOURCE))\nos.environ['DJANGO_SETTINGS_MODULE'] = 'server.conf.qa_necrozma_settings'\nconfig = json.loads((ART / 'runtime-private.json').read_text())\nimport django\ndjango.setup()\nimport evennia\nevennia._init()\nfrom django.db import connection\nwith connection.cursor() as cursor:\n    cursor.execute('SELECT current_schema()')\n    assert cursor.fetchone()[0] == config['schema']\n\nif sys.argv[1] == 'init':\n    # MigrationExecutor intentionally omits management-command post_migrate.\n    # Initialize the normal framework metadata in this new empty QA world.\n    from django.apps import apps\n    from django.contrib.contenttypes.management import create_contenttypes\n    from django.contrib.auth.management import create_permissions\n    for app in apps.get_app_configs():\n        create_contenttypes(app, verbosity=0, interactive=False)\n        create_permissions(app, verbosity=0, interactive=False)\n    from django.conf import settings\n    from django.contrib.sites.models import Site\n    Site.objects.get_or_create(pk=settings.SITE_ID, defaults={\n        'domain': '127.0.0.1:' + str(config['ports']['http']), 'name': 'Disposable Necrozma QA'})\n    from evennia.accounts.models import AccountDB\n    assert not AccountDB.objects.exists(), 'Only an empty task-owned QA world may initialize its operator'\n    account = AccountDB.objects.create_superuser(username=config['staff_username'], email='staff@example.invalid',\n                                                password=config['staff_password'])\n    assert account.pk == 1\n    account.tags.add(config['tag'])\n    print('Separate QA operator initialized; no ordinary account was elevated.')\nelif sys.argv[1] == 'site-metadata':\n    from django.conf import settings\n    from django.contrib.sites.models import Site\n    Site.objects.get_or_create(pk=settings.SITE_ID, defaults={\n        'domain': '127.0.0.1:' + str(config['ports']['http']), 'name': 'Disposable Necrozma QA'})\n    print('Default Site metadata restored in the task-owned schema only.')\nelif sys.argv[1] == 'diagnose-login':\n    from django.test import Client\n    response = Client(HTTP_HOST='127.0.0.1').get('/auth/login/')\n    print('Read-only login request:', response.status_code)\nelse:\n    raise SystemExit('Unknown tagged staff operation')\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\staff_transport.py": "\"\"\"Private QA operator transport; never logs authentication input.\"\"\"\nimport json\nfrom pathlib import Path\nimport re\nimport socket\nimport sys\nimport time\n\nART = Path(__file__).resolve().parent\nconfig = json.loads((ART / 'runtime-private.json').read_text())\nplan = json.loads((ART / 'plan.json').read_text())\nassert config['tag'] == plan['tag']\nassert config['ports'] == plan['ports']\n\ndef receive(connection, seconds=1.0):\n    \"\"\"Collect available server output without printing authentication data.\"\"\"\n    end = time.monotonic() + seconds\n    chunks = []\n    connection.settimeout(.2)\n    while time.monotonic() < end:\n        try:\n            data = connection.recv(65536)\n            if not data:\n                break\n            chunks.append(data)\n        except socket.timeout:\n            pass\n    output = b''.join(chunks).decode('utf-8', errors='replace')\n    for key in ('staff_username', 'staff_password', 'secret_key'):\n        output = output.replace(config[key], '[private]')\n    return re.sub(r'\\x1b\\[[0-9;]*m', '', output)\n\nwith socket.create_connection(('127.0.0.1', config['ports']['telnet']), timeout=5) as connection:\n    receive(connection)\n    connection.sendall(('connect ' + config['staff_username'] + ' ' + config['staff_password'] + '\\r\\n').encode())\n    login = receive(connection, 2)\n    if 'incorrect' in login.lower() or 'failed' in login.lower():\n        raise RuntimeError('Private operator authentication failed')\n    if sys.argv[1] == 'cookie-isolation':\n        suffix = config['tag'][-8:]\n        command = (\"@py from django.conf import settings; \"\n                   f\"settings.SESSION_COOKIE_NAME='necrozma_qa_{suffix}'; \"\n                   f\"settings.CSRF_COOKIE_NAME='necrozma_qa_csrf_{suffix}'; \"\n                   \"print('OCTOBER_COOKIE_ISOLATION', settings.SESSION_COOKIE_NAME, settings.CSRF_COOKIE_NAME)\")\n    elif sys.argv[1] == 'command':\n        command = sys.argv[2]\n    else:\n        raise SystemExit('Unknown private staff operation')\n    connection.sendall((command + '\\r\\n').encode())\n    output = receive(connection, 2)\n    print(output)\n    connection.sendall(b'quit\\r\\n')\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\battle_observe.py": "\"\"\"Separate operator read-only view of live battle effects and side budgets.\"\"\"\nimport json\nfrom pathlib import Path\nfrom django.conf import settings\nfrom django.db import connection\nfrom evennia.objects.models import ObjectDB\nROOT=Path(r'H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry')\nplan=json.loads((ROOT/'plan.json').read_text())\nconfig=json.loads((ROOT/'runtime-private.json').read_text())\nassert config['candidate']==plan['candidate'] and config['tag']==plan['tag']\nassert Path(settings.GAME_DIR).resolve()==Path(plan['source']).resolve()\nwith connection.cursor() as cursor:\n    cursor.execute('SELECT current_schema()')\n    assert cursor.fetchone()[0]==config['schema']\nplayer=ObjectDB.objects.get(db_key='NativeDusk'+plan['tag'][-6:],db_typeclass_path='pokemon.user.User')\nsession=player.location.ndb.battle_instances[player.db.battle_id]\nassert session and session.battle\nbattle=session.battle\nresult={'label':QA_LABEL,'battle_id':session.battle_id,'turn':battle.turn_count,\n 'declarations':dict(session.state.declare),\n 'pending_actors':[p.player.key for p in battle.participants if p.pending_action],\n 'z_used':list(battle.z_used),'z_pending':str(battle.z_pending),\n 'participants':[{'name':p.player.key,'team':p.team,'active':[str(getattr(x,'model_id','')) for x in p.active],\n 'pokemon':[{'uuid':str(getattr(x,'model_id','')),'name':x.name,'hp':x.hp,'max_hp':x.max_hp,\n 'move_names':[m.name for m in x.moves]} for x in p.pokemons]} for p in battle.participants]}\n(ROOT/('battle-'+QA_LABEL+'.json')).write_text(json.dumps(result,indent=2,default=str),encoding='utf-8')\nprint('READ_ONLY_BATTLE',QA_LABEL,'side budgets',list(battle.z_used))\n\n",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\source\\server\\conf\\qa_necrozma_settings.py": "\"\"\"Private new loopback test instance; fail closed outside its disposable schema.\"\"\"\nfrom .settings import *\nimport json\nfrom pathlib import Path\n\nGAME_DIR = str(Path(__file__).resolve().parents[2])\n_config = json.loads((Path(GAME_DIR).parent / 'runtime-private.json').read_text(encoding='utf-8'))\nDATABASES = {'default': _config['database']}\nSECRET_KEY = _config['secret_key']\nSERVERNAME = 'Native Necrozma QA ' + _config['tag'][-8:]\nDEV_MODE = False\nDEBUG = False\nALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']\nTELNET_ENABLED = True\nTELNET_PORTS = [_config['ports']['telnet']]\nTELNET_INTERFACES = ['127.0.0.1']\nSSL_ENABLED = SSH_ENABLED = False\nWEBSERVER_ENABLED = WEBCLIENT_ENABLED = WEBSOCKET_CLIENT_ENABLED = True\nWEBSERVER_PORTS = [(_config['ports']['http'], _config['ports']['web'])]\nWEBSERVER_INTERFACES = ['127.0.0.1']\nWEBSOCKET_CLIENT_PORT = _config['ports']['websocket']\nWEBSOCKET_CLIENT_INTERFACE = '127.0.0.1'\nWEBSOCKET_CLIENT_URL = 'ws://127.0.0.1:' + str(_config['ports']['websocket'])\nAMP_HOST, AMP_PORT = '127.0.0.1', _config['ports']['amp']\nAMP_INTERFACE = '127.0.0.1'\nNEW_ACCOUNT_REGISTRATION_ENABLED = True\nGUEST_ENABLED = False\nEMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'\nDEFAULT_FROM_EMAIL = 'necrozma-qa@example.invalid'\nCSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:' + str(_config['ports']['http'])]\nSESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = False\nSESSION_COOKIE_NAME = 'necrozma_qa_' + _config['tag'][-8:]\nCSRF_COOKIE_NAME = 'necrozma_qa_csrf_' + _config['tag'][-8:]\nLOG_DIR = str(Path(GAME_DIR) / 'server/logs')\nPath(LOG_DIR).mkdir(parents=True, exist_ok=True)\nSERVER_LOG_FILE = str(Path(LOG_DIR) / 'server.log')\nPORTAL_LOG_FILE = str(Path(LOG_DIR) / 'portal.log')\nHTTP_LOG_FILE = str(Path(LOG_DIR) / 'http.log')\n\nfrom django.db.backends.signals import connection_created\n\ndef _guard_connection(sender, connection, **kwargs):\n    \"\"\"Reject fallback database aliases, hosts or search paths before any writes.\"\"\"\n    expected = _config['database']\n    if (connection.vendor != 'postgresql' or connection.settings_dict.get('HOST') != expected['HOST']\n            or str(connection.settings_dict.get('PORT')) != str(expected['PORT'])\n            or connection.settings_dict.get('OPTIONS', {}).get('options') != expected['OPTIONS']['options']):\n        connection.close()\n        raise RuntimeError('QA connection attempted an unauthorized database configuration')\n    with connection.cursor() as cursor:\n        cursor.execute('SELECT current_schema()')\n        if cursor.fetchone()[0] != _config['schema']:\n            connection.close()\n            raise RuntimeError('QA connection attempted a non-QA schema')\n\nconnection_created.connect(_guard_connection, dispatch_uid='necrozma-qa-schema-guard', weak=False)\n"
+  },
+  "reviewed_controller_sha256": {
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\prepare_retry.py": "0263da7529587cd720049912aee443a8e589617d4b326f614ff256a2f22555cf",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\release_supervise_retry.py": "4327a443bf57c46e6c0d07ba7cebaa4c75a66615476c682d656319e2be88280d",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\release_world_retry.py": "701d1a5e90f128a1a74c598854f9f55f2e21c13cad00e4f458e195053dfb937a",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\release_preconditions_retry.py": "3e98d5a3c871e08e856d2c9cdf490d3d0e1d2dd2ebac050146893211f23643bf",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\postgres_fixture.py": "4f1d7eda65b8a6791c6c4d99297a69d0e4f8ea8fdb2f4f9f0a23481bbb3af9b5",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\staff.py": "d5ecffa2e0fd46668b7b0be50047786f856d7c051dfff6ad1f64c6f6988e0909",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\staff_transport.py": "f05ef56143e1b7eedd43126df690335b6cd22fa4b0337c2d4cedff0b8bb63d94",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\battle_observe.py": "30287e3265c312fe37ed72a7bc59794319140c1d56ddea0bf0ecb01d43e3e30f",
+    "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\source\\server\\conf\\qa_necrozma_settings.py": "ace93aedc8802b2744fc1f8ea720d8636d9720f12e4d76492897144a97b3bd75"
+  },
+  "authority": "AGENTS.md requires asking before migrations and service operations. The earlier human approval explicitly selected the failed original SHA and does not cover this replacement.",
+  "ordinary_players": [
+    "NativeDusk98300c",
+    "NativeDawn98300c"
+  ],
+  "staff_scope": "New tagged rooms/exits/finite stock/wallets/base charts; no source, fused or bag grants. Optional separately labelled bound PP0/host HP0, outside battle only.",
+  "ordinary_acceptance": "Repeat complete two-form acquisition/Center/review/inspection/battle/Z/reconnect/field/return flows, then assert ordinary and Z zero-PP rejection before declarations/damage/side use.",
+  "cleanup": "Separate only tagged sources, quit sockets, verify protected/companion rows, stop only the new archive through its AMP port, drop only its random schema, stop only the task cluster."
+}

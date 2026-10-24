@@ -14,11 +14,17 @@
   "qa_settings_sha256": "cdfbd4f6a3e5c6e0a67f0ea2d63b3234d892f368c0cd7578487fe4e598ea1edb",
   "source_is_pinned_uncommitted_candidate": false,
   "scope": "New named local release from published commit; task-only loopback PostgreSQL random schema; no existing service, game database, PF2-Dev release, permanent source or human player changes",
-  "status": "awaiting-separate-operator-approval",
+  "status": "executed-local-candidate-failed-ordinary-zero-pp-attack",
   "issue": 831,
   "local_implementation_receipt": "necrozma-items-2026-10-24.json",
-  "operator_approval": null,
-  "executed": false,
+  "operator_approval": {
+    "date": "2026-10-24",
+    "tag": "necrozma-release-777571d2a1114aac812d180fff18a87f",
+    "candidate": "02c81c0d62364d48d3cdae6d8b57023d8ed99249",
+    "approved_local_release_and_tagged_qa": true,
+    "human_reply": "Approve local release + QA"
+  },
+  "executed": true,
   "shared_server_deployment": false,
   "reviewed_controller_sources": {
     "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\prepare_release.py": "\"\"\"Prepare a reviewable frozen local release, without touching any database/service.\"\"\"\nimport hashlib\nimport json\nfrom pathlib import Path\nimport subprocess\nimport sys\nfrom uuid import uuid4\nimport zipfile\n\nART = Path(__file__).resolve().parent\nROOT = Path(r'H:\\PokemonFusionProject\\fusion2-necrozma-items')\nRELEASE = ART / 'released'\nSOURCE = RELEASE / 'source'\ncandidate = sys.argv[1]\nassert len(candidate) == 40 and all(c in '0123456789abcdef' for c in candidate)\nassert subprocess.check_output(['git','rev-parse',candidate+'^{commit}'],cwd=ROOT,text=True).strip() == candidate\nassert not SOURCE.exists(), 'Never overwrite a prepared release'\nRELEASE.mkdir(exist_ok=True)\narchive = RELEASE / 'source.zip'\nsubprocess.run(['git','archive','--format=zip','--output='+str(archive),candidate],cwd=ROOT,check=True)\nSOURCE.mkdir()\nwith zipfile.ZipFile(archive) as bundle:\n    for entry in bundle.infolist():\n        target = (SOURCE / entry.filename).resolve()\n        assert target.is_relative_to(SOURCE.resolve()) and '..' not in Path(entry.filename).parts\n    bundle.extractall(SOURCE)\nmanifest = json.loads((ART / 'qualified-python-source.json').read_text())\nassert all(hashlib.sha256((SOURCE / path).read_text(encoding='utf-8').encode()).hexdigest()==digest\n    for path,digest in manifest.items())\n(RELEASE/'source-manifest.json').write_text(json.dumps(manifest,indent=2))\nold = ART.parent / 'october-live-final-20261024'\nsettings = (old/'source/server/conf/qa_october_settings.py').read_text()\nsettings = settings.replace('October QA','Native Necrozma QA').replace('october','necrozma')\n(SOURCE/'server/conf/qa_necrozma_settings.py').write_text(settings,encoding='utf-8')\nfor name in ('staff.py','staff_transport.py'):\n    content=(old/name).read_text().replace('qa_october_settings','qa_necrozma_settings')\n    content=content.replace('October','Necrozma').replace('october_qa','necrozma_qa')\n    (RELEASE/name).write_text(content,encoding='utf-8')\nplan = {'tag':'necrozma-release-'+uuid4().hex,'candidate':candidate,\n    'repository':str(ROOT),'source':str(SOURCE),\n    'ports':{'telnet':53231,'http':53232,'web':53233,'amp':53234,'websocket':53235},\n    'source_manifest_sha256':hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest(),\n    'qa_settings_sha256':hashlib.sha256((SOURCE/'server/conf/qa_necrozma_settings.py').read_bytes()).hexdigest(),\n    'source_is_pinned_uncommitted_candidate':False,\n    'scope':'New named local release from published commit; task-only loopback PostgreSQL random schema; no existing service, game database, PF2-Dev release, permanent source or human player changes'}\n(RELEASE/'plan.json').write_text(json.dumps(plan,indent=2))\nprint('Prepared immutable local release',candidate,'with',len(manifest),'verified Python source files; no service/database operations.')\n",
@@ -64,5 +70,7 @@
       "paired host HP0"
     ],
     "ordinary_account_permissions": "Player; never elevated"
-  }
+  },
+  "execution_receipt": "necrozma-released-local-2026-10-24.json",
+  "replacement_plan": "necrozma-retry-release-plan-2026-10-24.json"
 }
