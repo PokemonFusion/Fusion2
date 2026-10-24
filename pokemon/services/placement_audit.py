@@ -90,3 +90,17 @@ def audit_placements_v1(apps, using="default"):
             yield problem("invalid_shape", f"location={location}, slot={slot}, box={bid}, position={position}")
         if (active[pid], stored[pid], boxed[pid]) != (expected_active, expected_stored, expected_boxed):
             yield problem("legacy_mismatch", f"party={active[pid]}, storage={stored[pid]}, boxes={boxed[pid]}")
+
+
+def audit_placements_v2(apps, using="default"):
+    """Extend v1's immutable migration contract with canonical Daycare shape."""
+    rows = apps.get_model("pokemon", "PokemonPlacement").objects.using(using).filter(location_type="daycare")
+    valid_shape = {str(row["pokemon_id"]) for row in rows.values()
+                   if row["slot"] is None and row["box_id"] is None and row["box_position"] is None}
+    for problem in audit_placements_v1(apps, using):
+        if problem.code == "invalid_shape" and problem.pokemon_id in valid_shape:
+            continue
+        yield problem
+    from pokemon.services.daycare_audit import audit_daycare_v1
+
+    yield from audit_daycare_v1(apps, using)

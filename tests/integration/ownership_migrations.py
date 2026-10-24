@@ -29,7 +29,8 @@ def rehearse(scenario):
     targets = executor.loader.graph.leaf_nodes()
     seed = None
     if scenario != "fresh":
-        baseline = [("pokemon", "0049_marketplace" if scenario == "market-upgrade" else
+        baseline = [("pokemon", "0051_daycare" if scenario == "daycare-upgrade" else
+                     "0049_marketplace" if scenario == "market-upgrade" else
                      "0047_ownership_transfers" if scenario == "guarded-upgrade" else "0046_berry_bed")]
         executor.migrate(baseline)
         seed = RecoveryMigrationRehearsal.seed_progression(executor.loader.project_state(baseline).apps)
@@ -70,6 +71,22 @@ def rehearse(scenario):
             cursor.execute("SELECT count(*) FROM pg_proc WHERE proname='pf2_check_market' AND pronamespace=current_schema()::regnamespace")
             assert cursor.fetchone()[0] == 0, "Failed market migration partially installed functions."
         invalid.delete()  # deliberately remove only the known invalid task-owned listing
+    if scenario == "daycare-upgrade":
+        history = executor.loader.project_state(baseline).apps
+        storage = history.get_model("pokemon", "UserStorage").objects.get(user_id=seed["player"])
+        invalid = history.get_model("pokemon", "DaycareEntry").objects.create(
+            storage=storage, pokemon_id=seed["pokemon"], owned_id=seed["pokemon"], saved_name="Known invalid QA parent", place=1)
+        executor = MigrationExecutor(connection)
+        try:
+            executor.migrate(targets)
+        except RuntimeError as error:
+            assert "Daycare audit failed" in str(error), str(error)
+        else:
+            raise AssertionError("A Daycare entry without matching placement/claim did not block deployment.")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM pg_proc WHERE proname='pf2_check_daycare' AND pronamespace=current_schema()::regnamespace")
+            assert cursor.fetchone()[0] == 0, "Failed Daycare migration partially installed checks."
+        invalid.delete()  # deliberately remove only the known invalid task-owned entry
     executor = MigrationExecutor(connection)
     executor.migrate(targets)
     executor = MigrationExecutor(connection)
@@ -105,10 +122,10 @@ def rehearse(scenario):
 def main():
     """Use one fresh Django process/schema for each scenario."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=("fresh", "upgrade", "guarded-upgrade", "market-upgrade"))
+    parser.add_argument("--scenario", choices=("fresh", "upgrade", "guarded-upgrade", "market-upgrade", "daycare-upgrade"))
     args = parser.parse_args()
     if args.scenario is None:
-        for scenario in ("fresh", "upgrade", "guarded-upgrade", "market-upgrade"):
+        for scenario in ("fresh", "upgrade", "guarded-upgrade", "market-upgrade", "daycare-upgrade"):
             subprocess.run([sys.executable, "-B", str(Path(__file__).resolve()), "--scenario", scenario], check=True)
     else:
         with IsolatedPostgres():

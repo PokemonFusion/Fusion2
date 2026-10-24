@@ -97,6 +97,7 @@ class PokemonPlacement(models.Model):
 		PARTY = "party", "Party"
 		BOX = "box", "Box"
 		FUSION = "fusion", "Fusion reservation"
+		DAYCARE = "daycare", "Daycare reservation"
 
 	storage = models.ForeignKey("UserStorage", on_delete=models.CASCADE, related_name="placements", db_index=True)
 	pokemon = models.OneToOneField("OwnedPokemon", on_delete=models.CASCADE, related_name="placement", db_index=True)
@@ -129,7 +130,7 @@ class PokemonPlacement(models.Model):
 						box__isnull=True, box_position__isnull=True)
 					| models.Q(location_type="box", slot__isnull=True, box__isnull=False,
 						box_position__isnull=False, box_position__gte=1)
-					| models.Q(location_type="fusion", slot__isnull=True, box__isnull=True,
+					| models.Q(location_type__in=("fusion", "daycare"), slot__isnull=True, box__isnull=True,
 						box_position__isnull=True)
 				), name="pokemon_placement_shape",
 			),
@@ -149,9 +150,9 @@ class PokemonPlacement(models.Model):
 				raise ValidationError("Box placement requires a box, positive position, and no party slot.")
 			if self.box.storage_id != self.storage_id:
 				raise ValidationError("Box does not belong to this storage.")
-		elif self.location_type == self.LocationType.FUSION:
+		elif self.location_type in (self.LocationType.FUSION, self.LocationType.DAYCARE):
 			if self.slot is not None or self.box_id is not None or self.box_position is not None:
-				raise ValidationError("Fusion reservations cannot have party or box data.")
+				raise ValidationError("Reserved Pokemon cannot have party or box data.")
 		else:
 			raise ValidationError("Unknown placement state.")
 

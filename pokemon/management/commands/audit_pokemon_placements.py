@@ -3,7 +3,7 @@
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 
-from pokemon.services.placement_audit import audit_placements_v1
+from pokemon.services.placement_audit import audit_placements_v2
 
 
 class Command(BaseCommand):
@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Emit actionable identifiers; never guess owners or perform repairs."""
         count = 0
-        for problem in audit_placements_v1(apps, options["database"]):
+        for problem in audit_placements_v2(apps, options["database"]):
             self.stdout.write(str(problem))
             count += 1
         if count:

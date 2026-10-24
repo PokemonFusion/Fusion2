@@ -81,3 +81,12 @@ def test_marketplace_guide_describes_exact_price_review_and_recovery():
         assert command in text
     for rule in ("24 hours", "1,000,000", "no fee", "hatched", "historical", "box"):
         assert rule in text
+
+
+def test_daycare_guide_matches_custody_only_release():
+    """Do not advertise breeding production before its separate rollout."""
+    text = _guide_entries()["daycare"]["text"]
+    for command in ("+daycare deposit", "+daycare retrieve", "+daycare"):
+        assert command in text
+    for rule in ("two", "100", "free", "no cooldown", "box", "not yet enabled"):
+        assert rule in text

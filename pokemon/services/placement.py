@@ -80,9 +80,9 @@ class PlacementService:
         placement.save()
         return placement
 
-    def _party(self, pokemon, storage, current, slot=None, *, allow_fusion=False):
+    def _party(self, pokemon, storage, current, slot=None, *, allow_fusion=False, allow_daycare=False):
         """Allocate or retain a slot while holding the storage lock."""
-        self._check_reservation(current, allow_fusion)
+        self._check_reservation(current, allow_fusion, allow_daycare)
         if slot is not None and (isinstance(slot, bool) or slot not in range(1, 7)):
             raise PlacementError("Party slot must be between 1 and 6.")
         if current and current.location_type == "party" and (slot is None or slot == current.slot):
@@ -98,8 +98,10 @@ class PlacementService:
         return self._write(pokemon, storage, current, "party", slot=slot)
 
     @staticmethod
-    def _check_reservation(current, allow_fusion):
+    def _check_reservation(current, allow_fusion, allow_daycare=False):
         """Only the fusion return path may consume a fusion reservation."""
+        if current and current.location_type == "daycare" and not allow_daycare:
+            raise PlacementError("Pokemon is reserved for Daycare.")
         if current and current.location_type == "fusion" and not allow_fusion:
             raise PlacementError("Pokemon is reserved for fusion.")
         if current and not allow_fusion:
@@ -108,11 +110,11 @@ class PlacementService:
             if str(current.pokemon_id) in fusion_references(current.storage.user):
                 raise PlacementError("Pokemon is reserved for an active or unlocked Fusion form.")
 
-    def _box(self, pokemon, storage, current, box=None, *, allow_fusion=False):
+    def _box(self, pokemon, storage, current, box=None, *, allow_fusion=False, allow_daycare=False):
         """Allocate a unique positive box position, preserving successful retries."""
         from pokemon.models.storage import StorageBox, assign_to_first_storage_box
 
-        self._check_reservation(current, allow_fusion)
+        self._check_reservation(current, allow_fusion, allow_daycare)
         if box is None and current and current.location_type == "box":
             return current
         if box is None:

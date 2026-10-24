@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from pokemon.models.ownership import OwnershipTransfer
-from pokemon.services.ownership_audit import audit_ownership_v1
+from pokemon.services.ownership_audit import audit_ownership_v2
 
 
 class Command(BaseCommand):
@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Print exact references for deliberate investigation and safe cancellation."""
-        problems = list(audit_ownership_v1(apps, options["database"]))
+        problems = list(audit_ownership_v2(apps, options["database"]))
         for problem in problems:
             self.stdout.write(str(problem))
         if options["pending"]:

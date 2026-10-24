@@ -27,3 +27,19 @@ def audit_ownership_v1(apps, using="default"):
                 for move in operation["terms"])
         ):
             yield PlacementProblem(str(pokemon_id), "reservation_consent", f"transfer={row['transfer_id']}")
+
+
+def audit_ownership_v2(apps, using="default"):
+    """Extend v1 for Daycare without changing historical migration validation."""
+    from pokemon.services.placement_audit import audit_placements_v2
+    from pokemon.services.market_audit import audit_market_v1
+
+    yield from audit_placements_v2(apps, using)
+    yield from audit_market_v1(apps, using)
+    valid_daycare = {str(row["pokemon_id"]) for row in apps.get_model("pokemon", "PokemonReservation").objects.using(using)
+        .filter(kind="daycare", pokemon__placement__location_type="daycare").values()}
+    for problem in audit_ownership_v1(apps, using):
+        if problem.code in {"reservation_placement", "reservation_consent"}:
+            if problem.code == "reservation_placement" and problem.pokemon_id in valid_daycare:
+                continue
+            yield problem

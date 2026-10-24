@@ -26,6 +26,36 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "daycare",
+		"aliases": ["pokemon daycare", "parent custody"],
+		"category": "Guide",
+		"text": """
+Daycare holds two hatched owned Pokemon per character. Deposit costs 100 trainer
+money per stay; retrieval is free. Depositing and retrieving have no cooldown.
+There is no passive EXP, healing, friendship or evolution. Breeding production
+is not yet enabled; this route provides custody only.
+
++daycare deposit 3
++daycare
++daycare retrieve <entry ID>
+
+Deposit accepts party slots or a unique owned Pokemon ID prefix of at least
+eight hex characters, including boxed Pokemon. Status shows your entry IDs
+after reconnect. Repeating an active deposit using its Pokemon ID costs nothing
+more. Repeating retrieval returns the saved receipt without another move.
+
+Deposited Pokemon leave the party/box and cannot battle, fuse, trade, be listed,
+released or edited. Eggs and conflicting reservations are rejected before fees.
+Finish your battle before deposit or retrieval. A full Daycare or insufficient
+money changes nothing; retrieval never requires money.
+
+Retrieval prefers the old party slot, then another free slot, then a box if full.
+The same Pokemon keeps its HP, status, moves, PP, genetics, training and held item.
+A later deliberate new stay costs another 100. Save the entry ID for historical
+receipts. Ask staff to inspect conflicting custody; do not pay again to repair it.
+		""",
+	},
+	{
 		"key": "marketplace",
 		"aliases": ["pokemon market", "player sales"],
 		"category": "Guide",
