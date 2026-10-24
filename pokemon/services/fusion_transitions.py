@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 from django.db import transaction
 
 from pokemon.services.battle_rewards import BattleRewards
-from pokemon.services.ownership import assert_character_free, fresh_owned, locked_owners
+from pokemon.services.ownership import acting_character, assert_character_free, fresh_owned, locked_owners
 from pokemon.services.placement import PlacementError, PlacementService
 
 CATEGORY = "fusion_transitions"
@@ -40,7 +40,7 @@ class FusionTransitions:
 
     def __init__(self, actor):
         """Accept only the acting character, not an account-wide owner capability."""
-        self.character = BattleRewards.character(actor)
+        self.character = acting_character(actor)
         self.actor_id = self.character.pk
 
     @staticmethod

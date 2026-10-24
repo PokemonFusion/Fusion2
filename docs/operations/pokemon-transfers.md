@@ -1,7 +1,7 @@
 # Shared ownership transfers and reservations (#722)
 
-This foundation supplies transactional services. The ordinary `+trade` route is
-still disabled until #725 supplies the consent UI. Marketplace, Daycare and
+This foundation supplies transactional services. The ordinary `+trade` route uses
+the [consent UI](consent-trading.md) in #725. Marketplace, Daycare and
 breeding remain separate implementation/acceptance work. These services grant
 no money, items, evolution, EXP or automatic repairs.
 

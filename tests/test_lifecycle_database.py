@@ -50,3 +50,15 @@ def test_fusion_transition_database():
         cwd=root, env=os.environ.copy(), capture_output=True, text=True, timeout=180,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_consent_trading_database():
+    """Cover the actual trade/menu boundaries with independent PostgreSQL writers."""
+    if not os.environ.get("PF2_TEST_POSTGRES_DSN"):
+        pytest.skip("Consent-trading coverage requires an explicit isolated PostgreSQL DSN.")
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, "-B", str(root / "tests/integration/trade_cases.py")],
+        cwd=root, env=os.environ.copy(), capture_output=True, text=True, timeout=180,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

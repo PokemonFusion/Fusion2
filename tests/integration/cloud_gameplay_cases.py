@@ -232,7 +232,7 @@ class CloudGameplayCases(unittest.TestCase):
         self.owned.refresh_from_db()
         self.assertEqual(self.owned.current_hp, min(get_max_hp(self.owned), 21))
         self.assertEqual(self.player.trainer.get_item_quantity("Potion"), 0)
-        self.assertIn("temporarily unavailable", self.command(CmdTradePokemon, "anything=anyone"))
+        self.assertIn("Gifts require recipient acceptance", self.command(CmdTradePokemon, "anything=anyone"))
 
 
 if __name__ == "__main__":

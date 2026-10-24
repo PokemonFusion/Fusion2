@@ -12,7 +12,7 @@ from utils.locks import require_no_battle_lock
 
 
 class CmdChooseMoveset(Command):
-    """Select which stored moveset a Pokemon should use.
+    """Select which stored moveset a Pokemon should use at a Pokemon Center.
 
     Usage:
       +moves/use <slot>=<set#>
@@ -49,6 +49,19 @@ class CmdChooseMoveset(Command):
         pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
         if not pokemon:
             self.caller.msg("No Pokémon in that slot.")
+            return
+        from pokemon.services.battle_rewards import BattleRewards
+
+        if BattleRewards.supports(self.caller):
+            from pokemon.services.move_edits import MoveEdits
+            from pokemon.services.placement import PlacementError
+
+            try:
+                name = MoveEdits(self.caller).activate_set(pokemon, self.index, expected_slot=self.slot)
+            except PlacementError as error:
+                self.caller.msg(str(error))
+                return
+            self.caller.msg(f"{name} is now using moveset {self.index + 1}.")
             return
         sets = list(pokemon.movesets.order_by("index"))
         if self.index < 0 or self.index >= len(sets):

@@ -1,6 +1,9 @@
+"""Center-only saved movesets with fresh owner/reservation checks on every reply."""
+
 from pokemon.helpers.party_helpers import get_party_slots
 from pokemon.names import normalize_name
 from pokemon.services.move_management import apply_active_moveset
+from pokemon.services.move_edits import BattleRewards, MoveEdits, after_move_commit, guarded_move_menu
 
 
 def node_start(caller, raw_input=None):
@@ -35,7 +38,9 @@ def node_start(caller, raw_input=None):
 	return node_manage(caller)
 
 
+@guarded_move_menu(require_center=True)
 def node_manage(caller, raw_input=None):
+	"""Inspect or activate a saved set while retaining the current owner guard."""
 	poke = caller.ndb.ms_pokemon
 	sets = []
 	for ms in poke.movesets.order_by("index"):
@@ -79,8 +84,11 @@ def node_manage(caller, raw_input=None):
 		caller.msg("Number must be 1-4.")
 		return node_manage(caller)
 	if action == "swap":
-		poke.swap_moveset(idx)
-		caller.msg(f"Active moveset set to {idx + 1}.")
+		if BattleRewards.supports(caller):
+			MoveEdits(caller).activate_set(poke, idx)
+		else:
+			poke.swap_moveset(idx)
+		after_move_commit(caller, lambda: caller.msg(f"Active moveset set to {idx + 1}."))
 		return node_manage(caller)
 	if action == "edit":
 		caller.ndb.ms_index = idx
@@ -89,7 +97,9 @@ def node_manage(caller, raw_input=None):
 	return node_manage(caller)
 
 
+@guarded_move_menu(require_center=True)
 def node_edit(caller, raw_input=None):
+	"""Update only the retained owned source, never a stale transferred reference."""
 	poke = caller.ndb.ms_pokemon
 	idx = caller.ndb.ms_index
 	sets = {ms.index: ms for ms in poke.movesets.all()}
@@ -125,5 +135,5 @@ def node_edit(caller, raw_input=None):
 		ms.slots.create(move=learned[normalize_name(mv)], slot=i)
 	if poke.active_moveset and poke.active_moveset.index == idx:
 		apply_active_moveset(poke)
-	caller.msg(f"Moveset {idx + 1} updated.")
+	after_move_commit(caller, lambda: caller.msg(f"Moveset {idx + 1} updated."))
 	return node_manage(caller)

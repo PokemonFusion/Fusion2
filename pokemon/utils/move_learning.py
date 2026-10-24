@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pokemon.names import find_named, normalize_name
 from pokemon.services.move_management import apply_active_moveset
+from pokemon.services.move_edits import after_move_commit, guarded_learning
 
 
 def get_learnable_levelup_moves(pokemon):
@@ -31,6 +32,7 @@ def get_learnable_levelup_moves(pokemon):
 	return moves, level_map
 
 
+@guarded_learning
 def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None) -> None:
 	"""Teach ``move_name`` to ``pokemon``.
 
@@ -60,7 +62,7 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
 	active = [s.move.name for s in active_ms.slots.order_by("slot")] if active_ms else []
 	if find_named(active, move_name) is not None:
 		if on_exit:
-			on_exit(caller, None)
+			after_move_commit(caller, lambda: on_exit(caller, None))
 		return
 
 	# if there's space, add automatically
@@ -69,26 +71,25 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
 		pokemon.save()
 		apply_active_moveset(pokemon)
 		if caller:
-			caller.msg(f"{pokemon.name} learned {move_name.capitalize()}!")
+			message = f"{pokemon.name} learned {move_name.capitalize()}!"
+			after_move_commit(caller, lambda: caller.msg(message))
 		if on_exit:
-			on_exit(caller, None)
+			after_move_commit(caller, lambda: on_exit(caller, None))
 		return
 
 	pokemon.save()
 	if not (prompt and caller):
 		if caller:
-			caller.msg(f"{pokemon.name} learned {move_name.capitalize()} (stored).")
+			message = f"{pokemon.name} learned {move_name.capitalize()} (stored)."
+			after_move_commit(caller, lambda: caller.msg(message))
 		if on_exit:
-			on_exit(caller, None)
+			after_move_commit(caller, lambda: on_exit(caller, None))
 		return
 
 	from menus import learn_move as learn_menu
 	from utils.enhanced_evmenu import EnhancedEvMenu
 
-	EnhancedEvMenu(
-		caller,
-		learn_menu,
-		startnode="node_start",
-		start_kwargs={"pokemon": pokemon, "move_name": move_name},
-		cmd_on_exit=on_exit,
-	)
+	after_move_commit(caller, lambda: EnhancedEvMenu(
+		caller, learn_menu, startnode="node_start",
+		start_kwargs={"pokemon": pokemon, "move_name": move_name}, cmd_on_exit=on_exit,
+	))

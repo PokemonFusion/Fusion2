@@ -1,0 +1,2058 @@
+{
+  "date": "2026-10-23",
+  "baseline": "9ca0f114869f8c83a3f685459ac5c16219b16cce",
+  "issues": [
+    725
+  ],
+  "scope": "Consent trades, immutable review/counteroffer terms and stale move-menu authority",
+  "source_python_files": 1050,
+  "source_files": {
+    "bboard/__init__.py": "aa177bb0fb35246cd2311854d4496ec7228f204434594f18afb6288b011748eb",
+    "bboard/bboard.py": "d296e76b25287f9861a044da5155b2418168aa0054eb2a18e9273159e035d9e9",
+    "bboard/commands.py": "7a37387f8a3edb97cd14d150ddfc288260fbb8d1ef58d09f716ba7f03cdce646",
+    "commands/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "commands/admin/__init__.py": "0242a00ea8fe0751d28a167d9d5cadc2542859d1100d2d798672865be1a6c37f",
+    "commands/admin/cmd_adminbattle.py": "7f097ce1ac1c1593b4d94213958e8fca3195eea3d5e51257a763d8eaa10fce5f",
+    "commands/admin/cmd_adminpokemon.py": "d52021fef5c90c50332399a13685016f411f946fda6dd2f6b692a750119cc6cd",
+    "commands/admin/cmd_adventureadmin.py": "4a285bc93e9fe7ca3f0cbb4b41e81b6777062507432345af416dac7de495f615",
+    "commands/admin/cmd_aidebug.py": "1545722fd2612ce6693f89db797c9c0fa36db69083345738a04ab7dc0b320071",
+    "commands/admin/cmd_alphaspawnapply.py": "4b8c6d7204b13b4abcac4b274ad2a556298fb5a625288ec7e6680aa41b44b853",
+    "commands/admin/cmd_alphaspawndiff.py": "cce972f3bedec4e424c50ba9c74d0d64849216297ee45a5546f2050b91f38b71",
+    "commands/admin/cmd_battleabort.py": "3fcbe2bdd38ba242918f0799919ceb9526907c44f2e8825aaee7d1a8237c7024",
+    "commands/admin/cmd_battleinspect.py": "97677a32ba417fd6fb7d926ff1c7f97724c575385f06c7fdec133655dec4d32e",
+    "commands/admin/cmd_editroom.py": "240a18559c4ff4992878281a2fd3cd862c078aa876a953826055081bf9af6392",
+    "commands/admin/cmd_fixfusion.py": "f5c4bbb5e255f7114b9ab283b8776e85155c6a0ed3693e1a7193f30f0fc9e275",
+    "commands/admin/cmd_fusionboost.py": "c8ea88ade3500846845c98a564b5f712a30be0d83b029f12dc5c33098b62e9fd",
+    "commands/admin/cmd_gitpull.py": "c211fb9d272a00668ac10ef668b68fe435014707049f75e4f8e185ca68d70c06",
+    "commands/admin/cmd_givepokemon.py": "b83657bb05894523f5fa3d890809bb45b1fc23a0b27448d0bf9c2439b6c99234",
+    "commands/admin/cmd_gymbattle.py": "90023b24fb21d5b4c2c59bc712885af5d84e4b76b117fd64a9cb7cdca2950864",
+    "commands/admin/cmd_heartbeat.py": "d5cf0a70c2195768b3e09a1e1699936857f8b3bfc0f00b44093854ca471fab01",
+    "commands/admin/cmd_landingnote.py": "9db751d2538d0984dc4fd86e8c379414870ce9dd6f51dff0c8c6071920906764",
+    "commands/admin/cmd_npcbattle.py": "9f52367535d366821ce8bd77ba62ae1c63461ca5c9ebad55269e53b40d702e4b",
+    "commands/admin/cmd_roomwizard.py": "de83bff692edd81db3e7389eca6aef1729134c1e2a375f4989016d0ad5599fb9",
+    "commands/admin/cmd_sitestatus.py": "dd0c31725aa3ae1d3df24ccda33f17557e0500211cbe5674d4bcf6c7b301e5f0",
+    "commands/admin/cmd_spawncompare.py": "08c41d893f0f3f8e183c13639243b9fa7f9779a68fc4941d058ea6cf8f5ecd5c",
+    "commands/admin/cmd_spawnhunttest.py": "84d60c6f88c3ba94504dd3d706bc51e866dcd685409dfe1385a32381f5ebca97",
+    "commands/admin/cmd_spawnmigratepreview.py": "52ab19dc71022833aab911da77b25013b5593096f9e5854b1bc9cf96767757f9",
+    "commands/admin/cmd_spawnpreview.py": "5afa293b6b14343f0ca7f0c45713c6bdaaedc0b0833d00d9560d7ff1ae3cde08",
+    "commands/admin/cmd_spawnprofilecompare.py": "a51cd49452f88536a00934aaa0ceaae2c7a664ed267f59914498ade6c19b2615",
+    "commands/admin/cmd_spawnprofilehunttest.py": "0f0646ed9eac22ba329fa7007ca473675afa4d64bc1e8cdc913995319380c1f9",
+    "commands/admin/cmd_spawnprofilepreview.py": "018d4a51773db3e5811d7f44287e1016f99b3fce68a3442740ba95c9c5237f52",
+    "commands/admin/cmd_spawnprofilerolltest.py": "34350a95a4eda65180a95bc7742ab41153d16fb2f596bf41edd4b5c9d20d009d",
+    "commands/admin/cmd_spawnrolltest.py": "b19543accc2d4ee0d78c683b4d8eb1b392a9261873ed8a6bdda02084f75f2e27",
+    "commands/admin/cmd_spawns.py": "2faa373df9f1b661ed878c3a3021450cf919bbb2c550dc77c9970a41d2c65ff9",
+    "commands/admin/cmd_spawnspecialprobe.py": "9a783d123df6e8e525a1938ff326baac94534ad8f7f1249a500d88d8c30a07bd",
+    "commands/admin/cmd_testbattle.py": "eef619bfcff0011522494739c4de7b60bfd32606aad91c51358a377a760f0c67",
+    "commands/admin/cmd_trainer_xp.py": "850cf20a91f7e7e37d076d82782f561ea39e492265b5c04014114cf72b4f75ba",
+    "commands/admin/cmd_validate.py": "6afacc2661fcfdc8c9dbfffb181bd20e7171aa849520f4806d31d2e95915aa97",
+    "commands/cmdsets/__init__.py": "6f8eb126916fb50362fef48782a44377b6d51a193d5c374a81c22d810bd0da02",
+    "commands/cmdsets/admin_misc.py": "cb49a3d1a48907caa24a3377ae9fae8a1fba16c9525622ecba06d95c39d9a1c4",
+    "commands/cmdsets/battle.py": "acefe391ae2d5a207344eecce93173c62db409f9a4a8c40f8b34d684e8c1787e",
+    "commands/cmdsets/battle_admin.py": "9c44e4a56cd4eb822ff81424601b2970587408b636a0f54973f56a7ed5d16e6b",
+    "commands/cmdsets/bboard.py": "8f8b19b51728a54b5878fc576f41bfabeaad133ed4cfa55d5313262461cd453f",
+    "commands/cmdsets/devinspect.py": "2544887d550409aaec23ca3da296465f5ea5f1c3dbabbb0c00015ecec3e0339a",
+    "commands/cmdsets/devtest.py": "76fd5d3fa73f2c37b647be09b30c5b2a98c0f13697f170610495b5170cc6c3d9",
+    "commands/cmdsets/economy_map.py": "275b1c1fbea9ebf019c0af0a7637d2c1ddb5f7a38df751676dbb1a4be172c7de",
+    "commands/cmdsets/pokedex.py": "27da168b50cf82c3bbba247a2d6ea17b4896d9013373bd160350a7ec71594d28",
+    "commands/cmdsets/pokemon_core.py": "cfda4cbf6b822c90acc887eb46dc61e1a7ba8d25034c6f3af3a5751a482603e9",
+    "commands/cmdsets/pvp.py": "e0dd6abc6db6c2d202d3880381523e44bb9260ab0290d9f25f5c40408f7d6a2d",
+    "commands/cmdsets/roleplay.py": "e82c7666c0ff52154df4143169bc3e2d70d365d617d2c09489417f6e66b54e81",
+    "commands/cmdsets/test.py": "71ea5f1cba045dfff18add4f48fd5067e93c767c94a37efd816079fa3e378674",
+    "commands/cmdsets/test_cmdset.py": "724074f70bb9413d93665b7c6d04b8b6bbad2a580a5b43b4ed75eafbdfd318dd",
+    "commands/cmdsets/testeffects.py": "c89c9f77b5ea36364e30ad866acbbb1210630577c97d4c4265695a13066a52df",
+    "commands/cmdsets/ui.py": "ae2a938230ef69631b72bbecdd389bc468513b042f70e2ce1555417a872bce8f",
+    "commands/cmdsets/world_build.py": "fb5c1baa12be8c1d8dd39a51e8308fa2f297d7dc259103b77141441d9d3b7830",
+    "commands/commands_dev.py": "e897310b2876a73e63b711457521632c81fd92f2685d8cad09b93d87aef44de1",
+    "commands/dbsafe.py": "7d75713d8d26fc81e4790c9152a514d98de668fd8bb9c8a19d18fe6202cd1159",
+    "commands/debug/__init__.py": "439feb7a4e925cda611b951c44bfe65936bae1d3caeb84161c15a5de6007b933",
+    "commands/debug/cmd_debugbattle.py": "50f5e5d6023e91d8ab6fae7d10247b1c267af0d2ec4128aac74806fddb99c9ac",
+    "commands/debug/cmd_debugpy.py": "995a1adf05cf3ab58724d047d760140003fb455c9e9977929ad071b5ceea0f4b",
+    "commands/debug/cmd_logusage.py": "ac324c459905a204b63c4a6e904bc7d0e06a387096ba11ba17df8956fe32c77d",
+    "commands/debug/cmd_movedata.py": "4e0df5f41e2e5a9ab867ffccb4693289856445215e292254ece89584e90048db",
+    "commands/debug/cmd_testmenu.py": "c54a06df83cb7ba9b4af7d59853f93cfb92f2df1cde92cfc1d5e496d815f7513",
+    "commands/debug/cmd_testmenu_enh.py": "8c90497cec422b78dbd62443bb7c6bd7eaf3d07d4ec587fda5398ebd2e063e40",
+    "commands/debug/command.py": "7402e4046986444d3766c4665efd9ec611f177f180fb0a470e70d164d8dddae2",
+    "commands/debug/devtest.py": "7cf8e8d7fe455d63ed1dba146a03b2e266b1e9da6d4fa515244bd3d45be60536",
+    "commands/default_cmdsets.py": "554875d2660a43a0f213e7142fb7c552a1752a2895fce9d837c1741221c07baf",
+    "commands/dev/__init__.py": "f06e6d26dc24a85cb303bbb844b11b678bb80d86568ea36b734aecdf186a929a",
+    "commands/dev/cmd_statusdev.py": "ed1affbe0d3fb7698d95902cd80b0394254bffed07664e3afd41a831b13b22a7",
+    "commands/player/__init__.py": "8b6b3d3d60715198292e7b73516dc3bc55328f01e1240eba5234d88ac07cc86f",
+    "commands/player/battle_choice_prompts.py": "6e9f7a77ed90056cb6d4df06aa0b7f85f68ebb2f3503fade28821ac4e63d77c7",
+    "commands/player/cmd_account.py": "6eccd452d8d7090101db70537421c520f5d4d213bbd14c60d3a05fb5c947241a",
+    "commands/player/cmd_alpha.py": "109cef8b3de66d14f012e4e0e0d617fac283afc41d1dd23f052cd0ea83a7b0c3",
+    "commands/player/cmd_battle_attack.py": "f23bdb8ee52fb44b2922d77d4e0ee2aa2de5ccbdad35e46a3f207cd47ff930da",
+    "commands/player/cmd_battle_concede.py": "789bbaf35289e5bd564b565f4a953e169c12d634b104ed1687a5798847cead7a",
+    "commands/player/cmd_battle_flee.py": "3f9d127e3ce1f2f4d180437f67c0e824bc3ba3fb0c93bc25c4c4c9859c1ef496",
+    "commands/player/cmd_battle_item.py": "a8f9ede8d4539cf7bdc559252c3f1dc187a64bcb64ff37db50067c904ff782ac",
+    "commands/player/cmd_battle_mega.py": "4af3fee1d7b7001c18d34ce418afde0f2261d921a6c3b14ce2fc5cfbee62b6ff",
+    "commands/player/cmd_battle_retry.py": "17dbf01a4dbf839448d6174a5c14f7bc95c39f53dbc6f4d560064d4c5ac0cc4c",
+    "commands/player/cmd_battle_switch.py": "35e8c92fe7d19e02a993fb9244271f47d99a02764927fc5c3fe458b9a7fcc6b9",
+    "commands/player/cmd_battle_tera.py": "35bade25c19115cd68cb110cadb42f27ce80ece6c5039eeadfd3a970c79789e3",
+    "commands/player/cmd_battle_utils.py": "6b36b99942516f46a604ce3c9b223ba3db7b7b4c1c447413f2b67d517ef18876",
+    "commands/player/cmd_battle_zmove.py": "c1c94aaa263208a7db89c706e2ae87dbce0422fa2b816731001d9de4c6f9ee93",
+    "commands/player/cmd_battleuistyle.py": "06f8c8499de2b5d86ffddaffc764e75517fff653ec9e2f37b84b50a30a2593d2",
+    "commands/player/cmd_berry.py": "1dd5ea3708f1fd410e1de395cbf8709ea9e12eb89fdc91fa58f672aa5c9145d1",
+    "commands/player/cmd_challenge.py": "64b7ee868c118c4bf410726eeb4423f985268357f0fa3e62575eafe776b28753",
+    "commands/player/cmd_channel.py": "ebf308d171c6622b0f52eb4685933f38f7212fdfdc0e86a6b4e87a7ac8630189",
+    "commands/player/cmd_chargen.py": "6a9ba596671bd7df3ce0c3d8ce3d17300e2cff13c3258a1702c5f4bede2ddb93",
+    "commands/player/cmd_effects.py": "098158fe5587a217d990590d5ff318cc9bbc1439f18ed1cfbf53477d7d7c7331",
+    "commands/player/cmd_examine.py": "59b8124671e1e6f5946d9e815149cfeafdcb445c413081150a4a529f60e48340",
+    "commands/player/cmd_fusion.py": "2b762a5978628dc89baa0edb1d66c0edebd2ea94a8ed980d74f0bf82160e9fec",
+    "commands/player/cmd_glance.py": "6103a2ee4764c2b27dde401c9b7d8e3ed97d923faddd3c07624bb56f7212360e",
+    "commands/player/cmd_gym.py": "da8d7a9ba8bf61117088f328db768f55cbbcdaf37b4e8525e89894d705fd4028",
+    "commands/player/cmd_help.py": "c64c303be3c74dbaa40e3161ecf535709d918a358bef57d4615c9dc32dea42c2",
+    "commands/player/cmd_hunt.py": "bd08ef7d08b86745eaceebc744df1153850846d7e2fd2fc41aabc223b518225d",
+    "commands/player/cmd_inventory.py": "418bd767463d8056e59f17d76a7b6eda472a3c8f134d632db136701997aa6564",
+    "commands/player/cmd_learn_evolve.py": "1566588b2a15a4e22e5b0539d18ecd61db0e5b0985950a7ff505c830a6ffbdaf",
+    "commands/player/cmd_look.py": "a28d1b8b2ff7e7ee57c579a3bc3bb8fe5ae64dffccd52f60b2e4fab43d87001a",
+    "commands/player/cmd_mail.py": "7056406dbabb15e571271225672f2385fe8950e8bd4657471e65bd90aa064713",
+    "commands/player/cmd_map_move.py": "ea6595a42fa9a9a00969a6a60090bb30bf5ac77166e6fdf2a147b870f3f32d98",
+    "commands/player/cmd_movesets.py": "547af2106d1bc8f9f693a031681cf3f47c83ad17f3c61c4162a1f4e80baa00dd",
+    "commands/player/cmd_nickname.py": "edf1e37f24986b4770bec9046ee226b61d72c3aba95d2566d4542d19ac8a92d1",
+    "commands/player/cmd_note.py": "80108146d34d4404f103748bf9b369870e7631115fcbed912de3d0a3e66f5ce4",
+    "commands/player/cmd_page.py": "db788aa0719688c87a225752622b5f99edd32f316526f68dccc1d4eeadb49029",
+    "commands/player/cmd_party.py": "3e4cdef1d7e45aec4b8cbd857ca24eeeeee0d4db3cdd77ce81e105768a6569d8",
+    "commands/player/cmd_pokedex.py": "8ebb043af67a3c7ba955d103fc22326bcf763f7980f772c559a27f7c648c511a",
+    "commands/player/cmd_pokestore.py": "5678148bbc0df52eda1b273d29d9897466c70c0609ca9f85227d67a0e016dfed",
+    "commands/player/cmd_profile.py": "6727f12b6a33e28e58cf711fad004cdae4dd3ee2d2a569fce751f180396a1c7f",
+    "commands/player/cmd_pvp.py": "6d101cf8ece25b6f6a88ebdc9fd00dd6e757ffca755435266e71ee154103b37e",
+    "commands/player/cmd_request.py": "5b4194bd14c778fa6043bf524a2bbdef11417309e85b8a57345e3d652d37f8fd",
+    "commands/player/cmd_roleplay.py": "48421de4efac24a3cb688b281f706e6113cd622f0c49067946fa8a6cd4c7cd05",
+    "commands/player/cmd_sheet.py": "ae8e7fb7e3b86d6e2668952e0abc83563ffb7c78440c688e98c274340371215c",
+    "commands/player/cmd_showbattle.py": "51fa27cab0140ecd9b82d1da101441f0d8775a4798c6838b5f7e542228046187",
+    "commands/player/cmd_staff.py": "d949d7d5d00a1b8a4817775c5541ce4742fb9c9169414228fb27ac2840733d54",
+    "commands/player/cmd_store.py": "bcef78da8aaad38f82f8329e65dc03dbc53603987eeb51e2a5fd1058ab096c6e",
+    "commands/player/cmd_symboltest.py": "feb8be5e852d9e1d3e10df219cb924740b95dee921d433543f7e22411f102e95",
+    "commands/player/cmd_trainer_xp.py": "bdac0b9ed00997b2cd4af36366a60b70c0be185b4df0f5e86b27172d4b695ab3",
+    "commands/player/cmd_uimode.py": "1c4d004838311fa1aa6f9c877400b5a981259218f94bb014424d9e4c2038e414",
+    "commands/player/cmd_uitheme.py": "6a8cf73cebe965aadd5ecd1a203d6326bd99eedaefcb35131fc3bb1d338920b9",
+    "commands/player/cmd_vendor.py": "f211806a47cdfa4fed676fdf338eaa6b5be115848c184ca5ec84419017766786",
+    "commands/player/cmd_watch.py": "5ab6039636a4745c064ae8999cccec8b17687e8c4adb588510c7122dfc1c9831",
+    "commands/player/cmd_watchbattle.py": "023b7fb783318ff88977b18294da004d92b8ac80d70b66e2b03d4d3d8ff7e074",
+    "commands/player/cmd_where.py": "04a11f863d5051e179ac85e76d32af891f74bc0c37aa39c063f2aa05e0c9adeb",
+    "commands/player/cmd_who.py": "7df0889644e55f42f5adfed0d2e9a8dd05699eda57592f5fb55a772662938eba",
+    "commands/player/cmdset_map.py": "a3bfdcccbab5c47b2fa33c69e09977637a1a4ebcddedee10816e4636f3f02102",
+    "commands/player/cmdstartmap.py": "9636c5050d234ac79eefac1328685a3a6c3bd606e09285981790e6096c2ecb54",
+    "commands/wizards/room_wizard.py": "c59e3969d6b209688ed1a0e25cee9698503ef41d9475e9e6e3d34f7e10d7d660",
+    "conftest.py": "10b827a6c2a441f3bd6eee0cebeff97f08458b7cefede1d6c56976e2f9565055",
+    "menus/__init__.py": "4acf2941e4d0b9105780cbdb6116ffde8d78f9935a08e3454471274ef978fce2",
+    "menus/battle_move.py": "ac58647b873a039a3cb3823f8c30cf3574172c7a5b244f3f5dd27f48e592d50c",
+    "menus/bboard.py": "63624ba1abc8dffcc1ded844629b80b0a766c137a160af53411e16c48c39fa68",
+    "menus/capture_nickname.py": "cb0268bda1c6cd758c848daf398f69b708a4d687abcb60f719c26ad13d2d2f68",
+    "menus/chargen.py": "6bc4632067e57d18445777aada252be64bb7142295bae92687fab8c8cfae2208",
+    "menus/edit_room.py": "6e0da1080da645a60cd98ffc98ce41af4da5e446cc94b15da1cac9997411eb7f",
+    "menus/evmenu_sanity.py": "0ec49db10a996ae5ea5949f5c0e822b4430a1c04babc06416419d2e86c674db8",
+    "menus/give_pokemon.py": "10eff3fde503be9b39aa15c6663c7a700e3775cd1c3327058a5c3f3462f0d57c",
+    "menus/item_store.py": "ea3c0766e393ced3f475eef40776b34e4f549074d981231c076943db99921c08",
+    "menus/learn_move.py": "fdd397bb9d1f85bd4e3f5450f1e3264d981f6a28e3fc6e6334e5fcde6346f390",
+    "menus/learn_new_moves.py": "ca69a364e7b24c72786391e237d02c84ebf83226a8029e4a053f6c4ead721fac",
+    "menus/moveset_manager.py": "c273a21548b9980d71f74d40b4f836b0c8142cef0387201fc48cf9033216f222",
+    "menus/pokestore.py": "32b21e1bb7255709f8aeea742a7831d777f062ab475a6d2a1283434667d6bf24",
+    "menus/room_wizard.py": "f87db683b835eaebfc2593ce43ce35cab4cb6bcdeb0552bab90b747d942d077b",
+    "pokemon/__init__.py": "96ac038711edfb777745650ad16dc5b29b02210f702290f9e370428e663c7cf4",
+    "pokemon/admin/__init__.py": "63b16587d5339057a397cd217f311fcc243e03f56e0bc4d0d66568cc370fb693",
+    "pokemon/admin/owned_pokemon.py": "86913f3ede93ea1b92e170259c4c0851c506b612e696b4df4e184763c68e3f15",
+    "pokemon/adventures/__init__.py": "92997208e4aa37f4ff4c01f7130b20fce9cd2458912c295170e0020ff7063f3c",
+    "pokemon/adventures/cmdsets.py": "ef8829064da1b04e0550852c0e16029739471b7fd881e85e5ab0c458dc3ccd43",
+    "pokemon/adventures/commands.py": "fbe22c60df54ff015894c36ed269e94844dc2518f5ea68e3914fdc9419b63521",
+    "pokemon/adventures/constants.py": "e68d5504f093d0f1d749ad35cdb57d739393b6ac323da63d776cb4cd9765c420",
+    "pokemon/adventures/progress.py": "abc64a8d6a802979f2951c12c318a66d9e28507a5ec3f7662b8db5575121828c",
+    "pokemon/adventures/renderer.py": "a7f8416f9cc8983b7b3033a75152aaafd4e83ae41e72dc4fa420b93bf8a9bbec",
+    "pokemon/adventures/sessions.py": "6dfdc8da2db2e4f0756b77a95c236b13fa053785206feb21f9ee3d5c4d5106cc",
+    "pokemon/adventures/templates.py": "3fbc6e6bd3bc1194b528c1423d790d224e80989d8e4bcb7b04ef9ad9c15a3a10",
+    "pokemon/ai/__init__.py": "417bcd7b4f9477e7f2ae156ffdda407d49008eb9469dcbe08f775b55b2bc2372",
+    "pokemon/apps.py": "5073c3fb793e29aadca8aadc86c764f23390fefdab40135e1a1aed6783f029cf",
+    "pokemon/battle/__init__.py": "6b466071c5cb60567323c3183ee3e88edd68d1bb1be34a6e68d5605f2ae13c5b",
+    "pokemon/battle/_shared.py": "af6575c194af2620cabc67be07c59a092f3b12b60eae134d3a7695265880c1d9",
+    "pokemon/battle/accuracy.py": "e7cb6624fbc126336f9fee85c83bb2f34b7622f0893f637fe964a042ef614752",
+    "pokemon/battle/action_queue.py": "59b6467f939bce71c11f8bae73f795b388c50c638ef5c7c65cfbafc45feec957",
+    "pokemon/battle/actionqueue.py": "05d57b01e28ab06303386750de6d72f2c114862b551a47521abee2f0587bb73d",
+    "pokemon/battle/actions.py": "c393c382cbf451dc14cfa79926c963c6e6aec0751f589e2a14ffeb90e78e9f5d",
+    "pokemon/battle/active_slots.py": "73be14a3f0e82a23f938cd338ed71d24e9876767a44e93ebfef430c568bfc66c",
+    "pokemon/battle/ai.py": "b16c267afbdca3ff6e60866920c375ae778c041e1c0fa4391f46130297412a45",
+    "pokemon/battle/ai_action_scoring.py": "59ec29fc9a4a50fdcc2b7f117c9079d46f919a3338bfd364060c0b78593f6e19",
+    "pokemon/battle/ai_actions.py": "bdc6e75f4daf5293fd9676da1cf63cf9a6c00f558f45f7882eb84482904a9d1e",
+    "pokemon/battle/ai_profiles.py": "777127146118c35c5d6a539485c8a710d6f5b33cf805ab27a680eca8ab21010b",
+    "pokemon/battle/ai_scoring.py": "37ce6f9a83d97ed0c2b08739235abd04a3f9f7237ded570a213869c8e1391023",
+    "pokemon/battle/appearance.py": "418bf36050c95c6b134ceb3bb833c0c1d9ffdf7a7137cc5ebfa94123e6669682",
+    "pokemon/battle/battledata.py": "d30bde7ced660615cd19dcda116af30bcaf33cf1ef3b1c361c74ed74b41b9f42",
+    "pokemon/battle/battleinstance.py": "fa4ce879d08e5b50f1b3b27cb72d8b1e0b8e5194557fcd56b9e18cdf34a78a01",
+    "pokemon/battle/callbacks.py": "fd6c9fd2f9b94995638b7b28f986ca7919838130565cb8d2c39c2c6cf7474ff8",
+    "pokemon/battle/called_moves.py": "e95b011a517ac87dba435af8bf8ab780471b2a73358b4ad6150ededb854d60f1",
+    "pokemon/battle/capture.py": "a42043c6add9dee9175ac29c419712c5071e0fcfbb48930b7f79ef0be2c1bfcb",
+    "pokemon/battle/compat.py": "b2a2aab7932dd89eed6bde6a20ca69f2ec1fc6ce29f5e0e5853b9bfa91fc610c",
+    "pokemon/battle/conditions.py": "2c91d91acd6fe223fa1742ff3462af0694b9d3f29e9d2b57dca9edf00eb8579f",
+    "pokemon/battle/contracts.py": "817e26380b511ec5d1308e70f217d2c11c85cf902e8d5af7f94d714b19985888",
+    "pokemon/battle/copied_moves.py": "2276d6c162d96da6018ae315b0fafb4331b0269d244be0b95b0471ea0c08f1eb",
+    "pokemon/battle/damage.py": "71088596da423e57653a925987120f43094b413696799406834b11121e0fbc2d",
+    "pokemon/battle/delayed_moves.py": "118f30160d1bae86cc6af5c97c41c3f09200faf22f7353bfbba37bc9564f4b2d",
+    "pokemon/battle/effect_context.py": "17bb8b3b5328b65de0727e77742b6e248067616864959f84b34d46522d78edeb",
+    "pokemon/battle/engine.py": "83d34976502c75ed8e990eaa28520a0939c4cc3385c62557561c59420515d207",
+    "pokemon/battle/error_handling.py": "4db9bc1b20fbdbe678cd923662d0844e165b65022a806366cef642dc77395fe9",
+    "pokemon/battle/events.py": "d26a7253fbd19b7603de5a42a433ead0a01d468b1ea1b20362309895346345dd",
+    "pokemon/battle/handler.py": "68c1ee96df4d7b2c5cd6d2f1784b0d007d1fe5e1ddc742be2559d3fb3f53e5c3",
+    "pokemon/battle/indirect_damage.py": "836c93c29cd557bf357f8ba130250abfefcfc0f5209a8c941c46c0ee503240fd",
+    "pokemon/battle/interface.py": "6d638c4f2618ca89b2ddc505aac2c7aa4a81e0d4b183ca71122cfc8c9ff267e2",
+    "pokemon/battle/item_effects.py": "8dd531a865fbf93b5b2fed82435ec0f4137ad80e9d78be8b84ebf7a4d40d61f6",
+    "pokemon/battle/legal_actions.py": "2bd9a5ce804d888261d10a42c8fff7d50cd339b7a4cc04f48c255efd8b196e7f",
+    "pokemon/battle/logic.py": "aa71de6b8ec61bd81f308fdf01591af472b0aab2ef64fa458e5ab5a9175c4647",
+    "pokemon/battle/mechanic_choices.py": "46b4b74b7f4190718d5a3589bbfc51be81446b79e1de9ab30fca980d45ee9a2f",
+    "pokemon/battle/mega_evolution.py": "2b6bd600cd03957753ff28298510a421364b35d0eb7e75f91a91129dcddeb989",
+    "pokemon/battle/mega_pairs.py": "26adca117389fac33c5b5ce75ffb07668a3ded603c29eb73d9e0fa8734145e5d",
+    "pokemon/battle/messaging.py": "eb3eeb933b11f912477a7b65b0ba56d743e285da396832fed16f2aeb1e232d8c",
+    "pokemon/battle/native_forms.py": "c1299cb2b06eae7f76719ceccde013a17cc6b1f8bb80493e3c2e0be79a0447d6",
+    "pokemon/battle/owned_battle_actor.py": "51eb108d609770b24ee4514e089e3ed5d8acf6d9450c6f403803631a2a3c4e4a",
+    "pokemon/battle/parental_bond.py": "5ee2b52f31b28df891511ae27bdcb0d8c9f3df108b413b030c6f8fbe81f6e00e",
+    "pokemon/battle/participants.py": "046ccfa64cdb4f5532c0da7ef5d4d208e3fc8656e86a0ab676c5784654b5aad0",
+    "pokemon/battle/persistence.py": "6abcd190137407a0f5c7218e4c5fb1b2ebdd7198ea74279412b4acd1434ea94f",
+    "pokemon/battle/player_choices.py": "f980f0b1a3e81db917d4655e71d85168e36ae34e28867d53b5941221fddc97b4",
+    "pokemon/battle/pokemon_factory.py": "7e3464b8f56142b4c2738072b641a42f5ceeb5f22169642cbae835af66cf5748",
+    "pokemon/battle/protection.py": "0fa5aac3a5d283eedfcb6fa98c99e2ae335581de38160701838d8e2779474c77",
+    "pokemon/battle/pvp.py": "341cd38199a9f3176fc6e89a0472d2aba0fd0c00bb411272234322757e49782d",
+    "pokemon/battle/random_source.py": "4552a9c4d272c5f6c1a4997c8049444c69a8101f3e1590c464a1d81b26c7afed",
+    "pokemon/battle/registry.py": "7ff8ae7477be1d48bec912d7fd4ab9e19412c9e76456b73a59042d3e931c0a0b",
+    "pokemon/battle/retaliation.py": "3840ad3b0d2a1a513453ab527f7f7afc6fd1c177f563d1c8ea143992bb0e28ee",
+    "pokemon/battle/setup.py": "4b48054807d38d8429db24820fb9a0d95b6c90b680c819dd9d4dd5e69ce55be8",
+    "pokemon/battle/stat_activation.py": "163d1c2184285141abb4dbcac3932ecb8ba3c7c9ddca3cb466a0345c5f2492a1",
+    "pokemon/battle/state.py": "ecff7392e88a19079f1a85dd63e0d8ae2af4d0a2e82ed4f042060a7139aa0a7e",
+    "pokemon/battle/status/__init__.py": "5cac4bac7cba23fda1b969d88c1fbf2450d1834936da333f5209dde3cfc10fed",
+    "pokemon/battle/status/burn.py": "b2394f51c69b7a8356d336b512888e2c124f49aaa79ab29294df31cce4894a49",
+    "pokemon/battle/status/freeze.py": "fc3338a69eaf2c2e69c77ec9586d75a46d05eefda9eecda6bb9c41acd0b855c5",
+    "pokemon/battle/status/paralysis.py": "905ba84f7974fe134f5dfa1dc97ee5a3cd1f110c6faa0dc91860eed2c91aed10",
+    "pokemon/battle/status/poison.py": "6bfd8354530d26349f394d8c721517bb2e5d8c7e84d519e12c182ace14089487",
+    "pokemon/battle/status/sleep.py": "2f19a899f4ba1dae00a782833a2429bbd2341b44220fb55b65eed52041c15607",
+    "pokemon/battle/status/status_core.py": "90d2a809b1ed3a8d29fffb1db64a65251eeee71d10566464b63f8ab6d437f75b",
+    "pokemon/battle/storage.py": "5b676e7d22f890793f64dd54529a6941e011dc717eebd764767cabf9c1da10de",
+    "pokemon/battle/terastallization.py": "64f4a25aeb871b08253119f37c9a459a607dd142c3098b12abfa06bbd2ad37d5",
+    "pokemon/battle/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pokemon/battle/tests/differential.py": "9a84739857d4596ff654a8a18122ab87ff9a0fc75f8e14566a24d104f3655a24",
+    "pokemon/battle/tests/helpers.py": "5ac43e49576d49f26627dea799ccba3c272d81c694db0d28275420ca8728bca0",
+    "pokemon/battle/tests/outcome_harness.py": "2ec38fbd8fd7a5e24d3221edcfe12d7c1112e8ce7e5d1da9b8e407c017ecc671",
+    "pokemon/battle/tests/test_ability_type_modifiers.py": "affc28d5e353828223dc1e69e0373b142f9cd280ec84e117c2c3831e473297d3",
+    "pokemon/battle/tests/test_additional_item_effects.py": "6693b636dc5a23ae9f82177dd3c398bbf3b55f8d0ea3bd5881a065f2b0103af0",
+    "pokemon/battle/tests/test_boost_switch_pp_event_flow.py": "99728b2c4f5a269240d18792c168178a6957324f675e8d59adb6caabce9894c7",
+    "pokemon/battle/tests/test_boost_volatile_trigger_context.py": "fec8af0f5a90e0c2bc0bd1841d3bc2ab3b55c35621184064233fed669f3dd8f6",
+    "pokemon/battle/tests/test_callback_registration_arity.py": "7db903ea433239d7775e12c3225e33d33fbef39b34eecf25a089a06e15a65bc8",
+    "pokemon/battle/tests/test_callback_registry.py": "bb7a18425647ef4c3bd6459b93f042acfb3ca4cbfc42b0f65cb15b31f2feda14",
+    "pokemon/battle/tests/test_called_move_execution.py": "537c18524c812f1f522c9232727de2b1e31bfe0606f84ac58836b12ece05129a",
+    "pokemon/battle/tests/test_constant_ability_hooks.py": "129067b581ee27ad08dcde592be1fdccc8597004d2dba0f45da15389c26d6c92",
+    "pokemon/battle/tests/test_consumable_form_guards.py": "1b87bdaa3e0b0a99dfcb8e306f8e9ab7acaad4b5853d5686181b211f776d84d2",
+    "pokemon/battle/tests/test_copied_move_persistence.py": "7c5e3fa485ac027981665ad6c2321668383aa209258290f6a344b6416cc5638d",
+    "pokemon/battle/tests/test_damage_event_flow.py": "b3394415692a96dc8a9aeb0b14c251ffc94d70b11fd1439709a655941877fa5a",
+    "pokemon/battle/tests/test_damage_modifier_ownership.py": "de646fc440b28e5d7285bc84867a43adee781b12f82ea17b6dfca63542ab0e48",
+    "pokemon/battle/tests/test_delayed_move_lifecycles.py": "bcb44698bc546acaaa8c23479c345d6ac2ae311c484b228041531137d3d34c32",
+    "pokemon/battle/tests/test_diagnosed_ability_paths.py": "bb5ac000618fd9fee344f5f289036ee4dc994b7ba26c5e4721c6827a7b23becc",
+    "pokemon/battle/tests/test_diagnosed_item_effects.py": "fae35b06cfbee4f3078f4dfd364069463f15996bfc787b608008d22f8145695b",
+    "pokemon/battle/tests/test_event_dispatcher.py": "156987461d18ffba7017fc3ccfafcaf484c4c139c3537e41c3519ef900348546",
+    "pokemon/battle/tests/test_exhaustive_dex_smoke.py": "b10e7fa89e6f19cc9ffff325705464258701db60c1c72f2d385f8dc8556ee4d9",
+    "pokemon/battle/tests/test_field_condition_messages.py": "aa3b7d7d6ebf01363490b88643e0bc68eed83298fdc96cb20762b6561c1ce554",
+    "pokemon/battle/tests/test_field_side_event_flow.py": "6a94ef6d4e0a8f47a68d2e35bfdc671e0cdc5852c0a7aca10d51ca94c708b4d3",
+    "pokemon/battle/tests/test_field_stat_ability_paths.py": "711bfbc504304b7ff1eaa22e2bece6ba752fdbdf73e055791802ce2217ce31b9",
+    "pokemon/battle/tests/test_five_diagnosed_live_defects.py": "86174ff65489c4821e1b620576285973dc4b85041268a17a00e89a3aac525c61",
+    "pokemon/battle/tests/test_flash_fire_fly_live_regressions.py": "bda646968609bac57d4753faa685939ecad6351689e6bc0ace899325c785c7b7",
+    "pokemon/battle/tests/test_forced_item_form_eligibility.py": "1079a86ac58c110a5d58fbe28148db752656fecc1fb79262e97fcf52f46f3c24",
+    "pokemon/battle/tests/test_generated_move_callbacks.py": "101a443e8ab11f9076ae4bc248b0ffe646340a0f38054e648777f0d10f7b3d75",
+    "pokemon/battle/tests/test_heal_event_flow.py": "00276d86e669fc4cdddbc90144bd6c73ba631553a46f8dbb3c6f4dc7aaaa2804",
+    "pokemon/battle/tests/test_hit_gate_event_flow.py": "68b48a27457d5c84f8c65f1cff5853bf1bbb08476eccdf329cdbe50322bf9058",
+    "pokemon/battle/tests/test_incense.py": "4224829701a611b419ab85e68b91cfab2fa0e489b6ab7d792c78a4e049265aaf",
+    "pokemon/battle/tests/test_item_core_runtime.py": "b5c4f1a97a3a4103a7675ccfea7fe238d987d4c22efdda957078d78a025193a2",
+    "pokemon/battle/tests/test_live_ability_move_context.py": "3185fd7cb2f0670d85bf953dfd16a7ed80ee722f255ba95b23e50a481566f95f",
+    "pokemon/battle/tests/test_live_ability_reactions.py": "0499b4e9c422e1d280d7036740a0eeefaab88cc97aabe62e9b0c762b52d8cd6c",
+    "pokemon/battle/tests/test_live_ability_trigger_resolution.py": "a2a76429865ebb2c7787e4de47b7b9bcfa47fafe3bfe746b0030afefa81d47e7",
+    "pokemon/battle/tests/test_live_accuracy_and_secondary_consumers.py": "b595bdb3cbb3837008aa7699d8dec9bdce66edb808841f82037b105586d2241b",
+    "pokemon/battle/tests/test_live_checkpoint_effect_consumers.py": "abb74a590f28383c379efc52b91b3d2db9e19e5aca0f85457068abb23d0312ba",
+    "pokemon/battle/tests/test_live_move_state_persistence.py": "b14bc5694ec4c8a40af7ee9ad95e96a4aea0d51cb63df1278496ddc9d42619aa",
+    "pokemon/battle/tests/test_live_side_protection.py": "f2c9eab58d7eb7e11cf7cccd4e361cfaeee8cea5fd3f1b7bd63f4f503eae92e6",
+    "pokemon/battle/tests/test_live_trigger_lifecycle.py": "200251b8a762f30a32a900160a250b5f1d946bffa6da1dd170aa1abb964546c5",
+    "pokemon/battle/tests/test_mega_consumer_guards.py": "305cd1a47ccb3333fe16d8ef7265d0ccd44c80cf9454eadd92d7fb8ec37101fb",
+    "pokemon/battle/tests/test_mega_thick_fat_effect.py": "5b8b5bf587bf5e1c8c7defe8d60da3ec04e6c3b73dc424ce5a0a71c21b65802a",
+    "pokemon/battle/tests/test_move_abort_message_flow.py": "92c19d6e28a6c4ec25a0c70c384dd3ea1b6b7c5971a0991eb5065be7e6b7dda2",
+    "pokemon/battle/tests/test_move_control_event_flow.py": "00c416f695dd8dbd6ebc5e0aa12868a88735456bada288f244fa3ec4faf52b91",
+    "pokemon/battle/tests/test_move_pp_persistence.py": "f3cf665a580d9d41caad708bf46faefdc574d08d602cc580a8a09c33b8fb3e09",
+    "pokemon/battle/tests/test_move_pp_serialization.py": "979325288eaec09174f4d71ee82076ece8fdad9973abee14eccd303042315fd3",
+    "pokemon/battle/tests/test_move_resolution_event_flow.py": "871df9e0edfa90d6d9fdf204ff736aebbe72cd4d13ab3a71cfbb7fc4dc43a77b",
+    "pokemon/battle/tests/test_named_ability_damage.py": "33f5959cb7cc161c774eb34ee6956a974a88b8bb8a7bb7fa46590d462c6ee189",
+    "pokemon/battle/tests/test_native_ability_lifecycles.py": "a53ffebe305894a708bb36c4ef285af1254820bb2556b8b6de010977ce2f796d",
+    "pokemon/battle/tests/test_native_form_and_postbattle_items.py": "2e0805816d0670b58b853a1c49a775dead659cf32821ffdf1b3e565c6d36f228",
+    "pokemon/battle/tests/test_offline_outcome_harness.py": "7d376dc84490903a3d538db31242db87a2c6b5ba2166e1d30d84f45054d9b56b",
+    "pokemon/battle/tests/test_ohko_execution_rules.py": "4c9aa2e8dec72dcf638fbdd06c2f50bee109aedf1b3ca42cef33169f0c5a8816",
+    "pokemon/battle/tests/test_pending_action_effects.py": "f479dddb83fb6b066b69b6f1fa5c734d42f4bd9f567271c1da5865d7020ad58e",
+    "pokemon/battle/tests/test_post_hit_after_move_flow.py": "77b9fcf80b2dce537887d5e623794ec1a153e21e964d32e4a75faed8921d51f0",
+    "pokemon/battle/tests/test_pressure_live_regressions.py": "0b203522f86e030c605dcaec824cd64021ca4da4939dece76c7251efc965c7e7",
+    "pokemon/battle/tests/test_remaining_item_effects.py": "1ebf13e9355e18ce2ea507210ff632775c04e8cb322b66d7d97d2e8eadd6dac0",
+    "pokemon/battle/tests/test_retaliation_live_regressions.py": "66a47a3811aac3fb3f400b9afe13010aaa99f2b9ab18e3de24d41425d73ed2a0",
+    "pokemon/battle/tests/test_reusable_probe_fixtures.py": "8cca87c981910467ad930e1b5d4ab00ad463b89c0fcc3044183cd3e9c3beee82",
+    "pokemon/battle/tests/test_sacrifice_revival_lifecycle.py": "cc7a690c721ab456973d82febd44cab0cfb7c235eee87fc273052afeaf242323",
+    "pokemon/battle/tests/test_scoped_holder_event_flow.py": "590dde19d6074895ef433684c550ecb296e962fc3bd55ab5c6c5756e1c9bca02",
+    "pokemon/battle/tests/test_scripted_move_legality.py": "9f38341098f3801154eaac4cb39662bc82af7618e38075ed27610a90296bea45",
+    "pokemon/battle/tests/test_secondary_power_abilities.py": "1b421ae3fc88af7b1a4b41c3a083df91553af5c5ce94f5dbc683f862e8b2bad7",
+    "pokemon/battle/tests/test_showdown_differential.py": "de2e86e926f9e5f32106d5f980ebb4a8a927d7208815013542632876ee947577",
+    "pokemon/battle/tests/test_showdown_event_core.py": "05e56d3891fc36e46665c659883022db7f052445fa78be605df95a5f269daa4e",
+    "pokemon/battle/tests/test_showdown_runtime_hooks.py": "7dbf8731fe58a8a1b0e8ebd35b2bec141209105147c2f69a7e608dff52fdb34f",
+    "pokemon/battle/tests/test_smoke_discovered_effects.py": "b155ad49b36381bf0010fd4d7b41d32e8fe8f91002a8b5475dd629dc985c88b0",
+    "pokemon/battle/tests/test_snow_weather_live.py": "b51fbb2998e63d5ff0dbcd22d73ff056376ee98ee5a64682f7c03f656c5b87fd",
+    "pokemon/battle/tests/test_special_move_preconditions.py": "8dff09155a4002b5108317017c65f430df601367a7146dcd7034c189b0785803",
+    "pokemon/battle/tests/test_stateful_power_context.py": "b0e5d72dc8de4a1b6be95252ada789aeee229a7457326ba81a03583a48974f03",
+    "pokemon/battle/tests/test_status_burn.py": "c191ddeefd3ed2f3a09fe596f3937a20b103016985ff2a45f60849c2fa443dc2",
+    "pokemon/battle/tests/test_status_freeze.py": "12d388ccacdeed085c64eae51bd81105d34a04e02b2b27e35d2033e3d7f2260f",
+    "pokemon/battle/tests/test_status_paralysis.py": "5ec17dd65cf97d70071d240cce6a4467bcd6492c80ba5ea18be495b53dadb790",
+    "pokemon/battle/tests/test_status_poison.py": "d2f96b41b89d96826c6f12e607f7f73bca0a563e971d439ef313f7df2d928b29",
+    "pokemon/battle/tests/test_status_sleep.py": "7262e7c0e22d19526d77928ec3435aa098e79611ad1b23cdccf0d6d5f4e7f09e",
+    "pokemon/battle/tests/test_target_trap_drag_flow.py": "367e7262c6d66a4a4506392594bf70e61f381957a8b321439fc23096f2409b6f",
+    "pokemon/battle/tests/test_toxic_chain_trigger_context.py": "e99f4485d7840c07763978c5fc368fd5fb41101c1f0f06806e4f50085a3eef5a",
+    "pokemon/battle/tests/test_try_move_event_flow.py": "39c4b070b0433fa31276be8522b5c9869e9cca06accfa3eabde7a49ab4ac2a03",
+    "pokemon/battle/tests/test_turn_order_event_flow.py": "9f668a4241199858c92950ef7558888bb9549e2a726a8ac2e085a122c0f649cc",
+    "pokemon/battle/tests/test_weather_damage_guards.py": "698cad50884222757ab3272fe809399723c19811604d524037c41569cde6b60e",
+    "pokemon/battle/tests/test_wonder_guard_natural_matchups.py": "aaf0a35d5044d8c84c4550cd6b245cee31bb533fc79b2875d070ca9dd0b80f88",
+    "pokemon/battle/tests/test_z_move_effects.py": "5cc2f61f7b93a1f28bef5420061cb3bb65f106e6ba665cf1e7babb02b6434b17",
+    "pokemon/battle/tests/test_z_special_effects.py": "b4a8d0be0f5358c11afa24238e473dcaf8d5c9daf96723f00649ac74cf45e24d",
+    "pokemon/battle/tests/test_zen_mode_lifecycle.py": "623140f7b58a31102eacbd5af6d4fb6c2cd379e11d678c5cdcd6d82b129a0c5b",
+    "pokemon/battle/turn.py": "99bcb2712ea6740f04fb11c1e92ce4f2119bab61ae6ba4cb9801764be386e9b9",
+    "pokemon/battle/turnorder.py": "d3b0aa94c30ad5c21f0e52ac5756486165c081b0a3eb30b68b6300b2a19e5b49",
+    "pokemon/battle/turns.py": "12beab1d592fc83d5816a76385179d929019f2e6aaa043d5a4aa89028a212f8f",
+    "pokemon/battle/utils.py": "b38b5e2416e78791ad2046f652fd975e010fb707b703668353f73472294d4d23",
+    "pokemon/battle/watchers.py": "ccf33e77c20155018ca3d4c423af758817a97e0a98bf49f7ed02a95d0345f52a",
+    "pokemon/battle/z_effects.py": "f3bad55000b55081d99589c21ad6669a76095bf8d329f4b39eb2d9c1b054e781",
+    "pokemon/battle/z_generic_pairs.py": "fa9447113a5ef2eed753d5662b61c167a50eac4208afcb35dc4cf6334a661971",
+    "pokemon/battle/z_moves.py": "e59c8100960cce39380c81cc196fbb19f60e86c13d8dde780e1c800339b54dca",
+    "pokemon/battle/z_profiles.py": "b4a860407e16944d231eb1e4f120ca1e0d0e5523e22fd4ee2b15a789e0c9d079",
+    "pokemon/battle/z_signature_pairs.py": "03421685294a98fd06922af6a97687e5a80104a0971b12cb18a4ea77ee7706a5",
+    "pokemon/battle/z_spread.py": "fcbb673af3b6d6d083dff7ae6d3f97562448c5268f1d3680c25c501ce034c184",
+    "pokemon/battle/z_status_pairs.py": "2b352278b1490060b89b518ef25914b362f990a382ccd9eda5c8cd489e22cd57",
+    "pokemon/data/__init__.py": "d7d67a83cabd8adc856e811e1215debc3bcab5f6a9f1e4d7997b04efc6cf7f67",
+    "pokemon/data/breeding.py": "d9bc9faf9f4b117dd582a67851d711568b7b90b1a5010f0fde05ff937379c862",
+    "pokemon/data/evolution.py": "e84157a6eb763f94ec07059ae02b34b7614232328c39145def090fd40ac09bdb",
+    "pokemon/data/generation.py": "7d5c367caa1cad91a3b0fc7270979ab24064298d82145d6c5800f78900172da3",
+    "pokemon/data/learnsets/__init__.py": "042e26982887cae1242cfbe21b14569a5f954797e41fa0863f2f2b1da9ea18d2",
+    "pokemon/data/learnsets/learnsets.py": "5ace8ca8d474b89bf7832bd609edd85b23a1f8941bd4a155e7d64d41377472a1",
+    "pokemon/data/regiondex.py": "863631bfe525203f3f1247f729d69bf790a12de8f12e37a42429cf08226cf4e9",
+    "pokemon/data/starters.py": "fbc665b033a3b8fb5a08de9c70c8d9e35bbb05444270d57c239430ebf4b2444d",
+    "pokemon/data/text/__init__.py": "23ff63a52b4996c12fd44568cc8cedd291dd5b2468b119f8e59a8faab988916c",
+    "pokemon/data/text/abilities.py": "1cb9b03f7d2617c2c8a1a5261947e6dc53944809f1963a6dd980fb309b399726",
+    "pokemon/data/text/default.py": "d231672e617bcce680520a6a2eea77f6f35b7865940025135a2cf6224be24060",
+    "pokemon/data/text/items.py": "e853149e9a205bcfeb1e6e5c3b1a20f84eb0b62fa2866712dada6af74f2ef055",
+    "pokemon/data/text/moves.py": "59b4e8e723fdc5a0da9cc80fc276261095ff46064b7bb282ba5acba03ca12404",
+    "pokemon/data/text/pokedex.py": "70f98476d0e34f160b8758aebb3b782fb166d2ef2ac5641bf69d8c3e88091dcd",
+    "pokemon/data/typechart.py": "646aa4e4262c81ee73c49a28294cdb1080a5a5788c8589d34fe49c4a413f2b1b",
+    "pokemon/dex/__init__.py": "316891227b15fc9d025722c1f41e8324547b8efdbcaa2dae6bab41cba8ca2d62",
+    "pokemon/dex/abilities/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pokemon/dex/abilities/abilitiesdex.py": "582a1ba99f8a5a04f14395df68b3eeb8ca6055d3acac4358cb342f598b6f1849",
+    "pokemon/dex/baby_species.py": "c503a5ed2a68e0c82df4472af43ebcda2263d0d329966cee266d8fb7d8c0d04c",
+    "pokemon/dex/catch_rates.py": "a51be30b6411ed86bc2711f9ec2dbda1a9f012d136d7ab92b0c415006747348d",
+    "pokemon/dex/conditions.py": "488ad7641990e776ba66a799835529aee9f095a750e7d08e32969a121006348f",
+    "pokemon/dex/entities.py": "620bf2756f04302fdcb3f48a42dab90a3677dd9a52cd7489cd09379a001e0e2a",
+    "pokemon/dex/exp_ev_yields.py": "cbe876a5562f098f6afeabf10f61893c9f983cebe1b44dd807ed9936f59d6a00",
+    "pokemon/dex/flag_groups.py": "4057574b177e1d6fdf41f0d749fe6295f68814c05cc16c2b118e24360034d2b4",
+    "pokemon/dex/functions/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pokemon/dex/functions/abilities_funcs.py": "20322c8e944c606505a737baad040806d6329fcfbd76a83778b1f4fd35a08a2e",
+    "pokemon/dex/functions/conditions_funcs.py": "a75c891174ac2f94cb2247c2f782449523cfe88cd3d6ab5a8d8fd373a1b1ed1f",
+    "pokemon/dex/functions/items_funcs.py": "3dc94f02534f28e147747630dcc0c0417b1a1112dcfe7002d62c423b0e151b46",
+    "pokemon/dex/functions/moves/__init__.py": "ba50d6f46151cb42dde27ccbf2f58a490319e81b1b177ac2fa9ffb6ea7dbb98f",
+    "pokemon/dex/functions/moves/damage_moves.py": "3f21fb9afd4b822c8d50a101c7512e9993c1cb4b9a8a2c5efa52f33e10f9cb32",
+    "pokemon/dex/functions/moves/misc_moves.py": "eec8b1d379e043b221e6b3c946d61654de56c8df4bcc86a268180e6918768833",
+    "pokemon/dex/functions/moves/status_moves.py": "ef2e19f1642a599def755d3e642531f465cc94c970f9171c52a0edc48a642382",
+    "pokemon/dex/functions/moves_funcs.py": "4faca381ea1dcef6b3d9140c583c6bc3f88dc28e1346ab082f05dd40a1dd24ff",
+    "pokemon/dex/functions/pokedex_funcs.py": "a33ee828e8894dffbf632e510b291e8451715effbdeca734cdf13f29789f8d24",
+    "pokemon/dex/items/ball_modifiers.py": "081f1c396ddda70114c48c3e6b97eb2819ac66ea755e498d949d9844cdcf2482",
+    "pokemon/dex/items/itemsdex.py": "f68a205f060cc75b64b5883671d089764d1d275be35ad2f54e141a94258535f3",
+    "pokemon/dex/items/pokeballs.py": "1083be52b42ea51f5a76aa06ac1c2a05d6215e3a5c769a55218c42a3d5be3f49",
+    "pokemon/dex/moves/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pokemon/dex/moves/movesdex.py": "862cc9142c9af4e32a6b1110f9b696c729fcbf93f9631aa329d355dcd04ce419",
+    "pokemon/dex/pokedex/__init__.py": "108763efa6133539acbbd6df8420ac723621980f54d5fc9afc99ac8d3125c04b",
+    "pokemon/dex/pokedex/alola.py": "f118f83e276f3596d32c0b0e9fc0b29f4d328c776f9b877e5d7cfce7ae3be7cc",
+    "pokemon/dex/pokedex/extras.py": "9202f60724f9b6baa8577491cf679fd271e3e8898a2dbcf26bf97a458efb0426",
+    "pokemon/dex/pokedex/galar.py": "1a9981f96bea77310863b7bb804d84ecc29e41f95e82724c0f0c4baff40f0d2c",
+    "pokemon/dex/pokedex/hoenn.py": "cc56b1ba02cc61975337f072e68fe17a0fd256124f7e8a4dfa67a68236df61f4",
+    "pokemon/dex/pokedex/johto.py": "81fbdfbf3960e07fcf00f73abbec198e8ac3c6f7fcfbc277347ee6ca4859c054",
+    "pokemon/dex/pokedex/kalos.py": "137c27d47c5f3026207262966930a8650fc8fd00dda52ccccaf7449c5f2002c7",
+    "pokemon/dex/pokedex/kanto.py": "ada2e0323db21d30c8660621f086349bb4079cd554656568dbc823a59777f208",
+    "pokemon/dex/pokedex/paldea.py": "226679ae5576e0569c13ebf05fd8ee0b6986e9e1b179e3fa2c217673eb7689c0",
+    "pokemon/dex/pokedex/sinnoh.py": "1311cbd887332eb2a7aa628a1a1c9623678a7ee11cf368bd68aefbc7013a0466",
+    "pokemon/dex/pokedex/unova.py": "3d38c23d2b0bced9f9f7cf7d78a4c2445cb3f7c70268f9147a69d287bf3e1565",
+    "pokemon/evolution_forms.py": "d4764711565c1341620512f799f859d8023877c944d458bb38c721156c5d1a74",
+    "pokemon/evolution_items.py": "106a9aaaa57e7c7a0cc912823b3e4104066149ee388b4b0686d58276ffe8394e",
+    "pokemon/helpers/__init__.py": "45fb466d264c62b11ffafa54ebfa3e96f8f221d3c67ed1c9d79986164d4488f8",
+    "pokemon/helpers/berry_system.py": "a09a282559340514c248d575abbf4497eca5f2ccaecdd6557b7ba4f77be46517",
+    "pokemon/helpers/display_helpers.py": "365dd4bacf5b746dce21c8851f77be0bf44b70e6a09393b3499c2f6158af03f8",
+    "pokemon/helpers/party_helpers.py": "b6b6185539b7f66301ed76a205147a804328e33ac74dd15395cbb5934262c623",
+    "pokemon/helpers/pokemon_helpers.py": "0ea863bf9e6737b7977720bb6d3523070afcb754cf997ba185e07382419dc829",
+    "pokemon/helpers/pokemon_spawn.py": "d226416ef2b2eae6bfc1f1fa17427212d6e1e36a0bc47cfcbdad5cb58cd7018e",
+    "pokemon/helpers/starter_helpers.py": "0e96d28611b5b5ba1b97302568422558824e3ea1c76c66368dc2397b481e5896",
+    "pokemon/hyper_training.py": "87f227936f74bac68f085b0f0ff843575392506883b608b74c8c09e1c3380987",
+    "pokemon/items.py": "35a4991bc2ab1acc4f16befd868ee9863096f8fa32d459fd3844ee282bc28bdd",
+    "pokemon/management/__init__.py": "64727fafa6a8ce8adf658f1dd30646a7c6f34fe0aa126ce0ace2d7e23d73d6b7",
+    "pokemon/management/commands/__init__.py": "baf53e05cc138eb35490213462e7ed04210e0ec2dbdd670856778bf2af2f3119",
+    "pokemon/management/commands/audit_fusion_state.py": "c0cd156243001a9782058fdbcfa2d5831b7f4a75e072bf12b0a4e33fcc13e46c",
+    "pokemon/management/commands/audit_pokemon_placements.py": "6c7e178ca7e2359b1a2af608e3771012b2a7c7a464195b4b77651b2324a2feb1",
+    "pokemon/management/commands/audit_pokemon_transfers.py": "382d5ef9f414a20d10d99837c32c2aebe48cc7bf0505196b5ea55e56f13bc3a6",
+    "pokemon/management/commands/seed_alpha_gym.py": "38cec9ebae66533a79f6a9ed436b3ab14b1a216a13dbb29fb55f808c64cd40c8",
+    "pokemon/management/commands/seed_production_gym.py": "b7b8780dae4a9d4c91731795ffe888f3a00e8d2ff62581f4d31807087d9a6ad7",
+    "pokemon/middleware.py": "1593fddee75ed4b8327fa6d254c9cf4bfb403014623392685b05834935373904",
+    "pokemon/migrations/0001_initial.py": "c4d3d2784e479e28076049b494a7a6620842af39278567829171bd9f5f0c7b40",
+    "pokemon/migrations/0002_pokemon_trainer.py": "9fb54db994cc14c267a6ad91d44a6627e8641d2ff27e3688601adde5ce4cbe92",
+    "pokemon/migrations/0003_trainer_badges.py": "cbe9605189f62ece9c45d2743f423e70c8605259f96bc58a624caec14108123c",
+    "pokemon/migrations/0004_pokemon_data.py": "8c8a8cf35ec3121d25327d51fdd124c88a28fd942c96c90e8edc5c4ca28c21a5",
+    "pokemon/migrations/0005_ownedpokemon_and_moveset.py": "85b594d5a5caec8f660e93ecebf28394b7f03af3be00e14e587fd82ffe366821",
+    "pokemon/migrations/0006_pokemon_ability_alter_userstorage_stored_pokemon_and_more.py": "24aafdf2ff9ebc8392de2f9b4ea4fb22d4ae5228bfb1599859358fba9d80830c",
+    "pokemon/migrations/0007_add_held_item.py": "a1a53d51a0a8a81b219fbb93fc560b6fc1b3f65429d371b1531cc39079b157a1",
+    "pokemon/migrations/0008_pokemon_temporary.py": "c59b8a3f0904b4ca53d55890fe8505565f560c2e9be39cd49ae8484f41251b04",
+    "pokemon/migrations/0009_refactor_ownedpokemon_models.py": "a5ffb1a3f34dd8a3bde4d404dce920f0bb63124461b9d7fb5d6615664591b552",
+    "pokemon/migrations/0010_update_storage_and_add_npctrainers.py": "adf64537def4fcaacba3715ed97ecfa63ca9e3596ec09b727da0cb54eea114cb",
+    "pokemon/migrations/0011_ownedpokemon_created_at.py": "636a0d8bf85c9e81795c2d02dc58857a586ebf8316661ef6aa6e8f79d164e940",
+    "pokemon/migrations/0012_activepokemonslot.py": "e84478b3bf8d5304ea0201c261506c4f11a10512aee6dcef59bf63cf052b3c9d",
+    "pokemon/migrations/0013_species_entry.py": "555786757e7eddaacbf98016884e6460ec26ef13d85a9fd674d980d24a7cc368",
+    "pokemon/migrations/0014_gender_nature_choices.py": "31abaf421c2858929c8e2add8742b1775df8ca5432d704180c0001947ae1e999",
+    "pokemon/migrations/0015_remove_pokemon_name_pokemon_evs_pokemon_gender_and_more.py": "fabcf8a5b51ac73dc71158393b51fa4473fcb61eab67eac53b6c534fd39cb7ee",
+    "pokemon/migrations/0016_unify_ownedpokemon.py": "00d26f9080ffd8a0fba4f6ca6ce2f978415868676f5e58bb50ea1962ed31692a",
+    "pokemon/migrations/0017_add_template_flags.py": "f61479b3b23ec080ef6eccc084c27b06b7eb2c660549868731dcff5df0a5c285",
+    "pokemon/migrations/0018_inventory_entry.py": "5f9ba0f7b447af8290b5b783a491abf6b1ac4d61067bf7997ebbef392b9fc69b",
+    "pokemon/migrations/0019_extend_ownedpokemon_fields.py": "23a9b9041a262843d0d6c9f6d5306946850ba1a52e296c171a44e19c8acb076c",
+    "pokemon/migrations/0020_persistent_hp_pp.py": "a768c64dc942da28f37bfc698e56f735690e802b27e1f3851553f7bbd66070c8",
+    "pokemon/migrations/0021_pokemon_fusion.py": "fa623bd010d38e976029e7732b2632515dda1048feea7ad44908fe8ef5508eb7",
+    "pokemon/migrations/0022_movesets.py": "45ad49bad58474a13747c64e9e68aefe2fde63b82e4a7741519f2643627baa91",
+    "pokemon/migrations/0023_move_pp_boost.py": "58d56334e00444982a93e64d06bfa12c07110f29aece4189748223c645ab823e",
+    "pokemon/migrations/0024_alter_moveppboost_id_alter_pokemonfusion_id.py": "8a43d56506a49a1c21c8949ba7b66f501ac5dcfa2326b1c1d950a588eecf24e5",
+    "pokemon/migrations/0025_sync_ownedpokemon_levels.py": "5ddce00e69ced6000b1ead2cefe1add91bae511f250c169d9d7ad3db0d485eff",
+    "pokemon/migrations/0026_ordered_unique_fusion.py": "d3c53258633b577614a783b63bfbefb76b415aefce96e384251891799b4704d9",
+    "pokemon/migrations/0027_trainer_pokemon_fusion.py": "493750262b53a276d19cce6e7bdaaf2ac7e49fbb1b11b7678c5b8053084692cd",
+    "pokemon/migrations/0028_pokemonfusion_permanent.py": "8cb44ede161e445e654ed45f98e6da371ee1cc1ca2682bcb955d5ed8c3ea52f9",
+    "pokemon/migrations/0029_moveset_models.py": "5292e1ca0ed2363da783f9841f364a36c1620871b5b33fd587e37f333e60d641",
+    "pokemon/migrations/0030_alter_moveset_id_alter_movesetslot_id_and_more.py": "ac654c1f0a5fec415d200ec9595b63cf271ad47ccc6067713afd036ada27e87d",
+    "pokemon/migrations/0031_moveset_constraints_and_learned_move_table.py": "4b4199e068999efd9074b06fa8e97d85f6ea7e59797177d3fa2af98f35f32b7a",
+    "pokemon/migrations/0032_move_verified.py": "b0dbee38fc4abdc71680e1d981af93fd0403b57bcabbc89a82515d821d7e4789",
+    "pokemon/migrations/0033_verifiedmove_model.py": "0be9186500accb317601d0be117d3f9c3157822a80c0b3ad129f732762b9fb5b",
+    "pokemon/migrations/0034_delete_pokemonfusion.py": "c2cb1ecc41dfc7ea8f0d699e638be7597b6d381248a293ec8fe3bb94ce8c546a",
+    "pokemon/migrations/0035_encounterpokemon_npctemplate_pokemonplacement.py": "93dbb2f790a2a5b6b60c4696dc8eae9ca93d2354dcda2681babde77262780918",
+    "pokemon/migrations/0036_alter_encounterpokemon_evs_and_more.py": "9ec29eead63c75b175524e4483568bd93888e9384ff60431cfc491c02b517fc9",
+    "pokemon/migrations/0037_remove_ownedpokemon_temp_fields.py": "c2a9f4d0d1dabef8395659c9fa8636a91ed4973516ae8dfcef634e2619e50567",
+    "pokemon/migrations/0038_gym_leader_profile.py": "e54ea0cce02a191f6127bbb96cda5ddd2f57745033fb464446c31ef4d7cc2892",
+    "pokemon/migrations/0039_adventure_session.py": "3ff26e50ae1cea753ed0246ffcecfa1750011ccfd7ff12b0d9735957bfe2ce50",
+    "pokemon/migrations/0040_adventure_participation.py": "944bafeb432e692c939cb5b9e84c63ec56bdcaa51bcbfbccd0564f1ed3539906",
+    "pokemon/migrations/0040_canonical_placement.py": "258cf9ef21086541ecc72ee7b917c869a0c0cf66abcb5b85597cffafdeee751c",
+    "pokemon/migrations/0041_placement_integrity_triggers.py": "73c433bc9ef1c354ef18d878fa7cf3d21d7cdae2f0f8a946e096fa184d8b2610",
+    "pokemon/migrations/0042_merge_adventure_placement.py": "a76028a6261f2ba765ae4229a0d9463b49fc732c0baa7f7841c6f8e7d1d25ef0",
+    "pokemon/migrations/0043_gym_victory.py": "9d92cdfd762fdda924955d511b4d9ac1e16bd348eb0da46aa852ba870a29850b",
+    "pokemon/migrations/0044_owned_pokemon_status.py": "9f72a00d0d765619985c6adf0807423bd2b951dcf998cca58878a746a2d93e3a",
+    "pokemon/migrations/0045_production_strategy_gym.py": "ef376cee22745e5e3454d87c46c429c621fe9cd31cec6c9afa7c92b7cf90826a",
+    "pokemon/migrations/0046_berry_bed.py": "4cf96baf94057f3ec427880c2ef8f33b82bc730e14344a660749cec3c2402edc",
+    "pokemon/migrations/0047_ownership_transfers.py": "fd0cfa488de32000df6357a201b0e55c551253f997067aea33de0afbf15a75fc",
+    "pokemon/migrations/0048_ownership_integrity.py": "fbd16a841f1bcc57a9a2da949a6d7ab947e0d25b04ce5827a96f6632b3033cec",
+    "pokemon/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pokemon/models/__init__.py": "95cc707d2e1fbc4a0e550f7892914efa59bf5bbebc5189daaa24e8d73a991f77",
+    "pokemon/models/adventures.py": "c6e004dfed8193cb8f8413137ec0fc112420ad36c1ab83a77454ee0d6589ed76",
+    "pokemon/models/berries.py": "8dfccd014cd3e0b746115e4dfd532ad38e0a107eeeb8e5f3e6617cffdc68b67a",
+    "pokemon/models/core.py": "385b2cca90fcf9640ecf62a723e857a2876b788f045754b430a308a4ae9b1664",
+    "pokemon/models/enums.py": "41280bf1dafae784a241e29013cf1f198e8bd2090331ad180da9b0f9f85c4c81",
+    "pokemon/models/gym.py": "f3f7249db1212a2d07ecd6b89292c2d504418fbb72f8482a06482dc6f8e484ed",
+    "pokemon/models/moves.py": "848445d5c6fd7d199420592bdaf0b6f879c2c93fd7d6b7571e8d7bdb4cd5891a",
+    "pokemon/models/ownership.py": "15872330407a71d5601bb90b0d8172501378bef31da0332baf15c77acb202004",
+    "pokemon/models/stats.py": "b623a7c89ea7cd41cd59883782de52d68f2ef7b15c30cbdad2abfc82efd8ccc1",
+    "pokemon/models/storage.py": "81afa3bd5d38b99d17fb89219f9e26e35620be22ab8350e7ac5db4eec5506b20",
+    "pokemon/models/trainer.py": "57d3e1f556db7cc94a2e6a0b7e8ce593640c9552b9e4aaf98886cc3df3698efe",
+    "pokemon/models/validators.py": "d674daad5dfc09e944e1160401d3766b3475dd504698ea0646ecfd71c1c7cca5",
+    "pokemon/names.py": "645fd0c2cbdd67bd002391cb8634b7faf1da51280b2bd7bc534e8babf70cb8a3",
+    "pokemon/services/__init__.py": "df04fbf9114d44c5372d15b43c7a764e88f965e4e2770a77b35dee2796d620c3",
+    "pokemon/services/alpha_gym_seed.py": "70dc1020550ebdfce33e0802cba5f490e6939fbede8aaa11c8ae4d1848090a35",
+    "pokemon/services/battle_items.py": "397622e8fa66320fec16a41e4585b8290e3adbc7160b5a7047c17d516503403c",
+    "pokemon/services/battle_rewards.py": "5bc2eee2f72c94e41d0e53e2c4ac05730065ad4a3a00f3b33ad8fbf680141ae9",
+    "pokemon/services/berry_growing.py": "1484cd0e211d5c7b498561e8fd0342aac09bb1356a487b28d0295296859023f2",
+    "pokemon/services/berry_snack.py": "1d8d49181ebb35b733f4f61afe85dbee671921a23543fafbabd1e5a20526080b",
+    "pokemon/services/capture.py": "2ee7378f2a16fb6241d303fa7bbb0fdab9e2048965df218c1a62a72a053e4500",
+    "pokemon/services/capture_nicknames.py": "98fda881d6f1fdbf30a248f233d6ae3df712ace46f534771c7839dd9076d7ad7",
+    "pokemon/services/encounters.py": "74d1e34fe3495d0621e05214f0940da7f581cd1e748057a876ed355993d5bd4b",
+    "pokemon/services/evolution.py": "ac9ca844eadc4165bc18991a66381ef5fdeb63df33971368a1c5939fd4a37732",
+    "pokemon/services/field_abilities.py": "9ab6c622b9adbae28455311ecde7bd9c79bfe15918b01eed48fcc8ab0aee464b",
+    "pokemon/services/field_berries.py": "c66a86d5e7a42de629760609db2284fd4faa5e341655d72ca0d3eec68441e50b",
+    "pokemon/services/field_food.py": "7b36893c49d239a2ccd36d28245e7fe867dcf7930eb07cac83e82ccf1d46a30b",
+    "pokemon/services/field_hyper_training.py": "6045c094095b62e846d976f06f6371e18dbf7247e88803e528447ff32fa0671e",
+    "pokemon/services/field_items.py": "ec27f28b3abb212ed039962316dbf43a4a133870cf60a740dacf03a18bb04448",
+    "pokemon/services/field_pp.py": "dea54c062c553988a1f17c859cfa894466c4194da28cfe29609a3d2a31490418",
+    "pokemon/services/field_progression.py": "dbd12054a2b19b48aa07dc208f78b8028fb2af189e5fa923825f2ed7c178edca",
+    "pokemon/services/field_recovery_equivalents.py": "23281efa4a48a4725525f494f9303cacd72c7fc1005e65ce023b4d0519f3ff25",
+    "pokemon/services/field_training.py": "d2c0a9fe7728111e0583f716326246aaaf66028b870d6340b1d23791d7a0f13a",
+    "pokemon/services/fusion_transitions.py": "483cb3e8366b4c952cbc34e9a06445fd5e32f96ca82cb435c7bc5b98896d97a3",
+    "pokemon/services/gym_challenges.py": "1fa815aaf843f2bcdf3af0657bb2cc1f45dd99dd2d50f8acd431f477acbbbc9d",
+    "pokemon/services/gym_leaders.py": "9c1754e9db02a6efeff5d2a58606c3b465a5d7be99daae1049806bd562e3ec03",
+    "pokemon/services/gym_policy.py": "6899ddbd3f23e4d37ce1cd1d6ba05efc4c46bbc0a6938935e3579899c86cbb75",
+    "pokemon/services/gym_rewards.py": "9753bb878f5188d2b6da7ef1047d3c340989385cd179e1e7d3a498f8e9351aca",
+    "pokemon/services/item_counter.py": "e5e22d3bf8d0b4250fedc8ae8f9f62049b3bb81a41954803b849ebda8b202ecf",
+    "pokemon/services/item_shop.py": "d3bf28f5ccfee3758a220366625d1ff9f8b119057b1e332115ab54f8e5175d01",
+    "pokemon/services/item_supply.py": "13d7b049d23388b67b792ce2e1770b468603f8b28b8a949754149a9c712ef8f7",
+    "pokemon/services/itemfinder.py": "75937652365cb8e11383113a3f802e56d9990eb948d76eda7b0c753817b4e915",
+    "pokemon/services/leader_crest.py": "2739f0a5f51d48dca49655d2d7a2ec75c5de12c995eb1bd7e02310269ef1a7f1",
+    "pokemon/services/move_edits.py": "dae5c73c0058de23a151b4b33bb3bc072040c66c4b2a07cc10ab3519ca99c5b5",
+    "pokemon/services/move_management.py": "3faaa1f0cb4f3bf7ed7d4d83a3f810390a13c2ec34862f7f1d2b9ab01b7cedc6",
+    "pokemon/services/ownership.py": "050530ccfc95f541bf16b443fbdf14457eeebd1c874e67d4dfcfbb9844a07a54",
+    "pokemon/services/ownership_audit.py": "686b66a4fff3245648478a807be6f0cff73241528957435f7da0f2b0be284ead",
+    "pokemon/services/placement.py": "24101e67df6b4eeccbee77aad8f577eb06d079622a83e31fe9cd8094ea9861d0",
+    "pokemon/services/placement_audit.py": "4ab9ada2308f8915cef2274159e15837c3e0c7da6962ac097d1c254fc54805df",
+    "pokemon/services/pokemon_refs.py": "e9636326246d510467362df5d2a63c0838c522bd29600264e3eead6bcb3e55a8",
+    "pokemon/services/post_battle_items.py": "962091f7c044ca7778fd880a63637c0450cfac60b01757d4f7cc6d9ce10dc9f0",
+    "pokemon/services/pp_capacity.py": "666ff1732581f24d1f49d072d9481f13d2e8278a2cd61b7a5ed8bae01b68d80e",
+    "pokemon/services/production_gym_seed.py": "9a75bd4a98d25cb637e2a34371772f83bfe7956811475abcb45ac0a009932b60",
+    "pokemon/services/recovery_effects.py": "c0c3b7a5b9feb3d25cd272e2576ade063a19fa21d244234c0b9232b41d9ea2d4",
+    "pokemon/services/sketch.py": "1597a9b75cbd0d41c5426f505a7d00c2b8b23728c44569c9a23b5cfb9e60bc45",
+    "pokemon/services/status_persistence.py": "f35e3f796d191eac1321fec02beda5166559741aff053ba211f1911d513de83f",
+    "pokemon/services/trade_snapshot.py": "6bc18fe82267224225e4e5ef512a9e9b104caeebf71241d554ce1887072a0c2e",
+    "pokemon/services/trading.py": "7af9bbffafdfb89608a360596228069685e210e38f46d3c4760c36d686fd0122",
+    "pokemon/services/trainer_challenges.py": "67213b0cebe2fbd150fc475a6360a5224def473cb238a990e8fe7fb8c751551c",
+    "pokemon/services/trainer_encounters.py": "795bebc5d313cc8a16e48084e86fac99e56e38fbdea3e9d44261dbc77dc3f596",
+    "pokemon/services/wild_held_items.py": "aa1cf7e5b8aa60f3855392864d3306f56e591aa4aa66270ccad475af1ba1ec5d",
+    "pokemon/spawns/__init__.py": "5b77e9b5a6977a82cf096fe1e1ee61d91ef9db5a96d5fbb76628faab08bbaa1c",
+    "pokemon/spawns/adapters.py": "19ef12c869d86fabcba7c78a00707203d6de4dc140a15a387c4f2b7170fa1f0d",
+    "pokemon/spawns/alpha_sync.py": "35a2b0873fe704a54c2f49447ff6078b841c91e870733d14b394fb5d356869fa",
+    "pokemon/spawns/compare.py": "7f0a907b145013d1977f14e4a2e5fbc6c2bf4ebb5e1f2ff36c2bbd043dedd2f2",
+    "pokemon/spawns/constants.py": "d10c3a597aac80681cede71538c1255c6ee4cf6754f9a5fb251b27662774ea32",
+    "pokemon/spawns/hunttest.py": "1711cca507fd43de8d12bcb834f7185398be69ec6e710ebdea57ff28dd687a1d",
+    "pokemon/spawns/legacy_migration.py": "3f2820a217738dea5d878c846132a7d735730d9391a5569c72f87c3d758821dd",
+    "pokemon/spawns/preview.py": "151c3269718babf366c89aa3bf0fa2d2ce7c14b049586fa5c5505f2545c9973c",
+    "pokemon/spawns/profile_compare.py": "12ca4f1937af016c1ac37ead8cecb3ce64576bbbc9e9f5c5052e1818b4886b4a",
+    "pokemon/spawns/profile_data.py": "ab7f104c868718a4da8dbb3721fc76f77c730bd9411a03f3d4cc45c1c20da6ae",
+    "pokemon/spawns/profile_hunttest.py": "62bbe73434b5c096b337f05ec9a39d9f5ffc516dfc7f0fe5daaa01d664ade183",
+    "pokemon/spawns/profile_rolltest.py": "eee36af04b4fd7b4b36325139594e2b3f19b585d5376873acae9dd8c22527182",
+    "pokemon/spawns/profiles.py": "388b67342d6811f24f0590ff58dc5f42fc7755222d626dd49f852f43bcc1aa57",
+    "pokemon/spawns/rolltest.py": "af9578f4861736f1e5d8d2c7f437d0ea23f2e11a9aa7261acc82ef87b53358cd",
+    "pokemon/spawns/schema.py": "354180642f3517cfe049a96159163f917805d3f918fdfdf2efe899afb86c37a5",
+    "pokemon/spawns/selection.py": "6e70842d39565ab8b1dd7a4b6fe23d251067b35dbdab6559de33349771604f11",
+    "pokemon/spawns/special_probe.py": "03d7a92c073be00d6ce456a34e5605ebe688c98c492c4a5dd5feda8a5e9f4f94",
+    "pokemon/spawns/specials.py": "1fd0ab0b6318efa6adccab8e6f7976beedabd0b53149d4bac405fb43a164b2d3",
+    "pokemon/ui/__init__.py": "1560ac60ee659adba64aac8947562a02e13be2b3a2ad59033dc72150ac868060",
+    "pokemon/ui/battle_effects.py": "b86779bc1aeb7aba06437215a1058ae68fa869a293aa16645e1e7449775ce853",
+    "pokemon/ui/battle_render.py": "10bde676134062832ddba5733bddeec5bb316387dadb4778b9e50ec8aeb43cd0",
+    "pokemon/ui/box_utils.py": "4c9018e0745b99e537526ac2cdc9cec1d3989b583fe139fbee71efc9aca4d5b5",
+    "pokemon/ui/move_gui.py": "b5d9069f08c6f0d2b5157dd2c3a8e065ac63e6624de29c9b3686155c0fe58dd3",
+    "pokemon/user.py": "0ce15f2c891fcd227888ec41f6b49458637fbdcd0414503d3acd484fc9c550ba",
+    "pokemon/utils/__init__.py": "cbcce4e4a7e9d1a8dbedad9cda2128b2121d4b5895c3d220f7870261c2514011",
+    "pokemon/utils/boosts.py": "421bb93d0fbf847d37146214e3e2859e8f8352b06a6556de054722d95ee8867e",
+    "pokemon/utils/move_learning.py": "dd5854b3605f838fd2b56ee0ea2c9dca169418c62a156535a57fa1fc0746bca3",
+    "pokemon/utils/objresolve.py": "df10fca9641e98ab436112dae99d2c9e9f958f50791108f4a77a79263a95f6c8",
+    "pokemon/utils/pokemon_like.py": "4d3e8b4469260535e4d2283cf4a13ef1ab274b0ec448e79196c3e084a715f0b7",
+    "roomeditor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "roomeditor/auth.py": "a72d4243c3048d2ad39d4680239447cab1841aafdd0a837078da72fba01a778d",
+    "roomeditor/forms.py": "5a4c7dca2a46cf084b7615aaf33741a2b1b21289931be4f3285cd970ecc04565",
+    "roomeditor/templatetags/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "roomeditor/templatetags/roomeditor_tags.py": "e6fc576e18faa8c7804ab193a84ecd0b7bb03b5b71fbc25243de516381ee98ac",
+    "roomeditor/urls.py": "410050e81976440d456d41290d073fb00c6e89fd903df9317375a360d201d49d",
+    "roomeditor/utils/__init__.py": "2666b2a3c84497c6f4bcc82d9ff7396f26bf3c6c19b0128eaa370ef52f2459d9",
+    "roomeditor/utils/locks.py": "bee34a69d4bf4207246fed2fd97e2d30f059dc52b7e64d433395c778e6f4588f",
+    "roomeditor/views/__init__.py": "640044fd885dd42d634defc1821a2ff5e6117d0f1e63c1f0144bc74b1d72ce45",
+    "roomeditor/views/locks.py": "6badb87bd716570ab181eb849d140bf33bfd401e1be77953ce2e7d3d92fb6b26",
+    "server/__init__.py": "9552f854fcf77389160a08cfb4be2eb902cd9a0c0af76ab57df02cbf9125d369",
+    "server/conf/__init__.py": "9552f854fcf77389160a08cfb4be2eb902cd9a0c0af76ab57df02cbf9125d369",
+    "server/conf/amp.py": "cbccd593c8662c395bd28a860b63f1a80042ca08ffe5a228d93149c9223558b3",
+    "server/conf/at_initial_setup.py": "db13450247cada1659a5b9ee674e845f150ee880ef3680c6fda548fddb035b8a",
+    "server/conf/at_search.py": "0d2305e8b08a7ccdc1e0016f31596eb534a987bcdd3b850946c4b3ca1e436368",
+    "server/conf/at_server_startstop.py": "96969b95a869e8bb350d50df775cb761ee0e364ea94cd8fdad6f53e62ff393eb",
+    "server/conf/cmdparser.py": "bcdf2c45ae96d73fb8b5893e4f8ef7d6ba1bee4cf8efab49f24579059bc2ed95",
+    "server/conf/connection_screens.py": "2173071ab27a47940e2981e13acc098443ba759259adb872f15add3433179b3b",
+    "server/conf/inlinefuncs.py": "689b94a66b41bbf36b48810497103b86a5a27b08eadd3f2f7df5e63d69aa2a5e",
+    "server/conf/inputfuncs.py": "d0831aec47ae254258d51ef8490a7c5f969b37c929d3b87d367e1dee463a4998",
+    "server/conf/lockfuncs.py": "3d4ccb5897842367b68a8ed81401ab78de18eb927340fffcd7b5ac23e7589547",
+    "server/conf/mssp.py": "2e7a05db9fc27e07cab6ec5b7130176ad5558e0ff8f69cc59f534bf516a6a037",
+    "server/conf/portal_services_plugins.py": "16b92e2da16df945aaa3e12788ad48dab058a9368e8808d22beff53378c83f3c",
+    "server/conf/server_services_plugins.py": "4a3ff8419f3303dfbc938db436c34d0134d9419f178a9ae24dad931fd89938ae",
+    "server/conf/serversession.py": "91ab7c10c66546fe0da9854a3f6654c521698b12a0f8439900106d65a139d00b",
+    "server/conf/settings.py": "857169ff085f0a866b52f664c9161c99d53e162d89d57fe4b3b8785c0b242b25",
+    "server/conf/telnet.py": "22db143eee9cce22be140bcf4b352d8515a346871cad0a2da1f4fc7edb2e94cc",
+    "server/conf/web_plugins.py": "36a828a807a65bfe35a74968741e3fb0b6869b57a2827bf5ab92873af885ece8",
+    "services/__init__.py": "536464ddca75dbc2628fe83054f319fb52b24fc2a2dff426d806e26f5c35d376",
+    "services/battle/__init__.py": "82b2a57f4f39e1bb9512abc1774bf55d465c8bc4e9ea853947eda16c3a10d2dd",
+    "services/battle/commit_adapter.py": "4096ccab8fdbddbdf98adf17ef35bbeea446ebb26f356d2b1d23c93ce10bfe29",
+    "services/battle/instance.py": "38e6dde512047ef822e32cdc967ad66257cbd9594675d62aeab96f02fbb2959a",
+    "services/battle/manager.py": "471a6dd5aae5f309790fe33a42b0c27e645c24656c10275c62d129211089f016",
+    "services/battle/snapshot_adapter.py": "08a0073301493aadb2d48d8124abe0d41ce124dfd5a03fed6928d747bc096f7f",
+    "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests/battle_contract_catalog.py": "2b56ff88dae8b59d86e4034ac9feab5f7d5bd6e0645ff5e14f7ea88e73ff545c",
+    "tests/battle_contract_coverage.py": "4f715c2b1da5ea6c2dd2280971dd6a1d7bcf72d3d9a9d1d94c11ad367bacb56b",
+    "tests/helpers/adventure_recovery_orm.py": "e352e9dad29658e4381877a2196f241201d42a5b0e2e4e70c90863ac67e349f0",
+    "tests/helpers/battle_hp_render.py": "0163aa758437d0992da148b3e9ee33c88958e8360990a589f72a3c99337a5552",
+    "tests/helpers/exit_commands_evennia.py": "0c3fb9ac600807bfdf5ceb5ec93caea1dba036b0039c15d0533f7488aa775f68",
+    "tests/helpers/gym_rewards_orm.py": "b83b8fb67b49a47d31b1c3b1c4e572f95ec6646e46f2ff6976080d3da26b552c",
+    "tests/integration/ability_item_cases.py": "14d34477b8c99b7b856f02f70adb8d47814e52ce400b40dcea4c85d52739c026",
+    "tests/integration/adventure_lifecycle_cases.py": "3976ae1acfb269c6dc2868148207e3713cff988f13b2a66aeca0fe8f2f282775",
+    "tests/integration/adventure_player_cases.py": "ef09ccdf185c527050904d4f2956e92f7a5fbd16beba1927a420cb561e8e7d43",
+    "tests/integration/ai_action_cases.py": "8323bc3848d17d112ba872901d0e7a37ef1074f19f816a1ee001993118551537",
+    "tests/integration/ai_scoring_cases.py": "63720657550b862038f4ef51a9f587cd445b3e82fc504b12782bf19f159db05f",
+    "tests/integration/alcremie_cases.py": "40f1930fa62063ef850ab390aeca401d73a7016c448adb7ddc0c78ce3acccb65",
+    "tests/integration/amp_reload_cases.py": "9a57440a606f7aa48d4746b9c77d99873157416a6a4ac6acd0c94a97b4a10222",
+    "tests/integration/battle_item_validation_cases.py": "647f3d78e25d5dcd6a8a7999de38dec64a3d0cea7d0f900f5aaa8ff9294d35dd",
+    "tests/integration/battle_recovery_cases.py": "cb92f532132598dfd1020af7cec67ee8e8ac9e697bb70f8fa9ccce9483e4dfbf",
+    "tests/integration/battle_recovery_food_cases.py": "b560a239b1ce1479c0a04ecf493f0f9b82157e4d3ea7e63dd00c980d705d34d8",
+    "tests/integration/berry_growing_cases.py": "7a9d833d4542680b5673e9fe732d953e65b011c2020519920d5fdc334a22242a",
+    "tests/integration/capture_ether_cases.py": "ec2b2f8d8765e0a41a6adeef3a18fc72935f840a0f38e8c1f5ae6d70eaf1367d",
+    "tests/integration/capture_pp_item_cases.py": "fac7727df81b15344b1a848c46ecc4f88556fb11581a31136d0b13844fb269e7",
+    "tests/integration/cloud_gameplay_cases.py": "39f94e3cd19d453f821caf288a0b37192e3aa7f7bcb20f7c08743cf11f1cafb6",
+    "tests/integration/evolution_cases.py": "6877abe23047ccbfd176366c360747e1b2c66c2cfadd739e69214bfe36bf76d2",
+    "tests/integration/field_berry_cases.py": "7946bee4049a20db95f193e94d5ef45508f55a9e97c65d312e635338e464738d",
+    "tests/integration/field_food_cases.py": "499cc9853a3c0b6ac2d1a3cee32a5ee5d351dcd843317e516818ba50d3c2f849",
+    "tests/integration/field_item_cases.py": "563be7107ae67199869c2898e1d3ffb6c5f21d3403df9f7065ff90c62fcbdb5a",
+    "tests/integration/field_training_cases.py": "3a019fa4bd0cd9e0a6c7ee7c92596db8c4f45729a6c567280a281eede73a6a52",
+    "tests/integration/fusion_cases.py": "a524a217c2f12aaf41f2e69351aabe4e582867487a349022d72f835fc60e0d1f",
+    "tests/integration/gimmighoul_coin_cases.py": "f93c9cbc988b896d292f57c5e2f001f4aef9d7b239ccb091d8d8c3ce152e68fe",
+    "tests/integration/hyper_training_cases.py": "e9c22d42171618cc32f1bf35dcdd01ff7e41d108a3d98e05521c8142c2bc20ba",
+    "tests/integration/incense_cases.py": "28e1f00e6d5a4ce44f4ac41888fefc59140257982e35bca99c942ec6919e8904",
+    "tests/integration/isolated_postgres.py": "4b38423ba6d7ccf08cbdfe9d022e26f0d399415adc3ef9df30d89945dcc1270b",
+    "tests/integration/item_availability_cases.py": "e06411a8b19b07cc167b5551b3c2cf2eb082dd004c95d3526243135ea412e52c",
+    "tests/integration/item_feedback_cases.py": "b07556fed81c0e9eb245298ffd3a726d389921251f23e750013706b6dba623b0",
+    "tests/integration/item_stat_batch_cases.py": "ea5f9e08547ce1328978d1f0a536f887c648079695ed3586e864a44908136da4",
+    "tests/integration/item_supply_cases.py": "2e78c8ed4807e456738cc5b0be61a56956e9e0208520b5f2b6ec153cdcb57c0e",
+    "tests/integration/itemfinder_cases.py": "3ccb4e1857609c416319c44df21de1feec64b61ef3d5a9c77caf9b3e2307456e",
+    "tests/integration/kubfu_cases.py": "03b6c7a30ef045146dbfe66b362176d02787739ea2cf903ed362de6dc4e18bca",
+    "tests/integration/leader_crest_cases.py": "a598992bd866b9f4285af522732cdf0d51a90ee6f62d1e88bfa27ef5fe6e59ba",
+    "tests/integration/legacy_berry_cases.py": "2fac79ce9a9b05b0f28ea5aac88a1e0fbb174ff1a971d900a13b84709be6d1e1",
+    "tests/integration/mega_evolution_cases.py": "c663b39b804dfb7a6186f66de4da70b8735d7d40cc713a15e48ff1afaf05b293",
+    "tests/integration/mega_stone_cases.py": "0f66264b942101089ce7eea66b275f4ee6b21295b98ec856bff7e5a4537ebb48",
+    "tests/integration/migration_graph.py": "4e5d9dfe7d8f4d528c2b02ddeab0fb2626c8388d6d797aee8737a2b1021a3c13",
+    "tests/integration/name_resolution_cases.py": "f0a9afcfff954b7ad6fa65cf6c8815aa5653130ebe6e2b030ec1ae1db2375f77",
+    "tests/integration/ownership_cases.py": "ee449fe719af17c8ebec04f2e87915707d955553c8f9aedaad3fc0f732cf6bf3",
+    "tests/integration/ownership_migrations.py": "6bea849c68a229d91429935a059e4e6a220b5964f414f9fcab6fe0e9dc489014",
+    "tests/integration/peat_block_cases.py": "d8d1a20b581c75b0bb6b883b4507ed2a67eda48df34a7b913d87733b19e5153d",
+    "tests/integration/placement_cases.py": "95c94c46a64ea6954e437aecaea05ccfb15a16d045039f9a63b652a2a6a117bf",
+    "tests/integration/player_doubles_cases.py": "d384e43dc53d706dfeb28b15b1c41d15f125730d725f72d7cc4139286934b3c1",
+    "tests/integration/pp_capacity_cases.py": "81106e322e978a998b9a067195054c162ff4955ae728b8293a5723114a4f3297",
+    "tests/integration/production_gym_cases.py": "cdc473939f54bda9ca147f14c38abb2778aec9e2c62dfbbbbdec0caf7ff0a423",
+    "tests/integration/progression_cases.py": "ab2b1f9c663286ff68caaaac3d58f7de44ba0d3f9ee544ea15f04e87ad0fd63d",
+    "tests/integration/rare_candy_cases.py": "303d6f747b45f747e15fef94405950c97c8a93f072ae31b54c19baa1a28c24b8",
+    "tests/integration/recovery_cases.py": "082337911dd85f1524e91161011df0840013783c89ce9060b867d86971adf4e2",
+    "tests/integration/recovery_equivalent_cases.py": "7d95d8cd3498b0a7bfb9253ca8fa96462eec634dceb014001a6ef1364c7828b7",
+    "tests/integration/recovery_migrations.py": "0254c92855cb4c72ff215237adc6d9776035cc56d311c1c8a1f2a3ede7cac533",
+    "tests/integration/remaining_item_cases.py": "6bcba49a27f2b103bae3415f34cb169ba56b4158610f32c20f565476b2da56ab",
+    "tests/integration/shop_purchase_cases.py": "29a57aa2f6d172c58e7b76ffff556b9be47889f9f7eb6ab2569a8eba617e56cb",
+    "tests/integration/smoke_ball_cases.py": "089c29e4842a44c9289b95f58c3fea59dd2da3ca294cd939eea93ebaa0f566f5",
+    "tests/integration/status_item_cases.py": "40878754fb9ad24d56da95f51e451f84ced707283803d15573d658dc44b5bc50",
+    "tests/integration/telnet_protocol_cases.py": "67afeb6017c671c2a2c2f22c6d530b117adb18aa2d300b0565f8260cb87aa8ad",
+    "tests/integration/terastallization_cases.py": "16b37f98948157052fcea5430a1db988dc8f04bdac3932000f89154181500cbd",
+    "tests/integration/trade_cases.py": "fe3b9cc5589d8b53a52075f08b2ae6527bd98f94c7a2b18d738a44dd02bb8890",
+    "tests/integration/trade_held_cases.py": "2f039b6bb8b02853907f3560167cb6d53c2d60c85702c8116ee3f5dd428380f1",
+    "tests/integration/trainer_challenge_cases.py": "e3fb095ec6ac5b97c3ee1fcc0dcddce0de110883efc85062fbfbe6abb25e9de4",
+    "tests/integration/ui_cases.py": "4b577086f4d96956e6c487db89441742a8f0e1ea6e9924cb9026d554f27aa750",
+    "tests/integration/wild_held_item_cases.py": "8d526e25203ad8ba43c0325c74ece28918af461d86cf3c188d4aa0d903e3197b",
+    "tests/integration/z_generic_cases.py": "669da8277bef438589a8af157c8f7755b3fe745bb3e41f006b53fe3c1b1ede04",
+    "tests/integration/z_move_cases.py": "4335d9a9af27f5c3083ef3c39f673dc39a12157909187b639e2e068217da5e9c",
+    "tests/integration/z_native_cases.py": "ec5e88903976cca790a1f9cb2b21c63680b79a2eeb58a4202a9e2aec1aaba7c9",
+    "tests/integration/z_signature_cases.py": "c0d42f642a53cce28c2b6e4852ce56200f185c41ce9cd1349bd7320d6202664d",
+    "tests/integration/z_status_cases.py": "d5965b4aefc5ec1d2cd3f9cda1b0c31bdc0ba38ada1ca6f2acc716bfced84a14",
+    "tests/test_ability_callbacks.py": "1968103e4cd79eaa192f329fc5eede2350bcc0ef78914df35177d71a4a8364ae",
+    "tests/test_ability_item_effects.py": "46cbf5123256262088e865b79eb28ee063de380167df44a69d6931ac61e036d9",
+    "tests/test_account_roster_view.py": "4b2efab5145b37cbe11f0164f08132f9658861587111e9d8e63f8fb00c0bf450",
+    "tests/test_account_site_status.py": "ce984a630e4fe076a3ac995abc08d242d09451a2e66b408e9eaaadd8d611d6c8",
+    "tests/test_acid_armor.py": "91b4b5823dccf9555f514a9d87ee4d2a646210b2a6a16c6cd0ba833218adc0be",
+    "tests/test_acupressure.py": "15e98079d768d4a72b6cd0a32c3b31319347d955002afbf4b3c21555db1c93a5",
+    "tests/test_admin_pokemon_safety.py": "bf6406c2d57af43ae86ecda4dbe22210b09b1de67e6f25f192193f17c46e51bc",
+    "tests/test_adventure_admin_commands.py": "6f2c49cb296f69b6141499769f97309e7ec3b568e7ca707802cc6e3c31a21cd4",
+    "tests/test_adventure_battle_results.py": "1d4faa63dd96ece56b85888e98b912b79494fb61e97f4d1baa25d4ab1b832a10",
+    "tests/test_adventure_commands.py": "921bd8b19ae128ad0487bedb9a4211f60327b04c9d19d8d8b1d0d63f9b3bbcc3",
+    "tests/test_adventure_progress.py": "e4175b3140715d7e1ba880288cd0425f84d43d43037f45bfeb048f21175116bf",
+    "tests/test_adventure_recovery_orm.py": "24674190318edf6b14dbb94bbbc7479d8789186d7a22875894d6b1e647b04de7",
+    "tests/test_adventure_renderer.py": "394d826c4b3ec392bfa45d1272ab42a5dee969b40eb780f8cb699e4ffe4287d6",
+    "tests/test_adventure_sessions.py": "efbab090d5326683be876137ca8dfc1d5221d078eadc237ec30c3f607b44fcfd",
+    "tests/test_adventure_templates.py": "dfa3e1d970ed3666124734b8b67257fe24802ec1d1bff8328c0c6b8950198429",
+    "tests/test_afteryou.py": "f1fe9aafbcfdcbb592304656f3d51f8a3c46c1530b57096bd7b05c9171e49965",
+    "tests/test_ai_action_scoring.py": "59b7d284965dd2f26a22a799bb5db6a23e214f214290261b84944cbcebb0b9fb",
+    "tests/test_ai_move_logging.py": "277fe7744d515176263fd122b7cba3df52856daddd552169f16fc73d455518a3",
+    "tests/test_aidebug_command.py": "450e648e73b84ba484106a4ce302f60ac1dc3dd5c08b7bc93d2a260671d91fcd",
+    "tests/test_alcremie_evolution.py": "ef2eeaadce3d35273b6c8aa6636ae5a4b987bdc761e691f238f134664bf2e7bb",
+    "tests/test_all_moves_and_abilities.py": "0c9a7bc61a7ce84db47d01cd1005097427e8b4e135dac08efe7c7c0ed876a731",
+    "tests/test_ally_base_power_abilities.py": "a0299bbf5632dda891b5172614e0c1b95b1975dfb3d0d47d7f104e9b02c0ac9a",
+    "tests/test_alpha_command_gating.py": "ff7b9b3a60ba96de1f2712544a63cd1b48fef8753f0b1b9e71e76a5c389082c5",
+    "tests/test_alpha_gym_seed.py": "46da19b11c526a1834e0038595451659d9e7eed15e31b76edf53968ed72af902",
+    "tests/test_alpha_pokemon_command.py": "f38cecff862462a3f79a49f3c948cc2e1ce120237865fbd12d0bf93b316a0b04",
+    "tests/test_alpha_spawn_apply.py": "67a4c5a1b2d4a641cf1ec47ee73700d5f98957d3988834e18f19afef3d2538b2",
+    "tests/test_alpha_spawn_sync.py": "ff1b5ef9337391c16bd56abc4cc1516f37e5f8cb34d0f6f2ea0b958b115f82ef",
+    "tests/test_alts_command.py": "6062ccf6bfa43b4d1909b7b0778ea67571b8c8d4651afbd1fd55fe247d4ff3da",
+    "tests/test_amp_reload.py": "a8437927161cdefaf6e62f988b2a42982e7039502369e579e20a7e8009f328a5",
+    "tests/test_assurance_base_power.py": "3aa823113ae967252c590f95dbd4a3279d0e86fac7016d57cb8c23fced39573b",
+    "tests/test_aura_break.py": "dc9202c1ff5f2e4ff11d4a6f12a20d292f7ebca7dad684f6c83b0f5519bbd54a",
+    "tests/test_avalanche_base_power.py": "9eb3176e68faca879255915dce59feeac7db4ed2b3a52f55aada57d8128dc446",
+    "tests/test_base_power_callback.py": "9302e6e654bdf1d4ae2af94cb85226c14c47d2c57e9b98bf909f4e9d68f2f72f",
+    "tests/test_battle_ai_scaffolding.py": "54e4574e007fe85c273cd5a20db1d32ef812bc2d9d13e9a5866f89c30a23dbec",
+    "tests/test_battle_attack_command.py": "f08bdb58f8e4ee17344d3ae925cf1a178d27dac25cd5260aea082c47abfeba75",
+    "tests/test_battle_cleanup_command.py": "e69c801cbf35858c9acdf7fe9d806c3455acd5b8c8ce5cdee07b838d4718dacd",
+    "tests/test_battle_contract_coverage.py": "a3835b57201ae136f3c5f47601217be249436a6d99ab769b23dda2979ebcf5cb",
+    "tests/test_battle_debug_output.py": "e0a8e4adfa74bd8aa6ed4a9a7ee5dd66435423c823192751b750294fa0628540",
+    "tests/test_battle_effects.py": "b76e6aca1d2655c0d8279f456d20563cd711c170a49bad8bef68c46afd7ba4ca",
+    "tests/test_battle_experience.py": "d6c49ba6a1ed20318e9c2109cce131dad712b903b0480e9a35d77e263845bd8b",
+    "tests/test_battle_flee_command.py": "31be70e78d3feadb109e8f8f618259b56ff1fdcd1d11e58d56f96a5d021902f5",
+    "tests/test_battle_handler_registry.py": "4f0a46727e648f1606da20b5310f8effeb54937adfdd0a36657395ac67c39137",
+    "tests/test_battle_hp_render.py": "5da4cd1ff958bfcfb8d8c76f4b404cb4f94342bf2c44943fe768e044e218f1f8",
+    "tests/test_battle_interface_perspective.py": "89f834edf060319407b4c1eaf34c09805ab02c933202d7562c9ceb022cf19fbd",
+    "tests/test_battle_item_command.py": "0c01c570f6ec3031af729cc07ac1335621817b4354c3d6e7bcbdbbd17ee6a59d",
+    "tests/test_battle_lifecycle_messages.py": "efd9fae9328bf9511b37b0da0626a9c2d05d06062b1e50dce69960bdb3b4d895",
+    "tests/test_battle_logging.py": "548781184431dd5599686c5578081d8d8e7ed9f510addb617bc2267e934e49d6",
+    "tests/test_battle_move_menu.py": "93d9f8ff524eccea96b780672d49a80cd8a0d5291951ffd0f2806d4d03bd8030",
+    "tests/test_battle_pokemon_types.py": "6612f785ece4fbf32a60ed334faebfc4b9662e8c8b673e56d1961be91bba362a",
+    "tests/test_battle_rebuild.py": "6a66ed21ebe40c8da410b3ddecf965c986a2b5541d4c4ca444c380133a0052a6",
+    "tests/test_battle_recovery_food.py": "1ecd762fedf2fed7524d694f66b03bd28f278e166a20a746e792c172c11f20db",
+    "tests/test_battle_restore_missing_state.py": "6ce118d7dcf342ee2f9a0f4f03d1c2719064951feb4b8d5c4ea1460e7265fa4a",
+    "tests/test_battle_run_actions.py": "c973bf6678af227a684d544ca33e333616dfb0dfe4cc05408b594f7d2ff1a1aa",
+    "tests/test_battle_semantic_contracts.py": "93928d065ec5285dde7b497862479afca70e9d5f7e57a7aace8cf021de6b270f",
+    "tests/test_battle_session_rewards.py": "4b74b480fd328e9278763f01920a675b8e8838b12f1c851096ab9f9cc29e327c",
+    "tests/test_battle_setup_encounter.py": "da8d3d52e1bcd3b6e5e565513947da8be6cdb0648062c61641b787e2851e5852",
+    "tests/test_battle_snapshot_command.py": "c7aad38a3ab9faf15884b7303d612c1088ede7802a661d052a7bb604cda5ec98",
+    "tests/test_battle_special_cases.py": "26833e6c2f97dda585fb7e333d05bf314a548eec94a489d4e53405af76082131",
+    "tests/test_battle_team_roster.py": "999506939e05b58839846232fc0cde2fada760e5aa5c8288e114bd5060fd9581",
+    "tests/test_battle_tempvals.py": "d12d99efdcefb004edc40e481906972fa49b6097a745b0f58baa32d73b7999f8",
+    "tests/test_battle_ui.py": "3c8a88c18a154bb7036b6f268c89a2fb49cc8bfad4d4dcea45a20fcbaecce0d7",
+    "tests/test_battle_watchers.py": "ebab9890f39fd9c8ce6e72ed841d56fb3da5ff748e7f0f65650367d14d03d5fd",
+    "tests/test_battle_wild_cleanup.py": "0fa01660be99d48db494b58dae4ba13dc3372d4c10bb4d81caf6d8c3a07755fd",
+    "tests/test_battledata_gender.py": "6b215cfcbe6faad30210907e0faf1cdcce0c9a3530e87ed035abb1e919828bab",
+    "tests/test_battleinstance_weather.py": "a0a243a723ecefffa0d116d7f02fbe8bb53d286df7bd469d9307f32fbb4c48cb",
+    "tests/test_battleswitch_command.py": "c9541f3de6e85ea36a8babf6eb43b3ef8547ac019c98c51f34d0f68481706a21",
+    "tests/test_battleuistyle_command.py": "5b88dd0a899da363e74d8a50aadc324eb84807457a2b7300e4e51478b9b666fd",
+    "tests/test_bboard_commands.py": "0dc1f6b4d2c4a7059a6afdd65f6a5e75877e42c4da82f81562c733478498e89e",
+    "tests/test_beatup_base_power.py": "5d4f995578e6f72d143bb735e143f7ef7b9dd2f8c8b4fa4de96c5f696efd04df",
+    "tests/test_before_turn.py": "96d742f4b1acfedcaa336c59b6e20d22851c66f2dacb2467872e494212b7169a",
+    "tests/test_berry_growing.py": "aab65bbc4a89bdc63f36fec76af66fc64dcbaaacd31d57ceda536e06c070013d",
+    "tests/test_berry_system.py": "10d33454b46a305147a855c3bbd0c3999337e2499bc5bfb3c7d6869f40a4bd8f",
+    "tests/test_boltbeak_base_power.py": "238b06288b0548592bb79e991df279dcced435360e6b9a82841ac4f2d4f4d345",
+    "tests/test_boost_messages.py": "7ea66c1e3c0fa9550b5604c4f66de0644b67cf5d2f8da1ea57060257f6892334",
+    "tests/test_breeding.py": "fd1f956160845eacc0c4ab7f667dd3cf5e577a2323678fc06a33b73f1a0f8684",
+    "tests/test_capture.py": "8c7668cc1d7d6001aabb9aafc706f99d1bd2d44826f556b8d895a6b9e3a7dd12",
+    "tests/test_capture_persistence.py": "3f5772015cfc5d0cfebcbb78ca7f6721f4e5b93b4d72f702afdaad37fb2da2f8",
+    "tests/test_catch_rate_lookup.py": "d85714c2795d80e7dc55c0405762c468fc2f007e58efbf51401b8fa689189692",
+    "tests/test_channel_identity.py": "464fdca12896c904960cca899c3f60297f7a273005f80077d0db181cf035b2a0",
+    "tests/test_character_mail.py": "1ff5c392127a81ac1a43e14eeba647eb5dba975f9523ca53246e1d6c742f7387",
+    "tests/test_character_profiles.py": "66083fa0226d6da687361cfaefbf43d40543c8d3b215eb7c88acd93364dbedd1",
+    "tests/test_character_turn_notifications.py": "7c2a5795ca955d0758782c45667f866279af0df32fc5da5b734a2d6ce0c68026",
+    "tests/test_chargen_finish_fusion.py": "cdb33652e6f15901e78d9f0a3675340a377fb44a85b407da19ccc0e1307bb677",
+    "tests/test_chargen_starter_menu.py": "efaf0a46a597dde69565f9ad9ede9cab06d203cbf5f691accec19d8cdfe60de6",
+    "tests/test_client_encoding.py": "9892c16667789542e738543da3c6b5d51db66dc5dee968da89d858f8e0cdf0d6",
+    "tests/test_commit_adapter.py": "082a50ea889d7f9948eadd40a626762ec57dea94e5f2af5407e4c531487d08b5",
+    "tests/test_crushgrip_base_power.py": "694d6c0d8c05f5ff88d86b9bd494293a6e35c45d59035a322c1ad442cce6b39e",
+    "tests/test_damage_admin_notifications.py": "d1b817fa1cc41e3050f70f077d473fc5adac60c9643e37bbc2f46fbba653724b",
+    "tests/test_damage_effectiveness_messages.py": "cf105ac27dbc190492d3c06481ce31c3881368f54bf0a70edca45e8e2b3c2449",
+    "tests/test_damage_power_fallback.py": "0cb32290d449a045f95b2745f33f4558591df64c55bc7364876b1137a615e94e",
+    "tests/test_db_connection_hygiene.py": "253bb58f033ea8a17a426e977228c4101de3f85a8e1c4b332a5de80e198f438d",
+    "tests/test_debugpy_command.py": "2d764e71b68127e588c13081d3d23150fecf54dcdb6f3363d03aae1a8f12776e",
+    "tests/test_dex_flag_behaviors.py": "736169e777ba43e1ce38d8274c499e33ea12ad00db9d96b9e2b1b4228bc71e93",
+    "tests/test_dex_suggestions.py": "42ff1f40fb677421cea18018b6620c42141955a0fd4334a8c573bec7e046acbc",
+    "tests/test_display_active_moves.py": "c646974aa51b46de65679345dc15e8c3183b01177076806c78eb229e01f3823d",
+    "tests/test_double_battle_moves.py": "cde91a174152de187c6ced5f29642932cf69dfee5f66846aae13a353a4eb9eec",
+    "tests/test_double_battle_turn_order.py": "870e73a7cbaa5d3274504af9b55960fc9fa8a9fc55e5ec007799e4c794f82405",
+    "tests/test_dragonenergy_base_power.py": "e1bbb2d2c04b488e1af027d569be4031109c92b7d29e295c0707143b21f00a33",
+    "tests/test_echoed_voice.py": "6b37b03444c8453b798c91dedcd0556458f6919956be6b114dd598332f514aef",
+    "tests/test_echoedvoice_base_power.py": "408caac0e46a2a456502169610e522f3e365f04dafcd3d8acdf04306a5a7e941",
+    "tests/test_effects_adminreveal_command.py": "cf2a684f1b1ccdef3630ac57f690dcc7910b411e00a4ccfcc233bdae9342e1a1",
+    "tests/test_electroball_base_power.py": "914aaadecc99d644d31f31863a41cd555afca74120d31e2beee82480e7739012",
+    "tests/test_engine_ai_pp.py": "da840895e976cf280d03ea2a549d961973a1b6b91027441a2b3f7e146c6b0ba6",
+    "tests/test_engine_damage.py": "c45751600557401f21398578e395df60ae1b64d348b0edbf37349ecd2c4c2000",
+    "tests/test_error_logging.py": "5d1c25aa514351e67fc2418c64d61b2d9902eeb6580b6dce4ee71d23409534ae",
+    "tests/test_eruption_base_power.py": "6c9f27090765775a4f01f05ff6ad29ee3d5d54b49041017d2d1848c3eedb584a",
+    "tests/test_event_dispatcher.py": "2bd7dc71a6e4fc5efdc001addbeb66f63738edf0457ed69693fffec65f4ff3bd",
+    "tests/test_evolution.py": "69263b306d4a52f385fd9d2abd8a8153694a667473b7724fcec4b1622e3db4c6",
+    "tests/test_evolution_conditions.py": "805946f95b829edc222469965b2bc4f383e64d3bececbe1aaa6a65bd18c28390",
+    "tests/test_evolve_command_safety.py": "60c695511594a9b320d561be7d26d3e1b08d55d06918da10c04e5c981d4f1b4c",
+    "tests/test_exit_commands.py": "264758a0190ddfe32ffa482b9da36a896750eba36270084d68b72b6c81cad3ab",
+    "tests/test_exit_display.py": "31ec12ff37ec139d06c0f89ee41d90f8fd857ad421a2b19031dcda1c94098103",
+    "tests/test_exp_items.py": "728d7f2ad9cdb6d6f90ac5456ea37786ea080dc295c2deac63f37c08896aa994",
+    "tests/test_exp_share.py": "c88313685ebb538f76d5ea0dfe7af3f0725b958d033f594fa777d294c6d72e5b",
+    "tests/test_experience_and_evs.py": "7948108cf2760db47b6be471ce960be93aee9f0de8e2afb818377a87fd0db4a5",
+    "tests/test_faint_notifications.py": "b1f668e15af7accd8d8c640843b86edb207c21dc9892333ddb06c6957cc89ce0",
+    "tests/test_field_food.py": "105b24c554062df757a9662a84e756b044f0ecea5b1e3bf5fff43f72ddc6877d",
+    "tests/test_field_hazard_moves.py": "63c47f7fd19443ea90e1188a77a9bdf3348aebeaebaf3d8554bc9cf1991668f6",
+    "tests/test_firepledge_base_power.py": "eec35a0cdc91bd9c0919bb7acd1e03988bb803ba47ce2a05a7620f48f8aa38ba",
+    "tests/test_fishiousrend_base_power.py": "165de52509e6351302d6b8d7a4962e266b457cb6ab0dd8f9347e0291ba158a0e",
+    "tests/test_fixfusion_command.py": "84b8af4787c17a114ea79937a1670632ae7d6f54cc76b5791ee7a9a1c22c5c79",
+    "tests/test_flail_base_power.py": "4df7dd219c7ba88049eb25f75e1bb9236adc3c0a50951d2533592d55d762fcf1",
+    "tests/test_frustration_base_power.py": "24120f20504de9fa716e9b3de8e6eb141dfefc4c0730a669512904d949b6e815",
+    "tests/test_furycutter_base_power.py": "51f066cf9473408404e2f12174b8cb84361d3ab05943167a2f911fb4aede6715",
+    "tests/test_fusion_boost_setting.py": "009f5c8ad91ad74d798c5561a78f53c2579023540e1d7d25211aae6b4433e59e",
+    "tests/test_fusion_commands.py": "484ce11654c3d19b4f5df9d9a880103862e0c6eb41f1d8505bf5d0e14b86635b",
+    "tests/test_fusion_growth_rate.py": "51fc896d7b9ecda5b27148b0aa883fcd6c388627954bc554cda0f4da9f60e402",
+    "tests/test_fusion_room_get_weather.py": "6f37592883cdc6179ab0c6c03938a8f8c123285195a4b1e719b01c167a33384c",
+    "tests/test_gameplay_items.py": "c73a3c3953a3168901486879fc2b8790add4491a94585fc226fb115c9daa81f2",
+    "tests/test_gender.py": "da0d1ecd8c1617509000f322b4af1e96e87ad2ad5866091e9c6ea758bb6d95a4",
+    "tests/test_generate_moveset.py": "577183390f36077d381d01f597ac54239a7d7d08e20012503a0f66f74f9619a2",
+    "tests/test_gimmighoul_evolution.py": "174932317599b5a6197538a5cdbb413e6f16f1e7cb24bb7aa51873f1656f7e4c",
+    "tests/test_gitpull_command.py": "4a3ee0ff79e57cfae92b29cd6b1921d5a8a6a9b25c01eec49bd93725478c9feb",
+    "tests/test_give_pokemon_menu.py": "9e8dbf066046e93fa3fd8c675c1969493ea27d097adfb192b9df24ab7ec58327",
+    "tests/test_givepokemon_command.py": "46cfb2942d162e402573e9319b6abeba0b7479bd3038cb3845d8a99af0ce3a21",
+    "tests/test_glance_command.py": "db9061263fe42a0d1f691211aa85d173a854904ee45d263be8e47c1314982f4e",
+    "tests/test_grassknot_base_power.py": "ebd2b09cc5a6a0bb0275624e79bbb511d6cc8627dc2705c0a43f4a156214565e",
+    "tests/test_grasspledge_base_power.py": "f298e1eb5d1fd14a204f57c07269396be59577c4f4d764e6dc2530701718ed75",
+    "tests/test_guide_entries.py": "79be5b5f73f262089897bed8d9393032dad572cb5176d8ad5af782b4d3f2ed75",
+    "tests/test_gym_admin_workflow.py": "eb216d283a22642575f22c522180c1016ec2861daf639de19d1078dbbcd855d3",
+    "tests/test_gym_battle_results.py": "a717d68281bb6949bccf151da4b795c106b56ec95e1467b5d33bc10dc575ab6c",
+    "tests/test_gym_command.py": "98b66893076ad63561c07ff389d863313c9095e8ddd86192271f5d83c38b3274",
+    "tests/test_gym_leaders.py": "377e345e13b527863e6a154ced5a2d937c3a9d942d86eb2570bebc9fea05f921",
+    "tests/test_gym_policy.py": "d1217a2400caaafd297ba1ddede88e2f5d68a11a988f14b4b3828004c9575b03",
+    "tests/test_gym_rewards_orm.py": "6dcb8ac5cbce5c97c768c1ade6f1a75ec7ada8202348b9997ece0a52b48caadb",
+    "tests/test_gymbattle_command.py": "1b0a54d9417862bae98bae506c54178e437d6b64c3f709215c3c8ef0a8bcf822",
+    "tests/test_gyroball_base_power.py": "98f6a26ca64bb409898043faee530ca9c7af5e8784384bb634f5f14f7749b397",
+    "tests/test_hardpress_base_power.py": "6497ed91b129611534eb6b6e91ee6decebf7e6752dd95d0228f962f9b54187cf",
+    "tests/test_heal_battle_guard.py": "58fde77076ed6bbec106b374fffe58814f7292a97c037f01a8082f1fe5788694",
+    "tests/test_heal_bulk_update.py": "ed72c2166fae15c596d50db618e3f9b9dc9a78085834bcf995d540c18e424c32",
+    "tests/test_heartbeat.py": "5814efc9ccc34f59a93f51c3cd234f1c41bab164c66f6605990d9c4c68b32b98",
+    "tests/test_help_command.py": "7d0ccd93d623e8ad2d6580fb8e4f53bd9897918d4f54675281c95f9a9f5ef86f",
+    "tests/test_help_pipe_escaping.py": "be942e7b109e9043dc922f3f2a068043d55caf524eb9e19d31d7ffeb41851dd2",
+    "tests/test_hold_command_safety.py": "81b05567bd39b033233c1617fb331da731b297813c5c2d025cf557e29db1a951",
+    "tests/test_homepage_webclient_preview.py": "bfe4e2d562311a9247941aa13865b8b16d766bb7b460f83f3fe8debcd8d4742c",
+    "tests/test_hunt_system.py": "a936c1edec61623653df5c862acd00504efc1e25e8f7587a962f2ecd5ab21ca0",
+    "tests/test_hyper_training.py": "63dd18679d4c75d8ee381d23deb251fb1cdb90e294ad99e04007ad965b0363a7",
+    "tests/test_imposter_ability.py": "955d30a7eab153f42e44d021d6a8c14227ec724224bb8cfde12b95fd3ece28ed",
+    "tests/test_interface_display.py": "a390dcc559fcc569f1bdc029796d8afc49c98492d8076fd75005a4b53a865180",
+    "tests/test_inventory.py": "8f9e69ce40ae2fee755efcb3caf3e4011dedd6e44de26a629a845598c394a184",
+    "tests/test_inventory_command.py": "7f32e77c303e2bf0900819325aada10ae64dbc095495f688e6cc38f4caea016d",
+    "tests/test_item_availability.py": "43267bd0a2df4230fc2e0f5131d84e38382251cc3390ac275af6cb8d6cd1856d",
+    "tests/test_item_capture.py": "a6ca20580418e3e19e6f10b7316ec5d241dd59bf94f6dfa6da6a5db5a659e98b",
+    "tests/test_item_store_safety.py": "10c15f77dc561f080baa50f6c0d4cf442b28fa04c1ea7bd8d811ff583312aa17",
+    "tests/test_item_support_reconciliation.py": "ae8bae31d13f470dce257b9b85cbb0b024240e61090b87a7a9e1e89088760813",
+    "tests/test_itemdex_command.py": "bf0ee120d4cc28244a774f6f2cb9c796e04ce0d63fadf4137230c66ae4958be9",
+    "tests/test_itemdex_presence.py": "dabf8273fb1f6da046b0da2a2109f68d58efa569ad295753c0dd03d5f44cb13d",
+    "tests/test_kubfu_evolution.py": "d87e2f89c70b243892c9c20cf0060d321fa6d07a236fec4ba715e9920d19ce59",
+    "tests/test_landing_announcement.py": "217259feaec2df62e331d6badff9a143469825e702ef2d64afb53554c12dd77f",
+    "tests/test_landingnote_command.py": "f9a95f250aa35a180b62fd9e138fddc616d6778efe55ff8dfd7503c6177978a8",
+    "tests/test_leader_crest.py": "125a36b4a46d8e1ef79411f85a39cb3f7db3f1a61a411c2e0a80e48a89ba6d50",
+    "tests/test_learn_command.py": "a140a1e536697bd235385d2a452ae8ac9f203cc80458443ca0ccecc313ebebb1",
+    "tests/test_learn_new_moves_menu.py": "a5485c42824bf42b8a66586948ca3d2507df5393d87ce1e2552cd6c51909219b",
+    "tests/test_leech_seed.py": "388742f641f5be9be86760f8b5335dd37dec208e1e165aa25d158572db0053ed",
+    "tests/test_legal_ai_actions.py": "c5e87fb5aca69a5abb0d26428502d6557b93b6ab3be4fc6436870912900831d1",
+    "tests/test_lifecycle_database.py": "ce044a3bf713aa74a5f4110db8725fd80e6c6462028359c6864c4f972cde6fb2",
+    "tests/test_live_battle_pilot.py": "87f00687320c18a3a9f2919d6ea4a3c11830458ba4a999ceb034727e11d28d92",
+    "tests/test_live_dex_false_flags.py": "ade0c6bcc6446d3e2e54f85d32916f6564613d0299581d94f871ce178defb44d",
+    "tests/test_live_dex_present.py": "dcab3413a5fba50b8744a75c3a83af79748327cd00b395842d13153bdc8feee7",
+    "tests/test_live_dex_runner.py": "3136fee3008e9a8beb93f22ccc9c3dab655f1311c414e6b44ef3a223739a2e34",
+    "tests/test_live_dex_wild_probes.py": "d09787f4bb9ff0e3b3aadac8883ab91bf4e5964b623d75a537054a4e12412915",
+    "tests/test_live_smoke_effects.py": "d2a4d8f3cd3384edcd21a24628a3c06badbc71b398f24bcc221020520deb30d4",
+    "tests/test_logusage_command.py": "6f7d3eab2fb5ca7ab8832cd7ca7e5241903760e4f63f68c4ca545f560964630c",
+    "tests/test_look_command.py": "9cac609946d555dd1dde1f7b88940a232d6fb7d3075d2ceb023c761a3c20b3cf",
+    "tests/test_magnetrise.py": "5864d7739c20963410dad152abc8901bbbaba2981309a45fe6633c574827d42f",
+    "tests/test_mail_command.py": "1d1991ccb335318f1c17629bb20f6851c56fcd483c2e16f5da670cbb7db3d1dc",
+    "tests/test_make_pokemon_from_dict.py": "6948a3c9f9b4b8d6af7b53c1e52589ddc290194a751d9c809ed282ae2b5536f8",
+    "tests/test_map_command_gating.py": "ab57fcaf93d54484736f6a488639fe771b4424f0ba5ceb89a7bd385c1adb2841",
+    "tests/test_messaging_mixin.py": "3642245933be42e1fc545a6dfe9065a565a97edaa9ec349593529d41142d8976",
+    "tests/test_middleware.py": "dfef2643562bd3766ce8c18499d7cbc9a4ae692f0a4cdbeb4a1228619522f511",
+    "tests/test_migration_backfill.py": "1d73f4c9e0e28ce583ac8e0201d308acbf6a066ddeaf3b286dfd2df645002e43",
+    "tests/test_minimum_damage.py": "6f7ec92c1ab82bd9737112f3576f00cdc363f388160b95f7a715ff9fd4eaa144",
+    "tests/test_models_validation.py": "97d28127f66cf5d155bf729647a149fd6b2bbe4337840ab5051a5ba5658961e5",
+    "tests/test_modify_priority.py": "42aa598341e1e90de8b888243e9f5118577888fa770341e8afcdfe4c9f3ed5f6",
+    "tests/test_more_base_power_moves.py": "1fa46c825d927c4cc2b6182e451a75eb0209ff0c0def6db975a41905830e517f",
+    "tests/test_move_accuracy_from_dex.py": "3b810397a2a6c5da73e972ad913c5ab7114b7a2075889ba1b4979473af3e3ad0",
+    "tests/test_move_effects.py": "67354e592ec52f0830aa8e67cc5483dcc8e7014080d164f1fffa7941375383b7",
+    "tests/test_move_failures.py": "c2fc787313d6fa314a14ec5ca22698ca29392cc5d01ba8596568f53d0f2dc6de",
+    "tests/test_move_flags.py": "4a0be8a9fe0428dc8241712bc516d1ffac708d6524b802e466d601f8048e925b",
+    "tests/test_move_gui.py": "e4b40a6a016999894106e894116988ddc2aeb67239908afe0fe934157b3b7598",
+    "tests/test_move_learning.py": "19e7a217ae8bed28739b96518a2dbd2f896b0079fbc932b2d6909cf33cf226fb",
+    "tests/test_move_management_services.py": "359f2408140138dbce8a0101d5648ed6a31a54cac55cadb19267fa72b95e2d5a",
+    "tests/test_move_volatiles.py": "475113f7846c744a8055dbcbe722bac785e2a9012b11eb6529616ba3198530eb",
+    "tests/test_moveset_command.py": "1d796d6175fb1dcf6ea0253f04f16a76ab55d3f3d87194da47fece5eb2d88843",
+    "tests/test_movesets_menu.py": "c13fe85601dbfc818afd28f002524e789d7942351c8278b4871b314995c7e20c",
+    "tests/test_multi_battle.py": "209b87f919b87b58d6f5d4c0f11d7eee25c8ccf9ea2bf5e0aae8c7c2bf50884e",
+    "tests/test_multi_hit_moves.py": "8993efec6b8d06d28519fd2a0a30488802f115a0a08f00a9e67d82536326a2d6",
+    "tests/test_name_resolution.py": "ad3e1e53508be2ad040e39637aef78a548a09292984b86b9e32d32e91437fea1",
+    "tests/test_note_command.py": "8fdafdf658392951c533e64e6e7e672aab64de82a4aa9a9bbfbcbcd593cd289e",
+    "tests/test_npc_trainer_team_battles.py": "991d51c3e9843b348e2497df2aba5b9172ab605916fb57df2b8968cb579a07c9",
+    "tests/test_npcbattle_command.py": "4e4121867b0c1d5b924b7ce1c56158e78fd54063846859b3ca23d4b0cded3754",
+    "tests/test_offline_battle_outcomes.py": "7fe6206673184bcc4211a64ea5c5c0570f5c7876f70e3497cd9897aaced12486",
+    "tests/test_offline_database_guard.py": "a3940321b06b96239200c4546b85831e6c899a5b5882a23f6abb1a028dc26aa8",
+    "tests/test_ogerpon_terastallization.py": "f091e73f5f563dd7981047954ddcc6ae6d3e9d91fea9bf9141c73aa3978b66ef",
+    "tests/test_ooc_command.py": "27ef6ad521a8bd2e22ccf4c423e0b1cc19ac2000a76a471aba0ad59fd57ec540",
+    "tests/test_ownedpokemon_level_field.py": "01ec108be8673be064f4afd2c9dd6dbdbfdeb1faf6885036d289726eff34a1bb",
+    "tests/test_ownedpokemon_types_template.py": "50ec57b5ec84611cba63f295ef73bf0543e78c20f7c0df860a9bf5eee82f9798",
+    "tests/test_page_command.py": "4d2588a844922da1d631ff7a78a355ff5ac2acceb4f3b26e76196bfc1cd91402",
+    "tests/test_party_slot_views.py": "be78ca4c37af4838c833437492d629b299a48a40dacf145be55d874bd9c3d3f9",
+    "tests/test_party_storage_flow.py": "9382539b23758d59590fdd7fcb9659203ea45c8cdbc7a77a6067cf2bda5fb0cb",
+    "tests/test_peat_block_evolution.py": "7667da39bca94cc33eca6ddcb9c7bbadcf1d7b017066463efd59f49c0103115c",
+    "tests/test_player_command_aliases.py": "a5e8bc2476e01498bf4e598c5235cc58cb30befd7521d4f058827b949e69ad30",
+    "tests/test_player_doubles.py": "923c9ecfe0ea01ec43b1aa806357de14275c1da80c853111fc697eee3a98a675",
+    "tests/test_pokemon_helper_create.py": "0a859a36fb59e7af787afade2fa446ba3752d80bbd0c61762ba253f8645b7664",
+    "tests/test_pokestore_command.py": "47a9f37e176e5cb58d56e0c41f1266884387cd00a1ad9018d5bda853365df41c",
+    "tests/test_pp_capacity.py": "561707bfe9dae671c6dbc367b9b3e052e5c41c8486d78938b184474ee8254850",
+    "tests/test_pp_initialization.py": "b13741c694936eba3d960481ec6492caf95c0c21d3dc44f1c796238b6fc9a892",
+    "tests/test_prepare_player_party.py": "2937b441afbd923c8f9e2cd32072e987ce5171469b5e3450d5f7119c8d5b4e28",
+    "tests/test_profile_command.py": "32fc6595023ae0b6d70999a61cd71f8bedc3d5b2eb4a3e611feb098ce70668aa",
+    "tests/test_profile_editor_view.py": "ba17709d71cdd948504881ebd86e8d7544b25ee6da00f8d5f1e2c8772033a760",
+    "tests/test_pvp_full_turn_debug.py": "25bd5cadd7e662b85566b433e9c15904bd76dfc02b91a652d7dba962582f3b60",
+    "tests/test_pvp_join_command.py": "95a1abe2dd7e35a5f5874e52f4cbd136de68ff90f449441d4e0bfb7b826eb15b",
+    "tests/test_pvp_requests.py": "94fbcfdf2a51207c1c675853dafc9857128b5f0d2820554dfdb4b9c0b8a32cbc",
+    "tests/test_pvp_start_command.py": "cb113fabeaf973420e30f9f8bf8b40d72f24169e92b622eddabae36427ead6a0",
+    "tests/test_pvp_team_restore.py": "dd1635b2816f51d6278f84ca862855b3db883d683dcbf1e577f948689caec5bf",
+    "tests/test_queue_actions_not_overwritten.py": "ff9b6ba506b46874687d362507ecce00778b9b09abb58feaa9f5220d5561e8db",
+    "tests/test_recoil_and_heal_messages.py": "0d13fdcd49597268ff76583978acdf1dc924ae77550640a1dfa1ed2b3e1d1313",
+    "tests/test_recovery_equivalents.py": "b257c8af48840b2369133645ff587e8315cc42772630387ae2c7488b9cbe2ebb",
+    "tests/test_render_box.py": "5c99c4fd0b8423969262da814d749816a424fb35da07228c8e462ffa16c7a525",
+    "tests/test_render_interfaces_display.py": "b55f1acec4275776e97409410c0c4bfc4bc647b6b26e1139cae0a00ef318f426",
+    "tests/test_request_command.py": "33a07d641adc5eadf6f39a2736c56bb9b524acf52e1b518db56c4b1aa894bb76",
+    "tests/test_residual.py": "e194bf744e0bd3d5a07ab9aa255a6949ff35e3f5a08c41c6c26f87a4c3744a82",
+    "tests/test_room_weather.py": "74a2da4841ebfe3db61cfd78539f6a76eeabe765d21f5ee43ac64034536f258e",
+    "tests/test_roomeditor_preview.py": "b6105a582882bc5103462098a7298df26ce73cbc5c06e3f95e0db3b9ba02bad3",
+    "tests/test_self_switch_moves.py": "fa24e0a85a3c0e7e8ee55aed51eb8d50bdc816ffa66b28b02c49744d1cbd2d4f",
+    "tests/test_server_logging.py": "9906d64a727150f641256a27d64181a90e1c07aa90893385c235e0437a093f37",
+    "tests/test_sheet_command_parsing.py": "02af1c198c3f9fcd4e80a67f22bae9939911bf1c218818090b8fa6e65041c0b5",
+    "tests/test_sheet_pokemon_fusion.py": "1a43306d03024b6d5d6387cd1b41cbc0817118f79338b575104aae996528340f",
+    "tests/test_showbattle_command.py": "47a5d22c19232a1c2b67cedcd4906dab5677671a250e810e8f31d10083c98f6f",
+    "tests/test_side_condition.py": "75a78a0126993a8401b5284904abff3e84c733d316663efb0959511127880e11",
+    "tests/test_site_status.py": "a91ca240cd535889500e4a330843caffa9bca645a8d2ea1078ba1e49e104fbba",
+    "tests/test_sitestatus_command.py": "f29eeecabfc63f8f2cade2327fe320f9ffd331245ddb3d35bb73a01927184df4",
+    "tests/test_smoke_ball.py": "0743d5574e0ac4e82b2e53c241000eba6f738eddbb32a3eba7d74f65df32baa7",
+    "tests/test_spawn_adapters.py": "2a5b6819f716f62481744d7b882ec3ac5ff871292e0ef57dffa69fa4b1840058",
+    "tests/test_spawn_compare.py": "7122c748ab13a633793f861e182a31649fd755719f08271858ad0529ff946135",
+    "tests/test_spawn_hunttest.py": "79ab9c7584c1b9f29f8e163ef8dbf784ab96d16d95c16c1ac003e6d2d6a6fbab",
+    "tests/test_spawn_legacy_migration.py": "df5ffe4dea931ea2fd03c59e8f2fd3789d6e6b22951f06bf72d85e87e9f2cd96",
+    "tests/test_spawn_npc_pokemon.py": "f79e42489ffc47d78735870b52210aef534859b390226770ed800e2a1e38dc7b",
+    "tests/test_spawn_preview.py": "7bb35b598ce00293de8a157267228ed2279524301d6a7f84b6d186524223477e",
+    "tests/test_spawn_profile_compare.py": "18541df4ed972797283d8da5ce7d732a2451f9e66f566e19088c3a8f5c3a9109",
+    "tests/test_spawn_profile_data.py": "8bc07f2a08e9d6fdb73a8ff4269aa27122c76f527a110448e642312f734859a8",
+    "tests/test_spawn_profile_hunttest.py": "1b4f3f80862abf850e8270a3cd323389872fd60fecea8336efcc54f0551f096f",
+    "tests/test_spawn_profile_rolltest.py": "d63ebd6560461fb9f4dfc686f28923dca993c8d1b1e20ac0d1cef816939b452d",
+    "tests/test_spawn_profiles.py": "f62908f42261f0e075827daa900ee52b6b38658892b380fd2f42c127072280da",
+    "tests/test_spawn_rolltest.py": "990bf7c37436037151cb00b2e9abfcc6ca6bf587d3fa8730d0ceac81d923343d",
+    "tests/test_spawn_selection.py": "7a47b1c44da6496bf56c0ae6dd10dda1a5395fd026507f194af64feefc83f961",
+    "tests/test_spawn_special_probe.py": "d58924e8a05faced2d639b020fa280ccede54292bfb3497e9bdcb29c555f3fd5",
+    "tests/test_spawn_specials.py": "13b42e48a057bd2f13172e22f03abaea32ab8e64786e48a491baac7d59b17425",
+    "tests/test_spoof_command.py": "769531c4bfb9d0598963f17b764976309d59f36bd347760bd35b1c240354a0d0",
+    "tests/test_stab_fallback.py": "466650876ae0015d61e6185b656784a3c8370cb8e6fe14d984c6c5dc1485733e",
+    "tests/test_staff_command.py": "9c0a52b72737798e5f35b48c710ced152afdafa0ec557b87095b5a1e81329000",
+    "tests/test_staff_notes.py": "5806975ec2a61b37b87b500940bfcfb9a2b9aacd70653e5d2856d2c4ea1eebfc",
+    "tests/test_staff_roster.py": "52d986dc348cc4b41ba6a2d6ee8e5a749fc3284fd3aabc4af4e668b7ec1ac3c8",
+    "tests/test_stale_state_cleanup.py": "9410fcf135310cc049bddd098fb8acd7de3e54c1a3b393d3cf65556f2fb67728",
+    "tests/test_starter_command.py": "1b85bae5e00a2bc75796b3e713099a8acede35ca56497d37bd326a944a70c780",
+    "tests/test_starters.py": "b58030fbd62ce565010ba8481a3b3e2fdd4928ed4b49a74e350e8525fd8e2010",
+    "tests/test_stat_caching.py": "8017241fd69ba6986fd370088cde77970e2c23cd767dbe380c654baa04fb8e8b",
+    "tests/test_status_move_messages.py": "5f5389c3d94c3839b45dfaefd68f2eb1d3bc5f82c3043878fd2319659439d27d",
+    "tests/test_status_moves_no_damage.py": "96deccb5dd7f929b772ed5e3dc9e9f1af3e3312c0e11702c5a0aa05c4415052c",
+    "tests/test_status_persistence.py": "b29f63c0e92fe701f170d2e1e3178e577c1dedaeb45a2ad548b4bb4892665619",
+    "tests/test_support_requests.py": "b8fbfd17d9f2118080fd891eed887f7cdd677585f81a46397a38e4b8a17f65e7",
+    "tests/test_symboltest_command.py": "f46a600f85755cfd6785e5cf814e58a84caf55aaf1f8d57a678e3b5dbc65410c",
+    "tests/test_system_battle_manager.py": "da57d01d12514a843bcae03ddcfe8acbbf7d354c797b2cbad6a9f4a1fff0e365",
+    "tests/test_teach_move_command.py": "33b37adf58e3ef83cc09ab8bb038820b2f37e6069d404a48320dbcc84472677d",
+    "tests/test_telnet_protocol.py": "46f20f8d3a145364187455b2ef85a6ab57e4b4b375ff684fd3496c31bc889a35",
+    "tests/test_temporary_pokemon.py": "c03ffa3b8be598e5fb5163a71a6cc5501ee5590f78d677bba180a1e46829035e",
+    "tests/test_terapagos_terastallization.py": "59653b2fdc031c509f81a9f034dfecefa7251887214589100bb411b94db82bf8",
+    "tests/test_terastallization.py": "b8105df98d77097072013be51c70fc0d18b34a7b2095951d1b2d4d4f1029be16",
+    "tests/test_test_import_isolation.py": "26076add5ba7758b010fdf77fe82a6c0726f9cb8dfacf5f9649dbf6f1f9ed6cb",
+    "tests/test_testbattle_commands.py": "a1b0dbfa590c0ee674d3fc15a7e7c3928be1c25a241d26060de1c7fb5f4b4dc2",
+    "tests/test_trade_held_evolution.py": "0ebc48707557ea70338575440d143b8b49a8825f111038daa2f682517ea00fc7",
+    "tests/test_trade_safety.py": "519209a69ac30a5fe63e9d76536d6d21d85a73beccc56b4798cb55cd1e7b6ffc",
+    "tests/test_trainer_challenges.py": "a610239e32e1cee4658c26b078491aaa611d9123930db2db4e42af6b1720180e",
+    "tests/test_trainer_encounters.py": "cb226149d4e6773caccae3c6915a02381f8399d50a94d3ba871f0436218ec171",
+    "tests/test_trainer_xp_commands.py": "8bfc677984eeb88cededa2475ec7e80b4c1944f0c8cf02ebe78d1f42208e1638",
+    "tests/test_trainer_xp_display.py": "1f736eb6efe45d1c41710220d1575bf87437a5bcbb857218374d0cde4d03c5a7",
+    "tests/test_transform_restore.py": "870cae1d00d3b32e30b0563fbe9c18e0f995b69bffda268b3c25677b4aa4e932",
+    "tests/test_turn_action_selection_protocol.py": "1735dba2942a05efe13a6e768a98f60283ecb4b0518d88b45184bae4e2181e76",
+    "tests/test_turn_counter_sync.py": "98d7fbecd7f26e484ae5926133879451b2ba51631084e78367a6c74de98da011",
+    "tests/test_turn_manager.py": "9ed3b56ff435c13ffbd0f2fbeb69bd0a5064018181d7cc6bcb05cde9c0f7b3cd",
+    "tests/test_turn_phases.py": "891e123484d812b9740009e5653722a5f7374d0c3221a85a2c09e7b33ed8249c",
+    "tests/test_turn_status.py": "d1808931c95bb8a0684c8331b5a509a91998413cae324f9e86d4e2a972b83b93",
+    "tests/test_turnorder.py": "5a9744a723cbb1476c7bf75546ca024ab31b23e0076f47935e024cb79ad89763",
+    "tests/test_two_turn_moves.py": "328d8586b2f527da0c64bb42b60219ea4a2b557977065736a10d532598cd2af7",
+    "tests/test_uimode_command.py": "37fc152ea80f83eea91ae9e097e2370a7761c133ca48b86373ab67c047f6d083",
+    "tests/test_uitheme_command.py": "b52d283a5028b88ddd0ca1782c67b62186b50d9ad0283746c46e9e5bf9e8257d",
+    "tests/test_usage_logging.py": "6092b340219db4e95e657c5eeeeca6df0c707413d491fa72db3f4fae5575ab9f",
+    "tests/test_useitem_pp.py": "cb8d6281f9dc9d692b3a04423d3d1bce3a7397307d2553bbba7c16d6e0173256",
+    "tests/test_userstorage_party.py": "79677390fe82e64066997d892251a34ac568234cee58beae0f965f46a15db228",
+    "tests/test_viewer_team_validation.py": "393b34018c7f341787911f2970008e9d149f1cef6f4cef4b47f7217f1a751a1b",
+    "tests/test_where_command.py": "4aff713147a83ad7eb5a34c5c07bb98c202b757a05194a762908446cfe51dea2",
+    "tests/test_who_command.py": "05d585f5d35ad74546aac2487c5ab31848dff83169eb1ce18c9912ce7ee069ef",
+    "tests/test_wild_held_items.py": "55feede507ea7504ed94b0e6023be5e631512d9d31dbb45ff764a59c425b568a",
+    "tests/test_xp_utils.py": "9df81f4cf0627291c7e7d47335ea8c4b81ca12c64d2f82ade2b10eb92844f7dc",
+    "tests/urls.py": "744729f61330adf59449dc34b38f623e0d4f8e590a4a9f54afbf9d2004bb2be9",
+    "tests/utils/__init__.py": "d4fbb2f0dc3ee75112f8766644c08e0ad7993e9256b5e54869eb6836a707b29e",
+    "tests/utils/testfactory.py": "274da66a087ac035439cee324aa3fac9dcd221d7af2a8e8271c730b2220871c1",
+    "tools/audit_item_availability.py": "72c0fd8c9d9c647fd93b70d71ecf85f2c5b706c893baa5d7df3b01c42219dff3",
+    "tools/ci_assessor.py": "ed2491dc296300fc0444df8f56e368449f559efd8f1ce3a2dc2f62e78f229bfc",
+    "tools/data_generation/dex/generate_baby_species.py": "a1c5b23e264afcb9db7ca5da331b32dde0b4915f463a7c9f293199c5a7eaf250",
+    "tools/data_generation/dex/generate_catch_rates.py": "1ee085ea16414c3f6fa95eb50f442baacb6594e659e1c3911ba540b7706fb8f6",
+    "tools/data_generation/dex/generate_exp_ev_yields.py": "30d760a38b7a65942c7c8d17bf7df1920be2035cc157de13f8134d784744bd61",
+    "tools/data_generation/dex/py/abilitiesdex.py": "ae1cb7e8f72e0e58aafc5a151b63239f654a835eef530a950a5cff9311184125",
+    "tools/data_generation/dex/py/functions/abilities_funcs.py": "db56bca64fa2c3a8e971774d6bb6fe7d22c1fb62e16474ac89bb1d6bc7307530",
+    "tools/data_generation/dex/py/functions/items_funcs.py": "5be256544d62ad4dce13ba9cfbb6cc58283dd95e87e47400d2b85e8323485a12",
+    "tools/data_generation/dex/py/functions/moves_funcs.py": "1a6506129dca518c187eccf0cb20b98c433352c19fa9eb77c3e01ba8790d7375",
+    "tools/data_generation/dex/py/functions/pokedex_funcs.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tools/data_generation/dex/py/itemsdex.py": "8afffc2abc68b1a50fcffde8ff3d55f0674ae2da4582c18ff733a6ec36bfa471",
+    "tools/data_generation/dex/py/moves.py": "969ad0bcd50292a8af6d626cf5249e6c3d3d15235ec3c4d3aa7faa2beafc57b2",
+    "tools/data_generation/dex/py/pokedex.py": "6554a869fdb68975424238309d097d1f4c27be6755cd70ef8c2b05449578f01c",
+    "tools/data_generation/dex/ts_to_py.py": "c19415fc37975789adde41ae2ce81bf00cc0016387a19c6443d98cf3ce4052ae",
+    "tools/data_generation/learnsets/ts_to_py.py": "d6fbbb97290b5107e1eee734fc0e5f063d7d81edb4a5d93b94a4cf1a14128cff",
+    "tools/data_generation/text/ts_to_py.py": "d957201da0cab226d9a98280e6af370fb2e15e198fcf6984672e4cbd1b83175f",
+    "tools/item_scrapers/check_gain_info.py": "1a68583e3d75a227b3ae3b5b457e6ab59c0179f796790fd30d4df91b096478a2",
+    "tools/item_scrapers/compare_items.py": "69729b2ef8f8ccf05e402201d5c8f093c436c277875a7861d71a6489c91626e0",
+    "tools/item_scrapers/item_list_scraper.py": "d79c7aa548289cfbc7d23c80353aa7a8823240cc96e20a28dbdf0359e89c1685",
+    "tools/item_scrapers/pokeball_scraper.py": "386a25d52013739ff8696a78090b82b92d3b21f356124484380ebe0a25b66884",
+    "tools/live_battle_pilot.py": "037ab7288555fecdea09fd53eac6e1552cce8131f622241850ec7ce1fa3b0371",
+    "tools/live_battle_pilot_cases.py": "bbd0ade725c0052d6caa9fd5723675a0f0ae757bbe308a45a7d17295998db0f2",
+    "tools/live_battle_pilot_server.py": "09284012f47bd3c341fff8cea4f99938ee06a9df167ffd290459db54f3b3b9a9",
+    "tools/live_dex_ability_probes.py": "b522a80fc8a41e330516ab2e1503de3ad335cb68287f6931791b14023a753156",
+    "tools/live_dex_cases.py": "eabc67d2af9e0906299c3a1149580ba9967efb080ade7e74d789121238c2bf18",
+    "tools/live_dex_coverage.py": "5be05c0b1f5146eb492536ab1dd1df96516e7eb75a79f4815ace074f3a42610b",
+    "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+    "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01",
+    "tools/live_dex_wild_probes.py": "7c0805c1a24bd32575260ceb2a9635d4d3fea476d949a5c4c620da9a024cd42e",
+    "tools/live_dex_wild_server.py": "d0f0a1012e9d276bf55f02589c20381697c020cef2e0956dafc2490fe92304ef",
+    "tools/live_smoke_effect_coverage.py": "4b459001cc4233245efbab59658b0ac6ffa5b8b3ac93d8c6e9221e3c9bdbd532",
+    "tools/live_smoke_effects.py": "3e81991b1d38b4880f03cedd8e6b5f013e77b817e1dcaf0de078a37d1e6aad41",
+    "tools/live_smoke_effects_cases.py": "c40f64a660126d136fde2792da1b761bd1cdd28f18ba1fb956a60f0ad4bec442",
+    "tools/live_smoke_effects_server.py": "5f767dce3d38cdda12b8cc648893b357849ee3462505f24aa82e776c638f3b4a",
+    "tools/org_score.py": "e939e0b84b7cabdb15a6134ec1fc47d8fc09e16adf44bd8479f0c21a1bbdcdfa",
+    "tools/reconcile_item_support.py": "22318811386bd0d71d7bab00d1c38bf358294d6557544d345e4554dd8b642ff3",
+    "tools/run_mandatory_tests.py": "104ca2882e3283675de3f816f1eb407ecdbca994d06214205accd5c6ee80233f",
+    "typeclasses/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typeclasses/accounts.py": "de22ccbeb61f1dcf7f038113de462e9270ea1dacff5e87a7437f2efd7559b2e5",
+    "typeclasses/battleroom.py": "f1f18b22078ca62415ec9ab20b4dda3467e85a4590f239e450b5937c77c28f36",
+    "typeclasses/channels.py": "2ed8a71a5111c51281af7224239e90250609bffef776321cc62adcf64fd18592",
+    "typeclasses/characters.py": "c8500a3b19b8aa2c699d330832d2d49aafc3a89c30648212ed4ee86e7f7983bf",
+    "typeclasses/exits.py": "3d08ede919e556b3d0951e2ff2ccd329a0fc074de74a35774a52d7f69344f88b",
+    "typeclasses/objects.py": "87e9ceda25e791a163eec1473f0adc536301a28d8e06aed07378d1e599e44b7b",
+    "typeclasses/rooms.py": "40bf36757d27d7c88106b3a095086769c8a8852229a382220b8f7c3b20065d82",
+    "typeclasses/scripts.py": "70477af46cd658dda1d92076d5f6a6e17d174288aad8748abfee51d5d3b1ae73",
+    "typeclasses/vendors.py": "902a473e0b5a9298cf97a73387557be6c4eae184ece2087bc8562e3b415c5f7e",
+    "utils/ansi.py": "ac80959b7d46c908713d116d721556501bb3605bbeb3f2d2041496f0d22d6207",
+    "utils/ansi_widgets.py": "e0f835fb5e1b5319a0483347200a46a9ffdbb701ae04ea73293694579cf7f696",
+    "utils/battle_display.py": "a8a0069983b319f4108c22ea4ccabef94b4d65e518800a5c6f0a4451807e0662",
+    "utils/battle_logging.py": "55733a27264cf42e9eac71c5bbbf27c993231cd225b859908e1cf6aa6aaba261",
+    "utils/build_utils.py": "55fd17343cc13ba4d124fdeaad43eae30231e7d08319a1fc8d11dd0522fa7d77",
+    "utils/channel_identity.py": "ad66172aff10214264481e27048f6c1fa1a1e2d43a11751bc01445d964224a7c",
+    "utils/character_mail.py": "e9babd44c872a80738758db13e0130fe9e394c95701e96dca4b250c1205ad5a6",
+    "utils/character_profiles.py": "a75cd0b3106f763d6259bed2336cd38fde3d72148cf85fb99b2bce41c5282422",
+    "utils/client_encoding.py": "c91cd00e281515bee2d6116969ff2b851e823b6ae2a6f65bb781216a4eb68dca",
+    "utils/constants/unverified_moves.py": "d0aece2fba017fb7bbef29a4c3ace14ecf5784b131bdd1142a51a1dbd5da1eec",
+    "utils/db_connection_hygiene.py": "df1118af1f90a0db858e5fc9c5ae9e52c13c0ad980363fa36b71da6d1670d8ac",
+    "utils/dex_suggestions.py": "cfc075058c2798787509bf915f8966d5004814f611652c91b95765839db9535a",
+    "utils/display.py": "c12cab8fb4ac75cc62af4e2b8e4201ab5a8c9d6d8148448a30f81c436e2088f7",
+    "utils/display_helpers.py": "365dd4bacf5b746dce21c8851f77be0bf44b70e6a09393b3499c2f6158af03f8",
+    "utils/enhanced_evmenu.py": "b2a84b3a03dd9f5a28c9bf9f23c2b9f8a9a311936cc41cc741c22fd692f5ff91",
+    "utils/error_logging.py": "aa5a4eac4d770a7ef30c80765c3398cdd813897bdc59132ffbc8bbeba1e97c8e",
+    "utils/exit_display.py": "9ae4e7dab9d2bd5d8e35db7c204a537f65a18444e231e71f49b06ac7dae4faef",
+    "utils/faction_utils.py": "77d831f09cc05d52831d9c7a6f00d589fed3d5b0daeecc83139ab21817a6675b",
+    "utils/fusion.py": "efd266e78f3ac2126dea25adb9303a296d7f9c1236f2c71afd54c121c8c4bea0",
+    "utils/hex_colors.py": "408638f1bfe2483cb1e5212d68b4edf53d3db78c4fa22a5f101cc807455f79e6",
+    "utils/inventory.py": "3be357cb9a4a3ef3d621f37c90cb026c5fb29bbb87df0ad83346a2b336f0a4ab",
+    "utils/inventory_view.py": "2886e84221b2a176fb2d85d997ae4ba38f1321852f23a9f652fc7653bdf8ff61",
+    "utils/item_utils.py": "2255585a507561677446b9918de0226880a62f78bf06a90d62af0b3fcf252b33",
+    "utils/landing_announcement.py": "434bb8f357aed908dc94c142e83f9b9befd41953aa4ea8b2f05588238c72aea5",
+    "utils/locks.py": "8e0eab78c0719836d1619a52c5080c713cb95646254c5206f625967c9d31fb26",
+    "utils/party_view.py": "740762db0f9789ed3a596a077fc96d7c6517c1afc048db1c5238fc3e04ad4a6d",
+    "utils/pokedex.py": "ec3f90666a526e0fea002b23c9e8fc0f747ff5ce2e47478288953cc4d4077982",
+    "utils/pokemon_config.py": "c73e520d3ea3ae2d7f8989297562036ecf782e19f7c484e349d4fb1ba171dd40",
+    "utils/pokemon_utils.py": "7c7b20104d1438ed803230d7ed5a1a8fafb1a3e08fce5d440a2e96548d54cd74",
+    "utils/safe_import.py": "619ff4335c0c237376193b36b9ce108e81ad7c5e6494bf50529603419d15025d",
+    "utils/server_logging.py": "675e7e3125f4c94f811cf674eb941597c272d88570ac1e245c89aeee1fce8977",
+    "utils/site_status.py": "5a065a2be1df8f34fe28041eaabf6f6d6f9d52ba73810f40ed7ff19cdbafc0ac",
+    "utils/staff_notes.py": "3246817df2438f864e5f4a8a2f2da7afdd4fd1650df287d5c09aeec0573f131f",
+    "utils/staff_roster.py": "0add8b0256a6f2c44a426b20e18147516b0683c3b18b7f40735aaaddc9883a87",
+    "utils/support_requests.py": "9b1f450e95155f9ba432dd53bb988a026ec880def7c1a698121bec0c3dec4e94",
+    "utils/usage_logging.py": "8394c28bd4fd84591d95233f2a056977e198afb10804ea1c695b550ad5c3fd9f",
+    "utils/xp_utils.py": "b7ccd3f2707ee4278237ef473acdc5e6162c65667194b6882f0ebf6974d9ed58",
+    "web/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/admin/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/admin/access.py": "df401f09c322bf015fff877c148da0cefd10974aa1ba4a0a0c487fb86c88b9b9",
+    "web/admin/urls.py": "812fe045ff5382ac59faf974f3999c3c112b9f6ee2b6e8ab3973925ba09bcdfc",
+    "web/admin/views.py": "0eb89f0044847f6e06dfca938685e82a82407cf56e6a8da5808249e51ef5dd54",
+    "web/api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/urls.py": "7cc325de5843016afd45340109958b5063d38046beb4d95ee82f4e25c65a6e8a",
+    "web/webclient/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/webclient/urls.py": "31a4c870a9276494e38fa4c17a4d15d1e06f2dcf209a02932cf361d88824f10e",
+    "web/website/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/website/urls.py": "48db2d8611ef76629b6c76e1e467f77dc675251869cfcad68b0b9bc0e2bad78f",
+    "web/website/views/__init__.py": "373c9b152ba330ae7c9b0794b36048aa5c6ca254ff9d9324b1e46d764e8818cd",
+    "web/website/views/ansi_reference.py": "e4feb13af2416dd3c32913c2659343010d789f78cc30a82d878035284c4c36f4",
+    "web/website/views/index.py": "84a64669139acda082e3f09cc22fe6b5eabdc28dc7e744ee98f68e196a6df51a",
+    "web/website/views/mysheet.py": "9dcc3e3ab1489dbde7312eaa75d9fa730d9180b3294c7f4bb491556d3249dacc",
+    "web/website/views/profile_editor.py": "6fd1ab8c0b90fada9737fd30a7120c82020ef074288faea15b09872dafc0af0a",
+    "world/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "world/heartbeat.py": "0ba09d85be2a6d64a143387df1faf585b86a1e41b1b64a302eebf2ac2a045793",
+    "world/help_entries.py": "5da76bdb433d20455f8a9a07b6764f49e92574abd27ce33e512e5ce933a9ca78",
+    "world/hunt_system.py": "f6afff66624d71222df1ba3c2cf71a7018be5703aa4165ef56aea2ce6d9fd01a",
+    "world/maphandler.py": "a99ca34ad49d4f66f6c38e5f408ed4657cb0c431dfb4dfae0a5f12eebb3b9958",
+    "world/prototypes.py": "f0eedb9d774b5410909a0aeb19975c86d693239d036d06288f6124b1680022df",
+    "world/stale_state.py": "17fa364cd2d3b677e1f7d6861476246f819215d828105c78c4e364e36e718028",
+    "world/system_init.py": "7021d864c3f52e67cfa8ae100fe50dd5f8dacc65ddcc14bf8779f82f860ea55e"
+  },
+  "source_manifest_sha256": "ec1d30349d40ac5d41250728cd88b39281d3d9fdb81dba75faabe10868391558",
+  "postgres_suites": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/trade_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 22.84,
+      "log_sha256": "990ac22dff7587ff04c55a2f07b92351c97c6216b7808c9724950eac833bc389",
+      "unittest_counts": [
+        17
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/ownership_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 22.02,
+      "log_sha256": "a1585e9f6dfaa746c41ea9073377f5791a6522bed17d764f89c8e18e238fd629",
+      "unittest_counts": [
+        23
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/fusion_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 32.95,
+      "log_sha256": "71d0bb67d714b410bcf8b9cd59069ce18c31526fc1f54bfac7670179be62f103",
+      "unittest_counts": [
+        22
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/field_item_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 16.06,
+      "log_sha256": "0bc3a9abbd1e782d75c67785804c4c1a6880d286659c195fbcc566d1c81b9207",
+      "unittest_counts": [
+        23
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/rare_candy_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 15.35,
+      "log_sha256": "1b5142161d0a11b7952f0d57d5e6d4e0baeeab437fe3dbe5605f518b5fdeee4c",
+      "unittest_counts": [
+        25
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/field_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 15.91,
+      "log_sha256": "c13867ba95919393d8ba1ffff951e4963a69c5c4ef187b5eaa2bed2688607976",
+      "unittest_counts": [
+        26
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/ability_item_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 23.12,
+      "log_sha256": "057d1fbd60da2751b5ab7951be530f1a6a89f73f4948c7e1006fcba2d0742363",
+      "unittest_counts": [
+        30
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/pp_capacity_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 23.39,
+      "log_sha256": "1f4487941bf6ddf233be26fe274bc9b4b43d30f2439d19076cd431b5c8705d36",
+      "unittest_counts": [
+        37
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/cloud_gameplay_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 12.49,
+      "log_sha256": "508397bf7d19a522e07765bfc7749edb93398fbacc998fe24cae82e873653e8e",
+      "unittest_counts": [
+        9
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/player_doubles_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 27.61,
+      "log_sha256": "729b338ebc17e40e11a652fa8180845b4a985fc4e9e7bcf27c07a2611b66ecf8",
+      "unittest_counts": [
+        10
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/ui_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 11.04,
+      "log_sha256": "d5959c68c4e07e11d4b661d8bc8b025e33331ea24e178a425fd0c9e99665062a",
+      "unittest_counts": [
+        14
+      ],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    }
+  ],
+  "postgres_cases": 236,
+  "mandatory": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tools/run_mandatory_tests.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1234.78,
+      "log_sha256": "4b052a6e47cb774df4be22d8e1cc5ed4b58f02c139506dfbc06f4db81d668f0a",
+      "unittest_counts": [],
+      "pytest_pass_counts": [
+        4911,
+        4911,
+        4911
+      ],
+      "pytest_skip_counts": [
+        4014,
+        4014,
+        4014
+      ]
+    }
+  ],
+  "migration_rehearsals": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/ownership_migrations.py"
+      ],
+      "exit_code": 0,
+      "seconds": 86.73,
+      "log_sha256": "7c2621cb4d49ec64e44a16984bec56bbd51d6a0fcad86b7d45e926c03d064db5",
+      "unittest_counts": [],
+      "pytest_pass_counts": [],
+      "pytest_skip_counts": []
+    }
+  ],
+  "focused": {
+    "passed": 19,
+    "log_sha256": "cfd1bf205df24025f4851973413120a4de91ffb48f480748a8ea21c5802320ef"
+  },
+  "command_and_fixture_evidence": [
+    {
+      "case": "test_accept_and_counter_require_this_characters_review_of_exact_current_terms",
+      "commands": [
+        {
+          "character": 1,
+          "input": "+trade offer Trade QA 6231ddc7f6fb=3",
+          "output": [
+            "Trade 2aa6a2a6-a136-4879-9ed5-5833fa583ebe: pending\nTrade QA 6fe48a6a8bc6 (#1) and Trade QA 6231ddc7f6fb (#2); expires 2026-10-23T23:56:22.727347+00:00\n#1 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [1a9d7675-7d02-412a-abfb-6f0ff58df649] to #2.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 2aa6a2a6-a136-4879-9ed5-5833fa583ebe or +trade counter 2aa6a2a6-a136-4879-9ed5-5833fa583ebe=<your slot/UUID>. Use +trade decline 2aa6a2a6-a136-4879-9ed5-5833fa583ebe or +trade cancel 2aa6a2a6-a136-4879-9ed5-5833fa583ebe to close it."
+          ]
+        },
+        {
+          "character": 2,
+          "input": "+trade accept 2aa6a2a6-a136-4879-9ed5-5833fa583ebe",
+          "output": [
+            "Inspect these exact terms first: +trade inspect 2aa6a2a6-a136-4879-9ed5-5833fa583ebe. Then accept or counter this offer. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 2,
+          "input": "+trade counter 2aa6a2a6-a136-4879-9ed5-5833fa583ebe=2e64e49f-6130-4f33-86c8-507071f8ab5c",
+          "output": [
+            "Inspect these exact terms first: +trade inspect 2aa6a2a6-a136-4879-9ed5-5833fa583ebe. Then accept or counter this offer. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 2,
+          "input": "+trade inspect 2aa6a2a6-a136-4879-9ed5-5833fa583ebe",
+          "output": [
+            "Trade 2aa6a2a6-a136-4879-9ed5-5833fa583ebe: pending\nTrade QA 6fe48a6a8bc6 (#1) and Trade QA 6231ddc7f6fb (#2); expires 2026-10-23T23:56:22.727347+00:00\n#1 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [1a9d7675-7d02-412a-abfb-6f0ff58df649] to #2.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 2aa6a2a6-a136-4879-9ed5-5833fa583ebe or +trade counter 2aa6a2a6-a136-4879-9ed5-5833fa583ebe=<your slot/UUID>. Use +trade decline 2aa6a2a6-a136-4879-9ed5-5833fa583ebe or +trade cancel 2aa6a2a6-a136-4879-9ed5-5833fa583ebe to close it."
+          ]
+        },
+        {
+          "character": 2,
+          "input": "+trade counter 2aa6a2a6-a136-4879-9ed5-5833fa583ebe=2e64e49f-6130-4f33-86c8-507071f8ab5c",
+          "output": [
+            "Trade 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244: pending\nTrade QA 6231ddc7f6fb (#2) and Trade QA 6fe48a6a8bc6 (#1); expires 2026-10-23T23:56:22.819346+00:00\n#1 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [1a9d7675-7d02-412a-abfb-6f0ff58df649] to #2.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#2 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [2e64e49f-6130-4f33-86c8-507071f8ab5c] to #1.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244 or +trade counter 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244=<your slot/UUID>. Use +trade decline 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244 or +trade cancel 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244 to close it."
+          ]
+        },
+        {
+          "character": 1,
+          "input": "+trade accept 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244",
+          "output": [
+            "Inspect these exact terms first: +trade inspect 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244. Then accept or counter this offer. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 1,
+          "input": "+trade inspect 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244",
+          "output": [
+            "Trade 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244: pending\nTrade QA 6231ddc7f6fb (#2) and Trade QA 6fe48a6a8bc6 (#1); expires 2026-10-23T23:56:22.819346+00:00\n#1 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [1a9d7675-7d02-412a-abfb-6f0ff58df649] to #2.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#2 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [2e64e49f-6130-4f33-86c8-507071f8ab5c] to #1.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244 or +trade counter 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244=<your slot/UUID>. Use +trade decline 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244 or +trade cancel 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244 to close it."
+          ]
+        },
+        {
+          "character": 1,
+          "input": "+trade accept 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244",
+          "output": [
+            "Trade completed: 160dc09b-eb5e-4aa6-bd10-cf1d7ba03244. Both sides are saved. Use +trade to inspect the receipt."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_acceptance_vs_a_pending_move_edit_cannot_mutate_the_new_owner",
+      "commands": [
+        {
+          "character": 4,
+          "input": "+trade offer Trade QA 7fd656ff8627=3",
+          "output": [
+            "Trade cc554c67-926e-447c-8a93-a87fa0ee893a: pending\nTrade QA 811834e6730e (#4) and Trade QA 7fd656ff8627 (#5); expires 2026-10-23T23:56:23.626346+00:00\n#4 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [c1cbe56a-6370-4363-ba7b-4cc07e668ae0] to #5.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept cc554c67-926e-447c-8a93-a87fa0ee893a or +trade counter cc554c67-926e-447c-8a93-a87fa0ee893a=<your slot/UUID>. Use +trade decline cc554c67-926e-447c-8a93-a87fa0ee893a or +trade cancel cc554c67-926e-447c-8a93-a87fa0ee893a to close it."
+          ]
+        },
+        {
+          "character": 5,
+          "input": "+trade inspect cc554c67-926e-447c-8a93-a87fa0ee893a",
+          "output": [
+            "Trade cc554c67-926e-447c-8a93-a87fa0ee893a: pending\nTrade QA 811834e6730e (#4) and Trade QA 7fd656ff8627 (#5); expires 2026-10-23T23:56:23.626346+00:00\n#4 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [c1cbe56a-6370-4363-ba7b-4cc07e668ae0] to #5.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept cc554c67-926e-447c-8a93-a87fa0ee893a or +trade counter cc554c67-926e-447c-8a93-a87fa0ee893a=<your slot/UUID>. Use +trade decline cc554c67-926e-447c-8a93-a87fa0ee893a or +trade cancel cc554c67-926e-447c-8a93-a87fa0ee893a to close it."
+          ]
+        },
+        {
+          "character": 5,
+          "input": "+trade counter cc554c67-926e-447c-8a93-a87fa0ee893a=b1d6f3a2-7e91-4994-9810-d23dcc6bcc5a",
+          "output": [
+            "Trade 2f692067-9754-4966-a53b-b731a58ad370: pending\nTrade QA 7fd656ff8627 (#5) and Trade QA 811834e6730e (#4); expires 2026-10-23T23:56:23.697846+00:00\n#5 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [b1d6f3a2-7e91-4994-9810-d23dcc6bcc5a] to #4.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#4 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [c1cbe56a-6370-4363-ba7b-4cc07e668ae0] to #5.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 2f692067-9754-4966-a53b-b731a58ad370 or +trade counter 2f692067-9754-4966-a53b-b731a58ad370=<your slot/UUID>. Use +trade decline 2f692067-9754-4966-a53b-b731a58ad370 or +trade cancel 2f692067-9754-4966-a53b-b731a58ad370 to close it."
+          ]
+        },
+        {
+          "character": 4,
+          "input": "+trade inspect 2f692067-9754-4966-a53b-b731a58ad370",
+          "output": [
+            "Trade 2f692067-9754-4966-a53b-b731a58ad370: pending\nTrade QA 7fd656ff8627 (#5) and Trade QA 811834e6730e (#4); expires 2026-10-23T23:56:23.697846+00:00\n#5 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [b1d6f3a2-7e91-4994-9810-d23dcc6bcc5a] to #4.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#4 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [c1cbe56a-6370-4363-ba7b-4cc07e668ae0] to #5.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 2f692067-9754-4966-a53b-b731a58ad370 or +trade counter 2f692067-9754-4966-a53b-b731a58ad370=<your slot/UUID>. Use +trade decline 2f692067-9754-4966-a53b-b731a58ad370 or +trade cancel 2f692067-9754-4966-a53b-b731a58ad370 to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_actual_player_learning_still_commits_and_outer_failure_publishes_nothing",
+      "commands": [],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_changed_pp_or_held_terms_cannot_be_accepted",
+      "commands": [
+        {
+          "character": 10,
+          "input": "+trade offer Trade QA a22c9dcf93c1=3",
+          "output": [
+            "Trade 05adac10-ddff-4b72-833a-03b8f379e4bc: pending\nTrade QA 4ca9c053cca6 (#10) and Trade QA a22c9dcf93c1 (#11); expires 2026-10-23T23:56:25.041846+00:00\n#10 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [e98402dc-6df2-4383-b824-f1fa2f920e51] to #11.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 05adac10-ddff-4b72-833a-03b8f379e4bc or +trade counter 05adac10-ddff-4b72-833a-03b8f379e4bc=<your slot/UUID>. Use +trade decline 05adac10-ddff-4b72-833a-03b8f379e4bc or +trade cancel 05adac10-ddff-4b72-833a-03b8f379e4bc to close it."
+          ]
+        },
+        {
+          "character": 11,
+          "input": "+trade inspect 05adac10-ddff-4b72-833a-03b8f379e4bc",
+          "output": [
+            "Trade 05adac10-ddff-4b72-833a-03b8f379e4bc: pending\nTrade QA 4ca9c053cca6 (#10) and Trade QA a22c9dcf93c1 (#11); expires 2026-10-23T23:56:25.041846+00:00\n#10 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [e98402dc-6df2-4383-b824-f1fa2f920e51] to #11.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 05adac10-ddff-4b72-833a-03b8f379e4bc or +trade counter 05adac10-ddff-4b72-833a-03b8f379e4bc=<your slot/UUID>. Use +trade decline 05adac10-ddff-4b72-833a-03b8f379e4bc or +trade cancel 05adac10-ddff-4b72-833a-03b8f379e4bc to close it."
+          ]
+        },
+        {
+          "character": 11,
+          "input": "+trade accept 05adac10-ddff-4b72-833a-03b8f379e4bc",
+          "output": [
+            "An offered Pokemon changed since these terms were recorded. Cancel and make a new offer. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 10,
+          "input": "+trade offer Trade QA a22c9dcf93c1=3",
+          "output": [
+            "Trade 42f6b082-57ae-4176-ac69-a9b89575eea8: pending\nTrade QA 4ca9c053cca6 (#10) and Trade QA a22c9dcf93c1 (#11); expires 2026-10-23T23:56:25.184845+00:00\n#10 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [e98402dc-6df2-4383-b824-f1fa2f920e51] to #11.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 1), 2: Watergun (PP 1).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 42f6b082-57ae-4176-ac69-a9b89575eea8 or +trade counter 42f6b082-57ae-4176-ac69-a9b89575eea8=<your slot/UUID>. Use +trade decline 42f6b082-57ae-4176-ac69-a9b89575eea8 or +trade cancel 42f6b082-57ae-4176-ac69-a9b89575eea8 to close it."
+          ]
+        },
+        {
+          "character": 11,
+          "input": "+trade inspect 42f6b082-57ae-4176-ac69-a9b89575eea8",
+          "output": [
+            "Trade 42f6b082-57ae-4176-ac69-a9b89575eea8: pending\nTrade QA 4ca9c053cca6 (#10) and Trade QA a22c9dcf93c1 (#11); expires 2026-10-23T23:56:25.184845+00:00\n#10 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [e98402dc-6df2-4383-b824-f1fa2f920e51] to #11.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 1), 2: Watergun (PP 1).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 42f6b082-57ae-4176-ac69-a9b89575eea8 or +trade counter 42f6b082-57ae-4176-ac69-a9b89575eea8=<your slot/UUID>. Use +trade decline 42f6b082-57ae-4176-ac69-a9b89575eea8 or +trade cancel 42f6b082-57ae-4176-ac69-a9b89575eea8 to close it."
+          ]
+        },
+        {
+          "character": 11,
+          "input": "+trade accept 42f6b082-57ae-4176-ac69-a9b89575eea8",
+          "output": [
+            "An offered Pokemon changed since these terms were recorded. Cancel and make a new offer. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_competing_accepts_commit_once_and_cancel_race_is_legal",
+      "commands": [
+        {
+          "character": 13,
+          "input": "+trade offer Trade QA ce4ebdfee33b=3",
+          "output": [
+            "Trade bcbb1eb1-8412-44cc-b80b-f9b51ff92d83: pending\nTrade QA 898ab885cb42 (#13) and Trade QA ce4ebdfee33b (#14); expires 2026-10-23T23:56:25.687847+00:00\n#13 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2440d315-b3b8-4a35-9bdc-342fd74495ca] to #14.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept bcbb1eb1-8412-44cc-b80b-f9b51ff92d83 or +trade counter bcbb1eb1-8412-44cc-b80b-f9b51ff92d83=<your slot/UUID>. Use +trade decline bcbb1eb1-8412-44cc-b80b-f9b51ff92d83 or +trade cancel bcbb1eb1-8412-44cc-b80b-f9b51ff92d83 to close it."
+          ]
+        },
+        {
+          "character": 14,
+          "input": "+trade inspect bcbb1eb1-8412-44cc-b80b-f9b51ff92d83",
+          "output": [
+            "Trade bcbb1eb1-8412-44cc-b80b-f9b51ff92d83: pending\nTrade QA 898ab885cb42 (#13) and Trade QA ce4ebdfee33b (#14); expires 2026-10-23T23:56:25.687847+00:00\n#13 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2440d315-b3b8-4a35-9bdc-342fd74495ca] to #14.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept bcbb1eb1-8412-44cc-b80b-f9b51ff92d83 or +trade counter bcbb1eb1-8412-44cc-b80b-f9b51ff92d83=<your slot/UUID>. Use +trade decline bcbb1eb1-8412-44cc-b80b-f9b51ff92d83 or +trade cancel bcbb1eb1-8412-44cc-b80b-f9b51ff92d83 to close it."
+          ]
+        },
+        {
+          "character": 13,
+          "input": "+trade offer Trade QA ce4ebdfee33b=3",
+          "output": [
+            "Trade d2e3307d-f137-4817-8d4d-87f730751664: pending\nTrade QA 898ab885cb42 (#13) and Trade QA ce4ebdfee33b (#14); expires 2026-10-23T23:56:26.107847+00:00\n#13 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [bcf70fc4-6f40-428e-bc36-9912e31b0d37] to #14.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept d2e3307d-f137-4817-8d4d-87f730751664 or +trade counter d2e3307d-f137-4817-8d4d-87f730751664=<your slot/UUID>. Use +trade decline d2e3307d-f137-4817-8d4d-87f730751664 or +trade cancel d2e3307d-f137-4817-8d4d-87f730751664 to close it."
+          ]
+        },
+        {
+          "character": 14,
+          "input": "+trade inspect d2e3307d-f137-4817-8d4d-87f730751664",
+          "output": [
+            "Trade d2e3307d-f137-4817-8d4d-87f730751664: pending\nTrade QA 898ab885cb42 (#13) and Trade QA ce4ebdfee33b (#14); expires 2026-10-23T23:56:26.107847+00:00\n#13 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [bcf70fc4-6f40-428e-bc36-9912e31b0d37] to #14.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept d2e3307d-f137-4817-8d4d-87f730751664 or +trade counter d2e3307d-f137-4817-8d4d-87f730751664=<your slot/UUID>. Use +trade decline d2e3307d-f137-4817-8d4d-87f730751664 or +trade cancel d2e3307d-f137-4817-8d4d-87f730751664 to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_completed_acceptance_after_release_returns_receipt_without_resurrection",
+      "commands": [
+        {
+          "character": 16,
+          "input": "+trade offer Trade QA ede064ac41e1=3",
+          "output": [
+            "Trade 2e1e84c9-aa9e-49a9-9936-b43752f7fa31: pending\nTrade QA dbceb985d20c (#16) and Trade QA ede064ac41e1 (#17); expires 2026-10-23T23:56:26.813845+00:00\n#16 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [57308bbd-a1e3-4484-9d1e-b0eda561b62b] to #17.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 2e1e84c9-aa9e-49a9-9936-b43752f7fa31 or +trade counter 2e1e84c9-aa9e-49a9-9936-b43752f7fa31=<your slot/UUID>. Use +trade decline 2e1e84c9-aa9e-49a9-9936-b43752f7fa31 or +trade cancel 2e1e84c9-aa9e-49a9-9936-b43752f7fa31 to close it."
+          ]
+        },
+        {
+          "character": 17,
+          "input": "+trade inspect 2e1e84c9-aa9e-49a9-9936-b43752f7fa31",
+          "output": [
+            "Trade 2e1e84c9-aa9e-49a9-9936-b43752f7fa31: pending\nTrade QA dbceb985d20c (#16) and Trade QA ede064ac41e1 (#17); expires 2026-10-23T23:56:26.813845+00:00\n#16 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [57308bbd-a1e3-4484-9d1e-b0eda561b62b] to #17.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 2e1e84c9-aa9e-49a9-9936-b43752f7fa31 or +trade counter 2e1e84c9-aa9e-49a9-9936-b43752f7fa31=<your slot/UUID>. Use +trade decline 2e1e84c9-aa9e-49a9-9936-b43752f7fa31 or +trade cancel 2e1e84c9-aa9e-49a9-9936-b43752f7fa31 to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_counteroffer_invalidates_old_consent_then_swaps_party_and_box",
+      "commands": [
+        {
+          "character": 19,
+          "input": "+trade offer Trade QA 3283e4673df2=3",
+          "output": [
+            "Trade aed6ec4b-61fc-40c5-bd56-1b14d11ead3b: pending\nTrade QA def84c6011ed (#19) and Trade QA 3283e4673df2 (#20); expires 2026-10-23T23:56:27.442846+00:00\n#19 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [88f46ed3-cdb2-461e-b5a3-30d6ae38c640] to #20.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept aed6ec4b-61fc-40c5-bd56-1b14d11ead3b or +trade counter aed6ec4b-61fc-40c5-bd56-1b14d11ead3b=<your slot/UUID>. Use +trade decline aed6ec4b-61fc-40c5-bd56-1b14d11ead3b or +trade cancel aed6ec4b-61fc-40c5-bd56-1b14d11ead3b to close it."
+          ]
+        },
+        {
+          "character": 20,
+          "input": "+trade inspect aed6ec4b-61fc-40c5-bd56-1b14d11ead3b",
+          "output": [
+            "Trade aed6ec4b-61fc-40c5-bd56-1b14d11ead3b: pending\nTrade QA def84c6011ed (#19) and Trade QA 3283e4673df2 (#20); expires 2026-10-23T23:56:27.442846+00:00\n#19 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [88f46ed3-cdb2-461e-b5a3-30d6ae38c640] to #20.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept aed6ec4b-61fc-40c5-bd56-1b14d11ead3b or +trade counter aed6ec4b-61fc-40c5-bd56-1b14d11ead3b=<your slot/UUID>. Use +trade decline aed6ec4b-61fc-40c5-bd56-1b14d11ead3b or +trade cancel aed6ec4b-61fc-40c5-bd56-1b14d11ead3b to close it."
+          ]
+        },
+        {
+          "character": 20,
+          "input": "+trade counter aed6ec4b-61fc-40c5-bd56-1b14d11ead3b=2c6ae001",
+          "output": [
+            "Trade af6cd4e5-bf33-4c45-9179-4d5f2316b0af: pending\nTrade QA 3283e4673df2 (#20) and Trade QA def84c6011ed (#19); expires 2026-10-23T23:56:27.517845+00:00\n#20 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [2c6ae001-2890-49fb-9245-168f64e78c90] to #19.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#19 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [88f46ed3-cdb2-461e-b5a3-30d6ae38c640] to #20.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept af6cd4e5-bf33-4c45-9179-4d5f2316b0af or +trade counter af6cd4e5-bf33-4c45-9179-4d5f2316b0af=<your slot/UUID>. Use +trade decline af6cd4e5-bf33-4c45-9179-4d5f2316b0af or +trade cancel af6cd4e5-bf33-4c45-9179-4d5f2316b0af to close it."
+          ]
+        },
+        {
+          "character": 20,
+          "input": "+trade accept aed6ec4b-61fc-40c5-bd56-1b14d11ead3b",
+          "output": [
+            "That offer is closed or expired; cancel expired offers to release reservations. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 19,
+          "input": "+trade inspect af6cd4e5-bf33-4c45-9179-4d5f2316b0af",
+          "output": [
+            "Trade af6cd4e5-bf33-4c45-9179-4d5f2316b0af: pending\nTrade QA 3283e4673df2 (#20) and Trade QA def84c6011ed (#19); expires 2026-10-23T23:56:27.517845+00:00\n#20 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [2c6ae001-2890-49fb-9245-168f64e78c90] to #19.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#19 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [88f46ed3-cdb2-461e-b5a3-30d6ae38c640] to #20.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept af6cd4e5-bf33-4c45-9179-4d5f2316b0af or +trade counter af6cd4e5-bf33-4c45-9179-4d5f2316b0af=<your slot/UUID>. Use +trade decline af6cd4e5-bf33-4c45-9179-4d5f2316b0af or +trade cancel af6cd4e5-bf33-4c45-9179-4d5f2316b0af to close it."
+          ]
+        },
+        {
+          "character": 19,
+          "input": "+trade accept af6cd4e5-bf33-4c45-9179-4d5f2316b0af",
+          "output": [
+            "Trade completed: af6cd4e5-bf33-4c45-9179-4d5f2316b0af. Both sides are saved. Use +trade to inspect the receipt."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_decline_cancel_and_expiry_never_move_or_keep_assets_unrecoverable",
+      "commands": [
+        {
+          "character": 22,
+          "input": "+trade offer Trade QA 9c3b052d65ed=3",
+          "output": [
+            "Trade 8f30fe3a-d5df-4ab6-84bf-96cf78513226: pending\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.282346+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 8f30fe3a-d5df-4ab6-84bf-96cf78513226 or +trade counter 8f30fe3a-d5df-4ab6-84bf-96cf78513226=<your slot/UUID>. Use +trade decline 8f30fe3a-d5df-4ab6-84bf-96cf78513226 or +trade cancel 8f30fe3a-d5df-4ab6-84bf-96cf78513226 to close it."
+          ]
+        },
+        {
+          "character": 23,
+          "input": "+trade inspect 8f30fe3a-d5df-4ab6-84bf-96cf78513226",
+          "output": [
+            "Trade 8f30fe3a-d5df-4ab6-84bf-96cf78513226: pending\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.282346+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 8f30fe3a-d5df-4ab6-84bf-96cf78513226 or +trade counter 8f30fe3a-d5df-4ab6-84bf-96cf78513226=<your slot/UUID>. Use +trade decline 8f30fe3a-d5df-4ab6-84bf-96cf78513226 or +trade cancel 8f30fe3a-d5df-4ab6-84bf-96cf78513226 to close it."
+          ]
+        },
+        {
+          "character": 23,
+          "input": "+trade decline 8f30fe3a-d5df-4ab6-84bf-96cf78513226",
+          "output": [
+            "Trade 8f30fe3a-d5df-4ab6-84bf-96cf78513226: cancelled\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.282346+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nClosed by #23: declined."
+          ]
+        },
+        {
+          "character": 23,
+          "input": "+trade accept 8f30fe3a-d5df-4ab6-84bf-96cf78513226",
+          "output": [
+            "That offer is closed or expired; cancel expired offers to release reservations. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 22,
+          "input": "+trade offer Trade QA 9c3b052d65ed=3",
+          "output": [
+            "Trade 563c0655-851d-4dd3-999f-401a7f5aff56: pending\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.356347+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 563c0655-851d-4dd3-999f-401a7f5aff56 or +trade counter 563c0655-851d-4dd3-999f-401a7f5aff56=<your slot/UUID>. Use +trade decline 563c0655-851d-4dd3-999f-401a7f5aff56 or +trade cancel 563c0655-851d-4dd3-999f-401a7f5aff56 to close it."
+          ]
+        },
+        {
+          "character": 23,
+          "input": "+trade inspect 563c0655-851d-4dd3-999f-401a7f5aff56",
+          "output": [
+            "Trade 563c0655-851d-4dd3-999f-401a7f5aff56: pending\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.356347+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 563c0655-851d-4dd3-999f-401a7f5aff56 or +trade counter 563c0655-851d-4dd3-999f-401a7f5aff56=<your slot/UUID>. Use +trade decline 563c0655-851d-4dd3-999f-401a7f5aff56 or +trade cancel 563c0655-851d-4dd3-999f-401a7f5aff56 to close it."
+          ]
+        },
+        {
+          "character": 22,
+          "input": "+trade cancel 563c0655-851d-4dd3-999f-401a7f5aff56",
+          "output": [
+            "Trade 563c0655-851d-4dd3-999f-401a7f5aff56: cancelled\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.356347+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nClosed by #22: cancelled."
+          ]
+        },
+        {
+          "character": 23,
+          "input": "+trade accept 563c0655-851d-4dd3-999f-401a7f5aff56",
+          "output": [
+            "That offer is closed or expired; cancel expired offers to release reservations. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 22,
+          "input": "+trade offer Trade QA 9c3b052d65ed=3",
+          "output": [
+            "Trade e663a69a-c025-4d7d-9a68-5b198b9f8522: pending\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.426847+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept e663a69a-c025-4d7d-9a68-5b198b9f8522 or +trade counter e663a69a-c025-4d7d-9a68-5b198b9f8522=<your slot/UUID>. Use +trade decline e663a69a-c025-4d7d-9a68-5b198b9f8522 or +trade cancel e663a69a-c025-4d7d-9a68-5b198b9f8522 to close it."
+          ]
+        },
+        {
+          "character": 23,
+          "input": "+trade inspect e663a69a-c025-4d7d-9a68-5b198b9f8522",
+          "output": [
+            "Trade e663a69a-c025-4d7d-9a68-5b198b9f8522: pending\nTrade QA 89132f7a3fec (#22) and Trade QA 9c3b052d65ed (#23); expires 2026-10-23T23:56:28.426847+00:00\n#22 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [2b646a3a-d595-4b06-84e8-b6b884a79e3c] to #23.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept e663a69a-c025-4d7d-9a68-5b198b9f8522 or +trade counter e663a69a-c025-4d7d-9a68-5b198b9f8522=<your slot/UUID>. Use +trade decline e663a69a-c025-4d7d-9a68-5b198b9f8522 or +trade cancel e663a69a-c025-4d7d-9a68-5b198b9f8522 to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_failed_counter_preserves_the_old_offer_and_its_reservation",
+      "commands": [
+        {
+          "character": 25,
+          "input": "+trade offer Trade QA 94bbe9749c0c=3",
+          "output": [
+            "Trade 92c8642a-9ef2-4c7d-868f-b9817c9911a4: pending\nTrade QA f83acec0c836 (#25) and Trade QA 94bbe9749c0c (#26); expires 2026-10-23T23:56:28.924846+00:00\n#25 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [53173d69-13b5-4de2-84b1-91862242576b] to #26.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 92c8642a-9ef2-4c7d-868f-b9817c9911a4 or +trade counter 92c8642a-9ef2-4c7d-868f-b9817c9911a4=<your slot/UUID>. Use +trade decline 92c8642a-9ef2-4c7d-868f-b9817c9911a4 or +trade cancel 92c8642a-9ef2-4c7d-868f-b9817c9911a4 to close it."
+          ]
+        },
+        {
+          "character": 26,
+          "input": "+trade inspect 92c8642a-9ef2-4c7d-868f-b9817c9911a4",
+          "output": [
+            "Trade 92c8642a-9ef2-4c7d-868f-b9817c9911a4: pending\nTrade QA f83acec0c836 (#25) and Trade QA 94bbe9749c0c (#26); expires 2026-10-23T23:56:28.924846+00:00\n#25 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [53173d69-13b5-4de2-84b1-91862242576b] to #26.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 92c8642a-9ef2-4c7d-868f-b9817c9911a4 or +trade counter 92c8642a-9ef2-4c7d-868f-b9817c9911a4=<your slot/UUID>. Use +trade decline 92c8642a-9ef2-4c7d-868f-b9817c9911a4 or +trade cancel 92c8642a-9ef2-4c7d-868f-b9817c9911a4 to close it."
+          ]
+        },
+        {
+          "character": 26,
+          "input": "+trade counter 92c8642a-9ef2-4c7d-868f-b9817c9911a4=67e66761-633b-4159-b606-e3b988b6db64",
+          "output": [
+            "Pokemon is reserved for market. Finish or cancel that activity first. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_final_commit_rechecks_battle_fusion_and_each_system_claim",
+      "commands": [
+        {
+          "character": 28,
+          "input": "+trade offer Trade QA ad244fcb924b=3",
+          "output": [
+            "Pokemon is reserved for market. Finish or cancel that activity first. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 28,
+          "input": "+trade offer Trade QA ad244fcb924b=3",
+          "output": [
+            "Pokemon is reserved for daycare. Finish or cancel that activity first. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 28,
+          "input": "+trade offer Trade QA ad244fcb924b=3",
+          "output": [
+            "Pokemon is reserved for breeding. Finish or cancel that activity first. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 28,
+          "input": "+trade offer Trade QA ad244fcb924b=3",
+          "output": [
+            "Pokemon is reserved for an active or unlocked Fusion form. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 28,
+          "input": "+trade offer Trade QA ad244fcb924b=3",
+          "output": [
+            "Trade 01cb781c-b5fa-4359-8d16-8aac4295c1bb: pending\nTrade QA 11e562adc243 (#28) and Trade QA ad244fcb924b (#29); expires 2026-10-23T23:56:29.740345+00:00\n#28 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [f01239dd-71e3-4d5e-9eb7-416bb5856c3d] to #29.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 01cb781c-b5fa-4359-8d16-8aac4295c1bb or +trade counter 01cb781c-b5fa-4359-8d16-8aac4295c1bb=<your slot/UUID>. Use +trade decline 01cb781c-b5fa-4359-8d16-8aac4295c1bb or +trade cancel 01cb781c-b5fa-4359-8d16-8aac4295c1bb to close it."
+          ]
+        },
+        {
+          "character": 29,
+          "input": "+trade inspect 01cb781c-b5fa-4359-8d16-8aac4295c1bb",
+          "output": [
+            "Trade 01cb781c-b5fa-4359-8d16-8aac4295c1bb: pending\nTrade QA 11e562adc243 (#28) and Trade QA ad244fcb924b (#29); expires 2026-10-23T23:56:29.740345+00:00\n#28 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [f01239dd-71e3-4d5e-9eb7-416bb5856c3d] to #29.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 01cb781c-b5fa-4359-8d16-8aac4295c1bb or +trade counter 01cb781c-b5fa-4359-8d16-8aac4295c1bb=<your slot/UUID>. Use +trade decline 01cb781c-b5fa-4359-8d16-8aac4295c1bb or +trade cancel 01cb781c-b5fa-4359-8d16-8aac4295c1bb to close it."
+          ]
+        },
+        {
+          "character": 29,
+          "input": "+trade accept 01cb781c-b5fa-4359-8d16-8aac4295c1bb",
+          "output": [
+            "Finish your battle before transferring or reserving Pokemon. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 29,
+          "input": "+trade accept 01cb781c-b5fa-4359-8d16-8aac4295c1bb",
+          "output": [
+            "Trade completed: 01cb781c-b5fa-4359-8d16-8aac4295c1bb. Both sides are saved. Use +trade to inspect the receipt."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_foreign_ids_and_same_account_alt_cannot_act_on_an_offer",
+      "commands": [
+        {
+          "character": 31,
+          "input": "+trade offer Trade QA 939fb4ee5a27=3",
+          "output": [
+            "Trade b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6: pending\nTrade QA b0cfdf23af83 (#31) and Trade QA 939fb4ee5a27 (#32); expires 2026-10-23T23:56:30.303846+00:00\n#31 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [1b500239-320b-461f-810e-b23269f3b258] to #32.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6 or +trade counter b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6=<your slot/UUID>. Use +trade decline b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6 or +trade cancel b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6 to close it."
+          ]
+        },
+        {
+          "character": 32,
+          "input": "+trade inspect b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6",
+          "output": [
+            "Trade b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6: pending\nTrade QA b0cfdf23af83 (#31) and Trade QA 939fb4ee5a27 (#32); expires 2026-10-23T23:56:30.303846+00:00\n#31 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [1b500239-320b-461f-810e-b23269f3b258] to #32.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6 or +trade counter b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6=<your slot/UUID>. Use +trade decline b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6 or +trade cancel b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6 to close it."
+          ]
+        },
+        {
+          "character": 33,
+          "input": "+trade inspect b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6",
+          "output": [
+            "That transfer does not belong to this character. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 33,
+          "input": "+trade accept b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6",
+          "output": [
+            "That transfer does not belong to this character. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 33,
+          "input": "+trade decline b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6",
+          "output": [
+            "That transfer does not belong to this character. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 33,
+          "input": "+trade cancel b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6",
+          "output": [
+            "That transfer does not belong to this character. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 32,
+          "input": "+trade counter b1d63f4b-d211-4f1c-a8b1-7f784c3a41b6=1b500239-320b-461f-810e-b23269f3b258",
+          "output": [
+            "That Pokemon ID does not uniquely identify one of your owned Pokemon. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_full_party_uses_box_and_a_missing_canonical_slot_cannot_offer",
+      "commands": [
+        {
+          "character": 34,
+          "input": "+trade offer Trade QA 439a77eccfbe=1",
+          "output": [
+            "There is no Pokemon in that party slot. No Pokemon changed owner. Use +trade to inspect or cancel the offer."
+          ]
+        },
+        {
+          "character": 34,
+          "input": "+trade offer Trade QA 439a77eccfbe=3",
+          "output": [
+            "Trade e05a30e5-2df8-44bd-865e-533550ad5678: pending\nTrade QA ad3eb07a1311 (#34) and Trade QA 439a77eccfbe (#35); expires 2026-10-23T23:56:31.306845+00:00\n#34 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [f99dc84f-ce1e-459b-bcf1-4b6ec7fcedb7] to #35.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept e05a30e5-2df8-44bd-865e-533550ad5678 or +trade counter e05a30e5-2df8-44bd-865e-533550ad5678=<your slot/UUID>. Use +trade decline e05a30e5-2df8-44bd-865e-533550ad5678 or +trade cancel e05a30e5-2df8-44bd-865e-533550ad5678 to close it."
+          ]
+        },
+        {
+          "character": 35,
+          "input": "+trade inspect e05a30e5-2df8-44bd-865e-533550ad5678",
+          "output": [
+            "Trade e05a30e5-2df8-44bd-865e-533550ad5678: pending\nTrade QA ad3eb07a1311 (#34) and Trade QA 439a77eccfbe (#35); expires 2026-10-23T23:56:31.306845+00:00\n#34 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [f99dc84f-ce1e-459b-bcf1-4b6ec7fcedb7] to #35.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept e05a30e5-2df8-44bd-865e-533550ad5678 or +trade counter e05a30e5-2df8-44bd-865e-533550ad5678=<your slot/UUID>. Use +trade decline e05a30e5-2df8-44bd-865e-533550ad5678 or +trade cancel e05a30e5-2df8-44bd-865e-533550ad5678 to close it."
+          ]
+        },
+        {
+          "character": 35,
+          "input": "+trade accept e05a30e5-2df8-44bd-865e-533550ad5678",
+          "output": [
+            "Trade completed: e05a30e5-2df8-44bd-865e-533550ad5678. Both sides are saved. Use +trade to inspect the receipt."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_gift_requires_recipient_acceptance_and_receipt_survives_reconnect",
+      "commands": [
+        {
+          "character": 37,
+          "input": "+trade offer Trade QA 8c64f741097b=3",
+          "output": [
+            "Trade 72dd8f67-d56e-4c29-8e86-5f1d08de8384: pending\nTrade QA 553576d8fad8 (#37) and Trade QA 8c64f741097b (#38); expires 2026-10-23T23:56:31.886346+00:00\n#37 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [4a0323c2-a74d-449a-803f-055803e28434] to #38.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 72dd8f67-d56e-4c29-8e86-5f1d08de8384 or +trade counter 72dd8f67-d56e-4c29-8e86-5f1d08de8384=<your slot/UUID>. Use +trade decline 72dd8f67-d56e-4c29-8e86-5f1d08de8384 or +trade cancel 72dd8f67-d56e-4c29-8e86-5f1d08de8384 to close it."
+          ]
+        },
+        {
+          "character": 38,
+          "input": "+trade inspect 72dd8f67-d56e-4c29-8e86-5f1d08de8384",
+          "output": [
+            "Trade 72dd8f67-d56e-4c29-8e86-5f1d08de8384: pending\nTrade QA 553576d8fad8 (#37) and Trade QA 8c64f741097b (#38); expires 2026-10-23T23:56:31.886346+00:00\n#37 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [4a0323c2-a74d-449a-803f-055803e28434] to #38.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 72dd8f67-d56e-4c29-8e86-5f1d08de8384 or +trade counter 72dd8f67-d56e-4c29-8e86-5f1d08de8384=<your slot/UUID>. Use +trade decline 72dd8f67-d56e-4c29-8e86-5f1d08de8384 or +trade cancel 72dd8f67-d56e-4c29-8e86-5f1d08de8384 to close it."
+          ]
+        },
+        {
+          "character": 38,
+          "input": "+trade",
+          "output": [
+            "Trade offers (up to 30, pending first):\n72dd8f67-d56e-4c29-8e86-5f1d08de8384: pending, with Trade QA 553576d8fad8. Use +trade inspect 72dd8f67-d56e-4c29-8e86-5f1d08de8384."
+          ]
+        },
+        {
+          "character": 38,
+          "input": "+trade inspect 72dd8f67-d56e-4c29-8e86-5f1d08de8384",
+          "output": [
+            "Trade 72dd8f67-d56e-4c29-8e86-5f1d08de8384: pending\nTrade QA 553576d8fad8 (#37) and Trade QA 8c64f741097b (#38); expires 2026-10-23T23:56:31.886346+00:00\n#37 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [4a0323c2-a74d-449a-803f-055803e28434] to #38.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 72dd8f67-d56e-4c29-8e86-5f1d08de8384 or +trade counter 72dd8f67-d56e-4c29-8e86-5f1d08de8384=<your slot/UUID>. Use +trade decline 72dd8f67-d56e-4c29-8e86-5f1d08de8384 or +trade cancel 72dd8f67-d56e-4c29-8e86-5f1d08de8384 to close it."
+          ]
+        },
+        {
+          "character": 38,
+          "input": "+trade accept 72dd8f67-d56e-4c29-8e86-5f1d08de8384",
+          "output": [
+            "Trade completed: 72dd8f67-d56e-4c29-8e86-5f1d08de8384. Both sides are saved. Use +trade to inspect the receipt."
+          ]
+        },
+        {
+          "character": 38,
+          "input": "+trade",
+          "output": [
+            "Trade offers (up to 30, pending first):\n72dd8f67-d56e-4c29-8e86-5f1d08de8384: completed, with Trade QA 553576d8fad8. Use +trade inspect 72dd8f67-d56e-4c29-8e86-5f1d08de8384."
+          ]
+        },
+        {
+          "character": 38,
+          "input": "+trade accept 72dd8f67-d56e-4c29-8e86-5f1d08de8384",
+          "output": [
+            "Trade completed: 72dd8f67-d56e-4c29-8e86-5f1d08de8384. Both sides are saved. Use +trade to inspect the receipt."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_move_learning_and_open_moveset_replies_cannot_edit_reserved_or_sold_asset",
+      "commands": [
+        {
+          "character": 40,
+          "input": "+trade offer Trade QA 94a20048ddbf=3",
+          "output": [
+            "Trade 4fe587ac-8d02-49b2-affd-e7c59513ef56: pending\nTrade QA 7f6a43c04cc3 (#40) and Trade QA 94a20048ddbf (#41); expires 2026-10-23T23:56:32.480846+00:00\n#40 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [57666084-98a4-4753-bd25-69e0f118a004] to #41.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 4fe587ac-8d02-49b2-affd-e7c59513ef56 or +trade counter 4fe587ac-8d02-49b2-affd-e7c59513ef56=<your slot/UUID>. Use +trade decline 4fe587ac-8d02-49b2-affd-e7c59513ef56 or +trade cancel 4fe587ac-8d02-49b2-affd-e7c59513ef56 to close it."
+          ]
+        },
+        {
+          "character": 41,
+          "input": "+trade inspect 4fe587ac-8d02-49b2-affd-e7c59513ef56",
+          "output": [
+            "Trade 4fe587ac-8d02-49b2-affd-e7c59513ef56: pending\nTrade QA 7f6a43c04cc3 (#40) and Trade QA 94a20048ddbf (#41); expires 2026-10-23T23:56:32.480846+00:00\n#40 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [57666084-98a4-4753-bd25-69e0f118a004] to #41.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 4fe587ac-8d02-49b2-affd-e7c59513ef56 or +trade counter 4fe587ac-8d02-49b2-affd-e7c59513ef56=<your slot/UUID>. Use +trade decline 4fe587ac-8d02-49b2-affd-e7c59513ef56 or +trade cancel 4fe587ac-8d02-49b2-affd-e7c59513ef56 to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_move_write_failure_rolls_back_without_a_false_success_notice",
+      "commands": [],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_moves_use_has_a_real_guarded_center_route_and_no_field_pp_refill",
+      "commands": [
+        {
+          "character": 47,
+          "input": "+trade offer Trade QA d12f7bed215b=3",
+          "output": [
+            "Trade e8039635-1757-4406-a694-fe8197e4d2d9: pending\nTrade QA 9e1632df88e8 (#47) and Trade QA d12f7bed215b (#48); expires 2026-10-23T23:56:33.716846+00:00\n#47 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [6df5c63b-41d2-41f7-a141-7fc9f8e8d386] to #48.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 35), 2: Watergun (PP 25).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept e8039635-1757-4406-a694-fe8197e4d2d9 or +trade counter e8039635-1757-4406-a694-fe8197e4d2d9=<your slot/UUID>. Use +trade decline e8039635-1757-4406-a694-fe8197e4d2d9 or +trade cancel e8039635-1757-4406-a694-fe8197e4d2d9 to close it."
+          ]
+        },
+        {
+          "character": 48,
+          "input": "+trade inspect e8039635-1757-4406-a694-fe8197e4d2d9",
+          "output": [
+            "Trade e8039635-1757-4406-a694-fe8197e4d2d9: pending\nTrade QA 9e1632df88e8 (#47) and Trade QA d12f7bed215b (#48); expires 2026-10-23T23:56:33.716846+00:00\n#47 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [6df5c63b-41d2-41f7-a141-7fc9f8e8d386] to #48.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 35), 2: Watergun (PP 25).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept e8039635-1757-4406-a694-fe8197e4d2d9 or +trade counter e8039635-1757-4406-a694-fe8197e4d2d9=<your slot/UUID>. Use +trade decline e8039635-1757-4406-a694-fe8197e4d2d9 or +trade cancel e8039635-1757-4406-a694-fe8197e4d2d9 to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    },
+    {
+      "case": "test_swap_failure_rolls_back_both_owners_and_consent",
+      "commands": [
+        {
+          "character": 51,
+          "input": "+trade offer Trade QA ea054a90acb7=3",
+          "output": [
+            "Trade a0c59ecd-c658-41c3-936b-894d9b446013: pending\nTrade QA e70c84a23de0 (#51) and Trade QA ea054a90acb7 (#52); expires 2026-10-23T23:56:34.257346+00:00\n#51 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [fc45bbff-84bb-4841-80c7-3fc77125e364] to #52.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept a0c59ecd-c658-41c3-936b-894d9b446013 or +trade counter a0c59ecd-c658-41c3-936b-894d9b446013=<your slot/UUID>. Use +trade decline a0c59ecd-c658-41c3-936b-894d9b446013 or +trade cancel a0c59ecd-c658-41c3-936b-894d9b446013 to close it."
+          ]
+        },
+        {
+          "character": 52,
+          "input": "+trade inspect a0c59ecd-c658-41c3-936b-894d9b446013",
+          "output": [
+            "Trade a0c59ecd-c658-41c3-936b-894d9b446013: pending\nTrade QA e70c84a23de0 (#51) and Trade QA ea054a90acb7 (#52); expires 2026-10-23T23:56:34.257346+00:00\n#51 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [fc45bbff-84bb-4841-80c7-3fc77125e364] to #52.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept a0c59ecd-c658-41c3-936b-894d9b446013 or +trade counter a0c59ecd-c658-41c3-936b-894d9b446013=<your slot/UUID>. Use +trade decline a0c59ecd-c658-41c3-936b-894d9b446013 or +trade cancel a0c59ecd-c658-41c3-936b-894d9b446013 to close it."
+          ]
+        },
+        {
+          "character": 52,
+          "input": "+trade counter a0c59ecd-c658-41c3-936b-894d9b446013=bc97b4f7-09de-4c32-afda-5fec3b78f64b",
+          "output": [
+            "Trade 0a9613d3-ef93-4089-a9d4-e5d480b41f0f: pending\nTrade QA ea054a90acb7 (#52) and Trade QA e70c84a23de0 (#51); expires 2026-10-23T23:56:34.338846+00:00\n#52 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [bc97b4f7-09de-4c32-afda-5fec3b78f64b] to #51.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#51 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [fc45bbff-84bb-4841-80c7-3fc77125e364] to #52.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 0a9613d3-ef93-4089-a9d4-e5d480b41f0f or +trade counter 0a9613d3-ef93-4089-a9d4-e5d480b41f0f=<your slot/UUID>. Use +trade decline 0a9613d3-ef93-4089-a9d4-e5d480b41f0f or +trade cancel 0a9613d3-ef93-4089-a9d4-e5d480b41f0f to close it."
+          ]
+        },
+        {
+          "character": 51,
+          "input": "+trade inspect 0a9613d3-ef93-4089-a9d4-e5d480b41f0f",
+          "output": [
+            "Trade 0a9613d3-ef93-4089-a9d4-e5d480b41f0f: pending\nTrade QA ea054a90acb7 (#52) and Trade QA e70c84a23de0 (#51); expires 2026-10-23T23:56:34.338846+00:00\n#52 offers Pikachu (Pikachu, level 20, , holding Oran Berry) [bc97b4f7-09de-4c32-afda-5fec3b78f64b] to #51.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\n#51 offers Squirtle (Squirtle, level 20, , holding Oran Berry) [fc45bbff-84bb-4841-80c7-3fc77125e364] to #52.\n  , Hardy nature; not shiny; Tera native; HP 2, status psn; friendship 70.\n  HP/Atk/Def/SpA/SpD/Spe genetic IVs: [1, 2, 3, 4, 5, 6]; EVs: [0, 0, 0, 0, 0, 0]; Hyper Training: none.\n  Active moves: 1: Tackle (PP 2), 2: Watergun (PP 2).\nAutomatic destination: a free party slot, otherwise your box. No fees or automatic evolution.\nRecipient: +trade accept 0a9613d3-ef93-4089-a9d4-e5d480b41f0f or +trade counter 0a9613d3-ef93-4089-a9d4-e5d480b41f0f=<your slot/UUID>. Use +trade decline 0a9613d3-ef93-4089-a9d4-e5d480b41f0f or +trade cancel 0a9613d3-ef93-4089-a9d4-e5d480b41f0f to close it."
+          ]
+        }
+      ],
+      "transport": "captured; no socket",
+      "permissions": [
+        [
+          "player"
+        ],
+        [
+          "player"
+        ]
+      ]
+    }
+  ],
+  "limits": [
+    "Local private PostgreSQL, real User/Account and command classes, outbound transport captured; no live sockets",
+    "Fault and concurrency fixtures are automated; ordinary Player permission is retained",
+    "No existing game database, service, deployment or source was changed",
+    "Hosted CI success not claimed",
+    "No automatic trade evolution; supported manual equivalents remain available",
+    "Expired claims require either named participant to cancel; pending-first list is bounded to 30"
+  ],
+  "git_blob_manifest_sha256": "912206870c17cf005671a8129b07f50ca8ce0b8b09ebf196bdcecdb273221c35"
+}

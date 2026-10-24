@@ -16,6 +16,7 @@ def test_on_exit_called_when_auto_learn():
 	utils_pkg.enhanced_evmenu = enhanced_mod
 	models_mod = types.ModuleType("pokemon.models.moves")
 	services_pkg = types.ModuleType("pokemon.services")
+	services_pkg.__path__ = [os.path.join(ROOT, "pokemon", "services")]
 	move_service_mod = types.ModuleType("pokemon.services.move_management")
 	move_service_mod.apply_active_moveset = lambda *a, **k: None
 	services_pkg.move_management = move_service_mod

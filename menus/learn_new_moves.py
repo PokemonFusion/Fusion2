@@ -1,10 +1,15 @@
+"""Level-up move choices bound to a fresh owned source on each menu reply."""
+
 from pokemon.data.generation import get_valid_moves
 from pokemon.middleware import get_moveset_by_name
 from pokemon.names import normalize_name
 from pokemon.utils.move_learning import learn_move
+from pokemon.services.move_edits import guarded_move_menu
 
 
+@guarded_move_menu
 def node_start(caller, raw_input=None, **kwargs):
+	"""List or select learning choices after the shared ownership guard succeeds."""
 	pokemon = kwargs.get("pokemon")
 	moves = kwargs.get("moves")
 	level_map = kwargs.get("level_map", {})

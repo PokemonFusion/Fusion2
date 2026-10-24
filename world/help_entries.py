@@ -274,6 +274,64 @@ They are not player-facing profile fields.
 		""",
 	},
 	{
+		"key": "trading",
+		"aliases": ["pokemon trading", "consent trades", "pokemon gifts"],
+		"category": "Guide",
+		"text": """
+Trades are private offers between two characters. Even characters sharing an
+account must each act for themselves. There are no fees, payments, EXP grants or
+automatic evolutions. Pokemon keep their ID, original trainer, held item, HP,
+status, moves and PP.
+
+# Gift
+
+Ash:   +trade offer Misty=3
+Misty: +trade inspect <offer ID>
+Misty: +trade accept <offer ID>
+
+The offer command shows its ID. +trade lists your pending offers and recent
+outcomes after reconnect. Inspect the exact offer before accepting or countering;
+another character's inspection cannot supply your consent.
+
+# Swap
+
+After inspecting Ash's offer, Misty chooses her own Pokemon:
+Misty: +trade counter <offer ID>=<her Pokemon ID>
+Ash:   +trade inspect <new offer ID>
+Ash:   +trade accept <new offer ID>
+
+A counteroffer closes the old offer and creates new terms. Previous inspection
+or consent does not carry forward. Each side offers one Pokemon. Use a party
+slot (1-6 or slot3), or a full/unique Pokemon ID prefix of at least eight hex
+characters from +box or +pokemon to offer a boxed Pokemon directly.
+
+# Closing And Recovery
+
++trade decline <offer ID>   Intended recipient declines.
++trade cancel <offer ID>    Either participant closes the offer.
++trade inspect <offer ID>   Inspect pending or completed/cancelled outcomes.
+
+Offers last 15 minutes. Expired offers cannot complete; cancel them to release
+their reservations. Changed Pokemon state requires new terms. Pending offers
+are shown first (up to 30); close them to expose older offers. Repeating a
+completed acceptance returns its historical outcome and never trades again.
+
+The offered Pokemon is reserved: finish/cancel the offer before moving, using
+items on, editing moves for, releasing or fusing it. Battles, Fusion forms and
+market/Daycare/breeding reservations block transfer. A boxed offer lets its
+owner battle with other party members, but the trade itself must wait until
+both characters finish battle. Failed checks move nothing.
+
+Recipients use a free party slot, otherwise a box. Existing boxes have no size
+limit. Both sides of a swap save together. Trades do not automatically evolve
+Pokemon; help growth and moves describes the supported manual held-item
+evolution equivalents.
+
+Saved moveset activation/management requires a Pokemon Center. A pending trade
+or an old move menu cannot edit a Pokemon after ownership changes.
+		""",
+	},
+	{
 		"key": "pokemon and storage",
 		"aliases": ["storage", "party management", "boxes", "pokemon storage"],
 		"category": "Guide",
@@ -297,8 +355,9 @@ boxes and can be moved around outside battle.
 +box/swap <pokemon_id> <party_slot> [box]    Swap a boxed Pokemon with a party slot.
 +storage                                      Open Pokemon storage at a Pokemon Center.
 
-Trading is temporarily unavailable while ownership safeguards are upgraded.
-+trade does not transfer Pokemon.
+Trading uses private, persistent offers. Type help trading for the gift/swap flow.
+No Pokemon changes owner until the intended recipient inspects and accepts the
+exact offer. Party and boxed Pokemon are supported; active activities block trades.
 
 # Held Items
 
@@ -470,7 +529,7 @@ Most maintenance commands are used outside battle.
 +learn                 List Pokemon with level-up moves available.
 +learn <slot>          Open the move-learning flow for a party slot.
 +teach <slot>=<move>   Teach a valid move to a party Pokemon.
-+moves/use <slot>=<set> Switch a Pokemon to a saved moveset.
++moves/use <slot>=<set> Switch to a saved moveset at a Pokemon Center.
 +movesets              Manage saved movesets at a Pokemon Center.
 
 # Items
@@ -581,8 +640,9 @@ Reaper Cloth -> Dusknoir; Spritzee: Sachet -> Aromatisse; Swirlix: Whipped Dream
 -> Slurpuff. Only the held copy is consumed; bag copies, owner and party/box
 placement stay unchanged. Eggs, Fusion reservations, battles and Everstone
 still block evolution. At the same level, explicitly choose =Porygon-Z after
-equipping Dubious Disc for Porygon's second evolution. +trade remains disabled;
-non-item and partner-species trade evolutions are unsupported.
+equipping Dubious Disc for Porygon's second evolution. A trade does not trigger
+automatic evolution; use these manual item equivalents. Non-item and
+partner-species trade evolution triggers remain unsupported.
 		""",
 	},
 	{

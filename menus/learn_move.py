@@ -1,8 +1,10 @@
 """Menu for learning a move and potentially replacing an active one."""
 
 from pokemon.services.move_management import apply_active_moveset, get_or_create_move
+from pokemon.services.move_edits import guarded_move_menu
 
 
+@guarded_move_menu
 def node_start(caller, raw_input=None, **kwargs):
 	"""Prompt whether to replace an existing move with the new one."""
 	pokemon = kwargs.get("pokemon")
@@ -17,6 +19,7 @@ def node_start(caller, raw_input=None, **kwargs):
 	]
 
 
+@guarded_move_menu
 def node_choose(caller, raw_input=None, **kwargs):
 	"""Let the user pick which move slot to replace."""
 	pokemon = kwargs.get("pokemon")
@@ -31,6 +34,7 @@ def node_choose(caller, raw_input=None, **kwargs):
 	return text, options
 
 
+@guarded_move_menu
 def node_replace(caller, raw_input=None, **kwargs):
 	"""Replace the selected move slot with the new move."""
 	pokemon = kwargs.get("pokemon")
@@ -51,6 +55,7 @@ def node_replace(caller, raw_input=None, **kwargs):
 	return f"{pokemon.name} forgot {old.capitalize()} and learned {move_name.capitalize()}!", None
 
 
+@guarded_move_menu
 def node_done(caller, raw_input=None, **kwargs):
 	"""Final message when move learning is complete."""
 	pokemon = kwargs.get("pokemon")

@@ -20,6 +20,17 @@ class OwnershipError(PlacementError):
     """A rejected ownership operation leaves assets, approvals and money intact."""
 
 
+def acting_character(actor):
+    """Bind authority to a real character, never a coincident account integer PK."""
+    from evennia.accounts.models import AccountDB
+    from evennia.objects.models import ObjectDB
+
+    character = BattleRewards.character(actor)
+    if isinstance(actor, AccountDB) or not isinstance(character, ObjectDB) or not character.pk:
+        raise OwnershipError("Use this route as your active character.")
+    return character
+
+
 def fresh_owned(pokemon_id, *, lock=False):
     """Bypass Evennia's identity map before checking or publishing model fields."""
     from pokemon.models.core import OwnedPokemon
@@ -161,7 +172,7 @@ class PokemonReservations:
 
     def __init__(self, actor):
         """Bind authority to the current character's own storage."""
-        self.actor_id = actor.pk
+        self.actor_id = acting_character(actor).pk
 
     def claim(self, kind, pokemon_ids, token):
         """Atomically reserve fresh eligible assets or reject the entire batch."""
@@ -215,8 +226,8 @@ class OwnershipTransfers:
 
     def __init__(self, actor, *, clock=None):
         """Use the acting character, never the account's other characters."""
-        self.actor = actor
-        self.actor_id = actor.pk
+        self.actor = acting_character(actor)
+        self.actor_id = self.actor.pk
         self.clock = clock or timezone.now
 
     def _terms(self, recipient_id, movements):
@@ -291,6 +302,11 @@ class OwnershipTransfers:
             source = storages[move["source"]]
             pokemon, placement = PlacementService(source)._pokemon(pokemon, source, reservation_token=operation.pk)
             assert_transferable(characters[move["source"]], pokemon, placement, token=operation.pk)
+            if move.get("snapshot"):
+                from pokemon.services.trade_snapshot import PokemonTradeSnapshot
+
+                if PokemonTradeSnapshot.capture(pokemon.pk)["fingerprint"] != move["snapshot"]["fingerprint"]:
+                    raise OwnershipError("An offered Pokemon changed since these terms were recorded. Cancel and make a new offer.")
             assets.append((move, pokemon, placement))
         return assets
 
@@ -320,13 +336,19 @@ class OwnershipTransfers:
             existing = OwnershipTransfer.objects.select_for_update().filter(pk=operation_id).first()
             if existing:
                 if (existing.proposer_id != self.actor_id or existing.recipient_id != recipient_id
-                        or existing.terms != terms):
+                        or [{key: value for key, value in move.items() if key != "snapshot"}
+                            for move in existing.terms] != terms):
                     raise OwnershipError("Request identity already belongs to different transfer terms.")
                 return existing
-            operation = OwnershipTransfer.objects.create(
+            from pokemon.services.trade_snapshot import PokemonTradeSnapshot
+
+            operation = OwnershipTransfer(
                 id=operation_id, proposer_id=self.actor_id, recipient_id=recipient_id,
                 terms=terms, approvals=[self.actor_id], expires_at=self.clock() + self.lifetime)
             assets = self._assets(operation, locked)
+            for move, pokemon, _ in assets:
+                move["snapshot"] = PokemonTradeSnapshot.capture(pokemon.pk)
+            operation.save(force_insert=True)
             self._reserve(operation, assets, {self.actor_id})
             return operation
 
@@ -344,13 +366,19 @@ class OwnershipTransfers:
             operation.save(update_fields=["approvals"])
             return operation
 
-    def cancel(self, operation_id):
-        """Either named character can close a pending offer, including after expiry."""
+    def cancel(self, operation_id, *, reason="cancelled", replacement_id=None):
+        """Close exact pending terms and retain the actor/reason in a sealed receipt."""
+        if reason not in {"cancelled", "declined", "countered"}:
+            raise OwnershipError("Unknown cancellation reason.")
         with self.locked(operation_id) as (operation, _):
             if operation.state == "pending":
                 operation.reservations.all().delete()
                 operation.state = "expired" if operation.expires_at <= self.clock() else "cancelled"
-                operation.save(update_fields=["state"])
+                operation.result = {"closed_by": self.actor_id,
+                                    "reason": "expired" if operation.state == "expired" else reason}
+                if replacement_id is not None:
+                    operation.result["replacement"] = str(UUID(str(replacement_id)))
+                operation.save(update_fields=["result", "state"])
             return operation
 
     def commit(self, operation_id):
