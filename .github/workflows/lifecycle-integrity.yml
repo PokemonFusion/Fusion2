@@ -26,6 +26,10 @@ on:
       - 'commands/cmdsets/pokemon_core.py'
       - 'commands/cmdsets/battle.py'
       - 'commands/player/cmd_challenge.py'
+      - 'commands/player/cmd_pvp_multi.py'
+      - 'commands/player/cmd_pvp.py'
+      - 'commands/cmdsets/pvp.py'
+      - 'typeclasses/multi_battle.py'
       - 'commands/debug/command.py'
       - 'commands/player/cmd_sheet.py'
       - 'commands/player/cmd_battle_retry.py'
@@ -102,6 +106,8 @@ jobs:
         run: python tests/integration/communication_cases.py
       - name: Character sheet ownership, read-only resources and private profile requests
         run: python tests/integration/sheet_cases.py
+      - name: Four-account Multi lobbies, exact controllers, team mechanics and rollback
+        run: python tests/integration/multi_battle_cases.py
       - name: Persistent human and Fusion onboarding, saved choices and atomic one-time grants
         run: python tests/integration/onboarding_cases.py
       - name: Breeding cycles, fixed traits, egg collection and same-identity hatch retries

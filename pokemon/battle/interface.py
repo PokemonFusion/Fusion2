@@ -290,6 +290,11 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None, style: st
 
 def broadcast_interfaces(session, *, waiting_on=None) -> None:
         """Render and send interfaces for ``session`` to all participants."""
+        if getattr(getattr(session, 'state', None), 'multi', None):
+                from .multi_battle import field_text
+                for target in [*session.trainers, *getattr(session, 'observers', [])]:
+                        session._msg_to(target, field_text(session))
+                return
 
         for t in getattr(session, "teamA", []):
                 session._msg_to(
@@ -336,6 +341,10 @@ def send_interface_to(session, target, *, waiting_on=None) -> None:
         """Render and send the battle interface for ``target`` only."""
 
         if not target:
+                return
+        if getattr(getattr(session, 'state', None), 'multi', None):
+                from .multi_battle import field_text
+                session._msg_to(target, field_text(session))
                 return
 
         if target in getattr(session, "teamA", []):

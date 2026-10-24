@@ -50,6 +50,7 @@ class CmdPvpHelp(Command):
 		lines.append("  +pvp/join <player> [password] - join a request")
 		lines.append("  +pvp/abort - abort your request")
 		lines.append("  +pvp/start - start the battle when ready")
+		lines.append("  +pvp/multi - four-trainer 2v2 lobby and consent; help multi battles")
 		self.caller.msg("\n".join(lines))
 
 

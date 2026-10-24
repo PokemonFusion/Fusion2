@@ -63,6 +63,14 @@ class Alluringvoice:
 class Allyswitch:
 	def onHit(self, user, target, battle):
 		"""Swap positions with the ally if possible."""
+		if getattr(battle, 'multi', False):
+			owner = battle.participant_for(user)
+			ally = next((part for part in battle.participants if part is not owner
+				and part.team == owner.team and part.active and part.active[0].hp > 0), None)
+			if ally is None:
+				return False
+			owner.field_position, ally.field_position = ally.field_position, owner.field_position
+			return True
 		side = getattr(user, "side", None)
 		if not side or len(getattr(side, "active", [])) <= 1:
 			return False

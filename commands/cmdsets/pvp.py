@@ -1,6 +1,7 @@
 """CmdSet for player-vs-player battle commands."""
 
 from evennia import CmdSet
+from commands.player.cmd_pvp_multi import CmdPvpMulti
 
 from commands.player.cmd_pvp import (
 	CmdPvpAbort,
@@ -19,6 +20,7 @@ class PvpCmdSet(CmdSet):
 
 	def at_cmdset_creation(self):
 		"""Populate the cmdset."""
+		self.add(CmdPvpMulti())
 		for cmd in (
 			CmdPvpHelp,
 			CmdPvpList,

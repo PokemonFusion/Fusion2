@@ -65,6 +65,7 @@ class Action:
 	pokemon: Optional[Any] = None
 	target_pokemon: Optional[Any] = None
 	target_slot: Optional[int] = None
+	target_position: Optional[str] = None
 	switch_slot: Optional[int] = None
 	switch_from: Optional[Any] = None
 	player_selected: bool = False
@@ -77,7 +78,8 @@ class BattleActions:
 
 	def check_victory(self) -> Optional[BattleParticipant]:
 		remaining = [p for p in self.participants if not p.has_lost]
-		if len(remaining) <= 1:
+		remaining_teams = {getattr(part, 'team', None) or id(part) for part in remaining}
+		if len(remaining_teams) <= 1:
 			self.battle_over = True
 			self.restore_transforms()
 			winner = remaining[0] if remaining else None

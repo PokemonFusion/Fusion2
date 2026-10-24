@@ -203,6 +203,7 @@ class LegalActions:
         legal = self.moves() + self.switches(reserved=reserved)
         for candidate in legal:
             candidate.player_selected = getattr(action, "player_selected", False)
+            candidate.target_position = getattr(action, 'target_position', None)
             if candidate.action_type is not action.action_type:
                 continue
             if candidate.action_type is ActionType.SWITCH:

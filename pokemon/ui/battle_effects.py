@@ -355,6 +355,8 @@ class EffectsAdapter:
 		)
 
 	def title(self) -> str:
+		if getattr(self.state, "multi", None):
+			return f"Multi Battle #{getattr(self.session, 'battle_id', '?')}"
 		a = getattr(self.session, "captainA", None)
 		b = getattr(self.session, "captainB", None)
 		enc = (getattr(self.state, "encounter_kind", "") or "").lower()
@@ -424,6 +426,26 @@ class EffectsAdapter:
 
 	def monB(self):
 		return getattr(getattr(self.session, "captainB", None), "active_pokemon", None)
+
+	def pokemon_entries(self, focus):
+		"""Bind Multi effects to physical cells and each exact owning character."""
+		role = self.viewer_role()
+		if getattr(self.state, "multi", None):
+			entries = []
+			for part in sorted(self.battle.participants, key=lambda part: part.field_position):
+				owns = self.viewer == part.player
+				if focus == "me" and not owns:
+					continue
+				if focus == "opp" and (role == "W" or part.team == role):
+					continue
+				mon = next(iter(part.active), None)
+				heading = f"{part.field_position}: {part.name}"
+				entries.append((mon, part.team, owns, owns, heading))
+			return entries
+		return [
+			(self.monA(), "A", role in ("A", "W") and focus != "opp" or focus == "me" and role == "A", role == "A", ""),
+			(self.monB(), "B", role in ("B", "W") and focus != "me" or focus == "opp" and role in ("A", "B"), role == "B", ""),
+		]
 
 	# ---- Field/global ----
 	def field_timers(self) -> List[Tuple[str, int | None, int | None]]:
@@ -599,11 +621,12 @@ def render_effects_panel(
 	if not brief:
 		rows.append(rpad("─ On-Field Pokémon " + ("─" * max(0, inner - 20)), inner))
 		role = ad.viewer_role()
-		for mon, pokemon_side, self_side in (
-			(ad.monA(), "A", role in ("A", "W") and focus != "opp" or focus == "me" and role == "A"),
-			(ad.monB(), "B", role in ("B", "W") and focus != "me" or focus == "opp" and role in ("A", "B")),
-		):
+		for mon, pokemon_side, self_side, is_self, heading in ad.pokemon_entries(focus):
+			if heading:
+				rows.append(rpad(heading, inner))
 			if not mon:
+				if heading:
+					rows.append(rpad("Empty cell", inner))
 				continue
 			# Line 1: Name + chips
 			name_raw = display_name(mon)
@@ -624,7 +647,6 @@ def render_effects_panel(
 			# HP
 			rows.append(rpad(fmt_hp_line(mon, inner, show_abs=self_side if role != "W" else self_side), inner))
 			# Item/Ability with reveal
-			is_self = role == pokemon_side
 			item = _reveal(_pokemon_item_name(mon), bool(getattr(mon, "item_revealed", False)), is_self)
 			abil = ad.ability_display(mon, pokemon_side, is_self)
 			rows.append(rpad(f"Item: {item}   Ability: {abil}", inner))

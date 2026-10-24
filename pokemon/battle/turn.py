@@ -166,6 +166,8 @@ class TurnManager:
 					log_warn("Failed to sync trainer active Pokemon", exc_info=True)
 
 			position_names = sorted(name for name in positions if str(name).startswith(team))
+			if getattr(participant, 'field_position', None):
+				position_names = [participant.field_position]
 			if not position_names:
 				position_names = [f"{team}{slot + 1}" for slot in range(len(active))]
 

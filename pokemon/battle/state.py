@@ -52,6 +52,7 @@ class BattleState:
 	z_used: List[str] = field(default_factory=list)
 	z_pending: Dict[str, Dict] = field(default_factory=dict)
 	z_effects: Dict = field(default_factory=dict)
+	multi: Dict = field(default_factory=dict)
 
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this state."""

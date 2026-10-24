@@ -189,11 +189,17 @@ class BattleLogic:
 			key: [_participant_identifier(mon) for mon in (getattr(part, "participating_pokemon", []) or getattr(part, "active", []))]
 			for key, part in teams
 		}
+		if getattr(self.state, 'multi', None):
+			from .multi_state import freeze
+			freeze(self)
 
 	@classmethod
 	def from_dict(cls, info):
 		data = BattleData.from_dict(info.get("data", {}))
 		state = BattleState.from_dict(info.get("state", {}))
+		if getattr(state, 'multi', None):
+			from .multi_state import rebuild
+			return rebuild(cls, data, state)
 
 		teamA = data.teams.get("A")
 		teamB = data.teams.get("B")

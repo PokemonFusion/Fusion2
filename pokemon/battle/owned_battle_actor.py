@@ -38,6 +38,7 @@ class OwnedBattleActor:
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import PokemonPlacement, UserStorage
         from pokemon.models.trainer import Trainer
+        from pokemon.models.ownership import PokemonReservation
         from pokemon.services.battle_rewards import BattleRewards
         from pokemon.services.pokemon_refs import parse_pokemon_ref
 
@@ -45,7 +46,11 @@ class OwnedBattleActor:
             participant not in battle.participants
             or battle.battle_over
             or getattr(battle.type, "name", "") not in {"WILD", "TRAINER", "PVP"}
-            or len(battle.participants) != 2
+            or (len(battle.participants) != 2 and not (
+                getattr(battle, 'multi', False) and len(battle.participants) == 4
+                and all(getattr(part, 'max_active', 1) == 1 for part in battle.participants)
+                and all(sum(part.team == team for part in battle.participants) == 2 for team in ('A', 'B'))
+                and len({getattr(part, 'controller_id', None) for part in battle.participants}) == 4))
             or any(getattr(part, "max_active", 1) not in {1, 2} for part in battle.participants)
             or not getattr(battle, "mechanic_battle_id", None)
         ):
@@ -94,6 +99,7 @@ class OwnedBattleActor:
                 or not placement
                 or placement["storage_id"] != storage["pk"]
                 or placement["location_type"] not in {"party", "fusion"}
+                or PokemonReservation.objects.filter(pokemon_id=identifier).exists()
             ):
                 raise BattleOwnershipChanged(
                     "That Pokemon is no longer your eligible party or current Fusion."

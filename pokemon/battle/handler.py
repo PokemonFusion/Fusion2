@@ -288,6 +288,9 @@ class BattleHandler:
 				inst.trainers = [t for t in (inst.captainA, inst.captainB) if t]
 			else:
 				inst.trainers = []
+			if inst.state and getattr(inst.state, 'multi', None):
+				from .multi_state import attach_players
+				attach_players(inst)
 
 
 battle_handler = BattleHandler()

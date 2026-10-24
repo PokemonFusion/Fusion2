@@ -47,6 +47,11 @@ class MechanicChoices:
             old_positions = {name: deepcopy(position.turninit)
                              for name, position in session.data.turndata.positions.items()}
             try:
+                if getattr(session.state, 'multi', None):
+                    from datetime import datetime
+                    from django.utils import timezone
+                    if datetime.fromisoformat(session.state.multi['deadline']) <= timezone.now():
+                        raise ValueError('The action deadline expired. The room timer will finish this Multi Battle; use +status to check it.')
                 character = BattleRewards.character(choices.caller)
                 if (
                     str(BattleRewards.stored_attribute(character, "battle_id"))

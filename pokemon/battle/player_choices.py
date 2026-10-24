@@ -9,6 +9,26 @@ from ._shared import _normalize_key
 from .active_slots import slot_for
 from .engine import Action, ActionType
 from .legal_actions import LegalActions
+from functools import wraps
+
+
+def serialized_multi(method):
+    """Use the existing committed room-choice guard for Multi ordinary actions."""
+    @wraps(method)
+    def guarded(self, *args, **kwargs):
+        """Retain teammates' saved declarations if any concurrent input changed."""
+        if not getattr(self.session.state, 'multi', None):
+            return method(self, *args, **kwargs)
+        from .mechanic_choices import MechanicChoices
+        from .owned_battle_actor import OwnedBattleActor
+        from contextlib import ExitStack
+        self._mechanic_actor = self.actor(kwargs.get('actor'))
+        with MechanicChoices.locked(self):
+            with ExitStack() as locks:
+                for mon in sorted(self.participant.pokemons, key=lambda mon: str(mon.model_id)):
+                    locks.enter_context(OwnedBattleActor.locked(self.battle, self.participant, mon, active=False))
+                return method(self, *args, **kwargs)
+    return guarded
 
 
 class PlayerChoices:
@@ -21,6 +41,10 @@ class PlayerChoices:
         if self.battle is None or self.battle.battle_over:
             raise ValueError("This battle has ended.")
         self.turn = self.battle.turn_count
+        if getattr(caller, '_meta', None):
+            from utils.character_reads import persistent_character
+            if not persistent_character(caller):
+                raise ValueError('Use battle commands as your active character.')
         self.participant = next((part for part in self.battle.participants
                                  if part.player is caller or (part.player is not None
                                  and getattr(part.player, "id", None) == getattr(caller, "id", object()))), None)
@@ -60,6 +84,7 @@ class PlayerChoices:
         """Expose the same executable candidates used by NPCs."""
         return LegalActions(self.battle, self.participant, pokemon).moves()
 
+    @serialized_multi
     def tera(self, *, actor=None, cancel=False):
         """Persist a Tera reservation before this actor chooses its move."""
         from .terastallization import Terastallization
@@ -84,7 +109,11 @@ class PlayerChoices:
             self.battle.tera_pending = previous
             self.session.logic.sync_runtime_state()
             raise
-        self.caller.msg(message)
+        if getattr(self.session.state, 'multi', None):
+            from django.db import transaction
+            transaction.on_commit(lambda: self.session.msg(message), robust=True)
+        else:
+            self.caller.msg(message)
 
     def mega(self, *, actor=None, cancel=False):
         """Use the room-locked, commit-aware native Mega reservation boundary."""
@@ -103,6 +132,7 @@ class PlayerChoices:
         return {name: pos.pokemon for name, pos in self.session.data.turndata.positions.items()
                 if any(mon is getattr(pos, "pokemon", None) for mon in targets)}
 
+    @serialized_multi
     def move(self, move_key, target=None, *, actor=None):
         """Queue a legal move; automatic and spread targets need no target token."""
         position, pokemon = self.actor(actor)
@@ -138,6 +168,7 @@ class PlayerChoices:
         """Expose stable party slots and the reserved Fusion choice to prompts."""
         return get_battle_switch_choices(self.caller, self.participant.pokemons)
 
+    @serialized_multi
     def run(self, *, actor=None):
         """Queue one owned flee attempt without overwriting a sibling's choice."""
         position, pokemon = self.actor(actor)
@@ -147,6 +178,7 @@ class PlayerChoices:
         self._store(position, pokemon, action, {"run": "1"}, lambda pos: pos.declareRun(),
                     f"{position} ({pokemon.name}) prepares to flee.")
 
+    @serialized_multi
     def switch(self, party_slot, *, actor=None):
         """Reserve one conscious bench member for the specified active slot."""
         position, pokemon = self.actor(actor)
@@ -165,6 +197,7 @@ class PlayerChoices:
         self._store(position, pokemon, action, {"switch": index}, lambda pos: pos.declareSwitch(index),
                     f"{position} ({pokemon.name}) prepares to switch to {incoming.name}.")
 
+    @serialized_multi
     def item(self, item_name, target=None, *, actor=None):
         """Queue medicine for this actor or a ball against the wild opponent."""
         from pokemon.services.battle_items import BattleItemCapability
@@ -195,6 +228,7 @@ class PlayerChoices:
     def _store(self, position, pokemon, action, declaration, declare, message, *, commit_aware=False):
         """Save one choice atomically in memory before allowing turn advancement."""
         session = self.session
+        commit_aware = commit_aware or bool(getattr(session.state, 'multi', None))
         pos = session.data.turndata.positions[position]
         previous = self.participant.pending_action
         previous_position = pos.turninit
@@ -207,6 +241,10 @@ class PlayerChoices:
         reservations = {name: deepcopy(getattr(self.battle, name + "_pending", {}))
                         for name in ("mega", "tera", "z")}
         declaration = {**declaration, "trainer": str(self.caller.id), "pokemon": getattr(pokemon, "model_id", None)}
+        if getattr(session.state, 'multi', None) and action.action_type is ActionType.MOVE:
+            if action.target_pokemon is not pokemon and action.move.raw.get('target') in {
+                    'normal', 'any', 'adjacentFoe', 'adjacentAlly', 'adjacentAllyOrSelf'}:
+                action.target_position = declaration.get('target')
         action.player_selected = True
         try:
             if action.action_type is not ActionType.MOVE:

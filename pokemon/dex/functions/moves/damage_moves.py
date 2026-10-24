@@ -2092,7 +2092,7 @@ class Followme:
 		if not battle:
 			return True
 		participants = getattr(battle, "participants", [])
-		multi = any(len(getattr(p, "active", [])) > 1 for p in participants)
+		multi = getattr(battle, 'multi', False) or any(len(getattr(p, "active", [])) > 1 for p in participants)
 		return multi
 
 
@@ -5170,7 +5170,7 @@ class Ragepowder:
 		if not battle:
 			return True
 		participants = getattr(battle, "participants", [])
-		multi = any(len(getattr(p, "active", [])) > 1 for p in participants)
+		multi = getattr(battle, 'multi', False) or any(len(getattr(p, "active", [])) > 1 for p in participants)
 		return multi
 
 

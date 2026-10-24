@@ -2058,6 +2058,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         participant = self.participant_for(pokemon)
         if participant is None:
             return None
+        if getattr(participant, 'field_position', None):
+            return int(participant.field_position[1:]) - 1
         try:
             return list(getattr(participant, "active", [])).index(pokemon)
         except ValueError:
@@ -2148,9 +2150,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         for part in self.participants:
             side = getattr(part, "side", None)
             side_relation = "foe"
-            if source is not None and source in getattr(part, "active", []):
+            if source is not None and getattr(source, 'side', None) is side:
                 side_relation = "source"
-            elif target_participant is not None and part is target_participant:
+            elif target_participant is not None and self._allied(part, target_participant):
                 side_relation = "ally"
             if target is not None and side is not None and side is not target_side:
                 add_holder_with_relation(side_relation, side, None, side)
@@ -2162,7 +2164,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 relation = "foe"
                 if source is not None and pokemon is source:
                     relation = "source"
-                elif target is not None and self.participant_for(pokemon) is self.participant_for(target):
+                elif target is not None and self._allied(self.participant_for(pokemon), self.participant_for(target)):
                     relation = "ally"
                 add_holder_with_relation(relation, self._pokemon_status_handler(pokemon), getattr(pokemon, "status_state", None), pokemon)
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
@@ -2277,12 +2279,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
             if (
                 eventid == "RedirectTarget"
-                and relation == "ally"
+                and relation in {"ally", "foe"}
                 and source is not None
                 and owner is not None
-                and self.participant_for(owner) is not self.participant_for(source)
             ):
-                hooks = [f"onFoe{eventid}", *hooks]
+                # Redirect effects belong to the attacker's ally/foe relation.
+                # A separate controller can still be on the attacker's team.
+                owner_part = self.participant_for(owner)
+                source_part = self.participant_for(source)
+                if owner_part is not None and source_part is not None:
+                    prefix = "onAlly" if self._allied(owner_part, source_part) else "onFoe"
+                    hooks = [f"{prefix}{eventid}"]
 
             try:
                 call_kwargs = {
@@ -2578,6 +2585,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return part
         return None
 
+    @staticmethod
+    def _allied(left, right):
+        """Keep allegiance separate from controller/roster identity."""
+        return bool(left and right and (left is right or (getattr(left, 'team', None) is not None
+                    and left.team == getattr(right, 'team', None))))
+
     def opponent_of(
         self, participant: BattleParticipant
     ) -> Optional[BattleParticipant]:
@@ -2863,10 +2876,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def _handle_side_condition_durations(self) -> None:
         """Expire finite side effects once per turn and run their cleanup hooks."""
+        seen_sides = set()
         for participant in self.participants:
             side = getattr(participant, "side", None)
-            if side is None:
+            if side is None or id(side) in seen_sides:
                 continue
+            seen_sides.add(id(side))
             for name, state in list(getattr(side, "conditions", {}).items()):
                 duration = state.get("duration") if isinstance(state, dict) else None
                 if not isinstance(duration, int) or duration <= 0:
@@ -2889,6 +2904,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             for slot, pokemon in enumerate(list(getattr(participant, "active", []))):
                 if pokemon is None:
                     continue
+                if getattr(participant, 'field_position', None):
+                    slot = self._active_slot_index(pokemon)
                 for name, handler, state in list(self._slot_condition_handlers(side, slot)):
                     state_map = state if isinstance(state, dict) else {}
                     state_map["target"] = pokemon
@@ -3554,6 +3571,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             holders.append((item, "self"))
         if include_foes:
             for part in self.participants:
+                if self._allied(part, self.participant_for(pokemon)):
+                    continue
                 for active in getattr(part, "active", []):
                     if active is None or active is pokemon:
                         continue
@@ -3875,7 +3894,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if pokemon is None or pokemon is user:
                     continue
                 relation = "foe"
-                if user_participant is not None and self.participant_for(pokemon) is user_participant:
+                if user_participant is not None and self._allied(self.participant_for(pokemon), user_participant):
                     relation = "ally"
                 add_holder(relation, self._pokemon_status_handler(pokemon), getattr(pokemon, "status_state", None), pokemon)
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
@@ -4694,6 +4713,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if before_move_result is False:
                 return
 
+        if getattr(self, 'multi', False) and getattr(action, 'target_position', None):
+            field_part = next((part for part in self.participants if part.field_position == action.target_position), None)
+            if field_part is not None:
+                action.target, action.target_slot = field_part, 0
+                action.target_pokemon = next(iter(field_part.active), None)
         target_part = action.target
         if target_part not in self.participants or target_part.has_lost:
             opponents = self.opponents_of(action.actor)
@@ -4739,7 +4763,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             modified_part = self.participant_for(target)
             if modified_part is not None:
                 target_part = modified_part
-            redirected = target if action.move.tracks_target or getattr(action.move, "_z_spread_part", False) else self.runEvent(
+            redirectable = action.move.raw.get("target", "normal") in {"normal", "any", "adjacentFoe"}
+            redirected = target if (not redirectable or action.move.tracks_target or getattr(action.move, "_z_spread_part", False)) else self.runEvent(
                 "RedirectTarget",
                 target,
                 user,
@@ -5095,6 +5120,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         before_user, before_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
         start_room = bool(self.field.get_pseudo_weather("trickroom"))
+        start_positions = tuple(part.field_position for part in self.participants) if getattr(self, 'multi', False) else None
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
@@ -5126,13 +5152,15 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         room_active = bool(self.field.get_pseudo_weather("trickroom"))
         room_changed = start_room != room_active
+        positions_changed = (start_positions is not None and
+            start_positions != tuple(part.field_position for part in self.participants))
         sacrifice = (action.move.raw.get("selfdestruct") == "ifHit"
                      and getattr(action.move, "_primary_hit_successful", False))
         called = (action.move.raw.get("callsMove") or _effect_key(action.move) == "instruct") and len(getattr(self, "called_moves", [])) > called_before
         if called:
             self.log_action(f"{user.name} used {action.move.name} and called {self.called_moves[-1]}!")
         self._announce_move_result(user, target, action.move, before_user, before_target,
-                                   field_changed=room_changed, report_no_effect=not sacrifice and not called)
+                                   field_changed=room_changed or positions_changed, report_no_effect=not sacrifice and not called)
         if room_changed:
             self.log_action("Trick Room twisted the dimensions!" if room_active else "Trick Room's twisted dimensions returned to normal!")
 
@@ -5546,7 +5574,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             handler.onResidual(poke, battle=self)
                         if vol in {"protect", "magiccoat", "shelltrap", "endure", "banefulbunker",
                                    "burningbulwark", "kingsshield", "obstruct", "silktrap", "spikyshield",
-                                   "electrify", "powder", "helpinghand"}:
+                                   "electrify", "powder", "helpinghand", "followme", "ragepowder", "spotlight"}:
                             # Protection ends with this turn, including restored
                             # sessions whose old volatile had no duration state.
                             self.remove_volatile(poke, vol)

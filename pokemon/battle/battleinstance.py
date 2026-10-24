@@ -1077,6 +1077,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             if "PYTEST_CURRENT_TEST" in __import__("os").environ:
                 raise
 
+        if getattr(obj.state, 'multi', None):
+            from .multi_state import attach_players
+            attach_players(obj)
         obj._restore_declarations()
         obj._bind_reward_delivery()
         obj.storage.set("state", obj._compact_state_for_persist(obj.state.to_dict()))
@@ -1194,6 +1197,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """Apply battle-result side effects that need the session context."""
 
         if getattr(self, "_battle_result_handled", False):
+            return
+        if getattr(getattr(self, 'state', None), 'multi', None):
+            from .multi_battle import outcomes
+            outcomes(self, winner)
             return
         metadata = dict(getattr(self, "encounter_metadata", None) or {})
         source_type = metadata.get("source_type")
@@ -1776,6 +1783,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         """End the battle and clean up."""
         if getattr(self, "_ended", False):
             return
+        if getattr(getattr(self, 'state', None), 'multi', None):
+            from .multi_battle import outcomes
+            outcomes(self, reason='completed' if self.battle.battle_over else 'aborted')
         metadata = dict(getattr(self, "encounter_metadata", None) or {})
         victory_id = getattr(self, "_gym_victory_id", None)
         if metadata.get("source_type") == "gym_leader" and victory_id and not self._battle_result_handled:
@@ -1935,6 +1945,8 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 if not actor or pokemon.hp <= 0 or not isinstance(declaration, Mapping):
                     raise ValueError("The acting Pokemon is no longer available.")
                 trainer_ids = trainer_info.get("team" + name[0], [])
+                if getattr(self.state, 'multi', None) and str(declaration.get("trainer")) != str(getattr(actor.player, 'id', None)):
+                    raise ValueError("The saved choice belongs to another controller.")
                 if declaration.get("trainer") and str(declaration["trainer"]) not in map(str, trainer_ids):
                     raise ValueError("The saved choice belongs to another trainer.")
                 if declaration.get("pokemon") and str(declaration["pokemon"]) != str(pokemon.model_id):
@@ -2009,6 +2021,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 else:
                     raise ValueError("The saved action is not supported.")
                 action.player_selected = not actor.is_ai
+                if getattr(self.state, 'multi', None) and action.action_type is ActionType.MOVE:
+                    if action.target_pokemon is not pokemon and action.move.raw.get('target') in {
+                            'normal', 'any', 'adjacentFoe', 'adjacentAlly', 'adjacentAllyOrSelf'}:
+                        action.target_position = declaration.get('target')
                 restored_actions[actor].append(action)
             except (ValueError, TypeError, IndexError, StopIteration) as error:
                 if isinstance(declaration, Mapping) and "z" in declaration:
@@ -2039,7 +2055,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         from evennia.objects.models import ObjectDB
         snapshot = self.logic.to_dict()
         adventure_result = getattr(self, "_adventure_result", None)
-        controllers = {part.team: part.player for part in self.battle.participants}
+        controllers = {(getattr(part, 'controller_id', None) or part.team): part.player for part in self.battle.participants}
         rng = self.battle.rng
         rng_state = rng.getstate() if hasattr(rng, "getstate") else None
         messages = BufferedMessages(self)
@@ -2052,6 +2068,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 ids = sorted(BattleRewards.character(player).pk for player in controllers.values()
                              if BattleRewards.supports(player))
                 list(ObjectDB.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+                if getattr(self.state, 'multi', None):
+                    saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
+                    if (saved.get('reward_id') != self.state.reward_id or saved.get('ending')
+                            or saved.get('mechanic_turn', 0) != self.battle.mechanic_turn
+                            or dict(saved.get('declare', {})) != dict(self.state.declare)):
+                        raise ValueError('This Multi turn changed; refresh and choose again.')
                 from .mega_evolution import MegaEvolution
 
                 MegaEvolution.validate_roster(self.battle)
@@ -2066,6 +2088,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 self.data.battle.turn = self.battle.turn_count
                 self.logic.sync_runtime_state()
                 self.state.declare.clear()
+                if getattr(self.state, 'multi', None):
+                    from .multi_battle import reset_deadline
+                    reset_deadline(self)
                 for position in self.data.turndata.positions.values():
                     position.removeDeclare()
                 for participant in self.battle.participants:
@@ -2101,7 +2126,7 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             self.logic = BattleLogic.from_dict(snapshot)
             self._adventure_result = adventure_result
             for participant in self.battle.participants:
-                participant.player = controllers.get(participant.team)
+                participant.player = controllers.get(getattr(participant, 'controller_id', None) or participant.team)
                 if participant.player is not None:
                     participant.player.team = participant.pokemons
                     participant.player.active_pokemon = participant.active[0] if participant.active else None
@@ -2120,6 +2145,13 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def choices_for(self, caller):
         """Return the player's authoritative view of legal per-slot choices."""
         from .player_choices import PlayerChoices
+        if getattr(getattr(self, 'state', None), 'multi', None):
+            from pokemon.services.battle_rewards import BattleRewards
+            saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
+            if (dict(saved.get('declare', {})) != dict(self.state.declare)
+                    or saved.get('mechanic_turn', 0) != self.battle.mechanic_turn):
+                current = type(self).restore(self.room, self.battle_id)
+                return PlayerChoices(current, caller)
         return PlayerChoices(self, caller)
 
     def _discard_unsupported_item_choices(self):
