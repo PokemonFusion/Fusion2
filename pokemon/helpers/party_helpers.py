@@ -97,7 +97,7 @@ def resolve_battle_switch_choice(character, choices, selection):
 def pokemon_is_usable(pokemon) -> bool:
         """Return ``True`` if ``pokemon`` is conscious and able to battle."""
 
-        if not pokemon:
+        if not pokemon or getattr(pokemon, "is_egg", False):
                 return False
         if getattr(pokemon, "fainted", False) or getattr(pokemon, "is_fainted", False):
                 return False

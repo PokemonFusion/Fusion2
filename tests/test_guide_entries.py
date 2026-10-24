@@ -83,10 +83,19 @@ def test_marketplace_guide_describes_exact_price_review_and_recovery():
         assert rule in text
 
 
-def test_daycare_guide_matches_custody_only_release():
-    """Do not advertise breeding production before its separate rollout."""
+def test_daycare_guide_distinguishes_custody_from_explicit_breeding():
+    """Custody itself never promises passive production or progression."""
     text = _guide_entries()["daycare"]["text"]
     for command in ("+daycare deposit", "+daycare retrieve", "+daycare"):
         assert command in text
-    for rule in ("two", "100", "free", "no cooldown", "box", "not yet enabled"):
+    for rule in ("two", "100", "free", "no cooldown", "box", "separate +breed"):
+        assert rule in text
+
+
+def test_breeding_guide_matches_one_cycle_and_current_owner_hatching():
+    """Publish costs, real-time policy, retry and supported-scope limits together."""
+    text = _guide_entries()["breeding"]["text"]
+    for command in ("+breed check", "+breed start", "+breed collect", "+breed hatch", "+breed cancel"):
+        assert command in text
+    for rule in ("500", "30 wall-clock", "24-hour", "20 wall-clock", "current owner", "same Pokemon ID", "excluded"):
         assert rule in text

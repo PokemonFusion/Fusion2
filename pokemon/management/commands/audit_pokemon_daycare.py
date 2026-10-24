@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 raise CommandError("No such Daycare entry. No data was changed.")
         if options["active"]:
             entries = entries.filter(state="active")
-        for entry in entries.values("id", "storage__user_id", "owned_id", "state", "place", "fee", "receipt"):
+        for entry in entries.values("id", "storage__user_id", "owned_id", "state", "place", "fee", "active_cycle_id", "receipt"):
             self.stdout.write(json.dumps(entry, default=str, sort_keys=True))
         problems = list(audit_ownership_v2(apps, options["database"]))
         for problem in problems:

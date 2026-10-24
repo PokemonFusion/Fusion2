@@ -6,6 +6,7 @@ runner applies migrations and therefore requires operational approval.
 """
 
 import argparse
+from datetime import timedelta
 import subprocess
 import sys
 from pathlib import Path
@@ -29,7 +30,8 @@ def rehearse(scenario):
     targets = executor.loader.graph.leaf_nodes()
     seed = None
     if scenario != "fresh":
-        baseline = [("pokemon", "0051_daycare" if scenario == "daycare-upgrade" else
+        baseline = [("pokemon", "0053_breeding" if scenario == "breeding-upgrade" else
+                     "0051_daycare" if scenario == "daycare-upgrade" else
                      "0049_marketplace" if scenario == "market-upgrade" else
                      "0047_ownership_transfers" if scenario == "guarded-upgrade" else "0046_berry_bed")]
         executor.migrate(baseline)
@@ -54,8 +56,6 @@ def rehearse(scenario):
         invalid.delete()  # deliberately remove only our known invalid QA row
     if scenario == "market-upgrade":
         history = executor.loader.project_state(baseline).apps
-        from datetime import timedelta
-
         invalid = history.get_model("pokemon", "MarketListing").objects.create(
             seller_id=seed["player"], seller_character_id=seed["player"], seller_name="Known invalid QA sale",
             pokemon_id=seed["pokemon"], owned_id=seed["pokemon"], request_selector="3", snapshot={}, price=100,
@@ -87,6 +87,25 @@ def rehearse(scenario):
             cursor.execute("SELECT count(*) FROM pg_proc WHERE proname='pf2_check_daycare' AND pronamespace=current_schema()::regnamespace")
             assert cursor.fetchone()[0] == 0, "Failed Daycare migration partially installed checks."
         invalid.delete()  # deliberately remove only the known invalid task-owned entry
+    if scenario == "breeding-upgrade":
+        history = executor.loader.project_state(baseline).apps
+        storage = history.get_model("pokemon", "UserStorage").objects.get(user_id=seed["player"])
+        now = timezone.now()
+        invalid = history.get_model("pokemon", "BreedingCycle").objects.create(
+            storage=storage, origin_character_id=seed["player"], parent_a_uuid=uuid4(), parent_b_uuid=uuid4(),
+            state="cancelled", plan={}, fee=500, started_at=now, ready_at=now + timedelta(minutes=30),
+            next_ready_at=now + timedelta(hours=24), closed_at=now)
+        executor = MigrationExecutor(connection)
+        try:
+            executor.migrate(targets)
+        except RuntimeError as error:
+            assert "Breeding audit failed" in str(error), str(error)
+        else:
+            raise AssertionError("A malformed paid outcome did not block breeding rollout.")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM pg_proc WHERE proname='pf2_check_breeding' AND pronamespace=current_schema()::regnamespace")
+            assert cursor.fetchone()[0] == 0, "Failed breeding migration partially installed checks."
+        invalid.delete()  # deliberately remove only the known invalid task-owned cycle
     executor = MigrationExecutor(connection)
     executor.migrate(targets)
     executor = MigrationExecutor(connection)
@@ -122,10 +141,10 @@ def rehearse(scenario):
 def main():
     """Use one fresh Django process/schema for each scenario."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=("fresh", "upgrade", "guarded-upgrade", "market-upgrade", "daycare-upgrade"))
+    parser.add_argument("--scenario", choices=("fresh", "upgrade", "guarded-upgrade", "market-upgrade", "daycare-upgrade", "breeding-upgrade"))
     args = parser.parse_args()
     if args.scenario is None:
-        for scenario in ("fresh", "upgrade", "guarded-upgrade", "market-upgrade", "daycare-upgrade"):
+        for scenario in ("fresh", "upgrade", "guarded-upgrade", "market-upgrade", "daycare-upgrade", "breeding-upgrade"):
             subprocess.run([sys.executable, "-B", str(Path(__file__).resolve()), "--scenario", scenario], check=True)
     else:
         with IsolatedPostgres():

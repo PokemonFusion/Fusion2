@@ -23,6 +23,7 @@ IMPORTS = {
     "commands.player.cmd_account": ["CmdTradePokemon"],
     "commands.player.cmd_market": ["CmdMarket"],
     "commands.player.cmd_daycare": ["CmdDaycare"],
+    "commands.player.cmd_breed": ["CmdBreed"],
     "commands.player.cmd_berry": ["CmdBerry"],
     "commands.player.cmd_gym": ["CmdGym"],
     "commands.player.cmd_fusion": [
@@ -128,6 +129,7 @@ def test_pokemon_core_cmdset_hides_alpha_commands_when_gate_disabled():
     assert any(isinstance(command, mod.CmdBerry) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdMarket) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdDaycare) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdBreed) for command in cmdset.added)
 
 
 def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
@@ -143,3 +145,4 @@ def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
     assert any(isinstance(command, mod.CmdBerry) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdMarket) for command in cmdset.added)
     assert any(isinstance(command, mod.CmdDaycare) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdBreed) for command in cmdset.added)

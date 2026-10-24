@@ -12,21 +12,16 @@ how to look up the species that will hatch from two parents::
     print(egg)  # -> "Pichu"
 """
 
-from pokemon.names import resolve_dex_entry
+from pokemon.names import normalize_name, resolve_dex_entry
 
 from ..dex import POKEDEX
 from .generation import PokemonInstance
 
-# Mapping of male-only species to the female species that lays their eggs
-_SPECIAL_MOTHERS = {
-    "Nidoran-M": "Nidoran-F",
-    "Nidorino": "Nidoran-F",
-    "Nidoking": "Nidoran-F",
-    "Volbeat": "Illumise",
-    "Indeedee": "Indeedee-F",
-}
+# These require random counterpart/form rules, rather than a fixed "mother".
+_SPECIAL_OFFSPRING = {"nidoranf", "nidoranm", "nidorina", "nidorino", "nidoqueen", "nidoking",
+                      "volbeat", "illumise", "indeedee", "indeedeef"}
 
-# Species that produce different baby forms when an incense is held
+# Generation 9 always produces these babies; an incense is not required.
 _INCENSE_BABIES = {
     "Chansey": "Happiny",
     "Blissey": "Happiny",
@@ -77,6 +72,13 @@ def determine_egg_species(parent_a: PokemonInstance, parent_b: PokemonInstance) 
     if not a or not b:
         raise ValueError("Unknown species")
 
+    if parent_a.gender not in {"M", "F", "N"} or parent_b.gender not in {"M", "F", "N"}:
+        raise ValueError("Invalid parent gender")
+    if a.name == b.name == "Ditto":
+        raise ValueError("Two Ditto cannot produce an egg")
+    if any(normalize_name(species.name) in _SPECIAL_OFFSPRING for species in (a, b)):
+        raise ValueError("Special offspring families require an explicit counterpart/form rule")
+
     if "Undiscovered" in a.egg_groups or "Undiscovered" in b.egg_groups:
         raise ValueError("Incompatible egg groups")
 
@@ -89,12 +91,12 @@ def determine_egg_species(parent_a: PokemonInstance, parent_b: PokemonInstance) 
         other = None
 
     if other:
-        base = _get_base_form(_SPECIAL_MOTHERS.get(other.name, other.name))
+        base = _get_base_form(other.name)
         return _INCENSE_BABIES.get(base, base)
 
     # gender compatibility
     genders = {parent_a.gender, parent_b.gender}
-    if "N" in genders or len(genders) != 2:
+    if genders != {"M", "F"}:
         raise ValueError("Incompatible genders")
 
     # shared egg group
@@ -106,6 +108,5 @@ def determine_egg_species(parent_a: PokemonInstance, parent_b: PokemonInstance) 
     if not species:
         raise ValueError("Unknown species")
 
-    base_name = _SPECIAL_MOTHERS.get(species.name, species.name)
-    base = _get_base_form(base_name)
+    base = _get_base_form(species.name)
     return _INCENSE_BABIES.get(base, base)

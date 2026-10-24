@@ -86,3 +86,15 @@ def test_daycare_database():
         cwd=root, env=os.environ.copy(), capture_output=True, text=True, timeout=180,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_breeding_database():
+    """Exercise one-outcome parent/egg lifecycle and transactional retries on PostgreSQL."""
+    if not os.environ.get("PF2_TEST_POSTGRES_DSN"):
+        pytest.skip("Breeding transactions require an explicit isolated PostgreSQL DSN.")
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, "-B", str(root / "tests/integration/breeding_cases.py")],
+        cwd=root, env=os.environ.copy(), capture_output=True, text=True, timeout=180,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

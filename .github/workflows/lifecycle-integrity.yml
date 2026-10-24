@@ -83,6 +83,10 @@ jobs:
         run: python tests/integration/market_cases.py
       - name: Daycare canonical custody, atomic fees, retrieval and reservation races
         run: python tests/integration/daycare_cases.py
+      - name: Breeding cycles, fixed traits, egg collection and same-identity hatch retries
+        run: python tests/integration/breeding_cases.py
+      - name: Real Gen 9 breeding species, native ability slots and genetic inheritance
+        run: pytest -q tests/integration/breeding_rule_cases.py
       - name: Ownership fresh install, upgrade and guarded invalid-data rollback
         run: python tests/integration/ownership_migrations.py
       - name: Evolution and held-item transactions and concurrent retries

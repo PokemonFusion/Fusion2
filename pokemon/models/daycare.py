@@ -19,6 +19,7 @@ class DaycareEntry(models.Model):
     fee = models.PositiveIntegerField(default=100)
     deposited_at = models.DateTimeField(auto_now_add=True)
     retrieved_at = models.DateTimeField(null=True)
+    active_cycle = models.ForeignKey("BreedingCycle", null=True, on_delete=models.PROTECT, related_name="active_daycare_entries")
     receipt = models.JSONField(default=dict)
 
     class Meta:

@@ -109,6 +109,8 @@ class Daycare:
     def describe(entry):
         """Keep the stable custody and Pokemon identities visible after reconnect."""
         name = entry.saved_name
+        breeding = (f" Active breeding cycle: {entry.active_cycle_id}; use +breed to collect/cancel before retrieval."
+                    if entry.active_cycle_id else "")
         return (f"Daycare {entry.pk}: {entry.state}; place {entry.place}; {name} [{entry.owned_id}]. "
                 f"Deposit fee paid: {entry.fee}; retrieval free. No passive EXP or healing. "
-                f"Use +daycare retrieve {entry.pk}." + (f" Receipt: {entry.receipt}" if entry.receipt else ""))
+                f"Use +daycare retrieve {entry.pk}." + breeding + (f" Receipt: {entry.receipt}" if entry.receipt else ""))

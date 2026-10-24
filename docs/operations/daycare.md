@@ -1,7 +1,7 @@
 # Daycare custody (#727)
 
-This cohort provides custody only. Breeding production and eggs ship separately
-under #728; depositing by itself does not provide that feature.
+Breeding production and eggs use the separate [breeding route](breeding.md)
+from #728; depositing by itself does not start that activity or grant an egg.
 
 The beta Daycare holds two hatched owned Pokemon per character. Deposit costs
 100 existing trainer money once per stay; retrieval is free. There is no passive

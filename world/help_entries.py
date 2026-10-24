@@ -26,6 +26,49 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "breeding",
+		"aliases": ["pokemon breeding", "eggs", "hatching"],
+		"category": "Guide",
+		"text": """
+Deposit two eligible hatched Pokemon with +daycare, then:
+
++breed check
++breed start
++breed
++breed collect <cycle ID>
++breed hatch <egg ID>
+
+A new cycle costs 500 trainer money and produces one fixed egg after 30 wall-clock
+minutes. Both parents have a 24-hour cooldown from start, even after cancellation,
+retrieval/redeposit or trading. A collected egg needs another 20 wall-clock
+minutes before hatching. Status, retries and reconnect never advance time or reroll.
+Repeated start while producing returns that same cycle without another charge.
+
+Opposite-gender parents need a compatible egg group, or one compatible Ditto.
+Two Ditto, eggs, Undiscovered parents and unsupported special/form families fail
+before the breeding fee. The beta supports ordinary base forms with Gen 9 move
+data; regional/cosmetic/special offspring, Nidoran, Volbeat/Illumise, Indeedee,
+Rockruff and Manaphy/Phione cases are excluded.
+
+Eggs inherit stored genetic IVs (not Hyper Training), nature, native ability slot
+and eligible Gen 9 moves. Held Destiny Knot, Everstone and Power items affect
+inheritance and stay on the parents. There is no passive EXP or healing.
+Masuda/Charm/Pokeball inheritance and hatch-speed modifiers are outside this MVP.
+
++breed cancel <cycle ID> stops uncollected production without a refund or resetting
+cooldown. Collect/cancel frees the parents for normal Daycare retrieval; they
+remain in Daycare until retrieved. Full parties receive eggs in a box. Eggs
+cannot battle, fuse, use ordinary field items or act as parents. They can be
+consent traded; only the current owner can hatch one, including from a box.
+
+Hatching changes the same Pokemon ID. Repeated collect/hatch returns a historical
+receipt, without another egg, payment or creature. Releasing an egg is permanent;
+a receipt cannot recreate it. The hatch records its current owner as original
+trainer and starts friendship at 100 under PF2's beta policy. Use +breed after
+reconnect to discover your cycles and current eggs; save IDs for older receipts.
+		""",
+	},
+	{
 		"key": "daycare",
 		"aliases": ["pokemon daycare", "parent custody"],
 		"category": "Guide",
@@ -33,7 +76,7 @@ HELP_ENTRY_DICTS = [
 Daycare holds two hatched owned Pokemon per character. Deposit costs 100 trainer
 money per stay; retrieval is free. Depositing and retrieving have no cooldown.
 There is no passive EXP, healing, friendship or evolution. Breeding production
-is not yet enabled; this route provides custody only.
+uses the separate +breed route; help breeding lists its costs, timing and scope.
 
 +daycare deposit 3
 +daycare
