@@ -1854,5 +1854,15 @@
     "Two-character and separate-account live walkthrough remains required; #732 stays open",
     "One full combined suite; integrated October battle work retains its three-order gate"
   ],
-  "git_blob_manifest_sha256": "c39168eaddd84c9b2968cb3118b1a256f42785997c25d47efba68af041e70513"
+  "git_blob_manifest_sha256": "c39168eaddd84c9b2968cb3118b1a256f42785997c25d47efba68af041e70513",
+  "subsequent_verification_2026_10_24": {
+    "issue": 732,
+    "live_acceptance": "passed on fresh isolated local server",
+    "live_report": "october-player-live-2026-10-24.json",
+    "final_regression_report": "october-multi-2026-10-24.json",
+    "source_manifest_sha256": "f8fcd6c0ead886d6b726e557c90f01ec99250162a99dce26aad35c620f64b326",
+    "shared_server_deployed": false,
+    "final_implementation_commit": "e6373121f8fb8c2429498d97bd46be8978afaf82",
+    "repairs": "Actual MUX command parsing and real menu/editor subject/exit/save behavior repaired"
+  }
 }

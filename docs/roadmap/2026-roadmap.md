@@ -87,6 +87,20 @@ PF2's existing battle and Pokémon-management foundation is trustworthy enough t
 
 October focuses on the major player capabilities that are genuinely missing or incomplete.
 
+October 24 closeout: #722–#733 and #746 are implemented and verified in the
+dependency order below. Adoption is the explicit deferred decision in #724.
+The [final ordinary-player record](../testing/october-player-live-2026-10-24.md)
+and [automated integration report](../testing/october-multi-2026-10-24.md) separate
+actual local browser/game acceptance, PostgreSQL fixtures and shared-server
+deployment. This closeout does not deploy the current staging candidate.
+
+| Batch | Completed capability and evidence |
+|---|---|
+| W1 | #722 canonical ownership/placement, #723 atomic Fusion integrity, #724 Adoption deferred; [ownership](../testing/october-ownership-2026-10-23.md), [Fusion](../testing/october-fusion-2026-10-23.md). |
+| W2 | #725 reviewed transactional trade, #726 transactional marketplace, #727 canonical Daycare; [trade](../testing/october-trading-2026-10-23.md), [market](../testing/october-market-2026-10-23.md), [Daycare](../testing/october-daycare-2026-10-23.md). |
+| W3 | #728 bounded breeding/eggs/hatching, #729 versioned gym content/installer, #730 self-service resumable onboarding; [breeding](../testing/october-breeding-2026-10-23.md), [gyms](../testing/october-gyms-2026-10-23.md), [onboarding](../testing/october-onboarding-2026-10-23.md). |
+| W4 | #731 shared current guidance, #732 character-scoped communications, #733 fresh read-only game/web sheets and #746 four human controllers in two teams; [communications](../testing/october-communications-2026-10-23.md), [sheets](../testing/october-sheets-2026-10-23.md), [live acceptance](../testing/october-player-live-2026-10-24.md), [Multi](../testing/october-multi-2026-10-24.md). |
+
 ## Trading and Marketplace
 
 - `[FINISH]` Replace immediate gift-style Pokémon transfers with consent-based, transactional trading.

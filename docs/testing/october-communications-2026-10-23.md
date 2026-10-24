@@ -1,3 +1,5 @@
+> October 24 follow-up: the required [fresh ordinary browser/game acceptance](october-player-live-2026-10-24.md) now passes. The historical implementation results below retain their original source and limits. [Final regression evidence](october-multi-2026-10-24.md) covers subsequent repairs. Shared-server deployment remains separate.
+
 # October communications implementation verification (#732)
 
 October 23, 2026 candidate based on `610876e`. [JSON evidence](october-communications-2026-10-23.json)

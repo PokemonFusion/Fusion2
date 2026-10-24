@@ -1760,5 +1760,15 @@
     "Live ordinary browser/game comparison remains pending; #733 stays open",
     "One final full suite; integrated four-player battle work retains the three-order gate"
   ],
-  "git_blob_manifest_sha256": "19b8b8996b3b63f3dd096dad37c1139272e749e7c248439c62569c0d4a86c198"
+  "git_blob_manifest_sha256": "19b8b8996b3b63f3dd096dad37c1139272e749e7c248439c62569c0d4a86c198",
+  "subsequent_verification_2026_10_24": {
+    "issue": 733,
+    "live_acceptance": "passed on fresh isolated local server",
+    "live_report": "october-player-live-2026-10-24.json",
+    "final_regression_report": "october-multi-2026-10-24.json",
+    "source_manifest_sha256": "f8fcd6c0ead886d6b726e557c90f01ec99250162a99dce26aad35c620f64b326",
+    "shared_server_deployed": false,
+    "final_implementation_commit": "e6373121f8fb8c2429498d97bd46be8978afaf82",
+    "repairs": "Unavailable/foreign profile selection no longer renders heading or field edit/add forms"
+  }
 }

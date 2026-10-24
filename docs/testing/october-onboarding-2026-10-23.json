@@ -1702,5 +1702,15 @@
     "No deployment, existing game database/service change or hosted CI success claimed",
     "One final full combined suite; integrated October battle work retains its three-order gate"
   ],
-  "git_blob_manifest_sha256": "85187d13f3e4f98f0baa36d0f57ba700cbd49bb7649fb77017d2d9907f3a6b5d"
+  "git_blob_manifest_sha256": "85187d13f3e4f98f0baa36d0f57ba700cbd49bb7649fb77017d2d9907f3a6b5d",
+  "subsequent_verification_2026_10_24": {
+    "issue": 730,
+    "live_acceptance": "passed on fresh isolated local server",
+    "live_report": "october-player-live-2026-10-24.json",
+    "final_regression_report": "october-multi-2026-10-24.json",
+    "source_manifest_sha256": "f8fcd6c0ead886d6b726e557c90f01ec99250162a99dce26aad35c620f64b326",
+    "shared_server_deployed": false,
+    "final_implementation_commit": "e6373121f8fb8c2429498d97bd46be8978afaf82",
+    "repairs": "No additional onboarding source changes; both ordinary routes and interrupted/repeated setup accepted"
+  }
 }
