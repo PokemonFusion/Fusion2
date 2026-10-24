@@ -172,6 +172,8 @@ class Marketplace:
             else:
                 for character in characters.values():
                     assert_character_free(character)
+                if type(listing.snapshot.get("summary", {}).get("shiny")) is not bool:
+                    raise OwnershipError("This older listing did not record shiny state. The seller must cancel and relist before purchase.")
                 reviewed = BattleRewards.stored_attribute(self.actor, "market_review:" + str(listing.pk), category="market_reviews")
                 if reviewed != self._digest(listing):
                     raise OwnershipError(f"Inspect the exact price and Pokemon first: +market inspect {listing.pk}.")
@@ -231,7 +233,7 @@ class Marketplace:
                 f"Expires {listing.expires_at.isoformat()}.\nIVs: {summary.get('ivs')}; EVs: {summary.get('evs')}; "
                 f"ability {summary.get('ability')}; nature {summary.get('nature')}; HP {summary.get('current_hp') if summary.get('current_hp') is not None else 'full'}; "
                 f"status {summary.get('status') or 'healthy'}.\n"
-                f"Shiny: {summary.get('shiny')}; Tera: {summary.get('tera_type')}; friendship: {summary.get('friendship')}.\n"
+                f"Shiny: {'unrecorded; seller must cancel/relist' if type(summary.get('shiny')) is not bool else 'yes' if summary['shiny'] else 'no'}; Tera: {summary.get('tera_type')}; friendship: {summary.get('friendship')}.\n"
                 f"Hyper Training: {summary.get('hyper_training')}; moves: {moves}.\n"
                 f"Use +market buy {listing.pk} after inspection, or +market cancel {listing.pk} if you are the seller. "
                 "Full parties use a box; purchases do not heal, grant EXP or trigger evolution." + outcome)

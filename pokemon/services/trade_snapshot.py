@@ -25,8 +25,9 @@ class PokemonTradeSnapshot:
                  "moveset_slots": list(MovesetSlot.objects.filter(moveset__pokemon_id=pokemon_id)
                                         .order_by("moveset_id", "slot").values())}
         summary = {key: row.get(key) for key in (
-            "species", "level", "gender", "shiny", "is_egg", "held_item", "current_hp", "status",
+            "species", "level", "gender", "is_egg", "held_item", "current_hp", "status",
             "friendship", "nature", "ability", "ivs", "evs", "tera_type")}
+        summary["shiny"] = row["is_shiny"]
         summary["name"] = row.get("nickname") or row["species"]
         summary["level"] = fresh_owned(pokemon_id).computed_level
         summary["hyper_training"] = [label for stat, label in zip(HyperTraining.stats, HyperTraining.labels)

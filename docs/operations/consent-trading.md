@@ -52,6 +52,11 @@ Pokémon UUID and stored genetic/progression/held/move/PP state. Changed state i
 rejected rather than accepted against an earlier display. A counter checks the
 original offered snapshot before proposing replacement terms.
 
+Shiny summaries read the saved `is_shiny` boolean. Older pending offers that did
+not record that value must be cancelled and reissued before acceptance or a
+counteroffer. Their terms are never silently rewritten or filled from a later
+owner's live Pokemon. Completed receipts still replay without a new transfer.
+
 The final commit rechecks both characters, source custody, battles, Fusion
 references, all system claims and destination allocation under shared locks.
 Both sides save or neither does. A free party slot is preferred, then the first

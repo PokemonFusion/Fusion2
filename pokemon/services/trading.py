@@ -176,6 +176,8 @@ class TradeOffers:
 
     def _require_review(self, operation):
         """Neither an old offer nor another character's review substitutes for consent."""
+        if any(type(move.get("snapshot", {}).get("summary", {}).get("shiny")) is not bool for move in operation.terms):
+            raise OwnershipError("This older offer did not record shiny state. Cancel it and make a new offer before consent.")
         reviewed = BattleRewards.stored_attribute(self.actor, "trade_review:" + str(operation.pk), category="trade_reviews")
         if reviewed != self._digest(operation):
             raise OwnershipError(f"Inspect these exact terms first: +trade inspect {operation.pk}. Then accept or counter this offer.")
@@ -198,7 +200,7 @@ class TradeOffers:
                          f"[{move['pokemon']}] to #{move['destination']}.")
             if summary:
                 lines.append(f"  {summary.get('ability')}, {summary.get('nature')} nature; "
-                             f"{'shiny' if summary.get('shiny') else 'not shiny'}; Tera {summary.get('tera_type') or 'native'}; "
+                             f"{'unrecorded shiny state' if type(summary.get('shiny')) is not bool else 'shiny' if summary['shiny'] else 'not shiny'}; Tera {summary.get('tera_type') or 'native'}; "
                              f"HP {summary.get('current_hp') if summary.get('current_hp') is not None else 'full'}, "
                              f"status {summary.get('status') or 'healthy'}; friendship {summary.get('friendship')}.")
                 lines.append(f"  HP/Atk/Def/SpA/SpD/Spe genetic IVs: {summary.get('ivs')}; EVs: {summary.get('evs')}; "
@@ -207,6 +209,8 @@ class TradeOffers:
                     f"{value['slot']}: {value['name']} (PP {value['pp'] if value['pp'] is not None else 'full'})"
                     for value in summary.get("moves", [])) or "none") + ".")
         if operation.state == "pending":
+            if any(type(move.get("snapshot", {}).get("summary", {}).get("shiny")) is not bool for move in operation.terms):
+                lines.append("This older offer did not record shiny state. Cancel it and make a new offer; it cannot be accepted or countered.")
             lines.append("Automatic destination: a free party slot, otherwise your box. No fees or automatic evolution.")
             lines.append(f"Recipient: +trade accept {operation.pk} or +trade counter {operation.pk}=<your slot/UUID>. "
                          f"Use +trade decline {operation.pk} or +trade cancel {operation.pk} to close it.")

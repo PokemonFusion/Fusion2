@@ -378,6 +378,38 @@ class TradeCases(unittest.TestCase):
         self.assertEqual(list(ActiveMoveslot.objects.filter(pokemon=self.left).order_by("slot").values()), before)
         self.assertEqual(len(self.messages[self.a.pk]), start)
 
+    def test_saved_shiny_boolean_is_displayed_and_preserved_through_player_trade(self):
+        from pokemon.services.trade_snapshot import PokemonTradeSnapshot
+
+        self.assertIs(PokemonTradeSnapshot.capture(self.left.pk)["summary"]["shiny"], False)
+        OwnedPokemon.objects.filter(pk=self.left.pk).update(is_shiny=True)
+        operation = self.offer()
+        self.assertIs(operation.terms[0]["snapshot"]["summary"]["shiny"], True)
+        self.assertIn("shiny; Tera", self.command(self.b, f"+trade inspect {operation.pk}"))
+        self.assertNotIn("not shiny; Tera", self.messages[self.b.pk][-1])
+        self.command(self.b, f"+trade accept {operation.pk}")
+        self.assertTrue(fresh_owned(self.left.pk).is_shiny)
+
+    def test_old_missing_shiny_summary_requires_new_terms_before_accept_or_counter(self):
+        from pokemon.services.trade_snapshot import PokemonTradeSnapshot
+
+        original = PokemonTradeSnapshot.capture
+        def old_snapshot(identifier):
+            """Reproduce only the earlier recorded summary shape before sealing terms."""
+            value = original(identifier)
+            value["summary"]["shiny"] = None
+            return value
+        with patch.object(PokemonTradeSnapshot, "capture", side_effect=old_snapshot):
+            operation = self.offer()
+        self.assertIn("unrecorded shiny state", self.command(self.b, f"+trade inspect {operation.pk}"))
+        for command in (f"+trade accept {operation.pk}", f"+trade counter {operation.pk}={self.right.pk}"):
+            self.assertIn("did not record shiny state", self.command(self.b, command))
+        operation.refresh_from_db()
+        self.assertEqual(operation.state, "pending")
+        self.assertEqual(fresh_owned(self.left.pk).trainer_id, self.a.trainer.pk)
+        self.command(self.a, f"+trade cancel {operation.pk}")
+        self.assertFalse(PokemonReservation.objects.filter(pokemon=self.left).exists())
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:

@@ -25,6 +25,9 @@ the buying character must inspect those exact terms before purchasing. The selle
 can `+market cancel LISTING_ID`. `+market mine` shows pending listings first and
 reclaims expired claims; attempted purchase of an expired listing also releases
 its claim. Status/cancellation/reclaim retries never move an asset or charge money.
+An older listing without recorded shiny state must be cancelled and relisted by
+its seller before purchase. The display says that state is unrecorded; it never
+guesses that the Pokemon is ordinary or changes sealed terms in place.
 Browse and own-list views show up to thirty records; use a saved listing UUID to
 inspect or cancel an older record directly.
 

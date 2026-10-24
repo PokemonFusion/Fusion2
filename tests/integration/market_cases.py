@@ -312,6 +312,35 @@ class MarketCases(unittest.TestCase):
         self.assertEqual(self.money(self.seller), 1107)
         self.assertEqual(self.money(self.buyer), 900)
 
+    def test_listing_displays_saved_shiny_state_and_preserves_it_on_purchase(self):
+        OwnedPokemon.objects.filter(pk=self.source.pk).update(is_shiny=True)
+        listing = self.listing()
+        self.assertIs(listing.snapshot["summary"]["shiny"], True)
+        self.assertIn("Shiny: yes", self.command(self.buyer, f"+market inspect {listing.pk}"))
+        self.command(self.buyer, f"+market buy {listing.pk}")
+        self.assertTrue(fresh_owned(self.source.pk).is_shiny)
+
+    def test_older_missing_shiny_listing_cannot_sell_until_seller_publishes_new_terms(self):
+        from pokemon.services.trade_snapshot import PokemonTradeSnapshot
+
+        original = PokemonTradeSnapshot.capture
+        def old_snapshot(identifier):
+            """Preserve the original fingerprint while recreating its missing public value."""
+            value = original(identifier)
+            value["summary"]["shiny"] = None
+            return value
+        with patch.object(PokemonTradeSnapshot, "capture", side_effect=old_snapshot):
+            listing = self.listing()
+        self.assertIn("unrecorded", self.command(self.buyer, f"+market inspect {listing.pk}"))
+        self.assertIn("did not record shiny state", self.command(self.buyer, f"+market buy {listing.pk}"))
+        self.assertEqual((self.money(self.seller), self.money(self.buyer)), (1000, 1000))
+        self.assertEqual(fresh_owned(self.source.pk).trainer_id, self.seller.trainer.pk)
+        self.command(self.seller, f"+market cancel {listing.pk}")
+        listing = self.listing()
+        self.assertIs(listing.snapshot["summary"]["shiny"], False)
+        self.assertIn("Shiny: no", self.command(self.buyer, f"+market inspect {listing.pk}"))
+        self.assertIn("completed", self.command(self.buyer, f"+market buy {listing.pk}"))
+
 
 if __name__ == "__main__":
     with IsolatedPostgres() as database:
