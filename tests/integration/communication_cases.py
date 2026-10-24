@@ -31,7 +31,7 @@ class CommunicationCases(unittest.TestCase):
             self.assertEqual(set(player.permissions.all()), {'player'})
             self.assertFalse(player.account.is_superuser)
             self.messages[player.pk] = []
-            capture = patch.object(player, 'msg', side_effect=self.messages[player.pk].append)
+            capture = patch.object(player, 'msg', side_effect=lambda text=None, _id=player.pk, **kwargs: self.messages[_id].append(text))
             capture.start()
             self.transports.append(capture)
         self.board = create_script(typeclass=BBoard, key='Comms QA ' + uuid4().hex[:8], autostart=False)
@@ -44,6 +44,56 @@ class CommunicationCases(unittest.TestCase):
         TRANSCRIPT.append({'case': self._testMethodName, 'commands': self.steps,
             'ordinary_permissions': [list(player.permissions.all()) for player in self.players],
             'transport': 'captured; no live socket', 'staff_setup': 'separate tagged fixture only when explicitly used'})
+
+    def test_raw_slash_mail_parser_send_read_reply_and_archive(self):
+        """Real MUX parsing must work before the production mail methods run."""
+        def execute(actor, arguments):
+            """Supply raw dispatcher arguments without prefilled switches/lhs/rhs."""
+            command = CmdMail()
+            command.caller, command.args = actor, arguments
+            command.cmdstring, command.raw_string = '+mail', '+mail' + arguments
+            start = len(self.messages[actor.pk])
+            command.parse()
+            command.func()
+            output = self.messages[actor.pk][start:]
+            self.steps.append({'character': actor.pk, 'input': '+mail' + arguments, 'output': output})
+            return str(output)
+        self.assertIn('sent to', execute(self.player, '/send ' + self.other.key + '=Raw parser/Live route regression'))
+        message = mail.list_character_mail(self.other)[0]
+        self.assertIn('Live route regression', execute(self.other, '/read ' + str(message.pk)))
+        self.assertIn('Reply sent', execute(self.other, '/reply ' + str(message.pk) + '=Raw reply'))
+        self.assertIn('archived', execute(self.other, '/delete ' + str(message.pk)))
+        self.assertFalse(mail.list_character_mail(self.other))
+        self.assertEqual(mail.mail_body(mail.list_character_mail(self.player)[0]), 'Raw reply')
+
+    def test_board_subject_free_text_opens_real_editor_and_saves_one_post(self):
+        """Exercise the actual menu dispatcher instead of calling a node directly."""
+        from bboard.commands import CmdBBPost
+        command = CmdBBPost()
+        command.caller, command.args = self.player, self.board.key
+        command.func()
+        menu = self.player.ndb._evmenu
+        self.assertIsNotNone(menu)
+        with patch.object(self.player, 'execute_cmd', wraps=self.player.execute_cmd) as dispatch:
+            menu.parse_input('Normal subject with spaces')
+        dispatch.assert_not_called()
+        editor = self.player.ndb._eveditor
+        self.assertIsNotNone(editor, self.messages[self.player.pk])
+        self.assertEqual(editor.get_buffer(), '')
+        editor.update_buffer('Normal editor body')
+        editor.save_buffer()
+        self.assertFalse(editor._unsaved)
+        editor.update_buffer('A second save must not create another post')
+        editor.save_buffer()
+        self.assertIn('already saved', str(self.messages[self.player.pk]))
+        editor.quit()
+        posts = self.board.posts()
+        self.assertEqual(len(posts), 1)
+        self.assertEqual(posts[0]['subject'], 'Normal subject with spaces')
+        self.assertEqual(posts[0]['body'], 'Normal editor body')
+        self.assertNotIn('Post aborted', str(self.messages[self.player.pk]))
+        self.steps.append({'character': self.player.pk, 'input': '+bbpost / free subject / editor body / save',
+                           'output': self.messages[self.player.pk]})
 
     def mail(self, actor, action='', *, args='', lhs='', rhs=''):
         """Execute the actual registered character mail command."""

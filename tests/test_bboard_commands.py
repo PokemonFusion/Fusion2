@@ -49,7 +49,7 @@ def load_bboard_commands():
 	fake_enhanced = types.ModuleType("utils.enhanced_evmenu")
 	fake_enhanced.calls = []
 
-	def fake_menu(caller, menu, startnode=None, start_kwargs=None):
+	def fake_menu(caller, menu, startnode=None, start_kwargs=None, cmd_on_exit=None):
 		fake_enhanced.calls.append((caller, menu, startnode, start_kwargs))
 
 	fake_enhanced.EnhancedEvMenu = fake_menu

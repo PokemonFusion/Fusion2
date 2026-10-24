@@ -386,7 +386,7 @@ class CmdBBPost(Command):
 			self.caller.msg("You cannot post to this board.")
 			return
 		_set_current_board(self.caller, board)
-		EnhancedEvMenu(self.caller, "menus.bboard", startnode="post_subject", start_kwargs={"board": board})
+		EnhancedEvMenu(self.caller, "menus.bboard", startnode="post_subject", start_kwargs={"board": board}, cmd_on_exit=None)
 
 
 class CmdBBDelete(Command):
@@ -548,6 +548,7 @@ class CmdBBEdit(Command):
 			self.caller,
 			"menus.bboard",
 			startnode="edit_body",
+			cmd_on_exit=None,
 			start_kwargs={"board": board, "index": index, "post": post},
 		)
 

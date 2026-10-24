@@ -11,19 +11,27 @@ def post_subject(caller, raw_string, **kwargs):
 	board = kwargs["board"]
 	subject = raw_string.strip()
 	if not subject:
-		return "Enter post subject:", {"goto": "post_subject"}
+		return "Enter post subject:", {"key": "_default", "goto": ("post_subject", {"board": board})}
+
+	saved = False
 
 	def _save(caller, buffer):
+		nonlocal saved
+		if saved:
+			caller.msg("This post is already saved. Reopen it with +bbedit to make further changes.")
+			return False
 		try:
 			board.post(subject, buffer.strip(), caller)
 		except BoardError as error:
 			caller.msg(str(error))
 			return False
+		saved = True
 		caller.msg("|gPost saved.|n")
 		return True
 
 	def _quit(caller):
-		caller.msg("|rPost aborted.|n")
+		if not saved:
+			caller.msg("|rPost aborted.|n")
 
 	EvEditor(caller, loadfunc=None, savefunc=_save, quitfunc=_quit, key=subject)
 	return None

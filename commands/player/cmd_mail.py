@@ -1,7 +1,8 @@
-from evennia import Command, search_object
+from evennia import search_object
 from evennia.objects.objects import DefaultCharacter
 from evennia.utils.evtable import EvTable
 
+from commands.dbsafe import DBSafeMuxCommand
 from utils import character_mail
 
 
@@ -36,7 +37,7 @@ def _split_subject_body(raw: str) -> tuple[str, str]:
     return subject.strip(), body.strip()
 
 
-class CmdMail(Command):
+class CmdMail(DBSafeMuxCommand):
     """Send and read character mail.
 
     Usage:
