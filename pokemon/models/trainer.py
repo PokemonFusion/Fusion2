@@ -215,6 +215,10 @@ class GymLeaderProfile(models.Model):
         is_enabled = models.BooleanField(default=True, db_index=True)
         sort_order = models.PositiveSmallIntegerField(default=1, db_index=True)
 
+        content_version = models.PositiveIntegerField(default=0)
+        content_digest = models.CharField(max_length=64, blank=True, default="")
+        content_definition = models.JSONField(default=dict, blank=True)
+
         battle_format = models.CharField(max_length=10, default="single", choices=(("single", "Singles"), ("double", "Doubles")))
         ai_profile = models.CharField(max_length=80, default="gym_leader")
         strategy_key = models.CharField(max_length=40, blank=True, default="", choices=(("", "None"), ("trick_room", "Trick Room")))

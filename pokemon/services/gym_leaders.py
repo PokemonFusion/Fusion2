@@ -131,6 +131,9 @@ def check_gym_leader(identifier, *, player=None) -> GymLeaderCheck:
     warnings = list(static_check.warnings)
     availability = ""
     try:
+        if getattr(profile, "content_version", 0):
+            from pokemon.services.gym_content import GymContent
+            GymContent.from_profile(profile)
         policy = GymPolicy.from_profile(profile)
         if policy.battle_format == "double" and len(static_check.templates) < 2:
             issues.append("Doubles requires at least two gym roster members.")
@@ -202,6 +205,10 @@ def generate_gym_leader_encounter(identifier, *, player=None) -> TrainerEncounte
     metadata.update(_profile_metadata(profile))
     policy = GymPolicy.from_profile(profile)
     metadata.update(policy.metadata())
+    metadata.update({"content_version": getattr(profile, "content_version", 0),
+                     "content_digest": getattr(profile, "content_digest", ""),
+                     "content_definition": getattr(profile, "content_definition", {}),
+                     "rules_text": getattr(profile, "rules_text", "")})
     metadata.update({"victory_text": getattr(profile, "victory_text", ""),
                      "defeat_text": getattr(profile, "defeat_text", ""),
                      "challenge_mode": "rematch" if check.has_badge else "first_clear"})

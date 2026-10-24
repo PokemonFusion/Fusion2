@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "league_key": "independent",
+  "gym_key": "tempo_gym",
+  "leader": {
+    "name": "Gym Leader Cadence",
+    "description": "Cadence teaches trainers to control the tempo of doubles battles with Trick Room."
+  },
+  "badge": {
+    "name": "Tempo Badge",
+    "region": "Independent Gyms",
+    "description": "Awarded once for mastering Cadence's Trick Room doubles challenge."
+  },
+  "profile": {
+    "badge_key": "tempo_badge",
+    "required_badge_count": 0,
+    "is_enabled": true,
+    "sort_order": 1,
+    "battle_format": "double",
+    "ai_profile": "gym_trick_room",
+    "strategy_key": "trick_room",
+    "content_stage": "production",
+    "reward_policy": "badge_only",
+    "rematch_cooldown_seconds": 86400,
+    "rules_text": "Doubles: bring at least two conscious party members. Cadence's three-Pokemon team is level 20. Trick Room reverses normal speed order for five turns; move priority still applies. Your first clear earns one Tempo Badge. Gym attempts grant no money, items, Pokemon XP, EVs or trainer XP. Losses and concessions allow immediate retries. Rematches are practice only, with a 24-hour cooldown after your last victory. Pending badge delivery must be claimed before another challenge.",
+    "intro_text": "Cadence: \"Speed alone does not decide a battle. Learn to change its tempo!\"\nDoubles: bring at least two conscious party members. Cadence's three-Pokemon team is level 20. Trick Room reverses normal speed order for five turns; move priority still applies. Your first clear earns one Tempo Badge. Gym attempts grant no money, items, Pokemon XP, EVs or trainer XP. Losses and concessions allow immediate retries. Rematches are practice only, with a 24-hour cooldown after your last victory. Pending badge delivery must be claimed before another challenge.",
+    "victory_text": "Cadence: \"You found your rhythm. Well battled!\" Use +gym check tempo_gym for rematch availability.",
+    "defeat_text": "Cadence: \"Watch who moves first, then choose your moment.\" No victory rewards were awarded. Heal your party and use +gym challenge tempo_gym to retry."
+  },
+  "team": [
+    {
+      "template_key": "tempo-setter",
+      "species": "Slowbro",
+      "level": 20,
+      "ability": "Own Tempo",
+      "nature": "Hardy",
+      "gender": "N",
+      "ivs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "held_item": "",
+      "move_names": [
+        "Trick Room",
+        "Water Gun",
+        "Heal Pulse",
+        "Protect"
+      ]
+    },
+    {
+      "template_key": "tempo-support",
+      "species": "Slowking",
+      "level": 20,
+      "ability": "Own Tempo",
+      "nature": "Hardy",
+      "gender": "N",
+      "ivs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "held_item": "",
+      "move_names": [
+        "Trick Room",
+        "Water Gun",
+        "Recover",
+        "Helping Hand"
+      ]
+    },
+    {
+      "template_key": "tempo-anchor",
+      "species": "Snorlax",
+      "level": 20,
+      "ability": "Immunity",
+      "nature": "Hardy",
+      "gender": "N",
+      "ivs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "held_item": "",
+      "move_names": [
+        "Tackle",
+        "Body Slam",
+        "Protect",
+        "Rest"
+      ]
+    }
+  ]
+}

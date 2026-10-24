@@ -98,3 +98,15 @@ def test_breeding_database():
         cwd=root, env=os.environ.copy(), capture_output=True, text=True, timeout=180,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_authored_gym_content_database():
+    """Verify versioned gym authorship and actual ordinary launch/rebuild/claims."""
+    if not os.environ.get("PF2_TEST_POSTGRES_DSN"):
+        pytest.skip("Gym content acceptance requires an explicit isolated PostgreSQL DSN.")
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, "-B", str(root / "tests/integration/gym_content_cases.py")],
+        cwd=root, env=os.environ.copy(), capture_output=True, text=True, timeout=180,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
