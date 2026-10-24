@@ -50,6 +50,9 @@ class PlayerChoices:
                                  and getattr(part.player, "id", None) == getattr(caller, "id", object()))), None)
         if self.participant is None or self.participant.is_ai:
             raise ValueError("You do not control a side in this battle.")
+        from .necrozma import NativeNecrozmaBattle
+
+        NativeNecrozmaBattle.validate_roster(self.battle)
 
     def positions(self):
         """Return currently controlled positions, with stable A1/A2/B1/B2 labels."""

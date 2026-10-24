@@ -3359,6 +3359,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                     slot.save()
                             except Exception:
                                 battle_logger.exception("Unable to persist spent PP for move %s.", move.name)
+                                if (getattr(pokemon, "native_origin", None) or {}).get("necrozma"):
+                                    raise
                         return current - updated
                     return 0
 

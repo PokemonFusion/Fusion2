@@ -158,6 +158,9 @@ class WildCaptureAttempt:
 			return result
 		if encounter.source_kind != EncounterPokemon.SourceKind.WILD:
 			raise PlacementError("Only wild encounters can be captured.")
+		from pokemon.services.necrozma_guards import assert_owned_creation
+
+		assert_owned_creation(encounter.species)
 		return None
 
 	def resolve(self, *, roll, consume_ball) -> CaptureAttemptResult:

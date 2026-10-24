@@ -305,6 +305,11 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
 	def heal(self) -> None:
 		"""Fully restore HP, clear status, and reset PP."""
+		from pokemon.services.necrozma_moves import heal_native, pair_for_model
+
+		if heal_native(self):
+			return
+		pair_for_model(self, "heal")
 		from pokemon.helpers.pokemon_helpers import get_max_hp
 		from pokemon.services.move_management import apply_current_pp
 

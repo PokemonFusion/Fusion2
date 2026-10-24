@@ -74,12 +74,18 @@ class FieldRareCandyUse(FieldProgressionUse):
         pokemon.__dict__.pop("_cached_stats", None)
         pokemon.save(update_fields=["total_exp", "level"])
         moves, _ = get_learnable_levelup_moves(pokemon)
+        from pokemon.services.necrozma_moves import pair_for_model
+
+        linked = bool(pair_for_model(pokemon, "progression"))
         for name in moves:
             # Use the normal learner without its best-effort EXP wrapper: an
             # unexpected failure must propagate and roll back this whole use.
-            learn_move(pokemon, name)
+            if linked:
+                learn_move(pokemon, name, knowledge_only=True)
+            else:
+                learn_move(pokemon, name)
         self.result_name, self.result_level = pokemon.name, pokemon.level
-        if moves:
+        if moves and not linked:
             # UI is not transactional. Only publish learning/prompts after the
             # outermost transaction commits, never after a rolled-back level.
             identifier, learned = pokemon.pk, tuple(moves)

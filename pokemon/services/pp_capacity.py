@@ -57,6 +57,9 @@ class PokemonPPCapacity:
             # All PP-capacity writers share the owned row, including callers
             # outside +use. Field use already holds storage/trainer/owned locks.
             OwnedPokemon.objects.select_for_update().filter(pk=pokemon.pk).values("pk").get()
+            from pokemon.services.necrozma_moves import pair_for_model
+
+            pair_for_model(pokemon, "pp")
             matches = [move for move in Move.objects.filter(pokemonlearnedmove__pokemon_id=pokemon.pk)
                        if normalize_name(move.name) == normalize_name(name)]
             if len(matches) != 1:

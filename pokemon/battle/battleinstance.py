@@ -1048,6 +1048,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         obj._ensure_virtual_opponent()
         obj.teamA = team_a_objs
         obj.teamB = team_b_objs
+        from .necrozma import NativeNecrozmaBattle
+
+        NativeNecrozmaBattle.validate_roster(obj.battle)
 
         log_info(
             f"Restore complete: player={getattr(obj.captainA, 'key', obj.captainA)} "
@@ -1661,12 +1664,16 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
     def _sync_player_pokemon_state(self, *, strict=False) -> None:
         """Keep protected Mega ownership checks locked through their owned writes."""
         guarded = any(getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None)
+                      or (getattr(poke, "native_origin", None) or {}).get("necrozma")
                       for participant in getattr(self.battle, "participants", [])
                       for poke in participant.pokemons)
         if guarded:
             from django.db import transaction
 
             with transaction.atomic():
+                from .necrozma import NativeNecrozmaBattle
+
+                NativeNecrozmaBattle.lock_sources(self.battle)
                 return BattleSession._sync_player_pokemon_rows(self, strict=strict)
         return BattleSession._sync_player_pokemon_rows(self, strict=strict)
 
@@ -1721,6 +1728,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 mon = lookup.get(str(ref_identifier))
                 if not mon:
                     continue
+                from .necrozma import NativeNecrozmaBattle
+
+                if NativeNecrozmaBattle.validate_actor(self.battle, participant, poke):
+                    from pokemon.services.ownership import fresh_owned
+
+                    mon = fresh_owned(mon.pk, lock=True)
                 source_guard = getattr(poke, "mega_guard_stone", None) or getattr(poke, "z_guard_crystal", None)
                 if source_guard:
                     from pokemon.battle.owned_battle_actor import OwnedBattleActor
@@ -1816,6 +1829,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .z_moves import ZMoves
 
             ZMoves.validate_roster(self.battle)
+            from .necrozma import NativeNecrozmaBattle
+
+            NativeNecrozmaBattle.validate_roster(self.battle)
         log_info(f"Ending battle {self.battle_id}")
 
         self.persist_debug_record(event="battle_ending")
@@ -1869,6 +1885,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
 
         if self.battle:
             self.battle.mechanic_session_id = str(self.battle_id)
+            from .necrozma import NativeNecrozmaBattle
+
+            NativeNecrozmaBattle.validate_roster(self.battle)
         if self.battle and self.state and BattleRewards.supports(self.captainA):
             self.battle.reward_delivery = BattleRewards(self.state.reward_id)
         metadata = getattr(self, "encounter_metadata", {}) or {}
@@ -2068,6 +2087,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 ids = sorted(BattleRewards.character(player).pk for player in controllers.values()
                              if BattleRewards.supports(player))
                 list(ObjectDB.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+                from .necrozma import NativeNecrozmaBattle
+
+                NativeNecrozmaBattle.lock_sources(self.battle)
                 if getattr(self.state, 'multi', None):
                     saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
                     if (saved.get('reward_id') != self.state.reward_id or saved.get('ending')
@@ -2080,6 +2102,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 from .z_moves import ZMoves
 
                 ZMoves.validate_roster(self.battle)
+                from .necrozma import NativeNecrozmaBattle
+
+                NativeNecrozmaBattle.validate_roster(self.battle)
                 turn_started = True
                 self.battle.run_turn()
                 self._sync_player_pokemon_state(strict=True)

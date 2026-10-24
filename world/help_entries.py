@@ -26,6 +26,46 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "native necrozma",
+		"aliases": ["necrozma combinations", "combine necrozma"],
+		"category": "Guide",
+		"text": """
+At a Pokemon Center in human form, combine your own conscious base Necrozma
+with native Solgaleo (Dusk-Mane) or Lunala (Dawn-Wings). This free reusable route
+needs two real owned sources, with no plot item, quest or currency.
+
++necrozma
++necrozma inspect 3
++necrozma combine 3=5/2
++necrozma separate 3
+
+Use actual gapped party slots, or full owned UUIDs for boxed sources. Review
+both identities, held items, the chosen source slot, displaced move/PP and
+companion return policy; answer yes or no. Reviews expire after five minutes.
+After reconnecting, +necrozma lists pending reviews you can reopen.
+
+The companion stays yours and can be inspected, but cannot act, move, receive
+items/training, transfer, release or enter trainer-Fusion until separation.
+The host keeps current health, status and progress. Healing, PP/training items,
+EXP and held-item changes work; active movesets, ability/species and ownership
+changes wait until separation. Earned base knowledge is stored without prompts.
+
+Sunsteel Strike or Moongeist Beam starts with 5 PP once. Later cycles retain
+remaining/zero PP and PP Up/Max bonuses; recombining never refills it. Hidden
+displaced moves and dormant form moves cannot be healed. Separation restores
+only the selected displaced slot, even if the host is fainted or statused.
+
+The party companion returns to its old free slot, then a free slot, then a box.
+A previously boxed companion prefers its valid old box. Nobody is evicted.
+Use ordinary moves/items/flee and the matching Solganium/Lunalium signature in
+human singles or two-controller doubles. Native pairs currently exclude Multi,
+Mega, Tera, Dynamax and Ultra. Source availability still depends on the world.
+
+This is separate from your trainer's +fuse. See help +necrozma and the
+repository docs/necrozma.md for the complete bounded route and release status.
+		""",
+	},
+	{
 		"key": "gyms",
 		"aliases": ["gym battles", "gym guide", "badges"],
 		"category": "Guide",
@@ -1017,9 +1057,13 @@ Sitrus, Berry Juice, Cheri/Chesto/Pecha/Rawst/Aspear/Lum/Leppa, and legacy
 Berry/Gold/Burnt/Ice/Mint/Miracle/PRZ Cure/PSN Cure/Mystery berries.
 Use +item A1 Leppa Berry=3/Water Gun for selected-move PP. Flavor/EV berries
 stay field/held-only. Bag effects do not invoke held eating callbacks.
-Mega/Z activation and berry growing are deferred.
+Accepted Mega Stones use +mega; accepted Z-Crystal/source pairs use +zmove.
+These are bounded mappings, not every possible source move. +berry supports
+one private Oran bed and the Razz field snack. Native Necrozma combinations use
++necrozma at a Center; see help native necrozma for companion and PP limits.
 Leader's Crest qualifies authored opponent victories, not a bag-item shortcut.
-The Itemfinder mysterious-item message currently grants no inventory item.
+Itemfinder grants a Potion only at a configured bounded source; a mysterious
+item message elsewhere does not prove an inventory grant.
 
 Stock and deployed commands can differ from the item catalog. The October 22
 audit found no enabled shops or Candy dispenser on the inspected older server

@@ -101,6 +101,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     """Return a battle-ready ``Pokemon`` object from a stored model."""
 
     from pokemon.hyper_training import HyperTraining
+    from pokemon.services.necrozma_moves import pair_for_model
+
+    native_pair = pair_for_model(model, "battle")
 
     if Pokemon is None:
         raise RuntimeError("Battle modules not available")
@@ -116,7 +119,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
 
     level = getattr(model, "_pf2_fusion_level", None)
     if level is None:
-        level = getattr(model, "computed_level", getattr(model, "level", 1))
+        level = model.level if native_pair else getattr(model, "computed_level", getattr(model, "level", 1))
     name = getattr(model, "name", getattr(model, "species", "Pikachu"))
 
     move_names = getattr(model, "moves", None) or []
@@ -204,6 +207,9 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
     battle_poke.name = name
     battle_poke.native_origin = ({"ref": str(model_id), "species": str(getattr(model, "species", battle_poke.species))}
                                  if model_id else None)
+    from pokemon.battle.necrozma import NativeNecrozmaBattle
+
+    NativeNecrozmaBattle.bind(model, battle_poke)
     status = PersistentStatus() if full_heal else PersistentStatus.from_pokemon(model)
     status.apply_to_battle(battle_poke)
     if slots is not None:

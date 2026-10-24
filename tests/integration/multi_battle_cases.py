@@ -819,6 +819,26 @@ class MultiBattleCases(unittest.TestCase):
         watch.at_repeat()
         self.assertFalse(BattleRewards.stored_attribute(self.room, 'multi_pvp_lobby'))
 
+    def test_combined_native_host_rejects_lobby_before_battle_or_asset_locks(self):
+        """The new native slice cannot silently enter four-controller Multi."""
+        from pokemon.services.necrozma import NecrozmaService
+        from pokemon.models.necrozma import NecrozmaCombination
+
+        self.room.attributes.add('is_pokemon_center', True)
+        player = self.players['A1']
+        host = create_owned_pokemon('Necrozma', player.trainer, 50, ability='Prism Armor', ivs=[0]*6, evs=[0]*6)
+        companion = create_owned_pokemon('Solgaleo', player.trainer, 50, ability='Full Metal Body', ivs=[0]*6, evs=[0]*6)
+        service = NecrozmaService(player)
+        operation = service.prepare('combine', str(host.pk), str(companion.pk), 2)
+        service.commit(operation.pk)
+        output = self.lobby('A1', 'create')
+        self.assertIn('Separate your native Necrozma', output)
+        self.assertFalse(BattleRewards.stored_attribute(self.room, 'multi_pvp_lobby'))
+        self.assertTrue(NecrozmaCombination.objects.filter(host=host, companion=companion).exists())
+        for other in self.players.values():
+            self.assertFalse(BattleRewards.stored_attribute(other, 'battle_lock'))
+            self.assertIsNone(other.ndb.battle_instance)
+
 
 if __name__ == '__main__':
     with IsolatedPostgres() as database:

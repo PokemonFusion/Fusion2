@@ -17,23 +17,27 @@ def get_learnable_levelup_moves(pokemon):
 	from pokemon.middleware import get_moveset_by_name
 
 	known = {normalize_name(m.name) for m in pokemon.learned_moves.all()}
-	_, moveset = get_moveset_by_name(pokemon.species)
+	from pokemon.services.necrozma_moves import progression_species
+
+	species = progression_species(pokemon)
+	level = pokemon.level if species != pokemon.species else pokemon.computed_level
+	_, moveset = get_moveset_by_name(species)
 	if moveset:
 		lvl_moves = [
-			(lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= pokemon.computed_level and normalize_name(mv) not in known
+			(lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= level and normalize_name(mv) not in known
 		]
 		lvl_moves.sort(key=lambda x: x[0])
 		moves = [mv for lvl, mv in lvl_moves]
 		level_map = {mv: lvl for lvl, mv in lvl_moves}
 	else:
-		moves = [mv for mv in get_valid_moves(pokemon.species, pokemon.computed_level) if normalize_name(mv) not in known]
+		moves = [mv for mv in get_valid_moves(species, level) if normalize_name(mv) not in known]
 		level_map = {}
 
 	return moves, level_map
 
 
 @guarded_learning
-def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None) -> None:
+def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None, knowledge_only=False) -> None:
 	"""Teach ``move_name`` to ``pokemon``.
 
 	If ``prompt`` is True and ``caller`` is provided, the caller will be asked
@@ -44,6 +48,10 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
 	"""
 
 	if not pokemon or not move_name:
+		return
+	from pokemon.services.necrozma_moves import remember_move
+
+	if remember_move(pokemon, move_name, knowledge_only=knowledge_only):
 		return
 
 	from pokemon.services.move_management import get_or_create_move

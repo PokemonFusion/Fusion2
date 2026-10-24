@@ -55,7 +55,7 @@ class EvolutionService:
         self.placement = PlacementService(caller.storage)
 
     @contextmanager
-    def locked(self, mon=None, slot=None):
+    def locked(self, mon=None, slot=None, *, operation="evolution"):
         """Read fresh locked rows and restore Evennia's shared instance on failure."""
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import PokemonPlacement
@@ -79,7 +79,7 @@ class EvolutionService:
                 row = OwnedPokemon.objects.select_for_update().filter(pk=mon.pk).values().get()
                 cached = OwnedPokemon.objects.get(pk=mon.pk)
                 self._restore_row(cached, row)
-                pokemon, placement = self.placement._pokemon(cached, storage)
+                pokemon, placement = self.placement._pokemon(cached, storage, operation=operation)
                 pokemon = copy(pokemon)
                 pokemon._state = copy(pokemon._state)
                 self.placement._check_reservation(placement, False)
@@ -216,7 +216,7 @@ class EvolutionService:
         if slot not in range(1, 7):
             raise EvolutionError("Slot must be a number between 1 and 6.")
         item_key, display = resolve_item(item) if item else (None, None)
-        with self.locked(slot=slot) as (pokemon, trainer, _storage):
+        with self.locked(slot=slot, operation="held") as (pokemon, trainer, _storage):
             previous = pokemon.held_item or ""
             if normalize_name(previous) == "nothing":
                 previous = ""

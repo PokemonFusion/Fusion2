@@ -55,6 +55,10 @@ class MultiLobby:
         if not player.account or not player.sessions.all() or not existing_trainer(player) or not existing_storage(player):
             raise ValueError(f'{player.key} must finish character setup and be connected.')
         assert_character_free(player)
+        from pokemon.models.necrozma import NecrozmaCombination
+
+        if NecrozmaCombination.objects.filter(storage__user_id=player.pk, host__placement__location_type="party").exists():
+            raise ValueError("Separate your native Necrozma pair before entering Multi Battles; combined hosts support singles and two-controller doubles.")
         if not has_usable_pokemon(player):
             raise ValueError(f'{player.key} needs a conscious eligible Pokemon.')
 

@@ -104,3 +104,18 @@ def audit_placements_v2(apps, using="default"):
     from pokemon.services.daycare_audit import audit_daycare_v1
 
     yield from audit_daycare_v1(apps, using)
+
+
+def audit_placements_v3(apps, using="default"):
+    """Add native companion custody without changing old migration contracts."""
+    placements = apps.get_model("pokemon", "PokemonPlacement").objects.using(using)
+    combined = {str(row["pokemon_id"]) for row in placements.filter(location_type="combined").values()
+                if row["combination_id"] is not None and row["slot"] is None
+                and row["box_id"] is None and row["box_position"] is None}
+    for problem in audit_placements_v2(apps, using):
+        if problem.code == "invalid_shape" and problem.pokemon_id in combined:
+            continue
+        yield problem
+    from pokemon.services.necrozma_audit import audit_necrozma_v1
+
+    yield from audit_necrozma_v1(apps, using)

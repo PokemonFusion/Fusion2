@@ -8,6 +8,7 @@ class FieldAbilityUse(FieldMedicineUse):
     """Change one legal ability name and debit one bag item atomically."""
 
     selected_move_items = set()
+    reservation_operation = "ability"
 
     @classmethod
     def supports(cls, item):

@@ -54,7 +54,7 @@ class FieldPPCapacityUse(FieldProgressionUse):
         from pokemon.models.moves import ActiveMoveslot, MovePPBoost
         from pokemon.models.storage import PokemonPlacement
 
-        return {
+        state = {
             "placement": PokemonPlacement.objects.select_for_update().filter(pokemon_id=pokemon.pk).values(
                 "pk", "storage_id", "location_type", "slot").get(),
             "moves": list(ActiveMoveslot.objects.select_for_update().filter(pokemon_id=pokemon.pk).order_by("slot").values(
@@ -62,6 +62,12 @@ class FieldPPCapacityUse(FieldProgressionUse):
             "boosts": list(MovePPBoost.objects.select_for_update().filter(pokemon_id=pokemon.pk).order_by("move_id").values(
                 "move_id", "bonus_pp")),
         }
+        from pokemon.services.necrozma_moves import pair_for_model
+
+        pair = pair_for_model(pokemon, "pp")
+        if pair:
+            state["native_lifecycle"] = str(pair["id"])
+        return state
 
     def _apply(self, item, pokemon, trainer, *, move=None):
         """Prompt without a debit, or commit exactly one confirmed paid boost."""

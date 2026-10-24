@@ -117,6 +117,9 @@ class OwnedBattleActor:
                 raise BattleOwnershipChanged(
                     "Native battle provenance changed; choose again after recovery."
                 )
+            from .necrozma import NativeNecrozmaBattle
+
+            NativeNecrozmaBattle.validate_actor(battle, participant, pokemon, row=row)
             yield row
 
     @staticmethod
@@ -125,6 +128,8 @@ class OwnedBattleActor:
         from .terastallization import Terastallization
 
         side = Terastallization.side(battle, participant)
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma") and mechanic != "z":
+            return True
         identifier = Terastallization.identifier(pokemon)
         for name in ("tera", "mega", "z"):
             if name == mechanic:

@@ -81,6 +81,9 @@ class ZMoves:
 
         entry = resolve_dex_entry(POKEDEX, row["species"])
         raw = getattr(entry, "raw", {}) or {}
+        from .necrozma import NativeNecrozmaBattle
+
+        combined = NativeNecrozmaBattle.signature_allowed(profile, pokemon, row)
         disguise = (getattr(pokemon, "native_origin", {}) or {}).get("disguise_busted")
         busted = (row["species"] in {"Mimikyu", "Mimikyu-Totem"}
                   and disguise == {"ref": str(pokemon.model_id), "species": row["species"],
@@ -90,7 +93,7 @@ class ZMoves:
             not raw
             or raw.get("num", 0) <= 0
             or raw.get("battleOnly")
-            or raw.get("changesFrom")
+            or raw.get("changesFrom") and not combined
             or raw.get("requiredItem")
             or raw.get("requiredItems")
             or str(raw.get("forme", "")).lower().startswith(("mega", "primal", "ultra"))
@@ -100,7 +103,7 @@ class ZMoves:
             raise ValueError(
                 "Z-Moves require a supported current native form, without Transform or a form shortcut."
             )
-        if profile.native and row["species"] not in profile.native:
+        if profile.native and row["species"] not in profile.native and not combined:
             raise ValueError("That signature needs its exact native holder.")
 
     @staticmethod

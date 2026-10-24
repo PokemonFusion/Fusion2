@@ -18,6 +18,7 @@ class FieldMedicineUse:
         self.caller = caller
 
     selected_move_items = {"ether", "maxether"}
+    reservation_operation = "field"
 
     @classmethod
     def supports(cls, item):
@@ -87,7 +88,8 @@ class FieldMedicineUse:
                     pokemon = OwnedPokemon.objects.get(pk=identifier)
                     self._refresh(pokemon, row)
                     pokemon_targets.append(pokemon)
-                    pokemon, placement = PlacementService(storage)._pokemon(pokemon, storage)
+                    pokemon, placement = PlacementService(storage)._pokemon(
+                        pokemon, storage, operation=self.reservation_operation)
                     if pokemon.trainer_id != trainer.pk or pokemon.is_egg:
                         raise FieldMedicineError("Field items require an eligible owned party Pokemon; eggs cannot use them.")
                     if placement is None or placement.location_type not in {"party", "fusion"}:
@@ -97,6 +99,10 @@ class FieldMedicineUse:
                 return self._apply_targets(item, pokemon_targets, trainer, move=move)
         except (UserStorage.DoesNotExist, Trainer.DoesNotExist,
                 OwnedPokemon.DoesNotExist, PlacementError) as error:
+            from pokemon.services.necrozma_guards import NecrozmaError
+
+            if isinstance(error, NecrozmaError):
+                raise FieldMedicineError(str(error)) from error
             raise FieldMedicineError("That Pokemon is no longer an eligible owned party member.") from error
         finally:
             # atomic() rolls back rows, not shared Evennia model instances.

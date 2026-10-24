@@ -45,6 +45,7 @@ from commands.player.cmd_learn_evolve import (
 )
 from commands.player.cmd_movesets import CmdMovesets
 from commands.player.cmd_nickname import CmdCaptureNickname
+from commands.player.cmd_necrozma import CmdNecrozma
 from commands.player.cmd_party import (
 	CmdChargenInfo,
 	CmdDepositPokemon,
@@ -89,6 +90,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdGiveItem,
 			CmdUseItem,
 			CmdBerry,
+			CmdNecrozma,
 			CmdTempFuse,
 			CmdPermFuse,
 			CmdUnfuse,

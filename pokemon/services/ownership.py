@@ -49,13 +49,16 @@ def fresh_owned(pokemon_id, *, lock=False):
     return pokemon
 
 
-def assert_unreserved(pokemon_id, *, token=None):
+def assert_unreserved(pokemon_id, *, token=None, operation="placement"):
     """Shared storage/Fusion/item guard; caller must already hold storage's lock."""
     from pokemon.models.ownership import PokemonReservation
 
     reservation = PokemonReservation.objects.filter(pokemon_id=pokemon_id).values("kind", "token").first()
     if reservation and (token is None or str(reservation["token"]) != str(token)):
         raise OwnershipError(f"Pokemon is reserved for {reservation['kind']}. Finish or cancel that activity first.")
+    from pokemon.services.necrozma_guards import assert_operation
+
+    assert_operation(pokemon_id, operation)
 
 
 def assert_character_free(character):
@@ -107,7 +110,7 @@ def claim_battle(character, battle_id):
                 if existing is not None and existing is not False and existing != "" and str(existing) != str(battle_id):
                     raise OwnershipError("Finish your current battle first.")
             for placement in storage.placements.filter(location_type="party").order_by("pokemon_id"):
-                PlacementService(storage)._pokemon(placement.pokemon, storage)
+                PlacementService(storage)._pokemon(placement.pokemon, storage, operation="battle")
             active = BattleRewards.stored_attribute(character, "fusion_id")
             if active:
                 from django.core.exceptions import ValidationError

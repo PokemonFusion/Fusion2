@@ -98,6 +98,7 @@ class PokemonPlacement(models.Model):
 		BOX = "box", "Box"
 		FUSION = "fusion", "Fusion reservation"
 		DAYCARE = "daycare", "Daycare reservation"
+		COMBINED = "combined", "Necrozma companion reservation"
 
 	storage = models.ForeignKey("UserStorage", on_delete=models.CASCADE, related_name="placements", db_index=True)
 	pokemon = models.OneToOneField("OwnedPokemon", on_delete=models.CASCADE, related_name="placement", db_index=True)
@@ -112,6 +113,10 @@ class PokemonPlacement(models.Model):
 		db_index=True,
 	)
 	box_position = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+	combination = models.OneToOneField(
+		"NecrozmaCombination", null=True, blank=True, on_delete=models.PROTECT,
+		related_name="companion_placement",
+	)
 
 	class Meta:
 		constraints = [
@@ -126,12 +131,14 @@ class PokemonPlacement(models.Model):
 			),
 			models.CheckConstraint(
 				condition=(
-					models.Q(location_type="party", slot__isnull=False, slot__gte=1, slot__lte=6,
+					models.Q(location_type="party", combination__isnull=True, slot__isnull=False, slot__gte=1, slot__lte=6,
 						box__isnull=True, box_position__isnull=True)
-					| models.Q(location_type="box", slot__isnull=True, box__isnull=False,
+					| models.Q(location_type="box", combination__isnull=True, slot__isnull=True, box__isnull=False,
 						box_position__isnull=False, box_position__gte=1)
-					| models.Q(location_type__in=("fusion", "daycare"), slot__isnull=True, box__isnull=True,
+					| models.Q(location_type__in=("fusion", "daycare"), combination__isnull=True, slot__isnull=True, box__isnull=True,
 						box_position__isnull=True)
+					| models.Q(location_type="combined", combination__isnull=False, slot__isnull=True,
+						box__isnull=True, box_position__isnull=True)
 				), name="pokemon_placement_shape",
 			),
 		]
@@ -140,6 +147,8 @@ class PokemonPlacement(models.Model):
 		"""Validate cross-table ownership as well as location shape."""
 		if not self.pokemon.trainer_id or self.pokemon.trainer.user_id != self.storage.user_id:
 			raise ValidationError("Pokemon owner does not match placement storage.")
+		if (self.location_type == self.LocationType.COMBINED) != (self.combination_id is not None):
+			raise ValidationError("Only a combined companion may reference a Necrozma pair.")
 		if self.location_type == self.LocationType.PARTY:
 			if self.slot is None or self.slot < 1 or self.slot > 6:
 				raise ValidationError("Party slot must be between 1 and 6.")
@@ -150,9 +159,13 @@ class PokemonPlacement(models.Model):
 				raise ValidationError("Box placement requires a box, positive position, and no party slot.")
 			if self.box.storage_id != self.storage_id:
 				raise ValidationError("Box does not belong to this storage.")
-		elif self.location_type in (self.LocationType.FUSION, self.LocationType.DAYCARE):
+		elif self.location_type in (self.LocationType.FUSION, self.LocationType.DAYCARE, self.LocationType.COMBINED):
 			if self.slot is not None or self.box_id is not None or self.box_position is not None:
 				raise ValidationError("Reserved Pokemon cannot have party or box data.")
+			if self.location_type == self.LocationType.COMBINED and (
+				self.combination.companion_id != self.pokemon_id or self.combination.storage_id != self.storage_id
+			):
+				raise ValidationError("Combined placement must reserve this pair's actual companion.")
 		else:
 			raise ValidationError("Unknown placement state.")
 

@@ -156,6 +156,9 @@ def create_owned_pokemon(
 	"""
 
 	from django.db import transaction
+	from pokemon.services.necrozma_guards import assert_owned_creation
+
+	assert_owned_creation(species)
 
 	with transaction.atomic():
 		from pokemon.models.core import OwnedPokemon

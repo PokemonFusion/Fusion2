@@ -173,6 +173,10 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 		"""Add experience to ``pokemon`` and update its level."""
 		if amount <= 0:
 				return
+		from pokemon.services.necrozma_moves import gain_experience
+
+		if gain_experience(pokemon, amount, rate=rate):
+				return
 
 		prev_level = getattr(pokemon, "level", None)
 

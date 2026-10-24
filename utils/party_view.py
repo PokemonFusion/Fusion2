@@ -210,5 +210,10 @@ class PartyView:
         lines.extend(("Summary: +party <slot>", "Moves:   +party/moves <slot>"))
         if self.fusion:
             lines.append("Fusion:  +party fusion | +party/moves fusion")
+        from pokemon.services.necrozma_display import native_pair_summary
+
+        native_summary = native_pair_summary(self.caller)
+        if native_summary:
+            lines.append(native_summary)
         output = "\n".join(lines)
         return apply_screen_reader(output) if self.screen_reader else output

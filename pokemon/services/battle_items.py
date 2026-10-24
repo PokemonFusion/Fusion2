@@ -92,6 +92,9 @@ class BattlePPRestoration:
             owned.refresh_from_db()
             if owned.trainer_id != getattr(self.trainer, "pk", None):
                 raise ValueError("PP restoration requires the owning trainer.")
+            from pokemon.services.necrozma_guards import assert_operation
+
+            assert_operation(identifier, "pp")
             slots = list(
                 ActiveMoveslot.objects.select_for_update(of=("self",))
                 .filter(
@@ -259,6 +262,9 @@ class BattleMedicineUse:
         )
         if owned.trainer_id != self.trainer.pk or owned.is_egg or placement is None:
             raise ValueError("Medicine requires an eligible owned party member.")
+        from pokemon.services.necrozma_guards import assert_operation
+
+        assert_operation(identifier, "field")
         if placement["location_type"] not in {"party", "fusion"}:
             raise ValueError("Medicine cannot target a boxed or reserved Pokemon.")
         if placement["location_type"] == "fusion":

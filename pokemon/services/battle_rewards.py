@@ -107,6 +107,7 @@ class BattleRewards:
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.stats import add_evs, add_experience, award_trainer_xp
         from pokemon.models.trainer import Trainer
+        from pokemon.models.storage import UserStorage
         from utils.fusion import award_fusion_experience
 
         character = self.character(player)
@@ -120,6 +121,7 @@ class BattleRewards:
                 if receipt["claimed"]:
                     return False
                 payload = receipt["payload"]
+                UserStorage.objects.select_for_update().filter(user_id=character.pk).values("pk").get()
                 trainer = Trainer.objects.select_for_update().get(user_id=character.pk)
                 for award in sorted(payload.get("pokemon", []), key=lambda row: row["id"]):
                     mon = OwnedPokemon.objects.select_for_update().get(pk=award["id"], trainer=trainer)

@@ -47,10 +47,12 @@ with patch(
 
     from pokemon.models.gym import GymVictory
     from pokemon.models.ownership import OwnershipTransfer, PokemonReservation
+    from pokemon.models.necrozma import NecrozmaCombination, NecrozmaOperation, NecrozmaResource
     from pokemon.models.trainer import GymLeaderProfile
 
     state = loader.project_state()
-    for model in (GymLeaderProfile, GymVictory, OwnershipTransfer, PokemonReservation):
+    for model in (GymLeaderProfile, GymVictory, OwnershipTransfer, PokemonReservation,
+                  NecrozmaCombination, NecrozmaOperation, NecrozmaResource):
         expected = ModelState.from_model(model)
         actual = state.models["pokemon", model._meta.model_name]
         assert set(actual.fields) == set(expected.fields), model.__name__

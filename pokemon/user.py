@@ -81,10 +81,14 @@ class User(Character, InventoryMixin):
         )
 
     def show_pokemon_in_storage(self):
-        return "\n".join(
+        result = "\n".join(
             f"{pokemon} - caught {timezone.localtime(pokemon.created_at):%Y-%m-%d %H:%M:%S}"
             for pokemon in self.storage.get_stored_pokemon()
         )
+        from pokemon.services.necrozma_display import native_pair_summary
+
+        summary = native_pair_summary(self)
+        return "\n".join(part for part in (result, summary) if part)
 
     def at_object_creation(self):
         super().at_object_creation()
@@ -232,9 +236,11 @@ class User(Character, InventoryMixin):
         except ValueError:
             return "Invalid box number."
         mons = box.get_pokemon()
-        if not mons:
-            return f"{box.name} is empty."
-        return "\n".join(str(p) for p in mons)
+        result = "\n".join(str(p) for p in mons) if mons else f"{box.name} is empty."
+        from pokemon.services.necrozma_display import native_pair_summary
+
+        summary = native_pair_summary(self)
+        return "\n".join(part for part in (result, summary) if part)
 
     def get_pokemon_by_id(self, pokemon_id):
         OwnedPokemon = apps.get_model("pokemon", "OwnedPokemon")
