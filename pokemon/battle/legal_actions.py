@@ -91,6 +91,20 @@ class LegalActions:
         raw = {**get_raw(entry), **(getattr(source, "raw", {}) or {})}
         pp = next((value for value in (getattr(source, "current_pp", None), getattr(source, "pp", None), get_pp(entry))
                    if value is not None), None)
+        # Owned battle moves can be name-only runtime objects. Their dex PP is
+        # capacity, not remaining PP; retain an explicit saved zero as well.
+        # Mimic/Transform slots have independent temporary PP instead.
+        from .copied_moves import BattleCopyState
+
+        slots = getattr(self.pokemon, "activemoveslot_set", None)
+        if slots is not None and BattleCopyState.temporary_index(self.pokemon, source) is None:
+            rows = slots.all() if hasattr(slots, "all") else slots
+            for slot in rows:
+                if _normalize_key(getattr(getattr(slot, "move", None), "name", "")) == key:
+                    current = getattr(slot, "current_pp", None)
+                    if current is not None:
+                        pp = current
+                    break
         return BattleMove(str(raw.get("name") or name), key=key, pp=pp,
                           power=raw.get("basePower", getattr(source, "power", 0)) or 0,
                           accuracy=raw.get("accuracy", getattr(source, "accuracy", 100)),

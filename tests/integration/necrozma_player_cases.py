@@ -441,6 +441,26 @@ class NecrozmaPlayerCases(unittest.TestCase):
         self.session = None
         self.separate()
 
+    def test_both_native_zero_pp_sources_reject_ordinary_attacks(self):
+        """Real ordinary commands cannot use dex capacity as saved source PP."""
+        for companion, source in (("Solgaleo", "Sunsteel Strike"), ("Lunala", "Moongeist Beam")):
+            with self.subTest(companion=companion):
+                self.acquire_pair(companion)
+                self.combine()
+                ActiveMoveslot.objects.filter(pokemon=self.host, slot=2).update(current_pp=0)
+                self.launch(kind="wild")
+                before = self.observation()
+                start = len(self.player.messages)
+                self.record("attack", source)
+                self.assertIn("cannot use that move", "\n".join(map(str, self.player.messages[start:])))
+                self.assertFalse(self.session.state.declare)
+                self.assertFalse(self.session.battle.participants[0].pending_action)
+                self.assertEqual(self.pp(), 0)
+                self.assertEqual(self.observation(), before)
+                self.session.end()
+                self.session = None
+                self.separate()
+
     def test_old_pp_prompt_cannot_boost_a_new_native_lifecycle(self):
         self.acquire_pair("Lunala")
         self.combine()

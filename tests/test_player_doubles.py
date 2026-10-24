@@ -64,6 +64,34 @@ def test_actor_and_target_ambiguity_does_not_mutate(session):
     assert session.battle.participants[0].pending_action is None
 
 
+@pytest.mark.parametrize("remaining", (0, 2))
+def test_owned_remaining_pp_controls_ordinary_choice(session, remaining):
+    """Name-only runtime moves cannot refill exhausted saved active slots."""
+    pokemon = session.battle.participants[0].active[0]
+    pokemon.moves = [Move("Tackle")]
+    pokemon.activemoveslot_set = [SimpleNamespace(move=SimpleNamespace(name="Tackle"), current_pp=remaining)]
+    if remaining == 0:
+        with pytest.raises(ValueError, match="cannot use that move"):
+            choices(session).move("Tackle", "B1", actor="A1")
+        assert session.battle.participants[0].pending_action is None
+        assert not session.state.declare
+        assert choices(session).legal_moves(pokemon)[0].move.name == "Struggle"
+    else:
+        choices(session).move("Tackle", "B1", actor="A1")
+        assert session.battle.participants[0].pending_action.move.pp == remaining
+
+
+def test_temporary_copied_slot_keeps_independent_pp(session):
+    """A virtual copied move may match an exhausted owned move in another slot."""
+    pokemon = session.battle.participants[0].active[0]
+    pokemon.moves = [Move("Tackle")]
+    pokemon.moves[0].pp = 5
+    pokemon.tempvals["copy_state"] = {"original_slots": {"0": {"name": "Mimic", "pp": 9}}}
+    pokemon.activemoveslot_set = [SimpleNamespace(move=SimpleNamespace(name="Tackle"), current_pp=0)]
+    choices(session).move("Tackle", "B1", actor="A1")
+    assert session.battle.participants[0].pending_action.move.pp == 5
+
+
 def test_self_and_ally_targets_follow_metadata(session):
     """Self and ally moves do not silently select the first foe or the wrong ally."""
     choices(session).move("Helping Hand", actor="A1")
