@@ -13,6 +13,7 @@ class OwnershipTransfer(models.Model):
                                  related_name="proposed_pokemon_transfers")
     recipient = models.ForeignKey("objects.ObjectDB", on_delete=models.CASCADE,
                                   related_name="received_pokemon_transfers")
+    purpose = models.CharField(max_length=12, default="trade", choices=(("trade", "Trade"), ("market", "Marketplace")))
     terms = models.JSONField()
     approvals = models.JSONField(default=list)
     state = models.CharField(max_length=12, default="pending", db_index=True)
@@ -23,6 +24,7 @@ class OwnershipTransfer(models.Model):
 
     class Meta:
         constraints = [
+            models.CheckConstraint(condition=models.Q(purpose__in=("trade", "market")), name="transfer_known_purpose"),
             models.CheckConstraint(condition=~models.Q(proposer=models.F("recipient")),
                                    name="transfer_distinct_characters"),
             models.CheckConstraint(condition=models.Q(state__in=("pending", "completed", "cancelled", "expired")),

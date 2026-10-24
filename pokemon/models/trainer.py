@@ -56,17 +56,28 @@ class Trainer(models.Model):
         def add_badge(self, badge: GymBadge) -> None:
                 self.badges.add(badge)
 
+        def _change_money(self, amount: int, *, debit: bool) -> bool:
+                """Serialize every existing wallet writer against marketplace settlement."""
+                if type(amount) is not int or amount < 0:
+                        raise ValueError("Money changes require a nonnegative whole amount.")
+                with transaction.atomic():
+                        balance = type(self).objects.select_for_update().values_list("money", flat=True).get(pk=self.pk)
+                        if debit and balance < amount:
+                                self.money = balance
+                                return False
+                        if not debit and balance > 2_147_483_647 - amount:
+                                raise ValueError("Trainer wallet cannot receive this payment.")
+                        self.money = balance - amount if debit else balance + amount
+                        type(self).objects.filter(pk=self.pk).update(money=self.money)
+                        return True
+
         def add_money(self, amount: int) -> None:
-                self.money += amount
-                self.save()
+                """Credit the current saved wallet without overwriting concurrent payments."""
+                self._change_money(amount, debit=False)
 
         def spend_money(self, amount: int) -> bool:
-                """Remove money if available and return success."""
-                if self.money < amount:
-                        return False
-                self.money -= amount
-                self.save()
-                return True
+                """Debit only available current money, including after stale object reads."""
+                return self._change_money(amount, debit=True)
 
         def log_seen_pokemon(self, species: str | int) -> None:
                 """Record that the trainer has seen the given species."""

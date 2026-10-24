@@ -323,10 +323,12 @@ class OwnershipTransfers:
                 if reservation.token != operation.pk:
                     raise OwnershipError("Pokemon is already reserved for another activity.")
 
-    def prepare(self, recipient_id, movements, *, request_id=None):
+    def prepare(self, recipient_id, movements, *, request_id=None, purpose="trade"):
         """Create a retryable offer without granting the recipient's consent."""
         from pokemon.models.ownership import OwnershipTransfer
 
+        if purpose not in {"trade", "market"}:
+            raise OwnershipError("Unknown transfer purpose.")
         terms = self._terms(recipient_id, movements)
         try:
             operation_id = UUID(str(request_id)) if request_id is not None else uuid4()
@@ -335,7 +337,7 @@ class OwnershipTransfers:
         with locked_owners((self.actor_id, recipient_id)) as locked:
             existing = OwnershipTransfer.objects.select_for_update().filter(pk=operation_id).first()
             if existing:
-                if (existing.proposer_id != self.actor_id or existing.recipient_id != recipient_id
+                if (existing.proposer_id != self.actor_id or existing.recipient_id != recipient_id or existing.purpose != purpose
                         or [{key: value for key, value in move.items() if key != "snapshot"}
                             for move in existing.terms] != terms):
                     raise OwnershipError("Request identity already belongs to different transfer terms.")
@@ -343,7 +345,7 @@ class OwnershipTransfers:
             from pokemon.services.trade_snapshot import PokemonTradeSnapshot
 
             operation = OwnershipTransfer(
-                id=operation_id, proposer_id=self.actor_id, recipient_id=recipient_id,
+                id=operation_id, proposer_id=self.actor_id, recipient_id=recipient_id, purpose=purpose,
                 terms=terms, approvals=[self.actor_id], expires_at=self.clock() + self.lifetime)
             assets = self._assets(operation, locked)
             for move, pokemon, _ in assets:

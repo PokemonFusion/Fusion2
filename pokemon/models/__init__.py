@@ -49,7 +49,7 @@ def ensure_model_modules_loaded(*, require_ready: bool = False) -> bool:
     if not (require_ready or apps.apps_ready):  # pragma: no cover - wait until Django is ready.
         return False
 
-    for module_name in ("core", "trainer", "moves", "storage", "adventures", "gym", "berries", "ownership"):
+    for module_name in ("core", "trainer", "moves", "storage", "adventures", "gym", "berries", "ownership", "market"):
         full_name = f"{__name__}.{module_name}"
         try:
             importlib.import_module(full_name)

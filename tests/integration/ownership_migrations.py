@@ -29,7 +29,8 @@ def rehearse(scenario):
     targets = executor.loader.graph.leaf_nodes()
     seed = None
     if scenario != "fresh":
-        baseline = [("pokemon", "0047_ownership_transfers" if scenario == "guarded-upgrade" else "0046_berry_bed")]
+        baseline = [("pokemon", "0049_marketplace" if scenario == "market-upgrade" else
+                     "0047_ownership_transfers" if scenario == "guarded-upgrade" else "0046_berry_bed")]
         executor.migrate(baseline)
         seed = RecoveryMigrationRehearsal.seed_progression(executor.loader.project_state(baseline).apps)
     if scenario == "guarded-upgrade":
@@ -50,6 +51,25 @@ def rehearse(scenario):
             cursor.execute("SELECT count(*) FROM pg_proc WHERE proname='pf2_check_reservation' AND pronamespace=current_schema()::regnamespace")
             assert cursor.fetchone()[0] == 0, "Failed migration partially installed functions."
         invalid.delete()  # deliberately remove only our known invalid QA row
+    if scenario == "market-upgrade":
+        history = executor.loader.project_state(baseline).apps
+        from datetime import timedelta
+
+        invalid = history.get_model("pokemon", "MarketListing").objects.create(
+            seller_id=seed["player"], seller_character_id=seed["player"], seller_name="Known invalid QA sale",
+            pokemon_id=seed["pokemon"], owned_id=seed["pokemon"], request_selector="3", snapshot={}, price=100,
+            expires_at=timezone.now() + timedelta(hours=24))
+        executor = MigrationExecutor(connection)
+        try:
+            executor.migrate(targets)
+        except RuntimeError as error:
+            assert "Market audit failed" in str(error), str(error)
+        else:
+            raise AssertionError("An active listing without its claim did not block deployment.")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM pg_proc WHERE proname='pf2_check_market' AND pronamespace=current_schema()::regnamespace")
+            assert cursor.fetchone()[0] == 0, "Failed market migration partially installed functions."
+        invalid.delete()  # deliberately remove only the known invalid task-owned listing
     executor = MigrationExecutor(connection)
     executor.migrate(targets)
     executor = MigrationExecutor(connection)
@@ -85,10 +105,10 @@ def rehearse(scenario):
 def main():
     """Use one fresh Django process/schema for each scenario."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=("fresh", "upgrade", "guarded-upgrade"))
+    parser.add_argument("--scenario", choices=("fresh", "upgrade", "guarded-upgrade", "market-upgrade"))
     args = parser.parse_args()
     if args.scenario is None:
-        for scenario in ("fresh", "upgrade", "guarded-upgrade"):
+        for scenario in ("fresh", "upgrade", "guarded-upgrade", "market-upgrade"):
             subprocess.run([sys.executable, "-B", str(Path(__file__).resolve()), "--scenario", scenario], check=True)
     else:
         with IsolatedPostgres():

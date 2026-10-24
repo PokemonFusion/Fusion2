@@ -72,3 +72,12 @@ def test_trade_guide_requires_inspection_consent_and_current_availability():
         assert rule.lower() in text.lower()
     assert "+trade remains disabled" not in entries["growth and moves"]["text"]
     assert "Trading is temporarily unavailable" not in entries["pokemon and storage"]["text"]
+
+
+def test_marketplace_guide_describes_exact_price_review_and_recovery():
+    """Keep the two guide surfaces aligned with bounded ordinary commerce."""
+    text = _guide_entries()["marketplace"]["text"]
+    for command in ("+market list", "+market inspect", "+market buy", "+market cancel", "+market mine"):
+        assert command in text
+    for rule in ("24 hours", "1,000,000", "no fee", "hatched", "historical", "box"):
+        assert rule in text

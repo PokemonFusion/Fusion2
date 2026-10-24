@@ -26,6 +26,43 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "marketplace",
+		"aliases": ["pokemon market", "player sales"],
+		"category": "Guide",
+		"text": """
+Sell hatched owned Pokemon for existing trainer money. Eggs use help trading.
+Prices are whole amounts from 1 to 1,000,000; there is no fee or sales tax.
+
+Seller: +market list 3=100
+Buyer:  +market
+Buyer:  +market inspect <listing ID>
+Buyer:  +market buy <listing ID>
+Seller: +market mine
+
+Use a party slot or a unique owned Pokemon ID prefix of at least eight hex
+characters for a boxed source. The buyer must inspect the exact advertised
+Pokemon and price first. Full parties receive purchases in a box. Purchases
+preserve HP, status, moves and PP, and grant no EXP or automatic evolution.
+
+Listings last 24 hours. +market cancel <listing ID> closes your own listing.
++market mine reclaims your expired listings and shows active entries first.
+Attempting to buy an expired listing also releases its reservation. Repeating a
+completed purchase returns its historical receipt; it never pays or transfers
+again. Inspect shows participants their own saved balance and asset destination.
+Later spending or Pokemon moves can change the current balance/location.
+
+A listed Pokemon cannot be moved, released, fused, edited, traded or used in
+battle. Boxed listings allow battles using other party members, but both buyer
+and seller must finish battle before a purchase. A failed check changes no money
+or ownership. Each character uses their own wallet even on a shared account.
+
+Browse and mine show up to thirty records. Save the listing ID to inspect or
+cancel an older one directly. Cancel and relist if the Pokemon's advertised state
+changed. Ask staff to inspect a missing/conflicting reservation; do not repeatedly
+pay or move another Pokemon to try to repair it.
+		""",
+	},
+	{
 		"key": "getting started",
 		"aliases": ["start", "new player", "quickstart", "first steps"],
 		"category": "Guide",

@@ -16,6 +16,7 @@ from commands.debug.command import (
 	CmdUseMove,
 )
 from commands.player.cmd_account import CmdTradePokemon
+from commands.player.cmd_market import CmdMarket
 from commands.player.cmd_berry import CmdBerry
 from commands.player.cmd_alpha import CmdAlphaLearnMove, CmdAlphaPokemon, alpha_test_commands_enabled
 from commands.player.cmd_fusion import (
@@ -103,6 +104,7 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdChooseMoveset,
 			CmdAdminHeal,
 			CmdTradePokemon,
+			CmdMarket,
 			CmdAdventure,
 			CmdHunt,
 			CmdLeaveHunt,

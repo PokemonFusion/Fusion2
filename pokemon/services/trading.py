@@ -1,5 +1,6 @@
 """Private durable player offers over the shared ownership transfer service."""
 
+from contextlib import contextmanager
 import hashlib
 import json
 from uuid import uuid4
@@ -21,6 +22,14 @@ class TradeOffers:
         self.actor_id = self.actor.pk
         self.clock = clock or timezone.now
         self.transfers = OwnershipTransfers(actor, clock=self.clock)
+
+    @contextmanager
+    def _locked(self, operation_id):
+        """Public trade authority cannot approve or close an internal market settlement."""
+        with self.transfers.locked(operation_id) as (operation, locked):
+            if operation.purpose != "trade":
+                raise OwnershipError("Use the marketplace receipt for this market settlement.")
+            yield operation, locked
 
     def recipient(self, query):
         """Resolve only an exact player character name or database character ID."""
@@ -46,14 +55,14 @@ class TradeOffers:
 
         selector = selector.strip().lower()
         number = selector.removeprefix("slot").strip()
-        if number.isdigit() and int(number) in range(1, 7):
+        if number in {"1", "2", "3", "4", "5", "6"}:
             identifier = PokemonPlacement.objects.filter(storage__user_id=character_id,
                 location_type="party", slot=int(number)).values_list("pokemon_id", flat=True).first()
             if identifier:
                 return identifier
             raise OwnershipError("There is no Pokemon in that party slot.")
         compact = selector.replace("-", "")
-        if len(compact) < 8 or any(value not in "0123456789abcdef" for value in compact):
+        if not 8 <= len(compact) <= 32 or any(value not in "0123456789abcdef" for value in compact):
             raise OwnershipError("Use a party slot or at least eight characters of an owned Pokemon UUID from +box/+sheet.")
         ids = [identifier for identifier in OwnedPokemon.objects.filter(trainer__user_id=character_id).values_list("pk", flat=True)
                if str(identifier).replace("-", "").startswith(compact)]
@@ -73,7 +82,7 @@ class TradeOffers:
 
     def counter(self, operation_id, selector):
         """Replace an offer with new immutable terms and invalidate prior consent."""
-        with self.transfers.locked(operation_id) as (operation, _):
+        with self._locked(operation_id) as (operation, _):
             if operation.recipient_id != self.actor_id:
                 raise OwnershipError("Only the intended recipient may counter this offer.")
             if operation.state != "pending" or operation.expires_at <= self.clock():
@@ -102,7 +111,7 @@ class TradeOffers:
 
     def accept(self, operation_id):
         """The named recipient accepts the sealed snapshot and atomically commits."""
-        with self.transfers.locked(operation_id) as (operation, _):
+        with self._locked(operation_id) as (operation, _):
             if operation.recipient_id != self.actor_id:
                 raise OwnershipError("Wait for the intended recipient to accept your offer.")
             if operation.state != "completed":
@@ -120,7 +129,7 @@ class TradeOffers:
 
     def close(self, operation_id, *, decline=False):
         """Persist a participant-bound decline/cancellation, including expired claims."""
-        with self.transfers.locked(operation_id) as (operation, _):
+        with self._locked(operation_id) as (operation, _):
             if decline and operation.recipient_id != self.actor_id:
                 raise OwnershipError("Only the intended recipient may decline this offer.")
             was_pending = operation.state == "pending"
@@ -144,7 +153,7 @@ class TradeOffers:
         """Discover this character's pending and recent receipts after reconnect."""
         from pokemon.models.ownership import OwnershipTransfer
 
-        return list(OwnershipTransfer.objects.filter(Q(proposer_id=self.actor_id) | Q(recipient_id=self.actor_id))
+        return list(OwnershipTransfer.objects.filter(Q(proposer_id=self.actor_id) | Q(recipient_id=self.actor_id), purpose="trade")
                     .order_by(Case(When(state="pending", then=Value(0)), default=Value(1)), "-created_at")[:30])
 
     def list_line(self, operation):
@@ -155,7 +164,7 @@ class TradeOffers:
 
     def inspect(self, operation_id):
         """Render only immutable offered summaries and the persisted outcome."""
-        with self.transfers.locked(operation_id) as (operation, _):
+        with self._locked(operation_id) as (operation, _):
             if operation.state == "pending" and operation.recipient_id == self.actor_id:
                 self.actor.attributes.add("trade_review:" + str(operation.pk), self._digest(operation), category="trade_reviews")
             return self.describe(operation)
