@@ -81,6 +81,9 @@ from contextlib import nullcontext
 @pytest.fixture(autouse=True)
 def placement_factory_dependencies(monkeypatch):
     """Stub only storage IO for the initialization unit tests."""
+    guard_module = types.ModuleType("pokemon.services.necrozma_guards")
+    guard_module.assert_owned_creation = lambda species: None
+    monkeypatch.setitem(sys.modules, "pokemon.services.necrozma_guards", guard_module)
     from django.db import transaction
     monkeypatch.setattr(transaction, "atomic", lambda: nullcontext())
     storage_module = types.ModuleType("pokemon.models.storage")

@@ -32,6 +32,10 @@ class NativeZCases(unittest.TestCase):
     def setUp(self):
         """Create only ordinary transports, a tagged chart and controlled stock."""
         core.MegaEvolutionCases.setUp(self)
+        # October's moveset boundary verifies the persisted character location,
+        # rather than the transport wrapper's location attribute.
+        for player in self.players:
+            core.acquisition.ObjectDB.objects.filter(pk=player.character.pk).update(db_location_id=self.room.pk)
 
     def tearDown(self):
         """End this fixture's actual session and remove only its SQL schema."""
