@@ -130,7 +130,7 @@ class FakeBoard:
 		post = self.get_post(index)
 		return bool(post and post["id"] in self._read_ids(caller))
 
-	def mark_read(self, caller, index):
+	def mark_read(self, caller, index, *, expected_id=None):
 		post = self.get_post(index)
 		if post:
 			self._read_ids(caller).add(post["id"])
@@ -147,7 +147,7 @@ class FakeBoard:
 				return index
 		return None
 
-	def delete_post(self, index):
+	def delete_post(self, index, *, actor=None, expected_id=None):
 		if 1 <= index <= len(self.db.posts):
 			self.deleted.append(self.db.posts.pop(index - 1))
 			return True

@@ -4,6 +4,14 @@ on:
     paths:
       - 'pokemon/**'
       - 'utils/fusion.py'
+      - 'utils/character_mail.py'
+      - 'utils/character_mail_state.py'
+      - 'utils/channel_identity.py'
+      - 'typeclasses/channels.py'
+      - 'commands/player/cmd_mail.py'
+      - 'commands/player/cmd_channel.py'
+      - 'bboard/**'
+      - 'menus/bboard.py'
       - 'utils/locks.py'
       - 'utils/pokemon_utils.py'
       - 'utils/display.py'
@@ -84,6 +92,8 @@ jobs:
         run: python tests/integration/market_cases.py
       - name: Daycare canonical custody, atomic fees, retrieval and reservation races
         run: python tests/integration/daycare_cases.py
+      - name: Character mail, persistent boards and channel recipient permissions
+        run: python tests/integration/communication_cases.py
       - name: Persistent human and Fusion onboarding, saved choices and atomic one-time grants
         run: python tests/integration/onboarding_cases.py
       - name: Breeding cycles, fixed traits, egg collection and same-identity hatch retries

@@ -1,4 +1,6 @@
 from __future__ import annotations
+from bboard.transactions import BoardError
+from functools import wraps
 
 from typing import Iterable
 
@@ -244,7 +246,11 @@ def read_post(caller, board: BBoard, post_index: int) -> bool:
 		str(post.get("body") or ""),
 		"|g" + "-" * 78 + "|n",
 	]
-	board.mark_read(caller, post_index)
+	try:
+		board.mark_read(caller, post_index, expected_id=post.get("id"))
+	except BoardError as error:
+		caller.msg(str(error))
+		return False
 	caller.msg("\n".join(lines))
 	return True
 
@@ -277,6 +283,18 @@ def _join_names(boards: Iterable[BBoard]) -> str:
 	return ", ".join(str(board.key) for board in boards)
 
 
+def board_errors(method):
+	"""Show domain refusals without exposing a traceback to ordinary readers."""
+	@wraps(method)
+	def command(self, *args, **kwargs):
+		"""Keep board access and stale-target errors local to this command."""
+		try:
+			return method(self, *args, **kwargs)
+		except BoardError as error:
+			self.caller.msg(str(error))
+	return command
+
+
 class CmdBBHelp(Command):
 	"""Show bulletin board help."""
 
@@ -284,6 +302,7 @@ class CmdBBHelp(Command):
 	aliases = ["+bboard"]
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		self.caller.msg(
 			"\n".join(
@@ -311,6 +330,7 @@ class CmdBBList(Command):
 	key = "+bblist"
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		raw, unread_only = _parse_unread_filter(self.args)
 		if not raw:
@@ -327,6 +347,7 @@ class CmdBBRead(Command):
 	key = "+bbread"
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		raw, unread_only = _parse_unread_filter(self.args)
 		if not raw:
@@ -356,6 +377,7 @@ class CmdBBPost(Command):
 	key = "+bbpost"
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		board = resolve_board(self.caller, self.args, allow_current=True)
 		if not board:
@@ -374,6 +396,7 @@ class CmdBBDelete(Command):
 	aliases = ["+bbremove"]
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		ref = _resolve_board_post(self.caller, self.args, allow_current=True)
 		if not ref:
@@ -386,7 +409,11 @@ class CmdBBDelete(Command):
 		if post.get("author_dbref") != getattr(self.caller, "dbref", None) and not _can_access(board, self.caller, "delete"):
 			self.caller.msg("You do not have permission to delete this post.")
 			return
-		board.delete_post(index)
+		try:
+			board.delete_post(index, actor=self.caller, expected_id=post.get("id"))
+		except BoardError as error:
+			self.caller.msg(str(error))
+			return
 		self.caller.msg("Post deleted.")
 
 
@@ -396,6 +423,7 @@ class CmdBBCatchup(Command):
 	key = "+bbcatchup"
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		raw = (self.args or "").strip()
 		if not raw:
@@ -425,6 +453,7 @@ class CmdBBNext(Command):
 	key = "+bbnext"
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		raw = (self.args or "").strip()
 		if raw:
@@ -452,6 +481,7 @@ class CmdBBSet(Command):
 	key = "+bbset"
 	locks = "cmd:all()"
 
+	@board_errors
 	def func(self):
 		board = resolve_board(self.caller, self.args)
 		if not board:
@@ -466,6 +496,7 @@ class CmdBBNew(Command):
 	key = "+bbnew"
 	locks = "cmd:perm(Admin)"
 
+	@board_errors
 	def func(self):
 		name = self.args.strip()
 		if not name:
@@ -484,6 +515,7 @@ class CmdBBSeed(Command):
 	key = "+bbseed"
 	locks = "cmd:perm(Admin)"
 
+	@board_errors
 	def func(self):
 		result = seed_default_boards()
 		created = result["created"]
@@ -502,6 +534,7 @@ class CmdBBEdit(Command):
 	key = "+bbedit"
 	locks = "cmd:perm(Admin)"
 
+	@board_errors
 	def func(self):
 		ref = _resolve_board_post(self.caller, self.args, allow_current=True)
 		if not ref:
@@ -525,6 +558,7 @@ class CmdBBMove(Command):
 	key = "+bbmove"
 	locks = "cmd:perm(Admin)"
 
+	@board_errors
 	def func(self):
 		if "=" in self.args:
 			left, dest_name = [part.strip() for part in self.args.split("=", 1)]
@@ -556,6 +590,7 @@ class CmdBBPurge(Command):
 	key = "+bbpurge"
 	locks = "cmd:perm(Admin)"
 
+	@board_errors
 	def func(self):
 		board = resolve_board(self.caller, self.args, allow_current=True)
 		if not board:
@@ -571,6 +606,7 @@ class CmdBBLock(Command):
 	key = "+bblock"
 	locks = "cmd:perm(Admin)"
 
+	@board_errors
 	def func(self):
 		if "=" not in self.args:
 			self.caller.msg("Usage: +bblock <board> = <lockstring>")

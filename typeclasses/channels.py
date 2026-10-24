@@ -115,4 +115,33 @@ class Channel(DefaultChannel):
 
 	"""
 
-	pass
+	def msg(self, message, senders=None, bypass_mute=False, **kwargs):
+		"""Route existing channel traffic only to currently authorized subscribers.
+
+		A subscription records membership, not permanent permission to hear a
+		channel after its listen lock changes. Preserve Evennia's normal hooks,
+		mute handling and history, with receiver-local filtering.
+		"""
+		from evennia.utils.utils import make_iter
+		from evennia.utils import logger
+
+		senders = make_iter(senders) if senders else []
+		receivers = self.subscriptions.online() if self.send_to_online_only else self.subscriptions.all()
+		if not bypass_mute:
+			receivers = [receiver for receiver in receivers if receiver not in self.mutelist]
+		send_kwargs = {"senders": senders, "bypass_mute": bypass_mute, **kwargs}
+		message = self.at_pre_msg(message, **send_kwargs)
+		if message in (None, False):
+			return
+		for receiver in receivers:
+			try:
+				if not self.access(receiver, "listen", default=False):
+					continue
+				received = receiver.at_pre_channel_msg(message, self, **send_kwargs)
+				if received in (None, False):
+					continue
+				receiver.channel_msg(received, self, **send_kwargs)
+				receiver.at_post_channel_msg(received, self, **send_kwargs)
+			except Exception:
+				logger.log_trace(f"Error delivering channel message to {receiver}.")
+		self.at_post_msg(message, **send_kwargs)

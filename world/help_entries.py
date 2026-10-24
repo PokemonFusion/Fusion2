@@ -292,6 +292,9 @@ party                 Alias for +sheet.
 		"category": "Guide",
 		"text": """
 Character mail is private asynchronous mail between IC characters.
+Each character has a separate inbox and read state, including your alts.
+Reading, marking unread or archiving shared mail leaves other recipients' state
+unchanged. Archiving hides your entry and does not delete their copy.
 
 # Commands
 
