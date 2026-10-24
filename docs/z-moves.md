@@ -63,8 +63,11 @@ Native Mimikyu may use Mimikium before or after its real Disguise break; both
 intact and matching Busted Totem lifecycles are accepted. The seven listed
 Pikachu cap forms and both Totem holders have configured ordinary hunt/capture/
 teaching proof. Actual live species availability still depends on authored
-charts. Fused Necrozma remains outside this route: its
-[combine/separate contract](design/necrozma-combination.md) is designed, while
-[#825–#831](design/necrozma-combination.md#delivery-gates) still require
-implementation and acceptance. The proposed `+necrozma` commands are unavailable.
-Ultra remains excluded.
+charts. The [native Necrozma route](necrozma.md) now passes local acceptance:
+a real Dusk-Mane pair may use Solganium Z/Sunsteel Strike and a real Dawn-Wings
+pair may use Lunalium Z/Moongeist Beam. The same existing signatures, source PP
+and side budget apply. The current human controller and both owned sources
+are revalidated through reconnect and final sync. Raw fused grants, copied
+forms and stale/forged pair proof cannot qualify. Public source includes
+`+necrozma`; a running game needs a deliberate release and schema upgrade.
+Released socket acceptance remains open in #831. Ultra remains excluded.

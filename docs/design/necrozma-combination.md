@@ -1,10 +1,12 @@
 # Non-plot Necrozma combine/separate contract (#820)
 
-Status: **design complete; implementation and player acceptance remain gated**.
+Status: **local implementation accepted (#825–#830); released-build socket acceptance remains open (#831)**.
 Reviewed on October 23, 2026 at `ec1203c47564c8e712831d8764394a4300a9b629`.
 The [machine-readable plan](necrozma-combination.json) records the exact scope,
 dependencies and validation inventory. Closing #820 records this bounded plan;
-it does not enable fused holders in the [current Z matrix](z-crystals.md).
+its original static receipt does not claim implementation. The October 24
+[local runtime receipt](../testing/necrozma-items-2026-10-24.md) now qualifies
+the two native lifecycles and their existing signatures in the [current Z matrix](z-crystals.md).
 
 ## Native forms and entry point
 
@@ -20,7 +22,7 @@ both ordinary source moves base PP 5. This contract's command, eligibility,
 storage, PP and recovery rules are **selected PF2 policy**, not a claim of
 complete cartridge or Pokémon GO parity.
 
-Proposed ordinary command at an existing Pokémon Center (`is_pokemon_center`):
+Ordinary command in the accepted source at an existing Pokémon Center (`is_pokemon_center`):
 
 ```text
 +necrozma
@@ -149,8 +151,9 @@ separation. Never discard EXP or earned knowledge as a consequence of slot locks
 
 `get_valid_moves` currently reads level-up entries. The fused learnsets contain
 only `7R/8R/9R` form-source entries, so current ordinary `+teach` does not supply
-these moves. A named implementation gate must provide the following bounded
-policy; do not enable Z from learnset metadata alone or edit generated learnsets.
+these moves. The accepted native lifecycle provides the following bounded
+policy through its selected slot; learnset metadata alone does not enable Z and
+generated learnsets remain unchanged.
 
 1. On combine, the player selects a real slot 1–4, including a genuinely empty
    slot. Bind the exact active moveset and slot; save only that displaced move's
@@ -192,7 +195,7 @@ live pair on entry, reconnect and mutation/PP/end-sync boundaries, binding its
 lifecycle/version, both UUIDs and owned origin. End/flee/concede restores only
 battle state; the persistent combination remains until explicit field separation.
 
-The future Z exception is exactly Dawn-Wings + Moongeist Beam + Lunalium Z and
+The accepted Z exception is exactly Dawn-Wings + Moongeist Beam + Lunalium Z and
 Dusk-Mane + Sunsteel Strike + Solganium Z with valid live pair proof. Direct
 fused owned rows, a crystal's `itemUser`, a nickname, copied ability, Transform or
 client-supplied species cannot qualify. Do not broadly waive `changesFrom`.
@@ -225,10 +228,10 @@ held crystal: its existing native offers already supply these same items.
 | F | [#830](https://github.com/PokemonFusion/Fusion2/issues/830) | Fused battle/Z provenance and both-form effects | B, D, E |
 | G | [#831](https://github.com/PokemonFusion/Fusion2/issues/831) | Integrated acceptance and separately authorized release walkthrough | E, F |
 
-Commands remain private/unregistered until A–F local gates pass together;
-isolated ordinary command tests may exercise their real classes beforehand.
-G records deliberately released live acceptance separately and authorizes no
-deployment by itself. Each implementation issue needs focused effects plus real
+A–F have passed their [local integration and mandatory gates](../testing/necrozma-items-2026-10-24.md)
+together; the accepted source registers the ordinary command. G remains open
+for deliberately released socket acceptance and authorizes no deployment by
+itself. The existing running shared game was not changed. Each implementation issue needs focused effects plus real
 production-model PostgreSQL tests, then the mandatory fresh combined/repeat/
 battle-first gate after Python changes. Static checks in #820 are design evidence.
 
@@ -254,7 +257,8 @@ trainer-Fusion code and its separate #723 hardening. Runtime native access and
 human-readable displays must agree with the canonical link.
 
 The [design validation receipt](../testing/necrozma-design-2026-10-23.md) pins
-source facts and issue dependencies. No command, schema, source move, fused Z
-holder, source acquisition or live availability is implemented by this design.
-No runtime/generated-data changes, game database, migration, service operation,
-plot item, trainer-Fusion reinterpretation or unrelated work is included.
+source facts and issue dependencies at the original design publication.
+The later local implementation is recorded separately above; neither receipt
+claims live source availability, a shared-game migration or deployment. Plot
+items, generated learnset changes, Ultra, trainer-Fusion reinterpretation and
+unrelated work remain outside this lifecycle.

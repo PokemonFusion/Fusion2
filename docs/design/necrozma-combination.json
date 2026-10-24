@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "parent": 820,
   "review_date": "2026-10-23",
   "baseline": "ec1203c47564c8e712831d8764394a4300a9b629",
-  "status": "design-complete-implementation-open",
-  "runtime_enabled": false,
+  "status": "local-implementation-accepted-released-socket-qa-open",
+  "runtime_enabled": true,
   "primary_form_source": "https://press.pokemon.com/en/MORE-NEW-DETAILS-ANNOUNCED-FOR-POKEMON-ULTRA-SUN-AND-POKEMON-ULT-65344",
   "policy_origin": "PF2-selected ownership/storage/PP/command policy; primary source verifies only native pairs and source moves. No complete cartridge/GO-parity claim.",
   "forms": [
@@ -29,8 +29,9 @@
         "spe": 77
       },
       "ordinary_source_base_pp": 5,
-      "current_runtime_enabled": false,
-      "implementation_gate": 830
+      "current_runtime_enabled": true,
+      "implementation_gate": 830,
+      "released_socket_acceptance": false
     },
     {
       "base": "Necrozma",
@@ -53,12 +54,13 @@
         "spe": 77
       },
       "ordinary_source_base_pp": 5,
-      "current_runtime_enabled": false,
-      "implementation_gate": 830
+      "current_runtime_enabled": true,
+      "implementation_gate": 830,
+      "released_socket_acceptance": false
     }
   ],
   "commands": {
-    "status": "proposed-unregistered",
+    "status": "registered-in-locally-accepted-source",
     "center_only": true,
     "human_form_only": true,
     "inspect": "+necrozma inspect <host slot or full owned UUID>",
@@ -199,7 +201,8 @@
         "Enforce exactly one canonical placement, one active membership across either pair role, matching owner/storage/species/form, reciprocal companion/link state, placement NULL shape and synchronized legacy mirrors. Extend the existing PostgreSQL deferred checks and placement audit; no parallel ownership source.",
         "Audit legacy/directly granted fused rows, missing companions, role reuse and inconsistent resource/move state. Fail before migration writes on ambiguous data; never invent, delete or automatically separate sources.",
         "Use isolated production-model PostgreSQL constraint/outer-transaction/upgrade tests, including actual installed deferred checks and invalid bulk-write commits. Preserve existing placement/capture/trainer-Fusion regressions. Migration files may be prepared; execution against a game database requires separate approval."
-      ]
+      ],
+      "implementation_status": "local-accepted"
     },
     {
       "key": "B",
@@ -223,7 +226,8 @@
         "Block directly created/captured owned fused forms without a valid live pair; a static itemUser/form row, copied appearance or unsupported encounter cannot fabricate a second owned source. Retain ordinary native/base captures and NPC encounter behavior; failed capture cannot debit a ball or strand rows.",
         "Expose a compatible reservation boundary for #722 and #723; do not add another owner-transfer writer or re-enable +trade. Guard release, box operations, current field/evolution/move writers and trainer-Fusion paths that exist now, including service-level bypass attempts.",
         "Run independent-connection PostgreSQL races against placement/release/Fusion/field use/battle entry and supported transfer reservations, plus negative ordinary inputs and deferred-integrity checks. Prove legal host use, companion freeze, no deadlock/loss/duplication and unchanged unrelated behavior."
-      ]
+      ],
+      "implementation_status": "local-accepted"
     },
     {
       "key": "C",
@@ -246,7 +250,8 @@
         "Return previous party slot if free, then first free slot, then an owner box; an originally boxed companion prefers its still-valid old box. Handle full parties/deleted hints via PlacementService without eviction/slot compaction; no legal destination means full rollback and retained valid pair.",
         "Bind request UUID/terms/version/lifecycle. Exact retries return committed history without repeating effects; changed partner requires separation; stale separation from an older cycle cannot undo a newer pair or resurrect released rows.",
         "Inject failure after every durable write and outer rollback, checking fresh SQL, shared-instance caches, mirrors, resources, receipts and success silence. Exercise both forms, party/box sources and independent-connection combine/combine, combine/separate and separate/separate contention."
-      ]
+      ],
+      "implementation_status": "local-accepted"
     },
     {
       "key": "D",
@@ -267,7 +272,8 @@
         "Lock active/saved moveset editing/switching, forgetting, mutating teach/learn prompts and source replacement while linked. Preserve read-only views. New base-Necrozma level-up knowledge/EXP may persist, but active-set changes/prompts are deferred; never lose earned progression.",
         "On separation retain the form resource/bonus history, remove only its temporary learned/slot exposure and restore only the displaced original slot/current PP or empty state. Other spent PP, newly earned base knowledge and progression persist; copied runtime moves never overwrite the canonical binding.",
         "Test real ordinary PP/healing/progression commands, zero/boosted PP repeated cycles, parent rollback/faults/concurrency, gapped/empty slots and failed source substitutions with independent SQL. Preserve current Rare Candy/PP items/medicine/learning and native Lunala/Solgaleo source routes."
-      ]
+      ],
+      "implementation_status": "local-accepted"
     },
     {
       "key": "E",
@@ -289,7 +295,8 @@
         "Expose host/companion association, read-only companion status and owned counts in appropriate party/storage/detail surfaces without treating the reserved companion as an actionable party/box member or changing trainer-Fusion labels. Explain source-slot editing limits and no PP refill.",
         "Exercise configured ordinary acquisition of both native base sources, real command/menu confirmation, form inspection, canonical storage moves, field items, reconnect, separation/full-party fallback and restored source rows in disposable PostgreSQL. Keep fixture/staff setup separate from ordinary input.",
         "Provide exact help and current supported/deferred docs, plus positive/negative/rollback/replay transport and fresh SQL evidence for both forms. Do not claim public activation, fused Z, live source availability or deployment from metadata/command tests."
-      ]
+      ],
+      "implementation_status": "local-accepted"
     },
     {
       "key": "F",
@@ -312,7 +319,8 @@
         "Preserve combination across switch/faint/revival/reconnect/end/flee/concede; only explicit field separation removes it. Persist host PP/HP/status/progression to the correct row and resource once; preserve every companion field.",
         "Initial combined-host support is ordinary moves/items/flee and those two Z signatures. Reject Mega/Tera/Dynamax/Ultra stacking before queuing in this bounded slice, leaving all existing unfused/native behavior intact. No AI activation/new format/new crystal or Counter expansion.",
         "Run acquire\u2192combine\u2192+hold\u2192ordinary attack and +zmove\u2192meaningful effects/SQL PP/use\u2192switch/rebuild/end\u2192separate/return flows for both forms, with ability/protection/immunity/source-zero/corrupt/current-owner/side-budget/fault controls. Rerun native Lunala/Solgaleo, existing Mega/Tera/Z and item regressions plus full mandatory gate before public mutation activation."
-      ]
+      ],
+      "implementation_status": "local-accepted"
     },
     {
       "key": "G",
@@ -334,7 +342,8 @@
         "Record exact commands, expected/observed results and relevant independent SQL/current proof; distinguish staff/setup, automated transport and ordinary live socket evidence. Do not use a directly granted fused row as native acquisition proof or touch human characters/Pok\u00e9mon.",
         "Retain failed/unsupported checks, fix through bounded prerequisites, rerun affected gates and complete cleanup of only tagged fixtures. Verify protected rows unchanged and no unresolved pair/reservation/source-resource leftovers.",
         "Mark live/released acceptance only after the actual walkthrough, with operator authorization and cleanup evidence. Keep new forms/Z disabled or explicitly unreleased if prerequisites or release approval remain missing. Ultra, plots, unrelated features and permanent source grants remain out."
-      ]
+      ],
+      "implementation_status": "awaiting-separate-release-approval-and-socket-acceptance"
     }
   ],
   "activation_gates": {
@@ -622,5 +631,22 @@
       "Solganium Z": "cdd04dcef8a3f54994f987bddcb670a4279611402c66106acee554b64ff9577b",
       "Lunalium Z": "d9bc5e51f0209fabb8c54f9696eb626fdb47b4a0262ac20e12a3e5c2562a92e9"
     }
+  },
+  "runtime_enabled_scope": "accepted source only; not a running shared-game deployment",
+  "implementation": {
+    "date": "2026-10-24",
+    "commit": "a45eed73d953f7350d9510482aac5534fac7ef51",
+    "local_accepted_issues": [
+      825,
+      826,
+      827,
+      828,
+      829,
+      830
+    ],
+    "released_acceptance_issue": 831,
+    "released_acceptance_complete": false,
+    "shared_game_deployed": false,
+    "receipt": "../testing/necrozma-items-2026-10-24.md"
   }
 }

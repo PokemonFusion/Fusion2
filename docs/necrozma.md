@@ -1,7 +1,8 @@
 # Native Necrozma combinations
 
-This route is undergoing local acceptance for #825–#830. Released-build
-acceptance is tracked separately in #831; it is not deployed by these docs.
+This route passes [local acceptance](testing/necrozma-items-2026-10-24.md)
+for #825–#830 and is registered in the tested source. Released-build socket
+acceptance remains open in #831; publication does not deploy a running game.
 
 Bring your own **base Necrozma and Solgaleo or Lunala** to a Pokémon Center.
 Remain in human form and finish any battle or conflicting activity first.
@@ -30,8 +31,9 @@ Use `+box`, `+pokemon <UUID>` or `+necrozma inspect <UUID>` to inspect your sour
 
 Review both identities, current placements, held items, chosen move slot,
 displaced move's PP and return rules before answering **yes** or **no**. Reviews
-expire after five minutes. A changed target, location, item, move or source
-state requires a new review. After reconnecting, `+necrozma` lists your pending
+expire after five minutes. Confirm at a Center in human form. Changes to source
+identities, placements, items, moves or other listed state require a new review.
+After reconnecting, `+necrozma` lists your pending
 reviews; `+necrozma review <request UUID>` reopens one.
 
 Necrozma keeps its own identity, genetics, nickname, held item and progression.

@@ -576,5 +576,32 @@
       "number": 808,
       "url": "https://github.com/PokemonFusion/Fusion2/issues/808"
     }
-  ]
+  ],
+  "native_necrozma_extension": {
+    "date": "2026-10-24",
+    "local_accepted": true,
+    "implementation_commit": "a45eed73d953f7350d9510482aac5534fac7ef51",
+    "released_socket_accepted": false,
+    "shared_game_deployed": false,
+    "profiles_added": 0,
+    "crystals_added": 0,
+    "pairs": [
+      {
+        "holder": "Necrozma-Dusk-Mane",
+        "companion": "Solgaleo",
+        "crystal": "Solganium Z",
+        "source": "Sunsteel Strike",
+        "requires_current_live_pair_proof": true
+      },
+      {
+        "holder": "Necrozma-Dawn-Wings",
+        "companion": "Lunala",
+        "crystal": "Lunalium Z",
+        "source": "Moongeist Beam",
+        "requires_current_live_pair_proof": true
+      }
+    ],
+    "receipt": "../testing/necrozma-items-2026-10-24.md",
+    "released_acceptance_issue": 831
+  }
 }
