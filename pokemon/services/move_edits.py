@@ -121,21 +121,23 @@ def guarded_move_menu(function=None, *, require_center=False):
     if function is None:
         return lambda target: guarded_move_menu(target, require_center=require_center)
     @wraps(function)
-    def guarded(caller, *args, **kwargs):
+    def guarded(caller, raw_input=None, **kwargs):
+        # EvMenu inspects getfullargspec rather than the wrapped signature.
+        # Keep input explicit so it forwards the player's actual reply.
         if not BattleRewards.supports(caller):
-            return function(caller, *args, **kwargs)
+            return function(caller, raw_input, **kwargs)
         from pokemon.services.placement import PlacementError
 
         pokemon = kwargs.get("pokemon") or getattr(caller.ndb, "ms_pokemon", None)
         if pokemon is None:
-            return function(caller, *args, **kwargs)
+            return function(caller, raw_input, **kwargs)
         try:
             with MoveEdits(caller).locked(pokemon, require_center=require_center) as source:
                 if "pokemon" in kwargs:
                     kwargs["pokemon"] = source
                 else:
                     caller.ndb.ms_pokemon = source
-                return function(caller, *args, **kwargs)
+                return function(caller, raw_input, **kwargs)
         except PlacementError as error:
             return str(error) + " No moves were changed. Reopen the menu for an eligible owned Pokemon.", None
     return guarded

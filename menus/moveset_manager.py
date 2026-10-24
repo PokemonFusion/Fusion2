@@ -39,7 +39,7 @@ def node_start(caller, raw_input=None):
 
 
 @guarded_move_menu(require_center=True)
-def node_manage(caller, raw_input=None):
+def node_manage(caller, raw_input=None, **kwargs):
 	"""Inspect or activate a saved set while retaining the current owner guard."""
 	poke = caller.ndb.ms_pokemon
 	sets = []
@@ -98,7 +98,7 @@ def node_manage(caller, raw_input=None):
 
 
 @guarded_move_menu(require_center=True)
-def node_edit(caller, raw_input=None):
+def node_edit(caller, raw_input=None, **kwargs):
 	"""Update only the retained owned source, never a stale transferred reference."""
 	poke = caller.ndb.ms_pokemon
 	idx = caller.ndb.ms_index
