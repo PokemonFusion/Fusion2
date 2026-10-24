@@ -1,6 +1,6 @@
 # Non-plot Necrozma combine/separate contract (#820)
 
-Status: **local implementation accepted (#825–#830); released-build socket acceptance remains open (#831)**.
+Status: **local implementation accepted (#825–#830); intentionally released local socket acceptance passed (#831)**.
 Reviewed on October 23, 2026 at `ec1203c47564c8e712831d8764394a4300a9b629`.
 The [machine-readable plan](necrozma-combination.json) records the exact scope,
 dependencies and validation inventory. Closing #820 records this bounded plan;
@@ -9,7 +9,10 @@ its original static receipt does not claim implementation. The October 24
 the two native lifecycles and their existing signatures in the [current Z matrix](z-crystals.md).
 The subsequent [released local walkthrough](../testing/necrozma-released-local-2026-10-24.md)
 exposed an ordinary zero-PP move-legality gap. Its original candidate failed
-acceptance; #831 remains open for a qualified replacement and released rerun.
+acceptance. The [approved replacement walkthrough](../testing/necrozma-released-retry-2026-10-24.md)
+passes on repaired candidate `e3557aa`, including ordinary/Z zero-PP rejection
+without action, damage or side use. This qualifies the disposable local release;
+it does not deploy a shared game.
 
 ## Native forms and entry point
 
@@ -232,9 +235,9 @@ held crystal: its existing native offers already supply these same items.
 | G | [#831](https://github.com/PokemonFusion/Fusion2/issues/831) | Integrated acceptance and separately authorized release walkthrough | E, F |
 
 A–F have passed their [local integration and mandatory gates](../testing/necrozma-items-2026-10-24.md)
-together; the accepted source registers the ordinary command. G remains open
-for deliberately released socket acceptance and authorizes no deployment by
-itself. The existing running shared game was not changed. Each implementation issue needs focused effects plus real
+together; the accepted source registers the ordinary command. G passed its
+[separately approved local release walkthrough](../testing/necrozma-released-retry-2026-10-24.md).
+The existing running shared game was not changed. Each implementation issue needs focused effects plus real
 production-model PostgreSQL tests, then the mandatory fresh combined/repeat/
 battle-first gate after Python changes. Static checks in #820 are design evidence.
 

@@ -62,9 +62,11 @@ October 24 update: the exact local plan for `02c81c0` was separately approved
 and executed. That instance was stopped and its schema removed after an
 additional ordinary zero-PP attack check failed. See the
 [released local receipt](../testing/necrozma-released-local-2026-10-24.md).
-The approval covered that candidate and isolated environment; a replacement
-candidate still requires its own exact release authorization. PF2-Dev stayed
-unchanged.
+The replacement candidate `e3557aa` was subsequently explicitly approved for
+local dev operations and passed its [released socket walkthrough](../testing/necrozma-released-retry-2026-10-24.md).
+Both isolated instances are stopped and their disposable schemas removed; the
+task-only cluster is stopped. PF2-Dev stayed unchanged. Future shared-game
+deployment still requires its own exact operational authorization.
 
 The released walkthrough must acquire both native sources through ordinary
 configured routes, then exercise actual Center movement, review/confirmation,

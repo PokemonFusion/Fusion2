@@ -14,10 +14,15 @@
   "qa_settings_sha256": "cdfbd4f6a3e5c6e0a67f0ea2d63b3234d892f368c0cd7578487fe4e598ea1edb",
   "source_is_pinned_uncommitted_candidate": false,
   "scope": "New named local release from published commit; task-only loopback PostgreSQL random schema; no existing service, game database, PF2-Dev release, permanent source or human player changes",
-  "status": "awaiting-exact-replacement-release-approval",
+  "status": "executed-released-local-acceptance-passed",
   "issue": 831,
-  "executed": false,
-  "operator_approval": null,
+  "executed": true,
+  "operator_approval": {
+    "tag": "necrozma-release-05e2205bda484d27a13099e03698300c",
+    "approved_local_release_and_tagged_qa": true,
+    "human_reply": "Try again, I approve you to do what you need over the local dev server.",
+    "candidate": "e3557aadced7fc5897b7024d1377047117735a64"
+  },
   "prior_failed_candidate": "02c81c0d62364d48d3cdae6d8b57023d8ed99249",
   "prior_receipt": "necrozma-released-local-2026-10-24.json",
   "shared_server_deployment": false,
@@ -248,12 +253,13 @@
     "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\battle_observe.py": "30287e3265c312fe37ed72a7bc59794319140c1d56ddea0bf0ecb01d43e3e30f",
     "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\released-retry\\source\\server\\conf\\qa_necrozma_settings.py": "ace93aedc8802b2744fc1f8ea720d8636d9720f12e4d76492897144a97b3bd75"
   },
-  "authority": "AGENTS.md requires asking before migrations and service operations. The earlier human approval explicitly selected the failed original SHA and does not cover this replacement.",
+  "authority": "Executed after the user's explicit approval of local dev operations. The exact approved candidate/tag/controller scope was preserved. No existing game database or shared service was changed.",
   "ordinary_players": [
     "NativeDusk98300c",
     "NativeDawn98300c"
   ],
   "staff_scope": "New tagged rooms/exits/finite stock/wallets/base charts; no source, fused or bag grants. Optional separately labelled bound PP0/host HP0, outside battle only.",
   "ordinary_acceptance": "Repeat complete two-form acquisition/Center/review/inspection/battle/Z/reconnect/field/return flows, then assert ordinary and Z zero-PP rejection before declarations/damage/side use.",
-  "cleanup": "Separate only tagged sources, quit sockets, verify protected/companion rows, stop only the new archive through its AMP port, drop only its random schema, stop only the task cluster."
+  "cleanup": "Separate only tagged sources, quit sockets, verify protected/companion rows, stop only the new archive through its AMP port, drop only its random schema, stop only the task cluster.",
+  "execution_receipt": "necrozma-released-retry-2026-10-24.md"
 }

@@ -8,7 +8,7 @@ Other ordinary/status sources and Ultra remain deferred. The two
 [local acceptance](../testing/necrozma-items-2026-10-24.md) for #825–#830.
 They extend holder eligibility for the same two signatures; the 42 mapping /
 34 crystal / 16 signature counts and original native fingerprints are unchanged.
-Released-build socket acceptance remains open in #831. No shared-game
+[Released local socket acceptance](../testing/necrozma-released-retry-2026-10-24.md) passes for #831. No shared-game
 deployment, permanent source or stock installation is asserted.
 Read the [activation contract](z-moves.md). The [JSON inventory](z-crystals.json)
 retains local crystal/source/holder metadata. This fresh enumeration found 18
@@ -60,7 +60,7 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Icium Z | Generic / Ice | Any eligible native holder | Powder Snow → Subzero Slammer, 100 Special; status: Haze; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
 | Incinium Z | Signature | Incineroar | Darkest Lariat → Malicious Moonsault, 180 Physical | Accepted bounded route / [#805](https://github.com/PokemonFusion/Fusion2/issues/805) |
 | Kommonium Z | Signature | Kommo-o, Kommo-o-Totem | Clanging Scales → Clangorous Soulblaze, 185 Special | Accepted bounded route / [#807](https://github.com/PokemonFusion/Fusion2/issues/807) |
-| Lunalium Z | Signature | Lunala; Dawn-Wings with [valid live native pair proof](necrozma-combination.md) | Moongeist Beam → Menacing Moonraze Maelstrom, 200 Special | Accepted native Lunala route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released socket QA #831 open |
+| Lunalium Z | Signature | Lunala; Dawn-Wings with [valid live native pair proof](necrozma-combination.md) | Moongeist Beam → Menacing Moonraze Maelstrom, 200 Special | Accepted native Lunala route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released local socket QA #831 passed |
 | Lycanium Z | Signature | Lycanroc, Lycanroc-Midnight, Lycanroc-Dusk | Stone Edge → Splintered Stormshards, 190 Physical | Accepted bounded route / [#807](https://github.com/PokemonFusion/Fusion2/issues/807) |
 | Marshadium Z | Signature | Marshadow | Spectral Thief → Soul-Stealing 7-Star Strike, 195 Physical | Accepted bounded route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808) |
 | Mewnium Z | Signature | Mew | Psychic → Genesis Supernova, 185 Special | Accepted bounded route / [#807](https://github.com/PokemonFusion/Fusion2/issues/807) |
@@ -73,7 +73,7 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Psychium Z | Generic / Psychic | Any eligible native holder | Confusion → Shattered Psyche, 100 Special; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
 | Rockium Z | Generic / Rock | Any eligible native holder | Rock Throw → Continental Crush, 100 Physical; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
 | Snorlium Z | Signature | Snorlax | Giga Impact → Pulverizing Pancake, 210 Physical | Accepted bounded route / [#806](https://github.com/PokemonFusion/Fusion2/issues/806) |
-| Solganium Z | Signature | Solgaleo; Dusk-Mane with [valid live native pair proof](necrozma-combination.md) | Sunsteel Strike → Searing Sunraze Smash, 200 Physical | Accepted native Solgaleo route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released socket QA #831 open |
+| Solganium Z | Signature | Solgaleo; Dusk-Mane with [valid live native pair proof](necrozma-combination.md) | Sunsteel Strike → Searing Sunraze Smash, 200 Physical | Accepted native Solgaleo route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released local socket QA #831 passed |
 | Steelium Z | Generic / Steel | Any eligible native holder | Metal Claw → Corkscrew Crash, 100 Physical; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
 | Tapunium Z | Signature | Tapu Koko, Tapu Lele, Tapu Bulu, Tapu Fini | Nature's Madness → Guardian of Alola, fixed HP fraction Special | Accepted bounded route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808) |
 | Ultranecrozium Z | Signature | Necrozma-Ultra | Photon Geyser | Deferred: Ultra native-form route needs separate design |

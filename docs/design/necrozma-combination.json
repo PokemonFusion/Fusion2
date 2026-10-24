@@ -3,7 +3,7 @@
   "parent": 820,
   "review_date": "2026-10-23",
   "baseline": "ec1203c47564c8e712831d8764394a4300a9b629",
-  "status": "local-repair-qualified-replacement-released-socket-qa-open",
+  "status": "local-implementation-and-released-local-socket-accepted",
   "runtime_enabled": true,
   "primary_form_source": "https://press.pokemon.com/en/MORE-NEW-DETAILS-ANNOUNCED-FOR-POKEMON-ULTRA-SUN-AND-POKEMON-ULT-65344",
   "policy_origin": "PF2-selected ownership/storage/PP/command policy; primary source verifies only native pairs and source moves. No complete cartridge/GO-parity claim.",
@@ -31,7 +31,7 @@
       "ordinary_source_base_pp": 5,
       "current_runtime_enabled": true,
       "implementation_gate": 830,
-      "released_socket_acceptance": false
+      "released_socket_acceptance": true
     },
     {
       "base": "Necrozma",
@@ -56,7 +56,7 @@
       "ordinary_source_base_pp": 5,
       "current_runtime_enabled": true,
       "implementation_gate": 830,
-      "released_socket_acceptance": false
+      "released_socket_acceptance": true
     }
   ],
   "commands": {
@@ -343,7 +343,7 @@
         "Retain failed/unsupported checks, fix through bounded prerequisites, rerun affected gates and complete cleanup of only tagged fixtures. Verify protected rows unchanged and no unresolved pair/reservation/source-resource leftovers.",
         "Mark live/released acceptance only after the actual walkthrough, with operator authorization and cleanup evidence. Keep new forms/Z disabled or explicitly unreleased if prerequisites or release approval remain missing. Ultra, plots, unrelated features and permanent source grants remain out."
       ],
-      "implementation_status": "replacement-release-awaiting-exact-approval-and-socket-rerun"
+      "implementation_status": "released-local-socket-accepted"
     }
   ],
   "activation_gates": {
@@ -645,7 +645,7 @@
       830
     ],
     "released_acceptance_issue": 831,
-    "released_acceptance_complete": false,
+    "released_acceptance_complete": true,
     "shared_game_deployed": false,
     "receipt": "../testing/necrozma-items-2026-10-24.md",
     "released_walkthrough_attempt": {
@@ -657,7 +657,13 @@
       "commit": "e3557aadced7fc5897b7024d1377047117735a64",
       "receipt": "../testing/necrozma-pp-repair-2026-10-24.json",
       "replacement_release_plan": "../testing/necrozma-retry-release-plan-2026-10-24.md",
-      "released_accepted": false
+      "released_accepted": true
+    },
+    "released_walkthrough_accepted": {
+      "candidate": "e3557aadced7fc5897b7024d1377047117735a64",
+      "tag": "necrozma-release-05e2205bda484d27a13099e03698300c",
+      "receipt": "../testing/necrozma-released-retry-2026-10-24.md",
+      "shared_game_deployed": false
     }
   }
 }

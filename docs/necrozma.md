@@ -1,12 +1,11 @@
 # Native Necrozma combinations
 
 This route passes [local acceptance](testing/necrozma-items-2026-10-24.md)
-for #825–#830 and is registered in the tested source. Released-build socket
-acceptance remains open in #831; publication does not deploy a running game.
-The [October 24 released local walkthrough](testing/necrozma-released-local-2026-10-24.md)
-found an ordinary zero-PP attack gap. Its bounded repair passes fresh local qualification; the
-[replacement release plan](testing/necrozma-retry-release-plan-2026-10-24.md)
-awaits separate approval and socket acceptance. The original candidate failed.
+for #825–#830 and [intentionally released local socket acceptance](testing/necrozma-released-retry-2026-10-24.md)
+for #831. The original candidate's zero-PP failure is retained in its
+[historical receipt](testing/necrozma-released-local-2026-10-24.md); repaired
+candidate `e3557aa` passes the fresh qualification and approved replacement
+walkthrough. This does not claim deployment or source availability in a shared game.
 
 Bring your own **base Necrozma and Solgaleo or Lunala** to a Pokémon Center.
 Remain in human form and finish any battle or conflicting activity first.

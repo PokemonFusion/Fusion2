@@ -1,11 +1,11 @@
 # Native Necrozma replacement release plan (#831)
 
-**Awaiting separate operator approval; not executed.** The original approved
-candidate failed an additional ordinary zero-PP check; its
-[complete receipt](necrozma-released-local-2026-10-24.md) is retained. The bounded
-repair and all fresh qualification results are published. Approval of the
-original SHA does not authorize this replacement. The [JSON](necrozma-retry-release-plan-2026-10-24.json)
-contains exact configuration and the full reviewable controller sources/hashes.
+**Executed with explicit local dev approval; replacement acceptance passed.**
+The [actual replacement receipt](necrozma-released-retry-2026-10-24.md) records
+the ordinary socket walkthrough, PP0 fix verification and completed cleanup.
+The original candidate's [failed receipt](necrozma-released-local-2026-10-24.md)
+is retained separately. The [JSON](necrozma-retry-release-plan-2026-10-24.json)
+preserves the exact reviewed configuration and controller sources/hashes below.
 
 ## Exact replacement
 
@@ -41,8 +41,9 @@ Record approval for this exact candidate/tag only in
 The supervisor creates/migrates only its new random schema, initializes a
 separate private operator and starts only the new archived instance. It retains
 teardown control. Authentication inputs and generated secrets stay private.
-`AGENTS.md` says “Never run migrations without asking first.” These operations
-have not been run for the replacement.
+`AGENTS.md` says “Never run migrations without asking first.” The user
+subsequently explicitly approved this local dev retry; these operations ran
+only against the new disposable schema and archived instance described here.
 
 Two independent ordinary socket players register, select their own characters
 and complete human onboarding. The separate operator runs the reviewed
