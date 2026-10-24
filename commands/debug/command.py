@@ -376,7 +376,7 @@ class CmdChooseStarter(Command):
                 )
             return
 
-        if _db_bool(caller, "validated", False):
+        if _db_bool(caller, "validated", False) or _db_bool(caller, "chargen_completed", False):
             caller.msg("You have already completed chargen; starter selection is closed.")
             return
 
@@ -421,6 +421,12 @@ def _caller_has_party_pokemon(caller) -> bool:
 
 def _starter_menu_target(caller):
     data = getattr(getattr(caller, "ndb", None), "chargen", None)
+    if not isinstance(data, dict) or not data:
+        from collections.abc import Mapping
+        saved = getattr(getattr(caller, "db", None), "chargen_draft", None)
+        if isinstance(saved, Mapping):
+            data = dict(saved)
+            caller.ndb.chargen = data
     if not isinstance(data, dict) or not data:
         return "start", "", {}
 

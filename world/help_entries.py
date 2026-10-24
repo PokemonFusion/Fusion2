@@ -163,6 +163,10 @@ short introduction to moving, talking, and trying your first wild battle.
    chargen
    Choose a human trainer with a starter Pokemon, or a Fusion who can battle
    as their own Pokemon form. Follow the menu's prompts one at a time.
+   Beta setup is self-service; no staff validation is required. Accepted choices
+   are saved. If you abort or disconnect, type chargen again to resume.
+   Completion saves one starting choice; repeating it never grants another
+   starter or Fusion form, including after trading or releasing that Pokemon.
 5. Human trainers choose their starter in the menu. Type starterlist when
    asked for a species. Outside the menu, +starters lists starter options;
    +starter opens or resumes human starter selection if needed.

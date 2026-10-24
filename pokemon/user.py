@@ -106,16 +106,7 @@ class User(Character, InventoryMixin):
 
         # Ensure a storage record and starter boxes exist for this character.
         _ = self.storage
-        Trainer = apps.get_model("pokemon", "Trainer")
-        # allocate next available trainer number to avoid unique collisions
-        next_number = (Trainer.objects.aggregate(max_num=Max("trainer_number"))["max_num"] or 0) + 1
-        while True:
-            try:
-                Trainer.objects.get_or_create(user=self, defaults={"trainer_number": next_number})
-            except IntegrityError:
-                next_number += 1
-                continue
-            break
+        self._ensure_trainer()
         if self.db.inventory is None:
             from utils.inventory import Inventory
 
@@ -264,11 +255,31 @@ class User(Character, InventoryMixin):
         slot_obj = self.storage.active_slots.select_related("pokemon").filter(slot=slot).first()
         return slot_obj.pokemon if slot_obj else None
 
+    def _ensure_trainer(self):
+        """Allocate a unique trainer number with savepoint-safe concurrent retries."""
+        Trainer = apps.get_model("pokemon", "Trainer")
+        current = Trainer.objects.filter(user=self).first()
+        if current is not None:
+            return current
+        for _attempt in range(100):
+            try:
+                with transaction.atomic():
+                    number = (Trainer.objects.aggregate(max_num=Max("trainer_number"))["max_num"] or 0) + 1
+                    trainer, _created = Trainer.objects.get_or_create(user=self, defaults={"trainer_number": number})
+                    return trainer
+            except IntegrityError:
+                # A different character may have chosen the same maximum, or
+                # another session just initialized this character. The inner
+                # savepoint keeps a surrounding create-character transaction usable.
+                current = Trainer.objects.filter(user=self).first()
+                if current is not None:
+                    return current
+        raise RuntimeError("Trainer number allocation remained busy; retry character setup.")
+
     @property
     def trainer(self) -> "Trainer":
-        Trainer = apps.get_model("pokemon", "Trainer")
-        trainer, _ = Trainer.objects.get_or_create(user=self, defaults={"trainer_number": Trainer.objects.count() + 1})
-        return trainer
+        """Return this character's trainer, initializing legacy missing state safely."""
+        return self._ensure_trainer()
 
     def _update_inventory_cache_from_trainer(self) -> None:
         """Synchronize the cached inventory with the trainer's records."""
