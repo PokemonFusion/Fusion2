@@ -33,6 +33,7 @@
     </form>
   </section>
 
+  {% if selected_character %}
   <section class="player-character-panel profile-editor-panel">
     <header class="player-character-heading">
       <div>
@@ -96,6 +97,11 @@
       </div>
     </form>
   </section>
+  {% else %}
+  <section class="player-character-panel profile-editor-panel">
+    <p class="player-hub-empty">That character is unavailable. Choose one of your own characters above and select Open.</p>
+  </section>
+  {% endif %}
   {% else %}
   <div class="player-character-panel">
     <h2>No Characters Found</h2>

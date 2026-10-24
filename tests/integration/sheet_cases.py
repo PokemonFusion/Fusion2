@@ -42,6 +42,28 @@ class SheetCases(unittest.TestCase):
         self.steps.append({'request': '/mysheet/', 'account': request.user.pk, 'status': response.status_code})
         return response, response.content.decode()
 
+    def test_website_guides_render_the_same_public_file_help_for_regular_players(self):
+        """Both help surfaces must use the current guide source and real template."""
+        from django.utils.text import slugify
+        from evennia.help.filehelp import FILE_HELP_ENTRIES
+        from evennia.web.website.views.help import HelpDetailView
+        from evennia.utils.ansi import strip_ansi
+        from world.help_entries import HELP_ENTRY_DICTS
+        FILE_HELP_ENTRIES.load()
+        entries = {entry['key']: entry for entry in HELP_ENTRY_DICTS if entry.get('category') == 'Guide'}
+        topics = ('getting started', 'pokemon and storage', 'growth and moves', 'fusion',
+                  'trading', 'gyms', 'pvp and spectating', 'multi battles')
+        for topic in topics:
+            request = RequestFactory().get('/help/guide/' + slugify(topic) + '/')
+            request.user, request.session = self.player.account, {}
+            response = HelpDetailView.as_view()(request, category='guide', topic=slugify(topic))
+            response.render()
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context_data['entry_text'], strip_ansi(entries[topic]['text']).strip())
+            self.assertIn('guide-entry-body', response.content.decode())
+            self.steps.append({'request': request.path, 'account': request.user.pk,
+                               'status': response.status_code, 'same_file_help': True})
+
     def sheet(self, actor=None, args='', switches=()):
         """Execute the normal sheet command without replacing resource reads."""
         actor = actor or self.player
@@ -100,6 +122,16 @@ class SheetCases(unittest.TestCase):
         anonymous.user = AnonymousUser()
         self.assertEqual(MySheetView.as_view()(anonymous).status_code, 302)
         self.assertEqual(ProfileEditorView.as_view()(anonymous).status_code, 302)
+        foreign = RequestFactory().get('/profiles/?character=' + str(self.other.pk))
+        foreign.user, foreign.session = self.player.account, {}
+        denied = ProfileEditorView.as_view()(foreign)
+        denied.render()
+        self.assertEqual(denied.status_code, 200)
+        self.assertIn('That character is unavailable', denied.content.decode())
+        self.assertNotIn('Add Field', denied.content.decode())
+        self.assertIsNone(denied.context_data['selected_character'])
+        self.steps.append({'request': foreign.path + '?character=' + str(self.other.pk),
+                           'status': 200, 'editable_character': False, 'no_field_forms': True})
         request = RequestFactory().post('/profiles/', {'character': self.other.pk, 'field_name': 'Secret', 'field_text': 'FORGED'})
         request.user = self.player.account
         with patch('web.website.views.profile_editor.messages.error'):

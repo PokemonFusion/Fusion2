@@ -468,7 +468,7 @@ def test_return_appearance_preserves_builder_metadata_in_classic_layout():
                 assert "(O)ut (#302)" in plain
                 assert "(S)ecret (#303) [Dark]" in plain
                 assert "Ball-O-Matic (#401) (Dark)" in plain
-                assert "There is a store here. Use +store/list to see its contents." in plain
+                assert "There is a store here. Use +store and choose Buy items to see its contents." in plain
 
 
 def test_return_appearance_items_in_sr_mode_are_plain_text():

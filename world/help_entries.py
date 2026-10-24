@@ -26,6 +26,106 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "gyms",
+		"aliases": ["gym battles", "gym guide", "badges"],
+		"category": "Guide",
+		"text": """
+Find an available gym with +gym list, then inspect its requirements before
+challenging. Use the gym key shown in that list; not every area has a gym.
+
++gym list
++gym check tempo_gym
++gym challenge tempo_gym
+
+The check explains the gym's format, roster limits, location, badge requirements
+and rematch availability. Meet those requirements and bring conscious eligible
+Pokemon. If the gym is disabled, you are in the wrong room, or you are already
+in an activity, resolve the reported problem before trying again. A gym doubles
+challenge uses two active Pokemon controlled by you, not four human trainers.
+
+During battle use help battle basics, +status and the acting positions shown
+by the prompt. For example, +attack A1 Water Gun B1 uses A1's learned Water Gun
+against B1; the move must actually be known and have PP. +switch lists your own
+legal reserves. Healing and storage changes belong outside the battle.
+
+Win to earn the gym's badge once. A rematch does not award a duplicate badge;
+its availability and rewards follow the rules shown by +gym check. If a victory
+reports a pending badge, reconnect if needed and use +gym claim. Do not repeat
+the battle to repair an interrupted claim. Use +battle/retry for a pending
+battle save, and +request with the command and exact response if recovery fails.
+
+Use help pvp and spectating for two-player singles/doubles, or help multi
+battles for four human controllers. Gyms do not provide human partner matching.
+		""",
+	},
+	{
+		"key": "multi battles",
+		"aliases": ["multi pvp", "four trainer battles", "team battles"],
+		"category": "Guide",
+		"text": """
+Multi is two trainers versus two trainers: four different player accounts.
+Each controls one active Pokemon and switches only among their own party and
+supported current Fusion. Ordinary doubles is two players, each controlling two
+active Pokemon; it uses +pvp/create double instead.
+
+Meet in one room. One player hosts A1:
++pvp/multi create
+
+The other three players choose their own slots:
++pvp/multi join A2
++pvp/multi join B1
++pvp/multi join B2
+
+All four type +pvp/multi ready. The host then types +pvp/multi start.
++pvp/multi status shows names, teams, readiness and the ten-minute lobby expiry.
+Use +pvp/multi unready to revoke your consent. Joining/changing slots or leaving
+clears remaining readiness. +pvp/multi leave leaves; the host's leave cancels.
+The lobby holds no movement or Pokemon locks. Absent members are removed by the
+room timer; an absent host cancels the request. Everyone needs a conscious,
+eligible party/current Fusion, no conflicting reservation and no other battle
+when the host starts. Failed startup keeps the lobby and rolls back partial locks.
+
+In battle, the field shows each slot's trainer, Pokemon, public HP/status and
+which living slots owe a choice. Examples for the trainer currently in A2:
++attack A2 Water Gun B1
++attack A2 Helping Hand A1
++attack A2 Surf
++switch A2 6
++switch A2 fusion
++item A2 Potion=3
+
+Your own saved party numbers retain gaps. fusion selects your current form when
+it joins a full party. Items use your own bag and own eligible targets. A partner
+cannot choose your action, cancel your reservation or borrow your reserves.
+Surf can hit your teammate; use its legal target list. Shared screens, hazards,
+guards, ally support and redirection apply by team. Ally Switch changes physical
+cells while each trainer keeps control of their own Pokemon; check +status again.
+
+The team shares one use each of enabled Tera, Mega and Z, under their existing
+rules. +tera A2 reserves Tera, +tera A2 cancel cancels that actor's reservation.
++mega A2 reserves an eligible held-stone form. +zmove A2 Tackle=B1 queues one
+eligible reusable-crystal Z action. A partner's pending reservation blocks a
+competing one; it cannot be cancelled by another actor. Switching cancels only
+the switching actor's uncommitted mechanic. Mechanics cannot stack on one actor.
+
+An exhausted trainer leaves an empty cell while the teammate continues. No
+choice is owed by that empty cell and there is no partner takeover. The team
+loses only after both own rosters are exhausted. Simultaneous exhaustion draws.
+PvP gives no new EXP, trainer XP or prize money.
+
+Each turn has a five-minute action deadline. Reconnect restores your exact
+controller and retained choices without resetting that clock. The room timer
+checks within thirty seconds: a team with an overdue missing living controller
+forfeits; if both teams are missing choices, the result is a draw. +concede yes
+forfeits your whole team after your explicit confirmation. Eliminated trainers
+cannot concede for a still-active teammate. There is no disconnect takeover.
+
+If a turn cannot save, use +battle/retry to recover the retained choices. Pending
+results/cleanup keep the battle until they can be saved; +battle/retry and the
+room timer retry safely. +status shows the current field, controls and deadline.
+		""",
+	},
+	{
 		"key": "breeding",
 		"aliases": ["pokemon breeding", "eggs", "hatching"],
 		"category": "Guide",
@@ -179,6 +279,25 @@ command. Type +sheet to see your character and battle information.
 Your next guide is help first outing. It walks through the Alpha Test Hub's
 beginner route and +hunt, with instructions for getting help along the way.
 You can also stay and chat: public Hi, I'm new! speaks on the public channel.
+
+# Choose Your Next Topic
+
+help core commands         Everyday command index.
+help pokemon and storage   Party slots, boxes and held items.
+help growth and moves      Healing, teaching moves, saved sets and evolution.
+help fusion                Temporary and permanent personal forms.
+help trading               Reviewed, consensual Pokemon gifts and swaps.
+help marketplace           Fixed-price player listings.
+help daycare               Paid parent custody; no passive progression.
+help breeding              Explicit paid cycles, eggs and hatching timers.
+help gyms                  Requirements, challenges, badges and recovery.
+help pvp and spectating    Two-player singles or ordinary doubles.
+help multi battles         Four human controllers in two teams.
+help item availability     Real item sources and supported use routes.
+
+The website's Guide contains these same topics. The browser client's Start here
+link opens this beginner guide. Adoption is deferred from beta; use the consent
+trade or marketplace routes for supported ownership exchange.
 
 # Useful Website Links
 
@@ -484,6 +603,9 @@ exact offer. Party and boxed Pokemon are supported; active activities block trad
 Held items come from trainer inventory or an exact carried item. Replacing or
 removing an item returns the previous item to trainer inventory. For example:
 +hold 2=Oran Berry, then +hold 2= to remove it.
+Use a slot that actually appears in +party and an item you own. For a shop,
+type +store, choose Buy items, then enter Potion 1. Type back within the menu
+and q before taking an exit. A catalogue description does not guarantee stock.
 
 Party numbers stay the same across +party, +switch, storage and moveset menus,
 including empty slots. Box menu numbers identify entries within that box.
@@ -492,6 +614,12 @@ select it. +switch lists the available party slots and Fusion choice.
 
 Storage commands cannot be used while your character is locked into an active
 battle.
+Copy the full Pokemon ID from +party <slot> for box commands; an item or move
+selector is not a storage ID. A reserved trade/market/Daycare/Fusion source is
+unavailable for other uses. Cancel the offer/listing, retrieve the Daycare entry,
+or +unfuse as appropriate before retrying. A completed permanent Fusion source
+does not become a transferable party Pokemon again. Use +battle/retry if an
+ended battle says its save is pending; do not rearrange the party to bypass it.
 		""",
 	},
 	{
@@ -520,6 +648,11 @@ your party while fused and returns to your party or storage when you use
 
 Permanent fusion requires Bond 255. The source Pokemon becomes part of the
 character and is not returned as a separate party Pokemon when you unfuse.
+An active form remains unavailable to trade, sell or deposit in Daycare.
+Temporary Fusion reserves its original source until +unfuse returns that same
+Pokemon. Permanent Fusion keeps its own form after +unfuse; use +fusion to
+choose it again. A full party can still have the separately labelled fusion
+battle reserve. Your participating form is controlled by you, including in Multi.
 
 # Form Control
 
@@ -614,7 +747,7 @@ Use +flee for this held effect; +item Smoke Ball does not throw a capture ball.
 +battleui <character>  View another character's current battle if visible.
 +status                Show field, side, status, and active Pokemon effects.
 +status brief          Show a shorter effects panel.
-+status me             Focus the panel on your side.
++status me             Focus on your side, or your own controller in Multi.
 +status opp            Focus the panel on the opposing side.
 
 # Spectating
@@ -626,6 +759,18 @@ Use +flee for this held effect; +item Smoke Ball does not throw a capture ball.
 
 For multi-target battles, targets are written as positions such as A1, A2, B1,
 or B2. If there is only one valid target, the game usually chooses it for you.
+In ordinary doubles or Multi, name the acting slot. Examples:
++attack A2 Water Gun B1
++switch A2 6
++item A2 Potion=3
+Use learned moves, your saved reserve
+numbers and your own stock. A2 can target its ally A1 with Helping Hand; Surf
+also hits its real adjacent recipients, including a teammate. If a move has
+several legal targets, provide the physical target label from the current field.
++attack A2 without a move opens that actor's move/target prompt; cancel backs out.
+After Ally Switch, read +status again: physical labels can change while each
+trainer keeps control of their own Pokemon. A queued action cannot be replaced.
+Four human controllers use help multi battles; +pvp/create double is two players.
 		""",
 	},
 	{
@@ -648,6 +793,15 @@ Most maintenance commands are used outside battle.
 +teach <slot>=<move>   Teach a valid move to a party Pokemon.
 +moves/use <slot>=<set> Switch to a saved moveset at a Pokemon Center.
 +movesets              Manage saved movesets at a Pokemon Center.
+
+For example, +party/moves 3 shows slot 3's current moves and PP, +learn 3 opens
+its eligible level-up choices, and +teach 3=Water Gun teaches that move only if
+that Pokemon can currently learn it. Follow the replacement prompt if all four
+active move slots are occupied; cancel leaves them unchanged. An unknown move,
+wrong level, egg, battle or reserved source is refused without changing the set.
+At a Pokemon Center, +movesets manages saved sets and +moves/use 3=2 activates
+an existing second set. Switching sets preserves PP; it is not free healing.
+If there is no second saved set, choose one that exists or leave the menu.
 
 # Items
 
@@ -802,12 +956,25 @@ players need usable Pokemon and must not already be in battle.
 
 +pvp                   Show the PvP command summary.
 +pvp/list              List open PvP requests in the room.
-+pvp/create            Create an open request.
-+pvp/create <password> Create a passworded request.
++pvp/create single     Create an open singles request (also the default).
++pvp/create double     Create ordinary doubles: two trainers, two actives each.
++pvp/create double <password>  Restrict that doubles request with a password.
 +pvp/join <player>     Join a request.
 +pvp/join <player> <password>
 +pvp/start             Start the battle once someone has joined your request.
 +pvp/abort             Cancel your request.
+
+For example, one trainer uses +pvp/create double, a second uses +pvp/join Ash
+(replace Ash with the host), then the host uses +pvp/start. Both must remain
+present and have at least two conscious eligible battlers at launch. If a party
+changed, heal or restore the eligible roster and retry; +pvp/list shows the
+current room's requests and format. This flow does not add two more controllers.
+
+Four players use +pvp/multi create, join A2/B1/B2, each ready, then the host starts.
+See help multi battles for that separate consent flow, shared team mechanics,
+independent reserves, deadlines and team concession. Eligible active Pokemon
+can use +tera, +mega and +zmove under their existing item/species/format rules;
+their own help explains prerequisites. These are not automatic battle grants.
 
 # Watching Battles
 
