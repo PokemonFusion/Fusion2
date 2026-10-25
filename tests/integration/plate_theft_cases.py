@@ -26,6 +26,11 @@ PLATES = (
 class PlateTheftCases(unittest.TestCase):
     """Pair actual nickname, equip, transfer and durable battle checkpoints."""
 
+    fixture_tag = "plate-855"
+    native_family = "Arceus"
+    native_abilities = {"Arceus": "Multitype", "Mew": "Synchronize", "Hypno": "Insomnia",
+                        "Gastrodon": "Sticky Hold"}
+
     command = transport.IncenseCases.command
     snapshot = transport.IncenseCases.snapshot
     hold = transport.IncenseCases.hold
@@ -37,7 +42,7 @@ class PlateTheftCases(unittest.TestCase):
 
     def setUp(self):
         """Create separate tagged ordinary characters, never an existing session."""
-        room = ObjectDB.objects.create(db_key="plate-855-room-" + uuid4().hex)
+        room = ObjectDB.objects.create(db_key=self.fixture_tag + "-room-" + uuid4().hex)
         self.room = SimpleNamespace(
             id=room.pk, pk=room.pk, key=room.key, db=room.db, ndb=room.ndb,
             attributes=room.attributes, contents=[],
@@ -45,7 +50,7 @@ class PlateTheftCases(unittest.TestCase):
         self.players, self.owned, self.session = [], [], None
         for _ in range(2):
             character = ObjectDB.objects.create(
-                db_key="plate-855-player-" + uuid4().hex, db_typeclass_path="pokemon.user.User",
+                db_key=self.fixture_tag + "-player-" + uuid4().hex, db_typeclass_path="pokemon.user.User",
             )
             character.permissions.add("Player")
             player = transport.IncensePlayer(character, character.trainer, character.storage)
@@ -62,8 +67,7 @@ class PlateTheftCases(unittest.TestCase):
     def capture(self, side, species, nickname, moves):
         """Separate tagged source setup from real capture nickname-menu inputs."""
         player = self.players[side]
-        ability = {"Arceus": "Multitype", "Mew": "Synchronize", "Hypno": "Insomnia",
-                   "Gastrodon": "Sticky Hold"}[species]
+        ability = self.native_abilities[species]
         encounter = create_encounter_pokemon(
             species=species, level=50, source_kind="wild", ability=ability,
             nature="Bold", ivs=[0] * 6, evs=[252, 0, 252, 0, 0, 0],
@@ -150,7 +154,7 @@ class PlateTheftCases(unittest.TestCase):
         for part, mon in zip(self.session.battle.participants, self.owned):
             self.assertEqual(str(part.active[0].base_species), mon.species)
         holder = self.session.battle.participants[0].active[0]
-        if self.owned[0].species != "Arceus":
+        if self.owned[0].species != self.native_family:
             self.assertEqual(str(holder.species), self.owned[0].species)
         else:
             self.assertEqual(str(holder.species), resolve_dex_entry(ITEMDEX, self.item).raw["forcedForme"])
@@ -166,7 +170,7 @@ class PlateTheftCases(unittest.TestCase):
                 """Fail only this tagged holder's save after the stock debit."""
                 if mon.pk == self.owned[0].pk and mon.held_item == item:
                     injected.append(mon.pk)
-                    raise RuntimeError("plate-855 held-save fault")
+                    raise RuntimeError(self.fixture_tag + " held-save fault")
                 return original(mon, *args, **kwargs)
 
             with patch.object(OwnedPokemon, "save", fail_held if facet == "rollback" else original):

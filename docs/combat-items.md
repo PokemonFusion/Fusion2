@@ -149,3 +149,19 @@ Switcheroo share these removal checks. The [#855 report](testing/plate-theft-ide
 records the exact item list, ordinary nickname/equip/attack/reconnect/end routes,
 item conservation, rollback controls and local acceptance limits. Other item
 families' identity protections and plot-only content are outside this repair.
+
+## Native Memory and Drive removal protection
+
+The 17 Memories protect removal when either participant is natively Silvally;
+the four Drives do the same for native Genesect. Known native type/Drive forms
+belong to their corresponding family. Renaming cannot change eligibility, and
+foreign nicknames or copied appearances cannot grant native protection. Native
+base identity survives Transform. Removal protection has no ability condition;
+the separate RKS System and form-entry requirements remain in force.
+
+These 21 callbacks reuse the shared identity helper and physical removal event
+path. Existing Memory/Multi-Attack and Drive/Techno Blast behavior is preserved;
+this repair adds no move, form or acquisition route. The [#856 report](testing/memory-drive-theft-2026-10-25.md)
+records the exact items, ordinary nickname/equip/attack/checkpoint results and
+the offline source-role controls for native species that cannot learn theft or
+swap moves. Other special item families remain separate work in #857.

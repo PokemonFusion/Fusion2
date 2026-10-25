@@ -419,20 +419,22 @@ class Buggem:
 
 class Bugmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Burndrive:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Genesect"):
-			return False
-		if source and source.name.startswith("Genesect"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Genesect."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Genesect", family=True)
+			or HeldItemIdentity.matches(source, "Genesect", family=True)
+		)
 
 
 class Burntberry:
@@ -544,11 +546,12 @@ class Chilanberry:
 
 class Chilldrive:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Genesect"):
-			return False
-		if source and source.name.startswith("Genesect"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Genesect."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Genesect", family=True)
+			or HeldItemIdentity.matches(source, "Genesect", family=True)
+		)
 
 
 class Choiceband:
@@ -696,11 +699,12 @@ class Darkgem:
 
 class Darkmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Deepseascale:
@@ -738,11 +742,12 @@ class Diancite:
 
 class Dousedrive:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Genesect"):
-			return False
-		if source and source.name.startswith("Genesect"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Genesect."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Genesect", family=True)
+			or HeldItemIdentity.matches(source, "Genesect", family=True)
+		)
 
 
 class Dracoplate:
@@ -775,11 +780,12 @@ class Dragongem:
 
 class Dragonmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Dreadplate:
@@ -834,11 +840,12 @@ class Electricgem:
 
 class Electricmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Electricseed:
@@ -911,11 +918,12 @@ class Fairygem:
 
 class Fairymemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Fightinggem:
@@ -926,11 +934,12 @@ class Fightinggem:
 
 class Fightingmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Figyberry:
@@ -955,11 +964,12 @@ class Firegem:
 
 class Firememory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Fistplate:
@@ -1018,11 +1028,12 @@ class Flyinggem:
 
 class Flyingmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Focusband:
@@ -1095,11 +1106,12 @@ class Ghostgem:
 
 class Ghostmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Glalitite:
@@ -1136,11 +1148,12 @@ class Grassgem:
 
 class Grassmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Grassyseed:
@@ -1191,11 +1204,12 @@ class Groundgem:
 
 class Groundmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Gyaradosite:
@@ -1288,11 +1302,12 @@ class Icegem:
 
 class Icememory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Icicleplate:
@@ -2053,11 +2068,12 @@ class Poisongem:
 
 class Poisonmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Polkadotbow:
@@ -2798,11 +2814,12 @@ class Psychicgem:
 
 class Psychicmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Psychicseed:
@@ -2923,11 +2940,12 @@ class Rockincense:
 
 class Rockmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Rockyhelmet:
@@ -3116,11 +3134,12 @@ class Shellbell:
 
 class Shockdrive:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Genesect"):
-			return False
-		if source and source.name.startswith("Genesect"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Genesect."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Genesect", family=True)
+			or HeldItemIdentity.matches(source, "Genesect", family=True)
+		)
 
 
 class Shucaberry:
@@ -3278,11 +3297,12 @@ class Steelixite:
 
 class Steelmemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Stick:
@@ -3446,11 +3466,12 @@ class Watergem:
 
 class Watermemory:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Silvally"):
-			return False
-		if source and source.name.startswith("Silvally"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Silvally."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Silvally", family=True)
+			or HeldItemIdentity.matches(source, "Silvally", family=True)
+		)
 
 
 class Waveincense:
