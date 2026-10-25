@@ -908,12 +908,37 @@ class Pokemon:
             if isinstance(abilities, dict) and not preserve_ability:
                 next_ability = abilities.get("0") or abilities.get(0)
                 if next_ability:
+                    # Species entries may carry display-only Ability objects.
+                    # Install the real callbacks before any first-turn effect;
+                    # a later checkpoint must not change ability behavior.
+                    from pokemon.dex import ABILITYDEX
+                    from pokemon.names import normalize_name, resolve_dex_entry
+
+                    next_ability = resolve_dex_entry(
+                        ABILITYDEX, getattr(next_ability, "name", next_ability)
+                    ) or next_ability
+                    display_name = (getattr(next_ability, "raw", {}) or {}).get("name")
+                    if display_name and display_name != getattr(next_ability, "name", None):
+                        from copy import copy
+
+                        next_ability = copy(next_ability)
+                        next_ability.name = display_name
+                    previous_ability = getattr(self, "ability", None)
+                    start_ability = getattr(battle_obj, "start_owned_ability", None)
                     self.setAbility(
                         next_ability,
                         source=source,
                         battle=battle_obj,
                         is_from_forme_change=True,
+                        run_start=not callable(start_ability),
                     )
+                    if callable(start_ability) and normalize_name(
+                        getattr(previous_ability, "name", previous_ability)
+                    ) != normalize_name(getattr(next_ability, "name", next_ability)):
+                        # Named owner context cannot confuse the opponent with
+                        # the battle argument. An unchanged ability starts via
+                        # normal entry, rather than granting its boost twice.
+                        start_ability(self)
 
         return True
 

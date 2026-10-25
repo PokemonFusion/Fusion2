@@ -1,0 +1,252 @@
+{
+  "issue": 872,
+  "baseline": "54275b1d67669a839b3cf6575a6d55d1d588bdf1",
+  "status": "accepted locally; no new live release claim",
+  "source_changes": {
+    "pokemon/battle/battledata.py": {
+      "Pokemon": [
+        "formeChange"
+      ]
+    },
+    "pokemon/battle/engine.py": {
+      "Battle": [
+        "start_owned_ability"
+      ]
+    },
+    "pokemon/dex/functions/abilities_funcs.py": {
+      "Desolateland": [
+        "onEnd"
+      ],
+      "Primordialsea": [
+        "onEnd"
+      ]
+    }
+  },
+  "new_offline_tests": 11,
+  "initial_nine_baseline_failures": 9,
+  "focused": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "pokemon/battle/tests/test_origin_primal_rusted_theft_identity.py",
+        "pokemon/battle/tests/test_item_form_ability_identity.py",
+        "pokemon/battle/tests/test_memory_drive_theft_identity.py",
+        "pokemon/battle/tests/test_plate_theft_identity.py",
+        "pokemon/battle/tests/test_legendary_item_identity.py",
+        "pokemon/battle/tests/test_item_core_runtime.py",
+        "pokemon/battle/tests/test_native_stat_items.py",
+        "pokemon/battle/tests/test_incense.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_native_form_and_postbattle_items.py",
+        "pokemon/battle/tests/test_copied_move_persistence.py",
+        "tests/test_item_support_reconciliation.py",
+        "--basetemp",
+        "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-origin-primal-rusted-857-20261025\\focused-temp",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "exit_code": 0,
+      "seconds": 41.9,
+      "log_sha256": "32b268065e0b40c6fdaf8c87b5a8dc42c076767ff10ea41062cf2a84888190af",
+      "pytest_counts": [
+        "1513"
+      ],
+      "skips": [],
+      "unittest_counts": []
+    }
+  ],
+  "ordinary_owned_player": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/origin_primal_rusted_theft_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 362.0,
+      "log_sha256": "f3261e2997607d8f6defd69ccc457ed44117155a8c6146943565865574f66ac4",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "237"
+      ]
+    }
+  ],
+  "shared_source_manifest": "origin-primal-rusted-theft-2026-10-25.json",
+  "coqualification_boundary": "Frozen combined candidate containing separate #872 and #857 changes; no intermediate-commit-only qualification claim",
+  "source_sha256_lf": {
+    "pokemon/battle/battledata.py": "ffaf3389892f5843308f6acec513278d21d65e3cb3c0bbbe0e871c9282eb7355",
+    "pokemon/battle/engine.py": "a027bb785c4f8e0b620015553f4e6a2d700da145cee3e194d2c60837b2ce650f",
+    "pokemon/dex/functions/abilities_funcs.py": "025bbc90d5954febe2eacc2533ef07b52db06ad3abb35d85f6b6204618cf8183"
+  },
+  "pilot_diagnosis": {
+    "first_pilot": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/origin_primal_rusted_theft_cases.py"
+        ],
+        "exit_code": 1,
+        "seconds": 15.95,
+        "log_sha256": "7b1ef0a5ecf618dd24774c6a14eb6ebcd7af0b4b8761fda3049fcdfdabc8c963",
+        "pytest_counts": [],
+        "skips": [],
+        "unittest_counts": [
+          "3"
+        ]
+      }
+    ],
+    "pressure_pilot": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/origin_primal_rusted_theft_cases.py"
+        ],
+        "exit_code": 1,
+        "seconds": 38.48,
+        "log_sha256": "e813e829897f8060ae6210a462d6f404518511903e7956c9dbc957f4ad427324",
+        "pytest_counts": [],
+        "skips": [],
+        "unittest_counts": [
+          "18"
+        ]
+      }
+    ],
+    "corrected_pilot": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tests/integration/origin_primal_rusted_theft_cases.py"
+        ],
+        "exit_code": 0,
+        "seconds": 371.1,
+        "log_sha256": "5cd03e4bb1b6282ac1aa8cabd50732f4fe0101ce84612ec3aed4e3ddbdd6d265",
+        "pytest_counts": [],
+        "skips": [],
+        "unittest_counts": [
+          "237"
+        ]
+      }
+    ],
+    "first_full_gate": [
+      {
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "tools/run_mandatory_tests.py"
+        ],
+        "exit_code": 1,
+        "seconds": 730.7,
+        "log_sha256": "53fbac70d87c1e271a42c6ff9e96556cc7552baea30e13e418523367250e40ae",
+        "pytest_counts": [
+          "6043"
+        ],
+        "skips": [
+          "4028"
+        ],
+        "unittest_counts": []
+      }
+    ],
+    "diagnosis": "First pilot assumed one PP; native Pressure requires two. Corrected pilot then found raw-empty native form ability before restore: separate #872 repair resolves real callbacks, avoids duplicate unchanged entry boosts and gives Primal weather End the correct context. Exact failed logs and subsequent focused failures retained; no effect was forced."
+  },
+  "limits": [
+    "Local automated command/model acceptance; no released socket or public acquisition claim",
+    "Only Dialga and Palkia native-source Trick is a legal native swap route here; other native theft/copy roles are explicitly offline adapters",
+    "Existing generic Knock Off protected-item power discrepancy remains documented by #855; removal and persistence are covered",
+    "No Mega Stone/CAP Vile Vial/new forms/plot-only content; existing sources and human data untouched"
+  ],
+  "mandatory": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tools/run_mandatory_tests.py"
+      ],
+      "exit_code": 0,
+      "seconds": 2061.91,
+      "log_sha256": "4a0a10707a33ddde97fa29d198975f1aa4fe14b0923cb2c54cb13b22d8a5156e",
+      "pytest_counts": [
+        "6045",
+        "6045",
+        "6045"
+      ],
+      "skips": [
+        "4028",
+        "4028",
+        "4028"
+      ],
+      "unittest_counts": []
+    }
+  ],
+  "mandatory_summary_lines": [
+    "6045 passed, 4028 skipped, 2142 warnings in 636.05s (0:10:36)",
+    "6045 passed, 4028 skipped, 2142 warnings in 605.73s (0:10:05)",
+    "6045 passed, 4028 skipped, 2152 warnings in 624.70s (0:10:24)"
+  ],
+  "compatibility": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/plate_theft_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 274.23,
+      "log_sha256": "d889b7fa9e99fe6a1fe8ed130523a05d37d4c7162e71b7548de1db8db15cd4e2",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "212"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/memory_drive_theft_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 331.34,
+      "log_sha256": "a202ac550c168f8ed73ea16b0491e2e313679ce2bd7c30aef6becb629083c8f1",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "258"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/legendary_item_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 121.95,
+      "log_sha256": "33842a672b1bcc798cb2b2cfc76e2f24f4bd203aeb197a7f9ca1347ac2386c5f",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "86"
+      ]
+    }
+  ],
+  "fixture_cleanup": {
+    "observed_utc": "2026-10-25T10:47:09.443442+00:00",
+    "stopped": true,
+    "remaining_disposable_schemas": 0,
+    "public_tables": 0,
+    "scope": "Only the existing task-owned loopback PostgreSQL fixture; controller refuses stop with residual QA schemas/public tables"
+  }
+}

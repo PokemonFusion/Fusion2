@@ -4130,7 +4130,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def start_owned_ability(self, pokemon) -> None:
         """Start an explicitly installed ability with named owner context.
 
-        Public Mega and Trace own this boundary. Propagate unexpected failures
+        Public Mega, Trace and native form installation use this boundary.
+        Propagate unexpected failures
         to their whole-turn transaction; do not replay entry or item events.
         Other ability installation paths retain their existing defaults.
         """

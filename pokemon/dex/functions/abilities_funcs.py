@@ -777,7 +777,9 @@ class Desolateland:
 		if getattr(self, "field_weather", "") == "desolateland" and weather and weather.id not in strong:
 			return False
 
-	def onEnd(self, pokemon=None, battle=None):
+	def onEnd(self, pokemon=None, source=None, effect=None, battle=None):
+		"""Clear this holder's weather with named or legacy battle context."""
+		battle = battle or (source if hasattr(source, "weather_state") else None)
 		if battle and battle.weather_state.get("source") == pokemon:
 			battle.clearWeather()
 
@@ -2402,7 +2404,9 @@ class Primordialsea:
 		if getattr(self, "field_weather", "") == "primordialsea" and weather and weather.id not in strong:
 			return False
 
-	def onEnd(self, pokemon=None, battle=None):
+	def onEnd(self, pokemon=None, source=None, effect=None, battle=None):
+		"""Clear this holder's weather with named or legacy battle context."""
+		battle = battle or (source if hasattr(source, "weather_state") else None)
 		if battle and battle.weather_state.get("source") == pokemon:
 			battle.clearWeather()
 
