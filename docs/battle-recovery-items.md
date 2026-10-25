@@ -89,3 +89,10 @@ execution receives no effect/debit. Useful effects debit exactly one bag copy;
 SQL/runtime effects and the turn checkpoint roll back together on write failure.
 The production turn recovery policy handles infrastructure failures; never retry
 by mutating the persisted declaration into a different target or move.
+
+Held Pecha Berry and PSN Cure Berry also cure Toxic; Burnt Berry thaws freeze
+and cannot cure burn. Their held triggers obey item suppression and Unnerve.
+These repairs preserve the field and manual bag routes, their reviewed amounts,
+and the supported no-effect action policy above. Current held evidence is in the
+[2026-10-25 berry report](testing/held-status-berries-2026-10-25.md); earlier dated
+reports remain historical receipts.

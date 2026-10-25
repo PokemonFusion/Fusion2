@@ -438,7 +438,7 @@ class Burndrive:
 
 class Burntberry:
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) in {"brn", "frz"}:
+		if pokemon and getattr(pokemon, "status", None) == "frz":
 			pokemon.setStatus(
 				0,
 				battle=getattr(pokemon, "battle", None),
@@ -446,7 +446,7 @@ class Burntberry:
 			)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) in {"brn", "frz"}:
+		if pokemon and getattr(pokemon, "status", None) == "frz":
 			if hasattr(pokemon, "eat_item"):
 				pokemon.eat_item()
 
@@ -1979,7 +1979,7 @@ class Payapaberry:
 
 class Pechaberry:
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "psn":
+		if pokemon and getattr(pokemon, "status", None) in {"psn", "tox"}:
 			pokemon.setStatus(
 				0,
 				battle=getattr(pokemon, "battle", None),
@@ -1987,7 +1987,7 @@ class Pechaberry:
 			)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "psn":
+		if pokemon and getattr(pokemon, "status", None) in {"psn", "tox"}:
 			if hasattr(pokemon, "eat_item"):
 				pokemon.eat_item()
 
@@ -2794,7 +2794,7 @@ class Przcureberry:
 
 class Psncureberry:
 	def onEat(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "psn":
+		if pokemon and getattr(pokemon, "status", None) in {"psn", "tox"}:
 			pokemon.setStatus(
 				0,
 				battle=getattr(pokemon, "battle", None),
@@ -2802,7 +2802,7 @@ class Psncureberry:
 			)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and getattr(pokemon, "status", None) == "psn":
+		if pokemon and getattr(pokemon, "status", None) in {"psn", "tox"}:
 			if hasattr(pokemon, "eat_item"):
 				pokemon.eat_item()
 

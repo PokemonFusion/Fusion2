@@ -180,3 +180,22 @@ removal protection survives item suppression; generic boosts remain suppressed.
 The [#857 report](testing/origin-primal-rusted-theft-2026-10-25.md) records exact
 rules, legitimate form entry, ordinary commands, Pressure PP costs and durable
 inventory/ownership evidence. Mega Stone and CAP item removal remain separate.
+
+## Held status berries and resumed battles
+
+Pecha Berry and PSN Cure Berry cure either ordinary poison or Toxic. Burnt Berry
+cures freeze only; burn and unrelated statuses keep both the status and berry.
+Useful eating consumes the held copy once and clears Toxic's counter. Magic
+Room, Embargo, Klutz and opposing Unnerve still prevent useful eating; releasing
+that prevention allows the next ordinary item update to act. Embargo lasts five
+residual boundaries, including its application turn. Expiry and the next update
+are separate boundaries. Old boolean Embargo checkpoints have no recoverable
+elapsed timer and receive a bounded five-residual countdown when first resumed.
+
+Reconnect reattaches active item and ability update handlers without replaying
+entry, native forms, Crowned boosts or Primal weather. Synchronize reflects only
+burn, paralysis and either poison status through normal status eligibility;
+freeze, sleep, Toxic Spikes and its own reflected effect cannot bounce back.
+
+The [berry report](testing/held-status-berries-2026-10-25.md) separates ordinary
+owned-player command evidence from offline controls and released-server proof.

@@ -192,6 +192,8 @@ jobs:
         run: python tests/integration/memory_drive_theft_cases.py
       - name: Origin, Primal and Rusted item native removal roles and player persistence
         run: python tests/integration/origin_primal_rusted_theft_cases.py
+      - name: Held status berries, Synchronize and restored item updates
+        run: python tests/integration/held_status_berry_cases.py
       - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
         run: python tests/integration/item_availability_cases.py
       - name: Bounded current stat and type item command replays

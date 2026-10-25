@@ -37,6 +37,24 @@ class BattleRecoveryFoodCases(fixtures.ItemSessionFixture):
 
     fixture_level = 100
 
+    def test_psn_cure_berry_also_cures_toxic_through_manual_item(self):
+        """The held repair must preserve the existing manual toxic-poison route."""
+        with patch.dict(STATUS_ITEMS, {"PSN Cure Berry": "tox"}):
+            self.check_item("PSN Cure Berry")
+
+    def test_burnt_berry_cannot_cure_burn_or_consume_manual_stock(self):
+        """Preserve the existing supported-medicine no-effect action policy."""
+        self.state(self.mon, current_hp=fixtures.get_max_hp(self.mon), status="brn")
+        self.give("Burnt Berry")
+        self.start()
+        before = self.proof_state()
+        self.recorded("Burnt Berry=1", label="expected-wrong-status-no-effect")
+        after = self.proof_state()
+        self.assertEqual(after["turn"], before["turn"] + 1)
+        self.assertEqual(after["inventory"], before["inventory"])
+        self.assertEqual(after["inventory_cache"], before["inventory_cache"])
+        self.assertEqual(self.row()["status"], "brn")
+
     def row(self, mon=None):
         """Read fresh SQL fields independently of Evennia's identity cache."""
         return fixtures.OwnedPokemon.objects.filter(pk=(mon or self.mon).pk).values().get()
