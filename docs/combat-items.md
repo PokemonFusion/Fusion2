@@ -115,4 +115,20 @@ All nine retain ordinary item suppression and normal `+hold` ownership rules.
 The [#853 report](testing/native-stat-items-2026-10-25.md) records the exact
 allowlists, local nickname/equip/battle command acceptance, outcomes and limits.
 This bounded repair does not change item sources or the historical support
-matrix. Legendary boosters and removal protections remain separate work.
+matrix. Legendary boosters have separate evidence below; removal protections
+remain separate work.
+
+## Native legendary type boosters
+
+Adamant Orb/Crystal boost native Dialga's Steel and Dragon moves; Lustrous
+Orb/Globe boost native Palkia's Water and Dragon moves; Griseous Orb/Core boost
+native Giratina's Ghost and Dragon moves. Soul Dew boosts native Latias/Latios
+Psychic and Dragon moves. All seven use canonical native base species, including
+their legitimate forms, and preserve the existing integer `power × 1.2` rule.
+Renaming cannot change eligibility. Their native bonuses survive Transform;
+copying a legendary appearance cannot grant the bonus to a foreign holder.
+
+Origin form-entry guards and suppression still apply separately. This repair
+adds no Mega/Z profile, acquisition source, form activation or removal rule.
+The [#854 report](testing/legendary-item-identity-2026-10-25.md) records the exact
+forms/types, ordinary nickname/equip/battle cases and local validation limits.

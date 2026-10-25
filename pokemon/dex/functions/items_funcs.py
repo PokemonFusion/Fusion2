@@ -89,7 +89,9 @@ class Absorbbulb:
 
 class Adamantcrystal:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Dialga") and move.type in {"Steel", "Dragon"}:
+		"""Boost only a native Dialga family's matching move types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Dialga", family=True) and move.type in {"Steel", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
@@ -103,7 +105,9 @@ class Adamantcrystal:
 
 class Adamantorb:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Dialga") and move.type in {"Steel", "Dragon"}:
+		"""Boost only a native Dialga family's matching move types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Dialga", family=True) and move.type in {"Steel", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
@@ -1151,7 +1155,9 @@ class Grassyseed:
 
 class Griseouscore:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Giratina") and move.type in {"Ghost", "Dragon"}:
+		"""Boost only a native Giratina family's matching move types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Giratina", family=True) and move.type in {"Ghost", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
@@ -1165,7 +1171,9 @@ class Griseouscore:
 
 class Griseousorb:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Giratina") and move.type in {"Ghost", "Dragon"}:
+		"""Boost only a native Giratina family's matching move types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Giratina", family=True) and move.type in {"Ghost", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
@@ -1563,7 +1571,9 @@ class Luminousmoss:
 
 class Lustrousglobe:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Palkia") and move.type in {"Water", "Dragon"}:
+		"""Boost only a native Palkia family's matching move types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Palkia", family=True) and move.type in {"Water", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
@@ -1577,7 +1587,9 @@ class Lustrousglobe:
 
 class Lustrousorb:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name.startswith("Palkia") and move.type in {"Water", "Dragon"}:
+		"""Boost only a native Palkia family's matching move types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Palkia", family=True) and move.type in {"Water", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
@@ -3179,7 +3191,9 @@ class Softsand:
 
 class Souldew:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if user and move and user.name in {"Latias", "Latios"} and move.type in {"Psychic", "Dragon"}:
+		"""Boost only native Latias/Latios families and their matching types."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if move and HeldItemIdentity.matches(user, "Latias", "Latios", family=True) and move.type in {"Psychic", "Dragon"}:
 			return int(base_power * 1.2)
 		return base_power
 
