@@ -1,4 +1,4 @@
-# Oran growing and Razz snacks
+# Oran growing and flavor snacks
 
 At a configured **Berry Nursery**, follow its `nursery` exit from the selected
 public hub and use `back` to return. `+store` → **Buy items** offers Oran Berry
@@ -22,16 +22,29 @@ the wrong room, changed cycles and invalid saved times reject safely. Repeated
 watering or harvest cannot add extra credit, and an old request cannot reset a
 newer crop. No tools, currency fee, plot unlock, farming level or process timer.
 
-Independently, `+berry snack Razz Berry=3` feeds one bag Razz Berry to an eligible
+Independently, `+berry snack Razz Berry=3` feeds one selected bag berry to an eligible
 living, injured owned party member for up to **10 HP**. `fusion`, a unique name
 or a full Pokemon ID uses the shared field target rules. It works outside battle
 without a nursery or crop. Fainted/full/egg/box/foreign/ambiguous/inactive Fusion
 targets and held-only stock consume nothing. HP and one debit commit together;
 status, PP, held items, genetics and progression stay intact.
 
-The Razz effect is a selected **PF2 food equivalent**. It grants no contest,
-friendship, lure or capture effect. `+use Razz Berry` remains unsupported. Other
-flavor berries, growing species, shared beds and broad agriculture are deferred.
+The explicit snack list is **Razz, Bluk, Nanab, Pinap, Wepear, Cornn, Magost,
+Nomel, Rabuta, Belue, Durin, Pamtre, Spelon and Watmel Berry**. For example,
+`+berry snack Bluk Berry=3` spends Bluk rather than an available Razz copy.
+Use `+berry help` for the current names and target syntax.
+
+Each snack is a selected **PF2 food equivalent**. It grants no status, PP,
+friendship, EV, Nature-confusion, contest, lure or capture effect. These names
+have no `+use`, manual battle medicine or automatic held healing route. Their
+existing Natural Gift/Fling identities are preserved. Other berries, growing
+species, shared beds and broad agriculture remain separate work.
+
+The nursery recipe still offers only Oran and Razz. Adding a snack neither
+stocks it nor makes it an eligible seed. The other thirteen names need their
+own deliberately authored source; no public stock is installed by this change.
+The [flavor snack receipt](testing/flavor-snacks-2026-10-25.md) records the
+named ordinary-command/SQL checks and their local evidence boundary.
 
 The [acceptance receipt](testing/berry-player-routes-2026-10-22.md) separates
 production-command/SQL checks with controlled server time from live timed growth.

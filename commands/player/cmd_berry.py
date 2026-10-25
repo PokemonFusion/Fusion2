@@ -1,10 +1,10 @@
-"""Ordinary Oran nursery operations and the independent Razz snack."""
+"""Ordinary Oran nursery operations and explicitly selected flavor snacks."""
 
 from evennia import Command
 
 
 class CmdBerry(Command):
-    """Tend your private bed at a Berry Nursery or feed a Razz snack.
+    """Tend your private bed at a Berry Nursery or feed a selected flavor snack.
 
     Usage:
       +berry help
@@ -13,13 +13,16 @@ class CmdBerry(Command):
       +berry water
       +berry harvest
       +berry snack Razz Berry=<party slot, unique name, full ID or fusion>
+      +berry snack Bluk Berry=<target>
 
     Growing costs one bag Oran seed. Four one-hour stages count offline time;
     water free once in each stage for yield 1-5. Ready crops do not decay.
     Harvest once, then replant explicitly. Find the optional nursery through its
     nursery/back exits and use +store to buy finite stock. No held seed or tool.
-    The Razz snack is a PF2 equivalent that heals up to 10 HP outside battle,
+    Each selected snack is a PF2 equivalent that heals up to 10 HP outside battle,
     independently of growing. No contest/lure/friendship or automatic +use alias.
+    Accepted snacks: Razz, Bluk, Nanab, Pinap, Wepear, Cornn, Magost, Nomel,
+    Rabuta, Belue, Durin, Pamtre, Spelon and Watmel Berry.
     """
 
     key = "+berry"
@@ -41,14 +44,16 @@ class CmdBerry(Command):
         try:
             if operation == "snack":
                 item, separator, target = argument.partition("=")
-                if normalize_name(item) != "razzberry" or not separator or not target.strip():
-                    raise ValueError("Use +berry snack Razz Berry=<party slot, unique name, full ID or fusion>.")
+                canonical = BerrySnack.canonical_name(item)
+                if canonical is None or not separator or not target.strip():
+                    raise ValueError("Use +berry snack <accepted berry>=<party slot, unique name, full ID or fusion>. "
+                                     "See +berry help for the accepted snacks.")
                 service = BerrySnack(self.caller)
-                used = service.use("Razz Berry", target.strip())
+                used = service.use(canonical, target.strip())
                 if used:
-                    service.notify_success("Razz Berry", target.strip())
+                    service.notify_success(canonical, target.strip())
                 elif used is not None:
-                    self.caller.msg("Razz Berry had no effect. No item was consumed.")
+                    self.caller.msg(f"{canonical} had no effect. No item was consumed.")
                 return
             growing = BerryGrowing(self.caller)
             if not operation or operation == "status":

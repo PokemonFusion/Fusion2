@@ -43,7 +43,7 @@ See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
 battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
-The [current October25 index](testing/item-availability-z-sources-index-2026-10-25.json)
+The [current October25 index](testing/item-availability-flavor-snacks-index-2026-10-25.json)
 and [report](testing/item-availability-2026-10-25.md) reconcile explicit accepted
 registries, six item-repair receipts and unverified world sources.
 See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
@@ -65,6 +65,8 @@ The [original plan](design/necrozma-combination.md) retains its design history. 
 [design/berry-player-routes.md](design/berry-player-routes.md) for the separate
 Oran growing/Razz snack contracts. The [berry nursery guide](berry-nursery.md)
 describes their implemented commands, optional source and release requirements.
+It also lists the thirteen later explicit flavor snacks, each a bounded 10-HP
+field equivalent through +berry snack with separately unverified acquisition.
 See [gimmighoul-evolution.md](gimmighoul-evolution.md) for the 999-coin Chest
 equivalent, [recovery-equivalents.md](recovery-equivalents.md) for two field-only
 medicines, [hunt-item-sources.md](hunt-item-sources.md) for reviewed hunt sources,

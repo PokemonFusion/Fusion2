@@ -132,6 +132,23 @@ def test_snack_growing_and_native_combination_do_not_invent_world_access():
     assert all(len(value) == 64 for value in result["source_identities_sha256_lf"].values())
 
 
+def test_flavor_snack_routes_name_the_actual_food_and_keep_other_routes_closed():
+    """A newly accepted food cannot be reported as feeding Razz or stocking a world."""
+    result = ItemAvailabilityAudit().build()
+    rows = {row["key"]: row for row in result["items"]}
+    names = ("Bluk", "Nanab", "Pinap", "Wepear", "Cornn", "Magost", "Nomel", "Rabuta",
+             "Belue", "Durin", "Pamtre", "Spelon", "Watmel")
+    for name in names:
+        row = rows[name.lower() + "berry"]
+        snack = next(route for route in row["routes"] if route["kind"] == "berry_snack")
+        assert snack["command"] == "+berry snack " + name + " Berry=<target>"
+        assert snack["evidence_report"] == "flavor-snacks-2026-10-25"
+        assert not any(route["kind"] in {"medicine", "berry", "manual_battle_medicine", "berry_growing"}
+                       for route in row["routes"])
+        assert row["world_availability"]["status"] == "unverified"
+        assert not row["world_availability"]["sources"]
+
+
 def test_depleted_disabled_absent_and_unknown_world_sources_are_distinct():
     """A sold-out observed shop is different from no observed source or no data."""
     assert live_sources(None, "potion")["status"] == "unverified"

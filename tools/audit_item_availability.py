@@ -173,8 +173,9 @@ class ItemAvailabilityAudit:
                      for service, kind, report in services if service.supports(key)]
             routes, limits, followups = list(field), [], []
             if BerrySnack.supports(key):
-                routes.append({"kind": "berry_snack", "command": "+berry snack Razz Berry=<target>",
-                               "evidence_report": "berry-player-routes-2026-10-22",
+                routes.append({"kind": "berry_snack", "command": "+berry snack " + name + "=<target>",
+                               "evidence_report": "berry-player-routes-2026-10-22" if key == "razzberry"
+                               else "flavor-snacks-2026-10-25",
                                "limit": "PF2 up to 10 HP living field target; separate from +use/manual/held/growing"})
             if key == "oranberry":
                 routes.append({"kind": "berry_growing", "command": "+berry plant Oran Berry / water / harvest",

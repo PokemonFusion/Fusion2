@@ -1,0 +1,639 @@
+{
+  "issues": [
+    889,
+    890,
+    891
+  ],
+  "date": "2026-10-25",
+  "baseline": "26aaa3e50a51679c0bb355c1b86587a2380a6692",
+  "status": "accepted local ordinary-command and PostgreSQL support",
+  "batches": {
+    "889": [
+      "Bluk Berry",
+      "Nanab Berry",
+      "Pinap Berry",
+      "Wepear Berry"
+    ],
+    "890": [
+      "Cornn Berry",
+      "Magost Berry",
+      "Nomel Berry",
+      "Rabuta Berry"
+    ],
+    "891": [
+      "Belue Berry",
+      "Durin Berry",
+      "Pamtre Berry",
+      "Spelon Berry",
+      "Watmel Berry"
+    ]
+  },
+  "effect": "Explicit PF2 up-to-10-HP field snack, one useful bag debit; +berry snack only",
+  "exclusions": [
+    "+use",
+    "manual battle medicine",
+    "automatic held recovery",
+    "new public stock",
+    "status/PP/friendship/EV/nature-confusion/contest/lure/capture effects",
+    "new growing species"
+  ],
+  "source_sha256_lf": {
+    "commands/player/cmd_berry.py": "7c66e3fa5741db2694d44a8b8c5f253daa0736592764c80e1fe32a2092a492fa",
+    "pokemon/services/berry_snack.py": "aa9d437dbaa2d5febb678c1867be9e810ed47ba3bc487e3dff7c14935ac06b94",
+    "tests/integration/flavor_snack_cases.py": "cded6877b37984a97c226f5d6ec350148aa0b1625b5705168985df9690cf3c7e",
+    "tests/test_item_availability.py": "b17a99cc5c70a7106db3f6252f05662e30c2fcd5d555dc27d74b330a641fbf20",
+    "tools/audit_item_availability.py": "b342266d58bf311efe148efaece964b35392590ab7bc124dec85bf836e378693"
+  },
+  "qualification_manifest_sha256_lf": "4edda5417db31d59c4df4f0a3012d02b7d240927a881fb1235e45154734938b2",
+  "frozen_copy_manifest_sha256_lf": "e70e8baf65e74b03542055e43361dd09b85e0641a5795688286d1b8ac7532711",
+  "python_sources": 1136,
+  "shared_unrelated_dirty_paths": 25,
+  "baseline_red": {
+    "cases": 28,
+    "failures": 22,
+    "passes": 6,
+    "receipt": [
+      {
+        "suite": "flavor_snack",
+        "exit": 1,
+        "seconds": 18.32,
+        "cases": [
+          "28"
+        ],
+        "sha256": "0f792e5385e7fcdb9805974c6d652dcc51106052ef980fe6cfeac42fd65cb5bc"
+      }
+    ]
+  },
+  "focused": {
+    "passed": 18,
+    "log_sha256": "084c3a369d2f3647c2234d38a7a79ef246a70c3dc7a9c8f42778a36dc7b6a486"
+  },
+  "ordinary_command_postgres": {
+    "cases": 28,
+    "result": [
+      {
+        "suite": "flavor_snack",
+        "exit": 0,
+        "seconds": 20.75,
+        "cases": [
+          "28"
+        ],
+        "sha256": "81736bea96dbe958463e45591a26622e532309a46ad401187f67d5756f170d52"
+      }
+    ],
+    "raw_records": 127,
+    "raw_sha256": "6477d81c2c569ed1bd82292001563c056ccce657a7317bb7b799f61315011f5d",
+    "positive_items": [
+      {
+        "item": "Bluk Berry",
+        "command": "+berry snack bLUK bERRY=d0c51f12-9f41-4c55-930c-10d7775a3279",
+        "messages": [
+          "Used Bluk Berry on d0c51f12-9f41-4c55-930c-10d7775a3279."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Bluk Berry",
+        "bag_before": [
+          {
+            "item_name": "blukberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Nanab Berry",
+        "command": "+berry snack nANAB bERRY=dbd07763-b7a3-413a-9137-2fd9bf3ed322",
+        "messages": [
+          "Used Nanab Berry on dbd07763-b7a3-413a-9137-2fd9bf3ed322."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Nanab Berry",
+        "bag_before": [
+          {
+            "item_name": "nanabberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Pinap Berry",
+        "command": "+berry snack pINAP bERRY=85f8c866-d5d3-436a-84f1-c0f6f8d97d84",
+        "messages": [
+          "Used Pinap Berry on 85f8c866-d5d3-436a-84f1-c0f6f8d97d84."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Pinap Berry",
+        "bag_before": [
+          {
+            "item_name": "pinapberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Wepear Berry",
+        "command": "+berry snack wEPEAR bERRY=d0fd53a9-c11d-4084-846f-08d11855d7df",
+        "messages": [
+          "Used Wepear Berry on d0fd53a9-c11d-4084-846f-08d11855d7df."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Wepear Berry",
+        "bag_before": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "wepearberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Cornn Berry",
+        "command": "+berry snack cORNN bERRY=b9e81042-21c6-493e-92ff-eb5befe0be2a",
+        "messages": [
+          "Used Cornn Berry on b9e81042-21c6-493e-92ff-eb5befe0be2a."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Cornn Berry",
+        "bag_before": [
+          {
+            "item_name": "cornnberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Magost Berry",
+        "command": "+berry snack mAGOST bERRY=e90d4130-a87c-4d4d-95e1-95f99942d6c1",
+        "messages": [
+          "Used Magost Berry on e90d4130-a87c-4d4d-95e1-95f99942d6c1."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Magost Berry",
+        "bag_before": [
+          {
+            "item_name": "magostberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Nomel Berry",
+        "command": "+berry snack nOMEL bERRY=fa57fcfc-9374-45f7-9df5-8c9d33b1abb7",
+        "messages": [
+          "Used Nomel Berry on fa57fcfc-9374-45f7-9df5-8c9d33b1abb7."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Nomel Berry",
+        "bag_before": [
+          {
+            "item_name": "nomelberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Rabuta Berry",
+        "command": "+berry snack rABUTA bERRY=a24042c7-5c88-44de-868f-1bf250cb2969",
+        "messages": [
+          "Used Rabuta Berry on a24042c7-5c88-44de-868f-1bf250cb2969."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Rabuta Berry",
+        "bag_before": [
+          {
+            "item_name": "rabutaberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Belue Berry",
+        "command": "+berry snack bELUE bERRY=ebc8896e-0f79-41c8-8ccf-16875eb61e58",
+        "messages": [
+          "Used Belue Berry on ebc8896e-0f79-41c8-8ccf-16875eb61e58."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Belue Berry",
+        "bag_before": [
+          {
+            "item_name": "belueberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Durin Berry",
+        "command": "+berry snack dURIN bERRY=8fb3c93a-5d11-445b-92e3-0d0a81661541",
+        "messages": [
+          "Used Durin Berry on 8fb3c93a-5d11-445b-92e3-0d0a81661541."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Durin Berry",
+        "bag_before": [
+          {
+            "item_name": "durinberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Pamtre Berry",
+        "command": "+berry snack pAMTRE bERRY=0e354912-9909-478c-9ad3-23399042c83a",
+        "messages": [
+          "Used Pamtre Berry on 0e354912-9909-478c-9ad3-23399042c83a."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Pamtre Berry",
+        "bag_before": [
+          {
+            "item_name": "pamtreberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Spelon Berry",
+        "command": "+berry snack sPELON bERRY=b1fa3340-601b-416e-9425-e66b56ca04ba",
+        "messages": [
+          "Used Spelon Berry on b1fa3340-601b-416e-9425-e66b56ca04ba."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Spelon Berry",
+        "bag_before": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "spelonberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      },
+      {
+        "item": "Watmel Berry",
+        "command": "+berry snack wATMEL bERRY=92ac448f-6a45-4d08-a853-933037c7558b",
+        "messages": [
+          "Used Watmel Berry on 92ac448f-6a45-4d08-a853-933037c7558b."
+        ],
+        "hp": [
+          1,
+          11
+        ],
+        "held_copy": "Watmel Berry",
+        "bag_before": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          },
+          {
+            "item_name": "watmelberry",
+            "quantity": 1
+          }
+        ],
+        "bag_after": [
+          {
+            "item_name": "razzberry",
+            "quantity": 1
+          }
+        ],
+        "non_hp_owned_fields_unchanged": true,
+        "pp_unchanged": true
+      }
+    ]
+  },
+  "compatibility": [
+    {
+      "suite": "berry_growing",
+      "exit": 0,
+      "seconds": 23.88,
+      "cases": [
+        "44"
+      ],
+      "sha256": "f317e64c386914795be719e1e05d40164d5f964db6ccda80372167b47e2c4b11"
+    },
+    {
+      "suite": "field_berry",
+      "exit": 0,
+      "seconds": 15.46,
+      "cases": [
+        "26"
+      ],
+      "sha256": "0b2e26e23e033ac40b56a3f8f6ed335f1d80f83388def87dd5c029fecc6ca4c9"
+    },
+    {
+      "suite": "legacy_berry",
+      "exit": 0,
+      "seconds": 23.39,
+      "cases": [
+        "26"
+      ],
+      "sha256": "a276ff06cc9206cf330da07621a8ed6e12204b203a81fa4e54b45e1da1f30a38"
+    },
+    {
+      "suite": "battle_recovery_food",
+      "exit": 0,
+      "seconds": 72.66,
+      "cases": [
+        "50"
+      ],
+      "sha256": "3a4ddeaca6830f4b5dae4ff1d1d4c3d29585dabc1faf6cdf00f52892c3d5034d"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 19.28,
+      "cases": [
+        "32"
+      ],
+      "sha256": "d8e7f63319f67f455440d39e39bb2317da32db07eaa346aa0bab7ce0f7355209"
+    },
+    {
+      "suite": "field_item",
+      "exit": 0,
+      "seconds": 15.21,
+      "cases": [
+        "23"
+      ],
+      "sha256": "039b1aa08c32f7eeb333fbfbd30dedb144e05cdb70078cb06211065661ca21e3"
+    },
+    {
+      "suite": "pp_capacity",
+      "exit": 0,
+      "seconds": 21.09,
+      "cases": [
+        "37"
+      ],
+      "sha256": "fed6b8d7b1ab6b8d08f9cdd244ac4138bba79f597c647aec2968e80d18b88b63"
+    },
+    {
+      "suite": "held_status_berry",
+      "exit": 0,
+      "seconds": 48.13,
+      "cases": [
+        "31"
+      ],
+      "sha256": "ff8357c843ece65a3ef6fdfeb4ea8e00c29b027cb6d4b5081795b7b80245817a"
+    },
+    {
+      "suite": "necrozma_player",
+      "exit": 0,
+      "seconds": 84.86,
+      "cases": [
+        "15"
+      ],
+      "sha256": "9b6b8c16ea7fbb0820d5c4a69247dcf8c037219cf4c9bff57961b88adbab52c9"
+    }
+  ],
+  "compatibility_passed": 284,
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\flavor-snacks-889-891-20261025\\qualified-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 1993.51,
+    "passed": [
+      "6154",
+      "6154",
+      "6154"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "1794ade57fe29bf8e813ebfefaec46c52931976ad33c1ceadc45076291e9234c",
+    "source_count": 1536
+  },
+  "retained_runner_error": {
+    "requested": "field_medicine_cases.py",
+    "diagnosis": "Nonexistent runner name; no case executed. Correct field_item_cases.py passed23.",
+    "result": {
+      "suite": "field_medicine",
+      "exit": 2,
+      "seconds": 0.05,
+      "cases": [],
+      "sha256": "c1b3e329d2f77b2306b777e879c62944cb018eec4b3638315a2b5d7639bee634"
+    }
+  },
+  "shared_checks": [
+    "finite purchase/wallet/stock conservation",
+    "correct named berry versus owned Razz",
+    "held-only rejection",
+    "current party/Fusion identity",
+    "full/fainted/egg/box/foreign rejection",
+    "battle-lock true/0/stale rejection",
+    "partial debit and post-save rollback",
+    "outer rollback suppresses success",
+    "two SQL connections, final-copy race: one heal/debit",
+    "fresh connection and instance reload",
+    "manual battle rejection before declaration",
+    "actual held battle turn grants no snack healing"
+  ],
+  "prerequisites": "Isolated schema/model tables, two controlled ordinary callers, source Pokemon/placement, finite shop and wallets, labelled HP/status/Fusion and passive battle conditions; separate from actual commands.",
+  "definitions_unchanged": [
+    "razzberry",
+    "blukberry",
+    "nanabberry",
+    "pinapberry",
+    "wepearberry",
+    "cornnberry",
+    "magostberry",
+    "nomelberry",
+    "rabutaberry",
+    "belueberry",
+    "durinberry",
+    "pamtreberry",
+    "spelonberry",
+    "watmelberry"
+  ],
+  "registries_unchanged": {
+    "mega_pairs": 47,
+    "z_mappings": 44,
+    "z_crystals": 34,
+    "z_kinds": {
+      "generic": 20,
+      "status": 8,
+      "signature": 16
+    }
+  },
+  "current_index": "item-availability-flavor-snacks-index-2026-10-25.json",
+  "current_index_sha256_lf": "094576a0abe0f9ac2bc97c7aa94fff358b0e73b6a11625e48ef6ffeea02442e0",
+  "boundary": "Actual production command classes/store menus, SQL and runtime controls. Not socket login, hosted CI, existing/shared release or public acquisition proof."
+}

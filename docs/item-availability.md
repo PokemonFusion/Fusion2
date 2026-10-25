@@ -60,7 +60,9 @@ does not certify a shared game or a newer item-repair candidate. The optional
 local automated [acceptance](testing/z-special-2026-10-23.md), separate from
 live deployment, authored chart availability and permanent public stock.
 The later [berry nursery](berry-nursery.md) adds one private durable Oran bed and
-the independent `+berry snack Razz Berry=<target>` HP equivalent. Its optional
+the independent `+berry snack Razz Berry=<target>` HP equivalent. The same guarded
+snack route later accepts thirteen explicitly named flavor berries for up to
+10 HP; see [the current snack list](berry-nursery.md). Its optional
 100-per-berry, five-copy source is checked-in content, with local command/SQL
 acceptance; it does not establish deployed commands or permanent public stock.
 
@@ -91,7 +93,7 @@ The [acquisition audit](testing/item-availability-2026-10-22.md) and
 [per-item index](testing/item-availability-index-2026-10-22.json) distinguish
 configured sources, tested commands, missing routes and live walkthroughs.
 
-The [October25 current index](testing/item-availability-z-sources-index-2026-10-25.json)
+The [October25 current index](testing/item-availability-flavor-snacks-index-2026-10-25.json)
 and [reconciliation receipt](testing/item-availability-2026-10-25.md) read the
 current field/manual services and explicit Mega/Z registries. They also link the
 six native-item/status-berry repair receipts. Their scope contains 452 non-plot
@@ -107,6 +109,11 @@ The 576-definition battle matrix and earlier dated reports remain historical.
 The [two-source Z receipt](testing/z-existing-sources-2026-10-25.md) records
 the later Flamethrower/Surf expansion; the first reconciliation index and its
 dated world snapshot remain unchanged.
+
+The later [thirteen flavor snacks](testing/flavor-snacks-2026-10-25.md) use the
+selected berry through `+berry snack`, each healing up to 10 HP. Their explicit
+field support adds no nursery offers, growing species or public stock. The
+earlier Z-source index remains the receipt for its dated candidate.
 
 The [October 25 deliberately released local walkthrough](testing/item-repair-released-player-2026-10-25.md)
 qualifies the repaired candidate through 716 ordinary commands and 102 independent
