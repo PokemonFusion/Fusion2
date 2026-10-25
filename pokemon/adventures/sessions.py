@@ -649,9 +649,6 @@ def move_session(player: Any, direction: str) -> AdventureActionResult:
     gate = inspect_adventure_battle(player, session)
     if gate.blocked:
         return AdventureActionResult(False, gate.message, session=session)
-    gate = inspect_adventure_battle(player, session)
-    if gate.blocked:
-        return AdventureActionResult(False, gate.message, session=session)
     template = get_template(getattr(session, "template_key", ""))
     if template is None:
         return AdventureActionResult(False, "This adventure template is missing.", session=session)
@@ -688,6 +685,9 @@ def search_session(player: Any) -> AdventureActionResult:
     session = get_active_session_for_player(player)
     if session is None:
         return AdventureActionResult(False, "You are not in an adventure.")
+    gate = inspect_adventure_battle(player, session)
+    if gate.blocked:
+        return AdventureActionResult(False, gate.message, session=session)
     template = get_template(getattr(session, "template_key", ""))
     if template is None:
         return AdventureActionResult(False, "This adventure template is missing.", session=session)
