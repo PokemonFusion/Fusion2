@@ -13,6 +13,7 @@ else:
     Command = _EvenniaCommand
 
 from .cmdsets import attach_movement_cmdset, detach_movement_cmdset
+from .interlocks import inspect_adventure_battle
 from .renderer import render_objectives, render_session, render_template_info
 from .sessions import (
     choose_session_route,
@@ -142,7 +143,8 @@ class CmdAdventure(Command):
         result = start_session(self.caller, arg)
         self.caller.msg(result.message)
         if result.ok and result.session is not None:
-            attach_movement_cmdset(self.caller)
+            if not inspect_adventure_battle(self.caller, result.session).blocked:
+                attach_movement_cmdset(self.caller)
             self.caller.msg(render_session(result.session))
 
     def _look(self) -> None:
@@ -150,7 +152,8 @@ class CmdAdventure(Command):
         if session is None:
             self.caller.msg("You are not in an adventure.")
             return
-        attach_movement_cmdset(self.caller)
+        if not inspect_adventure_battle(self.caller, session).blocked:
+            attach_movement_cmdset(self.caller)
         self.caller.msg(render_session(session))
 
     def _objectives(self) -> None:
@@ -245,7 +248,8 @@ class CmdAdventure(Command):
 
     def _leave(self) -> None:
         result = leave_session(self.caller)
-        detach_movement_cmdset(self.caller)
+        if result.ok:
+            detach_movement_cmdset(self.caller)
         self.caller.msg(result.message)
 
 
