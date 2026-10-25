@@ -1,4 +1,4 @@
-"""Eight bounded Z status sources, reviewed before implementation."""
+"""Fourteen bounded Z status sources, reviewed before implementation."""
 
 from .z_profiles import ZProfile
 
@@ -85,4 +85,16 @@ STATUS_PAIRS = (
     ZProfile(
         "Ghostium Z", "Curse", "Z-Curse", 0, "Ghost", "Status", kind="status", intrinsic="curse"
     ),
+    ZProfile("Normalium Z", "Recover", "Z-Recover", 0, "Normal", "Status",
+             target="self", kind="status", intrinsic="clearnegative"),
+    ZProfile("Flyinium Z", "Roost", "Z-Roost", 0, "Flying", "Status",
+             target="self", kind="status", intrinsic="clearnegative"),
+    ZProfile("Normalium Z", "Protect", "Z-Protect", 0, "Normal", "Status",
+             target="self", kind="status", intrinsic="clearnegative"),
+    ZProfile("Poisonium Z", "Toxic", "Z-Toxic", 0, "Poison", "Status",
+             kind="status", intrinsic="boost", bonus=(("def", 1),)),
+    ZProfile("Electrium Z", "Thunder Wave", "Z-Thunder Wave", 0, "Electric", "Status",
+             kind="status", intrinsic="boost", bonus=(("spd", 1),)),
+    ZProfile("Grassium Z", "Synthesis", "Z-Synthesis", 0, "Grass", "Status",
+             target="self", kind="status", intrinsic="clearnegative"),
 )

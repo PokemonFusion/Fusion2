@@ -22,7 +22,7 @@ class ZEffects:
 
     @staticmethod
     def start(battle, user, profile, move):
-        """Only the eight explicitly reviewed status sources receive bonuses."""
+        """Only the explicitly reviewed status sources receive their named bonus."""
         if profile.kind != "status":
             return
         from pokemon.utils.boosts import apply_boost

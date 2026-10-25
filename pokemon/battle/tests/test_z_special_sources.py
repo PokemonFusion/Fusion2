@@ -111,7 +111,7 @@ def test_old_generic_and_signature_fingerprints_are_preserved():
         """Freeze the full reviewed profile data, including native and effect fields."""
         return hashlib.sha256(json.dumps([asdict(p) for p in profiles], sort_keys=True).encode()).hexdigest()
 
-    assert len(GENERIC_PAIRS) == 25 and len(ZProfiles.accepted) == 1
+    assert len(GENERIC_PAIRS) >= 25 and len(ZProfiles.accepted) == 1
     assert fingerprint(GENERIC_PAIRS[:19]) == "8531fef86a1f635abd4e8951b92a0a4c9d3161975f756b9ec7d59656fa01df78"
     assert len(SIGNATURE_PAIRS) == 16
     assert fingerprint(SIGNATURE_PAIRS) == "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43"

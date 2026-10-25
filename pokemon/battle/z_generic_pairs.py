@@ -1,4 +1,4 @@
-"""Twenty-five reviewed damage additions; no automatic all-move release."""
+"""Thirty-one reviewed damage additions; no automatic all-move release."""
 
 from .z_profiles import ZProfile
 
@@ -29,4 +29,10 @@ GENERIC_PAIRS = (
     ZProfile("Psychium Z", "Psychic", "Shattered Psyche", 175, "Psychic", "Special"),
     ZProfile("Ghostium Z", "Shadow Ball", "Never-Ending Nightmare", 160, "Ghost", "Special"),
     ZProfile("Poisonium Z", "Sludge Bomb", "Acid Downpour", 175, "Poison", "Special"),
+    ZProfile("Normalium Z", "Body Slam", "Breakneck Blitz", 160, "Normal", "Physical"),
+    ZProfile("Darkinium Z", "Crunch", "Black Hole Eclipse", 160, "Dark", "Physical"),
+    ZProfile("Dragonium Z", "Dragon Claw", "Devastating Drake", 160, "Dragon", "Physical"),
+    ZProfile("Groundium Z", "Earthquake", "Tectonic Rage", 180, "Ground", "Physical"),
+    ZProfile("Rockium Z", "Rock Slide", "Continental Crush", 140, "Rock", "Physical"),
+    ZProfile("Steelium Z", "Iron Head", "Corkscrew Crash", 160, "Steel", "Physical"),
 )

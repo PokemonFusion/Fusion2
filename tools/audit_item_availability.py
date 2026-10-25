@@ -113,6 +113,32 @@ def live_sources(snapshot, item_key):
 class ItemAvailabilityAudit:
     """Keep definition identity, supported commands and availability independent."""
 
+    @staticmethod
+    def z_profile_report(profile):
+        """Associate only a specifically delivered crystal/source pair with its receipt."""
+        from pokemon.names import normalize_name
+
+        batches = {
+            "z-existing-sources-2026-10-25": (("Firium Z", "Flamethrower"), ("Waterium Z", "Surf")),
+            "z-six-special-sources-2026-10-25": (
+                ("Electrium Z", "Thunderbolt"), ("Icium Z", "Ice Beam"),
+                ("Grassium Z", "Energy Ball"), ("Psychium Z", "Psychic"),
+                ("Ghostium Z", "Shadow Ball"), ("Poisonium Z", "Sludge Bomb")),
+            "z-six-physical-sources-2026-10-25": (
+                ("Normalium Z", "Body Slam"), ("Darkinium Z", "Crunch"),
+                ("Dragonium Z", "Dragon Claw"), ("Groundium Z", "Earthquake"),
+                ("Rockium Z", "Rock Slide"), ("Steelium Z", "Iron Head")),
+            "z-six-status-sources-2026-10-25": (
+                ("Normalium Z", "Recover"), ("Flyinium Z", "Roost"),
+                ("Normalium Z", "Protect"), ("Poisonium Z", "Toxic"),
+                ("Electrium Z", "Thunder Wave"), ("Grassium Z", "Synthesis")),
+        }
+        key = normalize_name(profile.crystal), normalize_name(profile.source)
+        for report, pairs in batches.items():
+            if key in {(normalize_name(item), normalize_name(source)) for item, source in pairs}:
+                return report
+        return "z-core-2026-10-23" if profile.kind == "generic" else "z-special-2026-10-23"
+
     def __init__(self, snapshot=None):
         """Accept only explicit primitive snapshot data; perform no ORM work."""
         self.snapshot = snapshot
@@ -223,16 +249,7 @@ class ItemAvailabilityAudit:
                                                  "type": p.move_type, "category": p.category, "target": p.target,
                                                  "kind": p.kind, "native": list(p.native), "intrinsic": p.intrinsic,
                                                  "bonus": list(p.bonus),
-                                                 "evidence_report": "z-existing-sources-2026-10-25"
-                                                 if (normalize_name(p.crystal), normalize_name(p.source)) in {
-                                                     ("firiumz", "flamethrower"), ("wateriumz", "surf")}
-                                                 else "z-six-special-sources-2026-10-25"
-                                                 if (normalize_name(p.crystal), normalize_name(p.source)) in {
-                                                     ("electriumz", "thunderbolt"), ("iciumz", "icebeam"),
-                                                     ("grassiumz", "energyball"), ("psychiumz", "psychic"),
-                                                     ("ghostiumz", "shadowball"), ("poisoniumz", "sludgebomb")}
-                                                 else "z-core-2026-10-23" if p.kind == "generic"
-                                                 else "z-special-2026-10-23"} for p in profiles],
+                                                 "evidence_report": self.z_profile_report(p)} for p in profiles],
                                    "evidence_report": "z-special-2026-10-23",
                                    "limit": "Only exact crystal/source mappings; native signatures, actual PP/held ownership, suppression, targets and side budget still apply"})
                     if raw.get("zMoveType"):

@@ -153,8 +153,8 @@ def test_six_special_z_sources_have_their_own_evidence_without_public_stock():
     """New explicit mappings cannot silently inherit an older acceptance receipt."""
     result = ItemAvailabilityAudit().build()
     rows = {row["key"]: row for row in result["items"]}
-    assert result["current_registries"]["z_mappings"] == 50
-    assert result["current_registries"]["z_kinds"] == {"generic": 26, "status": 8, "signature": 16}
+    assert result["current_registries"]["z_mappings"] == 62
+    assert result["current_registries"]["z_kinds"] == {"generic": 32, "status": 14, "signature": 16}
     for crystal, source, power in (("electriumz", "Thunderbolt", 175), ("iciumz", "Ice Beam", 175),
                                   ("grassiumz", "Energy Ball", 175), ("psychiumz", "Psychic", 175),
                                   ("ghostiumz", "Shadow Ball", 160), ("poisoniumz", "Sludge Bomb", 175)):
@@ -163,6 +163,26 @@ def test_six_special_z_sources_have_their_own_evidence_without_public_stock():
         assert profile["power"] == power and profile["category"] == "Special" and profile["target"] == "normal"
         assert profile["evidence_report"] == "z-six-special-sources-2026-10-25"
         assert rows[crystal]["world_availability"]["status"] == "unverified"
+
+
+@pytest.mark.parametrize("kind,pairs", [
+    ("physical", (("normaliumz", "Body Slam", 160), ("darkiniumz", "Crunch", 160),
+                  ("dragoniumz", "Dragon Claw", 160), ("groundiumz", "Earthquake", 180),
+                  ("rockiumz", "Rock Slide", 140), ("steeliumz", "Iron Head", 160))),
+    ("status", (("normaliumz", "Recover", 0), ("flyiniumz", "Roost", 0),
+                ("normaliumz", "Protect", 0), ("poisoniumz", "Toxic", 0),
+                ("electriumz", "Thunder Wave", 0), ("grassiumz", "Synthesis", 0))),
+])
+def test_twelve_selected_z_sources_keep_exact_evidence_and_unknown_world(kind,pairs):
+    """A new mapping cannot inherit an old receipt or imply installed acquisition."""
+    result=ItemAvailabilityAudit().build()
+    rows={row["key"]:row for row in result["items"]}
+    for crystal,source,power in pairs:
+        route=next(r for r in rows[crystal]["routes"] if r["kind"]=="z_move")
+        profile=next(p for p in route["profiles"] if p["source"]==source)
+        assert profile["power"]==power and profile["category"]==kind.title()
+        assert profile["evidence_report"]=="z-six-"+kind+"-sources-2026-10-25"
+        assert rows[crystal]["world_availability"]["status"]=="unverified"
 
 
 def test_depleted_disabled_absent_and_unknown_world_sources_are_distinct():
