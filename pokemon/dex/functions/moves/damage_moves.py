@@ -1589,18 +1589,45 @@ class Electroshot:
 
 
 class Embargo:
+	"""Suppress held effects for five residual turns without losing state."""
+
 	def onEnd(self, *args, **kwargs):
+		"""Remove suppression once the condition ends."""
 		target = args[0] if args else kwargs.get("target")
 		if target and hasattr(target, "volatiles"):
 			target.volatiles.pop("embargo", None)
 		return True
 
 	def onStart(self, *args, **kwargs):
-		user = args[0] if args else None
-		target = args[1] if len(args) > 1 else None
+		"""Keep the engine's condition mapping and initialize its timer once."""
+		target = kwargs.get("target") or kwargs.get("pokemon")
+		if target is None:
+			# Move-data adapters pass (user, target); singleEvent passes
+			# (target, source, effect), including its explicit empty effect.
+			target = args[1] if len(args) == 2 else args[0] if args else None
 		if target and hasattr(target, "volatiles"):
-			target.volatiles["embargo"] = True
+			state = target.volatiles.get("embargo")
+			if not isinstance(state, dict):
+				state = {}
+			state.setdefault("duration", 5)
+			target.volatiles["embargo"] = state
 		return True
+
+	def onResidual(self, pokemon=None, battle=None, **kwargs):
+		"""Expire the condition after its fifth ordinary residual boundary."""
+		state = getattr(pokemon, "volatiles", {}).get("embargo")
+		if state is None:
+			return
+		if not isinstance(state, dict):
+			# Older checkpoints used a boolean and have no recoverable timer.
+			state = {"duration": 5}
+			pokemon.volatiles["embargo"] = state
+		state["duration"] = state.get("duration", 5) - 1
+		if state["duration"] <= 0:
+			if battle is not None:
+				battle.remove_volatile(pokemon, "embargo")
+			else:
+				pokemon.volatiles.pop("embargo", None)
 
 
 class Encore:

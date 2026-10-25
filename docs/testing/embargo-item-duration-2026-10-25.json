@@ -1,0 +1,1041 @@
+{
+  "date": "2026-10-25",
+  "tracker": 852,
+  "baseline": "65e8e246bb50f4672ffdffa79740999251950b7a",
+  "status": "accepted local repair",
+  "evidence_kind": "Local automated ordinary production commands/menus/full turns and isolated PostgreSQL; no new released socket, hosted CI, permanent stock or deployment claim",
+  "source_sha256_lf": {
+    "pokemon/battle/logic.py": "3f3b145d68d8097ba2c2e34cdd488536f5f9e470f19262177b80b8af95aeb54c",
+    "pokemon/dex/functions/abilities_funcs.py": "5e11759723f84d8ce376aa2b16e81fd58ba249eda42f28c2368bd7bba96d4600",
+    "pokemon/dex/functions/items_funcs.py": "d22830cad8f314384ba615a0b1140b157b80da3dbaf929325b16b6d120226816",
+    "pokemon/dex/functions/moves/damage_moves.py": "443f15aac12d8c4520fe0a549569fba0b39def5560779ea0727c2e69d494613f",
+    "tests/integration/battle_recovery_food_cases.py": "543b259c8aede25ad61eb052559b28cb7825e6c991dab274bdcc2a3ca5189db9",
+    "tests/integration/held_status_berry_cases.py": "10fe7728e51059d3853ce1a0fb0e075bdcf3671dc1e98bc9fffa568884ab9ce2",
+    "pokemon/battle/tests/test_held_status_berry_identity.py": "1055775955b0e94d2f6f2f846917afaf702ef6adbc30ea863fe6cf1b52dfad2f",
+    "pokemon/battle/tests/test_synchronize_status_berries.py": "37e510a2967235aea6485bb9545b35c391735ff04d2fe133208d8355e63e8c36",
+    "pokemon/battle/tests/test_restored_item_update_handlers.py": "850efc521188e7aeb7e249359270f3b25c2f56d45bce6861cda0e45f3851c985",
+    "pokemon/battle/tests/test_embargo_item_duration.py": "c7442d78cdad3c219a40e6745c91d560f2aef41b96a770acb445a3faf6b9e009"
+  },
+  "qualification_manifest_sha256_lf": "b98c962aff3c1635df5f99a28078d82fd6cdb462f6edded5de1457056aa2a2e0",
+  "qualification_python_sources": 1133,
+  "unrelated_shared_work": {
+    "paths": 25,
+    "unchanged": true
+  },
+  "focused": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "pokemon/battle/tests/test_embargo_item_duration.py",
+        "pokemon/battle/tests/test_restored_item_update_handlers.py",
+        "tests/test_multi_battle.py",
+        "tests/test_battle_rebuild.py",
+        "tests/test_pvp_team_restore.py",
+        "tests/test_battle_restore_missing_state.py",
+        "pokemon/battle/tests/test_held_status_berry_identity.py",
+        "pokemon/battle/tests/test_synchronize_status_berries.py",
+        "pokemon/battle/tests/test_status_poison.py",
+        "pokemon/battle/tests/test_status_freeze.py",
+        "pokemon/battle/tests/test_status_burn.py",
+        "pokemon/battle/tests/test_status_sleep.py",
+        "pokemon/battle/tests/test_status_paralysis.py",
+        "tests/test_turn_status.py",
+        "tests/test_status_persistence.py",
+        "tests/test_status_move_messages.py",
+        "tests/test_status_moves_no_damage.py",
+        "tests/test_battle_recovery_food.py",
+        "tests/test_recovery_equivalents.py",
+        "pokemon/battle/tests/test_origin_primal_rusted_theft_identity.py",
+        "pokemon/battle/tests/test_item_form_ability_identity.py",
+        "pokemon/battle/tests/test_memory_drive_theft_identity.py",
+        "pokemon/battle/tests/test_plate_theft_identity.py",
+        "pokemon/battle/tests/test_legendary_item_identity.py",
+        "pokemon/battle/tests/test_item_core_runtime.py",
+        "pokemon/battle/tests/test_native_stat_items.py",
+        "pokemon/battle/tests/test_incense.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_native_form_and_postbattle_items.py",
+        "pokemon/battle/tests/test_copied_move_persistence.py",
+        "tests/test_item_support_reconciliation.py",
+        "--basetemp",
+        "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-status-858-873-20261025\\focused-temp",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "exit_code": 0,
+      "seconds": 93.47,
+      "log_sha256": "bc20f5c2a2a328e40ec03d85b10017d680efc2f7110c02df12420ad7f0d23f58",
+      "pytest_counts": [
+        "1776"
+      ],
+      "skips": [],
+      "unittest_counts": []
+    }
+  ],
+  "player": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/held_status_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 78.15,
+      "log_sha256": "7281293a371592569e41b0000d471b71198d7b8cc76a8854c08394559e0ba212",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "31"
+      ]
+    }
+  ],
+  "compatibility": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/field_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 31.91,
+      "log_sha256": "defa8e25f0f868b3b9b9ac227327a22d76ea36eccbf43a0ea953a50b7f948a4d",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "26"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/legacy_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 33.15,
+      "log_sha256": "75190c5c532db21f6f5a80753033ad9725896bbcd9fb25bb3848fe5054815d24",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "26"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/battle_recovery_food_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 81.23,
+      "log_sha256": "a91500f56baa53a3cd170f135eef980ee4e3071d4ed1e8312b2bf9defb407feb",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "50"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/status_item_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 9.99,
+      "log_sha256": "3d4f7a142d43fa49070ecf36b835cc6e6d99b24433b2fe0faec82e9d52199511",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "9"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/recovery_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 9.9,
+      "log_sha256": "f11c80767a2e4d014cd28029e74a89a129cf8b0fdef958d71a842dbbe8dab54c",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "9"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/battle_recovery_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 47.76,
+      "log_sha256": "337c1f3544ee1da8679137a41096c8c3758629970cc8b1837148836306906535",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "36"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/multi_battle_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 93.18,
+      "log_sha256": "ca5d8d032408edcdf985be78b9f94194fba281d856aa180f2c4cd7de6f75c8f3",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "33"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/origin_primal_rusted_theft_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 350.23,
+      "log_sha256": "bd2c01ba3c6747d833ace3807596b70abd7f895af87051c3341c4daca9f39e21",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "237"
+      ]
+    }
+  ],
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-repairs-reporting-v2-20261025\\qualified-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 2097.88,
+    "passed": [
+      "6142",
+      "6142",
+      "6142"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "2ec4fa064c3a0284fbecb06d5334ce6b4a54317af8ead38831bfaee40982454a",
+    "source_count": 1503
+  },
+  "legacy_boolean_checkpoint": {
+    "kind": "labelled legacy boolean checkpoint; not newly granted gameplay",
+    "remaining_by_residual": [
+      4,
+      3,
+      2,
+      1,
+      0
+    ],
+    "source_untouched": true,
+    "consumed_once_on_next_update": true,
+    "observations": [
+      {
+        "duration": 4,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 140
+      },
+      {
+        "duration": 3,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 120
+      },
+      {
+        "duration": 2,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 100
+      },
+      {
+        "duration": 1,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 80
+      },
+      {
+        "duration": 0,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 60
+      }
+    ]
+  },
+  "raw_player_receipts": {
+    "path": "private task artifact/player-v2-evidence.json",
+    "sha256_lf": "30e2237b2eade13eb58bea129a6df7959d95458dfe134674bab3b40a6b8189a2",
+    "records": 215
+  },
+  "coqualification": "Four separate repair commits and #859 reporting share the corrected complete v2 frozen source tree. No isolated intermediate commit-only acceptance is claimed.",
+  "diagnostics": [
+    "Original 39+29 regression baseline: 26 failed, 42 passed; scoped fixes: 68 passed.",
+    "Restored update baseline: 10 failed, 6 passed; rebind fix: 16 passed.",
+    "Embargo timer baseline: 7 failed; timer plus restore tests: 23 passed.",
+    "Final direct-condition target probe found a second Embargo adapter defect: both source and holder were suppressed. New matched source guards: 2 failed,7 passed before fix;9 passed after fix. Actual ordinary move route had always targeted the holder correctly. A complete corrected replacement gate supersedes the retained earlier frozen runs.",
+    "Initial sleep/freeze reflection exposed actual Synchronize recursion; retained private seed diagnostics.",
+    "A draft residual assertion used the wrong engine boundary, then was corrected before accepted runs.",
+    "First new manual Burnt negative fixture incorrectly expected no action. Corrected to existing supported-no-effect action/no-debit policy; 50 manual cases pass.",
+    "Player pilots separately reproduced unregistered reconnect handlers and immortal boolean Embargo.",
+    "First timed Embargo pilot correctly expired but fixture expected eating at residual expiry. Corrected to next ordinary update; final source does not force a callback or override accuracy/secondary chance."
+  ],
+  "limits": [
+    "Tagged capture finalization and stock are separate prerequisites; no wild ball command or item obtainability claim.",
+    "Ice Beam uses native moves, normal RNG seed3 and its natural freeze chance; no forced effect. Other cases use seed853.",
+    "Offline Klutz/status prerequisites are named adapters, not ordinary native player acquisition.",
+    "Old boolean Embargo checkpoints have no elapsed timer; first resumed residual starts a bounded five-residual countdown.",
+    "Plot/CAP items, definition expansion, unrelated shared work and existing human characters/Pokemon are excluded."
+  ],
+  "fixture_cleanup": {
+    "stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0
+  },
+  "issue": 875,
+  "rule": "Embargo targets only the holder through both legacy move and canonical condition APIs, keeps structured state and expires after five residual turns; the next update resumes eating.",
+  "item_rules": {},
+  "new_offline_tests": 9,
+  "cases": [
+    {
+      "item": "Pecha Berry",
+      "facet": "embargo",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 32,
+          "owned_id": "2d989b30-b93b-4162-88ac-2706068cdaa2",
+          "trainer_id": 21
+        },
+        {
+          "side": 1,
+          "character_id": 33,
+          "owned_id": "27392aa2-ede4-418d-9c15-3855c6893813",
+          "trainer_id": 22
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        64,
+        75
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Embargo",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "embargo_duration_by_completed_turn": [
+        4,
+        3,
+        2,
+        1,
+        0,
+        0
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "2d989b30-b93b-4162-88ac-2706068cdaa2",
+          "trainer_id": 21,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 75,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "27392aa2-ede4-418d-9c15-3855c6893813",
+          "trainer_id": 22,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 16,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:2d989b30-b93b-4162-88ac-2706068cdaa2",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 75,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:27392aa2-ede4-418d-9c15-3855c6893813",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 16,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 6,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['embargo', 'toxic', 'safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Embargo"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Embargo \u2192 A1.",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Buddy's Pechaberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "  Buddy's Pechaberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "embargo",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 65,
+          "owned_id": "80e8b9a1-c406-49a9-88ca-3b4778f804a4",
+          "trainer_id": 43
+        },
+        {
+          "side": 1,
+          "character_id": 66,
+          "owned_id": "95345049-6755-4707-91b2-b5da1a0f0e5c",
+          "trainer_id": 44
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        143,
+        154
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Embargo",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "embargo_duration_by_completed_turn": [
+        4,
+        3,
+        2,
+        1,
+        0,
+        0
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "80e8b9a1-c406-49a9-88ca-3b4778f804a4",
+          "trainer_id": 43,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 75,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "95345049-6755-4707-91b2-b5da1a0f0e5c",
+          "trainer_id": 44,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 16,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:80e8b9a1-c406-49a9-88ca-3b4778f804a4",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 75,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:95345049-6755-4707-91b2-b5da1a0f0e5c",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 16,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 6,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['embargo', 'toxic', 'safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Embargo"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Embargo \u2192 A1.",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Buddy's Psncureberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "  Buddy's Psncureberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}
