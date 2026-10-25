@@ -7,7 +7,7 @@ import pytest
 
 from pokemon.adventures import sessions
 from pokemon.adventures.constants import ADVENTURE_SESSION_ATTR, STATE_ACTIVE, STATE_EXPIRED
-from tests.test_adventure_sessions import DummyRoom, DummyPlayer
+from tests.test_adventure_sessions import DummyRoom, DummyPlayer, adventure_world, fake_session_model
 
 
 @pytest.mark.parametrize("action", ["choose", "move", "search", "leave", "start"])
