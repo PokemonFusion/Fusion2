@@ -84,8 +84,14 @@ Use `+store` then **Buy items** (`1`) to view stock; the older room hint
 The old Itemfinder message-only result has been replaced by an explicitly
 configured [Potion finder](hunt-item-sources.md). The same guide specifies one
 opt-in Rattata/Oran Berry wild source; default charts grant no held item.
-The [six-item Supply Corner](item-supply-route.md) is an optional, duplicate-safe
-authored source with finite stock. The October 22 released QA walkthrough verifies only
+The [six-item Supply Corner](item-supply-route.md) is a duplicate-safe
+authored source with finite stock. Its [October 25 permanent release](testing/item-source-released-player-2026-10-25.md)
+verified ordinary travel from Alpha Test Hub #31 through `supplies`, all six
+purchases/effects and retry/reconnect. The counter remains buy-only, with no
+automatic refill; dated remaining stock is Potion19, Oran19, FreshWater19,
+FireStone4, Leftovers1 and SmokeBall1. `back` returns to the hub. Later sales can
+deplete these quantities. This is proof for those six offers only.
+The October 22 released QA walkthrough verifies only
 the nine named items at its deliberately authored sources, which were cleaned up.
 Finder/wild-held sources and permanent world population require their own checks.
 
@@ -127,4 +133,5 @@ sources and both native Necrozma signatures, including zero-PP refusals.
 The report separates its bounded representatives from the complete per-item
 automated matrices. Both Player accounts, tagged stock and base-source charts
 were disposable; the instance/schema were removed. This creates no permanent
-public supply and leaves #862's installation and source walkthrough separate.
+public supply. The later [#862 acceptance](testing/item-source-released-player-2026-10-25.md)
+separately verifies the six permanent public offers and removes its own QA fixtures.

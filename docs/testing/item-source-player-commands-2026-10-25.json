@@ -1,0 +1,799 @@
+{
+  "scope": "QA-only input ledger; authentication, private IDs and ambient output omitted",
+  "inputs": [
+    {
+      "input": 1,
+      "player": "QA-A",
+      "command": "[open ordinary socket]"
+    },
+    {
+      "input": 2,
+      "player": "QA-A",
+      "command": "[ordinary create; authentication omitted]"
+    },
+    {
+      "input": 3,
+      "player": "QA-A",
+      "command": "yes"
+    },
+    {
+      "input": 4,
+      "player": "QA-A",
+      "command": "[ordinary login; authentication omitted]"
+    },
+    {
+      "input": 5,
+      "player": "QA-A",
+      "command": "goic 1"
+    },
+    {
+      "input": 6,
+      "player": "QA-A",
+      "command": "chargen"
+    },
+    {
+      "input": 7,
+      "player": "QA-A",
+      "command": "a"
+    },
+    {
+      "input": 8,
+      "player": "QA-A",
+      "command": "m"
+    },
+    {
+      "input": 9,
+      "player": "QA-A",
+      "command": "water"
+    },
+    {
+      "input": 10,
+      "player": "QA-A",
+      "command": "Squirtle"
+    },
+    {
+      "input": 11,
+      "player": "QA-A",
+      "command": "1"
+    },
+    {
+      "input": 12,
+      "player": "QA-A",
+      "command": "Hardy"
+    },
+    {
+      "input": 13,
+      "player": "QA-A",
+      "command": "m"
+    },
+    {
+      "input": 14,
+      "player": "QA-A",
+      "command": "y"
+    },
+    {
+      "input": 15,
+      "player": "QA-B",
+      "command": "[open ordinary socket]"
+    },
+    {
+      "input": 16,
+      "player": "QA-B",
+      "command": "[ordinary create; authentication omitted]"
+    },
+    {
+      "input": 17,
+      "player": "QA-B",
+      "command": "yes"
+    },
+    {
+      "input": 18,
+      "player": "QA-B",
+      "command": "[ordinary login; authentication omitted]"
+    },
+    {
+      "input": 19,
+      "player": "QA-B",
+      "command": "goic 1"
+    },
+    {
+      "input": 20,
+      "player": "QA-B",
+      "command": "chargen"
+    },
+    {
+      "input": 21,
+      "player": "QA-B",
+      "command": "a"
+    },
+    {
+      "input": 22,
+      "player": "QA-B",
+      "command": "f"
+    },
+    {
+      "input": 23,
+      "player": "QA-B",
+      "command": "water"
+    },
+    {
+      "input": 24,
+      "player": "QA-B",
+      "command": "Squirtle"
+    },
+    {
+      "input": 25,
+      "player": "QA-B",
+      "command": "1"
+    },
+    {
+      "input": 26,
+      "player": "QA-B",
+      "command": "Hardy"
+    },
+    {
+      "input": 27,
+      "player": "QA-B",
+      "command": "m"
+    },
+    {
+      "input": 28,
+      "player": "QA-B",
+      "command": "y"
+    },
+    {
+      "input": 29,
+      "player": "QA-A",
+      "command": "look"
+    },
+    {
+      "input": 30,
+      "player": "QA-A",
+      "command": "(E)xit"
+    },
+    {
+      "input": 31,
+      "player": "QA-A",
+      "command": "look"
+    },
+    {
+      "input": 32,
+      "player": "QA-A",
+      "command": "(A)lpha (H)ub"
+    },
+    {
+      "input": 33,
+      "player": "QA-A",
+      "command": "supplies"
+    },
+    {
+      "input": 34,
+      "player": "QA-A",
+      "command": "+store",
+      "verified_response_fragments": [
+        "Welcome to the item store.",
+        "1. Buy items"
+      ]
+    },
+    {
+      "input": 35,
+      "player": "QA-A",
+      "command": "1",
+      "verified_response_fragments": [
+        "Potion - $300 (20 in stock)",
+        "Smoke Ball - $4000 (2 in stock)"
+      ]
+    },
+    {
+      "input": 36,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 37,
+      "player": "QA-A",
+      "command": "q"
+    },
+    {
+      "input": 38,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 39,
+      "player": "QA-B",
+      "command": "supplies"
+    },
+    {
+      "input": 40,
+      "player": "QA-B",
+      "command": "+store"
+    },
+    {
+      "input": 41,
+      "player": "QA-B",
+      "command": "1"
+    },
+    {
+      "input": 42,
+      "player": "QA-B",
+      "command": "Potion 1",
+      "verified_response_fragments": [
+        "You can't afford that."
+      ]
+    },
+    {
+      "input": 43,
+      "player": "QA-B",
+      "command": "Potion 999",
+      "verified_response_fragments": [
+        "The store doesn't have that many."
+      ]
+    },
+    {
+      "input": 44,
+      "player": "QA-B",
+      "command": "Potion 0",
+      "verified_response_fragments": [
+        "You must purchase at least one item."
+      ]
+    },
+    {
+      "input": 45,
+      "player": "QA-B",
+      "command": "Potion -1",
+      "verified_response_fragments": [
+        "You must purchase at least one item."
+      ]
+    },
+    {
+      "input": 46,
+      "player": "QA-B",
+      "command": "Potion nope",
+      "verified_response_fragments": [
+        "Usage: <item> <amount> or 'back'."
+      ]
+    },
+    {
+      "input": 47,
+      "player": "QA-B",
+      "command": "back"
+    },
+    {
+      "input": 48,
+      "player": "QA-B",
+      "command": "q"
+    },
+    {
+      "input": 49,
+      "player": "QA-B",
+      "command": "+inventory"
+    },
+    {
+      "input": 50,
+      "player": "QA-B",
+      "command": "back"
+    },
+    {
+      "input": 51,
+      "player": "QA-A",
+      "command": "supplies"
+    },
+    {
+      "input": 52,
+      "player": "QA-A",
+      "command": "+store"
+    },
+    {
+      "input": 53,
+      "player": "QA-A",
+      "command": "1"
+    },
+    {
+      "input": 54,
+      "player": "QA-A",
+      "command": "Potion 1",
+      "verified_response_fragments": [
+        "You purchase 1 x Potion for $300."
+      ]
+    },
+    {
+      "input": 55,
+      "player": "QA-A",
+      "command": "Oran Berry 1",
+      "verified_response_fragments": [
+        "You purchase 1 x Oran Berry for $80."
+      ]
+    },
+    {
+      "input": 56,
+      "player": "QA-A",
+      "command": "Fresh Water 1",
+      "verified_response_fragments": [
+        "You purchase 1 x Fresh Water for $200."
+      ]
+    },
+    {
+      "input": 57,
+      "player": "QA-A",
+      "command": "Fire Stone 1",
+      "verified_response_fragments": [
+        "You purchase 1 x Fire Stone for $3000."
+      ]
+    },
+    {
+      "input": 58,
+      "player": "QA-A",
+      "command": "Leftovers 1",
+      "verified_response_fragments": [
+        "You purchase 1 x Leftovers for $4000."
+      ]
+    },
+    {
+      "input": 59,
+      "player": "QA-A",
+      "command": "Smoke Ball 1",
+      "verified_response_fragments": [
+        "You purchase 1 x Smoke Ball for $4000."
+      ]
+    },
+    {
+      "input": 60,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 61,
+      "player": "QA-A",
+      "command": "q"
+    },
+    {
+      "input": 62,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 63,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 64,
+      "player": "QA-A",
+      "command": "(E)xit"
+    },
+    {
+      "input": 65,
+      "player": "QA-A",
+      "command": "item supply qa"
+    },
+    {
+      "input": 66,
+      "player": "QA-A",
+      "command": "+store"
+    },
+    {
+      "input": 67,
+      "player": "QA-A",
+      "command": "1"
+    },
+    {
+      "input": 68,
+      "player": "QA-A",
+      "command": "Master Ball 3"
+    },
+    {
+      "input": 69,
+      "player": "QA-A",
+      "command": "Revive 1"
+    },
+    {
+      "input": 70,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 71,
+      "player": "QA-A",
+      "command": "q"
+    },
+    {
+      "input": 72,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 73,
+      "player": "QA-A",
+      "command": "mew trail"
+    },
+    {
+      "input": 74,
+      "player": "QA-A",
+      "command": "+hunt"
+    },
+    {
+      "input": 75,
+      "player": "QA-A",
+      "command": "+item Master Ball",
+      "verified_response_fragments": [
+        "Gotcha! Mew was caught!"
+      ]
+    },
+    {
+      "input": 76,
+      "player": "QA-A",
+      "command": "yes"
+    },
+    {
+      "input": 77,
+      "player": "QA-A",
+      "command": "SupplyMew"
+    },
+    {
+      "input": 78,
+      "player": "QA-A",
+      "command": "center"
+    },
+    {
+      "input": 79,
+      "player": "QA-A",
+      "command": "+party"
+    },
+    {
+      "input": 80,
+      "player": "QA-A",
+      "command": "eevee trail"
+    },
+    {
+      "input": 81,
+      "player": "QA-A",
+      "command": "+hunt"
+    },
+    {
+      "input": 82,
+      "player": "QA-A",
+      "command": "+item Master Ball",
+      "verified_response_fragments": [
+        "Gotcha! Eevee was caught!"
+      ]
+    },
+    {
+      "input": 83,
+      "player": "QA-A",
+      "command": "yes"
+    },
+    {
+      "input": 84,
+      "player": "QA-A",
+      "command": "SupplyEevee"
+    },
+    {
+      "input": 85,
+      "player": "QA-A",
+      "command": "center"
+    },
+    {
+      "input": 86,
+      "player": "QA-A",
+      "command": "+party"
+    },
+    {
+      "input": 87,
+      "player": "QA-A",
+      "command": "+party 2"
+    },
+    {
+      "input": 88,
+      "player": "QA-A",
+      "command": "+party 3"
+    },
+    {
+      "input": 89,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 90,
+      "player": "QA-A",
+      "command": "+use Revive=2",
+      "verified_response_fragments": [
+        "Used Revive on 2."
+      ]
+    },
+    {
+      "input": 91,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 92,
+      "player": "QA-A",
+      "command": "+use Potion=2",
+      "verified_response_fragments": [
+        "Used Potion on 2."
+      ]
+    },
+    {
+      "input": 93,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 94,
+      "player": "QA-A",
+      "command": "+use Oran Berry=2",
+      "verified_response_fragments": [
+        "Used Oran Berry on 2."
+      ]
+    },
+    {
+      "input": 95,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 96,
+      "player": "QA-A",
+      "command": "+use Fresh Water=2",
+      "verified_response_fragments": [
+        "Used Fresh Water on 2."
+      ]
+    },
+    {
+      "input": 97,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 98,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 99,
+      "player": "QA-A",
+      "command": "+evolve <QA-Flareon-id> Fire Stone",
+      "verified_response_fragments": [
+        "SupplyEevee evolved into Flareon!"
+      ]
+    },
+    {
+      "input": 100,
+      "player": "QA-A",
+      "command": "+party 3"
+    },
+    {
+      "input": 101,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 102,
+      "player": "QA-A",
+      "command": "+box/deposit <QA-Squirtle-id>"
+    },
+    {
+      "input": 103,
+      "player": "QA-A",
+      "command": "+party"
+    },
+    {
+      "input": 104,
+      "player": "QA-A",
+      "command": "+hold 2=Leftovers"
+    },
+    {
+      "input": 105,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 106,
+      "player": "QA-A",
+      "command": "magikarp trail"
+    },
+    {
+      "input": 107,
+      "player": "QA-A",
+      "command": "+hunt"
+    },
+    {
+      "input": 108,
+      "player": "QA-A",
+      "command": "+attack Amnesia",
+      "verified_response_fragments": [
+        "SupplyMew used its Leftovers!",
+        "SupplyMew used Amnesia!",
+        "Magikarp uses Tackle"
+      ]
+    },
+    {
+      "input": 109,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 110,
+      "player": "QA-A",
+      "command": "+flee",
+      "verified_response_fragments": [
+        "fled from the battle!",
+        "The battle has ended."
+      ]
+    },
+    {
+      "input": 111,
+      "player": "QA-A",
+      "command": "center"
+    },
+    {
+      "input": 112,
+      "player": "QA-A",
+      "command": "+hold 2="
+    },
+    {
+      "input": 113,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 114,
+      "player": "QA-A",
+      "command": "+hold 2=Smoke Ball"
+    },
+    {
+      "input": 115,
+      "player": "QA-A",
+      "command": "mew trail"
+    },
+    {
+      "input": 116,
+      "player": "QA-A",
+      "command": "+hunt"
+    },
+    {
+      "input": 117,
+      "player": "QA-A",
+      "command": "+flee",
+      "verified_response_fragments": [
+        "fled from the battle!",
+        "The battle has ended."
+      ]
+    },
+    {
+      "input": 118,
+      "player": "QA-A",
+      "command": "center"
+    },
+    {
+      "input": 119,
+      "player": "QA-A",
+      "command": "+hold 2="
+    },
+    {
+      "input": 120,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 121,
+      "player": "QA-A",
+      "command": "+party/brief 2"
+    },
+    {
+      "input": 122,
+      "player": "QA-A",
+      "command": "quit"
+    },
+    {
+      "input": 123,
+      "player": "QA-A",
+      "command": "[open ordinary socket]"
+    },
+    {
+      "input": 124,
+      "player": "QA-A",
+      "command": "[ordinary login; authentication omitted]"
+    },
+    {
+      "input": 125,
+      "player": "QA-A",
+      "command": "goic 1"
+    },
+    {
+      "input": 126,
+      "player": "QA-A",
+      "command": "+party/brief 2",
+      "verified_response_fragments": [
+        "HP 265/332"
+      ]
+    },
+    {
+      "input": 127,
+      "player": "QA-A",
+      "command": "+inventory"
+    },
+    {
+      "input": 128,
+      "player": "QA-A",
+      "command": "limbo"
+    },
+    {
+      "input": 129,
+      "player": "QA-A",
+      "command": "(A)lpha (H)ub"
+    },
+    {
+      "input": 130,
+      "player": "QA-A",
+      "command": "supplies"
+    },
+    {
+      "input": 131,
+      "player": "QA-A",
+      "command": "+store"
+    },
+    {
+      "input": 132,
+      "player": "QA-A",
+      "command": "1"
+    },
+    {
+      "input": 133,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 134,
+      "player": "QA-A",
+      "command": "q"
+    },
+    {
+      "input": 135,
+      "player": "QA-A",
+      "command": "back"
+    },
+    {
+      "input": 136,
+      "player": "QA-B",
+      "command": "quit"
+    },
+    {
+      "input": 137,
+      "player": "QA-B",
+      "command": "[open ordinary socket]"
+    },
+    {
+      "input": 138,
+      "player": "QA-B",
+      "command": "[ordinary login; authentication omitted]"
+    },
+    {
+      "input": 139,
+      "player": "QA-B",
+      "command": "goic 1"
+    },
+    {
+      "input": 140,
+      "player": "QA-B",
+      "command": "+inventory"
+    },
+    {
+      "input": 141,
+      "player": "QA-A",
+      "command": "quit",
+      "verified_response_fragments": [
+        "Quitting. Hope to see you again, soon."
+      ]
+    },
+    {
+      "input": 142,
+      "player": "QA-B",
+      "command": "quit",
+      "verified_response_fragments": [
+        "Quitting. Hope to see you again, soon."
+      ]
+    }
+  ]
+}

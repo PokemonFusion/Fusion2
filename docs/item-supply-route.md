@@ -1,5 +1,12 @@
 # Optional six-item supply location (#781)
 
+The reusable recipe has a separately approved permanent PF2-Dev installation:
+see [October 25 released player acceptance](testing/item-source-released-player-2026-10-25.md).
+From Alpha Test Hub #31, take `supplies`; `back` returns. After acceptance the
+finite remaining units were Potion19 / Oran19 / FreshWater19 / FireStone4 /
+Leftovers1 / SmokeBall1. Later sales can deplete them. This dated source proof
+does not install the recipe elsewhere or authorize refilling it.
+
 The versioned [recipe](../world/item_supply.json) authors **Item Supply Corner**,
 reachable through a labeled **supplies** exit at one explicitly selected public
 hub, with **back** returning to that hub. Its room sign explains `+store`,

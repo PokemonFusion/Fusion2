@@ -58,6 +58,9 @@ installation and ordinary-player source acceptance remain separate requirements.
 The [replacement Supply Corner release proposal](testing/item-source-retry-release-plan-2026-10-25.md)
 pins the qualified candidate, exact six-offer stock, operational guards and tagged
 walkthrough; it requires explicit approval before execution.
+The approved [permanent Supply Corner acceptance](testing/item-source-released-player-2026-10-25.md)
+records the later PF2-Dev release, ordinary hub travel, six purchases/effects,
+retry/reconnect, finite remaining stock and complete tagged QA teardown.
 See the [Mega Stone player guide](mega-evolution.md),
 [activation contract](design/mega-evolution.md) and
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,

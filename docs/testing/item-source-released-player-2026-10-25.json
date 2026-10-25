@@ -1,0 +1,440 @@
+{
+  "issue": 862,
+  "date": "2026-10-25",
+  "released_candidate": "b13c43953451970cce68f2a47829e261ef9a7346",
+  "walkthrough_started_utc": "2026-10-25T19:27:33.985562+00:00",
+  "walkthrough_finished_utc": "2026-10-25T19:53:15.404313+00:00",
+  "ordinary_socket_inputs": 142,
+  "ordinary_game_commands": 132,
+  "independent_assertions": 71,
+  "sql_observations": 16,
+  "checks": [
+    {
+      "name": "protected-data-captured",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-effects-ended",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-evolved-held",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-fainted",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-leftovers-turn",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-onboard",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-oran",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-potion",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-pre-cleanup",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-purchased",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-reconnected",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-refusals",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-retry",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-revived",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-wallets",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "protected-data-water",
+      "passed": true,
+      "protected_table_count": 32
+    },
+    {
+      "name": "ordinary-self-service-onboarding",
+      "passed": true
+    },
+    {
+      "name": "separate-wallet-prerequisite",
+      "passed": true
+    },
+    {
+      "name": "refusals-preserve-all-assets",
+      "passed": true
+    },
+    {
+      "name": "one-copy-public-purchase-Potion",
+      "passed": true,
+      "price": 300,
+      "stock_before": 20,
+      "stock_after": 19
+    },
+    {
+      "name": "one-copy-public-purchase-Oran Berry",
+      "passed": true,
+      "price": 80,
+      "stock_before": 20,
+      "stock_after": 19
+    },
+    {
+      "name": "one-copy-public-purchase-Fresh Water",
+      "passed": true,
+      "price": 200,
+      "stock_before": 20,
+      "stock_after": 19
+    },
+    {
+      "name": "one-copy-public-purchase-Fire Stone",
+      "passed": true,
+      "price": 3000,
+      "stock_before": 5,
+      "stock_after": 4
+    },
+    {
+      "name": "one-copy-public-purchase-Leftovers",
+      "passed": true,
+      "price": 4000,
+      "stock_before": 2,
+      "stock_after": 1
+    },
+    {
+      "name": "one-copy-public-purchase-Smoke Ball",
+      "passed": true,
+      "price": 4000,
+      "stock_before": 2,
+      "stock_after": 1
+    },
+    {
+      "name": "public-and-helper-wallet-conservation",
+      "passed": true,
+      "public_spend": 11580,
+      "helper_spend": 4500,
+      "primary_balance": 3920,
+      "sql_observation_taken_after_public_and_helper_purchases": true
+    },
+    {
+      "name": "helper-wallet-conservation",
+      "passed": true,
+      "helper_spend": 4500,
+      "primary_balance": 3920
+    },
+    {
+      "name": "ordinary-native-captures",
+      "passed": true
+    },
+    {
+      "name": "labelled-hp0-prerequisite-only",
+      "passed": true
+    },
+    {
+      "name": "useful-field-effect-Revive",
+      "passed": true,
+      "hp_before": 0,
+      "hp_after": 166,
+      "copies_consumed": 1,
+      "pp_and_other_pokemon_fields_preserved": true
+    },
+    {
+      "name": "useful-field-effect-Potion",
+      "passed": true,
+      "hp_before": 166,
+      "hp_after": 186,
+      "copies_consumed": 1,
+      "pp_and_other_pokemon_fields_preserved": true
+    },
+    {
+      "name": "useful-field-effect-Oran Berry",
+      "passed": true,
+      "hp_before": 186,
+      "hp_after": 196,
+      "copies_consumed": 1,
+      "pp_and_other_pokemon_fields_preserved": true
+    },
+    {
+      "name": "useful-field-effect-Fresh Water",
+      "passed": true,
+      "hp_before": 196,
+      "hp_after": 226,
+      "copies_consumed": 1,
+      "pp_and_other_pokemon_fields_preserved": true
+    },
+    {
+      "name": "native-fire-stone-evolution",
+      "passed": true,
+      "same_owned_identity": true,
+      "level": 5,
+      "original_species": "Eevee",
+      "evolved_species": "Flareon"
+    },
+    {
+      "name": "leftovers-held-and-useful-recovery",
+      "passed": true,
+      "hp_before": 226,
+      "hp_after": 245,
+      "foe_move": "Tackle",
+      "ordinary_move": "Amnesia"
+    },
+    {
+      "name": "battle-pp-conservation",
+      "passed": true,
+      "pp_consumed": 1
+    },
+    {
+      "name": "reusable-held-copies-return",
+      "passed": true,
+      "leftovers_returned": 1,
+      "smoke_ball_returned": 1,
+      "active_battles": 0
+    },
+    {
+      "name": "post-flee-residual-and-smoke-hp",
+      "passed": true,
+      "after_leftovers_action": 245,
+      "after_following_leftovers_flee": 265,
+      "after_smoke_ball_flee": 265
+    },
+    {
+      "name": "persistence-reconnected",
+      "passed": true,
+      "hp_inventory_wallet_stock_pp_and_placements_preserved": true
+    },
+    {
+      "name": "persistence-retry",
+      "passed": true,
+      "hp_inventory_wallet_stock_pp_and_placements_preserved": true
+    },
+    {
+      "name": "persistence-pre-cleanup",
+      "passed": true,
+      "hp_inventory_wallet_stock_pp_and_placements_preserved": true
+    },
+    {
+      "name": "socket-response-34",
+      "passed": true
+    },
+    {
+      "name": "socket-response-35",
+      "passed": true
+    },
+    {
+      "name": "socket-response-42",
+      "passed": true
+    },
+    {
+      "name": "socket-response-43",
+      "passed": true
+    },
+    {
+      "name": "socket-response-44",
+      "passed": true
+    },
+    {
+      "name": "socket-response-45",
+      "passed": true
+    },
+    {
+      "name": "socket-response-46",
+      "passed": true
+    },
+    {
+      "name": "socket-response-75",
+      "passed": true
+    },
+    {
+      "name": "socket-response-82",
+      "passed": true
+    },
+    {
+      "name": "socket-response-90",
+      "passed": true
+    },
+    {
+      "name": "socket-response-92",
+      "passed": true
+    },
+    {
+      "name": "socket-response-94",
+      "passed": true
+    },
+    {
+      "name": "socket-response-96",
+      "passed": true
+    },
+    {
+      "name": "socket-response-99",
+      "passed": true
+    },
+    {
+      "name": "socket-response-108",
+      "passed": true
+    },
+    {
+      "name": "socket-response-110",
+      "passed": true
+    },
+    {
+      "name": "socket-response-117",
+      "passed": true
+    },
+    {
+      "name": "socket-response-126",
+      "passed": true
+    },
+    {
+      "name": "socket-response-141",
+      "passed": true
+    },
+    {
+      "name": "socket-response-142",
+      "passed": true
+    },
+    {
+      "name": "socket-response-54",
+      "passed": true
+    },
+    {
+      "name": "socket-response-55",
+      "passed": true
+    },
+    {
+      "name": "socket-response-56",
+      "passed": true
+    },
+    {
+      "name": "socket-response-57",
+      "passed": true
+    },
+    {
+      "name": "socket-response-58",
+      "passed": true
+    },
+    {
+      "name": "socket-response-59",
+      "passed": true
+    },
+    {
+      "name": "ordinary-smoke-ball-equip-and-return",
+      "passed": true
+    },
+    {
+      "name": "no-traceback-in-player-transcript",
+      "passed": true
+    },
+    {
+      "name": "released-runtime-and-qa-cleanup",
+      "passed": true,
+      "python_sources": 1139,
+      "tagged_fixture_residue": 0,
+      "protected_data_preserved": true
+    },
+    {
+      "name": "owned-client-forward-cleanup",
+      "passed": true
+    }
+  ],
+  "public_source": {
+    "hub": "Alpha Test Hub #31",
+    "entry": "supplies",
+    "return": "back",
+    "room": 105,
+    "buy_only": true,
+    "automatic_refill": false,
+    "remaining_stock": {
+      "Potion": {
+        "price": 300,
+        "quantity": 19
+      },
+      "Oran Berry": {
+        "price": 80,
+        "quantity": 19
+      },
+      "Fresh Water": {
+        "price": 200,
+        "quantity": 19
+      },
+      "Fire Stone": {
+        "price": 3000,
+        "quantity": 4
+      },
+      "Leftovers": {
+        "price": 4000,
+        "quantity": 1
+      },
+      "Smoke Ball": {
+        "price": 4000,
+        "quantity": 1
+      }
+    }
+  },
+  "operator_prerequisites": {
+    "separate_from_player_actions": true,
+    "wallets": [
+      20000,
+      0
+    ],
+    "captured_owned_mew_hp0_only": true,
+    "item_effect_or_rng_forcing": false
+  },
+  "cleanup": {
+    "two_ordinary_accounts_removed": true,
+    "four_qa_pokemon_removed": true,
+    "twelve_private_world_objects_removed": true,
+    "owned_clients_and_forward_closed": true,
+    "permanent_source_and_sales_preserved": true,
+    "protected_existing_data_unchanged": true
+  },
+  "qualified_automated_evidence": {
+    "full_orders": 3,
+    "passed_per_order": 6188,
+    "skipped_per_order": 4028,
+    "isolated_migration_rehearsals": 28,
+    "command_sql_acquisition_cases": 43,
+    "receipt": "item-source-migration-compatibility-2026-10-25.json"
+  },
+  "limits": [
+    "Smoke Ball flee text is generic; guaranteed eligibility is covered by the qualified automated route.",
+    "No race or rollback was induced in the shared world; those cases are isolated PostgreSQL evidence.",
+    "No broader item catalog is certified stocked; stock is finite and dated.",
+    "Initial output-matcher and read-only observer assumptions were retained and diagnosed as fixture errors."
+  ],
+  "public_command_ledger_sha256": "8ebd66b7e5b8894a49ad45f5aba8d5dd95da3bcfbe5c206f08932a8cc8bf3d40"
+}
