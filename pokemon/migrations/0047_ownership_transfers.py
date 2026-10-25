@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     """Keep the existing Evennia history and add only PF2-owned tables."""
 
     dependencies = [
-        ('objects', '0016_delete_exit'),
+        ('objects', '0013_defaultobject_alter_objectdb_id_defaultcharacter_and_more'),
         ('pokemon', '0046_berry_bed'),
     ]
 

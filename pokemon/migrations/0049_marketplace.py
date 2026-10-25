@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     """Add fixed-price listings and distinguish their internal ownership receipts."""
 
     dependencies = [
-        ('objects', '0016_delete_exit'),
+        ('objects', '0013_defaultobject_alter_objectdb_id_defaultcharacter_and_more'),
         ('pokemon', '0048_ownership_integrity'),
     ]
 

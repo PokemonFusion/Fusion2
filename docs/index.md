@@ -52,6 +52,9 @@ The [October 25 repaired-item local walkthrough](testing/item-repair-released-pl
 records 716 ordinary commands, 102 effect/conservation checks and complete
 disposable cleanup on the pinned repaired candidate. Permanent public stock
 remains separate from these temporary QA sources.
+The [Supply Corner migration compatibility receipt](testing/item-source-migration-compatibility-2026-10-25.md)
+qualifies the shared framework dependency needed for its release. Permanent
+installation and ordinary-player source acceptance remain separate requirements.
 See the [Mega Stone player guide](mega-evolution.md),
 [activation contract](design/mega-evolution.md) and
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,
