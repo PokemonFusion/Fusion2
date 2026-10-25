@@ -100,3 +100,19 @@ remain dated evidence; deployment and live availability are separate.
 The [Z-Move guide](z-moves.md) describes the 42 accepted generic/status/signature
 mappings and `+zmove`, including Normalium Z/Tackle. The [35-crystal inventory](design/z-crystals.md) retains
 explicit partial move/effect gates; other pairs and Ultra remain deferred.
+
+## Native species stat and critical items
+
+Light Ball, Thick Club, Deep Sea Scale, Deep Sea Tooth, Lucky Punch, Stick and
+Leek use the holder's canonical native species, including each item's permitted
+forms. Nicknames cannot grant or remove these bonuses. Their native bonuses
+survive Transform; copying an eligible appearance cannot grant a foreign holder
+the bonus. Stick permits Farfetch'd and its Galarian form; Leek also permits
+Sirfetch'd. Metal Powder and Quick Powder require native, currently
+untransformed Ditto and stop working after Transform.
+
+All nine retain ordinary item suppression and normal `+hold` ownership rules.
+The [#853 report](testing/native-stat-items-2026-10-25.md) records the exact
+allowlists, local nickname/equip/battle command acceptance, outcomes and limits.
+This bounded repair does not change item sources or the historical support
+matrix. Legendary boosters and removal protections remain separate work.

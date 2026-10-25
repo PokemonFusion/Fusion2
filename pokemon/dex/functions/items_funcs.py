@@ -701,14 +701,16 @@ class Darkmemory:
 
 class Deepseascale:
 	def onModifySpD(self, spd, pokemon=None):
-		if pokemon and pokemon.name == "Clamperl":
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Clamperl"):
 			return int(spd * 2)
 		return spd
 
 
 class Deepseatooth:
 	def onModifySpA(self, spa, pokemon=None):
-		if pokemon and pokemon.name == "Clamperl":
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Clamperl"):
 			return int(spa * 2)
 		return spa
 
@@ -1430,7 +1432,10 @@ class Laxincense:
 
 class Leek:
 	def onModifyCritRatio(self, crit_ratio, pokemon=None, target=None):
-		return crit_ratio + 2
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Farfetch'd", "Sirfetch'd", family=True):
+			return crit_ratio + 2
+		return crit_ratio
 
 
 class Leftovers:
@@ -1475,12 +1480,14 @@ class Lifeorb:
 
 class Lightball:
 	def onModifyAtk(self, atk, pokemon=None, target=None, move=None):
-		if pokemon and pokemon.name.startswith("Pikachu"):
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Pikachu", family=True):
 			return atk * 2
 		return atk
 
 	def onModifySpA(self, spa, pokemon=None, target=None, move=None):
-		if pokemon and pokemon.name.startswith("Pikachu"):
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Pikachu", family=True):
 			return spa * 2
 		return spa
 
@@ -1511,7 +1518,8 @@ class Lucarionite:
 
 class Luckypunch:
 	def onModifyCritRatio(self, crit_ratio, pokemon=None, target=None):
-		if pokemon and pokemon.name == "Chansey":
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Chansey"):
 			return crit_ratio + 2
 		return crit_ratio
 
@@ -1704,7 +1712,8 @@ class Metalcoat:
 
 class Metalpowder:
 	def onModifyDef(self, defense, pokemon=None):
-		if pokemon and pokemon.name == "Ditto" and not getattr(pokemon, "transformed", False):
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Ditto", untransformed=True):
 			return defense * 2
 		return defense
 
@@ -2808,7 +2817,8 @@ class Quickclaw:
 
 class Quickpowder:
 	def onModifySpe(self, spe, pokemon=None):
-		if pokemon and pokemon.name == "Ditto" and not getattr(pokemon, "transformed", False):
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Ditto", untransformed=True):
 			return spe * 2 if isinstance(spe, int) else spe
 		return spe
 
@@ -3249,7 +3259,10 @@ class Steelmemory:
 
 class Stick:
 	def onModifyCritRatio(self, crit_ratio, pokemon=None, target=None):
-		return crit_ratio + 2
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Farfetch'd", family=True):
+			return crit_ratio + 2
+		return crit_ratio
 
 
 class Stickybarb:
@@ -3298,7 +3311,8 @@ class Tangaberry:
 
 class Thickclub:
 	def onModifyAtk(self, atk, pokemon=None, target=None, move=None):
-		if pokemon and pokemon.name in {"Cubone", "Marowak", "Marowak-Alola", "Marowak-Alola-Totem"}:
+		from pokemon.battle.item_identity import HeldItemIdentity
+		if HeldItemIdentity.matches(pokemon, "Cubone", "Marowak", family=True):
 			return atk * 2
 		return atk
 

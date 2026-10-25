@@ -182,6 +182,8 @@ jobs:
         run: python tests/integration/hyper_training_cases.py
       - name: Existing incense equip, battle power, suppression and checkpoint persistence
         run: python tests/integration/incense_cases.py
+      - name: Native stat and critical items through nickname, hold and battle routes
+        run: python tests/integration/native_stat_item_cases.py
       - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
         run: python tests/integration/item_availability_cases.py
       - name: Bounded current stat and type item command replays
