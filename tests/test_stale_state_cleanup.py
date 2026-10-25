@@ -74,7 +74,7 @@ def test_cleanup_clears_missing_inactive_and_expired_adventure_attrs(monkeypatch
 	]
 
 	monkeypatch.setattr(stale_state, "resolve_adventure_session", lambda session_id: sessions.get(session_id))
-	monkeypatch.setattr(stale_state, "expire_adventure_session", lambda session: expired_sessions.append(session))
+	monkeypatch.setattr(stale_state, "expire_adventure_session", lambda session: (expired_sessions.append(session), setattr(session, "state", "expired")))
 
 	counts = stale_state.cleanup_stale_state(objects=objs, active_battle_ids=set(), now=now)
 
