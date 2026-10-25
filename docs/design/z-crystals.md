@@ -79,7 +79,7 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Solganium Z | Signature | Solgaleo; Dusk-Mane with [valid live native pair proof](necrozma-combination.md) | Sunsteel Strike → Searing Sunraze Smash, 200 Physical | Accepted native Solgaleo route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released local socket QA #831 passed |
 | Steelium Z | Generic / Steel | Any eligible native holder | Metal Claw → Corkscrew Crash, 100 Physical; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
 | Tapunium Z | Signature | Tapu Koko, Tapu Lele, Tapu Bulu, Tapu Fini | Nature's Madness → Guardian of Alola, fixed HP fraction Special | Accepted bounded route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808) |
-| Ultranecrozium Z | Signature | Necrozma-Ultra | Photon Geyser | Deferred: Ultra native-form route needs separate design |
+| Ultranecrozium Z | Signature | Necrozma-Ultra | Photon Geyser | Deferred runtime: [accepted Ultra contract](ultra-burst.md), implementation #885–#888 |
 | Waterium Z | Generic / Water | Any eligible native holder | Water Gun → Hydro Vortex,100 Special; Surf → Hydro Vortex,175 Special, normal single target; other sources deferred | Accepted bounded pairs / [#802](https://github.com/PokemonFusion/Fusion2/issues/802), [#863](https://github.com/PokemonFusion/Fusion2/issues/863) |
 
 Ultranecrozium Z is listed rather than silently enabled: its required native

@@ -31,15 +31,19 @@ the companion remains frozen in its existing combined placement. Never store
 an independently granted Ultra row or invent a missing partner. Human trainer
 Fusion is a separate system and cannot act as native pair proof.
 
-Photon Geyser is already a real native base-Necrozma move: the current/project
-and pinned Gen9 learnsets specify **level72**, not the older Gen7 level50.
+Photon Geyser is already a real native base-Necrozma move. The Gen9 reference
+lists level 72, but PF2's ordinary capture/learning route includes legitimate
+cross-generation level-up sources and already accepts Gen7 level 50. Released
+#860 QA captured native level-50 Necrozma with actual Photon knowledge and an
+active slot. Preserve that existing access; introduce no extra level-72 gate.
+See the [preparation correction and source evidence](../testing/ultra-photon-preparation-erratum-2026-10-25.md).
 Require legitimate base-Necrozma knowledge and an ordinary active slot before
 combining. Preserve Photon in a different slot from the selected temporary
 Sunsteel Strike/Moongeist Beam binding. A Photon source displaced by combining,
 stored-only knowledge or a free slot cannot be activated while linked. Separate,
 choose the legitimate active set normally, then recombine if necessary.
 No automatic teaching, PP transfer from the companion, refill on combine,
-shadow source slot or legacy-level shortcut. Ordinary Photon and the signature
+shadow source slot or arbitrary source/level grant. Ordinary Photon and the signature
 spend that exact current learned/active slot with existing PP boosts/caps.
 Selected PP policy: activation itself neither pays nor refills Photon and may
 proceed with Photon at0 PP if the actor's chosen ordinary attack is otherwise
