@@ -160,8 +160,11 @@ class Character(DexTrackerMixin, ObjectParent, DefaultCharacter):
 			from pokemon.adventures.cmdsets import attach_movement_cmdset
 			from pokemon.adventures.sessions import sync_player_to_active_session
 
-			if sync_player_to_active_session(self):
-				attach_movement_cmdset(self)
+			session = sync_player_to_active_session(self)
+			if session:
+				from pokemon.adventures.interlocks import inspect_adventure_battle
+				if not inspect_adventure_battle(self, session).blocked:
+					attach_movement_cmdset(self)
 		except Exception:
 			pass
 		if not inst:
