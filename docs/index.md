@@ -55,6 +55,9 @@ remains separate from these temporary QA sources.
 The [Supply Corner migration compatibility receipt](testing/item-source-migration-compatibility-2026-10-25.md)
 qualifies the shared framework dependency needed for its release. Permanent
 installation and ordinary-player source acceptance remain separate requirements.
+The [replacement Supply Corner release proposal](testing/item-source-retry-release-plan-2026-10-25.md)
+pins the qualified candidate, exact six-offer stock, operational guards and tagged
+walkthrough; it requires explicit approval before execution.
 See the [Mega Stone player guide](mega-evolution.md),
 [activation contract](design/mega-evolution.md) and
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,
