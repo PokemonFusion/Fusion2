@@ -1,0 +1,522 @@
+{
+  "date": "2026-10-25",
+  "issues": [
+    861,
+    865,
+    866,
+    867,
+    868,
+    869,
+    870,
+    871
+  ],
+  "status": "accepted design decisions and linked future deliveries; no runtime features or world installation",
+  "source_baseline": "6a6824844cb6303e5579ebc1bf3143479fffa92f",
+  "scope_documents": {
+    "861": {
+      "path": "docs/design/item-acquisition-policy.md",
+      "sha256_lf": "fe11944f82c4575a9b0bacce81637eec4fad1e82b1cc6b336db2bc79e98db6c5"
+    },
+    "865": {
+      "path": "docs/design/ultra-burst.md",
+      "sha256_lf": "04748326c04a026e349461c787bb45260f86229ec20fb8d21115c3e4144bd1b2"
+    },
+    "866": {
+      "path": "docs/design/flavor-berry-snacks.md",
+      "sha256_lf": "6a17291ee3c440a2c754f9db24feee4704ad69ed7cdb4a2e0ecf5e7baffb44ed"
+    },
+    "867": {
+      "path": "docs/design/nursery-seeds.md",
+      "sha256_lf": "e3ef6e04f806a844c4d4e2e086e4a3b7bb0c5e2c4febf5db11cccc98350bdc48"
+    },
+    "868": {
+      "path": "docs/design/exp-candy.md",
+      "sha256_lf": "97062194c50995b327260856b713bcd9119fc776f72d71e64d801ff57e21cb24"
+    },
+    "869": {
+      "path": "docs/design/nature-mints.md",
+      "sha256_lf": "acb6ea6a9fbe4297205a339d2e06717df3bd747d98986808532bbc5ee9d92795"
+    },
+    "870": {
+      "path": "docs/design/ev-mochi.md",
+      "sha256_lf": "b77f6254fec4e3a90fa194a5094b0faff4e57b11297125b46169e825cc9c4157"
+    },
+    "871": {
+      "path": "docs/design/battle-boosters.md",
+      "sha256_lf": "606f2bc754ad4afadcc1e514d91e354939193589b811f738213e9cbdc8f8846f"
+    }
+  },
+  "followup_count": 34,
+  "followups": [
+    {
+      "parent": 861,
+      "issue": 876,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/876",
+      "title": "[Items][Build] Add explicit capped operator replenishment for opted-in sources",
+      "key": "source_refill",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 877,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/877",
+      "title": "[Items][Build] Author a finite public source for six status medicines",
+      "key": "source_status",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 878,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/878",
+      "title": "[Items][Build] Author a finite public source for four stronger healing/revival medicines",
+      "key": "source_revival",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 879,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/879",
+      "title": "[Items][Build] Author a finite public source for four PP recovery medicines",
+      "key": "source_pp",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 880,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/880",
+      "title": "[Items][Build] Author a finite public source for six evolution stones",
+      "key": "source_stones",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 881,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/881",
+      "title": "[Items][Build] Author a finite public source for six vitamins",
+      "key": "source_training",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 882,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/882",
+      "title": "[Items][Build] Author a finite public source for PP capacity and ability items",
+      "key": "source_capacity",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 883,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/883",
+      "title": "[Items][Build] Author a finite public source for six held staples",
+      "key": "source_held",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 861,
+      "issue": 884,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/884",
+      "title": "[Items][Build] Qualify named Potion finder and Rattata/Oran renewable sources",
+      "key": "source_renewable",
+      "dependencies": [
+        861,
+        862
+      ]
+    },
+    {
+      "parent": 865,
+      "issue": 885,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/885",
+      "title": "[Items][Build] Bind Ultra eligibility and legitimate active Photon preparation",
+      "key": "ultra_native",
+      "dependencies": [
+        865
+      ]
+    },
+    {
+      "parent": 865,
+      "issue": 886,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/886",
+      "title": "[Items][Build] Persist Ultra declaration and reversible battle lifecycle",
+      "key": "ultra_lifecycle",
+      "dependencies": [
+        865,
+        885
+      ]
+    },
+    {
+      "parent": 865,
+      "issue": 887,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/887",
+      "title": "[Items][Build] Add guarded Ultra command and Light That Burns the Sky",
+      "key": "ultra_command",
+      "dependencies": [
+        865,
+        886
+      ]
+    },
+    {
+      "parent": 865,
+      "issue": 888,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/888",
+      "title": "[Items][Build] Qualify both Ultra lifecycles on a released build",
+      "key": "ultra_qa",
+      "dependencies": [
+        865,
+        887
+      ]
+    },
+    {
+      "parent": 866,
+      "issue": 889,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/889",
+      "title": "[Items][Build] Add explicit flavor berry snack batch 1",
+      "key": "snack1",
+      "dependencies": [
+        866
+      ]
+    },
+    {
+      "parent": 866,
+      "issue": 890,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/890",
+      "title": "[Items][Build] Add explicit flavor berry snack batch 2",
+      "key": "snack2",
+      "dependencies": [
+        866,
+        889
+      ]
+    },
+    {
+      "parent": 866,
+      "issue": 891,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/891",
+      "title": "[Items][Build] Add explicit flavor berry snack batch 3",
+      "key": "snack3",
+      "dependencies": [
+        866,
+        890
+      ]
+    },
+    {
+      "parent": 867,
+      "issue": 892,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/892",
+      "title": "[Items][Build] Grow Cheri, Pecha, Rawst and Aspear through the durable nursery",
+      "key": "seed_runtime",
+      "dependencies": [
+        867
+      ]
+    },
+    {
+      "parent": 867,
+      "issue": 893,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/893",
+      "title": "[Items][Build] Deliver four seed sources and real elapsed nursery acceptance",
+      "key": "seed_source",
+      "dependencies": [
+        867,
+        892
+      ]
+    },
+    {
+      "parent": 868,
+      "issue": 894,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/894",
+      "title": "[Items][Build] Add five EXP Candy definitions and atomic field progression",
+      "key": "exp_progression",
+      "dependencies": [
+        868
+      ]
+    },
+    {
+      "parent": 868,
+      "issue": 895,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/895",
+      "title": "[Items][Build] Preserve crossed-level EXP Candy learning and reconnect choices",
+      "key": "exp_learning",
+      "dependencies": [
+        868,
+        894
+      ]
+    },
+    {
+      "parent": 868,
+      "issue": 896,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/896",
+      "title": "[Items][Build] Qualify EXP Candy acquisition, multi-level use and later gameplay",
+      "key": "exp_source",
+      "dependencies": [
+        868,
+        895
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 897,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/897",
+      "title": "[Items][Build] Store mint training separately from genetic Nature",
+      "key": "mint_foundation",
+      "dependencies": [
+        869
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 898,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/898",
+      "title": "[Items][Build] Integrate trained Nature across stats, forms, displays and custody",
+      "key": "mint_consumers",
+      "dependencies": [
+        869,
+        897
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 899,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/899",
+      "title": "[Items][Build] Add nature mint item batch 1",
+      "key": "mint1",
+      "dependencies": [
+        869,
+        898
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 900,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/900",
+      "title": "[Items][Build] Add nature mint item batch 2",
+      "key": "mint2",
+      "dependencies": [
+        869,
+        898
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 901,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/901",
+      "title": "[Items][Build] Add nature mint item batch 3",
+      "key": "mint3",
+      "dependencies": [
+        869,
+        898
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 902,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/902",
+      "title": "[Items][Build] Add nature mint item batch 4",
+      "key": "mint4",
+      "dependencies": [
+        869,
+        898
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 903,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/903",
+      "title": "[Items][Build] Add nature mint item batch 5",
+      "key": "mint5",
+      "dependencies": [
+        869,
+        898
+      ]
+    },
+    {
+      "parent": 869,
+      "issue": 904,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/904",
+      "title": "[Items][Build] Qualify all21 mints across training, genetics and released gameplay",
+      "key": "mint_qa",
+      "dependencies": [
+        869,
+        899,
+        900,
+        901,
+        902,
+        903
+      ]
+    },
+    {
+      "parent": 870,
+      "issue": 905,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/905",
+      "title": "[Items][Build] Add six EV mochi through safe shared field training",
+      "key": "mochi_six",
+      "dependencies": [
+        870
+      ]
+    },
+    {
+      "parent": 870,
+      "issue": 906,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/906",
+      "title": "[Items][Build] Add Fresh-Start Mochi atomic reset and training acceptance",
+      "key": "mochi_reset",
+      "dependencies": [
+        870,
+        905
+      ]
+    },
+    {
+      "parent": 871,
+      "issue": 907,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/907",
+      "title": "[Items][Build] Add six X items with guarded manual battle action persistence",
+      "key": "x_six",
+      "dependencies": [
+        871
+      ]
+    },
+    {
+      "parent": 871,
+      "issue": 908,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/908",
+      "title": "[Items][Build] Implement Dire Hit with actual Focus Energy critical outcomes",
+      "key": "dire_hit",
+      "dependencies": [
+        871,
+        907
+      ]
+    },
+    {
+      "parent": 871,
+      "issue": 909,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/909",
+      "title": "[Items][Build] Implement Guard Spec. with timed source-aware Mist protection",
+      "key": "guard_spec",
+      "dependencies": [
+        871,
+        907
+      ]
+    }
+  ],
+  "runtime_definitions_added": 0,
+  "world_changes": false,
+  "primary_references": {
+    "showdown": "7e6cea3605c20b44142b2aab22acf08df75ea52b",
+    "rhh": "44bc3e0473b85d8e254c8dbc9004ac2d7b0a5fb3",
+    "official_mints_exp": "https://swordshield.pokemon.com/en-au/gameplay/features-raise-pokemon/"
+  },
+  "source_inventory": "docs/testing/item-availability-world-2026-10-25.json",
+  "inventory_limit": "Read-only configuration and authored recipes; ordinary reachability/public stock not claimed",
+  "mist_prerequisite_probe": {
+    "kind": "offline native legal-move prerequisite probe; not Guard Spec. gameplay",
+    "baseline": "6a6824844cb6303e5579ebc1bf3143479fffa92f",
+    "confirmed_gap": "Ordinary Mist does not prevent opposing Growl; Guard Spec. implementation must repair/qualify its reused condition",
+    "observations": [
+      {
+        "mist": false,
+        "target": "native Lapras50/Water Absorb",
+        "source": "native Eevee100/Run Away",
+        "before": {
+          "atk": 0,
+          "def": 0,
+          "spa": 0,
+          "spd": 0,
+          "spe": 0,
+          "accuracy": 0,
+          "evasion": 0
+        },
+        "after": {
+          "attack": -1,
+          "defense": 0,
+          "special_attack": 0,
+          "special_defense": 0,
+          "speed": 0,
+          "accuracy": 0,
+          "evasion": 0
+        },
+        "screens_after_five_residuals": [
+          {},
+          {},
+          {},
+          {},
+          {}
+        ]
+      },
+      {
+        "mist": true,
+        "target": "native Lapras50/Water Absorb",
+        "source": "native Eevee100/Run Away",
+        "before": {
+          "attack": 0,
+          "defense": 0,
+          "special_attack": 0,
+          "special_defense": 0,
+          "speed": 0,
+          "accuracy": 0,
+          "evasion": 0
+        },
+        "after": {
+          "attack": -1,
+          "defense": 0,
+          "special_attack": 0,
+          "special_defense": 0,
+          "speed": 0,
+          "accuracy": 0,
+          "evasion": 0
+        },
+        "screens_after_five_residuals": [
+          {
+            "mist": true
+          },
+          {
+            "mist": true
+          },
+          {
+            "mist": true
+          },
+          {
+            "mist": true
+          },
+          {
+            "mist": true
+          }
+        ]
+      }
+    ],
+    "runtime_items_added": 0
+  },
+  "probe_limit": "Executed with two unrelated Z profiles being qualified; Mist/boost sources unchanged from the published baseline; offline proof only",
+  "operational_limit": "No new family migration or deployment; PF2-Dev remains read-only and #862 permanent source remains separate",
+  "validation": [
+    "Exact13 flavor berries in4/4/5 batches",
+    "Exactly four next seeds; Oran/Razz unchanged",
+    "Five EXP amounts pinned; multi-level learning and HP0 preserved",
+    "21 mints; genetic consumer audit included",
+    "Six+one mochi, EV252/510 and no invented friendship",
+    "Six X items+Dire Hit+Guard Spec.; actual reused-Mist gap recorded",
+    "Ultra uses existing native pair and level72 Photon; separate side budgets and explicit confirmation",
+    "All34 follow-up issue IDs saved independently; dependencies resolved and no cycles"
+  ]
+}

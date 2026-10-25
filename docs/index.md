@@ -27,7 +27,7 @@
 ## Project Structure
 
 - `commands/` - player command handlers
-- `pokemon/` - core Pokémon game logic and data
+- `pokemon/` - core PokÃ©mon game logic and data
 - `server/` - server configuration and startup scripts
 - `typeclasses/` - Evennia typeclasses for game objects
 - `utils/` - shared utility helpers
@@ -65,6 +65,15 @@ See [gimmighoul-evolution.md](gimmighoul-evolution.md) for the 999-coin Chest
 equivalent, [recovery-equivalents.md](recovery-equivalents.md) for two field-only
 medicines, [hunt-item-sources.md](hunt-item-sources.md) for reviewed hunt sources,
 and [item-supply-route.md](item-supply-route.md) for optional six-item supply.
+The [acquisition policy](design/item-acquisition-policy.md) preserves finite supply
+and links bounded future counters. Future families have explicit contracts for
+[Ultra Burst](design/ultra-burst.md), [flavor snacks](design/flavor-berry-snacks.md),
+[nursery seeds](design/nursery-seeds.md), [EXP Candy](design/exp-candy.md),
+[mints](design/nature-mints.md), [mochi](design/ev-mochi.md) and
+[battle boosters](design/battle-boosters.md). Their [dated scope receipt](testing/item-scope-decisions-2026-10-25.md)
+links 34 future deliveries; these designs add no runtime effects or public stock.
+The [remaining Z-source plan](design/z-source-batches.md) classifies the full
+ordinary move inventory and selects three later six-source batches.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
 See the [September closeout](testing/september-closeout-2026-10-23.md) for the
@@ -86,7 +95,7 @@ reference and phased implementation roadmap.
 
 ## Battle HP Display
 
-During a battle, trainers see exact hit point numbers for their own Pokémon
+During a battle, trainers see exact hit point numbers for their own PokÃ©mon
 (for example, `25/40 HP`) while viewing the opposing team as percentages.
 Spectators watching the fight see percentage-based values for both teams so
 they know the relative health of each combatant without exact numbers.
