@@ -941,6 +941,12 @@ class BattleMove:
             return
         if target is not user and _ability_try_hit_blocks(target, user, self, battle):
             return
+        from .protection import StatusTypeImmunity
+
+        if target is not user and StatusTypeImmunity.blocks(target, self):
+            if battle and hasattr(battle, "log_action"):
+                battle.log_action(f"{target.name} is immune to {self.name}!")
+            return
         if (str(self.category).lower() == "status" or self.raw.get("heal")) and target is not user:
             from .accuracy import MoveAccuracy
 
@@ -1052,6 +1058,10 @@ class BattleMove:
                 max_hp = getattr(heal_target, "max_hp", getattr(heal_target, "hp", 1))
                 amount = max(1, int(max_hp * frac)) if frac else max_hp
                 applied = battle.heal(heal_target, amount, source=user, effect=self) if battle else 0
+                if applied > 0 and _effect_key(self) == "roost":
+                    from .recovery_moves import RoostTyping
+
+                    RoostTyping.start(heal_target)
                 if battle and applied > 0:
                     battle.log_action(
                         DEFAULT_TEXT["default"]["heal"].replace(
@@ -2636,6 +2646,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         for part in self.participants:
             for poke in part.pokemons:
+                self.remove_volatile(poke, "roost")
                 from .copied_moves import BattleCopyState
 
                 BattleCopyState.cleanup(poke)
@@ -2996,6 +3007,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def on_faint(self, pokemon) -> None:
         """Mark ``pokemon`` as fainted and trigger callbacks."""
+        self.remove_volatile(pokemon, "roost")
         pokemon.is_fainted = True
         cause = (getattr(pokemon, "tempvals", {}) or {}).pop("faint_cause", {})
         source, effect = cause.get("source"), cause.get("effect")
@@ -3861,6 +3873,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         chance_value = 1.0
         stall_state = getattr(user, "volatiles", {}).get("stall")
+        last_turn = stall_state.get("last_turn") if isinstance(stall_state, dict) else None
+        if type(last_turn) is int and getattr(self, "mechanic_turn", 0) - last_turn > 1:
+            self.remove_volatile(user, "stall")
+            stall_state = None
         if stall_state is not None:
             handler = self._volatile_handler("stall")
             if handler is not None:
@@ -3877,10 +3893,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 except Exception:
                     chance_value = 1.0
         chance_value = max(0.0, min(1.0, chance_value))
-        if random.random() > chance_value:
+        from .random_source import resolve_rng
+
+        if chance_value < 1 and resolve_rng(battle=self).random() >= chance_value:
+            self.remove_volatile(user, "stall")
             return False
-        if getattr(user, "volatiles", {}).get("stall") is None:
-            self.add_volatile(user, "stall", source=user, effect=move)
+        self.add_volatile(user, "stall", source=user, effect=move)
         return True
 
     def _move_stage_holders(self, user, target=None):

@@ -431,27 +431,55 @@ class Healreplacement:
 
 
 class Stall:
-	"""Track success rate for consecutive Protect/Detect use."""
+	"""Version modern consecutive-protection denominators without free legacy retries."""
 
-	def onStart(self, pokemon, *_, **__):
+	@staticmethod
+	def state(pokemon):
+		"""Translate the former power-of-two counter once, retaining a paid streak."""
+		state = pokemon.volatiles["stall"]
+		if not isinstance(state, dict):
+			state = pokemon.volatiles["stall"] = {"version": 2, "counter": 729}
+		counter = state.get("counter")
+		if "version" not in state:
+			if type(counter) is int and 0 < counter < 729 and counter & (counter - 1) == 0:
+				counter = min(729, 3 ** counter.bit_length())
+			else:
+				counter = 729
+			state.update(version=2, counter=counter)
+		elif type(state.get("version")) is not int or state.get("version") != 2:
+			state.update(version=2, counter=729)
+		if type(state.get("counter")) is not int or state.get("counter") not in {3, 9, 27, 81, 243, 729}:
+			state["counter"] = 729
+		return state
+
+	@staticmethod
+	def expire(pokemon, turn):
+		"""One complete intervening turn ends the protection streak."""
+		state = getattr(pokemon, "volatiles", {}).get("stall")
+		last = state.get("last_turn") if isinstance(state, dict) else None
+		if type(last) is int and last < turn:
+			pokemon.volatiles.pop("stall", None)
+
+	def onStart(self, pokemon, *_, battle=None, **__):
+		"""A first success makes the next attempt one-third likely."""
 		if hasattr(pokemon, "volatiles"):
-			pokemon.volatiles["stall"] = {"counter": 1}
+			pokemon.volatiles["stall"] = {"version": 2, "counter": 3,
+				"last_turn": getattr(battle, "mechanic_turn", 0)}
 		return True
 
-	def onRestart(self, pokemon, *_, **__):
-		vol = getattr(pokemon, "volatiles", {}).get("stall")
-		if vol:
-			vol["counter"] = 1
+	def onRestart(self, pokemon, *_, battle=None, **__):
+		"""Advance only after another actual successful protection attempt."""
+		state = self.state(pokemon)
+		state.update(counter=min(729, state["counter"] * 3),
+			last_turn=getattr(battle, "mechanic_turn", 0))
 		return True
 
 	def onStallMove(self, pokemon, *_, **__):
+		"""Return the next success probability without paying or advancing it."""
 		vol = getattr(pokemon, "volatiles", {}).get("stall")
-		if not vol:
+		if vol is None:
 			return 1.0
-		counter = vol.get("counter", 1)
-		chance = 1.0 / counter
-		vol["counter"] = min(counter * 2, 729)
-		return chance
+		return 1.0 / self.state(pokemon)["counter"]
 
 
 class Gem:

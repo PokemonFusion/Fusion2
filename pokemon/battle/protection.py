@@ -4,6 +4,20 @@ from .effect_context import EffectContext
 from .indirect_damage import IndirectEffect, apply_indirect_damage
 
 
+class StatusTypeImmunity:
+    """Honor explicit type-immunity metadata without changing ordinary status defaults."""
+
+    @staticmethod
+    def blocks(target, move):
+        """Thunder Wave opts into Electric immunity; default Growl still reaches Ghosts."""
+        raw = getattr(move, "raw", {}) or {}
+        if raw.get("category") != "Status" or raw.get("ignoreImmunity") is not False:
+            return False
+        from .damage import type_effectiveness
+
+        return type_effectiveness(target, move) == 0
+
+
 class MoveProtection:
     """Keep the protecting holder separate from the incoming contact attacker."""
 

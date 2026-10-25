@@ -1345,6 +1345,14 @@ class TurnProcessor:
 		from .z_effects import ZEffects
 
 		ZEffects.end_turn(self)
+		for part in self.participants:
+			for pokemon in part.pokemons:
+				if "roost" in getattr(pokemon, "volatiles", {}):
+					self.remove_volatile(pokemon, "roost")
+				if "stall" in getattr(pokemon, "volatiles", {}):
+					handler = self._volatile_handler("stall")
+					if callable(getattr(handler, "expire", None)):
+						handler.expire(pokemon, getattr(self, "mechanic_turn", 0))
 		self.mechanic_turn = getattr(self, "mechanic_turn", 0) + 1
 		self.z_pending = {}
 

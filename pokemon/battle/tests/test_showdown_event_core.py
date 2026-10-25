@@ -107,7 +107,8 @@ def test_add_volatile_runs_condition_handler_start():
     added = battle.add_volatile(defender, "stall", source=attacker, effect="move:protect")
 
     assert added is True
-    assert defender.volatiles.get("stall", {}).get("counter") == 1
+    assert defender.volatiles.get("stall", {}).get("counter") == 3
+    assert defender.volatiles["stall"]["version"] == 2
 
 
 def test_add_volatile_restart_uses_condition_handler():
@@ -117,4 +118,6 @@ def test_add_volatile_restart_uses_condition_handler():
     restarted = battle.add_volatile(defender, "stall", source=attacker, effect="move:protect")
 
     assert restarted is True
-    assert defender.volatiles.get("stall", {}).get("counter") == 1
+    # A legacy power-of-two streak converts once, then this success advances it.
+    assert defender.volatiles.get("stall", {}).get("counter") == 243
+    assert defender.volatiles["stall"]["version"] == 2

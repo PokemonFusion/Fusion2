@@ -5560,6 +5560,13 @@ class Rollout:
 
 
 class Roost:
+	"""End a useful heal's temporary Flying removal through normal lifecycle hooks."""
+
+	def onEnd(self, pokemon, *args, **kwargs):
+		"""Switch, faint and turn/battle cleanup preserve any later independent type."""
+		from pokemon.battle.recovery_moves import RoostTyping
+		RoostTyping.end(pokemon)
+
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
 		if user and hasattr(user, "volatiles"):
@@ -6622,16 +6629,16 @@ class Synchronoise:
 
 class Synthesis:
 	def onHit(self, user, target, battle):
-		"""Heal the user; amount depends on weather."""
+		"""Use effective weather and the ordinary healing event gate."""
 		max_hp = getattr(user, "max_hp", 0)
-		heal = max_hp // 2
-		weather = getattr(getattr(battle, "field", None), "weather", None)
-		if weather == "SunnyDay":
-			heal = int(max_hp * 2 / 3)
-		elif weather in {"RainDance", "Sandstorm", "Hail"}:
-			heal = max_hp // 4
-		user.hp = min(getattr(user, "hp", 0) + heal, max_hp)
-		return True
+		weather = _holder_effective_weather(user, battle)
+		numerator, denominator = (1, 2)
+		if weather in {"sunnyday", "desolateland"}:
+			numerator, denominator = (2, 3)
+		elif weather in {"raindance", "primordialsea", "sandstorm", "hail", "snow", "snowscape"}:
+			numerator, denominator = (1, 4)
+		amount = max(1, max_hp * numerator // denominator)
+		return battle.heal(user, amount, source=user, effect="move:synthesis") > 0
 
 
 class Syrupbomb:
