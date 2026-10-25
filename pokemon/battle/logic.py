@@ -147,6 +147,13 @@ class BattleLogic:
 		bind_reveal_data = getattr(battle, "bind_reveal_data", None)
 		if callable(bind_reveal_data):
 			bind_reveal_data(data)
+		# A restored dispatcher is empty even when its saved turn is nonzero.
+		# Bind current holders without replaying entry, forms or Start effects.
+		register = getattr(battle, "register_handlers", None)
+		if callable(register):
+			for participant in battle.participants:
+				for pokemon in getattr(participant, "active", []):
+					register(pokemon)
 
 	def to_dict(self):
 		self.sync_runtime_state()
