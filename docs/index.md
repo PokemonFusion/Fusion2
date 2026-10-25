@@ -43,7 +43,7 @@ See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
 battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
-The [current October25 index](testing/item-availability-index-2026-10-25.json)
+The [current October25 index](testing/item-availability-z-sources-index-2026-10-25.json)
 and [report](testing/item-availability-2026-10-25.md) reconcile explicit accepted
 registries, six item-repair receipts and unverified world sources.
 See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
@@ -54,7 +54,7 @@ See the [Mega Stone player guide](mega-evolution.md),
 its optional source and the 47 locally accepted canonical pairs.
 See [design/z-moves.md](design/z-moves.md) and its
 [crystal inventory](design/z-crystals.md) plus [Z-Move guide](z-moves.md) for the
-42 accepted generic/status/signature mappings and remaining gates. The
+44 accepted generic/status/signature mappings and remaining gates. The
 [Necrozma guide](necrozma.md) documents the accepted non-plot combine/separate
 lifecycle and two pair-proved signatures, with separate released local evidence.
 The [original plan](design/necrozma-combination.md) retains its design history. See

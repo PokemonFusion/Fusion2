@@ -48,7 +48,7 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The later [Z route](z-moves.md) accepts 42 explicit source mappings on 34
+The later [Z route](z-moves.md) accepts44 explicit source mappings on34
 existing crystals through `+zmove`, including eight status sources and 16
 signatures. The [matrix](design/z-crystals.md) names the exact native/source
 limits; other unreviewed source moves and Ultra remain deferred. The native
@@ -91,7 +91,7 @@ The [acquisition audit](testing/item-availability-2026-10-22.md) and
 [per-item index](testing/item-availability-index-2026-10-22.json) distinguish
 configured sources, tested commands, missing routes and live walkthroughs.
 
-The [October25 current index](testing/item-availability-index-2026-10-25.json)
+The [October25 current index](testing/item-availability-z-sources-index-2026-10-25.json)
 and [reconciliation receipt](testing/item-availability-2026-10-25.md) read the
 current field/manual services and explicit Mega/Z registries. They also link the
 six native-item/status-berry repair receipts. Their scope contains 452 non-plot
@@ -104,3 +104,6 @@ and a dated local test are different evidence. An uninspected world is unknown;
 an observed depleted source differs from an absent or disabled source. None of
 these labels replenishes stock or proves ordinary travel, locks or purchases.
 The 576-definition battle matrix and earlier dated reports remain historical.
+The [two-source Z receipt](testing/z-existing-sources-2026-10-25.md) records
+the later Flamethrower/Surf expansion; the first reconciliation index and its
+dated world snapshot remain unchanged.

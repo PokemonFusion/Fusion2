@@ -1,4 +1,4 @@
-"""Seventeen reviewed ordinary damage additions; no automatic all-move release."""
+"""Nineteen reviewed ordinary damage additions; no automatic all-move release."""
 
 from .z_profiles import ZProfile
 
@@ -21,4 +21,6 @@ GENERIC_PAIRS = (
     ZProfile("Rockium Z", "Rock Throw", "Continental Crush", 100, "Rock", "Physical"),
     ZProfile("Steelium Z", "Metal Claw", "Corkscrew Crash", 100, "Steel", "Physical"),
     ZProfile("Waterium Z", "Water Gun", "Hydro Vortex", 100, "Water", "Special"),
+    ZProfile("Firium Z", "Flamethrower", "Inferno Overdrive", 175, "Fire", "Special"),
+    ZProfile("Waterium Z", "Surf", "Hydro Vortex", 175, "Water", "Special"),
 )

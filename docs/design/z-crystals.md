@@ -1,13 +1,15 @@
 # Existing Z-Crystal implementation plan (#775)
 
-Status: **42 explicit mappings on 34 crystals accepted locally**: 18 generic
+Status: **44 explicit mappings on 34 crystals accepted locally**: 20 generic
 damage sources, eight status sources and 16 signatures. [Foundation evidence](../testing/z-core-2026-10-23.md),
 [status/signature evidence](../testing/z-special-2026-10-23.md) and [player guide](../z-moves.md).
 Other ordinary/status sources and Ultra remain deferred. The two
 [live-pair-proved Necrozma lifecycles](necrozma-combination.md) now pass
 [local acceptance](../testing/necrozma-items-2026-10-24.md) for #825–#830.
-They extend holder eligibility for the same two signatures; the 42 mapping /
-34 crystal / 16 signature counts and original native fingerprints are unchanged.
+They extend holder eligibility for the same two signatures; that earlier
+42-mapping/34-crystal/16-signature inventory and native fingerprints remain
+historical. [#863's separate expansion](../testing/z-existing-sources-2026-10-25.md)
+adds only Flamethrower and Surf; all16 signature profiles remain unchanged.
 [Released local socket acceptance](../testing/necrozma-released-retry-2026-10-24.md) passes for #831. No shared-game
 deployment, permanent source or stock installation is asserted.
 Read the [activation contract](z-moves.md). The [JSON inventory](z-crystals.json)
@@ -32,8 +34,9 @@ historical and is not used as the current catalog denominator.
 | [#807](https://github.com/PokemonFusion/Fusion2/issues/807) | Accept four existing signature Z-Crystal routes (3) | #799 |
 | [#808](https://github.com/PokemonFusion/Fusion2/issues/808) | Accept four existing signature Z-Crystal routes (4) | #799 |
 
-The accepted generic list contains exactly one reviewed damaging source per
-crystal, including Normalium Z/Tackle. These remain **partial** support; other
+The accepted generic list retains one reviewed damaging source per crystal,
+including Normalium Z/Tackle, plus Flamethrower/Firium Z and Surf/Waterium Z.
+These remain **partial** support; other
 source moves require their own explicit effect and player-route gates. Status issues select at most
 six mappings each; other status, variable, called and restricted combinations
 stay deferred. Signature groups contain four crystals each and require exact
@@ -52,7 +55,7 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Electrium Z | Generic / Electric | Any eligible native holder | Thunder Shock → Gigavolt Havoc, 100 Special; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
 | Fairium Z | Generic / Fairy | Any eligible native holder | Fairy Wind → Twinkle Tackle, 100 Special; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
 | Fightinium Z | Generic / Fighting | Any eligible native holder | Karate Chop → All-Out Pummeling, 100 Physical; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
-| Firium Z | Generic / Fire | Any eligible native holder | Ember → Inferno Overdrive, 100 Special; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
+| Firium Z | Generic / Fire | Any eligible native holder | Ember → Inferno Overdrive,100 Special; Flamethrower → Inferno Overdrive,175 Special; other sources deferred | Accepted bounded pairs / [#801](https://github.com/PokemonFusion/Fusion2/issues/801), [#863](https://github.com/PokemonFusion/Fusion2/issues/863) |
 | Flyinium Z | Generic / Flying | Any eligible native holder | Wing Attack → Supersonic Skystrike, 120 Physical; status: Tailwind; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
 | Ghostium Z | Generic / Ghost | Any eligible native holder | Lick → Never-Ending Nightmare, 100 Physical; status: Destiny Bond, Curse; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
 | Grassium Z | Generic / Grass | Any eligible native holder | Vine Whip → Bloom Doom, 100 Physical; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
@@ -77,14 +80,14 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Steelium Z | Generic / Steel | Any eligible native holder | Metal Claw → Corkscrew Crash, 100 Physical; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
 | Tapunium Z | Signature | Tapu Koko, Tapu Lele, Tapu Bulu, Tapu Fini | Nature's Madness → Guardian of Alola, fixed HP fraction Special | Accepted bounded route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808) |
 | Ultranecrozium Z | Signature | Necrozma-Ultra | Photon Geyser | Deferred: Ultra native-form route needs separate design |
-| Waterium Z | Generic / Water | Any eligible native holder | Water Gun → Hydro Vortex, 100 Special; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
+| Waterium Z | Generic / Water | Any eligible native holder | Water Gun → Hydro Vortex,100 Special; Surf → Hydro Vortex,175 Special, normal single target; other sources deferred | Accepted bounded pairs / [#802](https://github.com/PokemonFusion/Fusion2/issues/802), [#863](https://github.com/PokemonFusion/Fusion2/issues/863) |
 
 Ultranecrozium Z is listed rather than silently enabled: its required native
 Necrozma-Ultra lifecycle/Ultra Burst route is outside this non-transformation
 slice. No Ultra shortcut, plot unlock, new crystal or automatic NPC action is
 created. Other signature forms in this metadata table are requirements, not
 claims of obtainable or implemented holders. All 34 other crystals have one
-planned owner. The 18 generic, eight status and 16 signature mappings have bounded ordinary Z acceptance.
+planned owner. The20 generic, eight status and16 signature mappings have bounded ordinary Z acceptance.
 
 The optional Counter has the 34 accepted generic/signature offers, PF2 price 10,000,
 finite stock 1 each and no refill. Other offers require their named acceptance gate.

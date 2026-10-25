@@ -1,12 +1,21 @@
 # Z-Moves
 
-Each of the 18 generic crystals accepts one reviewed damaging source in the
+The 18 generic crystals accept 20 reviewed damaging source pairs in the
 [current matrix](design/z-crystals.md). For example **Normalium Z + an actual
 active Tackle slot → Breakneck Blitz**, 100-power Physical Normal damage. Eight
 selected status sources and 16 signatures are also accepted, with exact native
 holders in that matrix. All other source moves remain deferred. These are bounded
 routes; holding a crystal does not enable every move of its type.
 [Foundation acceptance](testing/z-core-2026-10-23.md) · [special acceptance](testing/z-special-2026-10-23.md).
+The [two-source expansion](testing/z-existing-sources-2026-10-25.md) adds
+Firium Z/Flamethrower and Waterium Z/Surf, each 175-power Special damage with
+a normal single target. Together with eight status sources and16 signatures,
+the current registry has44 mappings on34 crystals. Other sources stay deferred.
+Ordinary Surf retains its spread targets; its Z copy does not. Flamethrower's
+ordinary burn chance is not copied. Current Charizard/Slowpoke level-up data
+provides their respective source at level30; actual wild access still requires
+an authored source. The local player tests use actual capture/teach/moveset
+menus, real purchases, held crystals and the current source slot's PP.
 
 Equip your reusable crystal with `+hold <party slot>=Normalium Z`. During battle:
 
@@ -70,4 +79,6 @@ and side budget apply. The current human controller and both owned sources
 are revalidated through reconnect and final sync. Raw fused grants, copied
 forms and stale/forged pair proof cannot qualify. Public source includes
 `+necrozma`; a running game needs a deliberate release and schema upgrade.
-Released socket acceptance remains open in #831. Ultra remains excluded.
+[Released local socket acceptance](testing/necrozma-released-retry-2026-10-24.md)
+passed for #831's dated candidate; it does not certify this newer item build or
+shared-game deployment. Ultra remains excluded.

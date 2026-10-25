@@ -221,7 +221,12 @@ class ItemAvailabilityAudit:
                                    "profiles": [{"source": p.source, "result": p.name, "power": p.power,
                                                  "type": p.move_type, "category": p.category, "target": p.target,
                                                  "kind": p.kind, "native": list(p.native), "intrinsic": p.intrinsic,
-                                                 "bonus": list(p.bonus)} for p in profiles],
+                                                 "bonus": list(p.bonus),
+                                                 "evidence_report": "z-existing-sources-2026-10-25"
+                                                 if (normalize_name(p.crystal), normalize_name(p.source)) in {
+                                                     ("firiumz", "flamethrower"), ("wateriumz", "surf")}
+                                                 else "z-core-2026-10-23" if p.kind == "generic"
+                                                 else "z-special-2026-10-23"} for p in profiles],
                                    "evidence_report": "z-special-2026-10-23",
                                    "limit": "Only exact crystal/source mappings; native signatures, actual PP/held ownership, suppression, targets and side budget still apply"})
                     if raw.get("zMoveType"):
