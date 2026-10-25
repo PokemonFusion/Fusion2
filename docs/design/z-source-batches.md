@@ -1,6 +1,6 @@
 # Remaining generic and status Z sources (#864)
 
-Design only, after #863's Flamethrower/Surf slice. The current registry then has
+The original design followed #863's Flamethrower/Surf slice. Its registry then had
 44 explicit mappings on 34 crystals: 20 generic damage, eight status and 16
 signatures. The new source inventory enumerates every ordinary MOVEDEX source
 against those exact profiles. Metadata alone enables no source.
@@ -92,3 +92,12 @@ classification and bounded delivery rules, not the remaining runtime support.
 | [#910](https://github.com/PokemonFusion/Fusion2/issues/910) | Qualify six special attacks through explicit Z mappings | #864, #863 |
 | [#911](https://github.com/PokemonFusion/Fusion2/issues/911) | Qualify six physical attacks through explicit Z mappings | #864, #863 |
 | [#912](https://github.com/PokemonFusion/Fusion2/issues/912) | Qualify six status sources through explicit Z mappings | #864, #863 |
+
+## Six-special-source delivery (#910)
+
+The first selected six-source batch now has bounded implementation and
+[ordinary-command/SQL acceptance](../testing/z-six-special-sources-2026-10-25.md).
+The current registry has 50 mappings on 34 crystals: 26 generic, eight status,
+16 signatures. The physical/status batches #911/#912 remain open. The
+dated source-classification JSON is preserved as its original design receipt;
+this addition does not enable any other source or install public stock.

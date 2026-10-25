@@ -10,7 +10,13 @@ routes; holding a crystal does not enable every move of its type.
 The [two-source expansion](testing/z-existing-sources-2026-10-25.md) adds
 Firium Z/Flamethrower and Waterium Z/Surf, each 175-power Special damage with
 a normal single target. Together with eight status sources and16 signatures,
-the current registry has44 mappings on34 crystals. Other sources stay deferred.
+that earlier registry had44 mappings on34 crystals. The later
+[six-source acceptance](testing/z-six-special-sources-2026-10-25.md) adds
+Thunderbolt/Electrium Z, Ice Beam/Icium Z, Energy Ball/Grassium Z,
+Psychic/Psychium Z, Shadow Ball/Ghostium Z and Sludge Bomb/Poisonium Z.
+Each is normal single-target Special damage: Shadow Ball's Z power is 160,
+the other five are 175. The current total is 50 mappings on 34 crystals
+(26 generic, eight status, 16 signatures). Other sources stay deferred.
 Ordinary Surf retains its spread targets; its Z copy does not. Flamethrower's
 ordinary burn chance is not copied. Current Charizard/Slowpoke level-up data
 provides their respective source at level30; actual wild access still requires

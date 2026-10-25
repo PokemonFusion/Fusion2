@@ -1,6 +1,6 @@
 # Existing Z-Crystal implementation plan (#775)
 
-Status: **44 explicit mappings on 34 crystals accepted locally**: 20 generic
+Status: **50 explicit mappings on 34 crystals accepted locally**: 26 generic
 damage sources, eight status sources and 16 signatures. [Foundation evidence](../testing/z-core-2026-10-23.md),
 [status/signature evidence](../testing/z-special-2026-10-23.md) and [player guide](../z-moves.md).
 Other ordinary/status sources and Ultra remain deferred. The two
@@ -35,7 +35,8 @@ historical and is not used as the current catalog denominator.
 | [#808](https://github.com/PokemonFusion/Fusion2/issues/808) | Accept four existing signature Z-Crystal routes (4) | #799 |
 
 The accepted generic list retains one reviewed damaging source per crystal,
-including Normalium Z/Tackle, plus Flamethrower/Firium Z and Surf/Waterium Z.
+including Normalium Z/Tackle, Flamethrower/Firium Z, Surf/Waterium Z and
+the six [#910 special sources](../testing/z-six-special-sources-2026-10-25.md).
 These remain **partial** support; other
 source moves require their own explicit effect and player-route gates. Status issues select at most
 six mappings each; other status, variable, called and restricted combinations
@@ -52,15 +53,15 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Decidium Z | Signature | Decidueye | Spirit Shackle → Sinister Arrow Raid, 180 Physical | Accepted bounded route / [#805](https://github.com/PokemonFusion/Fusion2/issues/805) |
 | Dragonium Z | Generic / Dragon | Any eligible native holder | Dragon Breath → Devastating Drake, 120 Special; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
 | Eevium Z | Signature | Eevee | Last Resort → Extreme Evoboost, Status | Accepted bounded route / [#807](https://github.com/PokemonFusion/Fusion2/issues/807) |
-| Electrium Z | Generic / Electric | Any eligible native holder | Thunder Shock → Gigavolt Havoc, 100 Special; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
+| Electrium Z | Generic / Electric | Any eligible native holder | Thunder Shock → Gigavolt Havoc, 100 Special; Thunderbolt → Gigavolt Havoc, 175 Special; other sources deferred | Accepted bounded pairs / [#800](https://github.com/PokemonFusion/Fusion2/issues/800), [#910](https://github.com/PokemonFusion/Fusion2/issues/910) |
 | Fairium Z | Generic / Fairy | Any eligible native holder | Fairy Wind → Twinkle Tackle, 100 Special; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
 | Fightinium Z | Generic / Fighting | Any eligible native holder | Karate Chop → All-Out Pummeling, 100 Physical; other sources deferred | Accepted bounded pair / [#800](https://github.com/PokemonFusion/Fusion2/issues/800) |
 | Firium Z | Generic / Fire | Any eligible native holder | Ember → Inferno Overdrive,100 Special; Flamethrower → Inferno Overdrive,175 Special; other sources deferred | Accepted bounded pairs / [#801](https://github.com/PokemonFusion/Fusion2/issues/801), [#863](https://github.com/PokemonFusion/Fusion2/issues/863) |
 | Flyinium Z | Generic / Flying | Any eligible native holder | Wing Attack → Supersonic Skystrike, 120 Physical; status: Tailwind; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
-| Ghostium Z | Generic / Ghost | Any eligible native holder | Lick → Never-Ending Nightmare, 100 Physical; status: Destiny Bond, Curse; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
-| Grassium Z | Generic / Grass | Any eligible native holder | Vine Whip → Bloom Doom, 100 Physical; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
+| Ghostium Z | Generic / Ghost | Any eligible native holder | Lick → Never-Ending Nightmare, 100 Physical; status: Destiny Bond, Curse; Shadow Ball → Never-Ending Nightmare, 160 Special; other sources deferred | Accepted bounded pairs / [#801](https://github.com/PokemonFusion/Fusion2/issues/801), [#910](https://github.com/PokemonFusion/Fusion2/issues/910) |
+| Grassium Z | Generic / Grass | Any eligible native holder | Vine Whip → Bloom Doom, 100 Physical; Energy Ball → Bloom Doom, 175 Special; other sources deferred | Accepted bounded pairs / [#801](https://github.com/PokemonFusion/Fusion2/issues/801), [#910](https://github.com/PokemonFusion/Fusion2/issues/910) |
 | Groundium Z | Generic / Ground | Any eligible native holder | Mud-Slap → Tectonic Rage, 100 Special; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
-| Icium Z | Generic / Ice | Any eligible native holder | Powder Snow → Subzero Slammer, 100 Special; status: Haze; other sources deferred | Accepted bounded pair / [#801](https://github.com/PokemonFusion/Fusion2/issues/801) |
+| Icium Z | Generic / Ice | Any eligible native holder | Powder Snow → Subzero Slammer, 100 Special; status: Haze; Ice Beam → Subzero Slammer, 175 Special; other sources deferred | Accepted bounded pairs / [#801](https://github.com/PokemonFusion/Fusion2/issues/801), [#910](https://github.com/PokemonFusion/Fusion2/issues/910) |
 | Incinium Z | Signature | Incineroar | Darkest Lariat → Malicious Moonsault, 180 Physical | Accepted bounded route / [#805](https://github.com/PokemonFusion/Fusion2/issues/805) |
 | Kommonium Z | Signature | Kommo-o, Kommo-o-Totem | Clanging Scales → Clangorous Soulblaze, 185 Special | Accepted bounded route / [#807](https://github.com/PokemonFusion/Fusion2/issues/807) |
 | Lunalium Z | Signature | Lunala; Dawn-Wings with [valid live native pair proof](necrozma-combination.md) | Moongeist Beam → Menacing Moonraze Maelstrom, 200 Special | Accepted native Lunala route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released local socket QA #831 passed |
@@ -71,9 +72,9 @@ native-holder/source/effect proof; missing native access becomes a prerequisite.
 | Normalium Z | Generic / Normal | Any eligible native holder | Tackle → Breakneck Blitz, 100 Physical; status: Splash, Growl, Swords Dance; other sources deferred | Accepted bounded pair / [#799](https://github.com/PokemonFusion/Fusion2/issues/799) |
 | Pikanium Z | Signature | Pikachu | Volt Tackle → Catastropika, 210 Physical | Accepted bounded route / [#806](https://github.com/PokemonFusion/Fusion2/issues/806) |
 | Pikashunium Z | Signature | Pikachu-Original, Pikachu-Hoenn, Pikachu-Sinnoh, Pikachu-Unova, Pikachu-Kalos, Pikachu-Alola, Pikachu-Partner | Thunderbolt → 10,000,000 Volt Thunderbolt, 195 Special | Accepted bounded route / [#806](https://github.com/PokemonFusion/Fusion2/issues/806) |
-| Poisonium Z | Generic / Poison | Any eligible native holder | Poison Sting → Acid Downpour, 100 Physical; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
+| Poisonium Z | Generic / Poison | Any eligible native holder | Poison Sting → Acid Downpour, 100 Physical; Sludge Bomb → Acid Downpour, 175 Special; other sources deferred | Accepted bounded pairs / [#802](https://github.com/PokemonFusion/Fusion2/issues/802), [#910](https://github.com/PokemonFusion/Fusion2/issues/910) |
 | Primarium Z | Signature | Primarina | Sparkling Aria → Oceanic Operetta, 195 Special | Accepted bounded route / [#805](https://github.com/PokemonFusion/Fusion2/issues/805) |
-| Psychium Z | Generic / Psychic | Any eligible native holder | Confusion → Shattered Psyche, 100 Special; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
+| Psychium Z | Generic / Psychic | Any eligible native holder | Confusion → Shattered Psyche, 100 Special; Psychic → Shattered Psyche, 175 Special; other sources deferred | Accepted bounded pairs / [#802](https://github.com/PokemonFusion/Fusion2/issues/802), [#910](https://github.com/PokemonFusion/Fusion2/issues/910) |
 | Rockium Z | Generic / Rock | Any eligible native holder | Rock Throw → Continental Crush, 100 Physical; other sources deferred | Accepted bounded pair / [#802](https://github.com/PokemonFusion/Fusion2/issues/802) |
 | Snorlium Z | Signature | Snorlax | Giga Impact → Pulverizing Pancake, 210 Physical | Accepted bounded route / [#806](https://github.com/PokemonFusion/Fusion2/issues/806) |
 | Solganium Z | Signature | Solgaleo; Dusk-Mane with [valid live native pair proof](necrozma-combination.md) | Sunsteel Strike → Searing Sunraze Smash, 200 Physical | Accepted native Solgaleo route / [#808](https://github.com/PokemonFusion/Fusion2/issues/808); native pair route accepted locally / #830; released local socket QA #831 passed |
@@ -87,7 +88,7 @@ Necrozma-Ultra lifecycle/Ultra Burst route is outside this non-transformation
 slice. No Ultra shortcut, plot unlock, new crystal or automatic NPC action is
 created. Other signature forms in this metadata table are requirements, not
 claims of obtainable or implemented holders. All 34 other crystals have one
-planned owner. The20 generic, eight status and16 signature mappings have bounded ordinary Z acceptance.
+planned owner. The 26 generic, eight status and 16 signature mappings have bounded ordinary Z acceptance.
 
 The optional Counter has the 34 accepted generic/signature offers, PF2 price 10,000,
 finite stock 1 each and no refill. Other offers require their named acceptance gate.

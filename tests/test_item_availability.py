@@ -149,6 +149,22 @@ def test_flavor_snack_routes_name_the_actual_food_and_keep_other_routes_closed()
         assert not row["world_availability"]["sources"]
 
 
+def test_six_special_z_sources_have_their_own_evidence_without_public_stock():
+    """New explicit mappings cannot silently inherit an older acceptance receipt."""
+    result = ItemAvailabilityAudit().build()
+    rows = {row["key"]: row for row in result["items"]}
+    assert result["current_registries"]["z_mappings"] == 50
+    assert result["current_registries"]["z_kinds"] == {"generic": 26, "status": 8, "signature": 16}
+    for crystal, source, power in (("electriumz", "Thunderbolt", 175), ("iciumz", "Ice Beam", 175),
+                                  ("grassiumz", "Energy Ball", 175), ("psychiumz", "Psychic", 175),
+                                  ("ghostiumz", "Shadow Ball", 160), ("poisoniumz", "Sludge Bomb", 175)):
+        route = next(r for r in rows[crystal]["routes"] if r["kind"] == "z_move")
+        profile = next(p for p in route["profiles"] if p["source"] == source)
+        assert profile["power"] == power and profile["category"] == "Special" and profile["target"] == "normal"
+        assert profile["evidence_report"] == "z-six-special-sources-2026-10-25"
+        assert rows[crystal]["world_availability"]["status"] == "unverified"
+
+
 def test_depleted_disabled_absent_and_unknown_world_sources_are_distinct():
     """A sold-out observed shop is different from no observed source or no data."""
     assert live_sources(None, "potion")["status"] == "unverified"

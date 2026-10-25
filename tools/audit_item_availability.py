@@ -226,6 +226,11 @@ class ItemAvailabilityAudit:
                                                  "evidence_report": "z-existing-sources-2026-10-25"
                                                  if (normalize_name(p.crystal), normalize_name(p.source)) in {
                                                      ("firiumz", "flamethrower"), ("wateriumz", "surf")}
+                                                 else "z-six-special-sources-2026-10-25"
+                                                 if (normalize_name(p.crystal), normalize_name(p.source)) in {
+                                                     ("electriumz", "thunderbolt"), ("iciumz", "icebeam"),
+                                                     ("grassiumz", "energyball"), ("psychiumz", "psychic"),
+                                                     ("ghostiumz", "shadowball"), ("poisoniumz", "sludgebomb")}
                                                  else "z-core-2026-10-23" if p.kind == "generic"
                                                  else "z-special-2026-10-23"} for p in profiles],
                                    "evidence_report": "z-special-2026-10-23",

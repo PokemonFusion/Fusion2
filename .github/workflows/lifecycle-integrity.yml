@@ -198,6 +198,8 @@ jobs:
         run: python tests/integration/flavor_snack_cases.py
       - name: Flamethrower and Surf through owned generic Z source routes
         run: python tests/integration/z_existing_sources_cases.py
+      - name: Six explicit special Z sources, native acquisition, effects and persistent PP
+        run: python tests/integration/z_special_sources_cases.py
       - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
         run: python tests/integration/item_availability_cases.py
       - name: Bounded current stat and type item command replays
