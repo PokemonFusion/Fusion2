@@ -85,6 +85,37 @@ class HeldEscapeItem(GameplayItem):
                 "isPokeball": False, "heldEffect": "escape", "consumed": False}
 
 
+@dataclass(frozen=True)
+class EVTrainingItem(GameplayItem):
+    """Describe a field-only EV supplement or one atomic all-stat reset."""
+
+    price: int
+    stat: str | None
+    amount: int | None = 10
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Expose truthful itemdex/inventory metadata without a battle activation."""
+        return {**super().raw, "price": self.price, "category": "Training Items",
+                "effect": "ev" if self.stat else "ev-reset", "stat": self.stat,
+                "amount": self.amount, "fieldOnly": True}
+
+
+FIELD_TRAINING_ITEMS = {
+    normalize_name(name): EVTrainingItem(
+        name, f"Field use: adds up to 10 {stat} EVs within stat/total caps. "
+        f"Use +use {name}=<current target>. No held or manual battle effect.", 10000, stat)
+    for name, stat in (("Health Mochi", "HP"), ("Muscle Mochi", "Attack"),
+                       ("Resist Mochi", "Defense"), ("Genius Mochi", "Special Attack"),
+                       ("Clever Mochi", "Special Defense"), ("Swift Mochi", "Speed"))
+}
+FIELD_TRAINING_ITEMS["freshstartmochi"] = EVTrainingItem(
+    "Fresh-Start Mochi", "Field use: resets all six valid EVs to zero together. "
+    "An all-zero target has no effect and consumes nothing. Use +use Fresh-Start Mochi=<current target>. "
+    "Preserves genetic Nature, IVs, Hyper Training and progression; no held or manual battle effect.",
+    20000, None, None)
+
+
 FIELD_RECOVERY_ITEMS = {
     "freshwater": FieldRecoveryItem("Fresh Water", "Field or battle use: restores up to 30 HP to one living Pokemon.",
                                    price=200, effect="heal", amount=30),
@@ -145,6 +176,7 @@ FIELD_RECOVERY_EQUIVALENTS = {
 
 
 GAMEPLAY_ITEMS = {
+    **FIELD_TRAINING_ITEMS,
     **FIELD_RECOVERY_EQUIVALENTS,
     "gimmighoulcoin": EvolutionItem(
         "Gimmighoul Coin",

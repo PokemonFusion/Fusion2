@@ -147,7 +147,7 @@ class ItemAvailabilityAudit:
         """Account for every reviewed item and retain historical proof as historical."""
         from pokemon.data.evolution import required_item
         from pokemon.dex import ITEMDEX, POKEDEX
-        from pokemon.items import GAMEPLAY_ITEMS
+        from pokemon.items import GAMEPLAY_ITEMS, FIELD_TRAINING_ITEMS
         from pokemon.names import normalize_name
         from pokemon.services.battle_items import BattleMedicineUse
         from pokemon.services.field_abilities import FieldAbilityUse
@@ -162,6 +162,7 @@ class ItemAvailabilityAudit:
         from pokemon.services.item_supply import ItemSupplyRoute
         from pokemon.services.finite_item_supply import FINITE_SUPPLY_ROUTES
         from pokemon.services.berry_snack import BerrySnack
+        from pokemon.services.berry_growing import BerryGrowing
 
         matrix = json.loads((ROOT / MATRIX).read_text(encoding="utf-8"))
         historical = {normalize_name(row["item"]): row for row in matrix["items"]}
@@ -176,7 +177,8 @@ class ItemAvailabilityAudit:
         mega_pairs, z_profiles = current_registries()
         repairs = repair_receipts()
         recipes = []
-        for filename in ("mega_stone_counter.json", "z_crystal_counter.json", "berry_nursery.json"):
+        for filename in ("mega_stone_counter.json", "z_crystal_counter.json", "berry_nursery.json",
+                         "berry_seed_counter.json", "ev_mochi_counter.json"):
             path = ROOT / "world" / filename
             recipe = json.loads(path.read_text(encoding="utf-8"))
             recipes.append(("world/" + filename, recipe))
@@ -198,7 +200,8 @@ class ItemAvailabilityAudit:
         for key in sorted(scoped):
             name, raw, source = definitions[key]
             old = historical.get(key, {})
-            field = [{"kind": kind, "command": "+use", "evidence_report": report}
+            field = [{"kind": kind, "command": "+use", "evidence_report":
+                      "ev-mochi-2026-10-25" if key in FIELD_TRAINING_ITEMS else report}
                      for service, kind, report in services if service.supports(key)]
             routes, limits, followups = list(field), [], []
             if BerrySnack.supports(key):
@@ -206,10 +209,10 @@ class ItemAvailabilityAudit:
                                "evidence_report": "berry-player-routes-2026-10-22" if key == "razzberry"
                                else "flavor-snacks-2026-10-25",
                                "limit": "PF2 up to 10 HP living field target; separate from +use/manual/held/growing"})
-            if key == "oranberry":
-                routes.append({"kind": "berry_growing", "command": "+berry plant Oran Berry / water / harvest",
-                               "evidence_report": "berry-player-routes-2026-10-22",
-                               "limit": "One private Oran bed at configured nursery; one bag seed, four real hours, yield 1-5; no automatic replant"})
+            if key in {normalize_name(seed) for seed in BerryGrowing.seeds}:
+                routes.append({"kind": "berry_growing", "command": "+berry plant " + name + " / water / harvest",
+                               "evidence_report": "berry-player-routes-2026-10-22" if key == "oranberry" else "nursery-seeds-2026-10-25",
+                               "limit": "One private bed at configured nursery; one bag seed, four real hours, yield 1-5; no automatic replant; real elapsed released acceptance is separate"})
             if BattleMedicineUse.supports(key):
                 routes.append({"kind": "manual_battle_medicine", "command": "+item",
                                "evidence_report": "battle-recovery-foods-2026-10-22"
@@ -272,8 +275,8 @@ class ItemAvailabilityAudit:
                            ("Bluk", "Nanab", "Pinap", "Wepear", "Cornn", "Magost", "Nomel", "Rabuta",
                             "Belue", "Durin", "Pamtre", "Spelon", "Watmel")}:
                     followups.append(866)
-            if raw.get("isBerry") and key != "oranberry":
-                limits.append("Growing currently accepts Oran only; another berry is not an eligible seed")
+            if raw.get("isBerry") and key not in {normalize_name(seed) for seed in BerryGrowing.seeds}:
+                limits.append("Growing accepts only Oran/Cheri/Pecha/Rawst/Aspear; another berry is not an eligible seed")
             if field and not BattleMedicineUse.supports(key) and any(route["kind"] in {"berry", "food", "field_recovery_equivalent"} for route in field):
                 limits.append("Intentionally excluded from manual battle use by the reviewed item policy; rejects before spending an action")
             authored = []

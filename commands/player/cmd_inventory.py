@@ -360,6 +360,8 @@ class CmdUseItem(Command):
       add 1 EV to those same stats. Caps are 252 per stat and 510 total;
       partial increases use one item, capped or invalid EVs use none.
       Training preserves HP deficit and fainting; it accepts no move selector.
+      Health/Muscle/Resist/Genius/Clever/Swift Mochi share those +10 EV rules.
+      Fresh-Start Mochi resets all six valid EVs together; all-zero has no effect.
       Ability Capsule switches ordinary ability slots 0/1. Ability Patch
       switches an ordinary slot to hidden H, or hidden H back to ordinary 0.
       Both use the saved native species/form slots; special abilities, absent
@@ -508,7 +510,7 @@ class CmdUseItem(Command):
 
         self.caller.msg(
             f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
-            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. "
+            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers/mochi, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. "
             "Use +heal at a Pokemon Center to restore your party; "
             "battle items use +item <item> during battle."
         )

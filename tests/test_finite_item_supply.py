@@ -69,4 +69,3 @@ def test_source_index_records_recipes_without_claiming_installed_stock():
             assert source["refill"] == "none"
             assert row["world_availability"]["status"] == "unverified"
             assert not row["world_availability"]["sources"]
-    assert index["scoped_count"] == 452

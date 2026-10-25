@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "key": "ev-mochi-counter-v1",
+  "room": "EV Mochi Counter",
+  "entrance": "mochi",
+  "return_exit": "back",
+  "description": "A sign lists finite Health, Muscle, Resist, Genius, Clever, Swift and Fresh-Start Mochi. Use +store to buy, +inventory to inspect and +use <item>=<current target> outside battle. Fresh-Start resets all six valid EVs together. The back exit returns to the hub. No refill or resale.",
+  "buy_only": true,
+  "refill": "none",
+  "offers": [
+    {"item": "Health Mochi", "price": 10000, "quantity": 2},
+    {"item": "Muscle Mochi", "price": 10000, "quantity": 2},
+    {"item": "Resist Mochi", "price": 10000, "quantity": 2},
+    {"item": "Genius Mochi", "price": 10000, "quantity": 2},
+    {"item": "Clever Mochi", "price": 10000, "quantity": 2},
+    {"item": "Swift Mochi", "price": 10000, "quantity": 2},
+    {"item": "Fresh-Start Mochi", "price": 20000, "quantity": 1}
+  ]
+}

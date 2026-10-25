@@ -33,13 +33,29 @@ class ItemCounter:
         return data
 
     def install(self, hub):
-        """Atomically author one opt-in source, never replenish an existing one."""
+        """Author once and discard tentative marker caches after outer rollback."""
+        from django.db import connection, transaction
+        from pokemon.services.item_shop import ShopPurchase
+
+        data = self.recipe()
+        marker = "counter_" + data["key"]
+        hub.attributes.reset_cache()
+        try:
+            return self._install(hub, data)
+        finally:
+            hub.attributes.reset_cache()
+            if connection.in_atomic_block:
+                transaction.on_commit(lambda: ShopPurchase.refresh_attributes(hub, marker), robust=True)
+            else:
+                ShopPurchase.refresh_attributes(hub, marker)
+
+    def _install(self, hub, data):
+        """Atomically author one validated source, never replenish an existing one."""
         from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
         from evennia.utils.create import create_object
         from pokemon.services.battle_rewards import BattleRewards
 
-        data = self.recipe()
         marker = "counter_" + data["key"]
         lock = int.from_bytes(hashlib.sha256(data["key"].encode()).digest()[:8], "big") >> 1
         with transaction.atomic():
