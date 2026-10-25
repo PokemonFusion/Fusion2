@@ -15,6 +15,10 @@ seed/harvest contention, owner/location/battle checks, invalid saved identity,
 partial seed debit, post-credit failure and outer rollback preserve SQL/bags.
 Each new recipe source executes a real `seeds` Exit, purchase, crop and cure,
 while the original Oran/Razz counter and sold stock remain unchanged.
+Four supplementary source flows rebuild the ordinary captured player context
+and SQL connection after every crop action:24 reconstructions preserve the full
+committed state before subsequent stages/harvest/use. All four pass. This is
+reconstruction with controlled crop time, not a socket or real-hour walkthrough.
 
 **44 existing Oran/Razz SQL cases passed**, including original cycle masks,
 clock edges, target/battle guards, source installation and independent snacks.

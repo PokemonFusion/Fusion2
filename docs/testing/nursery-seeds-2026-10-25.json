@@ -1343,5 +1343,185 @@
     "installation": "not installed in shared game"
   },
   "previous_452_definitions_preserved": true,
-  "unknown_world_entries": 459
+  "unknown_world_entries": 459,
+  "rebuilt_player_context": {
+    "exit": 0,
+    "mode": "seeds",
+    "cases": 4,
+    "reconstructions": 24,
+    "records": [
+      {
+        "case": "__main__.SeedCheri.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedCheri.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedCheri.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedCheri.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedCheri.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedCheri.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedPecha.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedPecha.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedPecha.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedPecha.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedPecha.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedPecha.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedRawst.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedRawst.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedRawst.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedRawst.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedRawst.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedRawst.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedAspear.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedAspear.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedAspear.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedAspear.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedAspear.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      },
+      {
+        "case": "__main__.SeedAspear.test_counter",
+        "committed_state_identical": true,
+        "new_player_transport": true,
+        "fresh_sql_connection": true,
+        "kind": "captured transport reconstruction; not socket login"
+      }
+    ],
+    "actual_socket": false,
+    "production_source_changes": false,
+    "method": "Same immutable production-flow tests; close all SQL connections, flush character/Pokemon identities, rebuild ordinary captured transport from the same persisted trainer/storage, assert entire saved state identical, continue original commands/battles",
+    "limit": "Fresh SQL and ordinary player-context reconstruction, not a socket login; seed clock remains controlled"
+  }
 }
