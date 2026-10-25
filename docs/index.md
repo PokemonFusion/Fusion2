@@ -48,6 +48,10 @@ and [report](testing/item-availability-2026-10-25.md) reconcile explicit accepte
 registries, six item-repair receipts and unverified world sources.
 See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
 PF2-Dev purchase/effect/reconnect proof, fixture cleanup and remaining feedback.
+The [October 25 repaired-item local walkthrough](testing/item-repair-released-player-2026-10-25.md)
+records 716 ordinary commands, 102 effect/conservation checks and complete
+disposable cleanup on the pinned repaired candidate. Permanent public stock
+remains separate from these temporary QA sources.
 See the [Mega Stone player guide](mega-evolution.md),
 [activation contract](design/mega-evolution.md) and
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,

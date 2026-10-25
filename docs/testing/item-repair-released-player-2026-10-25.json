@@ -1,0 +1,1269 @@
+{
+  "issue": 860,
+  "date": "2026-10-25",
+  "candidate": "ddc56bfaf32261e47551ad893e0592fca3e86311",
+  "status": "passed bounded deliberately released local walkthrough and cleanup",
+  "started_utc": "2026-10-25T13:51:54.842456+00:00",
+  "finished_utc": "2026-10-25T14:53:28.199962+00:00",
+  "environment": "Fresh archived task-owned loopback Evennia/PostgreSQL schema only",
+  "tag": "item-repair-release-8a66c307ea8c4b99b77457a21e48368f",
+  "ports": {
+    "telnet": 53301,
+    "http": 53302,
+    "web": 53303,
+    "amp": 53304,
+    "websocket": 53305
+  },
+  "runtime_pid": 14280,
+  "module_source_attribution": {
+    "pokemon.battle.engine": {
+      "loaded": true,
+      "path": "pokemon/battle/engine.py",
+      "sha256_lf": "a027bb785c4f8e0b620015553f4e6a2d700da145cee3e194d2c60837b2ce650f"
+    },
+    "pokemon.battle.logic": {
+      "loaded": true,
+      "path": "pokemon/battle/logic.py",
+      "sha256_lf": "3f3b145d68d8097ba2c2e34cdd488536f5f9e470f19262177b80b8af95aeb54c"
+    },
+    "pokemon.dex.functions.items_funcs": {
+      "loaded": true,
+      "path": "pokemon/dex/functions/items_funcs.py",
+      "sha256_lf": "d22830cad8f314384ba615a0b1140b157b80da3dbaf929325b16b6d120226816"
+    },
+    "pokemon.dex.functions.abilities_funcs": {
+      "loaded": true,
+      "path": "pokemon/dex/functions/abilities_funcs.py",
+      "sha256_lf": "5e11759723f84d8ce376aa2b16e81fd58ba249eda42f28c2368bd7bba96d4600"
+    },
+    "pokemon.dex.functions.moves.damage_moves": {
+      "loaded": true,
+      "path": "pokemon/dex/functions/moves/damage_moves.py",
+      "sha256_lf": "443f15aac12d8c4520fe0a549569fba0b39def5560779ea0727c2e69d494613f"
+    },
+    "pokemon.battle.z_generic_pairs": {
+      "loaded": false
+    }
+  },
+  "qualified_python_source_count": 1135,
+  "python_manifest_sha256": "a2d92527a8a8bea105d02243c506dfe5dc90203d277d440a5c9ad626e8b595dc",
+  "full_gate": {
+    "orders": 3,
+    "passed_each": 6153,
+    "skipped_each": 4028,
+    "wrapper_exit": 0,
+    "log_sha256": "f09267699434c06723b8b5f44da4a3661259fd481a7104c5f8adf3308c7e0083"
+  },
+  "evidence_qualification": {
+    "candidate": "ddc56bfaf32261e47551ad893e0592fca3e86311",
+    "checks": [
+      {
+        "check": "two ordinary onboarding sources,20 final owned native/starter/captured rows",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "only controlled trainers own the final fixtures",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "both ordinary Player permissions and no remaining battle locks",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "protected nonparticipant sentinel unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "native pairs separated and source PP preserved",
+        "passed": true,
+        "observed": [
+          {
+            "id": 1,
+            "host_id": "a32a19d2-5478-4bf5-a7fd-51a2338ccce3",
+            "source": "Sunsteel Strike",
+            "current_pp": 4,
+            "policy_version": 1
+          },
+          {
+            "id": 2,
+            "host_id": "8de7ac1c-dc51-419a-ba7b-e8c120afde8c",
+            "source": "Moongeist Beam",
+            "current_pp": 4,
+            "policy_version": 1
+          }
+        ]
+      },
+      {
+        "check": "Sun companion owned row stayed frozen",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Sun companion active_moves unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Sun companion learned_moves unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Sun companion saved_moves unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Sun companion boosts unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Moon companion owned row stayed frozen",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Moon companion active_moves unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Moon companion learned_moves unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Moon companion saved_moves unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Moon companion boosts unchanged",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "both host species restored on their original IDs",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "earned paired-host damage retained",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "ordinary Light Ball actual damage24 control vs45 native",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "native Light Ball held and source PP spent once",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "recorded81 damage exceeds calculated noncritical maximum61",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Dialga native Crystal actual64 damage vs52 control",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "native Dialga form and real ability preserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "nickname foreign Plate theft really transfers item",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "native renamed Arceus retains Plate against real Thief",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "invalid target refused before the same valid Thief action",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "pecha-hit-after actual healthy empty held state",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "psn-cure-after actual healthy empty held state",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "burnt-cured actual healthy empty held state",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "missed Toxic did not eat Pecha",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "natural freeze evidence qualified without RNG/effect forcing",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "field labelledHP0 actually revived/healed to188/336",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "field selected PP bonus12/cap32 and two useful Ether, capped no-debit",
+        "passed": true,
+        "observed": [
+          {
+            "id": 1,
+            "pokemon_id": "4c6a0e87-e7e8-4f2a-8793-abc3eb1c5e75",
+            "move_id": 76,
+            "bonus_pp": 12
+          }
+        ]
+      },
+      {
+        "check": "dusk zero-PP refuses before declaration/budget",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "dusk manual Ether restores5 with Z still unused",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "dusk signature pays source once and spends correct side",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "dawn zero-PP refuses before declaration/budget",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "dawn manual Ether restores5 with Z still unused",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "dawn signature pays source once and spends correct side",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Rare Candy and Fire Stone preserve identity and truthful message",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Mega real form, ability, damage and side budget",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Mega owned form cleaned up",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "firium-active actual damage, source14/15, reusable crystal, one side",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "waterium-active actual damage, source14/15, reusable crystal, one side",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Leftovers real first-turn net20 after1damage+21 recovery",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Smoke Ball/Leftovers returned reusable and no held leaks",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "ItemRepairDusk48368f wallet exactly matches ordinary purchases",
+        "passed": true,
+        "observed": {
+          "spent": 144100,
+          "wallet": 355900
+        }
+      },
+      {
+        "check": "ItemRepairDawn48368f wallet exactly matches ordinary purchases",
+        "passed": true,
+        "observed": {
+          "spent": 99500,
+          "wallet": 400500
+        }
+      },
+      {
+        "check": "Master Ball finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Master Ball copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 50,
+          "final_bags": 32,
+          "consumed": 18
+        }
+      },
+      {
+        "check": "Potion finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Potion copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 20,
+          "final_bags": 9,
+          "consumed": 11
+        }
+      },
+      {
+        "check": "Revive finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Revive copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 6,
+          "final_bags": 3,
+          "consumed": 3
+        }
+      },
+      {
+        "check": "Ether finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Ether copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 24,
+          "final_bags": 20,
+          "consumed": 4
+        }
+      },
+      {
+        "check": "PP Up finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "PP Up copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 0,
+          "consumed": 2
+        }
+      },
+      {
+        "check": "PP Max finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "PP Max copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 0,
+          "consumed": 2
+        }
+      },
+      {
+        "check": "Rare Candy finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Rare Candy copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 1,
+          "consumed": 1
+        }
+      },
+      {
+        "check": "Fire Stone finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Fire Stone copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 1,
+          "consumed": 1
+        }
+      },
+      {
+        "check": "Leftovers finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Leftovers copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Smoke Ball finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Smoke Ball copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Light Ball finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Light Ball copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 2,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Leek finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Leek copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Adamant Crystal finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Adamant Crystal copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Flame Plate finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Flame Plate copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 2,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Fire Memory finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Fire Memory copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 0,
+          "final_bags": 0,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Shock Drive finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Shock Drive copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 0,
+          "final_bags": 0,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Rusted Sword finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Rusted Sword copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 0,
+          "final_bags": 0,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Pecha Berry finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Pecha Berry copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 1,
+          "consumed": 1
+        }
+      },
+      {
+        "check": "PSN Cure Berry finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "PSN Cure Berry copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 1,
+          "consumed": 1
+        }
+      },
+      {
+        "check": "Burnt Berry finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Burnt Berry copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 1,
+          "consumed": 1
+        }
+      },
+      {
+        "check": "Venusaurite finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Venusaurite copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Normalium Z finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Normalium Z copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 2,
+          "final_bags": 2,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Firium Z finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Firium Z copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Waterium Z finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Waterium Z copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Solganium Z finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Solganium Z copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "Lunalium Z finite stock conserved",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "Lunalium Z copies conserved across consumed/theft/held cleanup",
+        "passed": true,
+        "observed": {
+          "purchased": 1,
+          "final_bags": 1,
+          "consumed": 0
+        }
+      },
+      {
+        "check": "all live callback observations clean",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "one observed process and exact released candidate",
+        "passed": true,
+        "observed": null
+      },
+      {
+        "check": "all1135 released Python hashes still match qualification",
+        "passed": true,
+        "observed": null
+      }
+    ],
+    "check_count": 102,
+    "passed": true,
+    "purchases": [
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Master Ball",
+        "quantity": 25,
+        "cost": 25000,
+        "transcript_index": 31
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Potion",
+        "quantity": 10,
+        "cost": 3000,
+        "transcript_index": 32
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Ether",
+        "quantity": 12,
+        "cost": 14400,
+        "transcript_index": 33
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Revive",
+        "quantity": 3,
+        "cost": 4500,
+        "transcript_index": 34
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "PP Up",
+        "quantity": 1,
+        "cost": 9800,
+        "transcript_index": 35
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "PP Max",
+        "quantity": 1,
+        "cost": 15000,
+        "transcript_index": 36
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Rare Candy",
+        "quantity": 1,
+        "cost": 4800,
+        "transcript_index": 37
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Fire Stone",
+        "quantity": 1,
+        "cost": 3000,
+        "transcript_index": 38
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Normalium Z",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 39
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Master Ball",
+        "quantity": 25,
+        "cost": 25000,
+        "transcript_index": 46
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Potion",
+        "quantity": 10,
+        "cost": 3000,
+        "transcript_index": 47
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Ether",
+        "quantity": 12,
+        "cost": 14400,
+        "transcript_index": 48
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Revive",
+        "quantity": 3,
+        "cost": 4500,
+        "transcript_index": 49
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "PP Up",
+        "quantity": 1,
+        "cost": 9800,
+        "transcript_index": 50
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "PP Max",
+        "quantity": 1,
+        "cost": 15000,
+        "transcript_index": 51
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Rare Candy",
+        "quantity": 1,
+        "cost": 4800,
+        "transcript_index": 52
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Fire Stone",
+        "quantity": 1,
+        "cost": 3000,
+        "transcript_index": 53
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Normalium Z",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 54
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Light Ball",
+        "quantity": 2,
+        "cost": 2000,
+        "transcript_index": 178
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Leek",
+        "quantity": 1,
+        "cost": 1000,
+        "transcript_index": 179
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Adamant Crystal",
+        "quantity": 1,
+        "cost": 1000,
+        "transcript_index": 180
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Flame Plate",
+        "quantity": 1,
+        "cost": 1000,
+        "transcript_index": 181
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Pecha Berry",
+        "quantity": 2,
+        "cost": 200,
+        "transcript_index": 182
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "PSN Cure Berry",
+        "quantity": 2,
+        "cost": 200,
+        "transcript_index": 183
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Burnt Berry",
+        "quantity": 2,
+        "cost": 200,
+        "transcript_index": 184
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Flame Plate",
+        "quantity": 1,
+        "cost": 1000,
+        "transcript_index": 293
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Venusaurite",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 552
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Firium Z",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 553
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Waterium Z",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 554
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Solganium Z",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 555
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Smoke Ball",
+        "quantity": 1,
+        "cost": 4000,
+        "transcript_index": 556
+      },
+      {
+        "player": "ItemRepairDawn48368f",
+        "item": "Lunalium Z",
+        "quantity": 1,
+        "cost": 10000,
+        "transcript_index": 560
+      },
+      {
+        "player": "ItemRepairDusk48368f",
+        "item": "Leftovers",
+        "quantity": 1,
+        "cost": 4000,
+        "transcript_index": 699
+      }
+    ],
+    "ordinary_commands": 716,
+    "runtime_observations": 26,
+    "runtime_pid": 14280,
+    "owned_fixture_rows": 20,
+    "natural_freeze": {
+      "passed": true,
+      "attempts": 28,
+      "misses": 10,
+      "hits": 18,
+      "center_maintenance_cycles": 3,
+      "runner_correction": "Initial matcher expected thaw; actual player text says defrosted. Original mismatch and evidence retained.",
+      "backlog_note": "Initial any-client miss flags could include prior-turn output; qualified flags use only the fresh source declaration output.",
+      "pp_debit_once_each": true,
+      "rng_or_effect_forcing": false
+    },
+    "limit": "Retained transcript/effect evidence qualification, not a new full test suite or every-item live proof."
+  },
+  "case_expectations_and_observations": [
+    {
+      "case": "native-stat-critical",
+      "expected": "Native identity controls bonuses despite nicknames; reusable items and real useful outcomes.",
+      "observed": "Pikachu Sparky Quick Attack24 control/45LightBall; Farfetch'd Feathers Slash81 vs calculated noncrit51-61/crit76-91; native Clock Crystal64 vs52control. All reusable."
+    },
+    {
+      "case": "theft",
+      "expected": "A nickname gives no native protection; real Arceus retains its Plate.",
+      "observed": "Mew named Arceus lost FlamePlate to actualThief; transferred copy persisted and returned to Dawn bag. Native renamedStar/ArceusFire retained its separate Plate."
+    },
+    {
+      "case": "field-medicine-PP",
+      "expected": "HP0/PP0 prerequisites separately labelled; ordinary target/move/capacity/effect conservation.",
+      "observed": "Revive168+Potion20=188/336; PPUp0/20->4/24,PPMax12/32; twoEther32/32,thirdnoeffect/no debit. Wrong inline capacity selectors refused. Frost repeated correct PP prompts5/5->6/6->8/8."
+    },
+    {
+      "case": "status-berries",
+      "expected": "One useful held copy cures proper status with no Synchronize loop; missed moves spend no berry.",
+      "observed": "Pecha miss retained copy; nextToxic cured afterreconnect. PSNCure curedToxic. Burnt naturally froze/defrosted on28thBlizzard after18hits10misses and3ordinaryCentermaintenancecycles; one copyeach, healthy/emptyheld."
+    },
+    {
+      "case": "evolution",
+      "expected": "RareCandy atomic useful levelgain and evolution message uses previous name.",
+      "observed": "Native capturedSeed/Eevee5->6, sameUUID/EXP216; one FireStone then Seed evolved into Flareon."
+    },
+    {
+      "case": "Mega-Z",
+      "expected": "Actual native form/damage, correct source PP/budgets, reusable items and cleanup.",
+      "observed": "MegaVenusaur/ThickFat,RazorLeaf24; FiriumFlamethrower75 and WateriumSurf27 to same319HPnativeMew, PP15->14, oneAuse. RepeatedZ refused. End restoresbase."
+    },
+    {
+      "case": "native-Necrozma",
+      "expected": "Real separately obtained host/companion; correctslot/PP/nativeproof; zeroPP refuses beforeaction; recovery/reconnect/separation conserve state.",
+      "observed": "Both realpairs combinedslot2. DuskqueuedZsurvivedreconnect102damage; pairedHP0Revive/Potion101/163. Both0PPrequests kept budgets/declarations empty, manualEther restored5, laterZused4PP. Dusk97/Moon170damage; Dawnspentbudget survivedreconnect. Bothseparated; companionsowned/moves unchanged and bothresources4PP."
+    },
+    {
+      "case": "Leftovers-SmokeBall",
+      "expected": "Actual held recovery and ordinary wildescape, no item duplication/consumption.",
+      "observed": "Mew166,oneMagikarpTackle1+Leftovers21=>186; escape residual givesanother21=>207. SmokeBall held through normalMew100wildflee, then returned once. Finalbothbags retainoneeach, no heldleak."
+    }
+  ],
+  "diagnoses": [
+    "Before world writes, operator exec needed one explicit namespace and item validation needed shared middleware for SmokeBall outsideITEMDEX; exactv2plan published before retry. Nickit20 was replaced by verified nativePoochyena50/Thief.",
+    "Private read-only runtime observer was corrected for Move objects without cachedPP and wild Pokemon without ORM move slots; game sources stayed unchanged.",
+    "Initial harness expectations used bought/leave3/no-longer/UsedPP/thaw; actual UI uses You purchase/buy-onlyleave2 orq/returned/PP was increased/defrosted. Original failures retained; independent102effect/conservation checks qualified actual outcomes.",
+    "Wrong own-sideThief target and inlinePPcapacity selectors were ordinary refusals with no resource spend; corrected legal inputs completed the intended flow. Toxic/Blizzard misses and capped Amnesia were expected gameplay, never forced to succeed.",
+    "Evidence validator initially expected a stages column; MovePPBoost stores bonus_pp. Serialized Evennia stock dictionaries were parsed with ast.literal_eval, never eval. These read-only evidence corrections applied no game effect."
+  ],
+  "limits": [
+    "Bounded representatives were replayed on this fresh archived local instance. The full nine stat/critical, seven booster and45 protected-artifact matrices rely on their separate per-item PostgreSQL/offline receipts; not every item received a socket replay.",
+    "Current Python matches the three qualified fresh local full-suite orders. No hosted CI, PF2-Dev deployment or shared-game acceptance is certified.",
+    "All stock, base-source charts and500k wallets were explicitly labelled disposable operator prerequisites. No Pokemon/move/bag/native-combination grant or forced RNG/status/effect was used. OrdinaryCenterhealing maintained later cases.",
+    "LabelledHP0/PP0 controller writes only controlled current owned/out-of-battle targets, never companions. They are prerequisites rather than earned damage/PP.",
+    "The ordinary item counter is removed with the schema. #862 permanent public stock remains separate and uninstalled.",
+    "Immutable earlier reports and25 unrelated shared-worktree changes remain preserved. Plot-only/CAP/clutter and new capture support remain excluded."
+  ],
+  "cleanup": {
+    "ordinary_sockets_closed": true,
+    "supervisor_exit": 0,
+    "phase": "stopped",
+    "ports_closed": true,
+    "task_schema_dropped": true,
+    "task_postgres_stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0,
+    "existing_game_or_PF2Dev_changed": false,
+    "source_archive_retained_for_evidence": true
+  },
+  "controllers": {
+    "supervise.py": {
+      "sha256_lf": "4bea7227e01c8c2ba43383ca78c553071cd9d03340c3366f93b25f1f000512a8",
+      "source": "\"\"\"Approved-only fresh local released instance; clean up only its schema/processes.\"\"\"\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport secrets\nimport socket\nimport subprocess\nimport sys\nimport time\n\nART = Path(__file__).resolve().parent\nRELEASE = ART / 'released'\nPLAN = json.loads((RELEASE/'plan.json').read_text())\nSOURCE = Path(PLAN['source'])\nassert SOURCE.resolve() == (RELEASE/'source').resolve()\napproval = json.loads((RELEASE/'operator-approval.json').read_text())\nassert approval['candidate'] == PLAN['candidate'] and approval['tag'] == PLAN['tag']\nassert approval['existing_local_dev_authorization'] is True\nos.environ['PF2_TEST_POSTGRES_DSN'] = json.loads(Path(r'H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\necrozma-20261024\\postgres-fixture.json').read_text())['dsn']\nos.environ['PYTHONDONTWRITEBYTECODE']='1'\nsys.path.insert(0,str(SOURCE/'tests/integration'))\nsys.path.insert(0,str(SOURCE))\nfrom isolated_postgres import IsolatedPostgres\n\n\ndef save(name,value):\n    \"\"\"Keep credentials/config private; public output contains no login secrets.\"\"\"\n    (RELEASE/name).write_text(json.dumps(value,indent=2),encoding='utf-8')\n\n\ndef cli(action,env):\n    \"\"\"Only this clone's different AMP port can receive its start/stop command.\"\"\"\n    with (RELEASE/('cli-'+action+'.log')).open('w',encoding='utf-8') as output:\n        return subprocess.run([sys.executable,'-B','-m','evennia.server.evennia_launcher',\n            '--settings','qa_item_repair_settings.py',action],cwd=SOURCE,env=env,\n            stdout=output,stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),timeout=180)\n\n\nmanifest=json.loads((RELEASE/'source-manifest.json').read_text())\nassert all(hashlib.sha256((SOURCE/path).read_text(encoding='utf-8').encode()).hexdigest()==digest\n    for path,digest in manifest.items())\nassert hashlib.sha256((SOURCE/'server/conf/qa_item_repair_settings.py').read_bytes()).hexdigest()==PLAN['qa_settings_sha256']\nfor port in PLAN['ports'].values():\n    with socket.socket() as probe:\n        probe.bind(('127.0.0.1',port))\ndatabase = IsolatedPostgres()\ndatabase.__enter__()\nattempted=False\nstopped=False\ntry:\n    # This fresh isolated release uses the user's existing broad local-dev\n    # authorization, with exact candidate/tag/ports and task-owned schema guards.\n    from django.db import connection\n    from django.db.migrations.executor import MigrationExecutor\n    executor=MigrationExecutor(connection)\n    target=executor.loader.graph.leaf_nodes()\n    executor.migrate(target)\n    assert not MigrationExecutor(connection).migration_plan(target)\n    with connection.cursor() as cursor:\n        cursor.execute('SELECT current_schema()')\n        assert cursor.fetchone()[0]==database.schema\n        cursor.execute('SELECT count(*) FROM objects_objectdb')\n        assert cursor.fetchone()[0]==0\n    config=dict(connection.settings_dict)\n    config['OPTIONS']=dict(config['OPTIONS'],application_name=PLAN['tag'])\n    save('runtime-private.json',{'tag':PLAN['tag'],'candidate':PLAN['candidate'],\n        'schema':database.schema,'database':config,'ports':PLAN['ports'],\n        'secret_key':secrets.token_urlsafe(64),\n        'staff_username':'ItemRepairQAStaff'+secrets.token_hex(4),'staff_password':secrets.token_urlsafe(32)})\n    env=os.environ.copy()\n    env.pop('PF2_NO_EVENNIA',None)\n    env.update(PYTHONPATH=str(SOURCE),DJANGO_SETTINGS_MODULE='server.conf.qa_item_repair_settings',PYTHONIOENCODING='utf-8')\n    with (RELEASE/'staff-init.log').open('w',encoding='utf-8') as output:\n        result=subprocess.run([sys.executable,'-B',str(RELEASE/'staff.py'),'init'],cwd=SOURCE,env=env,\n            stdout=output,stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))\n    assert result.returncode==0,'New private operator init failed'\n    save('supervisor-state.json',{'phase':'starting','pid':os.getpid(),'candidate':PLAN['candidate'],\n        'schema':database.schema,'source':str(SOURCE),'ports':PLAN['ports']})\n    try:\n        attempted=True\n        assert cli('start',env).returncode==0,'Private release startup failed'\n        deadline=time.monotonic()+180\n        while time.monotonic()<deadline:\n            try:\n                with socket.create_connection(('127.0.0.1',PLAN['ports']['telnet']),timeout=2):\n                    pass\n                from evennia.objects.models import ObjectDB\n                assert ObjectDB.objects.filter(pk=2).exists()\n                break\n            except (OSError,AssertionError):\n                time.sleep(.5)\n        else:\n            raise RuntimeError('New QA loopback server did not become ready')\n        save('supervisor-state.json',{'phase':'ready','pid':os.getpid(),'candidate':PLAN['candidate'],\n            'schema':database.schema,'ports':PLAN['ports'],'source_manifest_sha256':PLAN['source_manifest_sha256']})\n        print('LOCAL_NATIVE_RELEASE_READY '+PLAN['candidate'],flush=True)\n        while not (RELEASE/'cleanup-requested').exists():\n            time.sleep(.5)\n    finally:\n        if attempted:\n            cli('stop',env)\n        open_ports=[]\n        for _ in range(60):\n            open_ports=[]\n            for name in ('telnet','http','web','amp','websocket'):\n                try:\n                    with socket.create_connection(('127.0.0.1',PLAN['ports'][name]),timeout=.2):\n                        open_ports.append(name)\n                except OSError:\n                    pass\n            if not open_ports:\n                break\n            time.sleep(.5)\n        assert not open_ports,'Retain schema until remaining task listeners are reviewed'\n        stopped=True\n        save('supervisor-state.json',{'phase':'stopped','candidate':PLAN['candidate'],\n            'schema':database.schema,'ports_closed':True,'existing_services_changed':False})\nfinally:\n    if not attempted or stopped:\n        database.close()\n        print('Private release stopped; its generated schema dropped.',flush=True)\n    else:\n        print('Private schema retained for explicit task-process cleanup.',flush=True)\n\n"
+    },
+    "world.py": {
+      "sha256_lf": "34ad507e39dc13deec0500689b48a11e1bb96e1ea7e25b496a73f655333a6ae3",
+      "source": "\"\"\"Separate tagged sources for the item repair released walkthrough; no Pokemon grants.\"\"\"\nimport hashlib\nimport json\nfrom pathlib import Path\n\nfrom django.conf import settings\nfrom django.db import connection, transaction\nfrom evennia import create_object\nfrom evennia.objects.models import ObjectDB\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.models.onboarding import OnboardingCompletion\nfrom pokemon.models.trainer import Trainer\n\nART = Path(r\"H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-release-860-20261025\")\nRELEASE = ART / \"released\"\nplan = json.loads((RELEASE/\"plan.json\").read_text())\nconfig = json.loads((RELEASE/\"runtime-private.json\").read_text())\nauthority = json.loads((RELEASE/\"operator-approval.json\").read_text())\nassert config[\"tag\"] == plan[\"tag\"] == authority[\"tag\"]\nassert config[\"candidate\"] == plan[\"candidate\"] == authority[\"candidate\"]\nassert authority[\"existing_local_dev_authorization\"] is True\nassert Path(settings.GAME_DIR).resolve() == Path(plan[\"source\"]).resolve()\nwith connection.cursor() as cursor:\n    cursor.execute(\"SELECT current_schema()\")\n    assert cursor.fetchone()[0] == config[\"schema\"]\nnames = [\"ItemRepair\"+key+plan[\"tag\"][-6:] for key in (\"Dusk\",\"Dawn\")]\nplayers = [ObjectDB.objects.get(db_key=name, db_typeclass_path=\"pokemon.user.User\") for name in names]\nfor player in players:\n    assert not player.account.is_superuser\n    assert set(player.permissions.all()) == {\"player\"} and set(player.account.permissions.all()) == {\"player\"}\n    assert OnboardingCompletion.objects.filter(character=player).count() == 1\n    assert OwnedPokemon.objects.filter(trainer__user=player).count() == 1\nassert not ObjectDB.objects.filter(db_tags__db_key=plan[\"tag\"]).exclude(pk__in=[p.pk for p in players]).exists()\nbefore = {str(p.pk):list(OwnedPokemon.objects.filter(trainer__user=p).values()) for p in players}\noffers = (\n (\"Master Ball\",1000,100), (\"Potion\",300,30), (\"Revive\",1500,10), (\"Ether\",1200,30),\n (\"PP Up\",9800,4), (\"PP Max\",15000,4), (\"Rare Candy\",4800,4), (\"Fire Stone\",3000,4),\n (\"Leftovers\",4000,4), (\"Smoke Ball\",4000,4), (\"Light Ball\",1000,4), (\"Leek\",1000,4),\n (\"Adamant Crystal\",1000,4), (\"Flame Plate\",1000,4), (\"Fire Memory\",1000,4),\n (\"Shock Drive\",1000,4), (\"Rusted Sword\",1000,4), (\"Pecha Berry\",100,4),\n (\"PSN Cure Berry\",100,4), (\"Burnt Berry\",100,4), (\"Venusaurite\",10000,2),\n (\"Normalium Z\",10000,2), (\"Firium Z\",10000,2), (\"Waterium Z\",10000,2),\n (\"Solganium Z\",10000,2), (\"Lunalium Z\",10000,2),\n)\nsources = (\n (\"Pikachu\",50), (\"Jigglypuff\",50), (\"Farfetch\u2019d\",50), (\"Pidgey\",50),\n (\"Dialga\",50), (\"Dratini\",50), (\"Arceus\",50), (\"Mew\",100), (\"Poochyena\",50),\n (\"Silvally\",50), (\"Genesect\",50), (\"Zacian\",50), (\"Clodsire\",50), (\"Spheal\",50),\n (\"Eevee\",5), (\"Venusaur\",50), (\"Necrozma\",50), (\"Solgaleo\",50),\n (\"Charizard\",50), (\"Slowpoke\",50), (\"Magikarp\",5),\n)\nfrom pokemon.dex import POKEDEX, ITEMDEX\nfrom pokemon.names import resolve_dex_entry\nassert all(resolve_dex_entry(POKEDEX, species) for species,_ in sources)\nfrom pokemon.middleware import get_item_by_name\nassert all(get_item_by_name(name)[1] is not None for name,_,_ in offers)\nwith transaction.atomic():\n    center = create_object(\"typeclasses.rooms.Room\", key=\"Item Repair QA Center\")\n    center.db.desc = (\"Disposable item repair QA Center and finite counter. +store buys reviewed stock; \"\n                      \"arena leads to ordinary consenting battles. Named trails provide base sources. \"\n                      \"Sources and wallets are separate operator prerequisites, not permanent public content.\")\n    center.db.is_pokemon_center = True\n    center.db.is_item_shop = True\n    center.db.store_buy_only = True\n    center.db.store_inventory = {name:{\"price\":price,\"quantity\":quantity} for name,price,quantity in offers}\n    arena = create_object(\"typeclasses.rooms.Room\", key=\"Item Repair QA Arena\")\n    arena.db.desc = \"Ordinary consenting battles. center returns to the item counter.\"\n    objects = [center,arena]\n    limbo = ObjectDB.objects.get(pk=2)\n    routes = [(\"item qa\",limbo,center),(\"limbo\",center,limbo),(\"arena\",center,arena),(\"center\",arena,center)]\n    for species,level in sources:\n        room = create_object(\"typeclasses.rooms.Room\", key=\"Item Repair \"+species+\" Trail\")\n        room.db.allow_hunting = True\n        room.db.npc_chance, room.db.encounter_rate = 0, 100\n        room.db.noitem, room.db.tp_cost = True, 0\n        room.db.hunt_chart = [{\"name\":species,\"min_level\":level,\"max_level\":level,\"weight\":1}]\n        objects.append(room)\n        routes.extend([(species.lower()+\" trail\",center,room),(\"center\",room,center)])\n    for key,source,destination in routes:\n        objects.append(create_object(\"typeclasses.exits.Exit\",key=key,location=source,destination=destination))\n    for obj in objects+players:\n        obj.tags.add(plan[\"tag\"])\n    Trainer.objects.filter(user_id__in=[p.pk for p in players]).update(money=500000)\n    sentinel = create_object(\"typeclasses.rooms.Room\",key=\"Item Repair Protected Sentinel\")\n    sentinel.db.desc = \"Protected nonparticipant row; no player route.\"\n    sentinel.tags.add(plan[\"tag\"]+\"-protected\")\nrecord = {\"kind\":\"separate tagged operator prerequisites\", \"candidate\":plan[\"candidate\"],\"tag\":plan[\"tag\"],\n          \"players\":names,\"onboarding_before_fixture_changes\":before,\n          \"ordinary_permissions_unchanged\":True,\"objects\":[{\"id\":o.pk,\"key\":o.key} for o in objects],\n          \"stock\":dict(center.db.store_inventory),\"wallet_fixture_per_player\":500000,\n          \"sources\":[{\"species\":s,\"level\":l,\"route\":s.lower()+\" trail\"} for s,l in sources],\n          \"source_grants\":0,\"fused_grants\":0,\"permanent_sources\":False,\"existing_game_database_used\":False,\n          \"sentinel\":{\"id\":sentinel.pk,\"key\":sentinel.key,\"description\":sentinel.db.desc}}\n(RELEASE/\"staff-prerequisites.json\").write_text(json.dumps(record,indent=2,default=str)+\"\\n\",encoding=\"utf-8\")\nprint(\"ITEM_REPAIR_QA_WORLD_READY\",center.pk,arena.pk,\"no Pokemon or bag grants; ordinary permissions unchanged\")\n\n"
+    },
+    "moon_source.py": {
+      "sha256_lf": "0ffcc00e3c133d881cef53453f4bbd110c4cbd54da27b212993f3b9ddb8e96db",
+      "source": "\"\"\"Add one separately reviewed native moon-source trail in this disposable world.\"\"\"\nimport json\nfrom pathlib import Path\nfrom django.conf import settings\nfrom django.db import connection,transaction\nfrom evennia import create_object\nfrom evennia.objects.models import ObjectDB\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.data.generation import get_valid_moves\nfrom pokemon.names import resolve_dex_entry\nfrom pokemon.dex import POKEDEX\nART=Path(r\"H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-release-860-20261025\")\nRELEASE=ART/\"released\"\nplan=json.loads((RELEASE/\"plan.json\").read_text())\nconfig=json.loads((RELEASE/\"runtime-private.json\").read_text())\nassert plan[\"candidate\"]==config[\"candidate\"] and plan[\"tag\"]==config[\"tag\"]\nassert Path(settings.GAME_DIR).resolve()==Path(plan[\"source\"]).resolve()\nwith connection.cursor() as cursor:\n    cursor.execute(\"SELECT current_schema()\")\n    assert cursor.fetchone()[0]==config[\"schema\"]\nassert resolve_dex_entry(POKEDEX,\"Lunala\")\nassert \"moongeistbeam\" in get_valid_moves(\"Lunala\",50)\ncenter=ObjectDB.objects.get(db_key=\"Item Repair QA Center\",db_tags__db_key=plan[\"tag\"])\nassert not ObjectDB.objects.filter(db_location=center,db_key=\"lunala trail\").exists()\nbefore=list(OwnedPokemon.objects.order_by(\"pk\").values())\nwith transaction.atomic():\n    room=create_object(\"typeclasses.rooms.Room\",key=\"Item Repair Lunala Trail\")\n    room.db.allow_hunting=True\n    room.db.npc_chance,room.db.encounter_rate=0,100\n    room.db.noitem,room.db.tp_cost=True,0\n    room.db.hunt_chart=[{\"name\":\"Lunala\",\"min_level\":50,\"max_level\":50,\"weight\":1}]\n    entrance=create_object(\"typeclasses.exits.Exit\",key=\"lunala trail\",location=center,destination=room)\n    returning=create_object(\"typeclasses.exits.Exit\",key=\"center\",location=room,destination=center)\n    for obj in (room,entrance,returning):obj.tags.add(plan[\"tag\"])\nassert list(OwnedPokemon.objects.order_by(\"pk\").values())==before\n(RELEASE/\"staff-moon-source.json\").write_text(json.dumps({\"candidate\":plan[\"candidate\"],\"tag\":plan[\"tag\"],\"objects\":[o.pk for o in (room,entrance,returning)],\"native_species\":\"Lunala\",\"level\":50,\"ownership_unchanged\":True,\"pokemon_grants\":0,\"permanent\":False},indent=2)+\"\\n\")\nprint(\"ITEM_REPAIR_QA_MOON_SOURCE_READY\",room.pk,\"zero Pokemon grants\")\n\n"
+    },
+    "prerequisites.py": {
+      "sha256_lf": "8d11b43ce493a13523d48d8dbe8152db54cf575d23fa8cb81d3b532ae0c6390a",
+      "source": "\"\"\"Explicit tagged HP/PP prerequisites; never apply item or battle effects.\"\"\"\nimport json\nfrom pathlib import Path\nfrom django.conf import settings\nfrom django.db import connection\nfrom evennia.objects.models import ObjectDB\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.models.moves import ActiveMoveslot\nfrom pokemon.models.necrozma import NecrozmaCombination\nfrom pokemon.services.ownership import assert_character_free, locked_owners\n\nART=Path(r\"H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-release-860-20261025\")\nRELEASE=ART/\"released\"\nplan=json.loads((RELEASE/\"plan.json\").read_text())\nconfig=json.loads((RELEASE/\"runtime-private.json\").read_text())\nauthority=json.loads((RELEASE/\"operator-approval.json\").read_text())\nassert config[\"candidate\"]==plan[\"candidate\"]==authority[\"candidate\"]\nassert config[\"tag\"]==plan[\"tag\"]==authority[\"tag\"]\nassert authority[\"existing_local_dev_authorization\"] is True\nassert Path(settings.GAME_DIR).resolve()==Path(plan[\"source\"]).resolve()\nwith connection.cursor() as cursor:\n    cursor.execute(\"SELECT current_schema()\")\n    assert cursor.fetchone()[0]==config[\"schema\"]\nassert QA_ACTION in {\"deplete-pp\",\"faint\"}\nnames=[r[\"name\"] for r in json.loads((RELEASE/\"player-private.json\").read_text()).values()]\nassert QA_PLAYER in names\nowner=ObjectDB.objects.get(db_key=QA_PLAYER,db_typeclass_path=\"pokemon.user.User\",db_tags__db_key=plan[\"tag\"])\nassert not owner.account.is_superuser and set(owner.permissions.all())=={\"player\"}\nwith locked_owners((owner.pk,)) as (characters,storages,trainers):\n    assert_character_free(characters[owner.pk])\n    mon=OwnedPokemon.objects.select_for_update().get(pk=QA_POKEMON,trainer=trainers[owner.pk])\n    assert not NecrozmaCombination.objects.filter(companion_id=mon.pk).exists()\n    before=OwnedPokemon.objects.filter(pk=mon.pk).values().get()\n    pp_before=list(ActiveMoveslot.objects.filter(pokemon_id=mon.pk).values())\n    if QA_ACTION==\"deplete-pp\":\n        assert type(QA_SLOT) is int and 1<=QA_SLOT<=4\n        slot=ActiveMoveslot.objects.get(pokemon_id=mon.pk,slot=QA_SLOT)\n        assert slot.move_id\n        ActiveMoveslot.objects.filter(pk=slot.pk).update(current_pp=0)\n    else:\n        assert mon.current_hp>0\n        OwnedPokemon.objects.filter(pk=mon.pk).update(current_hp=0)\n    after=OwnedPokemon.objects.filter(pk=mon.pk).values().get()\n    pp_after=list(ActiveMoveslot.objects.filter(pokemon_id=mon.pk).values())\nrecord={\"kind\":\"labelled staff prerequisite; not earned damage/PP or item effect\",\n        \"action\":QA_ACTION,\"player\":QA_PLAYER,\"pokemon\":str(mon.pk),\n        \"before\":before,\"after\":after,\"pp_before\":pp_before,\"pp_after\":pp_after,\"source_grants\":0}\npath=RELEASE/\"staff-field-prerequisites.json\"\nrows=json.loads(path.read_text()) if path.exists() else []\nrows.append(record)\npath.write_text(json.dumps(rows,indent=2,default=str)+\"\\n\",encoding=\"utf-8\")\nprint(\"ITEM_REPAIR_LABELLED_PREREQUISITE\",QA_PLAYER,QA_ACTION,str(mon.pk))\n\n"
+    },
+    "runtime.py": {
+      "sha256_lf": "120a57c39a4a3ef2901a8f35b63e642ca86745d33c82cb7761f3d72134b22a3a",
+      "source": "\"\"\"In-process observation only: current source attribution and ordinary battle state.\"\"\"\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport re\nimport sys\nfrom django.conf import settings\nfrom django.db import connection\nfrom evennia.objects.models import ObjectDB\n\nART=Path(r\"H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-release-860-20261025\")\nRELEASE=ART/\"released\"\nconfig=json.loads((RELEASE/\"runtime-private.json\").read_text())\nplan=json.loads((RELEASE/\"plan.json\").read_text())\nassert config[\"candidate\"]==plan[\"candidate\"] and config[\"tag\"]==plan[\"tag\"]\nassert re.fullmatch(\"[a-z0-9-]+\",QA_LABEL)\nSOURCE=Path(plan[\"source\"]).resolve()\nassert Path(settings.GAME_DIR).resolve()==SOURCE\nwith connection.cursor() as cursor:\n    cursor.execute(\"SELECT current_schema()\")\n    assert cursor.fetchone()[0]==config[\"schema\"]\nmanifest=json.loads((RELEASE/\"source-manifest.json\").read_text())\nmodules={}\nfor name in (\"pokemon.battle.engine\",\"pokemon.battle.logic\",\"pokemon.dex.functions.items_funcs\",\n             \"pokemon.dex.functions.abilities_funcs\",\"pokemon.dex.functions.moves.damage_moves\",\n             \"pokemon.battle.z_generic_pairs\"):\n    module=sys.modules.get(name)\n    if module is None:\n        modules[name]={\"loaded\":False}\n        continue\n    path=Path(module.__file__).resolve()\n    assert path.is_relative_to(SOURCE)\n    relative=str(path.relative_to(SOURCE)).replace(\"\\\\\",\"/\")\n    digest=hashlib.sha256(path.read_text(encoding=\"utf-8\").encode()).hexdigest()\n    assert digest==manifest[relative]\n    modules[name]={\"loaded\":True,\"path\":relative,\"sha256_lf\":digest}\nnames=[row[\"name\"] for row in json.loads((RELEASE/\"player-private.json\").read_text()).values()]\nplayers=list(ObjectDB.objects.filter(db_key__in=names,db_typeclass_path=\"pokemon.user.User\").order_by(\"pk\"))\nbattles={}\nfor player in players:\n    session=player.ndb.battle_instance\n    if session is None or session.battle is None:\n        continue\n    battle=session.battle\n    battles[str(session.battle_id)]={\"turn\":battle.turn_count,\"z_used\":list(getattr(battle,\"z_used\",set())),\n        \"mega_used\":list(getattr(battle,\"mega_used\",set())),\"z_pending\":getattr(battle,\"z_pending\",{}),\n        \"declarations\":dict(session.state.declare),\"callback_failure_count\":len(getattr(battle,\"_callback_failures\",[])),\n        \"participants\":[{\"controller\":getattr(part.player,\"key\",None),\"team\":getattr(part,\"team\",None),\n                         \"active\":[str(mon.model_id) for mon in part.active],\n                         \"pokemon\":[{\"id\":str(mon.model_id),\"name\":mon.name,\"species\":str(mon.species),\n                                     \"base_species\":str(mon.base_species),\"hp\":mon.hp,\"max_hp\":mon.max_hp,\n                                     \"status\":mon.status,\"toxic_counter\":mon.toxic_counter,\"boosts\":dict(mon.boosts),\n                                     \"held_item\":str(getattr(mon.item,\"name\",mon.item) or \"\"),\n                                     \"ability\":str(getattr(mon.ability,\"name\",mon.ability) or \"\"),\n                                     \"volatiles\":dict(mon.volatiles),\"tempvals\":dict(mon.tempvals),\n                                     \"moves\":[{\"name\":getattr(m,\"name\",str(m)),\"cached_pp\":getattr(m,\"pp\",None)} for m in mon.moves],\n                                     \"active_pp\":[{\"slot\":s.slot,\"name\":s.move.name,\"current_pp\":s.current_pp} for s in (mon.activemoveslot_set.all() if hasattr(mon,\"activemoveslot_set\") else [])],\n                                     \"native_origin\":dict(getattr(mon,\"native_origin\",None) or {})}\n                                    for mon in part.pokemons]} for part in battle.participants]}\nresult={\"label\":QA_LABEL,\"candidate\":config[\"candidate\"],\"pid\":os.getpid(),\"game_dir\":str(SOURCE),\n        \"module_source_attribution\":modules,\"battles\":battles,\"read_only_observation\":True}\npath=RELEASE/(\"runtime-\"+QA_LABEL+\".json\")\nassert not path.exists()\npath.write_text(json.dumps(result,indent=2,default=str)+\"\\n\",encoding=\"utf-8\")\nprint(\"ITEM_REPAIR_RUNTIME_OBSERVED\",QA_LABEL,\"battles\",len(battles),\"source\",config[\"candidate\"])\n\n"
+    },
+    "observer.py": {
+      "sha256_lf": "d9777218e50e179e6b810ca62e91e13eb253fdc497f7162f94e03b72087b97a0",
+      "source": "\"\"\"Read only this released fixture's ordinary-player SQL state and source identities.\"\"\"\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport re\nimport sys\n\nART=Path(__file__).resolve().parent\nRELEASE=ART/\"released\"\nSOURCE=RELEASE/\"source\"\nlabel=sys.argv[1]\nassert re.fullmatch(\"[a-z0-9-]+\",label)\nconfig=json.loads((RELEASE/\"runtime-private.json\").read_text())\nplan=json.loads((RELEASE/\"plan.json\").read_text())\nassert config[\"candidate\"]==plan[\"candidate\"] and config[\"tag\"]==plan[\"tag\"]\nsys.path.insert(0,str(SOURCE))\nos.environ[\"DJANGO_SETTINGS_MODULE\"]=\"server.conf.qa_item_repair_settings\"\nimport django\ndjango.setup()\nimport evennia\nevennia._init()\nfrom django.conf import settings\nfrom django.db import connection,transaction\nfrom evennia.objects.models import ObjectDB\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.models.moves import ActiveMoveslot, Moveset, MovesetSlot, PokemonLearnedMove, MovePPBoost, Move\nfrom pokemon.models.necrozma import NecrozmaCombination, NecrozmaResource, NecrozmaOperation\nfrom pokemon.models.storage import PokemonPlacement, ActivePokemonSlot\nfrom pokemon.models.trainer import Trainer\n\nassert Path(settings.GAME_DIR).resolve()==SOURCE.resolve()\nnames=[row[\"name\"] for row in json.loads((RELEASE/\"player-private.json\").read_text()).values()]\nwith transaction.atomic():\n    with connection.cursor() as cursor:\n        cursor.execute(\"SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY\")\n        cursor.execute(\"SHOW transaction_read_only\")\n        assert cursor.fetchone()[0]==\"on\"\n        cursor.execute(\"SELECT current_schema()\")\n        assert cursor.fetchone()[0]==config[\"schema\"]\n    players=list(ObjectDB.objects.filter(db_key__in=names,db_typeclass_path=\"pokemon.user.User\").order_by(\"pk\"))\n    assert len(players)==2\n    ids=[p.pk for p in players]\n    pokemon=list(OwnedPokemon.objects.filter(trainer__user_id__in=ids).order_by(\"pk\").values())\n    pids=[row[\"unique_id\"] for row in pokemon]\n    sentinel=ObjectDB.objects.get(db_tags__db_key=config[\"tag\"]+\"-protected\")\n    shops=[obj for obj in ObjectDB.objects.filter(db_tags__db_key=config[\"tag\"]) if obj.attributes.get(\"is_item_shop\") is True]\n    result={\"label\":label,\"candidate\":config[\"candidate\"],\"schema\":config[\"schema\"],\"transaction_read_only\":True,\n       \"players\":[{\"id\":p.pk,\"name\":p.key,\"permissions\":list(p.permissions.all()),\n                   \"account_permissions\":list(p.account.permissions.all()),\"superuser\":p.account.is_superuser,\n                   \"location_id\":p.db_location_id,\"location_name\":p.location.key if p.location else None,\n                   \"battle_id\":p.db.battle_id,\"battle_lock\":p.db.battle_lock,\"in_battle\":p.db.in_battle} for p in players],\n       \"pokemon\":pokemon,\"active_moves\":list(ActiveMoveslot.objects.filter(pokemon_id__in=pids).order_by(\"pokemon_id\",\"slot\").values()),\n       \"movesets\":list(Moveset.objects.filter(pokemon_id__in=pids).values()),\n       \"saved_moves\":list(MovesetSlot.objects.filter(moveset__pokemon_id__in=pids).values()),\n       \"learned_moves\":list(PokemonLearnedMove.objects.filter(pokemon_id__in=pids).values()),\n       \"move_definitions\":list(Move.objects.filter(pokemonlearnedmove__pokemon_id__in=pids).distinct().values()),\n       \"boosts\":list(MovePPBoost.objects.filter(pokemon_id__in=pids).values()),\n       \"placements\":list(PokemonPlacement.objects.filter(pokemon_id__in=pids).order_by(\"pokemon_id\").values()),\n       \"party_mirrors\":list(ActivePokemonSlot.objects.filter(pokemon_id__in=pids).values()),\n       \"pairs\":list(NecrozmaCombination.objects.all().values()),\"resources\":list(NecrozmaResource.objects.all().values()),\n       \"operations\":list(NecrozmaOperation.objects.all().values()),\n       \"wallets\":list(Trainer.objects.filter(user_id__in=ids).values(\"user_id\",\"money\")),\n       \"inventory\":{p.key:[{\"item\":row.item_name,\"quantity\":row.quantity} for row in p.trainer.list_inventory()] for p in players},\n       \"shops\":[{\"id\":obj.pk,\"name\":obj.key,\"stock\":obj.db.store_inventory,\"buy_only\":obj.db.store_buy_only} for obj in shops],\n       \"sentinel\":{\"id\":sentinel.pk,\"key\":sentinel.key,\"typeclass\":sentinel.db_typeclass_path,\n                   \"description\":sentinel.db.desc,\"location\":sentinel.db_location_id,\"tags\":list(sentinel.tags.all())}}\npath=RELEASE/(\"sql-\"+label+\".json\")\nassert not path.exists()\npath.write_text(json.dumps(result,indent=2,default=str)+\"\\n\",encoding=\"utf-8\")\nprint(json.dumps({\"label\":label,\"candidate\":config[\"candidate\"],\"owned\":len(pokemon),\n                  \"active_pairs\":len(result[\"pairs\"]),\"ordinary_permissions\":all(not p[\"superuser\"] and set(p[\"permissions\"])=={\"player\"} for p in result[\"players\"])}))\n\n"
+    },
+    "operator.py": {
+      "sha256_lf": "2349aabb841f428c3ea21a4820226a54474d49f3d4fbbd6c7e25888749ea3ffb",
+      "source": "\"\"\"Send only the published separate operator controls into this disposable game.\"\"\"\nimport json\nfrom pathlib import Path\nimport re\nimport subprocess\nimport sys\nART=Path(__file__).resolve().parent\nRELEASE=ART/\"released\"\nmode=sys.argv[1]\nif mode==\"world\":\n    pre=\"\"\n    path=ART/\"world.py\"\nelif mode==\"moon-source\":\n    pre=\"\"\n    path=ART/\"moon_source.py\"\nelif mode==\"runtime\":\n    label=sys.argv[2]\n    assert re.fullmatch(\"[a-z0-9-]+\",label)\n    pre=\"QA_LABEL=\"+repr(label)+\"; \"\n    path=ART/\"runtime.py\"\nelif mode==\"prerequisite\":\n    player,key,action=sys.argv[2:5]\n    config=json.loads((RELEASE/\"player-private.json\").read_text())\n    assert player in config\n    assert re.fullmatch(\"[0-9a-f-]{36}\",key)\n    assert action in {\"faint\",\"deplete-pp\"}\n    pre=\"QA_PLAYER=\"+repr(config[player][\"name\"])+\"; QA_POKEMON=\"+repr(key)+\"; QA_ACTION=\"+repr(action)+\"; \"\n    if action==\"deplete-pp\":pre+=\"QA_SLOT=\"+str(int(sys.argv[5]))+\"; \"\n    path=ART/\"prerequisites.py\"\nelse:raise SystemExit(\"world/runtime/prerequisite only\")\ncommand=\"@py exec(compile(\"+repr(pre)+\"+open(\"+repr(str(path))+\", encoding='utf-8').read(), \"+repr(str(path))+\", 'exec'), globals())\"\nsys.stdout.reconfigure(encoding=\"utf-8\",errors=\"replace\")\nresult=subprocess.run([sys.executable,\"-B\",str(RELEASE/\"staff_transport.py\"),\"command\",command],capture_output=True,text=True,encoding=\"utf-8\")\n(ART/(mode+\"-\"+(sys.argv[2] if len(sys.argv)>2 else \"setup\")+\"-transport.log\")).write_text(result.stdout+result.stderr,encoding=\"utf-8\")\nprint(result.stdout[-3500:])\nassert result.returncode==0\nmarker={\"world\":\"ITEM_REPAIR_QA_WORLD_READY\",\"moon-source\":\"ITEM_REPAIR_QA_MOON_SOURCE_READY\",\"runtime\":\"ITEM_REPAIR_RUNTIME_OBSERVED\",\"prerequisite\":\"ITEM_REPAIR_LABELLED_PREREQUISITE\"}[mode]\nassert marker in result.stdout,result.stdout[-3000:]\n\n"
+    },
+    "play.py": {
+      "sha256_lf": "4594c7596348523e1956f84f6fc240a6d5bca1cd2727de8f2868695b09c243fb",
+      "source": "\"\"\"Submit a named ordinary input batch; retain all redacted socket evidence.\"\"\"\nimport json\nfrom pathlib import Path\nimport sys\nimport time\nfrom uuid import uuid4\nsys.stdout.reconfigure(encoding=\"utf-8\",errors=\"replace\")\nART=Path(__file__).resolve().parent\nRELEASE=ART/\"released\"\nlabel=sys.argv[1]\nsteps=json.loads((ART/(label+\".json\")).read_text(encoding=\"utf-8\"))\nassert not (RELEASE/\"socket-job.json\").exists()\njob={\"id\":str(uuid4()),\"steps\":steps}\n(RELEASE/\"socket-job.json\").write_text(json.dumps(job),encoding=\"utf-8\")\ndeadline=time.monotonic()+120\nwhile time.monotonic()<deadline:\n    try:\n        result=json.loads((RELEASE/\"socket-result.json\").read_text())\n        if result[\"id\"]==job[\"id\"]:break\n    except (FileNotFoundError,json.JSONDecodeError):pass\n    time.sleep(.1)\nelse:raise RuntimeError(\"Retain timed-out batch\")\n(ART/(label+\"-result.json\")).write_text(json.dumps(result,indent=2)+\"\\n\",encoding=\"utf-8\")\nassert not result.get(\"error\"),result.get(\"error\")\nassert len(result[\"results\"])==len(steps)\nchecks=[]\nfor step,row in zip(steps,result[\"results\"]):\n    out=row[\"output\"]\n    passed=all(s in out for s in step.get(\"contains\",[])) and all(s not in out for s in step.get(\"excludes\",[]))\n    checks.append({\"player\":row[\"player\"],\"command\":row[\"command\"],\"passed\":passed,\"contains\":step.get(\"contains\",[]),\"excludes\":step.get(\"excludes\",[])})\n    lines=[s for s in out.splitlines() if s and not s.startswith((\"\u2554\",\"\u255a\",\"==\"))]\n    size=step.get(\"display\",600)\n    shown=\"\\n\".join(lines)\n    if len(shown)>size:shown=shown[:size//2]+\"\\n...\\n\"+shown[-size//2:]\n    print(row[\"player\"],row[\"command\"],\"PASS\" if passed else \"FAIL\")\n    print(shown)\n(ART/(label+\"-checks.json\")).write_text(json.dumps(checks,indent=2)+\"\\n\")\nassert all(row[\"passed\"] for row in checks),\"Preserved failed input expectations; diagnose before effects\"\n\n"
+    },
+    "burnt_walk.py": {
+      "sha256_lf": "17548cceb6431536a6a908aacebac776753914899759aa4ed1b8997ef684f3b5",
+      "source": "\"\"\"Use only ordinary attacks/healing until a naturally rolled freeze consumes Burnt.\"\"\"\nimport json,os\nfrom pathlib import Path\nimport subprocess\nimport sys\nART=Path(__file__).resolve().parent\nRELEASE=ART/\"released\"\nSOURCE=RELEASE/\"source\"\nsys.path.insert(0,str(SOURCE))\nos.environ[\"DJANGO_SETTINGS_MODULE\"]=\"server.conf.qa_item_repair_settings\"\nimport django\ndjango.setup()\nfrom django.db import connection,transaction\nfrom pokemon.models.core import OwnedPokemon\nfrom pokemon.models.moves import ActiveMoveslot\nconfig=json.loads((RELEASE/\"runtime-private.json\").read_text())\nplan=json.loads((RELEASE/\"plan.json\").read_text())\nassert config[\"candidate\"]==plan[\"candidate\"] and config[\"tag\"]==plan[\"tag\"]\ndef state():\n    with transaction.atomic():\n        with connection.cursor() as cursor:\n            cursor.execute(\"SET TRANSACTION READ ONLY\")\n            cursor.execute(\"SELECT current_schema()\")\n            assert cursor.fetchone()[0]==config[\"schema\"]\n        holder=OwnedPokemon.objects.filter(pk=\"4c6a0e87-e7e8-4f2a-8793-abc3eb1c5e75\",trainer_id=2).values(\"held_item\",\"status\",\"current_hp\").get()\n        pp=ActiveMoveslot.objects.filter(pokemon_id=\"76923b28-e998-4c46-aded-10161db3007a\",slot=1).values_list(\"current_pp\",flat=True).get()\n        return {\"holder\":holder,\"source_pp\":pp}\ndef run(label,steps):\n    path=ART/(label+\".json\")\n    assert not path.exists()\n    for step in steps:step.setdefault(\"display\",140)\n    path.write_text(json.dumps(steps,indent=2)+\"\\n\")\n    result=subprocess.run([sys.executable,\"-B\",str(ART/\"play.py\"),label],capture_output=True,text=True,encoding=\"utf-8\")\n    assert result.returncode==0,result.stdout[-2000:]+result.stderr\n    return json.loads((ART/(label+\"-result.json\")).read_text())\nrecord=[]\nbefore=state()\nassert before[\"holder\"][\"held_item\"]==\"Burnt Berry\" and not before[\"holder\"][\"status\"] and before[\"source_pp\"]==8\nfor attempt in range(1,81):\n    current=state()\n    assert current[\"holder\"][\"current_hp\"]>0\n    if current[\"source_pp\"]==0:\n        commands=[(\"Dusk\",\"+concede yes\"),(\"Dusk\",\"center\"),(\"Dawn\",\"center\"),(\"Dusk\",\"+heal\"),(\"Dawn\",\"+heal\"),\n                  (\"Dusk\",\"arena\"),(\"Dawn\",\"arena\"),(\"Dusk\",\"+pvp/create\"),(\"Dawn\",\"+pvp/join ItemRepairDusk48368f\"),(\"Dusk\",\"+pvp/start\")]\n        run(\"burnt-maintenance-\"+str(attempt),[{\"player\":p,\"command\":c} for p,c in commands])\n        current=state()\n        assert current[\"source_pp\"]==8 and current[\"holder\"][\"held_item\"]==\"Burnt Berry\"\n    result=run(\"burnt-turn-\"+str(attempt),[\n        {\"player\":\"Dusk\",\"command\":\"+attack Amnesia\",\"contains\":[\"prepares\"],\"wait\":.5},\n        {\"player\":\"Dawn\",\"command\":\"+attack Blizzard A1\",\"contains\":[\"prepares\"],\"wait\":1.0}])\n    after=state()\n    assert after[\"source_pp\"]==current[\"source_pp\"]-1\n    row={\"attempt\":attempt,\"before\":current,\"after\":after,\"missed\":any(\"but it missed\" in r[\"output\"] for r in result[\"results\"]),\n         \"frozen_text\":any(\"frozen\" in r[\"output\"].lower() for r in result[\"results\"]),\"cure_text\":any(\"thaw\" in r[\"output\"].lower() for r in result[\"results\"])}\n    record.append(row)\n    (ART/\"burnt-natural-freeze.json\").write_text(json.dumps({\"kind\":\"ordinary attacks and Center healing only; no forced RNG, status or effect call\",\"attempts\":record},indent=2)+\"\\n\")\n    print(json.dumps(row),flush=True)\n    if not after[\"holder\"][\"held_item\"]:\n        assert not after[\"holder\"][\"status\"] and row[\"frozen_text\"] and row[\"cure_text\"]\n        print(\"BURNT_NATURAL_FREEZE_AND_CURE_PASSED\",attempt,flush=True)\n        break\n    assert after[\"holder\"][\"held_item\"]==\"Burnt Berry\"\nelse:raise AssertionError(\"Natural freeze not observed in bounded80 attempts; retain and report\")\n\n"
+    },
+    "qualify_burnt.py": {
+      "sha256_lf": "2dba3a5752ba50ac26882ab2c9398ca02bcdd8519255c144dfdd38e5ebd660a7",
+      "source": "\"\"\"Qualify retained natural-freeze evidence with the game's actual defrost wording.\"\"\"\nimport json\nfrom pathlib import Path\nART=Path(__file__).resolve().parent\ndata=json.loads((ART/\"burnt-natural-freeze.json\").read_text())\nrows=data[\"attempts\"]\nassert len(rows)==28\nmisses=0\nfor row in rows:\n    out=json.loads((ART/(\"burnt-turn-\"+str(row[\"attempt\"])+\"-result.json\")).read_text())[\"results\"][-1][\"output\"]\n    fresh=out.split(\"B1 (Frost) prepares Blizzard\")[-1]\n    row[\"source_missed\"]=\"but it missed\" in fresh\n    row[\"source_frozen\"]=\"was frozen solid\" in fresh\n    row[\"source_defrosted\"]=\"Burntberry defrosted it\" in fresh\n    misses+=int(row[\"source_missed\"])\n    assert row[\"before\"][\"source_pp\"]-row[\"after\"][\"source_pp\"]==1\n    assert row[\"before\"][\"holder\"][\"held_item\"]==\"Burnt Berry\"\n    assert not row[\"after\"][\"holder\"][\"status\"]\n    if row[\"attempt\"]<28:assert row[\"after\"][\"holder\"][\"held_item\"]==\"Burnt Berry\" and not row[\"source_frozen\"]\nlast=rows[-1]\nassert last[\"source_frozen\"] and last[\"source_defrosted\"] and not last[\"after\"][\"holder\"][\"held_item\"]\ndata[\"qualification\"]={\"passed\":True,\"attempts\":28,\"misses\":misses,\"hits\":28-misses,\"center_maintenance_cycles\":3,\n                       \"runner_correction\":\"Initial matcher expected thaw; actual player text says defrosted. Original mismatch and evidence retained.\",\n                       \"backlog_note\":\"Initial any-client miss flags could include prior-turn output; qualified flags use only the fresh source declaration output.\",\n                       \"pp_debit_once_each\":True,\"rng_or_effect_forcing\":False}\n(ART/\"burnt-natural-freeze-qualified.json\").write_text(json.dumps(data,indent=2)+\"\\n\")\nprint(json.dumps(data[\"qualification\"]))\n\n"
+    },
+    "qualify_effects.py": {
+      "sha256_lf": "fcb3b6f511ff28dade74998733556d444973f6a54fe93d9aa8501b39b417eb1a",
+      "source": "\"\"\"Qualify actual released player effects and conservation from retained independent receipts.\"\"\"\nimport ast,hashlib,json,re\nfrom pathlib import Path\nART=Path(__file__).resolve().parent\nRELEASE=ART/\"released\"\nchecks=[]\ndef load(name):return json.loads((ART/name).read_text(encoding=\"utf-8\"))\ndef sql(label):return load(\"released/sql-\"+label+\".json\")\ndef rt(label):return load(\"released/runtime-\"+label+\".json\")\ndef expect(label,condition,observed=None):\n    checks.append({\"check\":label,\"passed\":bool(condition),\"observed\":observed})\n    if not condition:raise AssertionError(label+\": \"+str(observed))\ndef row(data,nick):return next(r for r in data[\"pokemon\"] if r[\"nickname\"]==nick)\ndef battle(label):return next(iter(rt(label)[\"battles\"].values()))\ndef mon(label,name):return next(m for p in battle(label)[\"participants\"] for m in p[\"pokemon\"] if m[\"name\"]==name)\ndef pp(m,slot):return next(r[\"current_pp\"] for r in m[\"active_pp\"] if r[\"slot\"]==slot)\ndef qty(data,player,item):\n    return sum(r[\"quantity\"] for r in data[\"inventory\"][player] if normalize(r[\"item\"])==normalize(item))\ndef normalize(s):return \"\".join(c.lower() for c in s if c.isalnum())\nsetup,final=sql(\"setup\"),sql(\"final\")\nexpect(\"two ordinary onboarding sources,20 final owned native/starter/captured rows\",len(setup[\"pokemon\"])==2 and len(final[\"pokemon\"])==20)\nexpect(\"only controlled trainers own the final fixtures\",{r[\"trainer_id\"] for r in final[\"pokemon\"]}=={2,3})\nexpect(\"both ordinary Player permissions and no remaining battle locks\",all(not p[\"superuser\"] and set(p[\"permissions\"])==set(p[\"account_permissions\"])=={\"player\"} and not p[\"battle_id\"] and not p[\"battle_lock\"] and not p[\"in_battle\"] for p in final[\"players\"]))\nexpect(\"protected nonparticipant sentinel unchanged\",setup[\"sentinel\"]==final[\"sentinel\"])\nexpect(\"native pairs separated and source PP preserved\",len(final[\"pairs\"])==0 and len(final[\"resources\"])==2 and all(r[\"current_pp\"]==4 for r in final[\"resources\"]),final[\"resources\"])\nbaseline=sql(\"regression-ready\")\nfor nick in (\"Sun\",\"Moon\"):\n    before,after=row(baseline,nick),row(final,nick)\n    expect(nick+\" companion owned row stayed frozen\",before==after)\n    key=before[\"unique_id\"]\n    for field in (\"active_moves\",\"learned_moves\",\"saved_moves\",\"boosts\"):\n        # MovesetSlot rows refer to a set instead of the Pokemon.\n        if field==\"saved_moves\":\n            ids={r[\"id\"] for r in baseline[\"movesets\"] if r[\"pokemon_id\"]==key}\n            prior=[r for r in baseline[field] if r[\"moveset_id\"] in ids]\n            later=[r for r in final[field] if r[\"moveset_id\"] in ids]\n        else:\n            prior=[r for r in baseline[field] if r[\"pokemon_id\"]==key]\n            later=[r for r in final[field] if r[\"pokemon_id\"]==key]\n        expect(nick+\" companion \"+field+\" unchanged\",prior==later)\nexpect(\"both host species restored on their original IDs\",row(final,\"Prism\")[\"species\"]==row(final,\"MoonPrism\")[\"species\"]==\"Necrozma\")\nexpect(\"earned paired-host damage retained\",row(final,\"Prism\")[\"current_hp\"]==101)\nexpect(\"ordinary Light Ball actual damage24 control vs45 native\",mon(\"lightball-control-observed\",\"Rogue\")[\"hp\"]==78 and mon(\"lightball-native-after\",\"Rogue\")[\"hp\"]==57)\nexpect(\"native Light Ball held and source PP spent once\",normalize(mon(\"lightball-native-after\",\"Sparky\")[\"held_item\"])==\"lightball\" and pp(mon(\"lightball-native-after\",\"Sparky\"),1)==28)\ncrit=load(\"leek-critical-interpretation.json\")\nexpect(\"recorded81 damage exceeds calculated noncritical maximum61\",crit[\"observed_live_damage\"]==81 and crit[\"noncritical_damage_range\"][1]==61 and crit[\"above_noncritical_maximum\"])\nexpect(\"Dialga native Crystal actual64 damage vs52 control\",mon(\"dialga-control-after\",\"Toxin\")[\"hp\"]==61 and mon(\"dialga-native-after\",\"Toxin\")[\"hp\"]==77)\nexpect(\"native Dialga form and real ability preserved\",mon(\"dialga-native-after\",\"Dialga-Origin\")[\"species\"]==\"Dialga-Origin\" and normalize(mon(\"dialga-native-after\",\"Dialga-Origin\")[\"ability\"])==\"pressure\")\nexpect(\"nickname foreign Plate theft really transfers item\",mon(\"plate-foreign-complete\",\"Arceus\")[\"species\"]==\"Mew\" and not mon(\"plate-foreign-complete\",\"Arceus\")[\"held_item\"] and normalize(mon(\"plate-foreign-complete\",\"Rogue\")[\"held_item\"])==\"flameplate\")\nexpect(\"native renamed Arceus retains Plate against real Thief\",normalize(mon(\"plate-native-after\",\"Arceus-Fire\")[\"held_item\"])==\"flameplate\" and not mon(\"plate-native-after\",\"Rogue\")[\"held_item\"])\nexpect(\"invalid target refused before the same valid Thief action\",battle(\"plate-foreign-after\")[\"turn\"]==1 and mon(\"plate-foreign-after\",\"Arceus\")[\"hp\"]==336 and normalize(mon(\"plate-foreign-after\",\"Arceus\")[\"held_item\"])==\"flameplate\")\nfor label in (\"pecha-hit-after\",\"psn-cure-after\",\"burnt-cured\"):\n    holder=mon(label,\"Arceus\")\n    expect(label+\" actual healthy empty held state\",not holder[\"status\"] and not holder[\"held_item\"])\nexpect(\"missed Toxic did not eat Pecha\",normalize(mon(\"pecha-after\",\"Arceus\")[\"held_item\"])==\"pechaberry\")\nnatural=load(\"burnt-natural-freeze-qualified.json\")\nexpect(\"natural freeze evidence qualified without RNG/effect forcing\",natural[\"qualification\"][\"passed\"] and natural[\"qualification\"][\"attempts\"]==28 and natural[\"qualification\"][\"hits\"]==18)\nmedicine=sql(\"medicine-complete\")\ndusk,dawn=\"ItemRepairDusk48368f\",\"ItemRepairDawn48368f\"\nexpect(\"field labelledHP0 actually revived/healed to188/336\",row(medicine,\"Arceus\")[\"current_hp\"]==188)\nexpect(\"field selected PP bonus12/cap32 and two useful Ether, capped no-debit\",qty(medicine,dusk,\"Ether\")==10 and any(b[\"bonus_pp\"]==12 for b in medicine[\"boosts\"] if b[\"pokemon_id\"]==row(medicine,\"Arceus\")[\"unique_id\"]),medicine[\"boosts\"])\nfor label,form,name,slot,team in ((\"dusk\",\"Necrozma-Dusk-Mane\",\"Prism\",2,\"A\"),(\"dawn\",\"Necrozma-Dawn-Wings\",\"MoonPrism\",2,\"B\")):\n    zero=battle(label+\"-zero-pp\")\n    expect(label+\" zero-PP refuses before declaration/budget\",not zero[\"z_used\"] and not any(zero[\"declarations\"].values()) and pp(mon(label+\"-zero-pp\",name),slot)==0)\n    expect(label+\" manual Ether restores5 with Z still unused\",not battle(label+\"-manual-pp\")[\"z_used\"] and pp(mon(label+\"-manual-pp\",name),slot)==5)\n    active=\"dusk-z-after-recovery\" if label==\"dusk\" else \"dawn-native-z\"\n    expect(label+\" signature pays source once and spends correct side\",battle(active)[\"z_used\"]==[team] and pp(mon(active,name),slot)==4 and mon(active,name)[\"species\"]==form)\nexpect(\"Rare Candy and Fire Stone preserve identity and truthful message\",row(final,\"Seed\")[\"species\"]==\"Flareon\" and row(final,\"Seed\")[\"level\"]==6 and row(final,\"Seed\")[\"total_exp\"]==216)\nexpect(\"Mega real form, ability, damage and side budget\",mon(\"mega-active\",\"Sprout\")[\"species\"]==\"Venusaur-Mega\" and normalize(mon(\"mega-active\",\"Sprout\")[\"ability\"])==\"thickfat\" and mon(\"mega-active\",\"Mirror\")[\"hp\"]==295 and battle(\"mega-active\")[\"mega_used\"]==[\"A\"])\nexpect(\"Mega owned form cleaned up\",row(final,\"Sprout\")[\"species\"]==\"Venusaur\" and not row(final,\"Sprout\")[\"held_item\"])\nfor label,name,hp in ((\"firium-active\",\"Blaze\",244),(\"waterium-active\",\"Brook\",292)):\n    expect(label+\" actual damage, source14/15, reusable crystal, one side\",mon(label,\"Mirror\")[\"hp\"]==hp and pp(mon(label,name),1)==14 and bool(mon(label,name)[\"held_item\"]) and battle(label)[\"z_used\"]==[\"A\"])\nexpect(\"Leftovers real first-turn net20 after1damage+21 recovery\",row(sql(\"leftovers-active\"),\"Arceus\")[\"current_hp\"]==186 and normalize(mon(\"leftovers-observed\",\"Arceus\")[\"held_item\"])==\"leftovers\")\nexpect(\"Smoke Ball/Leftovers returned reusable and no held leaks\",qty(final,dusk,\"Smoke Ball\")==qty(final,dusk,\"Leftovers\")==1 and all(not r[\"held_item\"] for r in final[\"pokemon\"]))\n# Exact positive purchase receipts must explain every wallet and finite stock delta.\nhistory=load(\"released/socket-history.json\")\npurchases=[]\nfor index,entry in enumerate(history):\n    for count,item,price in re.findall(r\"You purchase (\\d+) x (.+?) for \\$(\\d+)\\.\",entry[\"output\"]):\n        purchases.append({\"player\":entry[\"player\"],\"item\":item,\"quantity\":int(count),\"cost\":int(price),\"transcript_index\":index})\nwallets={r[\"user_id\"]:r[\"money\"] for r in final[\"wallets\"]}\nfor player,uid in ((dusk,3),(dawn,4)):\n    spent=sum(p[\"cost\"] for p in purchases if p[\"player\"]==player)\n    expect(player+\" wallet exactly matches ordinary purchases\",wallets[uid]==500000-spent,{\"spent\":spent,\"wallet\":wallets[uid]})\ninitial=ast.literal_eval(setup[\"shops\"][0][\"stock\"])\nlast=ast.literal_eval(final[\"shops\"][0][\"stock\"])\nconsumed={\"masterball\":18,\"potion\":11,\"revive\":3,\"ether\":4,\"ppup\":2,\"ppmax\":2,\"rarecandy\":1,\"firestone\":1,\"pechaberry\":1,\"psncureberry\":1,\"burntberry\":1}\nfor item,offer in initial.items():\n    count=sum(p[\"quantity\"] for p in purchases if normalize(p[\"item\"])==normalize(item))\n    expect(item+\" finite stock conserved\",offer[\"quantity\"]-last[item][\"quantity\"]==count)\n    total=sum(qty(final,player,item) for player in (dusk,dawn))\n    expect(item+\" copies conserved across consumed/theft/held cleanup\",count==total+consumed.get(normalize(item),0),{\"purchased\":count,\"final_bags\":total,\"consumed\":consumed.get(normalize(item),0)})\nruntime=[json.loads(p.read_text()) for p in RELEASE.glob(\"runtime-*.json\") if p.name!=\"runtime-private.json\"]\nexpect(\"all live callback observations clean\",all(b[\"callback_failure_count\"]==0 for r in runtime for b in r[\"battles\"].values()))\nexpect(\"one observed process and exact released candidate\",len({r[\"pid\"] for r in runtime})==1 and {r[\"candidate\"] for r in runtime}=={\"ddc56bfaf32261e47551ad893e0592fca3e86311\"})\nmanifest=load(\"released/source-manifest.json\")\nexpect(\"all1135 released Python hashes still match qualification\",len(manifest)==1135 and all(hashlib.sha256((RELEASE/\"source\"/p).read_text(encoding=\"utf-8\").encode()).hexdigest()==digest for p,digest in manifest.items()))\nresult={\"candidate\":\"ddc56bfaf32261e47551ad893e0592fca3e86311\",\"checks\":checks,\"check_count\":len(checks),\"passed\":True,\n        \"purchases\":purchases,\"ordinary_commands\":len(history),\"runtime_observations\":len(runtime),\n        \"runtime_pid\":runtime[0][\"pid\"],\"owned_fixture_rows\":20,\"natural_freeze\":natural[\"qualification\"],\n        \"limit\":\"Retained transcript/effect evidence qualification, not a new full test suite or every-item live proof.\"}\n(ART/\"qualified-live-effects.json\").write_text(json.dumps(result,indent=2)+\"\\n\",encoding=\"utf-8\")\nprint(json.dumps({k:result[k] for k in (\"passed\",\"check_count\",\"ordinary_commands\",\"runtime_observations\",\"owned_fixture_rows\")}))\n\n"
+    }
+  },
+  "artifact_digests": {
+    "socket-history.json": "42bbbbe7b03b96643c40864c08bbfd6d93490947778d627305888718a4be55b1",
+    "source-manifest.json": "9f63a266f2554f72acd6e7c3825ee149015fdb3396506e3c2e774e583abd9c05",
+    "runtime-burnt-cured.json": "bb43aef3e69805034cea43035dd7c6440da8f38d2959b6aa62732cbe0b42a2e8",
+    "runtime-dawn-manual-pp.json": "7d74bc0dcf82a4acf087f49f84b59803b9f3bb9d38d33e63bb9680e51da5a591",
+    "runtime-dawn-native-z.json": "161cd6800e561428497ca5c07d8dd682805ebd3287bed00d1eca524ba8afa80c",
+    "runtime-dawn-zero-pp.json": "b2c4917a37b360ccb9514674b890d684039537cb9d371cad7be3d21bc09a38e4",
+    "runtime-dialga-control-after.json": "377447117aeded0aa6ad9cb023caf4a8e78d27c3cd113bb626ab32e880348605",
+    "runtime-dialga-native-after.json": "65ea11c452ca445ed37d59261e7aa4548a5a30c70169dfdefafd5d6176eece3e",
+    "runtime-dusk-manual-pp.json": "c4abaad190b6a065ab31af48c6c8da0f82962fb49e04dc0f20f70a2c0ce247b0",
+    "runtime-dusk-native-z.json": "62235fccaa92aa4a0dcc9df915a6b783a934c3485b1ff1c95fff85efb0cf32f7",
+    "runtime-dusk-z-after-recovery.json": "18166f5ce721ad5fd67ca04f6e7bfa65ebe83eb9fad7986adaa0bda89a0fab66",
+    "runtime-dusk-zero-pp.json": "f1f3e2ce468f0a0ab4ed32d4cf772dbf947eebbce44a4595930a9f131b98d398",
+    "runtime-final.json": "ca8f5212a622338caa3c3fd0e7637d98e4f5723c6e57b505673243cd5d0bc3d1",
+    "runtime-firium-active.json": "2771865b28273cd4f71fd94d1dcb33e83cdd5e8c028faae7b38be6b33d0ab210",
+    "runtime-leek-critical-observed.json": "20d99b461398732eeb5c4bb3c3316ff444aaf93ff0dfefb1fdccab62c9369834",
+    "runtime-leek-native-after.json": "c58ae6a0a829fe492f5dbdb447e5ffacfe049497752cc6aa609fdea3faf3070f",
+    "runtime-leftovers-observed.json": "546f9410644396987e96ee1115bd574b50e8ca787cfdd7d101039196e72bf275",
+    "runtime-lightball-control-observed.json": "624720c0ead17c7b621d3135c2f29aa53896de05a6b5ed056fc5f9cd7c411d9f",
+    "runtime-lightball-native-after.json": "bfdb4276348d7ebc49471977fe646d651083949229966fe44bef56776122f3f8",
+    "runtime-mega-active.json": "9c6adc6189abb327cefdbd7546c5b73fb5ecf03052221c5e2943022026232964",
+    "runtime-pecha-after.json": "e4248ed58ac1b901bacdd7f088b11725ba222061a093502cb106cfbd7b9e28db",
+    "runtime-pecha-hit-after.json": "752b96e6eaf77fe8a2fac5c501c451e29764a48c68391bfcbe10fd7ec842f663",
+    "runtime-plate-foreign-after.json": "199fcac236fccac3d3ee2e573650b8faac16f01f978d841280c0526b7e9e6fec",
+    "runtime-plate-foreign-complete.json": "58f194cc9090ca326c0367184973e269efdeadea92a6c25430d239651b28aa0e",
+    "runtime-plate-native-after.json": "c61fa5729be95ad83a47c683d06a6b018d22b88a5f6d0966e25e75041696b9e4",
+    "runtime-psn-cure-after.json": "a3153e485221623e1d2acb730ff38bdde6e23dbe57f0157df1d1dfc6da36a129",
+    "runtime-source-baseline.json": "539bbb190d91352dc1c154512d6a6dd7da63ffc33e635ae7fa19b90ebac24422",
+    "runtime-waterium-active.json": "1437d82978dd7538b5c3d97f4b332e79b213ea88e57d4e9cd6c4adb8e2bbea52",
+    "sql-setup.json": "00a7ae60412d0e325dc2a26034dbbd55366b17daf8bc1904e77f294754470deb",
+    "sql-final.json": "79fdf0d00cd2a31325e9443bb275a0c7afdff918f0221d656264709bf8273923",
+    "burnt-natural-freeze-qualified.json": "a6c9e0b2be0b9c7c904969fd09fb834670a13718f577b52dd11f15cb817c6004"
+  },
+  "final_protected_sentinel": {
+    "id": 74,
+    "key": "Item Repair Protected Sentinel",
+    "typeclass": "typeclasses.rooms.Room",
+    "description": "Protected nonparticipant row; no player route.",
+    "location": null,
+    "tags": [
+      "item-repair-release-8a66c307ea8c4b99b77457a21e48368f-protected"
+    ]
+  },
+  "final_players": [
+    {
+      "id": 3,
+      "name": "ItemRepairDusk48368f",
+      "permissions": [
+        "player"
+      ],
+      "account_permissions": [
+        "player"
+      ],
+      "superuser": false,
+      "location_id": 5,
+      "location_name": "Item Repair QA Center",
+      "battle_id": null,
+      "battle_lock": null,
+      "in_battle": null
+    },
+    {
+      "id": 4,
+      "name": "ItemRepairDawn48368f",
+      "permissions": [
+        "player"
+      ],
+      "account_permissions": [
+        "player"
+      ],
+      "superuser": false,
+      "location_id": 5,
+      "location_name": "Item Repair QA Center",
+      "battle_id": null,
+      "battle_lock": null,
+      "in_battle": null
+    }
+  ],
+  "final_owned_sources": [
+    {
+      "species": "Dialga",
+      "nickname": "Clock",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Farfetch\u2019d",
+      "nickname": "Feathers",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Mew",
+      "nickname": "Arceus",
+      "level": 100,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Pikachu",
+      "nickname": "Sparky",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Poochyena",
+      "nickname": "Rogue",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Squirtle",
+      "nickname": "",
+      "level": 5,
+      "obtained_method": "starter"
+    },
+    {
+      "species": "Spheal",
+      "nickname": "Frost",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Venusaur",
+      "nickname": "Sprout",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Necrozma",
+      "nickname": "MoonPrism",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Squirtle",
+      "nickname": "",
+      "level": 5,
+      "obtained_method": "starter"
+    },
+    {
+      "species": "Arceus",
+      "nickname": "Star",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Charizard",
+      "nickname": "Blaze",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Lunala",
+      "nickname": "Moon",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Necrozma",
+      "nickname": "Prism",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Solgaleo",
+      "nickname": "Sun",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Flareon",
+      "nickname": "Seed",
+      "level": 6,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Mew",
+      "nickname": "Mirror",
+      "level": 100,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Jigglypuff",
+      "nickname": "Pikachu",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Clodsire",
+      "nickname": "Toxin",
+      "level": 50,
+      "obtained_method": "caught"
+    },
+    {
+      "species": "Slowpoke",
+      "nickname": "Brook",
+      "level": 50,
+      "obtained_method": "caught"
+    }
+  ]
+}

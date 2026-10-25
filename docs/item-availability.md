@@ -83,7 +83,7 @@ The old Itemfinder message-only result has been replaced by an explicitly
 configured [Potion finder](hunt-item-sources.md). The same guide specifies one
 opt-in Rattata/Oran Berry wild source; default charts grant no held item.
 The [six-item Supply Corner](item-supply-route.md) is an optional, duplicate-safe
-authored source with finite stock. The released QA walkthrough verifies only
+authored source with finite stock. The October 22 released QA walkthrough verifies only
 the nine named items at its deliberately authored sources, which were cleaned up.
 Finder/wild-held sources and permanent world population require their own checks.
 
@@ -107,3 +107,13 @@ The 576-definition battle matrix and earlier dated reports remain historical.
 The [two-source Z receipt](testing/z-existing-sources-2026-10-25.md) records
 the later Flamethrower/Surf expansion; the first reconciliation index and its
 dated world snapshot remain unchanged.
+
+The [October 25 deliberately released local walkthrough](testing/item-repair-released-player-2026-10-25.md)
+qualifies the repaired candidate through 716 ordinary commands and 102 independent
+effect/conservation checks. It replays named native bonuses, nickname theft,
+all three repaired held berries, medicine/PP/evolution, Mega, both new generic Z
+sources and both native Necrozma signatures, including zero-PP refusals.
+The report separates its bounded representatives from the complete per-item
+automated matrices. Both Player accounts, tagged stock and base-source charts
+were disposable; the instance/schema were removed. This creates no permanent
+public supply and leaves #862's installation and source walkthrough separate.
