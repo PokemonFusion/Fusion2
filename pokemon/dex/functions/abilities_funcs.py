@@ -3297,16 +3297,25 @@ class Symbiosis:
 
 
 class Synchronize:
-        def onAfterSetStatus(self, status, target=None, source=None, effect=None):
-                if target and source and target is getattr(self, "effect_state", {}).get("target") and source is not target:
-                        if status not in {0, None} and hasattr(source, "setStatus"):
-                                battle = getattr(target, "battle", None)
-                                source.setStatus(
-                                        status,
-                                        source=target,
-                                        battle=battle,
-                                        effect="ability:synchronize",
-                                )
+    def onAfterSetStatus(self, status, target=None, source=None, effect=None):
+        """Reflect a qualifying major status once into a healthy source."""
+        from pokemon.battle.effect_context import EffectContext
+
+        if (target is None or source is None or source is target
+                or target is not getattr(self, "effect_state", {}).get("target")):
+            return
+        status_key = EffectContext.key(status)
+        effect_key = EffectContext.key(
+            getattr(effect, "id", None) or getattr(effect, "name", None) or effect
+        )
+        if status_key not in {"psn", "tox", "brn", "par"} or effect_key in {
+            "toxicspikes", "movetoxicspikes", "synchronize", "abilitysynchronize",
+        }:
+            return
+        setter = getattr(source, "trySetStatus", None)
+        if callable(setter):
+            setter(status_key, source=target, battle=getattr(target, "battle", None),
+                   effect="ability:synchronize")
 
 
 class Tabletsofruin:
