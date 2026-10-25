@@ -120,15 +120,9 @@ def expire_adventure_session(session: Any) -> None:
 	try:
 		from pokemon.adventures.sessions import expire_session
 
-		expire_session(session)
+		return expire_session(session)
 	except Exception:
-		try:
-			session.state = "expired"
-			save = getattr(session, "save", None)
-			if callable(save):
-				save()
-		except Exception:
-			pass
+		return False
 
 
 def _normalize_now(now: datetime | None) -> datetime:
@@ -159,8 +153,21 @@ def _session_active(session: Any, now: datetime) -> bool:
 		return False
 	if _is_expired(session, now):
 		expire_adventure_session(session)
-		return False
+		return getattr(session, "state", None) == ACTIVE_ADVENTURE_STATE
 	return True
+
+
+def _protected_adventure_battle_ids(objects: list[Any]) -> set[int]:
+	"""Retain durable Adventure battle IDs during registry loss."""
+	from pokemon.adventures.sessions import inspect_adventure_battle
+	protected: set[int] = set()
+	for obj in objects:
+		session = resolve_adventure_session(_get_db(obj, ADVENTURE_SESSION_ATTR))
+		if session is not None:
+			gate = inspect_adventure_battle(getattr(session, "leader", None), session)
+			if gate.blocked:
+				protected.update(gate.battle_ids)
+	return protected
 
 
 def _cleanup_battle_refs(obj: Any, active_battle_ids: set[int], counts: dict[str, int]) -> None:
@@ -294,6 +301,7 @@ def cleanup_stale_state(
 		if active_battle_ids is not None
 		else _active_battle_ids_from_handler()
 	)
+	active_ids |= _protected_adventure_battle_ids(resolved_objects)
 	current_time = _normalize_now(now)
 	counts = {
 		"battle_id": 0,
