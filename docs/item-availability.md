@@ -141,3 +141,10 @@ The later [physical](testing/z-six-physical-sources-2026-10-25.md) and
 explicit registry to 62 mappings on 34 crystals. Their source-only index
 keeps world availability unknown; the dated permanent six-item Supply
 Corner acceptance remains separate. No new crystal/source is stocked by these changes.
+
+The later [seven finite counter recipes](finite-item-supply.md) author 36
+specific status/recovery/PP/stone/training/ability/held offers and test their
+ordinary routes. Their [source index](testing/item-availability-finite-sources-index-2026-10-25.json)
+records authored stock separately from unknown world access. They are not
+installed in PF2-Dev by code publication. The original permanent six-item
+counter and its dated acceptance remain separate; all new recipes are no-refill.

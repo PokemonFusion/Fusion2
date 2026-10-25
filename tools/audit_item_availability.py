@@ -160,6 +160,7 @@ class ItemAvailabilityAudit:
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
         from pokemon.services.item_supply import ItemSupplyRoute
+        from pokemon.services.finite_item_supply import FINITE_SUPPLY_ROUTES
         from pokemon.services.berry_snack import BerrySnack
 
         matrix = json.loads((ROOT / MATRIX).read_text(encoding="utf-8"))
@@ -179,6 +180,8 @@ class ItemAvailabilityAudit:
             path = ROOT / "world" / filename
             recipe = json.loads(path.read_text(encoding="utf-8"))
             recipes.append(("world/" + filename, recipe))
+        for route in FINITE_SUPPLY_ROUTES.values():
+            recipes.append(("pokemon/services/finite_item_supply.py", route.recipe()))
         required = {normalize_name(required_item(species)) for species in POKEDEX.values() if required_item(species)}
         required.update({"blackaugurite", "peatblock", "scrollofdarkness", "scrollofwaters"})
         supply = {normalize_name(offer["item"]): offer for offer in ItemSupplyRoute.recipe()["offers"]}

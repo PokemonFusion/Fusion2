@@ -13,6 +13,16 @@ class ItemSupplyRoute:
     names = {"Potion", "Oran Berry", "Fresh Water", "Fire Stone", "Leftovers", "Smoke Ball"}
 
     @classmethod
+    def description(cls, data):
+        """Keep the original six-item sign distinct from later bounded counters."""
+        return ("A sign lists six non-plot supplies: Potion, Oran Berry, Fresh Water, "
+                "Fire Stone, Leftovers and Smoke Ball. Use +store to buy finite stock. "
+                "Use +inventory and +itemdex <item>; +use feeds medicine/berries/food, "
+                "+evolve <full-id> Fire Stone evolves an eligible Pokemon, and +hold "
+                "equips reusable items. Smoke Ball uses +flee in an eligible wild battle. "
+                "The back exit returns to the hub. There is no automatic refill or resale.")
+
+    @classmethod
     def recipe(cls):
         """Validate the exact six-offer authored slice before any world write."""
         from pokemon.middleware import get_item_by_name
@@ -75,12 +85,7 @@ class ItemSupplyRoute:
                 raise ValueError("A supply route or conflicting entrance already exists.")
             room = create_object("typeclasses.rooms.FusionRoom", key=data["room"], nohome=True)
             room.tags.add(cls.key, category="item_supply")
-            room.db.desc = ("A sign lists six non-plot supplies: Potion, Oran Berry, Fresh Water, "
-                            "Fire Stone, Leftovers and Smoke Ball. Use +store to buy finite stock. "
-                            "Use +inventory and +itemdex <item>; +use feeds medicine/berries/food, "
-                            "+evolve <full-id> Fire Stone evolves an eligible Pokemon, and +hold "
-                            "equips reusable items. Smoke Ball uses +flee in an eligible wild battle. "
-                            "The back exit returns to the hub. There is no automatic refill or resale.")
+            room.db.desc = cls.description(data)
             room.db.is_item_shop, room.db.store_buy_only = True, True
             room.db.allow_hunting, room.db.noitem = False, True
             room.db.store_inventory = {offer["item"]: {"price": offer["price"], "quantity": offer["quantity"]}

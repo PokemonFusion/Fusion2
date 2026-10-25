@@ -43,7 +43,7 @@ See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
 battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
-The [current October25 index](testing/item-availability-physical-status-z-index-2026-10-25.json)
+The [current October25 index](testing/item-availability-finite-sources-index-2026-10-25.json)
 and [report](testing/item-availability-2026-10-25.md) reconcile explicit accepted
 registries, six item-repair receipts and unverified world sources.
 See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
@@ -61,6 +61,12 @@ walkthrough; it requires explicit approval before execution.
 The approved [permanent Supply Corner acceptance](testing/item-source-released-player-2026-10-25.md)
 records the later PF2-Dev release, ordinary hub travel, six purchases/effects,
 retry/reconnect, finite remaining stock and complete tagged QA teardown.
+See [explicit operator replenishment](item-replenishment.md) for the separate
+rolling-24-hour opt-in API and [disposable checks](testing/item-replenishment-2026-10-25.md).
+This adds no startup refill and leaves the original Supply Corner finite.
+The [seven additional finite recipes](finite-item-supply.md) cover status,
+stronger medicine, PP, stones, vitamins, capacity/ability and held staples.
+Their [automated checks](testing/finite-item-sources-2026-10-25.md) do not install public stock.
 See the [Mega Stone player guide](mega-evolution.md),
 [activation contract](design/mega-evolution.md) and
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,

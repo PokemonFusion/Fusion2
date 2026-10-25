@@ -52,6 +52,10 @@ permits two refills minutes apart. No refill debt, carryover, startup refill,
 price change, player resale or unlimited stock. The first six
 source stays excluded until its own reviewed version explicitly opts in.
 Release/rollback and actual economy authorization remain separate from design.
+The [explicit operator API](../item-replenishment.md) now implements this
+separate opt-in contract. Its [disposable checks](../testing/item-replenishment-2026-10-25.md)
+do not install or opt in any existing source. The original six-item counter and
+the seven proposed counters below remain excluded by default.
 The renewable finder and garden routes also require their own real elapsed
 time, cooldown, current-cycle and final-credit acceptance, never timer grants.
 
@@ -71,6 +75,11 @@ travel→discovery→funds/stock→purchase→inventory→use/equip/evolve→rec
 | Training | HP Up10000×2; Protein10000×2; Iron10000×2; Calcium10000×2; Zinc10000×2; Carbos10000×2 | Existing EV caps/shared field checks; no stat assignment grants |
 | PP capacity/ability | PP Up9800×2; PP Max15000×1; Ability Capsule20000×1; Ability Patch30000×1 | Existing selected-move/native-ability checks; no-effect no debit |
 | Held staples | Sitrus Berry200×10; Lum Berry600×5; Focus Sash5000×2; Choice Band5000×1; Choice Specs5000×1; Choice Scarf5000×1 | Actual held consumption/recovery/survival/lock/stat effects |
+
+The [seven finite source recipes](../finite-item-supply.md) now have
+[disposable command/SQL checks](../testing/finite-item-sources-2026-10-25.md).
+Their authoring does not install counters, opt them into refill, or complete
+the separate permanent-source release/player acceptance requirement.
 
 The operator-refill foundation, seven finite source batches, and renewable
 Potion finder/Rattata-Oran acceptance become explicit implementation issues.
