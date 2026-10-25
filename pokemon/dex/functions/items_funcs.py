@@ -96,11 +96,12 @@ class Adamantcrystal:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Dialga"):
-			return False
-		if source and source.name.startswith("Dialga"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Dialga."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Dialga", family=True)
+			or HeldItemIdentity.matches(source, "Dialga", family=True)
+		)
 
 
 class Adamantorb:
@@ -381,11 +382,9 @@ class Blueorb:
 				pokemon.queue_primal()
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name == "Kyogre":
-			return False
-		if source and source.name == "Kyogre":
-			return False
-		return True
+		"""Protect only a native Kyogre holder, in base or Primal form."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not HeldItemIdentity.matches(pokemon, "Kyogre", family=True)
 
 
 class Boosterenergy:
@@ -1180,11 +1179,12 @@ class Griseouscore:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Giratina"):
-			return False
-		if source and source.name.startswith("Giratina"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Giratina."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Giratina", family=True)
+			or HeldItemIdentity.matches(source, "Giratina", family=True)
+		)
 
 
 class Griseousorb:
@@ -1601,11 +1601,12 @@ class Lustrousglobe:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Palkia"):
-			return False
-		if source and source.name.startswith("Palkia"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Palkia."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Palkia", family=True)
+			or HeldItemIdentity.matches(source, "Palkia", family=True)
+		)
 
 
 class Lustrousorb:
@@ -2908,11 +2909,9 @@ class Redorb:
 				pokemon.queue_primal()
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name == "Groudon":
-			return False
-		if source and source.name == "Groudon":
-			return False
-		return True
+		"""Protect only a native Groudon holder, in base or Primal form."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not HeldItemIdentity.matches(pokemon, "Groudon", family=True)
 
 
 class Rindoberry:
@@ -3006,20 +3005,22 @@ class Rowapberry:
 
 class Rustedshield:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Zamazenta"):
-			return False
-		if source and source.name.startswith("Zamazenta"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Zamazenta."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Zamazenta", family=True)
+			or HeldItemIdentity.matches(source, "Zamazenta", family=True)
+		)
 
 
 class Rustedsword:
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Zacian"):
-			return False
-		if source and source.name.startswith("Zacian"):
-			return False
-		return True
+		"""Protect this item when its holder or source is natively Zacian."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Zacian", family=True)
+			or HeldItemIdentity.matches(source, "Zacian", family=True)
+		)
 
 
 class Sablenite:

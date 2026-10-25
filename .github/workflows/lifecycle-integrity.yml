@@ -190,6 +190,8 @@ jobs:
         run: python tests/integration/plate_theft_cases.py
       - name: Memory and Drive native theft protection and ordinary typed-move persistence
         run: python tests/integration/memory_drive_theft_cases.py
+      - name: Origin, Primal and Rusted item native removal roles and player persistence
+        run: python tests/integration/origin_primal_rusted_theft_cases.py
       - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
         run: python tests/integration/item_availability_cases.py
       - name: Bounded current stat and type item command replays

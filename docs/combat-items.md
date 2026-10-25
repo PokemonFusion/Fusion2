@@ -164,4 +164,19 @@ path. Existing Memory/Multi-Attack and Drive/Techno Blast behavior is preserved;
 this repair adds no move, form or acquisition route. The [#856 report](testing/memory-drive-theft-2026-10-25.md)
 records the exact items, ordinary nickname/equip/attack/checkpoint results and
 the offline source-role controls for native species that cannot learn theft or
-swap moves. Other special item families remain separate work in #857.
+swap moves.
+
+## Origin, Primal and Rusted removal protection
+
+Adamant Crystal, Griseous Core and Lustrous Globe protect removal when either
+participant is natively Dialga, Giratina or Palkia respectively. Rusted Sword
+and Rusted Shield likewise check either native Zacian or Zamazenta participant.
+Blue Orb and Red Orb check only their native Kyogre or Groudon holder; a native
+source alone cannot protect a foreign holder's Orb. All seven recognize their
+known base and special forms, independently of nicknames and abilities.
+
+Form entry retains its separate native/current/untransformed guards. Physical
+removal protection survives item suppression; generic boosts remain suppressed.
+The [#857 report](testing/origin-primal-rusted-theft-2026-10-25.md) records exact
+rules, legitimate form entry, ordinary commands, Pressure PP costs and durable
+inventory/ownership evidence. Mega Stone and CAP item removal remain separate.

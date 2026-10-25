@@ -195,8 +195,9 @@ class PlateTheftCases(unittest.TestCase):
         hp_before = holder.hp
         slot = next(s for s in self.owned[1].activemoveslot_set.all() if normalize_name(s.move.name) == normalize_name(move))
         pp_before = ActiveMoveslot.objects.get(pk=slot.pk).current_pp
+        pp_cost = getattr(self, "removal_pp_cost", 1)
         record = self.turn(self.idle, move, rebuild=facet.startswith("checkpoint"))
-        self.assertEqual(ActiveMoveslot.objects.get(pk=slot.pk).current_pp, pp_before - 1)
+        self.assertEqual(ActiveMoveslot.objects.get(pk=slot.pk).current_pp, pp_before - pp_cost)
         damage = hp_before - self.session.battle.participants[0].active[0].hp
         if move in {"Thief", "Knock Off"}:
             self.assertGreater(damage, 0)
@@ -223,6 +224,7 @@ class PlateTheftCases(unittest.TestCase):
         EVIDENCE.append({
             "label": "accepted-removal-outcome", "item": item, "facet": facet, "move": move,
             "protected": protected, "damage": damage, "pp_before": pp_before,
+            "pp_cost": pp_cost,
             "pp_after": ActiveMoveslot.objects.get(pk=slot.pk).current_pp,
             "held_after": expected, "queued_rebuilds": record["queued_rebuilds"],
             "post_turn_rebuilds": 2, "before_restore": before_restore,
