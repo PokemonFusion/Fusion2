@@ -148,3 +148,11 @@ ordinary routes. Their [source index](testing/item-availability-finite-sources-i
 records authored stock separately from unknown world access. They are not
 installed in PF2-Dev by code publication. The original permanent six-item
 counter and its dated acceptance remain separate; all new recipes are no-refill.
+
+The later [seven mochi](ev-mochi.md) reuse safe field training, and
+[Cheri/Pecha/Rawst/Aspear growing](berry-nursery.md) reuses the private nursery
+lifecycle. The [updated source index](testing/item-availability-field-training-seeds-index-2026-10-25.json)
+keeps459 world entries unknown, preserves the earlier452 definition fingerprints
+and names their optional finite recipes. Controlled-clock growing and captured
+command/SQL effects do not complete #893's four real elapsed hours or certify
+permanent public stock.

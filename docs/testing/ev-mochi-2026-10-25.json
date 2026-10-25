@@ -1,0 +1,1602 @@
+{
+  "schema_version": 1,
+  "baseline": "40987e269a8981db6e57e4f32b65aac5b82465b7",
+  "status": "qualified_local_automated",
+  "evidence_kind": "production commands/SQL/runtime with captured transport; disposable schemas",
+  "qualified_python_count": 1160,
+  "focused": {
+    "exit": 0,
+    "seconds": 12.18,
+    "passed": [
+      "147"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "5559c491ac68f2a484b80c51d116bdbf37e6e96fdcb1778bed212c74d0718c79"
+  },
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 1991.24,
+    "passed": [
+      "6400",
+      "6400",
+      "6400"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "22d2670b70204aa688ee9cc7a269cbf60670a3b6ca02851a16cac29313032342",
+    "source_count": 1594
+  },
+  "unrelated_shared_dirty_paths_preserved": 25,
+  "limits": [
+    "No shared deployment or new permanent stock",
+    "No socket login",
+    "No new model/migration",
+    "Existing human data/plot-only items excluded"
+  ],
+  "fixture": {
+    "scope": "previously authorized task-owned PostgreSQL; random disposable schemas",
+    "schemas_removed": true,
+    "stopped": true
+  },
+  "issues": [
+    905,
+    906
+  ],
+  "postgresql": [
+    {
+      "suite": "ev_mochi",
+      "exit": 0,
+      "seconds": 42.61,
+      "cases": [
+        "45"
+      ],
+      "sha256": "f53717b2dedbb8858ba4055b464f823af3a140a74808c4a731be80242f66fa75"
+    },
+    {
+      "suite": "field_training",
+      "exit": 0,
+      "seconds": 30.39,
+      "cases": [
+        "30"
+      ],
+      "sha256": "6a6155c9e44e1598f09aa98c0020123b886b510cee5c50be0a5d64b07cdb0a8b"
+    },
+    {
+      "suite": "mochi_necrozma",
+      "exit": 0,
+      "seconds": 117.07,
+      "cases": [
+        "29"
+      ],
+      "sha256": "3679e47582f695769e76d0e75419c283aa1b2087585f187d16aba4267cf36b8b"
+    },
+    {
+      "suite": "field_berry",
+      "exit": 0,
+      "seconds": 15.55,
+      "cases": [
+        "26"
+      ],
+      "sha256": "8c3597631b62f7304d42051a3f9a2e73ad47804607d5cf01b4a7b2575c9c9d06"
+    },
+    {
+      "suite": "hyper_training",
+      "exit": 0,
+      "seconds": 22.31,
+      "cases": [
+        "31"
+      ],
+      "sha256": "aaf20cd0f8e58a5895607948245b28a590f3fa8cca3645216a6d4810ee1a9c16"
+    }
+  ],
+  "python_sources": {
+    "pokemon/items.py": "8368a4ca4324a862a749762855256d2533ed8fa03ed3c9f0c04cef8fbfe77348",
+    "pokemon/services/field_training.py": "9eb3789fc1b041c7c8f9a721da02a33663bd93dbc2116fd6d847c0944761b06a",
+    "commands/player/cmd_inventory.py": "d35a1c4331719a8b263ea6a5b6020ebb543a023125fdbd6306adf77471e245e5",
+    "tests/test_ev_mochi.py": "fd100ab9cab49d7bfcb4722797759a77f17aca1a47c42c04bc94e88cb17fa23c",
+    "tests/integration/ev_mochi_cases.py": "36e37154231f846450b655fd95f610341bd7450d39b3c08193900b4e739be8a1",
+    "tests/integration/mochi_necrozma_cases.py": "584a9783badf05cd594aa6d7c49b8b6b28b75de6b7c6efe8ed603f75a292be04"
+  },
+  "paid_field_flows": [
+    {
+      "command": "+use Clever Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          0,
+          13,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "clevermochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Clever Mochi on 3."
+      ]
+    },
+    {
+      "command": "+use Genius Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          3,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          13,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "geniusmochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Genius Mochi on 3."
+      ]
+    },
+    {
+      "command": "+use Health Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          3,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          13,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 296,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "healthmochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Health Mochi on 3."
+      ]
+    },
+    {
+      "command": "+use Muscle Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          13,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "musclemochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Muscle Mochi on 3."
+      ]
+    },
+    {
+      "command": "+use Resist Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          13,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "resistmochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Resist Mochi on 3."
+      ]
+    },
+    {
+      "command": "+use Swift Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          3
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          13
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "swiftmochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Swift Mochi on 3."
+      ]
+    },
+    {
+      "command": "+use Fresh-Start Mochi=3",
+      "before": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          10
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 318,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "after": {
+        "species": "Mew",
+        "nature": "Hardy",
+        "evs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ivs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flags": [
+          "ordinary-field-training"
+        ],
+        "current_hp": 293,
+        "status": "psn",
+        "ability": "",
+        "held_item": "Leftovers",
+        "level": 100,
+        "total_exp": 1000000
+      },
+      "bag_before": [
+        {
+          "item_name": "freshstartmochi",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [],
+      "moves_unchanged": true,
+      "messages": [
+        "Used Fresh-Start Mochi on 3."
+      ]
+    }
+  ],
+  "native_flows": [
+    {
+      "case": "test_mochi_Lunala_Clever",
+      "command": "+use Clever Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        0,
+        10,
+        0
+      ],
+      "hp_before": 154,
+      "hp_after": 154,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Lunala_FreshStart",
+      "command": "+use Fresh-Start Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 162,
+      "hp_after": 161,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Lunala_Genius",
+      "command": "+use Genius Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      "hp_before": 159,
+      "hp_after": 159,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Lunala_Health",
+      "command": "+use Health Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 160,
+      "hp_after": 161,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Lunala_Muscle",
+      "command": "+use Muscle Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        10,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 156,
+      "hp_after": 156,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Lunala_Resist",
+      "command": "+use Resist Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        10,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 160,
+      "hp_after": 160,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Lunala_Swift",
+      "command": "+use Swift Mochi=3",
+      "host": "Necrozma-Dawn-Wings",
+      "companion": "Lunala",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10
+      ],
+      "hp_before": 160,
+      "hp_after": 160,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Moongeist Beam",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_Clever",
+      "command": "+use Clever Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        0,
+        10,
+        0
+      ],
+      "hp_before": 152,
+      "hp_after": 152,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_FreshStart",
+      "command": "+use Fresh-Start Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 161,
+      "hp_after": 160,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_Genius",
+      "command": "+use Genius Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      "hp_before": 152,
+      "hp_after": 152,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_Health",
+      "command": "+use Health Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 157,
+      "hp_after": 158,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_Muscle",
+      "command": "+use Muscle Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        10,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 164,
+      "hp_after": 164,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_Resist",
+      "command": "+use Resist Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        10,
+        0,
+        0,
+        0
+      ],
+      "hp_before": 157,
+      "hp_after": 157,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    },
+    {
+      "case": "test_mochi_Solgaleo_Swift",
+      "command": "+use Swift Mochi=3",
+      "host": "Necrozma-Dusk-Mane",
+      "companion": "Solgaleo",
+      "evs_before": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs_after": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10
+      ],
+      "hp_before": 159,
+      "hp_after": 159,
+      "companion_unchanged": true,
+      "native_pp_ledger_unchanged": true,
+      "ordinary_active_pp_before": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ],
+      "ordinary_active_pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Photongeyser",
+          "current_pp": 5
+        },
+        {
+          "slot": 2,
+          "move__name": "Sunsteel Strike",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Psychocut",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Gravity",
+          "current_pp": 5
+        }
+      ]
+    }
+  ],
+  "source": {
+    "recipe": "world/ev_mochi_counter.json",
+    "kind": "optional finite buy-only no-refill",
+    "installation": "not installed in shared game",
+    "counter_exit_purchase_use_retry_passed": true
+  },
+  "native_fixture": "Existing 0041/0058 integrity functions installed only in the already-authorized disposable schema",
+  "retained_diagnosis": "Current Fusion leaves canonical party slot3 empty; inspect +party fusion",
+  "previous_452_definitions_preserved": true,
+  "unknown_world_entries": 459
+}

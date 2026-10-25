@@ -43,7 +43,7 @@ See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
 battle food/berry allowlist, exclusions and action/rollback policy.
 See [item-availability.md](item-availability.md) for acquisition, ordinary item
 commands and the dated limits of authored stock and current-world evidence.
-The [current October25 index](testing/item-availability-finite-sources-index-2026-10-25.json)
+The [current October25 index](testing/item-availability-field-training-seeds-index-2026-10-25.json)
 and [report](testing/item-availability-2026-10-25.md) reconcile explicit accepted
 registries, six item-repair receipts and unverified world sources.
 See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
@@ -67,6 +67,9 @@ This adds no startup refill and leaves the original Supply Corner finite.
 The [seven additional finite recipes](finite-item-supply.md) cover status,
 stronger medicine, PP, stones, vitamins, capacity/ability and held staples.
 Their [automated checks](testing/finite-item-sources-2026-10-25.md) do not install public stock.
+The [EV mochi guide](ev-mochi.md) covers six supplements and Fresh-Start;
+the [nursery guide](berry-nursery.md) adds four selected status-berry seeds.
+Their command/SQL checks do not complete shared deployment or real elapsed growing.
 See the [Mega Stone player guide](mega-evolution.md),
 [activation contract](design/mega-evolution.md) and
 [per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,

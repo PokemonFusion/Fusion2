@@ -1,0 +1,1347 @@
+{
+  "schema_version": 1,
+  "baseline": "40987e269a8981db6e57e4f32b65aac5b82465b7",
+  "status": "qualified_local_automated",
+  "evidence_kind": "production commands/SQL/runtime with captured transport; disposable schemas",
+  "qualified_python_count": 1160,
+  "focused": {
+    "exit": 0,
+    "seconds": 12.18,
+    "passed": [
+      "147"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "5559c491ac68f2a484b80c51d116bdbf37e6e96fdcb1778bed212c74d0718c79"
+  },
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 1991.24,
+    "passed": [
+      "6400",
+      "6400",
+      "6400"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "22d2670b70204aa688ee9cc7a269cbf60670a3b6ca02851a16cac29313032342",
+    "source_count": 1594
+  },
+  "unrelated_shared_dirty_paths_preserved": 25,
+  "limits": [
+    "No shared deployment or new permanent stock",
+    "No socket login",
+    "No new model/migration",
+    "Existing human data/plot-only items excluded"
+  ],
+  "fixture": {
+    "scope": "previously authorized task-owned PostgreSQL; random disposable schemas",
+    "schemas_removed": true,
+    "stopped": true
+  },
+  "issues": [
+    892,
+    893
+  ],
+  "issue_893_status": "open_real_elapsed_release_required",
+  "postgresql": [
+    {
+      "suite": "nursery_seed",
+      "exit": 0,
+      "seconds": 44.04,
+      "cases": [
+        "84"
+      ],
+      "sha256": "48b0a1cb525994760d1a6269a2cf0fcf09b9f6e85b71a65f758ff7a5c1a9fa45"
+    },
+    {
+      "suite": "berry_growing",
+      "exit": 0,
+      "seconds": 23.7,
+      "cases": [
+        "44"
+      ],
+      "sha256": "a8cfc4014c771d6b87ceb27df0d8097edc9f114503530c9b81c864dc90462e2a"
+    }
+  ],
+  "python_sources": {
+    "pokemon/services/berry_growing.py": "5fe44e4c8de08175aac0dc8d2fdb5e6d8543680ffb733517fc667e485006b3a6",
+    "commands/player/cmd_berry.py": "82812e6efd19419471bc14cc97529e0afb4c26feb26419b27632a9e4ba47c4b0",
+    "pokemon/services/item_counter.py": "ec3c399c8e5405c80e76ee86cc1a3b10cd330a6b7b3cc53f14a5a85df7d8e714",
+    "tests/test_nursery_seed_batch.py": "b234f901c79a7bce655dcfda8f7d93ed06e851f38ec7b59037e8095a73baa8ec",
+    "tests/integration/nursery_seed_cases.py": "b663a834580b09566b1434926dfa60fd79db93dfa2163b57ec0b32007852fc86"
+  },
+  "accepted_seeds": [
+    "Oran Berry",
+    "Cheri Berry",
+    "Pecha Berry",
+    "Rawst Berry",
+    "Aspear Berry"
+  ],
+  "observed_harvests": [
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 1,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 10,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 11,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 12,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 13,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 14,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 2,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 3,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 4,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 5,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 6,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 7,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 8,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 9,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T20:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 20:00:00+00:00",
+      "bag_before": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        },
+        {
+          "item_name": "pechaberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 1,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 10,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 11,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 12,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 13,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 14,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 2,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 3,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 4,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 5,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 6,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 7,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 8,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 9,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Pecha Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T20:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 20:00:00+00:00",
+      "bag_before": [
+        {
+          "item_name": "pechaberry",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        },
+        {
+          "item_name": "pechaberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 1,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 10,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 11,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 12,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 13,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 14,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 2,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 3,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 4,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 5,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 6,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 7,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 8,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 9,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Rawst Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T20:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 20:00:00+00:00",
+      "bag_before": [
+        {
+          "item_name": "rawstberry",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        },
+        {
+          "item_name": "rawstberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 1,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 10,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 11,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 12,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 13,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 14,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 15,
+      "yield": 5,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 2,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 3,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 4,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 5,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 6,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 7,
+      "yield": 4,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 8,
+      "yield": 2,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 9,
+      "yield": 3,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Aspear Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T16:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 16:00:00+00:00",
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "berry": "Cheri Berry",
+      "command": "+berry harvest",
+      "controlled_server_utc": "2026-10-22T20:00:00+00:00",
+      "watered_mask": 0,
+      "yield": 1,
+      "ready_at": "2026-10-22 20:00:00+00:00",
+      "bag_before": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 1
+        }
+      ],
+      "bag_after": [
+        {
+          "item_name": "aspearberry",
+          "quantity": 1
+        },
+        {
+          "item_name": "cheriberry",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "harvested_cure_checks": {
+    "kind": "assertions confirmed by each passed SQL test; not separate raw post-cure snapshots",
+    "cases": 68,
+    "required": "one actual +use debit and saved status cleared",
+    "source": "tests/integration/nursery_seed_cases.py::masks/counter"
+  },
+  "controlled_clock_only": true,
+  "four_real_elapsed_hours_completed": false,
+  "counter_cache_diagnosis": {
+    "prior_source": "46bb6ed:pokemon/services/item_counter.py",
+    "prior_sha256_lf": "e5e22d3bf8d0b4250fedc8ae8f9f62049b3bb81a41954803b849ebda8b202ecf",
+    "old_rollback_sql_marker_absent": true,
+    "old_rollback_normal_handler_has_ghost": true,
+    "new_rollback_sql_and_handler_marker_absent": true,
+    "new_retry_single_source": true,
+    "scope": "one random disposable schema; no migrations"
+  },
+  "source": {
+    "recipe": "world/berry_seed_counter.json",
+    "kind": "optional finite buy-only no-refill",
+    "original_oran_razz_stock_preserved": true,
+    "installation": "not installed in shared game"
+  },
+  "previous_452_definitions_preserved": true,
+  "unknown_world_entries": 459
+}

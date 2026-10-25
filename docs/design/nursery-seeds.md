@@ -57,6 +57,10 @@ Oran identity), and `pokemon/services/item_counter.py::install` (current
 recipe markers/offers cannot drift or refill on retry). These are exact
 extension boundaries, not runtime acceptance of the four new seeds.
 Implementation follows the linked issues below.
+The [runtime seed delivery](../testing/nursery-seeds-2026-10-25.md) now has
+controlled-clock command/SQL evidence for all four names and the old Oran/Razz
+regressions. Optional source authoring is separate from #893's still-required
+four-real-hour released ordinary-player acceptance.
 
 
 ## Implementation follow-ups
