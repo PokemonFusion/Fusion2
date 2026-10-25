@@ -752,11 +752,12 @@ class Dracoplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Dragonfang:
@@ -788,11 +789,12 @@ class Dreadplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Earthplate:
@@ -802,11 +804,12 @@ class Earthplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Ejectbutton:
@@ -966,11 +969,12 @@ class Fistplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Flameorb:
@@ -993,11 +997,12 @@ class Flameplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Floatstone:
@@ -1297,11 +1302,12 @@ class Icicleplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Insectplate:
@@ -1311,11 +1317,12 @@ class Insectplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Ironball:
@@ -1335,11 +1342,12 @@ class Ironplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Jabocaberry:
@@ -1670,11 +1678,12 @@ class Meadowplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Medichamite:
@@ -1797,11 +1806,12 @@ class Mindplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Mintberry:
@@ -2020,11 +2030,12 @@ class Pixieplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Poisonbarb:
@@ -3158,11 +3169,12 @@ class Skyplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Slowbronite:
@@ -3212,11 +3224,12 @@ class Splashplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Spookyplate:
@@ -3226,11 +3239,12 @@ class Spookyplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Starfberry:
@@ -3297,11 +3311,12 @@ class Stoneplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Swampertite:
@@ -3352,11 +3367,12 @@ class Toxicplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Twistedspoon:
@@ -3530,11 +3546,12 @@ class Zapplate:
 		return base_power
 
 	def onTakeItem(self, item=None, pokemon=None, source=None):
-		if pokemon and pokemon.name.startswith("Arceus"):
-			return False
-		if source and source.name.startswith("Arceus"):
-			return False
-		return True
+		"""Protect a Plate only when its holder or source is natively Arceus."""
+		from pokemon.battle.item_identity import HeldItemIdentity
+		return not (
+			HeldItemIdentity.matches(pokemon, "Arceus", family=True)
+			or HeldItemIdentity.matches(source, "Arceus", family=True)
+		)
 
 
 class Zoomlens:

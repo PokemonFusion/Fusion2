@@ -132,3 +132,20 @@ Origin form-entry guards and suppression still apply separately. This repair
 adds no Mega/Z profile, acquisition source, form activation or removal rule.
 The [#854 report](testing/legendary-item-identity-2026-10-25.md) records the exact
 forms/types, ordinary nickname/equip/battle cases and local validation limits.
+
+## Native Plate removal protection
+
+The 17 existing Plates protect against removal when either the holder or the
+source is natively Arceus, including its canonical type forms. Nicknames and
+copied appearances cannot grant that protection; a native Arceus keeps it after
+renaming or Transform. This removal rule has no ability condition. Entering a
+Plate's Arceus form still separately requires the existing native Multitype
+checks. Every Plate retains its generic matching-type power boost for other
+species.
+
+Physical `TakeItem` checks still run under Magic Room, Embargo and Klutz;
+ordinary item power effects remain suppressed. Thief, Knock Off, Trick and
+Switcheroo share these removal checks. The [#855 report](testing/plate-theft-identity-2026-10-25.md)
+records the exact item list, ordinary nickname/equip/attack/reconnect/end routes,
+item conservation, rollback controls and local acceptance limits. Other item
+families' identity protections and plot-only content are outside this repair.

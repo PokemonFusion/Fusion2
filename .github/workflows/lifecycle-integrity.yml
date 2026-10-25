@@ -186,6 +186,8 @@ jobs:
         run: python tests/integration/native_stat_item_cases.py
       - name: Native legendary type boosters, forms and ordinary player persistence
         run: python tests/integration/legendary_item_cases.py
+      - name: Plate native theft protection, nickname controls and durable player transfers
+        run: python tests/integration/plate_theft_cases.py
       - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
         run: python tests/integration/item_availability_cases.py
       - name: Bounded current stat and type item command replays

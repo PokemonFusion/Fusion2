@@ -2104,12 +2104,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     holders.append((handler, state if isinstance(state, dict) else {}, self.field))
         return holders
 
-    def _event_scoped_holders(self, target=None, source=None, effect=None) -> List[tuple[Any, Optional[Dict[str, Any]], Any]]:
+    def _event_scoped_holders(
+        self, target=None, source=None, effect=None, *, include_suppressed_items=False,
+    ) -> List[tuple[Any, Optional[Dict[str, Any]], Any]]:
         """Return effect holders participating in a scoped event."""
 
         holders: List[tuple[Any, Optional[Dict[str, Any]], Any]] = []
         seen: set[tuple[Any, int, int, int]] = set()
         from .effect_context import EffectContext
+
+        # Physical removal rules still apply under Embargo, Klutz and Magic Room.
+        # Other event consumers continue to receive only effective held items.
+        item_for = self._holder_item if include_suppressed_items else EffectContext.item
 
         def add_holder(holder, state=None, owner=None) -> None:
             if holder is not None:
@@ -2131,7 +2137,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 add_holder(handler, getattr(target, "volatiles", {}).get(volatile_name), target)
             if not self._move_ignores_target_ability(source, target, effect):
                 add_holder(EffectContext.ability(target), getattr(target, "ability_state", None), target)
-            add_holder(EffectContext.item(target), getattr(target, "item_state", None), target)
+            add_holder(item_for(target), getattr(target, "item_state", None), target)
             target_participant = self.participant_for(target)
             target_side = getattr(target_participant, "side", getattr(target, "side", None))
             if target_side is not None:
@@ -2170,7 +2176,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
                     add_holder_with_relation(relation, handler, getattr(pokemon, "volatiles", {}).get(volatile_name), pokemon)
                 ability = EffectContext.ability(pokemon)
-                item = EffectContext.item(pokemon)
+                item = item_for(pokemon)
                 slot = self._active_slot_index(pokemon)
                 if side is not None:
                     for _, handler, state in self._slot_condition_handlers(side, slot):
@@ -2195,7 +2201,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     for _, handler, state in self._slot_condition_handlers(part.side, slot):
                         add_holder(handler, state, pokemon)
                     add_holder(EffectContext.ability(pokemon), getattr(pokemon, "ability_state", None), pokemon)
-                    add_holder(EffectContext.item(pokemon), getattr(pokemon, "item_state", None), pokemon)
+                    add_holder(item_for(pokemon), getattr(pokemon, "item_state", None), pokemon)
         return holders
 
     def singleEvent(
@@ -2262,7 +2268,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         elif eventid == "TryAddVolatile":
             relay_kw_name = "status"
             relay_positional = False
-        for holder, state, owner in self._event_scoped_holders(target=target, source=source, effect=effect):
+        for holder, state, owner in self._event_scoped_holders(
+            target=target, source=source, effect=effect,
+            include_suppressed_items=eventid == "TakeItem",
+        ):
             relation = None
             actual_holder = holder
             if isinstance(holder, tuple):
