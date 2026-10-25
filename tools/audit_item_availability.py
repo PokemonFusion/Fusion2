@@ -17,6 +17,51 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 MATRIX = "docs/testing/battle-item-support-2026-10-21.json"
 EXCLUDED = ("Capture-ball expansion", "TR/TM and incidental", "Collector/clutter")
+REPAIR_REPORTS = {
+    853: "native-stat-items-2026-10-25.json",
+    854: "legendary-item-identity-2026-10-25.json",
+    855: "plate-theft-identity-2026-10-25.json",
+    856: "memory-drive-theft-2026-10-25.json",
+    857: "origin-primal-rusted-theft-2026-10-25.json",
+    858: "held-status-berries-2026-10-25.json",
+}
+
+
+def current_registries():
+    """Read explicit accepted source allowlists, never all catalog metadata."""
+    from pokemon.battle.mega_pairs import MEGA_PAIRS
+    from pokemon.battle.z_profiles import ZProfiles
+    from pokemon.battle.z_generic_pairs import GENERIC_PAIRS
+    from pokemon.battle.z_status_pairs import STATUS_PAIRS
+    from pokemon.battle.z_signature_pairs import SIGNATURE_PAIRS
+
+    profiles = (*ZProfiles.accepted.values(), *GENERIC_PAIRS, *STATUS_PAIRS, *SIGNATURE_PAIRS)
+    return MEGA_PAIRS, profiles
+
+
+def repair_receipts():
+    """Carry each dated proof's scope/status without upgrading it to live proof."""
+    from pokemon.names import normalize_name
+
+    result = []
+    for issue, filename in REPAIR_REPORTS.items():
+        path = ROOT / "docs/testing" / filename
+        if not path.exists():
+            result.append({"issue": issue, "status": "receipt_not_yet_published", "items": []})
+            continue
+        report = json.loads(path.read_text(encoding="utf-8"))
+        if issue == 855:
+            # Z-Crystals also carry onPlate metadata. The receipt's changed
+            # callback list is the exact repaired inventory, not that metadata.
+            names = report["changed_item_methods"]
+        else:
+            names = report.get("item_rules", report.get("items", []))
+        result.append({"issue": issue, "path": str(path.relative_to(ROOT)).replace("\\", "/"),
+                       "sha256_lf": digest(path), "status": report["status"],
+                       "evidence_kind": report.get("evidence_kind", "local automated; read exact receipt"),
+                       "items": sorted({normalize_name(name) for name in names}),
+                       "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"})
+    return result
 
 
 def digest(path):
@@ -30,27 +75,38 @@ def live_sources(snapshot, item_key):
 
     if snapshot is None:
         return {"status": "unverified", "sources": [], "limit": "No current world snapshot supplied"}
-    sources = []
+    sources, observed = [], []
     for obj in snapshot["world_objects"]:
         attrs = obj.get("attributes", {})
         stock = attrs.get("store_inventory")
-        if attrs.get("is_item_shop") is True and isinstance(stock, dict):
+        if isinstance(stock, dict):
             for name, data in stock.items():
                 if normalize_name(name) == item_key and isinstance(data, dict):
                     quantity = data.get("quantity")
-                    if type(quantity) is int and quantity > 0:
+                    enabled = attrs.get("is_item_shop") is True
+                    observed.append({"kind": "shop", "object_id": obj["id"], "enabled": enabled,
+                                     "quantity": quantity})
+                    if enabled and type(quantity) is int and quantity > 0:
                         sources.append({"kind": "configured_shop", "object_id": obj["id"],
                                         "name": obj["name"], "price": data.get("price"), "quantity": quantity})
         if normalize_name(attrs.get("dispense_item") or "") == item_key:
             stock = attrs.get("stock", "unknown")
             bundle = attrs.get("dispense_quantity", 1)
             bundle = max(1, bundle) if type(bundle) is int else 1
+            observed.append({"kind": "vendor", "object_id": obj["id"], "stock": stock, "bundle": bundle})
             if stock is None or type(stock) is int and stock >= bundle:
                 sources.append({"kind": "configured_vendor", "object_id": obj["id"], "name": obj["name"],
                                 "location_id": obj.get("location"), "stock": stock,
                                 "bundle": bundle})
-    return {"status": "configured_unverified_walkthrough" if sources else "no_observed_shop_or_vendor_source",
-            "sources": sources,
+    if sources:
+        status = "configured_unverified_walkthrough"
+    elif any((row["kind"] == "shop" and row["enabled"] and type(row["quantity"]) is int and row["quantity"] == 0)
+             or (row["kind"] == "vendor" and type(row["stock"]) is int and 0 <= row["stock"] < row["bundle"])
+             for row in observed):
+        status = "observed_depleted_source"
+    else:
+        status = "observed_disabled_or_invalid_source" if observed else "no_observed_shop_or_vendor_source"
+    return {"status": status, "sources": sources, "observed_sources": observed,
             "limit": "Snapshot does not prove reachability, locks, deployed effect or ordinary-player walkthrough"}
 
 
@@ -78,6 +134,7 @@ class ItemAvailabilityAudit:
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
         from pokemon.services.item_supply import ItemSupplyRoute
+        from pokemon.services.berry_snack import BerrySnack
 
         matrix = json.loads((ROOT / MATRIX).read_text(encoding="utf-8"))
         historical = {normalize_name(row["item"]): row for row in matrix["items"]}
@@ -87,6 +144,15 @@ class ItemAvailabilityAudit:
             definitions[key] = (data.name, data.raw, "pokemon/items.py")
         scoped = {key for key, row in historical.items() if not row.get("reason", "").startswith(EXCLUDED)}
         scoped.update(GAMEPLAY_ITEMS)
+        excluded_cap = {key for key, (_, raw, _) in definitions.items() if raw.get("isNonstandard") == "CAP"}
+        scoped.difference_update(excluded_cap)
+        mega_pairs, z_profiles = current_registries()
+        repairs = repair_receipts()
+        recipes = []
+        for filename in ("mega_stone_counter.json", "z_crystal_counter.json", "berry_nursery.json"):
+            path = ROOT / "world" / filename
+            recipe = json.loads(path.read_text(encoding="utf-8"))
+            recipes.append(("world/" + filename, recipe))
         required = {normalize_name(required_item(species)) for species in POKEDEX.values() if required_item(species)}
         required.update({"blackaugurite", "peatblock", "scrollofdarkness", "scrollofwaters"})
         supply = {normalize_name(offer["item"]): offer for offer in ItemSupplyRoute.recipe()["offers"]}
@@ -106,6 +172,14 @@ class ItemAvailabilityAudit:
             field = [{"kind": kind, "command": "+use", "evidence_report": report}
                      for service, kind, report in services if service.supports(key)]
             routes, limits, followups = list(field), [], []
+            if BerrySnack.supports(key):
+                routes.append({"kind": "berry_snack", "command": "+berry snack Razz Berry=<target>",
+                               "evidence_report": "berry-player-routes-2026-10-22",
+                               "limit": "PF2 up to 10 HP living field target; separate from +use/manual/held/growing"})
+            if key == "oranberry":
+                routes.append({"kind": "berry_growing", "command": "+berry plant Oran Berry / water / harvest",
+                               "evidence_report": "berry-player-routes-2026-10-22",
+                               "limit": "One private Oran bed at configured nursery; one bag seed, four real hours, yield 1-5; no automatic replant"})
             if BattleMedicineUse.supports(key):
                 routes.append({"kind": "manual_battle_medicine", "command": "+item",
                                "evidence_report": "battle-recovery-foods-2026-10-22"
@@ -132,17 +206,54 @@ class ItemAvailabilityAudit:
                 routes.append({"kind": "opponent_qualification", "command": "+hunt / +challenge then +evolve",
                                "limit": "Defeat three authored Crest Bisharp; player does not obtain or consume a Crest"})
             if raw.get("megaStone"):
-                limits.append("No supported ordinary player Mega activation slice")
-                followups.append(774)
+                pair = mega_pairs.get(key)
+                if pair:
+                    routes.append({"kind": "mega", "command": "+hold then +mega then +attack",
+                                   "native": pair[0], "form": pair[1],
+                                   "evidence_report": "mega-stones-2026-10-23",
+                                   "limit": "Exact native pair only; current ownership/placement, suppression, form and side budget checks apply"})
+                else:
+                    limits.append("No accepted native Mega pair in the current registry")
             if raw.get("zMove") or raw.get("zMoveType"):
-                limits.append("No supported ordinary player Z activation slice")
-                followups.append(775)
-            if raw.get("isBerry") and not field:
-                limits.append("No field feeding/growing route; a held trigger may be supported separately")
-                followups.append(776)
+                profiles = [profile for profile in z_profiles if normalize_name(profile.crystal) == key]
+                if profiles:
+                    routes.append({"kind": "z_move", "command": "+hold then +zmove <actual source slot>=<target>",
+                                   "profiles": [{"source": p.source, "result": p.name, "power": p.power,
+                                                 "type": p.move_type, "category": p.category, "target": p.target,
+                                                 "kind": p.kind, "native": list(p.native), "intrinsic": p.intrinsic,
+                                                 "bonus": list(p.bonus)} for p in profiles],
+                                   "evidence_report": "z-special-2026-10-23",
+                                   "limit": "Only exact crystal/source mappings; native signatures, actual PP/held ownership, suppression, targets and side budget still apply"})
+                    if raw.get("zMoveType"):
+                        limits.append("Other source moves are deferred until an explicit mapping is qualified")
+                        followups.append(864)
+                else:
+                    limits.append("Ultra Burst and Light That Burns the Sky have no accepted player lifecycle")
+                    followups.append(865)
+                if key in {"solganiumz", "lunaliumz"}:
+                    routes.append({"kind": "native_necrozma_signature", "command": "+necrozma combine then +zmove",
+                                   "evidence_report": "necrozma-items-2026-10-24",
+                                   "released_local_report": "necrozma-released-retry-2026-10-24",
+                                   "limit": "Valid live owned native pair proof only; Dusk-Mane/Sunsteel or Dawn-Wings/Moongeist; no Ultra or shared deployment claim"})
+            if raw.get("isBerry") and not field and not BerrySnack.supports(key):
+                limits.append("No field feeding route; a held trigger may be supported separately")
+                if key in {normalize_name(name + " Berry") for name in
+                           ("Bluk", "Nanab", "Pinap", "Wepear", "Cornn", "Magost", "Nomel", "Rabuta",
+                            "Belue", "Durin", "Pamtre", "Spelon", "Watmel")}:
+                    followups.append(866)
+            if raw.get("isBerry") and key != "oranberry":
+                limits.append("Growing currently accepts Oran only; another berry is not an eligible seed")
             if field and not BattleMedicineUse.supports(key) and any(route["kind"] in {"berry", "food", "field_recovery_equivalent"} for route in field):
                 limits.append("Intentionally excluded from manual battle use by the reviewed item policy; rejects before spending an action")
             authored = []
+            for recipe_path, recipe in recipes:
+                for offer in recipe.get("offers", []):
+                    if normalize_name(offer["item"]) == key:
+                        authored.append({"kind": "opt_in_recipe_shop", "source": recipe_path,
+                                         "name": recipe["room"], "price": offer["price"],
+                                         "initial_stock": offer["quantity"], "refill": recipe["refill"],
+                                         "entry": recipe["entrance"],
+                                         "limit": "Authored recipe only; installation, finite current stock, locks and reachability require separate world proof"})
             if key in supply:
                 offer = supply[key]
                 authored.append({"kind": "opt_in_recipe_shop", "source": "world/item_supply.json",
@@ -178,11 +289,30 @@ class ItemAvailabilityAudit:
                          "support_status": "deferred" if followups and not routes else "capability_with_bounded_evidence" if routes else "unverified",
                          "limits": limits, "followups": sorted(set(followups)),
                          "historical_evidence": old.get("evidence", []), "historical_batches": old.get("batches", [])})
-        return {"schema_version": 1, "scope": "Non-plot evolution, recovery, berries/equivalents, training and held items; capture/TR/clutter excluded",
+            rows[-1]["current_repair_evidence"] = [receipt for receipt in repairs if key in receipt["items"]]
+        identity_paths = [MATRIX, "tools/audit_item_availability.py", "pokemon/battle/mega_pairs.py",
+                          "pokemon/battle/z_profiles.py", "pokemon/battle/z_generic_pairs.py",
+                          "pokemon/battle/z_status_pairs.py", "pokemon/battle/z_signature_pairs.py",
+                          "pokemon/services/berry_snack.py", "pokemon/services/berry_growing.py",
+                          "pokemon/services/necrozma.py", "pokemon/battle/necrozma.py",
+                          "world/item_supply.json", *(path for path, _ in recipes)]
+        identity_paths.extend(str(Path(sys.modules[service.__module__].__file__).relative_to(ROOT)).replace("\\", "/")
+                              for service, _, _ in services)
+        return {"schema_version": 2, "scope": "Non-plot evolution, recovery, berries/equivalents, training and held items; CAP/capture/TR/clutter excluded",
                 "definition_count": len(definitions), "scoped_count": len(rows),
+                "excluded_cap": sorted(definitions[key][0] for key in excluded_cap),
+                "current_registries": {"mega_pairs": len(mega_pairs), "z_mappings": len(z_profiles),
+                                       "z_crystals": len({normalize_name(p.crystal) for p in z_profiles}),
+                                       "z_kinds": dict(Counter(p.kind for p in z_profiles))},
+                "repair_receipts": repairs,
+                "native_necrozma": {"command": "+necrozma", "route": "Two real owned native base sources, Center review/confirm, reusable free combine/separate",
+                                    "guide": "docs/necrozma.md", "evidence": "docs/testing/necrozma-items-2026-10-24.md",
+                                    "released_local_evidence": "docs/testing/necrozma-released-retry-2026-10-24.md",
+                                    "limit": "Local deliberately released build only; no Ultra or shared game deployment/obtainability claim"},
+                "source_identities_sha256_lf": {path: digest(ROOT / path) for path in identity_paths},
                 "counts": {"world_availability": dict(Counter(row["world_availability"]["status"] for row in rows)),
                            "support_status": dict(Counter(row["support_status"] for row in rows))},
-                "world_snapshot": {key: self.snapshot[key] for key in ("observed_utc", "revision", "dirty", "transaction_read_only")}
+                "world_snapshot": {key: self.snapshot.get(key) for key in ("observed_utc", "revision", "dirty", "transaction_read_only")}
                                   if self.snapshot else None,
                 "items": rows, "historical_matrix": {"path": MATRIX, "sha256_lf": digest(ROOT / MATRIX),
                                                      "status": "historical_observations_not_a_fresh_replay"}}

@@ -51,7 +51,11 @@ records accepted effects, source limits and the remaining CAP/required-move excl
 The later [Z route](z-moves.md) accepts 42 explicit source mappings on 34
 existing crystals through `+zmove`, including eight status sources and 16
 signatures. The [matrix](design/z-crystals.md) names the exact native/source
-limits; other moves, fused Necrozma and Ultra remain deferred. Its optional
+limits; other unreviewed source moves and Ultra remain deferred. The native
+[Necrozma combine/separate route](necrozma.md) accepts two real owned sources
+and the matching Dusk-Mane/Sunsteel or Dawn-Wings/Moongeist signature, with
+durable native-pair proof. Its [released local acceptance](testing/necrozma-released-retry-2026-10-24.md)
+does not certify a shared game or a newer item-repair candidate. The optional
 10,000-price/stock1 Counter and configured native hunt/capture routes have
 local automated [acceptance](testing/z-special-2026-10-23.md), separate from
 live deployment, authored chart availability and permanent public stock.
@@ -86,3 +90,17 @@ Finder/wild-held sources and permanent world population require their own checks
 The [acquisition audit](testing/item-availability-2026-10-22.md) and
 [per-item index](testing/item-availability-index-2026-10-22.json) distinguish
 configured sources, tested commands, missing routes and live walkthroughs.
+
+The [October25 current index](testing/item-availability-index-2026-10-25.json)
+and [reconciliation receipt](testing/item-availability-2026-10-25.md) read the
+current field/manual services and explicit Mega/Z registries. They also link the
+six native-item/status-berry repair receipts. Their scope contains 452 non-plot
+items out of 600 deduplicated definitions, with Crucibellite and Vile Vial
+explicitly excluded as CAP. This source-only index supplies no current world
+snapshot: all 452 world-availability entries remain unverified.
+
+Authored shop recipes, optional hunt/finder rules, a nursery's timed Oran yield
+and a dated local test are different evidence. An uninspected world is unknown;
+an observed depleted source differs from an absent or disabled source. None of
+these labels replenishes stock or proves ordinary travel, locks or purchases.
+The 576-definition battle matrix and earlier dated reports remain historical.
