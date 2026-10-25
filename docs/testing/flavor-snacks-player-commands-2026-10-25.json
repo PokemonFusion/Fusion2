@@ -1,0 +1,611 @@
+[
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "[open ordinary socket]",
+    "output": "",
+    "expected": null,
+    "time": 1792945361.2856786
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "[ordinary create; authentication omitted]",
+    "output": "You want to create an account 'ItemRepairDuskd6814a' with password '[private]'.\nIs this what you intended? [Y]/N?\n\n==============================================================\n\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557\n\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2551 \u2588\u2588\u2554\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551\n\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2554\u2588\u2588\u2588\u2588\u2554\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\n\u2588\u2588\u2554\u2550\u2550\u2550\u255d \u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2588\u2588\u2557 \u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551\u255a\u2588\u2588\u2554\u255d\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2551\n\u2588\u2588\u2551     \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u255a\u2550\u255d \u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2551\n\u255a\u2550\u255d      \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u2550\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2557     \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\n                             \u2588\u2588\u2588\u2588\u2588\u2554\u255d|                           \n                            \u2588\u2588\u2554\u2550\u2550\u2550\u255d |                           \n        \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557   \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557        \n        \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551        \n        \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551        \n        \u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551   \u2588\u2588\u2551\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2551        \n        \u2588\u2588\u2551     \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2551        \n        \u255a\u2550\u255d      \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\n\n Best Viewed in UTF8 - Unicode\n Welcome to Item Repair QA 74d6814a, Powered by Evennia 6.0.0!\n\n Your website and game login use the same account.\n If you already registered on the website or in the game, type:\n      connect <username> <password>\n If this is your first account, type (without the <>'s):\n      create <username> <password>\n\n Your account holds your characters. After logging in, choose\n a character from the list to begin or continue playing.\n\n If you have spaces in your username, enclose it in quotes.\n Enter help for more info. look will re-show this screen.\n==============================================================\n",
+    "expected": null,
+    "time": 1792945362.3724234
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "yes",
+    "output": "A new account 'ItemRepairDuskd6814a' was created. Welcome!\n\nYou can now log with the command 'connect ItemRepairDuskd6814a <your password>'.\n",
+    "expected": null,
+    "time": 1792945363.145454
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "[ordinary login; authentication omitted]",
+    "output": "--------------------------------------------------------------------\nAccount ItemRepairDuskd6814a - Character selection\n\nYour account is your login for both the website and the game.\nYour characters are the people you play in the world.\n\nAvailable character(s) (1/10, goic <name> or goic <#> to play):\n  1. ItemRepairDuskd6814a [player]\n\nNext: type goic 1 to enter as the first character above.\nOnce in the game, type chargen for first-time character setup.\nFinished setup? Type help getting started for your next steps.\nUse charcreate <name> only if you want another character.\n\n\nOther commands:\n  help - more commands\n  public <text> - talk on public channel\n  chardelete <name> - delete a character\n  goooc - return here while playing a character\n  goic - return to the last character you played\n\nConnected session(s):\n* 1 telnet (127.0.0.1)\n--------------------------------------------------------------------\n",
+    "expected": null,
+    "time": 1792945364.1514912
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "goic 1",
+    "output": "\nYou become ItemRepairDuskd6814a.\n\nLimbo\nWelcome to your new Evennia-based game! Visit https://www.evennia.com if you need\nhelp, want to contribute, report issues or just join the community.\nAs a privileged user, write batchcommand tutorial_world.build to build\ntutorial content. Once built, try intro for starting help and tutorial to\nplay the demo game.\nCharacters: [private]\n",
+    "expected": null,
+    "time": 1792945364.892519
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "chargen",
+    "output": "Beta setup is self-service; no staff validation is required. Your accepted choices are saved until completion.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Welcome to Pokemon Fusion 2!                                                  \u2551\n\u2551A: Play a human trainer with a starter Pok\u00e9mon.                               \u2551\n\u2551B: Play a Fusion without a starter.                                           \u2551\n\u2551______________________________________________________________________________\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945365.6269295
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "a",
+    "output": "Selected character type: Human trainer\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your gender: (M)ale or (F)emale\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945366.3408017
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "m",
+    "output": "Selected gender: Male\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your favored Pok\u00e9mon type:       \u2551\n\u2551  Bug       Dark      Dragon    Electric\u2551\n\u2551  Fighting  Fire      Flying    Ghost   \u2551\n\u2551  Grass     Ground    Ice       Normal  \u2551\n\u2551  Poison    Psychic   Rock      Steel   \u2551\n\u2551  Water                                 \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945367.0498047
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "water",
+    "output": "Selected favored type: Water\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Enter the species for your starter Pok\u00e9mon                 \u2551\n\u2551(use 'starterlist' or 'pokemonlist' to view valid options):\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945367.8498244
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Squirtle",
+    "output": "Selected starter: Squirtle\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose one of the following abilities:\u2551\n\u2551  1: Torrent                          \u2551\n\u2551  H: Rain Dish                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945368.5468276
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "1",
+    "output": "Selected ability: Torrent\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your starter's nature:                \u2551\n\u2551  Hardy    Lonely   Brave    Adamant  Naughty\u2551\n\u2551  Bold     Docile   Relaxed  Impish   Lax    \u2551\n\u2551  Timid    Hasty    Serious  Jolly    Naive  \u2551\n\u2551  Modest   Mild     Quiet    Bashful  Rash   \u2551\n\u2551  Calm     Gentle   Sassy    Careful  Quirky \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945369.251742
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Hardy",
+    "output": "Selected nature: Hardy\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your starter's gender: (M)ale or (F)emale\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945369.9503398
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "m",
+    "output": "Selected starter gender: Male\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551You chose Squirtle (M) with ability Torrent and nature Hardy as your starter.\u2551\n\u2551Proceed? (Y/N)                                                               \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945370.6629589
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "y",
+    "output": "Your starting choice is saved: Human trainer with Squirtle, ability Torrent, nature Hardy.\nCharacter generation complete.\n\nStart here: Type look and press Enter to see where you are.\nTo move, type an exit's name exactly as it appears in the room.\nType +sheet to see your character and battle information.\nFor a guided first outing, type help first outing.\nNeed a hand? Type public Hi, I'm new. Where should I start?\nYou can return to the beginner guide with help getting started.\n\n",
+    "expected": null,
+    "time": 1792945371.38983
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "[open ordinary socket]",
+    "output": "\n==============================================================\n\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557\n\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2551 \u2588\u2588\u2554\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551\n\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2554\u2588\u2588\u2588\u2588\u2554\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\n\u2588\u2588\u2554\u2550\u2550\u2550\u255d \u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2588\u2588\u2557 \u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551\u255a\u2588\u2588\u2554\u255d\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2551\n\u2588\u2588\u2551     \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u255a\u2550\u255d \u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2551\n\u255a\u2550\u255d      \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u2550\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2557     \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\n                             \u2588\u2588\u2588\u2588\u2588\u2554\u255d|                           \n                            \u2588\u2588\u2554\u2550\u2550\u2550\u255d |                           \n        \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557   \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557        \n        \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551        \n        \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551        \n        \u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551   \u2588\u2588\u2551\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2551        \n        \u2588\u2588\u2551     \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2551        \n        \u255a\u2550\u255d      \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\n\n Best Viewed in UTF8 - Unicode\n Welcome to Item Repair QA 74d6814a, Powered by Evennia 6.0.0!\n\n Your website and game login use the same account.\n If you already registered on the website or in the game, type:\n      connect <username> <password>\n If this is your first account, type (without the <>'s):\n      create <username> <password>\n\n Your account holds your characters. After logging in, choose\n a character from the list to begin or continue playing.\n\n If you have spaces in your username, enclose it in quotes.\n Enter help for more info. look will re-show this screen.\n==============================================================\n",
+    "expected": null,
+    "time": 1792945371.9188669
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "[ordinary create; authentication omitted]",
+    "output": "You want to create an account 'ItemRepairDawnd6814a' with password '[private]'.\nIs this what you intended? [Y]/N?\n",
+    "expected": null,
+    "time": 1792945372.9947574
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "yes",
+    "output": "A new account 'ItemRepairDawnd6814a' was created. Welcome!\n\nYou can now log with the command 'connect ItemRepairDawnd6814a <your password>'.\n",
+    "expected": null,
+    "time": 1792945373.7601345
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "[ordinary login; authentication omitted]",
+    "output": "--------------------------------------------------------------------\nAccount ItemRepairDawnd6814a - Character selection\n\nYour account is your login for both the website and the game.\nYour characters are the people you play in the world.\n\nAvailable character(s) (1/10, goic <name> or goic <#> to play):\n  1. ItemRepairDawnd6814a [player]\n\nNext: type goic 1 to enter as the first character above.\nOnce in the game, type chargen for first-time character setup.\nFinished setup? Type help getting started for your next steps.\nUse charcreate <name> only if you want another character.\n\n\nOther commands:\n  help - more commands\n  public <text> - talk on public channel\n  chardelete <name> - delete a character\n  goooc - return here while playing a character\n  goic - return to the last character you played\n\nConnected session(s):\n* 1 telnet (127.0.0.1)\n--------------------------------------------------------------------\n",
+    "expected": null,
+    "time": 1792945374.7801945
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "goic 1",
+    "output": "\nYou become ItemRepairDawnd6814a.\n\nLimbo\nWelcome to your new Evennia-based game! Visit https://www.evennia.com if you need\nhelp, want to contribute, report issues or just join the community.\nAs a privileged user, write batchcommand tutorial_world.build to build\ntutorial content. Once built, try intro for starting help and tutorial to\nplay the demo game.\nCharacters: [private] and ItemRepairDuskd6814a\n",
+    "expected": null,
+    "time": 1792945375.5187936
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "chargen",
+    "output": "Beta setup is self-service; no staff validation is required. Your accepted choices are saved until completion.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Welcome to Pokemon Fusion 2!                                                  \u2551\n\u2551A: Play a human trainer with a starter Pok\u00e9mon.                               \u2551\n\u2551B: Play a Fusion without a starter.                                           \u2551\n\u2551______________________________________________________________________________\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945376.246292
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "a",
+    "output": "Selected character type: Human trainer\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your gender: (M)ale or (F)emale\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945376.956722
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "f",
+    "output": "Selected gender: Female\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your favored Pok\u00e9mon type:       \u2551\n\u2551  Bug       Dark      Dragon    Electric\u2551\n\u2551  Fighting  Fire      Flying    Ghost   \u2551\n\u2551  Grass     Ground    Ice       Normal  \u2551\n\u2551  Poison    Psychic   Rock      Steel   \u2551\n\u2551  Water                                 \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945377.6794589
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "water",
+    "output": "Selected favored type: Water\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Enter the species for your starter Pok\u00e9mon                 \u2551\n\u2551(use 'starterlist' or 'pokemonlist' to view valid options):\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945378.4769542
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "Squirtle",
+    "output": "Selected starter: Squirtle\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose one of the following abilities:\u2551\n\u2551  1: Torrent                          \u2551\n\u2551  H: Rain Dish                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945379.1709769
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "1",
+    "output": "Selected ability: Torrent\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your starter's nature:                \u2551\n\u2551  Hardy    Lonely   Brave    Adamant  Naughty\u2551\n\u2551  Bold     Docile   Relaxed  Impish   Lax    \u2551\n\u2551  Timid    Hasty    Serious  Jolly    Naive  \u2551\n\u2551  Modest   Mild     Quiet    Bashful  Rash   \u2551\n\u2551  Calm     Gentle   Sassy    Careful  Quirky \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945379.97601
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "Hardy",
+    "output": "Selected nature: Hardy\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Choose your starter's gender: (M)ale or (F)emale\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945380.6860108
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "m",
+    "output": "Selected starter gender: Male\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551You chose Squirtle (M) with ability Torrent and nature Hardy as your starter.\u2551\n\u2551Proceed? (Y/N)                                                               \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945381.407012
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "y",
+    "output": "Your starting choice is saved: Human trainer with Squirtle, ability Torrent, nature Hardy.\nCharacter generation complete.\n\nStart here: Type look and press Enter to see where you are.\nTo move, type an exit's name exactly as it appears in the room.\nType +sheet to see your character and battle information.\nFor a guided first outing, type help first outing.\nNeed a hand? Type public Hi, I'm new. Where should I start?\nYou can return to the beginner guide with help getting started.\n\n",
+    "expected": null,
+    "time": 1792945382.1309805
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "item qa",
+    "output": "ItemRepairDawnd6814a has entered the game.\n\ufffd\ufffd\ufffd\ufffdFlavor Snack QA Center\nDisposable item repair QA Center and finite counter. +store buys reviewed stock; arena leads to ordinary consenting battles. Named trails provide base sources. Sources and wallets are separate operator prerequisites, not permanent public content.\nExits: limbo, arena, and mew trail\n",
+    "expected": null,
+    "time": 1792945441.7984407
+  },
+  {
+    "player": "ItemRepairDawnd6814a",
+    "command": "item qa",
+    "output": "\ufffd\ufffd\ufffd\ufffdItemRepairDuskd6814a is leaving Limbo, heading for Flavor Snack QA Center.\nFlavor Snack QA Center\nDisposable item repair QA Center and finite counter. +store buys reviewed stock; arena leads to ordinary consenting battles. Named trails provide base sources. Sources and wallets are separate operator prerequisites, not permanent public content.\nExits: limbo, arena, and mew trail\nCharacters: ItemRepairDuskd6814a\n",
+    "expected": null,
+    "time": 1792945442.6045685
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+store",
+    "output": "ItemRepairDawnd6814a arrives to Flavor Snack QA Center from Limbo.\n\u2554\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Welcome to the item store.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n1. Buy items\n2. Leave\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945443.39028
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "1",
+    "output": "Usage: <item> <amount> or 'back'.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (2 in stock)       \u2551\n\u2551  Revive - $1500 (2 in stock)            \u2551\n\u2551  Razz Berry - $100 (5 in stock)         \u2551\n\u2551  Bluk Berry - $100 (5 in stock)         \u2551\n\u2551  Nanab Berry - $100 (5 in stock)        \u2551\n\u2551  Pinap Berry - $100 (5 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945444.1708045
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Master Ball 1",
+    "output": "You purchase 1 x Master Ball for $1000.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (2 in stock)            \u2551\n\u2551  Razz Berry - $100 (5 in stock)         \u2551\n\u2551  Bluk Berry - $100 (5 in stock)         \u2551\n\u2551  Nanab Berry - $100 (5 in stock)        \u2551\n\u2551  Pinap Berry - $100 (5 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945444.8957515
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Revive 1",
+    "output": "You purchase 1 x Revive for $1500.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (5 in stock)         \u2551\n\u2551  Bluk Berry - $100 (5 in stock)         \u2551\n\u2551  Nanab Berry - $100 (5 in stock)        \u2551\n\u2551  Pinap Berry - $100 (5 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945445.6207495
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Razz Berry 1",
+    "output": "You purchase 1 x Razz Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (5 in stock)         \u2551\n\u2551  Nanab Berry - $100 (5 in stock)        \u2551\n\u2551  Pinap Berry - $100 (5 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945446.3427472
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Bluk Berry 2",
+    "output": "You purchase 2 x Bluk Berry for $200.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (5 in stock)        \u2551\n\u2551  Pinap Berry - $100 (5 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945447.0680559
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Nanab Berry 1",
+    "output": "You purchase 1 x Nanab Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (5 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945447.792333
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Pinap Berry 1",
+    "output": "You purchase 1 x Pinap Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (5 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945448.5189385
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Wepear Berry 1",
+    "output": "You purchase 1 x Wepear Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (5 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945449.2547731
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Cornn Berry 1",
+    "output": "You purchase 1 x Cornn Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (5 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945449.9757743
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Magost Berry 1",
+    "output": "You purchase 1 x Magost Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (5 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945450.698795
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Nomel Berry 1",
+    "output": "\ufffd\ufffdYou purchase 1 x Nomel Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (5 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945451.413187
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Rabuta Berry 1",
+    "output": "You purchase 1 x Rabuta Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (4 in stock)       \u2551\n\u2551  Belue Berry - $100 (5 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945452.1397038
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Belue Berry 1",
+    "output": "You purchase 1 x Belue Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (4 in stock)       \u2551\n\u2551  Belue Berry - $100 (4 in stock)        \u2551\n\u2551  Durin Berry - $100 (5 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945452.8632386
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Durin Berry 1",
+    "output": "You purchase 1 x Durin Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (4 in stock)       \u2551\n\u2551  Belue Berry - $100 (4 in stock)        \u2551\n\u2551  Durin Berry - $100 (4 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (5 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945453.588236
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Pamtre Berry 1",
+    "output": "You purchase 1 x Pamtre Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (4 in stock)       \u2551\n\u2551  Belue Berry - $100 (4 in stock)        \u2551\n\u2551  Durin Berry - $100 (4 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (4 in stock)       \u2551\n\u2551  Spelon Berry - $100 (5 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945454.311237
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Spelon Berry 1",
+    "output": "You purchase 1 x Spelon Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (4 in stock)       \u2551\n\u2551  Belue Berry - $100 (4 in stock)        \u2551\n\u2551  Durin Berry - $100 (4 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (4 in stock)       \u2551\n\u2551  Spelon Berry - $100 (4 in stock)       \u2551\n\u2551  Watmel Berry - $100 (5 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945455.0341835
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Watmel Berry 1",
+    "output": "You purchase 1 x Watmel Berry for $100.\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Items for sale                           \u2551\n\u2551  Master Ball - $1000 (1 in stock)       \u2551\n\u2551  Revive - $1500 (1 in stock)            \u2551\n\u2551  Razz Berry - $100 (4 in stock)         \u2551\n\u2551  Bluk Berry - $100 (3 in stock)         \u2551\n\u2551  Nanab Berry - $100 (4 in stock)        \u2551\n\u2551  Pinap Berry - $100 (4 in stock)        \u2551\n\u2551  Wepear Berry - $100 (4 in stock)       \u2551\n\u2551  Cornn Berry - $100 (4 in stock)        \u2551\n\u2551  Magost Berry - $100 (4 in stock)       \u2551\n\u2551  Nomel Berry - $100 (4 in stock)        \u2551\n\u2551  Rabuta Berry - $100 (4 in stock)       \u2551\n\u2551  Belue Berry - $100 (4 in stock)        \u2551\n\u2551  Durin Berry - $100 (4 in stock)        \u2551\n\u2551  Pamtre Berry - $100 (4 in stock)       \u2551\n\u2551  Spelon Berry - $100 (4 in stock)       \u2551\n\u2551  Watmel Berry - $100 (4 in stock)       \u2551\n\u2551Enter '<item> <amount>' to buy or 'back'.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945455.754184
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "back",
+    "output": "\u2554\u2550\u2550\u2550\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551Welcome to the item store.\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n1. Buy items\n2. Leave\n\n== [Make Choice] | 'q' to quit | 'help' for help ==\n",
+    "expected": null,
+    "time": 1792945456.5391831
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "q",
+    "output": "\u2554\u2550\u2550[ Pok\u00e9mon Menu ]\u2550\u2550\u2557\n\u2551Thanks for visiting!\u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n",
+    "expected": null,
+    "time": 1792945457.2951937
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+inventory",
+    "output": "Your Inventory:\nBelue Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nBluk Berry x2 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nCornn Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nDurin Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nMagost Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nMaster Ball x1 - The best Ball with the ultimate performance. It will catch any wild Pokemon.\nNanab Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nNomel Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nPamtre Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nPinap Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nRabuta Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nRazz Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nRevive x1 - Revives one fainted Pokemon with half its max HP.\nSpelon Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nWatmel Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nWepear Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\n",
+    "expected": null,
+    "time": 1792945458.0802035
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "mew trail",
+    "output": "\ufffd\ufffdItem Repair Mew Trail\nThis is a room.\nExits: center\n",
+    "expected": null,
+    "time": 1792945493.8926735
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+hunt",
+    "output": "Battle started!\nBattle ID: 1\nItemRepairDuskd6814a has entered battle!\nA wild Mew appears!\n== Turn 1 ==\n== Turn 1 ====================================================================\n=================================== Team A ===================================\nItemRepairDuskd6814a\n1 Squirtle \u2642              Lv 5       HP: |||||||||||||||||||| 20/20 100%      \nTeam: O . . . . .\nWeather: -                      | Field: -                        | Round: 1  \n================================ WILD Pokemon ================================\nWild Mew\n1 Mew \u2013                   Lv 100     HP: |||||||||||||||||||| 100%            \nTeam: O . . . . .\nChoose an action for Squirtle.\nThe battle awaits your move.\nA wild Mew (Lv 100) appeared!\n",
+    "expected": null,
+    "time": 1792945495.1159089
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+item Master Ball",
+    "output": "A1 (Squirtle) prepares Master Ball \u2192 B1.\n== Turn 1 ==\nThe ball shook!\nThe ball shook!\nThe ball shook!\nThe ball shook!\nGotcha! Mew was caught!\n**ItemRepairDuskd6814a** won the battle!\n-- Turn 1 --\nThe battle has ended.\n______________________________________________________________________________\n\nWould you like to give Mew a nickname? (yes/no)\n______________________________________________________________________________\n\n yes                      \n no                       \n",
+    "expected": null,
+    "time": 1792945496.3096585
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "yes",
+    "output": "______________________________________________________________________________\n\nEnter a nickname (1\u201350 characters), or 'cancel' to keep its name.\n______________________________________________________________________________\n\n cancel              \n",
+    "expected": null,
+    "time": 1792945497.0958643
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "Snack Mew",
+    "output": "Your Pok\u00e9mon is now named Snack Mew.\n__________________________\n\nNickname choices complete.\n__________________________\n\n\n",
+    "expected": null,
+    "time": 1792945497.830074
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "center",
+    "output": "Flavor Snack QA Center\nDisposable item repair QA Center and finite counter. +store buys reviewed stock; arena leads to ordinary consenting battles. Named trails provide base sources. Sources and wallets are separate operator prerequisites, not permanent public content.\nExits: limbo, arena, and mew trail\nCharacters: ItemRepairDawnd6814a\n",
+    "expected": null,
+    "time": 1792945498.6251051
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+party",
+    "output": "Party Pok\u00e9mon - 2/6 | 2 able to battle\n\n1: Squirtle  M  Lv 5  [WATER] [LEAD]\n   HP [##########] 20/20  OK  Held: None\n\n2: Snack Mew (Mew)  N  Lv 100  [PSYCHIC]\n   HP [##########] 340/340  OK  Held: None\n\nSummary: +party <slot>\nMoves:   +party/moves <slot>\n",
+    "expected": null,
+    "time": 1792945499.3442757
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry help",
+    "output": "\ufffd\ufffdTend your private bed at a Berry Nursery or feed a selected flavor snack.\n\n    Usage:\n      +berry help\n      +berry status\n      +berry plant Oran Berry\n      +berry water\n      +berry harvest\n      +berry snack Razz Berry=<party slot, unique name, full ID or fusion>\n      +berry snack Bluk Berry=<target>\n\n    Growing costs one bag Oran seed. Four one-hour stages count offline time;\n    water free once in each stage for yield 1-5. Ready crops do not decay.\n    Harvest once, then replant explicitly. Find the optional nursery through its\n    nursery/back exits and use +store to buy finite stock. No held seed or tool.\n    Each selected snack is a PF2 equivalent that heals up to 10 HP outside battle,\n    independently of growing. No contest/lure/friendship or automatic +use alias.\n    Accepted snacks: Razz, Bluk, Nanab, Pinap, Wepear, Cornn, Magost, Nomel,\n    Rabuta, Belue, Durin, Pamtre, Spelon and Watmel Berry.\n    \n",
+    "expected": null,
+    "time": 1792945521.7149227
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+hold 2=Bluk Berry",
+    "output": "Snack Mew is now holding Bluk Berry.\n",
+    "expected": null,
+    "time": 1792945522.472957
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack Bluk Berry=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Bluk Berry had no effect. No item was consumed.\n",
+    "expected": null,
+    "time": 1792945523.2137094
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+use Bluk Berry=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Bluk Berry is not usable outside battle yet. Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. Use +heal at a Pokemon Center to restore your party; battle items use +item <item> during battle.\n",
+    "expected": null,
+    "time": 1792945523.9247403
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack Bluk Berry=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "\ufffd\ufffd\ufffd\ufffdBluk Berry had no effect. No item was consumed.\n",
+    "expected": null,
+    "time": 1792945591.5494983
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+use Revive=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Revive on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945596.745377
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack bLUK bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "\ufffd\ufffdUsed Bluk Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945601.947381
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack nANAB bERRY=Snack Mew",
+    "output": "Used Nanab Berry on Snack Mew.\n",
+    "expected": null,
+    "time": 1792945607.5692391
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack pINAP bERRY=2",
+    "output": "Used Pinap Berry on 2.\n",
+    "expected": null,
+    "time": 1792945613.0893447
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack wEPEAR bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Wepear Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945618.7067435
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack cORNN bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Cornn Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945624.2237651
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack mAGOST bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Magost Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945629.440059
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack nOMEL bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "\ufffd\ufffdUsed Nomel Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945634.639387
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack rABUTA bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Rabuta Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945640.0588038
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack bELUE bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Belue Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945645.169203
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack dURIN bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Durin Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945650.3174267
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack pAMTRE bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Pamtre Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945655.504882
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack sPELON bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Used Spelon Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945660.6986275
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack wATMEL bERRY=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "\ufffd\ufffdUsed Watmel Berry on f69f0191-2dd2-4f66-ae91-a0b7b9cfb318.\n",
+    "expected": null,
+    "time": 1792945665.8009005
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack Bluk Berry=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "You don't have any of that item to use.\n",
+    "expected": null,
+    "time": 1792945670.9621835
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack Razz Berry=d6895193-628b-42e0-9451-f2d0399146cf",
+    "output": "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion.\n",
+    "expected": null,
+    "time": 1792945671.6572309
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack Unknown Berry=f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "output": "Use +berry snack <accepted berry>=<party slot, unique name, full ID or fusion>. See +berry help for the accepted snacks.\n",
+    "expected": null,
+    "time": 1792945672.408751
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+berry snack Bluk Berry=",
+    "output": "Use +berry snack <accepted berry>=<party slot, unique name, full ID or fusion>. See +berry help for the accepted snacks.\n",
+    "expected": null,
+    "time": 1792945673.1622887
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+hold 2=",
+    "output": "Snack Mew's Bluk Berry was returned to your inventory.\n",
+    "expected": null,
+    "time": 1792945678.2640493
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "[open ordinary socket]",
+    "output": "\n==============================================================\n\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557\n\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2551 \u2588\u2588\u2554\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551\n\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2554\u2588\u2588\u2588\u2588\u2554\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\n\u2588\u2588\u2554\u2550\u2550\u2550\u255d \u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2588\u2588\u2557 \u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551\u255a\u2588\u2588\u2554\u255d\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2551\n\u2588\u2588\u2551     \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u255a\u2550\u255d \u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2551\n\u255a\u2550\u255d      \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u2550\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2557     \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\n                             \u2588\u2588\u2588\u2588\u2588\u2554\u255d|                           \n                            \u2588\u2588\u2554\u2550\u2550\u2550\u255d |                           \n        \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557   \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557        \n        \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551        \n        \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551        \n        \u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551   \u2588\u2588\u2551\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2551        \n        \u2588\u2588\u2551     \u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2551        \n        \u255a\u2550\u255d      \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\n\n Best Viewed in UTF8 - Unicode\n Welcome to Item Repair QA 74d6814a, Powered by Evennia 6.0.0!\n\n Your website and game login use the same account.\n If you already registered on the website or in the game, type:\n      connect <username> <password>\n If this is your first account, type (without the <>'s):\n      create <username> <password>\n\n Your account holds your characters. After logging in, choose\n a character from the list to begin or continue playing.\n\n If you have spaces in your username, enclose it in quotes.\n Enter help for more info. look will re-show this screen.\n==============================================================\n",
+    "expected": null,
+    "time": 1792945678.8465574
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "[ordinary login; authentication omitted]",
+    "output": "--------------------------------------------------------------------\nAccount ItemRepairDuskd6814a - Character selection\n\nYour account is your login for both the website and the game.\nYour characters are the people you play in the world.\n\nAvailable character(s) (1/10, goic <name> or goic <#> to play):\n  1. ItemRepairDuskd6814a [player]\n\nNext: type goic 1 to enter as the first character above.\nOnce in the game, type chargen for first-time character setup.\nFinished setup? Type help getting started for your next steps.\nUse charcreate <name> only if you want another character.\n\n\nOther commands:\n  help - more commands\n  public <text> - talk on public channel\n  chardelete <name> - delete a character\n  goooc - return here while playing a character\n  goic - return to the last character you played\n\nConnected session(s):\n* 1 telnet (127.0.0.1)\n--------------------------------------------------------------------\n",
+    "expected": null,
+    "time": 1792945679.9407172
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "goic 1",
+    "output": "\nYou become ItemRepairDuskd6814a.\n\nFlavor Snack QA Center\nDisposable item repair QA Center and finite counter. +store buys reviewed stock; arena leads to ordinary consenting battles. Named trails provide base sources. Sources and wallets are separate operator prerequisites, not permanent public content.\nExits: limbo, arena, and mew trail\nCharacters: ItemRepairDawnd6814a\n",
+    "expected": null,
+    "time": 1792945680.6473973
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+inventory",
+    "output": "Your Inventory:\nBluk Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\nRazz Berry x1 - Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.\n",
+    "expected": null,
+    "time": 1792945681.4314816
+  },
+  {
+    "player": "ItemRepairDuskd6814a",
+    "command": "+party 2",
+    "output": "-----------------------------[Slot 2: Snack Mew] -----------------------------\n Species: Mew    Gender: N    Type: Psychic    \n Level: 100    XP: 1000000/1000000 (MAX LEVEL) \nID: f69f0191-2dd2-4f66-ae91-a0b7b9cfb318\nHP: 300/340 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588    (88%)   Status: NORM\nNature: Sassy   Ability: Synchronize   Held: Nothing\n+------------------------------+\n| HP   Atk  Def  SpA  SpD  Spe |\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n| 340  210  208  235  235  211 |\n+------------------------------+\nIV/EV Breakdown\n+---------------------------------+\n|     HP  Atk  Def  SpA  SpD  Spe |\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n| IV  30  5    3    30   9    30  |\n| EV  0   0    0    0    0    0   |\n+---------------------------------+\n-----------------------------------[Moves] -----------------------------------\n  Psychic (10/10 PP)\n  Imprison (10/10 PP)\n  Amnesia (20/20 PP)\n  Barrier (20/20 PP)\n",
+    "expected": null,
+    "time": 1792945682.2044914
+  }
+]

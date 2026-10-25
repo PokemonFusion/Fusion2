@@ -45,6 +45,9 @@ stocks it nor makes it an eligible seed. The other thirteen names need their
 own deliberately authored source; no public stock is installed by this change.
 The [flavor snack receipt](testing/flavor-snacks-2026-10-25.md) records the
 named ordinary-command/SQL checks and their local evidence boundary.
+The [later released walkthrough](testing/flavor-snacks-released-player-2026-10-25.md)
+replays all thirteen snacks through ordinary socket inputs, with each useful
+effect checked against saved HP and inventory. Its temporary source was removed.
 
 The [acceptance receipt](testing/berry-player-routes-2026-10-22.md) separates
 production-command/SQL checks with controlled server time from live timed growth.

@@ -67,6 +67,8 @@ Oran growing/Razz snack contracts. The [berry nursery guide](berry-nursery.md)
 describes their implemented commands, optional source and release requirements.
 It also lists the thirteen later explicit flavor snacks, each a bounded 10-HP
 field equivalent through +berry snack with separately unverified acquisition.
+Their [released local walkthrough](testing/flavor-snacks-released-player-2026-10-25.md)
+checks all thirteen effects and reconnect persistence; its fixtures are removed.
 See [gimmighoul-evolution.md](gimmighoul-evolution.md) for the 999-coin Chest
 equivalent, [recovery-equivalents.md](recovery-equivalents.md) for two field-only
 medicines, [hunt-item-sources.md](hunt-item-sources.md) for reviewed hunt sources,

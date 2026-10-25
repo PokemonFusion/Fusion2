@@ -114,6 +114,9 @@ The later [thirteen flavor snacks](testing/flavor-snacks-2026-10-25.md) use the
 selected berry through `+berry snack`, each healing up to 10 HP. Their explicit
 field support adds no nursery offers, growing species or public stock. The
 earlier Z-source index remains the receipt for its dated candidate.
+The [separate released snack walkthrough](testing/flavor-snacks-released-player-2026-10-25.md)
+verifies all thirteen names through normal purchases and socket inputs, with
+43 effect/conservation checks. Its stock and schema were disposable and removed.
 
 The [October 25 deliberately released local walkthrough](testing/item-repair-released-player-2026-10-25.md)
 qualifies the repaired candidate through 716 ordinary commands and 102 independent
