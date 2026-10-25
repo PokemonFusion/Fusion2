@@ -48,8 +48,8 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The later [Z route](z-moves.md) accepts50 explicit source mappings on34
-existing crystals through `+zmove`, including eight status sources and 16
+The later [Z route](z-moves.md) accepts62 explicit source mappings on34
+existing crystals through `+zmove`, including 14 status sources and 16
 signatures. The [matrix](design/z-crystals.md) names the exact native/source
 limits; other unreviewed source moves and Ultra remain deferred. The native
 [Necrozma combine/separate route](necrozma.md) accepts two real owned sources
@@ -99,7 +99,7 @@ The [acquisition audit](testing/item-availability-2026-10-22.md) and
 [per-item index](testing/item-availability-index-2026-10-22.json) distinguish
 configured sources, tested commands, missing routes and live walkthroughs.
 
-The [October25 current index](testing/item-availability-six-z-sources-index-2026-10-25.json)
+The [October25 current index](testing/item-availability-physical-status-z-index-2026-10-25.json)
 and [reconciliation receipt](testing/item-availability-2026-10-25.md) read the
 current field/manual services and explicit Mega/Z registries. They also link the
 six native-item/status-berry repair receipts. Their scope contains 452 non-plot
@@ -135,3 +135,9 @@ automated matrices. Both Player accounts, tagged stock and base-source charts
 were disposable; the instance/schema were removed. This creates no permanent
 public supply. The later [#862 acceptance](testing/item-source-released-player-2026-10-25.md)
 separately verifies the six permanent public offers and removes its own QA fixtures.
+
+The later [physical](testing/z-six-physical-sources-2026-10-25.md) and
+[status](testing/z-six-status-sources-2026-10-25.md) batches bring the
+explicit registry to 62 mappings on 34 crystals. Their source-only index
+keeps world availability unknown; the dated permanent six-item Supply
+Corner acceptance remains separate. No new crystal/source is stocked by these changes.

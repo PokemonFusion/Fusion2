@@ -1,8 +1,8 @@
 # Z-Moves
 
-The 18 generic crystals accept 20 reviewed damaging source pairs in the
+The 18 generic crystals accept 32 reviewed damaging source pairs in the
 [current matrix](design/z-crystals.md). For example **Normalium Z + an actual
-active Tackle slot → Breakneck Blitz**, 100-power Physical Normal damage. Eight
+active Tackle slot → Breakneck Blitz**, 100-power Physical Normal damage. Fourteen
 selected status sources and 16 signatures are also accepted, with exact native
 holders in that matrix. All other source moves remain deferred. These are bounded
 routes; holding a crystal does not enable every move of its type.
@@ -15,8 +15,12 @@ that earlier registry had44 mappings on34 crystals. The later
 Thunderbolt/Electrium Z, Ice Beam/Icium Z, Energy Ball/Grassium Z,
 Psychic/Psychium Z, Shadow Ball/Ghostium Z and Sludge Bomb/Poisonium Z.
 Each is normal single-target Special damage: Shadow Ball's Z power is 160,
-the other five are 175. The current total is 50 mappings on 34 crystals
-(26 generic, eight status, 16 signatures). Other sources stay deferred.
+the other five are 175. The later [physical batch](testing/z-six-physical-sources-2026-10-25.md)
+adds Body Slam, Crunch, Dragon Claw, Earthquake, Rock Slide and Iron Head.
+The [status batch](testing/z-six-status-sources-2026-10-25.md) adds Recover,
+Roost, Protect, Toxic, Thunder Wave and Synthesis with their exact reviewed
+bonuses. The current total is 62 mappings on 34 crystals (32 generic,
+14 status, 16 signatures). All other sources stay deferred.
 Ordinary Surf retains its spread targets; its Z copy does not. Flamethrower's
 ordinary burn chance is not copied. Current Charizard/Slowpoke level-up data
 provides their respective source at level30; actual wild access still requires
@@ -59,11 +63,18 @@ An existing Counter with an older offer set requires an explicit stock review;
 re-running installation rejects drift and does not expand or refill it.
 
 Selected status sources are Splash, Growl, Swords Dance, Haze, Memento, Destiny
-Bond, Tailwind and Curse. Their Z bonus occurs before the ordinary base effect;
+Bond, Tailwind and Curse, plus Recover, Roost, Protect, Toxic, Thunder Wave and
+Synthesis. Their Z bonus occurs before the ordinary base effect;
 a blocked base effect keeps a started bonus. Memento prepares one HP-only heal
 for that same side/active slot's next conscious incoming holder. Tailwind's
 critical bonus lasts until switching; its side timer survives reconnect without
 resetting. Curse uses the holder's current Ghost/non-Ghost type when acting.
+Recover/Roost/Protect/Synthesis clear only negative user stages; Toxic adds
+Defense +1 and Thunder Wave adds Special Defense +1. Useful Roost temporarily
+removes Flying through the rest of the turn, then restores it; fixed Tera
+typing stays fixed. Synthesis uses effective weather and common healing
+prevention. Repeated Protect uses the modern one-third progression; a
+started Z-Protect bonus remains paid even when its ordinary shield fails.
 
 The source must remain an otherwise legal active move: this PF2 slice gives no
 Z exception to Taunt, Disable, Encore, Imprison, choice or Assault Vest. The held

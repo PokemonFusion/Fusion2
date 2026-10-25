@@ -97,7 +97,19 @@ classification and bounded delivery rules, not the remaining runtime support.
 
 The first selected six-source batch now has bounded implementation and
 [ordinary-command/SQL acceptance](../testing/z-six-special-sources-2026-10-25.md).
-The current registry has 50 mappings on 34 crystals: 26 generic, eight status,
-16 signatures. The physical/status batches #911/#912 remain open. The
+That delivery had 50 mappings on 34 crystals: 26 generic, eight status and
+16 signatures. The later physical/status deliveries are recorded below. The
 dated source-classification JSON is preserved as its original design receipt;
 this addition does not enable any other source or install public stock.
+
+## Physical and status delivery (#911/#912)
+
+The other two selected batches now have [physical](../testing/z-six-physical-sources-2026-10-25.md)
+and [status](../testing/z-six-status-sources-2026-10-25.md) command/SQL
+receipts. The registry has 62 mappings on 34 crystals: 32 generic,
+14 status and 16 unchanged signatures. Existing ordinary Roost/Synthesis,
+Protect repetition and Thunder Wave immunity were repaired first in
+#913/#914/#916. The separate Damp/weather callback finding is #915;
+these item deliveries do not claim to repair that ability. All other
+unreviewed generic/status sources and Ultra remain deferred. The original
+classified JSON inventory remains its dated design receipt. No new public stock is installed.
