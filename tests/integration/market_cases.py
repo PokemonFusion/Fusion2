@@ -342,6 +342,35 @@ class MarketCases(unittest.TestCase):
         self.assertIn("completed", self.command(self.buyer, f"+market buy {listing.pk}"))
 
 
+    def test_paid_mint_survives_ordinary_market_review_and_purchase(self):
+        """A trained asset retains genetics, stat preference and resulting stats after sale."""
+        from pokemon.services.field_mints import FieldMintUse
+        from pokemon.helpers.pokemon_helpers import get_stats
+
+        self.seller.trainer.add_item("Modest Mint")
+        self.assertTrue(FieldMintUse(self.seller).use("Modest Mint", "3"))
+        expected = get_stats(fresh_owned(self.source.pk))
+        listing = self.listing()
+        text = self.command(self.buyer, f"+market inspect {listing.pk}")
+        self.assertIn("Modest", text)
+        self.assertIn("Hardy", text)
+        self.command(self.buyer, f"+market buy {listing.pk}")
+        current = fresh_owned(self.source.pk)
+        self.assertEqual(current.trainer_id, self.buyer.trainer.pk)
+        self.assertEqual((current.nature, current.trained_stat_nature), ("Hardy", "Modest"))
+        self.assertEqual(get_stats(current), expected)
+
+    def test_changed_mint_training_invalidates_market_inspection(self):
+        """A labelled out-of-band overlay change cannot spend the buyer's old consent."""
+        listing = self.listing()
+        OwnedPokemon.objects.filter(pk=self.source.pk).update(trained_stat_nature="Modest")
+        before = self.money(self.buyer)
+        self.command(self.buyer, f"+market buy {listing.pk}")
+        self.assertEqual(self.money(self.buyer), before)
+        self.assertEqual(fresh_owned(self.source.pk).trainer_id, self.seller.trainer.pk)
+        self.command(self.seller, f"+market cancel {listing.pk}")
+
+
 if __name__ == "__main__":
     with IsolatedPostgres() as database:
         database.create_model_tables()

@@ -10,6 +10,7 @@ from evennia.utils.idmapper.models import SharedMemoryModel
 
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
+from pokemon.nature_training import NatureTraining, NatureTrainingError
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +137,28 @@ class Pokemon(BasePokemon):
 
 class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	"""Persistent data for a player's Pokémon."""
+
+	trained_stat_nature = models.CharField(max_length=20, null=True, blank=True, default=None,
+		choices=[(name, name) for name in NatureTraining.mint_names])
+
+	class Meta:
+		"""Keep a trained preference bounded without rewriting genetic Nature."""
+
+		constraints = [models.CheckConstraint(name="owned_trained_nature_valid", condition=(
+			models.Q(trained_stat_nature__isnull=True) | models.Q(trained_stat_nature="")
+			| models.Q(trained_stat_nature__in=NatureTraining.mint_names)))]
+
+	def clean(self):
+		"""Expose malformed training/genetics as validation errors before model writes."""
+		super().clean()
+		from django.core.exceptions import ValidationError
+
+		try:
+			NatureTraining.validate_training(self.trained_stat_nature)
+			if self.trained_stat_nature:
+				NatureTraining.effective(self)
+		except NatureTrainingError as error:
+			raise ValidationError({"trained_stat_nature": str(error)}) from error
 
 	unique_id = models.UUIDField(
 		primary_key=True,

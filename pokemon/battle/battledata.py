@@ -258,6 +258,7 @@ class Pokemon:
         tera_type: str = "",
         friendship: int = 70,
         hyper_training: Optional[List[str]] = None,
+        trained_stat_nature: Optional[str] = None,
     ):
         from pokemon.hyper_training import HyperTraining
 
@@ -278,6 +279,12 @@ class Pokemon:
         self.ivs = ivs or [0, 0, 0, 0, 0, 0]
         self.evs = evs or [0, 0, 0, 0, 0, 0]
         self.nature = nature
+        from pokemon.nature_training import NatureTraining
+
+        self.trained_stat_nature = NatureTraining.validate_training(trained_stat_nature)
+        NatureTraining.effective(self)  # Invalid training cannot enter a stats fallback.
+        if self.trained_stat_nature is not None and parse_pokemon_ref(model_id)[0] == "encounter":
+            raise ValueError("Encounter Pokemon cannot carry mint training.")
         self.gender = gender
         self.tempvals: Dict[str, int] = {}
         # Track volatile status effects such as confusion or curses
@@ -875,6 +882,7 @@ class Pokemon:
 
         data = SimpleNamespace(species=str(new_forme), level=self.level,
                                ivs=self.ivs, evs=self.evs, nature=self.nature,
+                               trained_stat_nature=self.trained_stat_nature,
                                hyper_training=self.hyper_training)
         stats = get_stats(data)
         maximum = get_max_hp(data)
@@ -1066,6 +1074,7 @@ class Pokemon:
                 "hyper_training": list(self.hyper_training),
                 "evs": list(self.evs),
                 "nature": self.nature,
+                "trained_stat_nature": self.trained_stat_nature,
                 "types": list(self.types),
                 "tera_type": self.tera_type,
                 "terastallized": self.terastallized,
@@ -1108,6 +1117,10 @@ class Pokemon:
         hyper_training = data.get("hyper_training")
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
+        from pokemon.nature_training import NatureTraining, NatureTrainingError
+
+        trained_stat_nature = NatureTraining.validate_training(data.get("trained_stat_nature"))
+        NatureTraining.genetic(nature, legacy_blank=trained_stat_nature is None)
         types = data.get("types")
         tera_type = data.get("tera_type", "")
         gender = data.get("gender", "N")
@@ -1142,6 +1155,10 @@ class Pokemon:
                     hyper_training = HyperTraining.trained(poke)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
+                    current_training = NatureTraining.validate_training(getattr(poke, "trained_stat_nature", None))
+                    if "trained_stat_nature" in data and current_training != trained_stat_nature:
+                        raise NatureTrainingError("Saved mint training differs from current owned state; battle recovery is required.")
+                    trained_stat_nature = current_training
                     gender = getattr(poke, "gender", gender)
                     if friendship is None:
                         friendship = getattr(poke, "friendship", 70)
@@ -1172,6 +1189,8 @@ class Pokemon:
                         else:
                             move_names = ["Tackle"]
                         moves = [Move(name=m) for m in move_names]
+                except NatureTrainingError:
+                    raise
                 except Exception:
                     pass
             elif ref_kind == "encounter" and EncounterPokemon:
@@ -1221,6 +1240,7 @@ class Pokemon:
             gender=gender,
             friendship=70 if friendship is None else friendship,
             hyper_training=hyper_training,
+            trained_stat_nature=trained_stat_nature,
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
         disguised = (data.get("ability_state", {}) or {}).get("illusion")

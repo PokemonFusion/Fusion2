@@ -123,6 +123,7 @@ class PartyView:
                 unique_id=getattr(fused, "unique_id", None),
                 ability=getattr(fused, "ability", None),
                 nature=getattr(fused, "nature", None),
+                trained_stat_nature=getattr(fused, "trained_stat_nature", None),
                 _cached_stats={
                     name: battle.getStat(key, True, True)
                     for name, key in (
@@ -138,6 +139,9 @@ class PartyView:
             for attr in ("activemoveslot_set", "pp_bonuses", "moves", "ivs", "evs"):
                 if hasattr(fused, attr):
                     setattr(display, attr, getattr(fused, attr))
+            from pokemon.nature_training import NatureTraining
+
+            display._cached_stats_nature = NatureTraining.effective(display)
         else:
             # Legacy characters may retain a form description without a model.
             # Keep it inspectable, but never include it in the battle-ready count.

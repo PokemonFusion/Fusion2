@@ -230,3 +230,22 @@ def test_eight_named_manual_boosters_keep_field_and_world_routes_separate():
         assert not any(route["command"] == "+use" for route in row["routes"])
         assert any(source["source"] == "world/battle_booster_counter.json" for source in row["authored_acquisition"])
         assert row["world_availability"]["status"] == "unverified"
+
+
+def test_exact_mints_have_field_training_without_battle_or_inferred_world_stock():
+    """Twenty-one preferences and Mint Berry retain distinct routes and identities."""
+    from pokemon.items import NATURE_MINT_ITEMS
+    from pokemon.services.field_mints import FieldMintUse
+
+    rows = {row["key"]: row for row in ItemAvailabilityAudit().build()["items"]}
+    assert len(NATURE_MINT_ITEMS) == 21
+    for key in NATURE_MINT_ITEMS:
+        row = rows[key]
+        assert FieldMintUse.supports(key)
+        assert any(route["kind"] == "nature_training" and route["command"] == "+use"
+                   for route in row["routes"])
+        assert not any(route["command"] == "+item" for route in row["routes"])
+        assert any(source["source"] == "world/nature_mint_counter.json" for source in row["authored_acquisition"])
+        assert row["world_availability"]["status"] == "unverified"
+    assert not FieldMintUse.supports("Mint Berry")
+    assert not any(route["kind"] == "nature_training" for route in rows["mintberry"]["routes"])

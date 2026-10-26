@@ -137,6 +137,7 @@ class MegaEvolution:
             ivs=pokemon.ivs,
             evs=pokemon.evs,
             nature=pokemon.nature,
+            trained_stat_nature=getattr(pokemon, "trained_stat_nature", None),
             hyper_training=pokemon.hyper_training,
         )
         return {

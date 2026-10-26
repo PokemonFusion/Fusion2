@@ -235,5 +235,6 @@ class Marketplace:
                 f"status {summary.get('status') or 'healthy'}.\n"
                 f"Shiny: {'unrecorded; seller must cancel/relist' if type(summary.get('shiny')) is not bool else 'yes' if summary['shiny'] else 'no'}; Tera: {summary.get('tera_type')}; friendship: {summary.get('friendship')}.\n"
                 f"Hyper Training: {summary.get('hyper_training')}; moves: {moves}.\n"
+                f"Mint stats: {summary.get('trained_stat_nature', 'unrecorded') or 'none'} (genetic Nature unchanged).\n"
                 f"Use +market buy {listing.pk} after inspection, or +market cancel {listing.pk} if you are the seller. "
                 "Full parties use a box; purchases do not heal, grant EXP or trigger evolution." + outcome)

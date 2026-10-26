@@ -128,6 +128,30 @@ class BattleBoosterItem(GameplayItem):
                 "effect": self.effect, "battleOnly": True, "isPokeball": False}
 
 
+@dataclass(frozen=True)
+class NatureMintItem(GameplayItem):
+    """Publish one reviewed stat Nature preference, never genetic replacement."""
+
+    trained_nature: str
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Share exact field metadata while leaving enforcement to the fresh owned service."""
+        return {**super().raw, "price": 20000, "category": "Training Items", "fieldOnly": True,
+                "effect": "trained_stat_nature", "trainedNature": self.trained_nature}
+
+
+from pokemon.nature_training import NatureTraining
+
+NATURE_MINT_ITEMS = {
+    normalize_name(nature + " Mint"): NatureMintItem(nature + " Mint",
+        f"Field use: uses {nature} stat modifiers while preserving genetic Nature, breeding, "
+        "nature evolution and berry preferences. Use +use " + nature + " Mint=<current target>. "
+        "Equivalent modifiers have no effect; no held or battle use.", nature)
+    for nature in NatureTraining.mint_names
+}
+
+
 BATTLE_BOOSTER_ITEMS = {
     normalize_name(name): BattleBoosterItem(name,
         f"Manual battle use: {description} Use +item [acting slot] {name}=<actor's party slot>. "
@@ -231,6 +255,7 @@ FIELD_RECOVERY_EQUIVALENTS = {
 
 
 GAMEPLAY_ITEMS = {
+    **NATURE_MINT_ITEMS,
     **BATTLE_BOOSTER_ITEMS,
     **EXP_CANDY_ITEMS,
     **FIELD_TRAINING_ITEMS,

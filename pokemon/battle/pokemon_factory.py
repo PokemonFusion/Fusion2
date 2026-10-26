@@ -40,7 +40,9 @@ def _calc_stats_from_model(poke):
 
 	ivs_list = _stat_list(getattr(poke, "ivs", None))
 	evs_list = _stat_list(getattr(poke, "evs", None))
-	nature = getattr(poke, "nature", "Hardy")
+	from pokemon.nature_training import NatureTraining
+
+	nature = NatureTraining.effective(poke)
 	name = getattr(poke, "species", None) or getattr(poke, "name", "Pikachu")
 	level = getattr(poke, "_pf2_fusion_level", None) or getattr(poke, "level", 1)
 

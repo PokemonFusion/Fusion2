@@ -364,6 +364,9 @@ class CmdUseItem(Command):
       Fresh-Start Mochi resets all six valid EVs together; all-zero has no effect.
       Exp. Candy XS/S/M/L/XL grant bounded EXP. Use +learn pending afterward
       for stored crossed-level moves; no automatic evolution or revival occurs.
+      Nature Mints set a stat preference; genetic Nature, breeding, nature
+      evolution and berry preferences stay unchanged. Use a full name such
+      as +use Adamant Mint=3. Equivalent modifiers consume nothing.
       Ability Capsule switches ordinary ability slots 0/1. Ability Patch
       switches an ordinary slot to hidden H, or hidden H back to ordinary 0.
       Both use the saved native species/form slots; special abilities, absent
@@ -453,13 +456,14 @@ class CmdUseItem(Command):
         from pokemon.services.field_items import FieldMedicineUse
         from pokemon.services.field_progression import FieldRareCandyUse
         from pokemon.services.exp_candy import FieldExpCandyUse
+        from pokemon.services.field_mints import FieldMintUse
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_abilities import FieldAbilityUse
         from pokemon.services.field_hyper_training import FieldHyperTrainingUse
         from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
 
         field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse,
-                                                     FieldRareCandyUse, FieldExpCandyUse, FieldTrainingUse, FieldAbilityUse,
+                                                     FieldRareCandyUse, FieldExpCandyUse, FieldMintUse, FieldTrainingUse, FieldAbilityUse,
                                                      FieldHyperTrainingUse, FieldRecoveryEquivalentUse)
                               if service.supports(item_name)), None)
         if field_service is not None:

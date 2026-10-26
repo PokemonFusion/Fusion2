@@ -150,6 +150,7 @@ def _active_fusion_sheet(character):
         return SimpleNamespace(
                 species=owned.species, level=battle.level, hp=battle.hp, max_hp=battle.max_hp,
                 status=getattr(owned, "status", ""), types=battle.types, nature=owned.nature,
+                trained_stat_nature=getattr(owned, "trained_stat_nature", None),
                 ability=owned.ability, held_item=owned.held_item,
                 total_exp=getattr(owned, "_pf2_fusion_xp", owned.total_exp),
                 growth_rate=_growth_from_pokemon(owned), stats=stats,
@@ -226,6 +227,7 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         faction_chip = _chip(faction_display, "None", "|C")
 
         nature = getattr(db, "nature", getattr(char, "nature", None)) or "—"
+        trained_stat_nature = getattr(fusion, "trained_stat_nature", None) if fusion else None
         ability = getattr(db, "ability", getattr(char, "ability", None)) or "—"
         held_item = (
                 getattr(db, "held_item", None)
@@ -432,6 +434,9 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 kv_row("Nature", str(nature), "Ability", str(ability), width=width, theme=palette, screen_reader=screen_reader),
                 kv_row("Held Item", str(held_item), width=width, theme=palette, screen_reader=screen_reader),
         ]
+        if trained_stat_nature:
+                traits_block.append(kv_row("Mint stats", str(trained_stat_nature), "Genetic Nature", str(nature),
+                                           width=width, theme=palette, screen_reader=screen_reader))
 
         vitals_block = [
                 section_divider("Vitals", width=width, theme=palette, screen_reader=screen_reader),
@@ -702,6 +707,9 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 		f"{THEME['muted']}Ability|n: {THEME['value']}{ability}|n   "
 		f"{THEME['muted']}Held|n: {THEME['value']}{held}|n"
 	)
+	trained_stat_nature = getattr(pokemon, "trained_stat_nature", None)
+	if trained_stat_nature:
+		lines.append(f"{THEME['muted']}Mint stats|n: {THEME['value']}{trained_stat_nature}|n (genetic Nature remains {nature})")
 
 	stats = {STAT_KEY_MAP.get(k, k): v for k, v in get_stats(pokemon).items()}
 	headers = [

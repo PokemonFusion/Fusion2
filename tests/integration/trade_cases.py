@@ -411,6 +411,34 @@ class TradeCases(unittest.TestCase):
         self.assertFalse(PokemonReservation.objects.filter(pokemon=self.left).exists())
 
 
+    def test_paid_mint_is_visible_and_preserved_by_ordinary_trade(self):
+        """A separately labelled bag prerequisite funds training before genuine consent."""
+        from pokemon.services.field_mints import FieldMintUse
+        from pokemon.helpers.pokemon_helpers import get_stats
+
+        self.a.trainer.add_item("Adamant Mint")
+        self.assertTrue(FieldMintUse(self.a).use("Adamant Mint", "3"))
+        expected = get_stats(fresh_owned(self.left.pk))
+        operation = self.offer()
+        text = self.command(self.b, f"+trade inspect {operation.pk}")
+        self.assertIn("Adamant", text)
+        self.assertIn("Hardy", text)
+        self.command(self.b, f"+trade accept {operation.pk}")
+        current = fresh_owned(self.left.pk)
+        self.assertEqual(current.trainer_id, self.b.trainer.pk)
+        self.assertEqual((current.nature, current.trained_stat_nature), ("Hardy", "Adamant"))
+        self.assertEqual(get_stats(current), expected)
+
+    def test_changed_mint_training_invalidates_exact_trade_review(self):
+        """A labelled out-of-band saved change cannot inherit another asset's consent."""
+        operation = self.offer()
+        OwnedPokemon.objects.filter(pk=self.left.pk).update(trained_stat_nature="Adamant")
+        self.command(self.b, f"+trade accept {operation.pk}")
+        self.assertIn("changed", self.messages[self.b.pk][-1])
+        self.assertEqual(fresh_owned(self.left.pk).trainer_id, self.a.trainer.pk)
+        self.command(self.a, f"+trade cancel {operation.pk}")
+
+
 if __name__ == "__main__":
     with IsolatedPostgres() as database:
         database.create_model_tables()
