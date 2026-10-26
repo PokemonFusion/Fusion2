@@ -205,3 +205,15 @@ def test_six_repair_receipts_keep_exact_named_facets_and_local_limits():
     assert not rows["potion"]["current_repair_evidence"]
     assert all("no fresh live replay" in row["limit"] for row in receipts.values())
     assert all(len(row["sha256_lf"]) == 64 for row in receipts.values())
+
+
+def test_exp_candy_names_keep_paid_field_effect_and_optional_stock_distinct():
+    """All five exact definitions have field EXP, not battle or public-stock claims."""
+    rows = {row["key"]: row for row in ItemAvailabilityAudit().build()["items"]}
+    for size in ("xs", "s", "m", "l", "xl"):
+        row = rows["expcandy" + size]
+        assert any(route["kind"] == "exp" and route["command"] == "+use"
+                   and route["evidence_report"] == "exp-candy-2026-10-25" for route in row["routes"])
+        assert any(source["source"] == "world/exp_candy_counter.json" for source in row["authored_acquisition"])
+        assert not any(route["command"] == "+item" for route in row["routes"])
+        assert row["world_availability"]["status"] == "unverified"

@@ -137,6 +137,8 @@ class CmdLearn(Command):
 
     Usage:
       +learn <slot>
+      +learn pending
+      +learn pending <current token>=<active slot1-4 or store>
 
     Examples:
       +learn
@@ -158,6 +160,25 @@ class CmdLearn(Command):
 
     def func(self):
         if not require_no_battle_lock(self.caller):
+            return
+        raw = self.args.strip()
+        prefix, _, tail = raw.partition(" ")
+        if prefix.casefold() == "pending":
+            from pokemon.services.item_learning import ItemLearning, ItemLearningError
+
+            service = ItemLearning(self.caller)
+            try:
+                if not tail.strip():
+                    service.present()
+                else:
+                    token, separator, choice = tail.strip().partition("=")
+                    if not separator:
+                        raise ItemLearningError("Use +learn pending <current token>=<1-4 or store>.")
+                    choice = choice.strip().casefold()
+                    selection = int(choice) if choice in {"1", "2", "3", "4"} else choice
+                    service.choose(token.strip(), selection)
+            except ValueError as error:
+                self.caller.msg(str(error))
             return
         from pokemon.utils.move_learning import get_learnable_levelup_moves
 

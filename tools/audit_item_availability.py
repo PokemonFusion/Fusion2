@@ -157,6 +157,7 @@ class ItemAvailabilityAudit:
         from pokemon.services.field_items import FieldMedicineUse
         from pokemon.services.field_pp import FieldPPCapacityUse
         from pokemon.services.field_progression import FieldRareCandyUse
+        from pokemon.services.exp_candy import FieldExpCandyUse
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
         from pokemon.services.item_supply import ItemSupplyRoute
@@ -178,7 +179,7 @@ class ItemAvailabilityAudit:
         repairs = repair_receipts()
         recipes = []
         for filename in ("mega_stone_counter.json", "z_crystal_counter.json", "berry_nursery.json",
-                         "berry_seed_counter.json", "ev_mochi_counter.json"):
+                         "berry_seed_counter.json", "ev_mochi_counter.json", "exp_candy_counter.json"):
             path = ROOT / "world" / filename
             recipe = json.loads(path.read_text(encoding="utf-8"))
             recipes.append(("world/" + filename, recipe))
@@ -195,6 +196,7 @@ class ItemAvailabilityAudit:
                     (FieldHyperTrainingUse, "hyper_training", "hyper-training-2026-10-22"),
                     (FieldPPCapacityUse, "pp_capacity", "pp-capacity-2026-10-22"),
                     (FieldRareCandyUse, "level", "rare-candy-2026-10-22"),
+                    (FieldExpCandyUse, "exp", "exp-candy-2026-10-25"),
                     (FieldRecoveryEquivalentUse, "field_recovery_equivalent", "item-followups-2026-10-22")]
         rows = []
         for key in sorted(scoped):

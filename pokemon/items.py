@@ -101,6 +101,30 @@ class EVTrainingItem(GameplayItem):
                 "amount": self.amount, "fieldOnly": True}
 
 
+@dataclass(frozen=True)
+class ExpCandyItem(GameplayItem):
+    """Describe one bounded field EXP gain; activation uses the atomic service."""
+
+    amount: int
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Share the authored amount/price without inventing a held/battle effect."""
+        return {**super().raw, "price": self.amount, "category": "Training Items",
+                "effect": "exp", "amount": self.amount, "fieldOnly": True}
+
+
+EXP_CANDY_ITEMS = {
+    normalize_name("Exp. Candy " + size): ExpCandyItem(
+        "Exp. Candy " + size,
+        f"Field use: grants up to {amount} EXP within the species' level100 threshold. "
+        "Use +use Exp. Candy " + size + "=<current target>. Earned moves stay stored; "
+        "use +learn pending for active choices. No evolution, revival, held or manual battle effect.",
+        amount)
+    for size, amount in (("XS", 100), ("S", 800), ("M", 3000), ("L", 10000), ("XL", 30000))
+}
+
+
 FIELD_TRAINING_ITEMS = {
     normalize_name(name): EVTrainingItem(
         name, f"Field use: adds up to 10 {stat} EVs within stat/total caps. "
@@ -176,6 +200,7 @@ FIELD_RECOVERY_EQUIVALENTS = {
 
 
 GAMEPLAY_ITEMS = {
+    **EXP_CANDY_ITEMS,
     **FIELD_TRAINING_ITEMS,
     **FIELD_RECOVERY_EQUIVALENTS,
     "gimmighoulcoin": EvolutionItem(
