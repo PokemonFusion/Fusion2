@@ -44,7 +44,7 @@ class OwnedBattleActor:
 
         if (
             participant not in battle.participants
-            or battle.battle_over
+            or (battle.battle_over and active)
             or getattr(battle.type, "name", "") not in {"WILD", "TRAINER", "PVP"}
             or (len(battle.participants) != 2 and not (
                 getattr(battle, 'multi', False) and len(battle.participants) == 4
