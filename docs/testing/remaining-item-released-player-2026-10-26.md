@@ -1,16 +1,34 @@
 # Remaining item released player acceptance (2026-10-26)
 
-**In progress. The eleven issues remain open.** PF2-Dev deliberately runs
+**All eleven player-route checks passed; final cleanup remains incomplete and
+the issues stay open.** PF2-Dev deliberately runs
 **4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9**, upgraded atomically from Pokemon0058
 to0059 under the explicitly approved [release plan](remaining-item-release-plan-2026-10-26.md).
-The [cleanup supplement](remaining-item-fusion-cleanup-supplement-2026-10-26.md)
-is also explicitly approved and staged; final cleanup has not run.
 
-The four real nursery crops finish after **2026-10-26 15:06:40 UTC**. Their
-first two stages have been watered at actual elapsed times. Stage-three/four
-watering, harvest, useful owned cures and the second guarded Evennia stop/start
-cycle remain pending. No clock was advanced. This checkpoint is recoverable
-progress, not issue closure or final health certification.
+Four growers completed all four genuine one-hour stages and harvested after
+their actual four-hour deadlines. Every yield was5; repeat harvest added nothing.
+Ordinary `+use` cured each grower's separately labelled paralysis/poison/burn/
+freeze, consumed one copy and left4. Healthy repeats consumed nothing. Exact
+planted/ready/observed UTC/cycle receipts are in the machine report. No clock was
+advanced; real breeding production/hatch waits also passed.
+
+After ordinary logout the approved Fusion cleanup refused **before deletion**:
+logout clears the transient account FK, while that controller expected it to
+remain attached. Its transaction rolled back. The already approved second start
+restored the exact game; all1,188 hashes,0059, five listeners, ordinary greeting/
+logins and protected original-data checks passed independently. The four QA
+accounts and25 owned Pokemon remain intact, logged out, and their tunnel ended.
+Both originally approved maintenance cycles are used. No cleanup receipt was
+forged and no account link, source, stock, refill or game rule was rewritten.
+
+The [tested logged-out cleanup plan](remaining-item-logout-cleanup-plan-2026-10-26.md)
+proposes a fresh persistent-roster guard and one additional guarded Evennia-only
+cycle. Eight isolated SQL cases pass, including every-other-row preservation,
+missing/foreign/attached identity refusal, active/foreign Fusion protections,
+unfamiliar occupants and full rollback after injected partial deletion. The
+first proposal exposed stale FK cache behavior; fresh SQL fixed it. Those tests
+are separate from live deletion and authorize no operation. Explicit approval,
+actual cleanup and final independent health remain required before closure.
 
 ## Completed released routes
 
@@ -51,7 +69,7 @@ not certify permanent public acquisition of the crystal or every base species.
   Jolteon, Leafeon, Glaceon, Bellossom, Clefable and Vaporeon. The Water Stone
   followed Candy leveling and a later battle; Candy did not auto-evolve it.
 - Allfive EXP Candy sizes worked. XS also gave a same-level gain at50; level100
-  refused without debit. The new Eevee progressed5→6→10→15→24→35. Candy M left
+  refused without debit. The new Eevee progressed5â†’6â†’10â†’15â†’24â†’35. Candy M left
   labelled HP0 unchanged. Separate purchased Revive restored22/44, then L/XL
   retained the22-point deficit at43/65 and68/90. Reconnect retained progression
   and actual earned choices; an expired token refused, Quick Attack activated
@@ -63,7 +81,8 @@ not certify permanent public acquisition of the crystal or every base species.
   Dusk activated at Photon0, used ordinary battle Ether and paid one Photon PP
   for its later signature; Dawn paid its boosted6-capacity source. Psychic/Dragon,
   native Neuroforce, earned Growl stages and distinct Ultra/Z budgets persisted.
-  Final Photon PP was4/5, revived host HP85/84, and both companions stayed frozen.
+  At end/separation, Photon PP was4/5 for Dusk and5/6 for Dawn; revived host
+  HP was85/84, and both companions stayed frozen.
   Both crystals returned reusable. Real Transform with copied paired appearance
   and Prism Armor still refused; displaced Photon and a stale preview refused.
 - Mint genetics also survived real Everstone breeding and the actual30-minute
@@ -71,17 +90,17 @@ not certify permanent public acquisition of the crystal or every base species.
   Naughty, with no Brave training overlay. The trained/Hyper Trained Mew passed
   a consent trade and inspected100-money marketplace return without resource or
   genetic changes. The Careful initial Fusion body fought and reconnected, then
-  ordinarily unfused. Wiki healed80→190 and caused actual confusion from genetic
+  ordinarily unfused. Wiki healed80â†’190 and caused actual confusion from genetic
   Jolly despite its opposite Sassy mint preference.
-- Held Sitrus restored143→228 and Lum cured labelled poison, consuming each copy.
+- Held Sitrus restored143â†’228 and Lum cured labelled poison, consuming each copy.
   Full-HP Magikarp survived an actual Psychic at1/18 HP using Focus Sash. Choice
   Band/Specs produced useful damage and alternate-move lock refusals; Scarf
   reversed ordinary equal-priority order. Each reusable Choice copy returned once.
 
 ## Evidence and remaining limits
 
-The retained observations pass **61 material outcome assertions across102
-independent checkpoints** at this progress snapshot. Fourteen additional
+The retained observations pass **61 material outcome assertions across117
+independent checkpoints**, plus the four real nursery harvest/cure receipts. Fourteen additional
 medicine conservation receipts and five per-stone effect receipts are included
 in the machine record. The [ordinary input ledger](remaining-item-player-commands-2026-10-26.json)
 omits authentication and ambient human output, retaining only allowlisted
@@ -101,14 +120,19 @@ the mistaken Splash attempt spent no turn and was repeated using Tackle.
 After a consent trade freed slot2, the hatched offspring occupied that actual
 hole rather than the runner's assumed slot6. Paid actions were not replayed.
 
-A separate battle setup problem admitted a breeding egg into the roster, then
+The separate [battle finding #918](https://github.com/PokemonFusion/Fusion2/issues/918)
+admitted a breeding egg into the roster, then
 the owned-actor guard refused the whole turn. The failed checkpoint is retained;
 the successful Dawn lifecycle ordinarily boxed that egg first. This is excluded
 from the item implementation; unrelated battle#915 remains untouched.
 
-All102 observations preserved the43 protected original tables and existing human
+All117 observations preserved the43 protected original tables and existing human
 Attributes/links. Only the exact tagged QA identities are fixtures. Private
-backups, raw controller evidence and credentials remain private. Permanent
-content/sales stay installed; the approved final teardown will remove only
-closed tagged QA data after all real-time growing work finishes. Plot-only
-items and unrelated shared-worktree changes remain excluded.
+backups, raw controller evidence and credentials remain private. One post-logout
+read-only observer refused its attached-account assumption and produced no
+counted checkpoint; independent maintenance/recovery guards verified no active
+sessions/ownership work and preserved original data. Permanent content/sales
+remain installed. Only the exact closed tagged QA fixtures await the proposed
+cleanup approval. Plot-only items and all25 unrelated shared dirty paths remain
+excluded; all1,188 qualified application identities still match. The temporary
+QA crystal/capture helpers are not certified permanent public acquisition.

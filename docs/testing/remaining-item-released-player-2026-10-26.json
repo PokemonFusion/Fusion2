@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "IN PROGRESS: real nursery harvest and final guarded cleanup/health pending; issues remain open",
-  "observed_utc": "2026-10-26T12:55:49.052680+00:00",
+  "status": "PLAYER CHECKS COMPLETE; guarded cleanup refused before deletion; recovered healthy; replacement controller and one additional maintenance cycle await explicit approval; eleven issues remain open",
+  "observed_utc": "2026-10-26T15:24:15.027068+00:00",
   "environment": "PF2-Dev",
   "game_candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
   "migration": "0059_owned_trained_stat_nature",
@@ -56,7 +56,8 @@
           "installed": 10,
           "remaining": 9
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 878,
@@ -90,7 +91,8 @@
           "installed": 2,
           "remaining": 1
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 879,
@@ -124,7 +126,8 @@
           "installed": 2,
           "remaining": 1
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 880,
@@ -170,7 +173,8 @@
           "installed": 5,
           "remaining": 4
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 881,
@@ -216,7 +220,8 @@
           "installed": 2,
           "remaining": 1
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 882,
@@ -250,7 +255,8 @@
           "installed": 1,
           "remaining": 0
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 883,
@@ -296,7 +302,8 @@
           "installed": 1,
           "remaining": 0
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 893,
@@ -330,7 +337,8 @@
           "installed": 5,
           "remaining": 4
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 896,
@@ -370,7 +378,8 @@
           "installed": 1,
           "remaining": 0
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     },
     {
       "issue": 904,
@@ -506,11 +515,12 @@
           "installed": 1,
           "remaining": 0
         }
-      ]
+      ],
+      "observed_utc": "2026-10-26T15:08:43.651040+00:00"
     }
   ],
   "effects": {
-    "status": "untimed released checks complete; real nursery harvest and final cleanup pending",
+    "status": "Untimed released outcome checks passed; actual four-hour nursery receipts separately passed; final cleanup remains incomplete",
     "meaningful_assertions": 61,
     "claims": [
       "All independent observations preserve every protected original table",
@@ -575,7 +585,7 @@
       "Exact installer retry preserves all current stock and source IDs",
       "Installer retry preserves owned, wallets, bags and placements"
     ],
-    "independent_observations": 102,
+    "independent_observations": 117,
     "ultra": {
       "Dusk": {
         "photon_after_signature": 4,
@@ -1078,12 +1088,136 @@
       "other_owned_and_wallet_stock_unchanged": true
     }
   ],
-  "socket_inputs_so_far": 1079,
-  "published_ordinary_inputs": 1058,
+  "socket_inputs_so_far": 1203,
+  "published_ordinary_inputs": 1162,
   "pending": [
-    "Stage-three and stage-four watering at real elapsed times",
-    "All four nursery harvests after 15:06:40 UTC and useful owned cures",
-    "Approved stopped-instance tagged cleanup supplement and same-build health verification",
-    "Final report, scoped commit/push, issue closures and tracker update"
+    "Explicit approval of exact logged-out cleanup controller and one additional guarded Evennia stop/start cycle",
+    "Exact tagged QA cleanup and independent same-build final health/source verification",
+    "Final released availability index/report, scoped commit/push, eleven child closures and tracker update"
+  ],
+  "nursery": {
+    "all_four_actual_real_hour_flows_passed": true,
+    "records": [
+      {
+        "player": "QA_Dusk",
+        "berry": "Cheri Berry",
+        "cycle": "a76d93d8-35b1-4e55-b71b-277a3e0ecce0",
+        "planted_at": "2026-10-26 11:06:09.430505+00:00",
+        "ready_at": "2026-10-26 15:06:09.430505+00:00",
+        "harvested_at_checkpoint": "2026-10-26T15:07:17.221712+00:00",
+        "actual_elapsed_seconds_at_before_observation": 14458.726981,
+        "real_hours": true,
+        "watered_all_four_stages": true,
+        "harvest": 5,
+        "repeated_harvest_adds_nothing": true,
+        "separate_labelled_prerequisite": "par",
+        "normal_use": "+use Cheri Berry=DuskMew",
+        "status_cured": true,
+        "one_copy_debit": true,
+        "healthy_repeat_no_debit": true,
+        "remaining": 4,
+        "pp_other_owned_wallet_stock_and_existing_data_preserved": true
+      },
+      {
+        "player": "QA_Dawn",
+        "berry": "Pecha Berry",
+        "cycle": "2283dca2-0042-4e3e-a591-428ff7b84af1",
+        "planted_at": "2026-10-26 11:06:19.725796+00:00",
+        "ready_at": "2026-10-26 15:06:19.725796+00:00",
+        "harvested_at_checkpoint": "2026-10-26T15:07:40.696295+00:00",
+        "actual_elapsed_seconds_at_before_observation": 14472.494283,
+        "real_hours": true,
+        "watered_all_four_stages": true,
+        "harvest": 5,
+        "repeated_harvest_adds_nothing": true,
+        "separate_labelled_prerequisite": "psn",
+        "normal_use": "+use Pecha Berry=DawnMew",
+        "status_cured": true,
+        "one_copy_debit": true,
+        "healthy_repeat_no_debit": true,
+        "remaining": 4,
+        "pp_other_owned_wallet_stock_and_existing_data_preserved": true
+      },
+      {
+        "player": "QA_Rawst",
+        "berry": "Rawst Berry",
+        "cycle": "85cafb64-196f-4c9f-a330-a9f99272ad2a",
+        "planted_at": "2026-10-26 11:06:30.076555+00:00",
+        "ready_at": "2026-10-26 15:06:30.076555+00:00",
+        "harvested_at_checkpoint": "2026-10-26T15:08:05.142834+00:00",
+        "actual_elapsed_seconds_at_before_observation": 14486.314735,
+        "real_hours": true,
+        "watered_all_four_stages": true,
+        "harvest": 5,
+        "repeated_harvest_adds_nothing": true,
+        "separate_labelled_prerequisite": "brn",
+        "normal_use": "+use Rawst Berry=RawstMew",
+        "status_cured": true,
+        "one_copy_debit": true,
+        "healthy_repeat_no_debit": true,
+        "remaining": 4,
+        "pp_other_owned_wallet_stock_and_existing_data_preserved": true
+      },
+      {
+        "player": "QA_Aspear",
+        "berry": "Aspear Berry",
+        "cycle": "04e9f383-9d53-449f-96ae-b923ed794d16",
+        "planted_at": "2026-10-26 11:06:40.344072+00:00",
+        "ready_at": "2026-10-26 15:06:40.344072+00:00",
+        "harvested_at_checkpoint": "2026-10-26T15:08:28.285400+00:00",
+        "actual_elapsed_seconds_at_before_observation": 14499.796523,
+        "real_hours": true,
+        "watered_all_four_stages": true,
+        "harvest": 5,
+        "repeated_harvest_adds_nothing": true,
+        "separate_labelled_prerequisite": "frz",
+        "normal_use": "+use Aspear Berry=AspearMew",
+        "status_cured": true,
+        "one_copy_debit": true,
+        "healthy_repeat_no_debit": true,
+        "remaining": 4,
+        "pp_other_owned_wallet_stock_and_existing_data_preserved": true
+      }
+    ]
+  },
+  "cleanup": {
+    "complete": false,
+    "refused_before_deletion": true,
+    "diagnosis": "Normal logout cleared the transient active account FK required by the prior cleanup; its transaction refused before deletion. The replacement checks the persistent roster and current SQL attachment state.",
+    "tagged_accounts_retained": 4,
+    "tagged_owned_retained": 25,
+    "ordinary_players_logged_out": true,
+    "owned_tunnel_ended": true,
+    "original_two_evennia_cycles_used": true,
+    "additional_cycle_proposed": 1,
+    "approval_pending": true
+  },
+  "recovery_health": {
+    "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
+    "migration": "0059_owned_trained_stat_nature",
+    "qualified_python_sources": 1188,
+    "ports": [
+      4000,
+      4001,
+      4002,
+      4005,
+      4006
+    ],
+    "ordinary_greeting_received": true,
+    "ordinary_logins_enabled": true,
+    "observed_utc": "2026-10-26T15:14:37.440869+00:00",
+    "protected": {
+      "tables": 43,
+      "all_original_columns_and_rows_unchanged": true,
+      "original_human_attributes_unchanged": true
+    },
+    "cleanup_complete": false
+  },
+  "post_logout_observer_diagnosis": "One extra read-only snapshot refused its attached-account assumption after logout; no checkpoint was counted. The maintenance/recovery guards independently verified disconnection and original data. No paid player action was repeated.",
+  "separate_battle_findings": [
+    {
+      "issue": 918,
+      "status": "open; separately authorized battle finding; ordinary boxing used for this item walkthrough"
+    }
   ]
 }

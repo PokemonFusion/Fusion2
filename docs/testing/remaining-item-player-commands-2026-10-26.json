@@ -1,5 +1,5 @@
 {
-  "status": "IN PROGRESS: real nursery harvest and final guarded cleanup/health pending; issues remain open",
+  "status": "PLAYER CHECKS COMPLETE; guarded cleanup refused before deletion; recovered healthy; replacement controller and one additional maintenance cycle await explicit approval; eleven issues remain open",
   "note": "All non-authentication ordinary inputs; alias QA identities; only allowlisted response fragments. Raw output, credentials and ambient existing-human data stay private. Input presence alone is not a useful-effect assertion; see independent outcome checks and diagnosed refusals.",
   "inputs": [
     {
@@ -6662,6 +6662,682 @@
       "player": "QA_Rawst",
       "command": "+concede yes",
       "utc": "2026-10-26T12:46:58.971427+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "goic 1",
+      "utc": "2026-10-26T13:07:07.587391+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "limbo",
+      "utc": "2026-10-26T13:07:08.430080+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "(A)lpha (H)ub",
+      "utc": "2026-10-26T13:07:09.286783+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "seeds",
+      "utc": "2026-10-26T13:07:10.147801+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:11.034845+00:00",
+      "verified_response_fragments": [
+        "Cheri Berry: growing stage 3/4; ready at 2026-10-26T15:06:09.430505+00:00; yield 3; cycle a76d93d8-35b1-4e55-b71b-277a3e0ecce0."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry water",
+      "utc": "2026-10-26T13:07:11.848408+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 3. Expected yield: 4."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:12.680744+00:00",
+      "verified_response_fragments": [
+        "Cheri Berry: growing stage 3/4; ready at 2026-10-26T15:06:09.430505+00:00; yield 4; cycle a76d93d8-35b1-4e55-b71b-277a3e0ecce0."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T13:07:13.498826+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "back",
+      "utc": "2026-10-26T13:07:14.317066+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "goic 1",
+      "utc": "2026-10-26T13:07:16.715959+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "limbo",
+      "utc": "2026-10-26T13:07:17.590199+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "(A)lpha (H)ub",
+      "utc": "2026-10-26T13:07:18.451134+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "seeds",
+      "utc": "2026-10-26T13:07:19.310160+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:20.177122+00:00",
+      "verified_response_fragments": [
+        "Pecha Berry: growing stage 3/4; ready at 2026-10-26T15:06:19.725796+00:00; yield 3; cycle 2283dca2-0042-4e3e-a591-428ff7b84af1."
+      ]
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry water",
+      "utc": "2026-10-26T13:07:21.008813+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 3. Expected yield: 4."
+      ]
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:21.853019+00:00",
+      "verified_response_fragments": [
+        "Pecha Berry: growing stage 3/4; ready at 2026-10-26T15:06:19.725796+00:00; yield 4; cycle 2283dca2-0042-4e3e-a591-428ff7b84af1."
+      ]
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T13:07:22.683043+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "back",
+      "utc": "2026-10-26T13:07:23.534097+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "goic 1",
+      "utc": "2026-10-26T13:07:25.900824+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "limbo",
+      "utc": "2026-10-26T13:07:26.776473+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "(A)lpha (H)ub",
+      "utc": "2026-10-26T13:07:27.648476+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "seeds",
+      "utc": "2026-10-26T13:07:28.511612+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:29.353987+00:00",
+      "verified_response_fragments": [
+        "Rawst Berry: growing stage 3/4; ready at 2026-10-26T15:06:30.076555+00:00; yield 3; cycle 85cafb64-196f-4c9f-a330-a9f99272ad2a."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry water",
+      "utc": "2026-10-26T13:07:30.185867+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 3. Expected yield: 4."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:31.000122+00:00",
+      "verified_response_fragments": [
+        "Rawst Berry: growing stage 3/4; ready at 2026-10-26T15:06:30.076555+00:00; yield 4; cycle 85cafb64-196f-4c9f-a330-a9f99272ad2a."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T13:07:31.846148+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "back",
+      "utc": "2026-10-26T13:07:32.692506+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "goic 1",
+      "utc": "2026-10-26T13:07:35.184579+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "limbo",
+      "utc": "2026-10-26T13:07:36.041617+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "(A)lpha (H)ub",
+      "utc": "2026-10-26T13:07:36.888786+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "seeds",
+      "utc": "2026-10-26T13:07:37.744561+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:38.634340+00:00",
+      "verified_response_fragments": [
+        "Aspear Berry: growing stage 3/4; ready at 2026-10-26T15:06:40.344072+00:00; yield 3; cycle 04e9f383-9d53-449f-96ae-b923ed794d16."
+      ]
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry water",
+      "utc": "2026-10-26T13:07:39.464542+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 3. Expected yield: 4."
+      ]
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry status",
+      "utc": "2026-10-26T13:07:40.306834+00:00",
+      "verified_response_fragments": [
+        "Aspear Berry: growing stage 3/4; ready at 2026-10-26T15:06:40.344072+00:00; yield 4; cycle 04e9f383-9d53-449f-96ae-b923ed794d16."
+      ]
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T13:07:41.145406+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "back",
+      "utc": "2026-10-26T13:07:42.009918+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "goic 1",
+      "utc": "2026-10-26T14:07:07.606251+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "seeds",
+      "utc": "2026-10-26T14:07:08.494250+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:09.339310+00:00",
+      "verified_response_fragments": [
+        "Cheri Berry: growing stage 4/4; ready at 2026-10-26T15:06:09.430505+00:00; yield 4; cycle a76d93d8-35b1-4e55-b71b-277a3e0ecce0."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry water",
+      "utc": "2026-10-26T14:07:10.168243+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 4. Expected yield: 5."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:11.000319+00:00",
+      "verified_response_fragments": [
+        "Cheri Berry: growing stage 4/4; ready at 2026-10-26T15:06:09.430505+00:00; yield 5; cycle a76d93d8-35b1-4e55-b71b-277a3e0ecce0."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T14:07:11.843591+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "back",
+      "utc": "2026-10-26T14:07:12.673591+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "goic 1",
+      "utc": "2026-10-26T14:07:15.134773+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "seeds",
+      "utc": "2026-10-26T14:07:15.977623+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:16.865497+00:00",
+      "verified_response_fragments": [
+        "Pecha Berry: growing stage 4/4; ready at 2026-10-26T15:06:19.725796+00:00; yield 4; cycle 2283dca2-0042-4e3e-a591-428ff7b84af1."
+      ]
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry water",
+      "utc": "2026-10-26T14:07:17.670066+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 4. Expected yield: 5."
+      ]
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:18.507593+00:00",
+      "verified_response_fragments": [
+        "Pecha Berry: growing stage 4/4; ready at 2026-10-26T15:06:19.725796+00:00; yield 5; cycle 2283dca2-0042-4e3e-a591-428ff7b84af1."
+      ]
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T14:07:19.337601+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "back",
+      "utc": "2026-10-26T14:07:20.167317+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "goic 1",
+      "utc": "2026-10-26T14:07:22.592720+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "seeds",
+      "utc": "2026-10-26T14:07:23.451472+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:24.311114+00:00",
+      "verified_response_fragments": [
+        "Rawst Berry: growing stage 4/4; ready at 2026-10-26T15:06:30.076555+00:00; yield 4; cycle 85cafb64-196f-4c9f-a330-a9f99272ad2a."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry water",
+      "utc": "2026-10-26T14:07:25.154643+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 4. Expected yield: 5."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:26.010869+00:00",
+      "verified_response_fragments": [
+        "Rawst Berry: growing stage 4/4; ready at 2026-10-26T15:06:30.076555+00:00; yield 5; cycle 85cafb64-196f-4c9f-a330-a9f99272ad2a."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T14:07:26.825895+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "back",
+      "utc": "2026-10-26T14:07:27.655454+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "goic 1",
+      "utc": "2026-10-26T14:07:30.070334+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "seeds",
+      "utc": "2026-10-26T14:07:30.930859+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:31.785627+00:00",
+      "verified_response_fragments": [
+        "Aspear Berry: growing stage 4/4; ready at 2026-10-26T15:06:40.344072+00:00; yield 4; cycle 04e9f383-9d53-449f-96ae-b923ed794d16."
+      ]
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry water",
+      "utc": "2026-10-26T14:07:32.632596+00:00",
+      "verified_response_fragments": [
+        "Watered growing stage 4. Expected yield: 5."
+      ]
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry status",
+      "utc": "2026-10-26T14:07:33.483149+00:00",
+      "verified_response_fragments": [
+        "Aspear Berry: growing stage 4/4; ready at 2026-10-26T15:06:40.344072+00:00; yield 5; cycle 04e9f383-9d53-449f-96ae-b923ed794d16."
+      ]
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T14:07:34.302513+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "back",
+      "utc": "2026-10-26T14:07:35.115027+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "seeds",
+      "utc": "2026-10-26T15:07:10.745188+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:07:11.575278+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:07:12.420281+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:07:13.249053+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:07:14.094054+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+use Cheri Berry=DuskMew",
+      "utc": "2026-10-26T15:07:27.388770+00:00",
+      "verified_response_fragments": [
+        "Used Cheri Berry on DuskMew."
+      ]
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+use Cheri Berry=DuskMew",
+      "utc": "2026-10-26T15:07:28.234693+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "+party 2",
+      "utc": "2026-10-26T15:07:29.127704+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "back",
+      "utc": "2026-10-26T15:07:29.991017+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "seeds",
+      "utc": "2026-10-26T15:07:34.854081+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:07:35.668089+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:07:36.505646+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:07:37.336055+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:07:38.165052+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+use Pecha Berry=DawnMew",
+      "utc": "2026-10-26T15:07:51.157679+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+use Pecha Berry=DawnMew",
+      "utc": "2026-10-26T15:07:52.041678+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "+party 2",
+      "utc": "2026-10-26T15:07:52.944688+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "back",
+      "utc": "2026-10-26T15:07:53.819832+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "seeds",
+      "utc": "2026-10-26T15:07:59.492432+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:08:00.321940+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:08:01.181983+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:08:02.012045+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:08:02.871206+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+use Rawst Berry=RawstMew",
+      "utc": "2026-10-26T15:08:15.472963+00:00",
+      "verified_response_fragments": [
+        "Used Rawst Berry on RawstMew."
+      ]
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+use Rawst Berry=RawstMew",
+      "utc": "2026-10-26T15:08:16.335006+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "+party 1",
+      "utc": "2026-10-26T15:08:17.149527+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "back",
+      "utc": "2026-10-26T15:08:18.012046+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "seeds",
+      "utc": "2026-10-26T15:08:22.683417+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:08:23.530270+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:08:24.389882+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry harvest",
+      "utc": "2026-10-26T15:08:25.203427+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+berry status",
+      "utc": "2026-10-26T15:08:26.061472+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+use Aspear Berry=AspearMew",
+      "utc": "2026-10-26T15:08:38.823297+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+use Aspear Berry=AspearMew",
+      "utc": "2026-10-26T15:08:39.683844+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "+party 2",
+      "utc": "2026-10-26T15:08:40.557859+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "back",
+      "utc": "2026-10-26T15:08:41.396888+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dusk",
+      "command": "quit",
+      "utc": "2026-10-26T15:09:26.448680+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Dawn",
+      "command": "quit",
+      "utc": "2026-10-26T15:09:26.557677+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Rawst",
+      "command": "quit",
+      "utc": "2026-10-26T15:09:26.663227+00:00",
+      "verified_response_fragments": []
+    },
+    {
+      "player": "QA_Aspear",
+      "command": "quit",
+      "utc": "2026-10-26T15:09:26.821884+00:00",
       "verified_response_fragments": []
     }
   ]
