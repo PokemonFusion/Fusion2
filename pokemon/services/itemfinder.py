@@ -24,7 +24,7 @@ class ItemfinderClaim:
 
     def claim(self):
         """Deliver at most one Potion for this attempt, or return an honest refusal."""
-        from django.db import transaction
+        from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
         from pokemon.models.trainer import Trainer
         from pokemon.names import normalize_name
@@ -32,6 +32,11 @@ class ItemfinderClaim:
         from pokemon.services.item_shop import ShopPurchase
         from utils.locks import require_no_battle_lock
 
+        if connection.in_atomic_block:
+            # Public hunt output cannot be recalled if its enclosing operation
+            # later aborts. Refuse before credit/receipt rather than announce a
+            # Potion that has not reached an outer commit boundary.
+            return "Item searches require a fresh player command; no item was granted."
         character = BattleRewards.character(self.hunter)
         if not BattleRewards.supports(self.hunter):
             return None
