@@ -3008,6 +3008,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def on_faint(self, pokemon) -> None:
         """Mark ``pokemon`` as fainted and trigger callbacks."""
         self.remove_volatile(pokemon, "roost")
+        self.remove_volatile(pokemon, "focusenergy")
+        if (getattr(pokemon, "tempvals", {}) or {}).pop("bag_boosters", False):
+            self.reset_stat_changes(pokemon)
         pokemon.is_fainted = True
         cause = (getattr(pokemon, "tempvals", {}) or {}).pop("faint_cause", {})
         source, effect = cause.get("source"), cause.get("effect")
@@ -3224,8 +3227,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         ) is False:
                             continue
                         passed_substitute = None
+                        passed_focus = None
                         if active.tempvals.get("baton_pass"):
                             passed_substitute = getattr(active, "volatiles", {}).get("substitute")
+                            passed_focus = getattr(active, "volatiles", {}).get("focusenergy")
                         self.on_switch_out(active, source=replacement)
                         assign_active(part, slot, replacement)
                         setattr(replacement, "side", part.side)
@@ -3240,6 +3245,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 if not hasattr(replacement, "volatiles"):
                                     replacement.volatiles = {}
                                 replacement.volatiles["substitute"] = dict(sub)
+                            if passed_focus:
+                                replacement.volatiles["focusenergy"] = {
+                                    **(dict(passed_focus) if isinstance(passed_focus, dict) else {"id": "focusenergy", "source": active}),
+                                    "target": replacement}
+                            if active.tempvals.get("bag_boosters"):
+                                replacement.tempvals["bag_boosters"] = True
                             active.tempvals.pop("baton_pass", None)
                         if shedtail_substitute:
                             if not hasattr(replacement, "volatiles"):

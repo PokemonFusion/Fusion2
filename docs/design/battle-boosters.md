@@ -137,3 +137,8 @@ migration/release operations and ordinary acceptance remain with these open issu
 | [#909](https://github.com/PokemonFusion/Fusion2/issues/909) | Implement Guard Spec. with timed source-aware Mist protection | #871, #907 |
 
 Scope/source checks: [2026-10-25 decision receipt](../testing/item-scope-decisions-2026-10-25.md).
+
+The bounded runtime implementation is described in the
+[player guide](../battle-boosters.md). It includes the ordinary accuracy-stage,
+Focus Energy lifecycle and structured/source-aware Mist prerequisites. Source
+recipes remain opt-in; their publication does not install a shared counter.

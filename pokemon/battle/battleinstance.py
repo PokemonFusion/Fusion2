@@ -1848,6 +1848,9 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             from .z_moves import ZMoves
 
             ZMoves.cleanup(self.battle)
+            from .battle_boosters import BattleBoosters
+
+            BattleBoosters.cleanup(self.battle)
         self._sync_player_pokemon_state(strict=True)
         self._set_player_control(False)
         self._cleanup_saved_battle()
@@ -2033,6 +2036,11 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                         raise ValueError("The saved item target is no longer on that side.")
                     action = Action(actor, ActionType.ITEM, target, item=item, priority=6, pokemon=pokemon,
                                     target_pokemon=chosen, target_slot=slot_for(target, chosen), item_move=declaration.get("item_move"))
+                    from .battle_boosters import BattleBoosters
+
+                    if BattleBoosters.supports(item) and (declaration.get("booster_version") != 1
+                            or chosen is not pokemon or action.item_move is not None):
+                        raise ValueError("The saved booster target/policy requires a fresh choice.")
                     position.declareItem(item)
                 elif "run" in declaration:
                     action = Action(actor, ActionType.RUN, self.battle.opponent_of(actor), pokemon=pokemon, priority=9)
@@ -2070,8 +2078,12 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
         if not BattleRewards.supports(self.captainA):
             self.battle.run_turn()
             return
-        from django.db import transaction
+        from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
+        from .battle_boosters import BattleBoosters
+
+        if BattleBoosters.tracked(self.battle) and connection.in_atomic_block:
+            raise ValueError("Submit a booster turn outside a containing transaction; no turn changed.")
         snapshot = self.logic.to_dict()
         adventure_result = getattr(self, "_adventure_result", None)
         controllers = {(getattr(part, 'controller_id', None) or part.team): part.player for part in self.battle.participants}
@@ -2090,12 +2102,15 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
                 from .necrozma import NativeNecrozmaBattle
 
                 NativeNecrozmaBattle.lock_sources(self.battle)
-                if getattr(self.state, 'multi', None):
+                from .battle_boosters import BattleBoosters
+
+                if getattr(self.state, 'multi', None) or BattleBoosters.tracked(self.battle):
                     saved = BattleRewards.stored_attribute(self.room, self.storage._key('state')) or {}
                     if (saved.get('reward_id') != self.state.reward_id or saved.get('ending')
                             or saved.get('mechanic_turn', 0) != self.battle.mechanic_turn
-                            or dict(saved.get('declare', {})) != dict(self.state.declare)):
-                        raise ValueError('This Multi turn changed; refresh and choose again.')
+                            or dict(saved.get('declare', {})) != dict(self.state.declare)
+                            or saved.get('booster_effects', {}) != self.state.booster_effects):
+                        raise ValueError('This battle turn changed; refresh and choose again.')
                 from .mega_evolution import MegaEvolution
 
                 MegaEvolution.validate_roster(self.battle)

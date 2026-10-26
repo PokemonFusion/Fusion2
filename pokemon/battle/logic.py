@@ -130,6 +130,9 @@ class BattleLogic:
 		from .z_effects import ZEffects
 
 		ZEffects.recover(battle, getattr(state, "z_effects", {}))
+		from .battle_boosters import BattleBoosters
+
+		BattleBoosters.recover(battle, getattr(state, "booster_effects", {}))
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
@@ -180,6 +183,9 @@ class BattleLogic:
 		from .z_effects import ZEffects
 
 		self.state.z_effects = ZEffects.freeze(self.battle)
+		from .battle_boosters import BattleBoosters
+
+		self.state.booster_effects = BattleBoosters.freeze(self.battle)
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)

@@ -206,6 +206,10 @@ class PlayerChoices:
         from pokemon.services.battle_items import BattleItemCapability
 
         BattleItemCapability.validate(item_name, battle=self.battle)
+        from .battle_boosters import BattleBoosters
+
+        if BattleBoosters.supports(item_name):
+            return BattleBoosters.declare(self, item_name, target, actor=actor)
         position, pokemon = self.actor(actor)
         self._check(position, pokemon)
         if not self.participant.has_item(item_name):

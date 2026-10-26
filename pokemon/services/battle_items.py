@@ -23,8 +23,14 @@ class BattleItemCapability:
     @staticmethod
     def validate(item, *, battle=None):
         """Reject unsupported uses without inspecting target effect or spending."""
-        from pokemon.items import is_capture_ball
+        from pokemon.items import BATTLE_BOOSTER_ITEMS, is_capture_ball
 
+        if normalize_name(item) in BATTLE_BOOSTER_ITEMS:
+            if battle is not None:
+                from pokemon.battle.battle_boosters import BattleBoosters
+
+                BattleBoosters.format(battle)
+            return
         if normalize_name(item) == "smokeball":
             raise ValueError("Smoke Ball is a held item. Equip it with +hold before battle and use +flee.")
         if BattleMedicineUse.supports(item):

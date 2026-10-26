@@ -2065,7 +2065,9 @@ class Focusenergy:
 	def onStart(self, *args, **kwargs):
 		user = args[0] if args else None
 		if user and hasattr(user, "volatiles"):
-			user.volatiles["focusenergy"] = True
+			# add_volatile already binds current target/source/effect. Retain
+			# that structured state for reconnect instead of replacing it.
+			user.volatiles.setdefault("focusenergy", {"id": "focusenergy", "target": user})
 		return True
 
 
@@ -4335,15 +4337,37 @@ class Mist:
 		side = args[0] if args else kwargs.get("side")
 		if side and hasattr(side, "screens"):
 			side.screens["mist"] = True
+			if not hasattr(side, "conditions"):
+				side.conditions = {}
+			state = side.conditions.setdefault("mist", {"id": "mist"})
+			state.setdefault("duration", 5)
+			state.setdefault("source", args[1] if len(args) > 1 else kwargs.get("source"))
+			state.setdefault("sourceEffect", "move:mist")
 		return True
 
 	def onTryBoost(self, *args, **kwargs):
 		boosts = args[0] if args else kwargs.get("boosts")
 		target = args[1] if len(args) > 1 else kwargs.get("target")
 		side = getattr(target, "side", None)
-		if side and getattr(side, "screens", {}).get("mist"):
-			return None
-		return boosts
+		source = args[2] if len(args) > 2 else kwargs.get("source")
+		effect = args[3] if len(args) > 3 else kwargs.get("effect")
+		if not isinstance(boosts, dict) or not side or not source or source is target:
+			return boosts
+		state = getattr(side, "conditions", {}).get("mist")
+		if not isinstance(state, dict) or type(state.get("duration")) is not int or state["duration"] <= 0:
+			return boosts
+		battle = kwargs.get("battle") or getattr(target, "battle", None)
+		if battle is not None:
+			own, other = battle.participant_for(target), battle.participant_for(source)
+			if own is None or other is None or battle._allied(own, other):
+				return boosts
+		from pokemon.battle.effect_context import EffectContext
+
+		move_effect = getattr(effect, "effectType", None) == "Move"
+		if move_effect and (getattr(effect, "infiltrates", False)
+				or EffectContext.key(EffectContext.ability(source)) == "infiltrator"):
+			return boosts
+		return {stat: amount for stat, amount in boosts.items() if amount >= 0}
 
 
 class Mistyexplosion:

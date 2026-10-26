@@ -1079,6 +1079,15 @@ class TurnProcessor:
 			self.log_action(str(error))
 			return
 		item_key = normalize_name(action.item)
+		from .battle_boosters import BattleBoosters
+
+		if BattleBoosters.supports(action.item):
+			# New bag boosts propagate faults to complete-turn SQL/runtime rollback.
+			used = BattleBoosters.execute(self, action)
+			action.item_executed = True
+			self.log_action(BattleBoosters.notice(action.item, action.pokemon) if used
+				else f"But {action.item} had no effect; no copy was consumed.")
+			return
 		target = action.target
 		if is_capture_ball(action.item):
 			if target not in self.participants or target.has_lost or not target.active:

@@ -114,6 +114,37 @@ class ExpCandyItem(GameplayItem):
                 "effect": "exp", "amount": self.amount, "fieldOnly": True}
 
 
+@dataclass(frozen=True)
+class BattleBoosterItem(GameplayItem):
+    """Publish exact manual bag effects without adding field or held callbacks."""
+
+    effect: str
+    price: int = 1000
+
+    @property
+    def raw(self) -> dict[str, object]:
+        """Keep named battle-only policy separate from arbitrary dex callbacks."""
+        return {**super().raw, "price": self.price, "category": "Battle Items",
+                "effect": self.effect, "battleOnly": True, "isPokeball": False}
+
+
+BATTLE_BOOSTER_ITEMS = {
+    normalize_name(name): BattleBoosterItem(name,
+        f"Manual battle use: {description} Use +item [acting slot] {name}=<actor's party slot>. "
+        "Current conscious owned actor only; two-participant singles/doubles. "
+        "Embargo prevents use. No field or held effect.", effect, price)
+    for name, description, effect, price in (
+        ("X Attack", "Attack +2 stages through normal ability rules.", "boost:atk:2", 1000),
+        ("X Defense", "Defense +2 stages through normal ability rules.", "boost:def:2", 1000),
+        ("X Sp. Atk", "Special Attack +2 stages through normal ability rules.", "boost:spa:2", 1000),
+        ("X Sp. Def", "Special Defense +2 stages through normal ability rules.", "boost:spd:2", 1000),
+        ("X Speed", "Speed +2 stages through normal ability rules.", "boost:spe:2", 1000),
+        ("X Accuracy", "Accuracy +2 stages through normal ability rules.", "boost:accuracy:2", 1000),
+        ("Dire Hit", "Focus Energy (+2 critical stages); repeat active use has no effect.", "focusenergy", 1000),
+        ("Guard Spec.", "Side Mist for five turns including activation; active use cannot refresh it.", "mist:5", 1500))
+}
+
+
 EXP_CANDY_ITEMS = {
     normalize_name("Exp. Candy " + size): ExpCandyItem(
         "Exp. Candy " + size,
@@ -200,6 +231,7 @@ FIELD_RECOVERY_EQUIVALENTS = {
 
 
 GAMEPLAY_ITEMS = {
+    **BATTLE_BOOSTER_ITEMS,
     **EXP_CANDY_ITEMS,
     **FIELD_TRAINING_ITEMS,
     **FIELD_RECOVERY_EQUIVALENTS,

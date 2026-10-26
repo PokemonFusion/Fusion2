@@ -9,7 +9,7 @@ class MechanicChoices:
 
     @staticmethod
     @contextmanager
-    def locked(choices):
+    def locked(choices, *, preserve_state=False):
         """Reject stale inputs rather than overwriting another controller's checkpoint."""
         from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
@@ -42,6 +42,7 @@ class MechanicChoices:
                 for name in ("mega", "z", "tera")
                 for suffix in ("_used", "_pending")
             }
+            old_state = deepcopy(session.state.to_dict()) if preserve_state else None
             old_declarations = deepcopy(session.state.declare)
             old_actions = choices.participant.pending_action
             old_positions = {name: deepcopy(position.turninit)
@@ -74,6 +75,8 @@ class MechanicChoices:
                 for name, turninit in old_positions.items():
                     session.data.turndata.positions[name].turninit = turninit
                 session.logic.sync_runtime_state()
+                if old_state is not None:
+                    session.logic.state = type(session.state).from_dict(old_state)
                 session.room.attributes.reset_cache()
                 raise
 

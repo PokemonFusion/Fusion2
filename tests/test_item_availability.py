@@ -217,3 +217,16 @@ def test_exp_candy_names_keep_paid_field_effect_and_optional_stock_distinct():
         assert any(source["source"] == "world/exp_candy_counter.json" for source in row["authored_acquisition"])
         assert not any(route["command"] == "+item" for route in row["routes"])
         assert row["world_availability"]["status"] == "unverified"
+
+
+def test_eight_named_manual_boosters_keep_field_and_world_routes_separate():
+    """The exact optional battle names never become field feeding or public stock."""
+    from pokemon.items import BATTLE_BOOSTER_ITEMS
+
+    rows = {row["key"]: row for row in ItemAvailabilityAudit().build()["items"]}
+    for key in BATTLE_BOOSTER_ITEMS:
+        row = rows[key]
+        assert any(route["kind"] == "battle_booster" for route in row["routes"])
+        assert not any(route["command"] == "+use" for route in row["routes"])
+        assert any(source["source"] == "world/battle_booster_counter.json" for source in row["authored_acquisition"])
+        assert row["world_availability"]["status"] == "unverified"

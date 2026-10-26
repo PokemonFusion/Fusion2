@@ -158,6 +158,7 @@ class ItemAvailabilityAudit:
         from pokemon.services.field_pp import FieldPPCapacityUse
         from pokemon.services.field_progression import FieldRareCandyUse
         from pokemon.services.exp_candy import FieldExpCandyUse
+        from pokemon.battle.battle_boosters import BattleBoosters
         from pokemon.services.field_training import FieldTrainingUse
         from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
         from pokemon.services.item_supply import ItemSupplyRoute
@@ -179,7 +180,8 @@ class ItemAvailabilityAudit:
         repairs = repair_receipts()
         recipes = []
         for filename in ("mega_stone_counter.json", "z_crystal_counter.json", "berry_nursery.json",
-                         "berry_seed_counter.json", "ev_mochi_counter.json", "exp_candy_counter.json"):
+                         "berry_seed_counter.json", "ev_mochi_counter.json", "exp_candy_counter.json",
+                         "battle_booster_counter.json"):
             path = ROOT / "world" / filename
             recipe = json.loads(path.read_text(encoding="utf-8"))
             recipes.append(("world/" + filename, recipe))
@@ -206,6 +208,10 @@ class ItemAvailabilityAudit:
                       "ev-mochi-2026-10-25" if key in FIELD_TRAINING_ITEMS else report}
                      for service, kind, report in services if service.supports(key)]
             routes, limits, followups = list(field), [], []
+            if BattleBoosters.supports(key):
+                routes.append({"kind": "battle_booster", "command": "+item [actor] <item>=<actor's party slot>",
+                    "evidence_report": "battle-boosters-2026-10-25",
+                    "limit": "Conscious current owned active self-target; two-participant wild/trainer/PvP single/double only; ability/Embargo/no-effect/copy/checkpoint guards; no field or held effect"})
             if BerrySnack.supports(key):
                 routes.append({"kind": "berry_snack", "command": "+berry snack " + name + "=<target>",
                                "evidence_report": "berry-player-routes-2026-10-22" if key == "razzberry"
@@ -330,6 +336,8 @@ class ItemAvailabilityAudit:
                           "pokemon/battle/z_profiles.py", "pokemon/battle/z_generic_pairs.py",
                           "pokemon/battle/z_status_pairs.py", "pokemon/battle/z_signature_pairs.py",
                           "pokemon/services/berry_snack.py", "pokemon/services/berry_growing.py",
+                          "pokemon/battle/battle_boosters.py", "pokemon/battle/accuracy.py",
+                          "pokemon/dex/functions/moves/damage_moves.py",
                           "pokemon/services/necrozma.py", "pokemon/battle/necrozma.py",
                           "world/item_supply.json", *(path for path, _ in recipes)]
         identity_paths.extend(str(Path(sys.modules[service.__module__].__file__).relative_to(ROOT)).replace("\\", "/")
