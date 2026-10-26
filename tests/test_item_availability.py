@@ -98,13 +98,17 @@ def test_current_allowlists_preserve_bounded_sources_and_cap_ultra_exclusions():
     mega, profiles = current_registries()
     assert result["current_registries"]["mega_pairs"] == len(mega) == 47
     assert result["current_registries"]["z_mappings"] == len(profiles)
-    assert result["current_registries"]["z_crystals"] == 34
+    assert result["current_registries"]["z_crystals"] == 35
     assert result["current_registries"]["z_kinds"]["signature"] == 16
     assert {row["key"] for row in result["items"] if any(r["kind"] == "mega" for r in row["routes"])} == set(mega)
     assert "crucibellite" not in rows and "vilevial" not in rows
     assert result["excluded_cap"] == ["Crucibellite", "Vile Vial"]
-    assert rows["ultranecroziumz"]["support_status"] == "deferred"
-    assert rows["ultranecroziumz"]["followups"] == [865]
+    assert result["current_registries"]["z_kinds"]["ultra"] == 1
+    assert rows["ultranecroziumz"]["support_status"] == "capability_with_bounded_evidence"
+    assert rows["ultranecroziumz"]["followups"] == [888]
+    assert any(route["kind"] == "ultra_burst" and "+ultra" in route["command"]
+               for route in rows["ultranecroziumz"]["routes"])
+    assert rows["ultranecroziumz"]["world_availability"]["status"] == "unverified"
     firium = next(route for route in rows["firiumz"]["routes"] if route["kind"] == "z_move")
     assert any(p["source"] == "Ember" and p["power"] == 100 for p in firium["profiles"])
     assert not any(p["source"] == "Fire Blast" for p in firium["profiles"])
@@ -153,8 +157,8 @@ def test_six_special_z_sources_have_their_own_evidence_without_public_stock():
     """New explicit mappings cannot silently inherit an older acceptance receipt."""
     result = ItemAvailabilityAudit().build()
     rows = {row["key"]: row for row in result["items"]}
-    assert result["current_registries"]["z_mappings"] == 62
-    assert result["current_registries"]["z_kinds"] == {"generic": 32, "status": 14, "signature": 16}
+    assert result["current_registries"]["z_mappings"] == 63
+    assert result["current_registries"]["z_kinds"] == {"generic": 32, "status": 14, "signature": 16, "ultra": 1}
     for crystal, source, power in (("electriumz", "Thunderbolt", 175), ("iciumz", "Ice Beam", 175),
                                   ("grassiumz", "Energy Ball", 175), ("psychiumz", "Psychic", 175),
                                   ("ghostiumz", "Shadow Ball", 160), ("poisoniumz", "Sludge Bomb", 175)):

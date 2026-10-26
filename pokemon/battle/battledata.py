@@ -148,7 +148,7 @@ def _pokemon_reveal_key(
 
 @dataclass
 class Move:
-    """Minimal representation of a Pokémon move.
+    """Minimal representation of a PokÃƒÆ’Ã‚Â©mon move.
 
     Parameters
     ----------
@@ -157,7 +157,7 @@ class Move:
     priority
         Execution priority of the move.
     pokemon_types
-        Optional typing of the Pokémon using the move.  This is primarily
+        Optional typing of the PokÃƒÆ’Ã‚Â©mon using the move.  This is primarily
         carried so ephemeral test battles can perform damage calculations with
         the correct Same Type Attack Bonus.
     """
@@ -189,12 +189,12 @@ class Move:
 
 
 class Pokemon:
-    """Very small Pokémon container used for battles.
+    """Very small PokÃƒÆ’Ã‚Â©mon container used for battles.
 
     The constructor accepts optional item and stat data. IVs, EVs and nature
     are used to calculate the base stats for the battle instance.  Explicit
     typing can be supplied via the ``types`` argument; when omitted, typing is
-    inferred from the Pokédex using the Pokémon's species name.
+    inferred from the PokÃƒÆ’Ã‚Â©dex using the PokÃƒÆ’Ã‚Â©mon's species name.
     """
 
     @property
@@ -344,13 +344,16 @@ class Pokemon:
         # Ensure a ``types`` attribute is always available. Some parts of the
         # battle engine (such as damage calculation) expect this attribute to
         # exist.  Use the explicitly supplied types if provided; otherwise fall
-        # back to a Pokédex lookup based on the Pokémon's species name.
+        # back to a PokÃƒÆ’Ã‚Â©dex lookup based on the PokÃƒÆ’Ã‚Â©mon's species name.
         self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
         self.tera_type = tera_type
         self.terastallized = None
         self.tera_original_types = []
         self.stellar_boosted_types = []
         self.native_origin = None
+        self.native_ability_provenance = None
+        self.ultra_profile = None
+        self.ultra_guard_crystal = None
         self.mega_profile = None
         self.mega_evolved = False
         self.mega_guard_stone = None
@@ -562,7 +565,7 @@ class Pokemon:
         return max(order, key=lambda stat: self.getStat(stat, unboosted, unmodified))
 
     def _lookup_species_types(self) -> List[str]:
-        """Return this Pokémon's types inferred from the Pokédex.
+        """Return this PokÃƒÆ’Ã‚Â©mon's types inferred from the PokÃƒÆ’Ã‚Â©dex.
 
         The ``POKEDEX`` mapping may not always be populated during tests so
         this helper is intentionally defensive and falls back to an empty list
@@ -626,7 +629,7 @@ class Pokemon:
         return []
 
     def _lookup_species_entry(self, species_name: Optional[str] = None) -> Any:
-        """Return a Pokédex entry for ``species_name`` when available."""
+        """Return a PokÃƒÆ’Ã‚Â©dex entry for ``species_name`` when available."""
 
         lookup_name = species_name or getattr(self, "species", None) or self.name
         pdex: Dict[str, Any] = {}
@@ -689,7 +692,7 @@ class Pokemon:
         effect=None,
         bypass_protection: bool = False,
     ) -> bool:
-        """Attempt to set a major status condition on this Pokémon."""
+        """Attempt to set a major status condition on this PokÃƒÆ’Ã‚Â©mon."""
 
         previous_status = getattr(self, "status", 0)
         previous_toxic = getattr(self, "toxic_counter", 0)
@@ -969,7 +972,7 @@ class Pokemon:
         return False
 
     def to_dict(self) -> Dict:
-        """Return a serialisable representation of this Pokémon."""
+        """Return a serialisable representation of this PokÃƒÆ’Ã‚Â©mon."""
 
         def _collect_slots(slots_obj):
             if slots_obj is None:
@@ -1083,6 +1086,9 @@ class Pokemon:
                 "transformed": bool(getattr(self, "transformed", False)),
                 "bond_triggered": bool(getattr(self, "bond_triggered", False)),
                 "native_origin": snapshot_battle_value(getattr(self, "native_origin", None)),
+                "native_ability_provenance": getattr(self, "native_ability_provenance", None),
+                "ultra_profile": snapshot_battle_value(getattr(self, "ultra_profile", None)),
+                "ultra_guard_crystal": getattr(self, "ultra_guard_crystal", None),
                 "mega_profile": snapshot_battle_value(getattr(self, "mega_profile", None)),
                 "mega_evolved": bool(getattr(self, "mega_evolved", False)),
                 "mega_guard_stone": getattr(self, "mega_guard_stone", None),
@@ -1247,6 +1253,12 @@ class Pokemon:
         native_form = (data.get("tempvals", {}) or {}).get("native_form")
         obj.name = data.get("name", name) if data.get("transformed") or disguised or native_form or data.get("mega_profile") else name
         obj.native_origin = detached_mapping(native_origin) if native_origin else None
+        provenance = data.get("native_ability_provenance")
+        if provenance not in (None, "native", "changed"):
+            raise ValueError("Invalid native ability provenance requires battle recovery.")
+        obj.native_ability_provenance = provenance
+        obj.ultra_profile = snapshot_battle_value(data["ultra_profile"]) if data.get("ultra_profile") else None
+        obj.ultra_guard_crystal = data.get("ultra_guard_crystal")
         obj.mega_profile = snapshot_battle_value(data["mega_profile"]) if data.get("mega_profile") else None
         obj.mega_evolved = bool(data.get("mega_evolved", False))
         obj.mega_guard_stone = data.get("mega_guard_stone")
@@ -1368,7 +1380,7 @@ class TurnInit:
 
 @dataclass
 class PositionData:
-    """Container for a Pokémon and its declared action."""
+    """Container for a PokÃƒÆ’Ã‚Â©mon and its declared action."""
 
     pokemon: Optional[Pokemon] = None
     turninit: TurnInit = field(default_factory=TurnInit)

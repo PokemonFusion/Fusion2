@@ -48,10 +48,11 @@ The later [47-pair Mega route](mega-evolution.md) supplies ordinary `+mega` befo
 10,000-price Counter recipe. Its local automated acceptance is separate from
 deployment and permanent public stock; the [per-stone matrix](design/mega-stones.md)
 records accepted effects, source limits and the remaining CAP/required-move exclusions.
-The later [Z route](z-moves.md) accepts62 explicit source mappings on34
-existing crystals through `+zmove`, including 14 status sources and 16
-signatures. The [matrix](design/z-crystals.md) names the exact native/source
-limits; other unreviewed source moves and Ultra remain deferred. The native
+The later [Z route](z-moves.md) accepts63 explicit source mappings on35
+existing crystals through `+zmove`, including 14 status sources,16 unchanged
+signatures and one separately guarded [Ultra signature](ultra-burst.md).
+The [matrix](design/z-crystals.md) names the older exact native/source
+limits; other unreviewed source moves remain deferred. The native
 [Necrozma combine/separate route](necrozma.md) accepts two real owned sources
 and the matching Dusk-Mane/Sunsteel or Dawn-Wings/Moongeist signature, with
 durable native-pair proof. Its [released local acceptance](testing/necrozma-released-retry-2026-10-24.md)
@@ -156,3 +157,12 @@ keeps459 world entries unknown, preserves the earlier452 definition fingerprints
 and names their optional finite recipes. Controlled-clock growing and captured
 command/SQL effects do not complete #893's four real elapsed hours or certify
 permanent public stock.
+
+The later EXP Candy, manual battle boosters and21 nature mints retain their
+separate guides and dated local receipts. The newest [source-only index](testing/item-availability-ultra-index-2026-10-25.json)
+preserves all493 scoped definition fingerprints and adds the explicitly guarded
+[Ultra route](ultra-burst.md):63 mappings on35 crystals, including the unchanged
+16 signatures and one separate native Ultra profile. All493 world entries stay
+unverified in this source-only artifact. [Ultra qualification](testing/ultra-burst-2026-10-25.md)
+does not replace #888's deliberately released gate; mint #904 and the finite
+counter/nursery/EXP source releases also remain separate.

@@ -6,7 +6,7 @@ turn ordering and state tracking rather than full battle logic.
 
 Notes
 -----
-The file :mod:`simulator-doc.txt` from Pokémon Showdown describes the
+The file :mod:`simulator-doc.txt` from PokÃƒÆ’Ã‚Â©mon Showdown describes the
 expected control flow of that engine.  The important parts are included
 here as a reference for future work.  Individual functions below map to
 sections of that pseudocode and currently act as placeholders.
@@ -266,7 +266,7 @@ def is_self_target(target: str | None) -> bool:
 def _resolve_ability(ability):
     """Return an :class:`~pokemon.dex.entities.Ability` for ``ability``.
 
-    Pokémon instances within tests sometimes store their ability as a simple
+    PokÃƒÆ’Ã‚Â©mon instances within tests sometimes store their ability as a simple
     string identifier rather than an :class:`Ability` object.  This helper
     looks up such strings in :data:`pokemon.dex.ABILITYDEX` and returns the
     corresponding instance so callers can safely invoke callbacks.  If the
@@ -1497,7 +1497,7 @@ class RewardService:
                 return
             battle._rewards_granted = True
             if claimed:
-                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!")
+                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â½{prize_money} for winning!")
             return
         trainer = getattr(recipient, "trainer", None)
         if trainer and hasattr(trainer, "add_money"):
@@ -1509,7 +1509,7 @@ class RewardService:
 
         if hasattr(battle, "log_action"):
             battle.log_action(
-                f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!"
+                f"{getattr(recipient, 'key', 'Player')} received ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â½{prize_money} for winning!"
             )
 
         battle._rewards_granted = True
@@ -1571,7 +1571,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.message_formatter = message_formatter or MessageFormatter()
         self.reward_service = reward_service or RewardService()
 
-        # If any participant already has active Pokémon assigned (common in
+        # If any participant already has active PokÃƒÆ’Ã‚Â©mon assigned (common in
         # tests or restored battles) make sure they are marked as having
         # participated so they receive rewards appropriately.
         for part in self.participants:
@@ -2514,7 +2514,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Battle initialisation helpers
     # ------------------------------------------------------------------
     def start_battle(self) -> None:
-        """Prepare the battle by sending out the first available Pokémon."""
+        """Prepare the battle by sending out the first available PokÃƒÆ’Ã‚Â©mon."""
         names = [
             getattr(part, "name", "Trainer")
             for part in self.participants
@@ -2567,7 +2567,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def switch_pokemon(
         self, participant: BattleParticipant, new_pokemon, slot: int = 0
     ) -> None:
-        """Switch the active Pokémon for ``participant`` in ``slot``."""
+        """Switch the active PokÃƒÆ’Ã‚Â©mon for ``participant`` in ``slot``."""
         from .active_slots import active_at, assign_active
 
         current = active_at(participant, slot)
@@ -2641,7 +2641,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         return opponents
 
     def restore_transforms(self) -> None:
-        """Revert any Pokémon transformed via the Transform move."""
+        """Revert any PokÃƒÆ’Ã‚Â©mon transformed via the Transform move."""
         from .terastallization import Terastallization
 
         for part in self.participants:
@@ -2947,6 +2947,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         from .mega_evolution import MegaEvolution
 
         MegaEvolution.prepare_entry(pokemon)
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma"):
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.prepare_entry(pokemon)
         if part is not None:
             pokemon.side = part.side
         pokemon.ability_state = self.init_effect_state(getattr(pokemon, "ability", None), target=pokemon, source=source)
@@ -3053,6 +3057,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             except Exception:
                 pass
         self._end_holder_effects(pokemon)
+        if getattr(pokemon, "ultra_profile", None):
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.revert(pokemon)
 
     def on_end_turn(self) -> None:
         """Apply end of turn effects."""
@@ -3060,14 +3068,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.handle_terrain()
 
     def _apply_misc_callbacks(self) -> None:
-        """Invoke seldom triggered ability callbacks for active Pokémon.
+        """Invoke seldom triggered ability callbacks for active PokÃƒÆ’Ã‚Â©mon.
 
         The lightweight battle engine used in tests omits many edge-case
         mechanics that would normally trigger hooks such as
         ``onAllyTryAddVolatile`` (Aroma Veil) or ``onFoeTryEatItem`` (As One).
         Without invoking these callbacks, the comprehensive ability tests
         would flag them as unused.  This helper calls the hooks once for each
-        active Pokémon, ignoring any errors so the minimal test doubles remain
+        active PokÃƒÆ’Ã‚Â©mon, ignoring any errors so the minimal test doubles remain
         compatible with the simplified environment.
         """
 
@@ -3103,16 +3111,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     pass
 
     def _apply_trap_callbacks(self) -> None:
-        """Invoke trapping related ability callbacks for active Pokémon.
+        """Invoke trapping related ability callbacks for active PokÃƒÆ’Ã‚Â©mon.
 
         Some abilities such as Arena Trap expose ``onFoeTrapPokemon`` hooks
         that are normally triggered by the battle engine when checking if a
-        Pokémon is allowed to switch out.  The simplified engine used for
+        PokÃƒÆ’Ã‚Â©mon is allowed to switch out.  The simplified engine used for
         testing does not implement full switching logic and therefore these
         callbacks were never invoked, causing ability tests to fail.  This
         helper manually calls the relevant ability callbacks for each active
-        Pokémon pair, swallowing any errors so the minimal test doubles used
-        in the suite do not need to implement the full Pokémon Showdown API.
+        PokÃƒÆ’Ã‚Â©mon pair, swallowing any errors so the minimal test doubles used
+        in the suite do not need to implement the full PokÃƒÆ’Ã‚Â©mon Showdown API.
         """
 
         for part in self.participants:
@@ -3146,7 +3154,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Pseudocode mapping
     # ------------------------------------------------------------------
     def run_switch(self) -> None:
-        """Handle Pokémon switches before moves are executed."""
+        """Handle PokÃƒÆ’Ã‚Â©mon switches before moves are executed."""
 
         from .active_slots import active_at, assign_active
         from .legal_actions import LegalActions
@@ -3156,7 +3164,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         for part in self.participants:
             if part.has_lost:
                 continue
-            # Ensure correct number of active Pokémon
+            # Ensure correct number of active PokÃƒÆ’Ã‚Â©mon
             for slot in range(part.max_active):
                 if active_at(part, slot) is None:
                     reserves = LegalActions(self, part, None).reserves(slot=slot, forced=True)
@@ -3277,7 +3285,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         self.on_enter_battle(replacement, source=active)
 
     def run_after_switch(self) -> None:
-        """Trigger simple events after Pokémon have switched in."""
+        """Trigger simple events after PokÃƒÆ’Ã‚Â©mon have switched in."""
 
         for part in self.participants:
             if part.has_lost:
@@ -4151,6 +4159,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if old_ability:
             self.singleEvent("End", old_ability, old_state, pokemon, source)
         pokemon.ability = resolved
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma") and not is_from_forme_change:
+            pokemon.native_ability_provenance = "changed"
         pokemon.ability_state = self.init_effect_state(resolved, target=pokemon, source=source)
         if resolved and run_start:
             self.singleEvent("Start", resolved, pokemon.ability_state, pokemon, source)
@@ -5307,7 +5317,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.execute_actions(actions)
 
     def run_faint(self) -> None:
-        """Handle fainted Pokémon and mark participants as losing if needed."""
+        """Handle fainted PokÃƒÆ’Ã‚Â©mon and mark participants as losing if needed."""
 
         from .active_slots import active_at, active_slots, assign_active
         from .legal_actions import LegalActions
@@ -5484,13 +5494,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     for poke in fainted:
                         self.on_faint(poke)
 
-            # Remove fainted Pokémon from the active list
+            # Remove fainted PokÃƒÆ’Ã‚Â©mon from the active list
             active_slots(part)
             part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]
             if getattr(part, "side", None) is not None:
                 part.side.active = part.active
 
-            # Check if the participant has any Pokémon left
+            # Check if the participant has any PokÃƒÆ’Ã‚Â©mon left
             if not any(getattr(p, "hp", 0) > 0 for p in part.pokemons):
                 part.has_lost = True
                 continue
@@ -5506,7 +5516,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             part.record_participation(replacement)
                         if getattr(part, "side", None) is not None:
                             part.side.active = part.active
-                        if getattr(replacement, "mega_profile", None):
+                        if getattr(replacement, "mega_profile", None) or (getattr(replacement, "native_origin", None) or {}).get("necrozma"):
                             self.on_enter_battle(replacement)
                             self._log_switch_in(part, replacement)
                             continue
@@ -5712,7 +5722,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     if effect["duration"] <= 0:
                         self.remove_pseudo_weather(name)
 
-        # Remove Pokémon that fainted from residual damage
+        # Remove PokÃƒÆ’Ã‚Â©mon that fainted from residual damage
         self.run_faint()
 
         # Auto-switch in replacements for any empty sides
@@ -5820,7 +5830,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         Parameters
         ----------
         pokemon: Any
-            The Pokémon whose stat changes will be announced.
+            The PokÃƒÆ’Ã‚Â©mon whose stat changes will be announced.
         start: dict
             Mapping of stat names to their starting stage values.
         end: dict

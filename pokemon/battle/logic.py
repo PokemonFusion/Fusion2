@@ -14,7 +14,7 @@ from .state import BattleState
 def _participant_identifier(pokemon) -> str:
         """Return a best-effort identifier for ``pokemon``.
 
-        Persistent battle data stores multiple snapshots of the same Pokémon.
+        Persistent battle data stores multiple snapshots of the same PokÃƒÂ©mon.
         When rebuilding live battle objects after a server restart we need to
         match the copies stored on the teams with the copies embedded in the
         active position data.  Prefer unique database-backed identifiers when
@@ -36,13 +36,13 @@ def _align_positions_with_team(
         positions: Dict[str, object],
         team_key: str,
 ) -> List:
-        """Return active Pokémon aligned with ``participant``'s roster.
+        """Return active PokÃƒÂ©mon aligned with ``participant``'s roster.
 
-        The persisted :class:`TurnData` keeps its own Pokémon copies which are
+        The persisted :class:`TurnData` keeps its own PokÃƒÂ©mon copies which are
         detached from the roster restored on :class:`BattleParticipant`.  The
         battle engine mutates the roster entries (for HP, status changes, etc.)
         so the position data must reference the same objects.  This helper
-        rewires the position Pokémon to the roster entries and returns them in
+        rewires the position PokÃƒÂ©mon to the roster entries and returns them in
         active-slot order.
         """
 
@@ -71,7 +71,7 @@ def _align_positions_with_team(
                         # Fallback: pick the first roster member that has not
                         # already been assigned. This keeps the battle running
                         # even if identifiers could not be matched (e.g. for
-                        # generated wild Pokémon without stored ids).
+                        # generated wild PokÃƒÂ©mon without stored ids).
                         for mon in roster:
                                 if mon not in active:
                                         replacement = mon
@@ -125,7 +125,20 @@ class BattleLogic:
 		from .mega_evolution import MegaEvolution
 		from .z_moves import ZMoves
 
+		ultra_used, ultra_pending = getattr(state, "ultra_used", []), getattr(state, "ultra_pending", {})
+		if (not isinstance(ultra_used, (list, tuple, MutableSequence))
+				or any(side not in {"A", "B"} for side in ultra_used)
+				or len(ultra_used) != len(set(ultra_used)) or not isinstance(ultra_pending, Mapping)
+				or any(side not in {"A", "B"} or not isinstance(value, Mapping) for side, value in ultra_pending.items())):
+			raise ValueError("Corrupt Ultra side ledger requires recovery.")
+		battle.ultra_used = set(ultra_used)
+		from ._shared import snapshot_battle_value
+
+		battle.ultra_pending = snapshot_battle_value(ultra_pending)
 		MegaEvolution.recover(battle)
+		from .ultra_burst import UltraBurst
+
+		UltraBurst.recover(battle)
 		ZMoves.recover(battle, state.declare)
 		from .z_effects import ZEffects
 
@@ -176,6 +189,8 @@ class BattleLogic:
 		self.state.tera_used = sorted(getattr(self.battle, "tera_used", set()))
 		self.state.tera_pending = {key: dict(value) for key, value in getattr(self.battle, "tera_pending", {}).items()}
 		self.state.mechanic_turn = getattr(self.battle, "mechanic_turn", 0)
+		self.state.ultra_used = sorted(getattr(self.battle, "ultra_used", set()))
+		self.state.ultra_pending = {key: dict(value) for key, value in getattr(self.battle, "ultra_pending", {}).items()}
 		self.state.mega_used = sorted(getattr(self.battle, "mega_used", set()))
 		self.state.mega_pending = {key: dict(value) for key, value in getattr(self.battle, "mega_pending", {}).items()}
 		self.state.z_used = sorted(getattr(self.battle, "z_used", set()))

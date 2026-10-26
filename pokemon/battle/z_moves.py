@@ -75,8 +75,15 @@ class ZMoves:
         return hashlib.sha256(json.dumps(asdict(profile), sort_keys=True).encode()).hexdigest()
 
     @staticmethod
-    def native(profile, pokemon, row):
+    def native(profile, pokemon, row, *, battle=None, participant=None):
         """A crystal cannot grant a native form, species or transformation."""
+        if profile.intrinsic == "ultra":
+            from .ultra_burst import UltraBurst
+
+            if battle is None or participant is None:
+                raise ValueError("Ultra signatures require current battle proof.")
+            UltraBurst.validate_active(battle, participant, pokemon, row, signature=True)
+            return
         from pokemon.dex import POKEDEX
 
         entry = resolve_dex_entry(POKEDEX, row["species"])
@@ -232,7 +239,7 @@ class ZMoves:
                 raise ValueError(
                     "That crystal/source pair is deferred. Use +zmove to list accepted active sources."
                 )
-            cls.native(profile, pokemon, row)
+            cls.native(profile, pokemon, row, battle=battle, participant=participant)
             legality = LegalActions(battle, participant, pokemon)
             source_move = legality._move(runtime)
             source_move.pp = current
@@ -321,7 +328,7 @@ class ZMoves:
                     "z": deepcopy(request),
                 },
                 lambda pos: pos.declareAttack(target, normalize_name(request["source"])),
-                f"{position} ({pokemon.name}) prepares {profile.name} from {request['source']} → {target}.",
+                f"{position} ({pokemon.name}) prepares {profile.name} from {request['source']} Ã¢â€ â€™ {target}.",
                 commit_aware=True,
             )
 
@@ -335,9 +342,9 @@ class ZMoves:
                 profile = ZProfiles.get(OwnedBattleActor.item_key(pokemon), slot.move.name)
                 if profile is None:
                     continue
-                cls.native(profile, pokemon, row)
+                cls.native(profile, pokemon, row, battle=choices.battle, participant=choices.participant)
                 lines.append(
-                    f"{slot.slot}: {slot.move.name} ({current}/{maximum} PP), {profile.crystal} → {profile.name}, {profile.move_type} {profile.category} {profile.power}."
+                    f"{slot.slot}: {slot.move.name} ({current}/{maximum} PP), {profile.crystal} Ã¢â€ â€™ {profile.name}, {profile.move_type} {profile.category} {profile.power}."
                 )
         side = Terastallization.side(choices.battle, choices.participant)
         budget = (
@@ -471,7 +478,7 @@ class ZMoves:
                 or OwnedBattleActor.item_key(pokemon) != request["crystal"]
             ):
                 raise BattleOwnershipChanged("The held Z source changed before activation.")
-            cls.native(profile, pokemon, row)
+            cls.native(profile, pokemon, row, battle=battle, participant=participant)
             slot, current, maximum, runtime = cls.source(pokemon, row, request["source_slot"])
             if slot.move_id != request["source_id"]:
                 raise BattleOwnershipChanged("The active Z source was replaced.")

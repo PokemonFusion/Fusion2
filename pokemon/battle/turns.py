@@ -229,7 +229,7 @@ class TurnProcessor:
 				self.dispatcher.dispatch("update", pokemon=poke, battle=self)
 
 	def before_turn(self) -> None:
-		"""Run simple BeforeTurn events for all active Pokémon."""
+		"""Run simple BeforeTurn events for all active PokÃ©mon."""
 		try:
 			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 		except Exception:
@@ -282,6 +282,10 @@ class TurnProcessor:
 		from .terastallization import Terastallization
 		from .z_moves import ZMoves
 
+		if getattr(self, "ultra_pending", {}):
+			from .ultra_burst import UltraBurst
+
+			UltraBurst.lock(self)
 		ZMoves.lock(self)
 		Terastallization.lock(self)
 		from .mega_evolution import MegaEvolution

@@ -51,6 +51,8 @@ class BattleState:
 	mega_pending: Dict[str, Dict] = field(default_factory=dict)
 	z_used: List[str] = field(default_factory=list)
 	z_pending: Dict[str, Dict] = field(default_factory=dict)
+	ultra_used: List[str] = field(default_factory=list)
+	ultra_pending: Dict[str, Dict] = field(default_factory=dict)
 	z_effects: Dict = field(default_factory=dict)
 	booster_effects: Dict = field(default_factory=dict)
 	multi: Dict = field(default_factory=dict)

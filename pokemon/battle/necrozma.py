@@ -30,6 +30,7 @@ class NativeNecrozmaBattle:
         pair = pair_for_model(model, "battle")
         if pair:
             pokemon.native_origin = dict(pokemon.native_origin or {}, necrozma=cls.proof(pair))
+            pokemon.native_ability_provenance = "native"
 
     @classmethod
     def validate_actor(cls, battle, participant, pokemon, *, row=None):

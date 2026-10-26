@@ -17,7 +17,8 @@ def serialized_multi(method):
     @wraps(method)
     def guarded(self, *args, **kwargs):
         """Retain teammates' saved declarations if any concurrent input changed."""
-        if not getattr(self.session.state, 'multi', None):
+        if not (getattr(self.session.state, 'multi', None)
+                or getattr(self.battle, "ultra_pending", {}) or getattr(self.battle, "ultra_used", set())):
             return method(self, *args, **kwargs)
         from .mechanic_choices import MechanicChoices
         from .owned_battle_actor import OwnedBattleActor
@@ -73,14 +74,14 @@ class PlayerChoices:
             raise ValueError("Choose your acting slot: " + (labels or "no active Pokémon"))
         return position, positions[position].pokemon
 
-    def _check(self, position, pokemon):
+    def _check(self, position, pokemon, *, allow_queued=False):
         """Reject stale callbacks, replacements and duplicate input before mutation."""
         if self.session.battle is not self.battle or self.battle.turn_count != self.turn or self.battle.battle_over:
             raise ValueError("That choice is from an earlier turn. Choose an action again.")
         current = self.positions().get(position)
         if current is None or current.pokemon is not pokemon:
             raise ValueError("That active Pokémon has changed. Choose an action again.")
-        if position in self.session.state.declare or current.getAction():
+        if not allow_queued and (position in self.session.state.declare or current.getAction()):
             raise ValueError(f"{position} ({pokemon.name}) already has an action queued this turn.")
 
     def legal_moves(self, pokemon):
@@ -235,7 +236,8 @@ class PlayerChoices:
     def _store(self, position, pokemon, action, declaration, declare, message, *, commit_aware=False):
         """Save one choice atomically in memory before allowing turn advancement."""
         session = self.session
-        commit_aware = commit_aware or bool(getattr(session.state, 'multi', None))
+        commit_aware = (commit_aware or bool(getattr(session.state, 'multi', None))
+                        or bool(getattr(self.battle, "ultra_pending", {}) or getattr(self.battle, "ultra_used", set())))
         pos = session.data.turndata.positions[position]
         previous = self.participant.pending_action
         previous_position = pos.turninit
@@ -246,7 +248,7 @@ class PlayerChoices:
         from copy import deepcopy
 
         reservations = {name: deepcopy(getattr(self.battle, name + "_pending", {}))
-                        for name in ("mega", "tera", "z")}
+                        for name in ("mega", "tera", "z", "ultra")}
         declaration = {**declaration, "trainer": str(self.caller.id), "pokemon": getattr(pokemon, "model_id", None)}
         if getattr(session.state, 'multi', None) and action.action_type is ActionType.MOVE:
             if action.target_pokemon is not pokemon and action.move.raw.get('target') in {

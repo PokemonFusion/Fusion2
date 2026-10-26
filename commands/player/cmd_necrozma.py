@@ -20,6 +20,8 @@ class CmdNecrozma(Command):
     Review exact identities and confirm yes/no. The route is free, needs two
     owned native sources, and reserves the companion until explicit separation.
     Recombining restores saved source PP, including zero; it never refills PP.
+    Prepare legitimate Photon Geyser in a different active slot before combining
+    for +ultra. In battle, +ultra previews the native/crystal/ability rules.
     """
 
     key = "+necrozma"
@@ -44,6 +46,9 @@ class CmdNecrozma(Command):
                          "At a Pokemon Center in human form, use +necrozma combine <host>=<companion>/<move slot>.",
                          "Use +necrozma inspect <slot/full UUID>, or +necrozma separate <host>. "
                          "This free route reserves your companion and preserves saved source PP."]
+                lines.append("For Ultra Burst, prepare legitimate active Photon Geyser separately before combining, "
+                             "equip Ultranecrozium Z, then review +ultra before an ordinary attack. "
+                             "A later turn can use +zmove Photon Geyser=<target> with current PP and an unused Z budget.")
                 for pair in NecrozmaCombination.objects.filter(storage=storage).select_related("host", "companion"):
                     lines.append(f"{pair.host.name} ({pair.host_id}) + {pair.companion.name} ({pair.companion_id}, reserved companion).")
                 from django.utils import timezone

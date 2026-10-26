@@ -78,6 +78,10 @@ class ZProfile:
                 raw["secondary"] = {"chance": 100}
             if self.intrinsic == "guardian":
                 raw["zGuardian"] = True
+            if self.intrinsic == "ultra" and pokemon is not None:
+                from .ultra_profile import UltraProfile
+
+                raw["category"] = UltraProfile.category(pokemon)
             name = self.name
         if self.kind == "status":
             # The ordinary engine has already bound the base callbacks.
@@ -118,6 +122,10 @@ class ZProfiles:
         from .z_signature_pairs import SIGNATURE_PAIRS
 
         key = normalize_name(crystal), normalize_name(source)
+        if key == ("ultranecroziumz", "photongeyser"):
+            from .ultra_profile import UltraProfile
+
+            return UltraProfile.checked().z_profile()
         return cls.accepted.get(key) or next(
             (
                 profile

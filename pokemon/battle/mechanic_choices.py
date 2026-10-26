@@ -9,7 +9,7 @@ class MechanicChoices:
 
     @staticmethod
     @contextmanager
-    def locked(choices, *, preserve_state=False):
+    def locked(choices, *, preserve_state=False, allow_queued=False):
         """Reject stale inputs rather than overwriting another controller's checkpoint."""
         from django.db import connection, transaction
         from evennia.objects.models import ObjectDB
@@ -34,12 +34,15 @@ class MechanicChoices:
                 raise ValueError(
                     "The battle input changed; refresh your current choices and try again."
                 )
-            for name in ("mega", "z", "tera"):
+            for name in ("mega", "z", "tera", "ultra"):
                 setattr(battle, name + "_used", set(saved.get(name + "_used", [])))
                 setattr(battle, name + "_pending", deepcopy(dict(saved.get(name + "_pending", {}))))
+            from ._shared import snapshot_battle_value
+
+            battle.ultra_pending = snapshot_battle_value(battle.ultra_pending)
             previous = {
                 name + suffix: deepcopy(getattr(battle, name + suffix))
-                for name in ("mega", "z", "tera")
+                for name in ("mega", "z", "tera", "ultra")
                 for suffix in ("_used", "_pending")
             }
             old_state = deepcopy(session.state.to_dict()) if preserve_state else None
@@ -57,11 +60,14 @@ class MechanicChoices:
                 if (
                     str(BattleRewards.stored_attribute(character, "battle_id"))
                     != str(session.battle_id)
-                    or BattleRewards.stored_attribute(character, "battle_control") is not True
+                    or (not allow_queued and BattleRewards.stored_attribute(character, "battle_control") is not True)
                 ):
                     raise ValueError("This battle is not waiting for your current control.")
                 battle.mechanic_session_id = str(session.battle_id)
-                choices._check(*choices._mechanic_actor)
+                if allow_queued:
+                    choices._check(*choices._mechanic_actor, allow_queued=True)
+                else:
+                    choices._check(*choices._mechanic_actor)
                 yield
                 session.logic.sync_runtime_state()
                 session.storage.set(
@@ -111,7 +117,7 @@ class MechanicChoices:
 
         side = Terastallization.side(battle, participant)
         identifier = Terastallization.identifier(pokemon)
-        for name in ("mega", "z", "tera"):
+        for name in ("mega", "z", "tera", "ultra"):
             ledger = getattr(battle, name + "_pending", {})
             if ledger.get(side, {}).get("pokemon") == identifier:
                 ledger.pop(side, None)

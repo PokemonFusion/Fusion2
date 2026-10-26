@@ -34,8 +34,10 @@ def current_registries():
     from pokemon.battle.z_generic_pairs import GENERIC_PAIRS
     from pokemon.battle.z_status_pairs import STATUS_PAIRS
     from pokemon.battle.z_signature_pairs import SIGNATURE_PAIRS
+    from pokemon.battle.ultra_profile import UltraProfile
 
-    profiles = (*ZProfiles.accepted.values(), *GENERIC_PAIRS, *STATUS_PAIRS, *SIGNATURE_PAIRS)
+    profiles = (*ZProfiles.accepted.values(), *GENERIC_PAIRS, *STATUS_PAIRS, *SIGNATURE_PAIRS,
+                UltraProfile.checked().z_profile())
     return MEGA_PAIRS, profiles
 
 
@@ -119,6 +121,7 @@ class ItemAvailabilityAudit:
         from pokemon.names import normalize_name
 
         batches = {
+            "ultra-burst-2026-10-25": (("Ultranecrozium Z", "Photon Geyser"),),
             "z-existing-sources-2026-10-25": (("Firium Z", "Flamethrower"), ("Waterium Z", "Surf")),
             "z-six-special-sources-2026-10-25": (
                 ("Electrium Z", "Thunderbolt"), ("Icium Z", "Ice Beam"),
@@ -260,9 +263,10 @@ class ItemAvailabilityAudit:
             if raw.get("zMove") or raw.get("zMoveType"):
                 profiles = [profile for profile in z_profiles if normalize_name(profile.crystal) == key]
                 if profiles:
-                    routes.append({"kind": "z_move", "command": "+hold then +zmove <actual source slot>=<target>",
+                    routes.append({"kind": "z_move", "command": ("+hold then +ultra/yes and +attack; later +zmove Photon Geyser=<target>"
+                                   if key == "ultranecroziumz" else "+hold then +zmove <actual source slot>=<target>"),
                                    "profiles": [{"source": p.source, "result": p.name, "power": p.power,
-                                                 "type": p.move_type, "category": p.category, "target": p.target,
+                                                 "type": p.move_type, "category": "Attack-vs-SpA with raw stages; ties Special" if p.intrinsic == "ultra" else p.category, "target": p.target,
                                                  "kind": p.kind, "native": list(p.native), "intrinsic": p.intrinsic,
                                                  "bonus": list(p.bonus),
                                                  "evidence_report": self.z_profile_report(p)} for p in profiles],
@@ -271,6 +275,11 @@ class ItemAvailabilityAudit:
                     if raw.get("zMoveType"):
                         limits.append("Other source moves are deferred until an explicit mapping is qualified")
                         followups.append(864)
+                    if key == "ultranecroziumz":
+                        routes.append({"kind": "ultra_burst", "command": "+ultra [actor], yes, +attack; later +zmove Photon Geyser=<target>",
+                                       "evidence_report": "ultra-burst-2026-10-25",
+                                       "limit": "Exact live native pair/Photon/Prism Armor proof, independent Ultra budget, later-turn signature and current Photon PP/Z budget; category compares stored Attack/SpA with raw stages, ties Special"})
+                        followups.append(888)
                 else:
                     limits.append("Ultra Burst and Light That Burns the Sky have no accepted player lifecycle")
                     followups.append(865)
@@ -341,6 +350,8 @@ class ItemAvailabilityAudit:
                           "pokemon/battle/battle_boosters.py", "pokemon/battle/accuracy.py",
                           "pokemon/dex/functions/moves/damage_moves.py",
                           "pokemon/services/necrozma.py", "pokemon/battle/necrozma.py",
+                          "pokemon/battle/ultra_profile.py", "pokemon/battle/ultra_eligibility.py",
+                          "pokemon/battle/ultra_burst.py", "commands/player/cmd_battle_ultra.py",
                           "world/item_supply.json", *(path for path, _ in recipes)]
         identity_paths.extend(str(Path(sys.modules[service.__module__].__file__).relative_to(ROOT)).replace("\\", "/")
                               for service, _, _ in services)
