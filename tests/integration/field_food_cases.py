@@ -23,6 +23,7 @@ class PlayerView:
 
     def __init__(self, character, trainer, storage, room):
         """Use no staff permissions or live game session."""
+        self.character = character
         self.pk = self.id = character.pk
         self.key = self.name = character.key
         self.db, self.ndb = character.db, character.ndb
