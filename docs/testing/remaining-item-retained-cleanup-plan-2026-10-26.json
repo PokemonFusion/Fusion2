@@ -236,5 +236,26 @@
     "candidate": "4347e76b046d2c59bd8bcf1eabe3535ebeaa95a9",
     "controller_sha256": "03ac8a714785a0e191fa07dd36ee72d35e2f8dd59ac27fb5f279560247c66646",
     "scope": "exact tagged QA cleanup retaining sealed receipts and one guarded maintenance cycle"
+  },
+  "bounded_evidence_collection": {
+    "remote_files": [
+      "qa-cleanup-receipt.json",
+      "verify-retained-cleanup-receipt.json"
+    ],
+    "selected_fields_only": [
+      "exact QA removed/retained receipt IDs and counts",
+      "normalized protected digests and boolean invariants",
+      "candidate/migration/source-count/listeners/greeting/logins/observed UTC",
+      "public source IDs/markers/current finite stock"
+    ],
+    "local_destination": ".codex-artifacts/remaining-items-release-20261025/retained-cleanup-evidence.json",
+    "publication": "sanitized item report and dated public stock index only",
+    "excluded": [
+      "process IDs",
+      "private backup/dump payloads",
+      "database catalog definitions",
+      "credentials",
+      "raw human rows or Attributes"
+    ]
   }
 }

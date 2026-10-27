@@ -102,6 +102,15 @@ refill, new account, source grant or player walkthrough is included.
    sealed audit receipts. Publish the final reports/index, commit/push and close
    only the satisfied eleven item issues and tracker#852.
 
+For final evidence, read only `qa-cleanup-receipt.json` and the new
+`verify-retained-cleanup-receipt.json` on the server, selecting the exact QA
+removed/retained IDs and counts, normalized digests/boolean protections, candidate/
+migration/source count/listeners/greeting/logins/time and public source IDs,
+markers/current stock. Transfer only that bounded summary to local
+`.codex-artifacts/remaining-items-release-20261025/retained-cleanup-evidence.json`
+and publish sanitized item reports/index. Do not transfer process IDs, private
+backup payloads, catalog definitions, credentials or raw human rows/Attributes.
+
 If any cleanup guard refuses, the same approved cycle includes verifying full
 rollback and restoring the unchanged candidate with that one `evennia start`,
 then independently checking healthy service with QA retained. Keep the failure
