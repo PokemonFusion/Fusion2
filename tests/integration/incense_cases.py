@@ -19,8 +19,9 @@ PROFILES = {"Odd Incense": ("Psychic", "Psychic"), "Rock Incense": ("Power Gem",
             "Rose Incense": ("Energy Ball", "Grass"), "Sea Incense": ("Surf", "Water"),
             "Wave Incense": ("Surf", "Water")}
 SEED = 771
-DEBUG = re.compile(r"\[DEBUG\] lvl=(\d+) pow=(\d+) atk=(\d+) def=(\d+) "
-                   r"stab=([\d.]+) eff=([\d.]+) roll=([\d.]+) crit=(True|False) dmg=(\d+)")
+# Compact output may wrap between fields; keep every numeric field required.
+DEBUG = re.compile(r"\[DEBUG\]\s+lvl=(\d+)\s+pow=(\d+)\s+atk=(\d+)\s+def=(\d+)\s+"
+                   r"stab=([\d.]+)\s+eff=([\d.]+)\s+roll=([\d.]+)\s+crit=(True|False)\s+dmg=(\d+)")
 
 
 class IncensePlayer(SessionTransport):
