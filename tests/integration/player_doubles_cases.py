@@ -302,9 +302,14 @@ class PlayerDoublesCases(unittest.TestCase):
                 text = "\n".join(self.players[0].messages)
                 targets = own.active if name == "Life Dew" else (foe.active if name == "Heal Block" else [*foe.active,own.active[1]])
                 for mon in targets:
-                    summary = f"used {name}!" if mon is own.active[0] else f"used {name} on {mon.name}!"
+                    position = next(label for label, cell in session.data.turndata.positions.items()
+                                    if cell.pokemon is mon)
+                    source_name = f"{own.active[0].name} (A1)"
+                    target_name = f"{mon.name} ({position})"
+                    summary = (f"{source_name} used {name}!" if mon is own.active[0]
+                               else f"{source_name} used {name} on {target_name}!")
                     self.assertIn(summary, text)
-                    self.assertNotIn(f"used {name} on {mon.name} but it had no effect", text)
+                    self.assertNotIn(f"{source_name} used {name} on {target_name} but it had no effect", text)
                 if name == "Life Dew":
                     self.assertGreater(own.active[1].hp, start_hp[own.active[1].model_id])
                 elif volatile:

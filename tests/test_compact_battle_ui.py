@@ -106,7 +106,7 @@ def test_multi_ally_is_not_the_viewer_and_observer_cannot_borrow_a_side():
     """Four controllers retain ownership even when two trainers share a side."""
     session, players, _ = battle(multi=True)
     output = strip_ansi(render(session, players[1]))
-    assert "YOU A2" in output and "ALLY A1" in output
+    assert "YOU  Eevee (A2)" in output and "ALLY  Pikachu (A1)" in output
     assert "37/81" in output and "42/60" not in output
     watcher = trainer("Viewer", 99)
     output = strip_ansi(render(session, watcher, viewer_team="A"))

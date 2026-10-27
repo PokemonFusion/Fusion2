@@ -8,6 +8,7 @@ from utils.safe_import import safe_import
 
 from ._shared import _normalize_key, weather_suppressed
 from .effect_context import EffectContext
+from .labels import BattlerLabels
 
 """Damage calculation helpers and convenience wrappers.
 
@@ -598,6 +599,7 @@ def damage_calc(
     rng: Optional[random.Random] = None,
 ) -> DamageResult:
     result = DamageResult()
+    labels = BattlerLabels(battle)
     from pokemon.battle.effect_context import EffectContext
 
     ohko = (getattr(move, "raw", {}) or {}).get("ohko")
@@ -607,7 +609,7 @@ def damage_calc(
         ignores = getattr(battle, "_move_ignores_target_ability", lambda *args: False)(attacker, target, move)
         if (user_level < target_level or (ohko == "Ice" and "Ice" in getattr(target, "types", []))
                 or (EffectContext.key(_pokemon_ability(target)) == "sturdy" and not ignores)):
-            result.text.append(f"{attacker.name}'s {move.name} failed!")
+            result.text.append(f"{labels.name(attacker)}'s {move.name} failed!")
             return result
     if not getattr(move, "_tera_shared_use", False):
         move._stellar_boosts = {}
@@ -659,7 +661,7 @@ def damage_calc(
         move.accuracy = accuracy
 
         if not accuracy_check(move, rng=rng):
-            result.text.append(f"{attacker.name} uses {move.name} but it missed!")
+            result.text.append(f"{labels.name(attacker)} uses {move.name} but it missed!")
             item = EffectContext.item(attacker)
             if hasattr(item, "call"):
                 item.call("onAccuracyMiss", pokemon=attacker, target=target, move=move)
@@ -719,7 +721,7 @@ def damage_calc(
             result.debug.setdefault("type_effectiveness", []).append(eff)
             result.debug.setdefault("critical", []).append(False)
             if eff == 0:
-                result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+                result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", labels.name(target)))
                 result.debug.setdefault("damage", []).append(0)
             else:
                 result.debug.setdefault("damage", []).append(max(0, fixed_damage))
@@ -754,7 +756,7 @@ def damage_calc(
                 result.debug.setdefault("type_effectiveness", []).append(effectiveness)
                 result.debug.setdefault("critical", []).append(False)
                 if effectiveness == 0:
-                    result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+                    result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", labels.name(target)))
                     fixed_damage = 0
                 result.debug.setdefault("damage", []).append(fixed_damage)
                 continue
@@ -1098,7 +1100,7 @@ def damage_calc(
                     result.text.append(DEFAULT_TEXT["default"]["resisted"])
                     temp_eff *= 2
             elif temp_eff == 0:
-                result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", target.name))
+                result.text.append(DEFAULT_TEXT["default"]["immune"].replace("[POKEMON]", labels.name(target)))
                 continue
             dmg = floor(dmg * eff)
             if getattr(attacker, "terastallized", None) == "Stellar":
@@ -1213,10 +1215,10 @@ def damage_calc(
                     setattr(target, "status", status)
                     applied = True
                 if applied and status == "brn":
-                    result.text.append(f"{target.name} was burned!")
+                    result.text.append(f"{labels.name(target)} was burned!")
 
     if numhits > 1:
-        result.text.append(f"{attacker.name} hit {numhits} times!")
+        result.text.append(f"{labels.name(attacker)} hit {numhits} times!")
 
     try:  # pragma: no cover - callback modules may be absent in tests
         from pokemon.dex.functions import abilities_funcs, items_funcs, moves_funcs  # type: ignore
@@ -1270,6 +1272,7 @@ def apply_damage(
         updated to the final damage amount after callbacks.
     """
 
+    labels = BattlerLabels(battle)
     if rng is None and battle is not None:
         rng = getattr(battle, "rng", None)
     try:
@@ -1524,7 +1527,8 @@ def apply_damage(
     phrase = damage_phrase(target, dmg)
     result.text.insert(
         0,
-        f"{attacker.name} uses {move.name} on {target.name} and deals {phrase} damage!",
+        f"{labels.name(attacker)} uses {move.name} on "
+        f"{labels.name(target)} and deals {phrase} damage!",
     )
     if battle is not None and hasattr(battle, "log_action"):
         for line in result.text:

@@ -19,6 +19,7 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
 
     from pokemon.battle._shared import _normalize_key
     from pokemon.battle.legal_actions import LegalActions
+    from pokemon.battle.labels import BattlerLabels
     from utils.battle_display import render_move_gui
     from pokemon.battle.interface import get_battle_ui_width
     from pokemon.ui.compact_battle import BattleText, screen_reader
@@ -80,7 +81,10 @@ def attack_prompt(inst, caller, move_name, target=None, actor=None):
     if move_name:
         submit(move_name, target)
         return
-    fields = ", ".join(f"{name}: {pos.pokemon.name}" for name, pos in inst.data.turndata.positions.items()
+    labels = BattlerLabels(inst.battle)
+    fields = ", ".join(labels.name(pos.pokemon) if labels.position(pos.pokemon)
+                       else f"{name}: {pos.pokemon.name}"
+                       for name, pos in inst.data.turndata.positions.items()
                        if LegalActions.conscious(pos.pokemon))
     width = get_battle_ui_width(caller)
     prompt = f"Move for {position} ({pokemon.name}):\n" + render_move_gui(

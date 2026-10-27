@@ -12,6 +12,7 @@ from .actions import Action, ActionType
 from .contracts import BattleContextProtocol, CombatPokemonProtocol, ParticipantAdapter, ParticipantProtocol
 from .error_handling import handle_battle_exception
 from .random_source import resolve_rng
+from .labels import BattlerLabels
 
 logger = logging.getLogger("battle")
 
@@ -1293,7 +1294,7 @@ class TurnProcessor:
 
 		if hasattr(self, "log_action"):
 			self.log_action(
-				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {getattr(target_poke, 'name', 'Pokemon')}!"
+				f"{getattr(action.actor, 'name', 'Trainer')} used {action.item} on {BattlerLabels(self).name(target_poke)}!"
 			)
 
 	def perform_move_action(self, action: Action) -> None:
