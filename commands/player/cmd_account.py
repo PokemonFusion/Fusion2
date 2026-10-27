@@ -3,8 +3,9 @@ from evennia import Command, search_account, search_object
 from evennia.accounts.models import AccountDB
 from evennia.commands.default.account import CmdCharCreate as DefaultCmdCharCreate
 
-from pokemon.models.storage import move_to_box
-from utils.locks import require_no_battle_lock
+# Preserve the legacy command module's public imports while trading is disabled.
+from pokemon.models.storage import move_to_box as move_to_box
+from utils.locks import require_no_battle_lock as require_no_battle_lock
 
 STAFF_LOCK = (
     "cmd:perm(Helper) or perm(Validator) or perm(Builder) or perm(Admin) "
@@ -205,16 +206,25 @@ class CmdAlts(Command):
 
 
 class CmdTradePokemon(Command):
-    """Trade a Pokemon with another character.
+    """Offer, inspect and consent to durable Pokemon trades.
 
     Usage:
-      +trade <pokemon_id>=<character>
+      +trade
+      +trade offer <character>=<your party slot or Pokemon UUID>
+      +trade inspect <offer UUID>
+      +trade counter <offer UUID>=<your party slot or Pokemon UUID>
+      +trade accept <offer UUID>
+      +trade decline <offer UUID>
+      +trade cancel <offer UUID>
 
-    Examples:
-      +trade abc123=Misty
-
-    Notes:
-      You cannot trade while either character is in battle.
+    Offers last 15 minutes. Gifts require acceptance. For a swap, the recipient
+    counters with their own Pokemon, then the original proposer accepts the new
+    offer. Inspect an offer before accepting or countering it. Every counteroffer
+    requires a new inspection and consent. Party and boxed Pokemon are
+    supported; use a unique UUID prefix of at least eight characters for boxes.
+    No fees; full parties use boxes. Trade-trigger evolution is deferred: use the
+    documented manual evolution equivalents. Expired/stale offers cannot complete;
+    cancel them to release their reservations. +trade lists outcomes after reconnect.
     """
 
     key = "+trade"
@@ -223,7 +233,37 @@ class CmdTradePokemon(Command):
     help_category = "Pokemon"
 
     def func(self):
-        """Keep the legacy non-atomic transfer path closed pending trading work."""
-        self.caller.msg(
-            "Pokemon trading is temporarily unavailable while ownership safeguards are upgraded."
-        )
+        """Keep every user mutation behind fresh character-scoped offer services."""
+        raw = (self.args or "").strip()
+        action, _, arguments = raw.partition(" ")
+        action = action.lower()
+        if raw and action not in {"offer", "counter", "inspect", "accept", "cancel", "decline"}:
+            self.caller.msg("Use +trade offer <character>=<your slot/UUID>. Gifts require recipient acceptance; +trade lists your offers.")
+            return
+        from pokemon.services.placement import PlacementError
+        from pokemon.services.trading import TradeOffers
+
+        try:
+            service = TradeOffers(self.caller)
+            if not raw:
+                offers = service.offers()
+                self.caller.msg("Trade offers (up to 30, pending first):\n" + "\n".join(service.list_line(offer) for offer in offers)
+                    if offers else "No trade offers. Use +trade offer <character>=<your slot/UUID>. Gifts require acceptance.")
+            elif action == "offer" and "=" in arguments:
+                recipient, selector = [value.strip() for value in arguments.split("=", 1)]
+                self.caller.msg(service.describe(service.propose(recipient, selector)))
+            elif action == "counter" and "=" in arguments:
+                identifier, selector = [value.strip() for value in arguments.split("=", 1)]
+                self.caller.msg(service.describe(service.counter(identifier, selector)))
+            elif action == "inspect" and arguments:
+                self.caller.msg(service.inspect(arguments.strip()))
+            elif action == "accept" and arguments:
+                receipt = service.accept(arguments.strip())
+                self.caller.msg("Trade completed: " + receipt["transfer"] + ". Both sides are saved. Use +trade to inspect the receipt.")
+            elif action in {"cancel", "decline"} and arguments:
+                operation = service.close(arguments.strip(), decline=action == "decline")
+                self.caller.msg(service.describe(operation))
+            else:
+                self.caller.msg("Use +trade offer <character>=<your slot/UUID>, or +trade inspect/accept/counter/decline/cancel <offer UUID>.")
+        except PlacementError as error:
+            self.caller.msg(str(error) + " No Pokemon changed owner. Use +trade to inspect or cancel the offer.")

@@ -262,6 +262,11 @@ def _get_item_text_entry(name, details):
 
 def get_item_description(name, details=None):
 	"""Return the best available item description from dex or text data."""
+	from pokemon.items import HYPER_TRAINING_ITEMS
+
+	training = HYPER_TRAINING_ITEMS.get(_normalize_key(name))
+	if training:
+		return training.desc
 
 	if details is None:
 		_, details = get_item_by_name(name)
@@ -284,6 +289,12 @@ def format_item_details(name, details):
 
 	if name != display_name:
 		lines.append(f"Dex Key: {name}")
+	category = _get(details, "category")
+	if category:
+		lines.append(f"Category: {category}")
+	price = _get(details, "price")
+	if price is not None:
+		lines.append(f"Reference price: ${price}")
 
 	generation = _get(details, "gen")
 	if generation is not None:

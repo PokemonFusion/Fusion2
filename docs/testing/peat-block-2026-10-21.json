@@ -1,0 +1,353 @@
+{
+  "issue": 760,
+  "completed_utc": "2026-10-22T00:28:24.734159+00:00",
+  "result": "passed_peat_block_ordinary_ursaluna_explicit_item_equivalent",
+  "baseline_commit": "12dfb356dbb044f177553bdc2f0e04b6fac76fcd",
+  "python": "3.12.4",
+  "source_sha256_lf": {
+    ".github/workflows/lifecycle-integrity.yml": "1328d0fbf0033f41593c933f63e0bb4b9303889202b0c2a9899d6f0783f167fd",
+    "commands/player/cmd_inventory.py": "79280017f864164b0a43d04e65fd273a8fc6ef5372d52d2ca27884f5112ff6f5",
+    "commands/player/cmd_learn_evolve.py": "8c0d82db8f3904bb76bde98b94215f94a39c30a9b281a80231afada650cf6f97",
+    "commands/player/cmd_pokedex.py": "2d33957b4553933a837db9eb60cbc11f0330c075f5b57f811312cb728cd5c50e",
+    "commands/player/cmd_sheet.py": "c56a1e317bf3cefcce1bd7b6fc12460813ed1b1c1aed9ea284233b7ce1fa8351",
+    "docs/evolution.md": "542b8dcd1a7b3a3249bfdf6a337bcf2396ed4137e80bdfa8e7a6c615b1ece9c7",
+    "docs/peat-block-evolution.md": "e6c31076ff24983cf07680209d892f9f62309b19e16b67bb21d204573378ecb9",
+    "menus/item_store.py": "601737aa85f2b985f4cea90042635279eeab463b4f97572db49df669b331a78c",
+    "pokemon/data/evolution.py": "736e02d54f593197dbf3219c743d5c877e72b9e843b600d3884586ad1bd84acc",
+    "pokemon/data/item_prices.csv": "fe19ff5131d9821abfa9173e8a9df1f27f5864540e2fb903246346db6ec10392",
+    "pokemon/dex/pokedex/galar.py": "c3269e8addf29e7519569847b0d116c2858d9df18b63d7641ddef46bc62d963a",
+    "pokemon/dex/pokedex/johto.py": "4c99b7b75e705fe0a8c68b7f88a56bc0ac4e864285ad79e3a04874d9d699d6e1",
+    "pokemon/evolution_items.py": "9653590ad58dff05a412a823bf632c7656731d8fc07f1171287da9e14dce5da2",
+    "pokemon/items.py": "667d6e2bb3394dff7db010be6034853bae1004eafe7c66d9091a6ca0acf3c3c9",
+    "pokemon/middleware.py": "9e9d613144230807debad09b844ecf782095c089b3d37c7facebc38d2b82ae6d",
+    "pokemon/models/core.py": "e807802c0c5eecbefe7819480697d267c4f56ad7edb3d569e23aedfa92193847",
+    "pokemon/models/trainer.py": "b25af6ac140457b8a4cafca7264e5152ae6eb06f54fdaa40c734143ad993817d",
+    "pokemon/names.py": "645fd0c2cbdd67bd002391cb8634b7faf1da51280b2bd7bc534e8babf70cb8a3",
+    "pokemon/services/evolution.py": "a6a6d83fa1cf617590520e04ea00fe8b10848fca91c744c2e2461cbd3ff1f93f",
+    "pokemon/services/placement.py": "5fa4d9e2b80c2b1a9eab6330e8d9907d497ca23e3da6f93a24e78ee3270930b9",
+    "pokemon/user.py": "7016b47bbf45c9a0d192d6c9a0b5e606454494db2f59670a8b4f816aee599168",
+    "tests/integration/alcremie_cases.py": "40f1930fa62063ef850ab390aeca401d73a7016c448adb7ddc0c78ce3acccb65",
+    "tests/integration/evolution_cases.py": "0a518b97cd4108b3af250c5f042c9e28042eb65e7cd1b2cb8c820057da9b71e9",
+    "tests/integration/field_food_cases.py": "499cc9853a3c0b6ac2d1a3cee32a5ee5d351dcd843317e516818ba50d3c2f849",
+    "tests/integration/isolated_postgres.py": "4b38423ba6d7ccf08cbdfe9d022e26f0d399415adc3ef9df30d89945dcc1270b",
+    "tests/integration/peat_block_cases.py": "d8d1a20b581c75b0bb6b883b4507ed2a67eda48df34a7b913d87733b19e5153d",
+    "tests/integration/smoke_ball_cases.py": "250704f3039bde38c6e0318e6bb252b11252be3b4275fe3bce3a3b822b836b40",
+    "tests/integration/trade_held_cases.py": "2f039b6bb8b02853907f3560167cb6d53c2d60c85702c8116ee3f5dd428380f1",
+    "tests/integration/ui_cases.py": "4b577086f4d96956e6c487db89441742a8f0e1ea6e9924cb9026d554f27aa750",
+    "tests/test_peat_block_evolution.py": "7667da39bca94cc33eca6ddcb9c7bbadcf1d7b017066463efd59f49c0103115c",
+    "tools/run_mandatory_tests.py": "74e942d278967cf2065d0d4c3c3a47c2117723c32bb106cfa5c4de15191b0d94",
+    "utils/inventory_view.py": "d1341f83e0266c717ee325183c0030199fa35161d90749c600328381a754893b",
+    "world/help_entries.py": "d2f7b4b3370b20ee00770b04073c5511fb1b4fef9376cfbd391ec97f7b78d956"
+  },
+  "frozen_python_sources_verified": 956,
+  "dependencies": {
+    "747": "all ten P1/P2 children closed; existing-item gate satisfied in documented scopes",
+    "755": "closed; existing atomic evolution/equip boundary retained",
+    "756": "closed; bounded equivalent pattern retained"
+  },
+  "rule_selection": {
+    "recorded_before_implementation": true,
+    "selected": "explicit mechanical equivalent",
+    "authority": "PeatBlockEvolution in pokemon/evolution_items.py plus shared exact evolution evaluator",
+    "route": "+evolve <full owned Pokemon ID> Peat Block[=Ursaluna]",
+    "source": "exact native Ursaring",
+    "target": "ordinary Ursaluna only",
+    "inventory": "one real trainer bag item; held copy not used",
+    "lunar_claim": false,
+    "time_region_weather_requirement": false,
+    "level": "no additional threshold; same source/target dex level check",
+    "spoofing": "no room/character/Pokemon moon flags or client text grant eligibility",
+    "fail_closed": "exact reviewed other type/condition and no foreign forms; generic full-moon condition remains false",
+    "Bloodmoon": "excluded; cannot evolve into or transform to that form",
+    "canon_reference": {
+      "url": "https://bulbapedia.bulbagarden.net/wiki/Peat_Block#Effect",
+      "checked_local_date": "2026-10-21",
+      "kind": "secondary community reference",
+      "baseline": "Peat Block on Ursaring during a full moon consumes the item",
+      "distinction": "PF2 deliberately replaces the lunar predicate with explicit bag-item use"
+    }
+  },
+  "definition": {
+    "canonical_key": "peatblock",
+    "display_name": "Peat Block",
+    "category": "Evolution Items",
+    "reference_price": 10000,
+    "price_policy": "PF2 reference follows the source Legends Arceus purchase cost; shops charge configured stock price",
+    "price_csv": "no entry; existing CSV unchanged",
+    "supplemental": true,
+    "competitive_ITEMDEX_and_generated_species_dex_modified": false,
+    "automatic_grants_or_live_stock": false,
+    "intentional_acquisition": "existing opt-in shop/reward configuration; current editor stock key PeatBlock tested"
+  },
+  "persistence": {
+    "service": "existing EvolutionService unchanged",
+    "locks": [
+      "storage",
+      "trainer",
+      "fresh owned Pokemon"
+    ],
+    "bag_debit": 1,
+    "same_identity_and_owner": true,
+    "party_box_placement_and_mirrors": "preserved",
+    "preserved": [
+      "nickname",
+      "held item",
+      "current HP",
+      "status/sleep",
+      "EXP",
+      "IVs/EVs",
+      "friendship",
+      "moves/PP",
+      "unrelated flags"
+    ],
+    "changes": [
+      "canonical species",
+      "mapped ability slot",
+      "derived types/stats",
+      "normal evolution receipt"
+    ],
+    "HP": "current HP unchanged; calculated max follows evolved species; no healing/rescaling",
+    "failure": "outer transaction rolls back bag, SQL transition and receipt, then restores shared cached state",
+    "schema_or_service_change": false
+  },
+  "ordinary_player_flow": {
+    "proof_kind": "automated shipped ordinary commands and production models with captured session transport",
+    "fixture_setup": "tagged disposable owners, shop editor stock, controlled Pokemon/room state; separate from ordinary purchase/actions",
+    "walkthroughs": [
+      {
+        "ability_before": "Quick Feet",
+        "ability_after": "Bulletproof",
+        "context": "day",
+        "item": "Peat Block",
+        "bag_after": 1,
+        "commands": [
+          "shop Buy: PeatBlock 2",
+          "+inventory",
+          "+itemdex Peat Block",
+          "+party 3",
+          "+evolve 085b2327-3833-4257-9912-68ec3fbddcc0 Peat Block",
+          "+party 3"
+        ],
+        "purchase_output": "You purchase 2 x PeatBlock for $20000.",
+        "evolve_output": "Buddy evolved into Ursaluna!",
+        "species_after": "Ursaluna",
+        "id": "085b2327-3833-4257-9912-68ec3fbddcc0",
+        "hp_after": 3,
+        "max_hp_before": 94,
+        "max_hp_after": 118,
+        "held_after": "Leftovers",
+        "other_state_preserved": true,
+        "SQL_reload_and_retry": true
+      },
+      {
+        "ability_before": "Guts",
+        "ability_after": "Guts",
+        "context": "missing_room",
+        "item": "Peat Block",
+        "bag_after": 1,
+        "commands": [
+          "shop Buy: PeatBlock 2",
+          "+inventory",
+          "+itemdex Peat Block",
+          "+party 3",
+          "+evolve 7fe6916f-5556-4b8a-8343-cc9a1efd2ffb Peat Block",
+          "+party 3"
+        ],
+        "purchase_output": "You purchase 2 x PeatBlock for $20000.",
+        "evolve_output": "Buddy evolved into Ursaluna!",
+        "species_after": "Ursaluna",
+        "id": "7fe6916f-5556-4b8a-8343-cc9a1efd2ffb",
+        "hp_after": 3,
+        "max_hp_before": 94,
+        "max_hp_after": 118,
+        "held_after": "Leftovers",
+        "other_state_preserved": true,
+        "SQL_reload_and_retry": true
+      },
+      {
+        "ability_before": "Unnerve",
+        "ability_after": "Unnerve",
+        "context": "night",
+        "item": "Peat Block",
+        "bag_after": 1,
+        "commands": [
+          "shop Buy: PeatBlock 2",
+          "+inventory",
+          "+itemdex Peat Block",
+          "+party 3",
+          "+evolve a4eb2dd7-1acc-4aa1-aae8-5d2f7471c91f Peat Block=Ursaluna",
+          "+party 3"
+        ],
+        "purchase_output": "You purchase 2 x PeatBlock for $20000.",
+        "evolve_output": "Buddy evolved into Ursaluna!",
+        "species_after": "Ursaluna",
+        "id": "a4eb2dd7-1acc-4aa1-aae8-5d2f7471c91f",
+        "hp_after": 3,
+        "max_hp_before": 94,
+        "max_hp_after": 118,
+        "held_after": "Leftovers",
+        "other_state_preserved": true,
+        "SQL_reload_and_retry": true
+      }
+    ],
+    "live_login_performed": false
+  },
+  "production_model_checks": {
+    "suites": {
+      "evolution": {
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 3.128,
+        "log": ".codex-artifacts\\peat-block-20261021\\evolution-final.log",
+        "log_sha256": "cbdec337552f94c962e62e4475c9f477e66a47e7f34196d4869ca0980ee6e6ec",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py evolution_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/evolution_cases.py"
+      },
+      "alcremie": {
+        "passed": 76,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 17.313,
+        "log": ".codex-artifacts\\peat-block-20261021\\alcremie-final.log",
+        "log_sha256": "27b464d550437875276db71ef6fdd5ebb11c61352c5d6ad4073ac997db7e8527",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py alcremie_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/alcremie_cases.py"
+      },
+      "trade_held": {
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 7.608,
+        "log": ".codex-artifacts\\peat-block-20261021\\trade_held-final.log",
+        "log_sha256": "96428a0be1a0c4ad48c1cec99f5bc52b209ac52ac9aeca81b0558f679424248e",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py trade_held_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/trade_held_cases.py"
+      },
+      "ui": {
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 2.667,
+        "log": ".codex-artifacts\\peat-block-20261021\\ui-final.log",
+        "log_sha256": "87aca3d43ad74791420bc64e2471f942b934063cd8a72a60729688ed2c7a3dab",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py ui_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/ui_cases.py"
+      },
+      "field_food": {
+        "passed": 70,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 13.836,
+        "log": ".codex-artifacts\\peat-block-20261021\\field_food-final.log",
+        "log_sha256": "0a8f4ce5fa048ca0ad9ee88d782e70872d8bd5c5e436cdb60d1482071458954c",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py field_food_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/field_food_cases.py"
+      },
+      "smoke_ball": {
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 6.903,
+        "log": ".codex-artifacts\\peat-block-20261021\\smoke_ball-final.log",
+        "log_sha256": "72c842e821cf545ab748b29671f79d3eb6fb7ce44c2f3060dd24b14929ca056a",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py smoke_ball_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/smoke_ball_cases.py"
+      },
+      "peat_block": {
+        "passed": 29,
+        "failed": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "duration_seconds": 5.107,
+        "log": ".codex-artifacts\\peat-block-20261021\\peat-final.log",
+        "log_sha256": "700fd5d4077187250a78de6fed4a85b5739f9458d9d64b61010693af301d8f0c",
+        "command": "python -B .codex-artifacts/peat-block-20261021/run_case.py peat_block_cases.py",
+        "equivalent_ci_command": "python -B tests/integration/peat_block_cases.py"
+      }
+    },
+    "total_passed": 267,
+    "database": "fresh private loopback PostgreSQL 16.9, explicit test DSN and isolated schemas",
+    "wrapper": "only argv and test log destinations adapted"
+  },
+  "focused_pytest": {
+    "passed": 160,
+    "failed": 0,
+    "warnings": 14,
+    "exit_code": 0,
+    "command": "python -B -m pytest tests/test_peat_block_evolution.py tests/test_evolution.py tests/test_evolution_conditions.py tests/test_alcremie_evolution.py tests/test_trade_held_evolution.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_gameplay_items.py tests/test_itemdex_command.py tests/test_item_store_safety.py tests/test_help_pipe_escaping.py -q --run-callback-tests -o addopts= -p no:cacheprovider --basetemp=.pytest-basetemp-760-focused-final",
+    "environment": {
+      "PF2_NO_EVENNIA": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "log_sha256": "4a97f5b4a62350ca09494db05348a973f710cdd0923efbf0ced1e8bae4c7eb28"
+  },
+  "mandatory_gate": {
+    "command": "python -B tools/run_mandatory_tests.py",
+    "runs": [
+      {
+        "name": "combined",
+        "passed": 4500,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 214.89,
+        "exit_code": 0
+      },
+      {
+        "name": "repeat",
+        "passed": 4500,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 205.99,
+        "exit_code": 0
+      },
+      {
+        "name": "battle-first",
+        "passed": 4500,
+        "skipped": 4014,
+        "warnings": 1401,
+        "duration_seconds": 199.37,
+        "exit_code": 0
+      }
+    ],
+    "exit_code": 0,
+    "log_sha256": "6761a1a9d67801a7e60608dfa2fb4b0b04a7c710b7c36b10f2ce595511a31aa0",
+    "warnings": "existing model-reload and pytest-cache permission warnings retained",
+    "skips": "4014 per process remain outside enabled scope; PG proof is separate"
+  },
+  "preliminary_diagnoses": [
+    "Fixture expected a SQL type_ field instead of reloaded computed species types.",
+    "Fixture used trainer instead of owner when creating legacy InventoryEntry rows.",
+    "Captured player adapter omitted the shipped party-slot getter for a +use negative control.",
+    "Only fixtures changed for these errors; final 29-case PG rerun passed without gameplay/service changes."
+  ],
+  "cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_peat_block_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_cluster_stopped": true
+  },
+  "boundaries": {
+    "unrelated_work_included": false,
+    "plot_only_content": false,
+    "migration_runner": false,
+    "existing_service_restart": false,
+    "game_database": false,
+    "live_login": false,
+    "hosted_ci_confirmed": false,
+    "main_merge": false,
+    "deployed": false,
+    "battle_runtime_modified": false,
+    "historical_reports_modified": false
+  }
+}

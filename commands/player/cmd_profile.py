@@ -39,7 +39,7 @@ def _caller_character(command):
 
 
 def _search_character(query):
-    matches = search_object(query, exact=False, typeclass="typeclasses.characters.Character")
+    matches = search_object(query, exact=False)
     return [match for match in matches if _is_character(match)]
 
 

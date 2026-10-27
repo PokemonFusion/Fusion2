@@ -15,6 +15,8 @@ class GymVictory(models.Model):
     metadata = models.JSONField(default=dict)
     recorded_at = models.DateTimeField(default=timezone.now)
     claimed_at = models.DateTimeField(null=True, blank=True)
+    award_kind = models.CharField(max_length=16, blank=True, default="",
+                                  choices=(("first_clear", "First clear"), ("rematch", "Rematch")))
 
     class Meta:
         ordering = ("recorded_at", "id")

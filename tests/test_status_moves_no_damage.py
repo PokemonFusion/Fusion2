@@ -87,9 +87,11 @@ def test_status_move_applies_boost_without_damage(env, monkeypatch):
 	battle, user, target = setup_battle(env)
 	called = {}
 
-	def fake_apply_boost(pokemon, boosts):
+	def fake_apply_boost(pokemon, boosts, source=None, effect=None):
 		called["pokemon"] = pokemon
 		called["boosts"] = boosts
+		called["source"] = source
+		called["effect"] = effect
 		pokemon.boosts = boosts
 
 	from pokemon.utils import boosts as boost_utils
@@ -109,6 +111,8 @@ def test_status_move_applies_boost_without_damage(env, monkeypatch):
 	assert target.hp == 100
 	assert user.boosts.get("atk") == 1
 	assert called["pokemon"] is user
+	assert called["source"] is user
+	assert called["effect"] is move
 	dmg = battle._deal_damage(user, target, move)
 	assert dmg == 0
 

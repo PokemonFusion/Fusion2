@@ -1,0 +1,7313 @@
+{
+  "schema_version": 1,
+  "issues": [
+    877,
+    878,
+    879,
+    880,
+    881,
+    882,
+    883
+  ],
+  "status": "qualified_authored_sources_pending_installation",
+  "evidence_kind": "production command/menu/runtime with disposable PostgreSQL and captured transport",
+  "baseline": "30ec667c0050b797b155c7cd20e32146e7473346",
+  "qualified_python_count": 1155,
+  "python_sources": {
+    "pokemon/services/item_supply.py": "d84419fb856c51f7333b8ae6ad359721a9e8849089107d0b6f53321407875291",
+    "pokemon/services/finite_item_supply.py": "efb4c72523e97f9b5c077ad2860c4a106d699fbb47a71a35e5f89b8b7e29a7ed",
+    "tests/test_finite_item_supply.py": "95a103ddbbbe0cb17a48aa5cd7bb6f3d5066bb71f47a3a6109f1cc00928deae1",
+    "tests/integration/finite_item_supply_cases.py": "e26642118854e7dd905428252fc4fa04a82ce710b957a4c27182a790c64fa48e",
+    "tools/audit_item_availability.py": "7e4eb415584984b6bbdbc4c46549a357f3e2e7dd457a98f3d4365d2451d55311"
+  },
+  "unrelated_shared_wip_preserved": true,
+  "unrelated_dirty_path_count": 25,
+  "focused": {
+    "exit": 0,
+    "seconds": 8.61,
+    "passed": [
+      "61"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "a6a6029794c74e8d0bd4c6ca0ca63ebe3c14fb0a182244ba83867d400bd715ad"
+  },
+  "postgresql": [
+    {
+      "suite": "finite_item_supply",
+      "exit": 0,
+      "seconds": 52.47,
+      "cases": [
+        "100"
+      ],
+      "sha256": "d0fc8c918ffc8f6b5866fe5d35d39970a1bb74b9e16622b106f6771db3d48d17"
+    },
+    {
+      "suite": "item_replenishment",
+      "exit": 0,
+      "seconds": 17.67,
+      "cases": [
+        "29"
+      ],
+      "sha256": "5f3e311048935bb99ab0be59e3ea49ea497d99806fcd4ae2a7ed3da0b5153378"
+    },
+    {
+      "suite": "item_supply",
+      "exit": 0,
+      "seconds": 15.93,
+      "cases": [
+        "11"
+      ],
+      "sha256": "371b67334d4011761ed8d6b1e727cd1fe03edcb3ed6605ff25f14b3c6e78cdaf"
+    },
+    {
+      "suite": "shop_purchase",
+      "exit": 0,
+      "seconds": 13.74,
+      "cases": [
+        "8"
+      ],
+      "sha256": "208316454c08644e4d5a9346a80ef745b77dcc268eec72a4db391c3ef5472cce"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 20.91,
+      "cases": [
+        "32"
+      ],
+      "sha256": "5979cd2503a60b8a02947899a0bd0fb7a0281b6641345ce359bdead791ab6b18"
+    }
+  ],
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 2192.67,
+    "passed": [
+      "6327",
+      "6327",
+      "6327"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "7253f1cd19692186db30193e6b0fd6d7aa7f40a38cd7a1961497b52f69caf88f",
+    "source_count": 1583
+  },
+  "cases": [
+    {
+      "issue": 877,
+      "case": "test_coexistence",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 19}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199900,
+      "bag_after": [
+        {
+          "item_name": "antidote",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 0}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198000,
+      "bag_after": [
+        {
+          "item_name": "antidote",
+          "quantity": 20
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_field_Antidote",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 19}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199900,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_field_Awakening",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 9}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199750,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_field_BurnHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 9}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199750,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_field_FullHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 9}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_field_IceHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 9}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199750,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_field_ParalyzeHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 19}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199800,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 19}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199900,
+      "bag_after": [
+        {
+          "item_name": "antidote",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_manual_Antidote",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 19}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199900,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_manual_Awakening",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 9}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199750,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_manual_BurnHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 9}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199750,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_manual_FullHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 9}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_manual_IceHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 9}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199750,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_manual_ParalyzeHeal",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 19}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199800,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 19}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199900,
+      "bag_after": [
+        {
+          "item_name": "antidote",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 877,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "stock_after": {
+        "Antidote": "{'price': 100, 'quantity': 20}",
+        "Paralyze Heal": "{'price': 200, 'quantity': 20}",
+        "Awakening": "{'price': 250, 'quantity': 10}",
+        "Burn Heal": "{'price': 250, 'quantity': 10}",
+        "Ice Heal": "{'price': 250, 'quantity': 10}",
+        "Full Heal": "{'price': 600, 'quantity': 10}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 0}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 186000,
+      "bag_after": [
+        {
+          "item_name": "superpotion",
+          "quantity": 20
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_field_HyperPotion",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 9}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198500,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 121,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_field_MaxRevive",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 196000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_field_Revive",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 9}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198500,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 80,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_field_SuperPotion",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 19}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199300,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 61,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 19}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199300,
+      "bag_after": [
+        {
+          "item_name": "superpotion",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_manual_HyperPotion",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 9}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198500,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 121,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_manual_MaxRevive",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 196000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Eevee",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Run Away",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_manual_Revive",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 9}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198500,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 80,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Eevee",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Run Away",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_manual_SuperPotion",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 19}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199300,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 61,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 19}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199300,
+      "bag_after": [
+        {
+          "item_name": "superpotion",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 878,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Super Potion": "{'price': 700, 'quantity': 20}",
+        "Hyper Potion": "{'price': 1500, 'quantity': 10}",
+        "Revive": "{'price': 1500, 'quantity': 10}",
+        "Max Revive": "{'price': 4000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 0}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 188000,
+      "bag_after": [
+        {
+          "item_name": "ether",
+          "quantity": 10
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_field_Elixir",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 4}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 10
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 10
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "87548315-e688-4322-9919-1925fb478e5d",
+          "move_id": 10,
+          "bonus_pp": 21
+        },
+        {
+          "pokemon_id": "87548315-e688-4322-9919-1925fb478e5d",
+          "move_id": 11,
+          "bonus_pp": 15
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_field_Ether",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 9}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198800,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 0
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 10
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "0b0163bf-f4f6-4b91-8c26-0dabcd4bd462",
+          "move_id": 10,
+          "bonus_pp": 21
+        },
+        {
+          "pokemon_id": "0b0163bf-f4f6-4b91-8c26-0dabcd4bd462",
+          "move_id": 11,
+          "bonus_pp": 15
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_field_MaxElixir",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 194000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 56
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 40
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "4eeb29df-7739-489b-bcbe-eb21897cd6f4",
+          "move_id": 10,
+          "bonus_pp": 21
+        },
+        {
+          "pokemon_id": "4eeb29df-7739-489b-bcbe-eb21897cd6f4",
+          "move_id": 11,
+          "bonus_pp": 15
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_field_MaxEther",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 4}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197600,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 0
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 40
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "3271dbbb-f509-4b10-bfda-44074806cb92",
+          "move_id": 10,
+          "bonus_pp": 21
+        },
+        {
+          "pokemon_id": "3271dbbb-f509-4b10-bfda-44074806cb92",
+          "move_id": 11,
+          "bonus_pp": 15
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 9}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198800,
+      "bag_after": [
+        {
+          "item_name": "ether",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_manual_Elixir",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 4}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 10
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 10
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_manual_Ether",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 9}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198800,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 0
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 10
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_manual_MaxElixir",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 194000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_manual_MaxEther",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 4}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197600,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 0
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 9}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198800,
+      "bag_after": [
+        {
+          "item_name": "ether",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 879,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Ether": "{'price': 1200, 'quantity': 10}",
+        "Max Ether": "{'price': 2400, 'quantity': 5}",
+        "Elixir": "{'price': 3000, 'quantity': 5}",
+        "Max Elixir": "{'price': 6000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 0}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 185000,
+      "bag_after": [
+        {
+          "item_name": "waterstone",
+          "quantity": 5
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_field_IceStone",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 4}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Doubleedge",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Lastresort",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Trumpcard",
+          "current_pp": 5
+        },
+        {
+          "slot": 4,
+          "move__name": "Takedown",
+          "current_pp": 20
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Glaceon",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Snow Cloak",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_field_LeafStone",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 4}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Doubleedge",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Lastresort",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Trumpcard",
+          "current_pp": 5
+        },
+        {
+          "slot": 4,
+          "move__name": "Takedown",
+          "current_pp": 20
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Leafeon",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Leaf Guard",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_field_MoonStone",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 4}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Moonblast",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Moonlight",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Charm",
+          "current_pp": 20
+        },
+        {
+          "slot": 4,
+          "move__name": "Disarmingvoice",
+          "current_pp": 15
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Clefable",
+          "current_hp": 130,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Cute Charm",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_field_SunStone",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 4}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Petaldance",
+          "current_pp": 10
+        },
+        {
+          "slot": 2,
+          "move__name": "Petalblizzard",
+          "current_pp": 15
+        },
+        {
+          "slot": 3,
+          "move__name": "Gigadrain",
+          "current_pp": 10
+        },
+        {
+          "slot": 4,
+          "move__name": "Toxic",
+          "current_pp": 10
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Bellossom",
+          "current_hp": 120,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Chlorophyll",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_field_ThunderStone",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 4}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Doubleedge",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Lastresort",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Trumpcard",
+          "current_pp": 5
+        },
+        {
+          "slot": 4,
+          "move__name": "Takedown",
+          "current_pp": 20
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Jolteon",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Volt Absorb",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_field_WaterStone",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 4}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Doubleedge",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Lastresort",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Trumpcard",
+          "current_pp": 5
+        },
+        {
+          "slot": 4,
+          "move__name": "Takedown",
+          "current_pp": 20
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Vaporeon",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Water Absorb",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 4}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [
+        {
+          "item_name": "waterstone",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 4}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 197000,
+      "bag_after": [
+        {
+          "item_name": "waterstone",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 880,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "stock_after": {
+        "Water Stone": "{'price': 3000, 'quantity': 5}",
+        "Thunder Stone": "{'price': 3000, 'quantity': 5}",
+        "Leaf Stone": "{'price': 3000, 'quantity': 5}",
+        "Ice Stone": "{'price': 3000, 'quantity': 5}",
+        "Sun Stone": "{'price': 3000, 'quantity': 5}",
+        "Moon Stone": "{'price': 3000, 'quantity': 5}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 0}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 180000,
+      "bag_after": [
+        {
+          "item_name": "hpup",
+          "quantity": 2
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_field_Calcium",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 1}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            10,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_field_Carbos",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_field_HPUp",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 1}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 161,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            10,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_field_Iron",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 1}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            10,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_field_Protein",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 1}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            10,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_field_Zinc",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 1}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            10,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 1}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [
+        {
+          "item_name": "hpup",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            252,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 1}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190000,
+      "bag_after": [
+        {
+          "item_name": "hpup",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 881,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "stock_after": {
+        "HP Up": "{'price': 10000, 'quantity': 2}",
+        "Protein": "{'price': 10000, 'quantity': 2}",
+        "Iron": "{'price': 10000, 'quantity': 2}",
+        "Calcium": "{'price': 10000, 'quantity': 2}",
+        "Zinc": "{'price': 10000, 'quantity': 2}",
+        "Carbos": "{'price': 10000, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 0}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 180400,
+      "bag_after": [
+        {
+          "item_name": "ppup",
+          "quantity": 2
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_field_AbilityCapsule",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 0}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 180000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Doubleedge",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Lastresort",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Trumpcard",
+          "current_pp": 5
+        },
+        {
+          "slot": 4,
+          "move__name": "Takedown",
+          "current_pp": 20
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Eevee",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Adaptability",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_field_AbilityPatch",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 0}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 170000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Doubleedge",
+          "current_pp": 15
+        },
+        {
+          "slot": 2,
+          "move__name": "Lastresort",
+          "current_pp": 5
+        },
+        {
+          "slot": 3,
+          "move__name": "Trumpcard",
+          "current_pp": 5
+        },
+        {
+          "slot": 4,
+          "move__name": "Takedown",
+          "current_pp": 20
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        },
+        {
+          "species": "Eevee",
+          "current_hp": 115,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Anticipation",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_field_PPMax",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 0}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 185000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 56
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "08728c75-b213-4bd4-ae4c-bec6011d4377",
+          "move_id": 10,
+          "bonus_pp": 21
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_field_PPUp",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 1}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190200,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 42
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "1dfd54be-2b6c-48f7-9182-49580360b7fd",
+          "move_id": 10,
+          "bonus_pp": 7
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 1}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190200,
+      "bag_after": [
+        {
+          "item_name": "ppup",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [
+        {
+          "pokemon_id": "12428e66-d000-4bf6-9be5-67942bcc536e",
+          "move_id": 10,
+          "bonus_pp": 21
+        },
+        {
+          "pokemon_id": "12428e66-d000-4bf6-9be5-67942bcc536e",
+          "move_id": 11,
+          "bonus_pp": 15
+        }
+      ],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 1}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 190200,
+      "bag_after": [
+        {
+          "item_name": "ppup",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 882,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "PP Up": "{'price': 9800, 'quantity': 2}",
+        "PP Max": "{'price': 15000, 'quantity': 1}",
+        "Ability Capsule": "{'price': 20000, 'quantity': 1}",
+        "Ability Patch": "{'price': 30000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_contention",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 0}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 198000,
+      "bag_after": [
+        {
+          "item_name": "sitrusberry",
+          "quantity": 10
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_drift",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_guards",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 9}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199800,
+      "bag_after": [
+        {
+          "item_name": "sitrusberry",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_held_ChoiceBand",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 0}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 195000,
+      "bag_after": [
+        {
+          "item_name": "choiceband",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 33
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_held_ChoiceScarf",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 0}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 195000,
+      "bag_after": [
+        {
+          "item_name": "choicescarf",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 33
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_held_ChoiceSpecs",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 0}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 195000,
+      "bag_after": [
+        {
+          "item_name": "choicespecs",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 23
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_held_FocusSash",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 1}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 195000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 34
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 1,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 5,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_held_LumBerry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 4}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 34
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_held_SitrusBerry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 9}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199800,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 34
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 41,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_install_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_restrictions",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 0,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_retry",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 9}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199800,
+      "bag_after": [
+        {
+          "item_name": "sitrusberry",
+          "quantity": 1
+        }
+      ],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    },
+    {
+      "issue": 883,
+      "case": "test_rollback",
+      "setup": "Tagged hub, finite recipe, wallet and native target; initially empty bag",
+      "stock_before": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "stock_after": {
+        "Sitrus Berry": "{'price': 200, 'quantity': 10}",
+        "Lum Berry": "{'price': 600, 'quantity': 5}",
+        "Focus Sash": "{'price': 5000, 'quantity': 2}",
+        "Choice Band": "{'price': 5000, 'quantity': 1}",
+        "Choice Specs": "{'price': 5000, 'quantity': 1}",
+        "Choice Scarf": "{'price': 5000, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_after": [],
+      "pp_after": [
+        {
+          "slot": 1,
+          "move__name": "Tackle",
+          "current_pp": 35
+        },
+        {
+          "slot": 2,
+          "move__name": "Watergun",
+          "current_pp": 25
+        }
+      ],
+      "boosts_after": [],
+      "owned_after": [
+        {
+          "species": "Mew",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "ability": "Synchronize",
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "level": 50,
+          "held_item": ""
+        }
+      ]
+    }
+  ],
+  "held_effects": [
+    {
+      "issue": 883,
+      "label": "purchased-held-item-battle",
+      "item": "Choice Band",
+      "commands": [
+        "+hold 3=Choice Band",
+        "+attack Tackle"
+      ],
+      "hp_before": 160,
+      "hp_after": 160,
+      "foe_damage": 27,
+      "executed_order": [
+        [
+          "encounter:bb55f506-3565-4c48-abb8-8487339ba29f",
+          138
+        ],
+        [
+          "owned:8c91f3d0-840a-481d-92e1-a4245c3f889c",
+          105
+        ]
+      ],
+      "plain_damage": 18,
+      "plain_executed_order": [
+        [
+          "encounter:ae9d7225-1577-4bf9-9b87-65911b3c7071",
+          152
+        ],
+        [
+          "owned:8c91f3d0-840a-481d-92e1-a4245c3f889c",
+          105
+        ]
+      ]
+    },
+    {
+      "issue": 883,
+      "label": "purchased-held-item-battle",
+      "item": "Choice Scarf",
+      "commands": [
+        "+hold 3=Choice Scarf",
+        "+attack Tackle"
+      ],
+      "hp_before": 160,
+      "hp_after": 160,
+      "foe_damage": 18,
+      "executed_order": [
+        [
+          "owned:048bc6d2-ca14-434d-8555-154f0ce5d467",
+          157
+        ],
+        [
+          "encounter:9ea06e44-d2f5-4dd7-8351-d269719debc4",
+          149
+        ]
+      ],
+      "plain_damage": 15,
+      "plain_executed_order": [
+        [
+          "encounter:0f84d854-b6ea-4d72-bf2d-41b40ee88345",
+          133
+        ],
+        [
+          "owned:048bc6d2-ca14-434d-8555-154f0ce5d467",
+          105
+        ]
+      ]
+    },
+    {
+      "issue": 883,
+      "label": "purchased-held-item-battle",
+      "item": "Choice Specs",
+      "commands": [
+        "+hold 3=Choice Specs",
+        "+attack Water Gun"
+      ],
+      "hp_before": 160,
+      "hp_after": 160,
+      "foe_damage": 21,
+      "executed_order": [
+        [
+          "encounter:4c8878bf-e24b-4fd4-ae90-48ce1334e209",
+          146
+        ],
+        [
+          "owned:01c9fd2d-e73c-496c-a71c-354b2eab58df",
+          105
+        ]
+      ],
+      "plain_damage": 13,
+      "plain_executed_order": [
+        [
+          "encounter:3c3d0dd9-7b79-459d-80c7-5859463c354f",
+          123
+        ],
+        [
+          "owned:01c9fd2d-e73c-496c-a71c-354b2eab58df",
+          105
+        ]
+      ]
+    },
+    {
+      "issue": 883,
+      "label": "purchased-held-item-battle",
+      "item": "Focus Sash",
+      "commands": [
+        "+hold 3=Focus Sash",
+        "+attack Tackle"
+      ],
+      "hp_before": 25,
+      "hp_after": 1,
+      "foe_damage": 6,
+      "executed_order": [
+        [
+          "encounter:c3464e2b-a493-4627-ab3f-5cc2868ad494",
+          142
+        ],
+        [
+          "owned:d03e4784-ba20-4cb5-83e9-46f1a5912ca8",
+          105
+        ]
+      ]
+    },
+    {
+      "issue": 883,
+      "label": "purchased-held-item-battle",
+      "item": "Lum Berry",
+      "commands": [
+        "+hold 3=Lum Berry",
+        "+attack Tackle"
+      ],
+      "hp_before": 160,
+      "hp_after": 160,
+      "foe_damage": 22,
+      "executed_order": [
+        [
+          "encounter:d102d270-c92f-4434-b7e9-7d59efe0bae3",
+          140
+        ],
+        [
+          "owned:8df3efc5-464b-4d64-828b-0cd06c43c1e1",
+          105
+        ]
+      ]
+    },
+    {
+      "issue": 883,
+      "label": "purchased-held-item-battle",
+      "item": "Sitrus Berry",
+      "commands": [
+        "+hold 3=Sitrus Berry",
+        "+attack Tackle"
+      ],
+      "hp_before": 41,
+      "hp_after": 41,
+      "foe_damage": 16,
+      "executed_order": [
+        [
+          "encounter:a7b3c85a-8a3e-42c8-b2e4-0be5baec5674",
+          171
+        ],
+        [
+          "owned:93531645-62c5-4410-a908-66cf375abd67",
+          105
+        ]
+      ]
+    }
+  ],
+  "recipes": {
+    "877": {
+      "version": 1,
+      "key": "status-medicine-supply-v1",
+      "room": "Status Medicine Counter",
+      "entrance": "statusmeds",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "Antidote",
+          "price": 100,
+          "quantity": 20
+        },
+        {
+          "item": "Paralyze Heal",
+          "price": 200,
+          "quantity": 20
+        },
+        {
+          "item": "Awakening",
+          "price": 250,
+          "quantity": 10
+        },
+        {
+          "item": "Burn Heal",
+          "price": 250,
+          "quantity": 10
+        },
+        {
+          "item": "Ice Heal",
+          "price": 250,
+          "quantity": 10
+        },
+        {
+          "item": "Full Heal",
+          "price": 600,
+          "quantity": 10
+        }
+      ]
+    },
+    "878": {
+      "version": 1,
+      "key": "strong-medicine-supply-v1",
+      "room": "Recovery Medicine Counter",
+      "entrance": "recoverymeds",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "Super Potion",
+          "price": 700,
+          "quantity": 20
+        },
+        {
+          "item": "Hyper Potion",
+          "price": 1500,
+          "quantity": 10
+        },
+        {
+          "item": "Revive",
+          "price": 1500,
+          "quantity": 10
+        },
+        {
+          "item": "Max Revive",
+          "price": 4000,
+          "quantity": 2
+        }
+      ]
+    },
+    "879": {
+      "version": 1,
+      "key": "pp-medicine-supply-v1",
+      "room": "PP Recovery Counter",
+      "entrance": "ppmeds",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "Ether",
+          "price": 1200,
+          "quantity": 10
+        },
+        {
+          "item": "Max Ether",
+          "price": 2400,
+          "quantity": 5
+        },
+        {
+          "item": "Elixir",
+          "price": 3000,
+          "quantity": 5
+        },
+        {
+          "item": "Max Elixir",
+          "price": 6000,
+          "quantity": 2
+        }
+      ]
+    },
+    "880": {
+      "version": 1,
+      "key": "evolution-stone-supply-v1",
+      "room": "Evolution Stone Counter",
+      "entrance": "stones",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "Water Stone",
+          "price": 3000,
+          "quantity": 5
+        },
+        {
+          "item": "Thunder Stone",
+          "price": 3000,
+          "quantity": 5
+        },
+        {
+          "item": "Leaf Stone",
+          "price": 3000,
+          "quantity": 5
+        },
+        {
+          "item": "Ice Stone",
+          "price": 3000,
+          "quantity": 5
+        },
+        {
+          "item": "Sun Stone",
+          "price": 3000,
+          "quantity": 5
+        },
+        {
+          "item": "Moon Stone",
+          "price": 3000,
+          "quantity": 5
+        }
+      ]
+    },
+    "881": {
+      "version": 1,
+      "key": "vitamin-supply-v1",
+      "room": "Vitamin Counter",
+      "entrance": "vitamins",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "HP Up",
+          "price": 10000,
+          "quantity": 2
+        },
+        {
+          "item": "Protein",
+          "price": 10000,
+          "quantity": 2
+        },
+        {
+          "item": "Iron",
+          "price": 10000,
+          "quantity": 2
+        },
+        {
+          "item": "Calcium",
+          "price": 10000,
+          "quantity": 2
+        },
+        {
+          "item": "Zinc",
+          "price": 10000,
+          "quantity": 2
+        },
+        {
+          "item": "Carbos",
+          "price": 10000,
+          "quantity": 2
+        }
+      ]
+    },
+    "882": {
+      "version": 1,
+      "key": "capacity-ability-supply-v1",
+      "room": "Capacity and Ability Counter",
+      "entrance": "capacity",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "PP Up",
+          "price": 9800,
+          "quantity": 2
+        },
+        {
+          "item": "PP Max",
+          "price": 15000,
+          "quantity": 1
+        },
+        {
+          "item": "Ability Capsule",
+          "price": 20000,
+          "quantity": 1
+        },
+        {
+          "item": "Ability Patch",
+          "price": 30000,
+          "quantity": 1
+        }
+      ]
+    },
+    "883": {
+      "version": 1,
+      "key": "held-staple-supply-v1",
+      "room": "Held Item Counter",
+      "entrance": "helditems",
+      "return_exit": "back",
+      "refill": "none",
+      "buy_only": true,
+      "offers": [
+        {
+          "item": "Sitrus Berry",
+          "price": 200,
+          "quantity": 10
+        },
+        {
+          "item": "Lum Berry",
+          "price": 600,
+          "quantity": 5
+        },
+        {
+          "item": "Focus Sash",
+          "price": 5000,
+          "quantity": 2
+        },
+        {
+          "item": "Choice Band",
+          "price": 5000,
+          "quantity": 1
+        },
+        {
+          "item": "Choice Specs",
+          "price": 5000,
+          "quantity": 1
+        },
+        {
+          "item": "Choice Scarf",
+          "price": 5000,
+          "quantity": 1
+        }
+      ]
+    }
+  },
+  "command_examples": [
+    "<authored exit>",
+    "+store",
+    "1",
+    "<exact item> 1",
+    "back",
+    "q",
+    "+inventory",
+    "+use <item>=3",
+    "+item <medicine>=3",
+    "+use Ether=3/Water Gun",
+    "+use PP Up=3; +use 1",
+    "+evolve <owned full ID> <stone>",
+    "+hold 3=<held item>; +attack <legal move>; checkpoint restore; +hold 3="
+  ],
+  "fixture": {
+    "scope": "task-owned loopback PostgreSQL; random disposable schemas",
+    "migrations": false,
+    "schemas_removed": true
+  },
+  "limits": [
+    "No permanent shop installation",
+    "No deployment or socket login",
+    "All seven recipes finite/buy-only/no-refill",
+    "Original six-item source preserved",
+    "Plot-only/capture/clutter/CAP and unrelated work excluded"
+  ],
+  "definition_fingerprints_preserved": 452,
+  "unknown_world_entries": 452
+}

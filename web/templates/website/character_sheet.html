@@ -43,6 +43,10 @@
       </div>
       {% endif %}
 
+      {% for warning in entry.warnings %}
+      <p class="player-hub-empty" role="status">{{ warning }}</p>
+      {% endfor %}
+
       <div class="player-summary-grid" aria-label="Trainer summary">
         <div>
           <span>Party</span>
@@ -75,7 +79,7 @@
           <ol class="player-pokemon-list player-party-list">
             {% for mon in entry.party %}
             <li>
-              <span class="player-party-slot">{{ mon.party_slot|default:forloop.counter }}</span>
+              <span class="player-party-slot">{{ mon.party_slot }}</span>
               <div>
                 <strong>{{ mon.nickname|default:mon.species }}</strong>
                 <span>Lv {{ mon.level }}</span>
@@ -92,6 +96,7 @@
                   {% if mon.gender %}{% if mon.ability or mon.held_item %} | {% endif %}{{ mon.gender }}{% endif %}
                   {% if mon.is_shiny %}{% if mon.ability or mon.held_item or mon.gender %} | {% endif %}Shiny{% endif %}
                   {% if mon.status %}{% if mon.ability or mon.held_item or mon.gender or mon.is_shiny %} | {% endif %}Status: {{ mon.status }}{% endif %}
+                  {% if mon.sheet_reservation %} | Reserved: {{ mon.sheet_reservation }}{% endif %}
                 </small>
               </div>
             </li>
@@ -101,6 +106,19 @@
           <p class="player-hub-empty">No party Pokemon found.</p>
           {% endif %}
         </section>
+
+        {% if entry.reserved %}
+        <section class="player-hub-section" aria-labelledby="reserved-{{ forloop.counter }}">
+          <h3 id="reserved-{{ forloop.counter }}">Reserved Pokemon</h3>
+          <ul class="player-pokemon-list">
+            {% for row in entry.reserved %}
+            <li><strong>{{ row.pokemon.nickname|default:row.pokemon.species }}</strong>
+              <span>{{ row.location }}{% if row.activity %} | {{ row.activity }}{% endif %}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </section>
+        {% endif %}
 
         <section class="player-hub-section" aria-labelledby="boxed-{{ forloop.counter }}">
           <h3 id="boxed-{{ forloop.counter }}">Boxed Roster</h3>

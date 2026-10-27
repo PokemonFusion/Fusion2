@@ -1,0 +1,2480 @@
+{
+  "schema_version": 1,
+  "issue": 876,
+  "status": "qualified_local_automated",
+  "evidence_kind": "disposable PostgreSQL / production commands with captured transport / offline tests",
+  "baseline": "30ec667c0050b797b155c7cd20e32146e7473346",
+  "python_sources": {
+    "pokemon/services/item_replenishment.py": "675f0db2fea241a5bca991a4f4baeb65a48efe83cba5343fbae9413197d5fcbd",
+    "tests/test_item_replenishment.py": "3fc05a357669b10ef2daf16ddf409ea22ccc51fea1f40ee26e5be8328e4402b2",
+    "tests/integration/item_replenishment_cases.py": "e6f22c98d4c73ee3cd6230b63671807946a9569809e7a5756d8db2c7cb1ea8d0"
+  },
+  "qualified_python_count": 1152,
+  "existing_python_unchanged": true,
+  "unrelated_shared_wip_preserved": true,
+  "unrelated_dirty_path_count": 25,
+  "focused": {
+    "exit": 0,
+    "seconds": 6.11,
+    "passed": [
+      "52"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "d02cf95ed595f789ea40145bd49742ac5f36ee57afeb60b5c58e2134d8cb6e85"
+  },
+  "postgresql": [
+    {
+      "suite": "item_replenishment",
+      "exit": 0,
+      "seconds": 16.55,
+      "cases": [
+        "29"
+      ],
+      "sha256": "f5a7700a06a39c774ae6cf91d1cfcf282b2c60759d729f4406114f76e06a0ca9"
+    },
+    {
+      "suite": "shop_purchase",
+      "exit": 0,
+      "seconds": 11.16,
+      "cases": [
+        "8"
+      ],
+      "sha256": "2ea7ee2b2a00afba636d342b0c05ec012c261e6523fa0e54e58f211bb7fd34d0"
+    },
+    {
+      "suite": "item_supply",
+      "exit": 0,
+      "seconds": 15.33,
+      "cases": [
+        "11"
+      ],
+      "sha256": "9ba142dd39fb13df11a2852bdc736157a294fa832436ddfcf1ffb052e1276bd9"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 17.56,
+      "cases": [
+        "32"
+      ],
+      "sha256": "dd915eae2ea467ed864c64bae2fcf7223de0e08aa9d6f1f79d98fea4ceadde02"
+    }
+  ],
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 2138.52,
+    "passed": [
+      "6318",
+      "6318",
+      "6318"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "1445ab66b04736feacef98b3ecb0c7e14ff703b6d0b5f2fd87823cb00418e2af",
+    "source_count": 1577
+  },
+  "ordinary_commands": [
+    "+store",
+    "1",
+    "Potion 2",
+    "back",
+    "q",
+    "+store",
+    "1",
+    "Potion 1",
+    "back",
+    "q",
+    "separate operator refill",
+    "+store",
+    "1",
+    "Potion 1",
+    "back",
+    "q",
+    "+inventory",
+    "+use Potion=3"
+  ],
+  "ordinary_messages": [
+    "|y╔═════[ |wPokémon Menu|y ]═════╗|n\n|y║|nWelcome to the item store.|y║|n\n|y╚══════════════════════════╝|n\n\n|c1.|n |wBuy items|n\n|c2.|n |wLeave|n\n\n|y== |g[Make Choice]|n | |w'q' to quit|n | |w'help' for help|n|y ==|n",
+    "Usage: <item> <amount> or 'back'.",
+    "|y╔════════════[ |wPokémon Menu|y ]═════════════╗|n\n|y║|n|wItems for sale|n                           |y║|n\n|y║|n  Oran Berry - $80 (3 in stock)          |y║|n\n|y║|n  Potion - $300 (2 in stock)             |y║|n\n|y║|nEnter '<item> <amount>' to buy or 'back'.|y║|n\n|y╚═════════════════════════════════════════╝|n",
+    "You purchase 2 x Potion for $600.",
+    "|y╔════════════[ |wPokémon Menu|y ]═════════════╗|n\n|y║|n|wItems for sale|n                           |y║|n\n|y║|n  Oran Berry - $80 (3 in stock)          |y║|n\n|y║|n  Potion - $300 (0 in stock)             |y║|n\n|y║|nEnter '<item> <amount>' to buy or 'back'.|y║|n\n|y╚═════════════════════════════════════════╝|n",
+    "|y╔═════[ |wPokémon Menu|y ]═════╗|n\n|y║|nWelcome to the item store.|y║|n\n|y╚══════════════════════════╝|n\n\n|c1.|n |wBuy items|n\n|c2.|n |wLeave|n\n\n|y== |g[Make Choice]|n | |w'q' to quit|n | |w'help' for help|n|y ==|n",
+    "|y╔══[ |wPokémon Menu|y ]══╗|n\n|y║|nThanks for visiting!|y║|n\n|y╚════════════════════╝|n",
+    "|y╔═════[ |wPokémon Menu|y ]═════╗|n\n|y║|nWelcome to the item store.|y║|n\n|y╚══════════════════════════╝|n\n\n|c1.|n |wBuy items|n\n|c2.|n |wLeave|n\n\n|y== |g[Make Choice]|n | |w'q' to quit|n | |w'help' for help|n|y ==|n",
+    "Usage: <item> <amount> or 'back'.",
+    "|y╔════════════[ |wPokémon Menu|y ]═════════════╗|n\n|y║|n|wItems for sale|n                           |y║|n\n|y║|n  Oran Berry - $80 (3 in stock)          |y║|n\n|y║|n  Potion - $300 (0 in stock)             |y║|n\n|y║|nEnter '<item> <amount>' to buy or 'back'.|y║|n\n|y╚═════════════════════════════════════════╝|n",
+    "The store doesn't have that many.",
+    "|y╔════════════[ |wPokémon Menu|y ]═════════════╗|n\n|y║|n|wItems for sale|n                           |y║|n\n|y║|n  Oran Berry - $80 (3 in stock)          |y║|n\n|y║|n  Potion - $300 (0 in stock)             |y║|n\n|y║|nEnter '<item> <amount>' to buy or 'back'.|y║|n\n|y╚═════════════════════════════════════════╝|n",
+    "|y╔═════[ |wPokémon Menu|y ]═════╗|n\n|y║|nWelcome to the item store.|y║|n\n|y╚══════════════════════════╝|n\n\n|c1.|n |wBuy items|n\n|c2.|n |wLeave|n\n\n|y== |g[Make Choice]|n | |w'q' to quit|n | |w'help' for help|n|y ==|n",
+    "|y╔══[ |wPokémon Menu|y ]══╗|n\n|y║|nThanks for visiting!|y║|n\n|y╚════════════════════╝|n",
+    "|y╔═════[ |wPokémon Menu|y ]═════╗|n\n|y║|nWelcome to the item store.|y║|n\n|y╚══════════════════════════╝|n\n\n|c1.|n |wBuy items|n\n|c2.|n |wLeave|n\n\n|y== |g[Make Choice]|n | |w'q' to quit|n | |w'help' for help|n|y ==|n",
+    "Usage: <item> <amount> or 'back'.",
+    "|y╔════════════[ |wPokémon Menu|y ]═════════════╗|n\n|y║|n|wItems for sale|n                           |y║|n\n|y║|n  Oran Berry - $80 (3 in stock)          |y║|n\n|y║|n  Potion - $300 (2 in stock)             |y║|n\n|y║|nEnter '<item> <amount>' to buy or 'back'.|y║|n\n|y╚═════════════════════════════════════════╝|n",
+    "You purchase 1 x Potion for $300.",
+    "|y╔════════════[ |wPokémon Menu|y ]═════════════╗|n\n|y║|n|wItems for sale|n                           |y║|n\n|y║|n  Oran Berry - $80 (3 in stock)          |y║|n\n|y║|n  Potion - $300 (1 in stock)             |y║|n\n|y║|nEnter '<item> <amount>' to buy or 'back'.|y║|n\n|y╚═════════════════════════════════════════╝|n",
+    "|y╔═════[ |wPokémon Menu|y ]═════╗|n\n|y║|nWelcome to the item store.|y║|n\n|y╚══════════════════════════╝|n\n\n|c1.|n |wBuy items|n\n|c2.|n |wLeave|n\n\n|y== |g[Make Choice]|n | |w'q' to quit|n | |w'help' for help|n|y ==|n",
+    "|y╔══[ |wPokémon Menu|y ]══╗|n\n|y║|nThanks for visiting!|y║|n\n|y╚════════════════════╝|n",
+    "Your Inventory:\nPotion x3 - Restores 20 HP to one Pokemon.",
+    "Used Potion on 3."
+  ],
+  "ordinary_effect": {
+    "hp_before_use": 1,
+    "hp_after": 21,
+    "purchased": 3,
+    "consumed": 1,
+    "remaining": 2
+  },
+  "cases": [
+    {
+      "case": "test_cached_builder_tag_cannot_survive_direct_sql_revocation",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 1,
+        "instance": "6e39a021-6474-47c4-aca5-df2c54bc4f0f",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_clock_rollback_before_initial_and_after_refill",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 4,
+        "instance": "c618a182-2cdc-4614-9cf0-e4c5fd363c01",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "396109bf-92f3-48ce-97f5-cc5a32b055dc"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 4,
+          "instance": "c618a182-2cdc-4614-9cf0-e4c5fd363c01",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "396109bf-92f3-48ce-97f5-cc5a32b055dc",
+          "actor": 2,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "c5a159e42f0e1d35e6ad5e44655bd7afa3d0eef7b9d97d67b08abf7bfb8cb947"
+        }
+      ]
+    },
+    {
+      "case": "test_concurrent_different_requests_have_one_refill",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 7,
+        "instance": "0b82098f-e701-4b71-a4c5-bb282721dafe",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "e036ae70-ae52-4557-a8ff-781658a8fa21"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 7,
+          "instance": "0b82098f-e701-4b71-a4c5-bb282721dafe",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "e036ae70-ae52-4557-a8ff-781658a8fa21",
+          "actor": 3,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "f892e15b7de9fed9d6c8ee73d0db71bea4865be8255f4915fcc32aba425014bd"
+        }
+      ]
+    },
+    {
+      "case": "test_concurrent_same_request_has_one_receipt_and_delta",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 10,
+        "instance": "11bd2c3f-dde3-41f3-ab9e-ab5b2755ffcb",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "36f01510-c07b-4db1-b6c5-0537a329a992"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 10,
+          "instance": "11bd2c3f-dde3-41f3-ab9e-ab5b2755ffcb",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "36f01510-c07b-4db1-b6c5-0537a329a992",
+          "actor": 4,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "a87f2a604e2957912cdeedb172a667c33a8c48b6ddfd4fad745d00de5beac712"
+        }
+      ]
+    },
+    {
+      "case": "test_configure_retry_after_purchase_preserves_initial_caps",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 13,
+        "instance": "3db9405d-8b4f-4de3-8c14-040cca3a578f",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "fab11a3f-83e1-42d1-9814-ba3d75a79150"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 13,
+          "instance": "3db9405d-8b4f-4de3-8c14-040cca3a578f",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "fab11a3f-83e1-42d1-9814-ba3d75a79150",
+          "actor": 5,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "91c2342357277af4339787bf1ee4c279649bc042cc8caa5be98e215348f13ff4"
+        }
+      ]
+    },
+    {
+      "case": "test_current_account_permissions_not_stale_flags",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 16,
+        "instance": "3ca9c22f-38a2-4d2f-88a3-2f29d4768046",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "9d7271a9-9c31-4b7e-a2f8-9e4c194c33f3"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 16,
+          "instance": "3ca9c22f-38a2-4d2f-88a3-2f29d4768046",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "9d7271a9-9c31-4b7e-a2f8-9e4c194c33f3",
+          "actor": 6,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "baa7a0c3113df963491f8530c44e754d1739f323d02a4c71c6a564818e70104e"
+        }
+      ]
+    },
+    {
+      "case": "test_different_request_cannot_refill_same_window",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 2
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 19,
+        "instance": "db1012f8-5db7-4e36-9240-27810cb0c97f",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "c1096223-2728-4b03-96ca-09cbe5b11362"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 19,
+          "instance": "db1012f8-5db7-4e36-9240-27810cb0c97f",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "c1096223-2728-4b03-96ca-09cbe5b11362",
+          "actor": 7,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "c7dce22a5147b416c317327838eb2f785b0b1f0d5b862aa98c6371b3961bb634"
+        }
+      ]
+    },
+    {
+      "case": "test_duplicate_marker_requires_review",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_before": [],
+      "bag_after": [],
+      "marker_after": {
+        "schema": 1,
+        "room": 22,
+        "instance": "a7baed6f-aebf-4f37-a393-480b13394135",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_duplicate_request_after_purchase_and_later_refill",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199100,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 3
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 25,
+        "instance": "f619c0ed-6b06-4365-87fb-c1a7f3b36dc5",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-27T23:59:00+00:00",
+        "sequence": 2,
+        "request": "3d75528d-0b04-4f6f-ab33-779c7ebd6af0"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 25,
+          "instance": "f619c0ed-6b06-4365-87fb-c1a7f3b36dc5",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "009c0424-da7e-4840-baf6-65394cc50ffa",
+          "actor": 9,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "54c82498a2ece0c0d7be002d54af5c814239d0777901327b6b7fe082d65b3872"
+        },
+        {
+          "schema": 1,
+          "room": 25,
+          "instance": "f619c0ed-6b06-4365-87fb-c1a7f3b36dc5",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 2,
+          "request": "3d75528d-0b04-4f6f-ab33-779c7ebd6af0",
+          "actor": 9,
+          "previous_at": "2026-10-26T23:59:00+00:00",
+          "eligible_at": "2026-10-27T23:59:00+00:00",
+          "committed_at": "2026-10-27T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "ff8bb97887cf4d760f66d6e8cb785dcf470a3c8570b8cf7f84a65f7d85aa01c0"
+        }
+      ]
+    },
+    {
+      "case": "test_exact_boundary_midnight_and_microsecond_early",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 28,
+        "instance": "26ad6647-7f1f-4b47-95e8-d8d1d24a5823",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "438cbbc7-bb19-4de4-9887-60dc0e1ba074"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 28,
+          "instance": "26ad6647-7f1f-4b47-95e8-d8d1d24a5823",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "438cbbc7-bb19-4de4-9887-60dc0e1ba074",
+          "actor": 10,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "9d4db80cbe8a0569d2028022dc665c17c24511af7a994bed355fe503cc07fd28"
+        }
+      ]
+    },
+    {
+      "case": "test_fake_actor_or_character_does_not_authorize",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_before": [],
+      "bag_after": [],
+      "marker_after": {
+        "schema": 1,
+        "room": 31,
+        "instance": "e787b4bd-280b-41c2-aa2b-8c12fdb4c210",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_fault_after_receipt_rolls_back_stock_and_ledger",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 34,
+        "instance": "79b5256c-95d0-496f-a515-120031bcf553",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "3d020dbb-1ca4-4298-beda-813ff5592a2d"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 34,
+          "instance": "79b5256c-95d0-496f-a515-120031bcf553",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "3d020dbb-1ca4-4298-beda-813ff5592a2d",
+          "actor": 12,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "4b00a5142ac36054362077f37637f0c85d35eed53c71cd0372d84baf0a4973bd"
+        }
+      ]
+    },
+    {
+      "case": "test_fault_after_stock_rolls_back_stock_and_ledger",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 37,
+        "instance": "0122f7c7-33aa-4fb6-a01e-b9a9eb435cfe",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "0cb540fc-4985-412f-8e10-08b4b714e5db"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 37,
+          "instance": "0122f7c7-33aa-4fb6-a01e-b9a9eb435cfe",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "0cb540fc-4985-412f-8e10-08b4b714e5db",
+          "actor": 13,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "6e37366741466b852c855798aca4712cf2ec4b87a93614622df8bd7446f5da99"
+        }
+      ]
+    },
+    {
+      "case": "test_final_copy_competition_after_refill",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 0}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 4
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 40,
+        "instance": "2be2f2b3-d197-4d36-84b2-e1039cb19d9a",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "120db4ec-e5a4-4bac-9df6-dd71d7d7d135"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 40,
+          "instance": "2be2f2b3-d197-4d36-84b2-e1039cb19d9a",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "120db4ec-e5a4-4bac-9df6-dd71d7d7d135",
+          "actor": 14,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 0
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 2
+          },
+          "digest": "efa69a226a4a4f70912c41283ff32dcc4beecd17c0cec8a277c2a2030cf984b9"
+        }
+      ]
+    },
+    {
+      "case": "test_full_stock_noop_does_not_consume_window_or_request",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 43,
+        "instance": "fb6ed070-79c8-47a6-b663-8c44c3f2c33b",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "33750078-6f20-45f7-8d64-3da8c5ba912b"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 43,
+          "instance": "fb6ed070-79c8-47a6-b663-8c44c3f2c33b",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "33750078-6f20-45f7-8d64-3da8c5ba912b",
+          "actor": 15,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "f76138268f78358856631d2f54f25fbfa0ebbc9b594457bc016b52d6e70f52d3"
+        }
+      ]
+    },
+    {
+      "case": "test_legacy_supply_corner_stays_excluded",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_before": [],
+      "bag_after": [],
+      "marker_after": {
+        "schema": 1,
+        "room": 46,
+        "instance": "8e36cfe1-5665-41b0-8c72-38f64496ee97",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_next_interval_begins_at_actual_committed_refill",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 2
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 49,
+        "instance": "bf502884-6477-474e-9339-47b15243eb4e",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-11-05T23:59:00+00:00",
+        "sequence": 2,
+        "request": "cebb004b-9ee1-4403-9359-be44ac3df03f"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 49,
+          "instance": "bf502884-6477-474e-9339-47b15243eb4e",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "5d1fe1e2-d013-4cbf-9a28-bd88c1cb2e2b",
+          "actor": 17,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-11-04T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "ff1fb9ced27b66fde79dca3c7ad01bb8c7878f7391071125ee5e1cfbfa36e44d"
+        },
+        {
+          "schema": 1,
+          "room": 49,
+          "instance": "bf502884-6477-474e-9339-47b15243eb4e",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 2,
+          "request": "cebb004b-9ee1-4403-9359-be44ac3df03f",
+          "actor": 17,
+          "previous_at": "2026-11-04T23:59:00+00:00",
+          "eligible_at": "2026-11-05T23:59:00+00:00",
+          "committed_at": "2026-11-05T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "1d2f11e5aa33507302224c9ce148395b6021f5f0861050913496cd2ee282673c"
+        }
+      ]
+    },
+    {
+      "case": "test_no_optin_is_not_a_refill_source",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_before": [],
+      "bag_after": [],
+      "marker_after": null,
+      "receipts_after": []
+    },
+    {
+      "case": "test_ordinary_buy_empty_refill_buy_use_and_reload",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199100,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 2
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 55,
+        "instance": "cc0a4e2a-a2bf-4f9f-99dd-7b2f11e9642d",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "dfaec5d5-e4bd-414f-82e9-f952c6962bd0"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 55,
+          "instance": "cc0a4e2a-a2bf-4f9f-99dd-7b2f11e9642d",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "dfaec5d5-e4bd-414f-82e9-f952c6962bd0",
+          "actor": 19,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 0
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 2
+          },
+          "digest": "7e9e55616c0f9e721bc41e50a95d82e47ff13f43637ae09fddfb56dfe03a857f"
+        }
+      ]
+    },
+    {
+      "case": "test_outer_commit_refreshes_normal_attribute_views",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 58,
+        "instance": "b9b557b6-295b-4a72-ba40-1bbb84d72711",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "3ca9e02f-228f-479b-974a-a64e550ed158"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 58,
+          "instance": "b9b557b6-295b-4a72-ba40-1bbb84d72711",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "3ca9e02f-228f-479b-974a-a64e550ed158",
+          "actor": 20,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "c0362d3284db0774893d867b8fd4469c102d83718cada16eb2504bec1d617cab"
+        }
+      ]
+    },
+    {
+      "case": "test_outer_configure_rollback_can_retry_without_ghost_marker",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_before": [],
+      "bag_after": [],
+      "marker_after": {
+        "schema": 1,
+        "room": 61,
+        "instance": "777507c6-e2c6-4f20-8660-561786d7821c",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_outer_refill_rollback_discards_cache_and_request",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 64,
+        "instance": "0d6af030-4e7c-42a2-8a08-77d2febcd19a",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "4f3c9c5c-e519-434f-9a80-57fcb57cc64e"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 64,
+          "instance": "0d6af030-4e7c-42a2-8a08-77d2febcd19a",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "4f3c9c5c-e519-434f-9a80-57fcb57cc64e",
+          "actor": 22,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "0b6d8d88feb396b3658a4be80005654ff948fb05b53d3f814cf076a457708bd7"
+        }
+      ]
+    },
+    {
+      "case": "test_player_invalid_target_and_full_health_preserve_acquired_copy",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 2
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 67,
+        "instance": "8b9ef892-a701-4b53-9d64-3ef2f750f200",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "729f0b2c-9b25-447a-a1ce-5350648c72c3"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 67,
+          "instance": "8b9ef892-a701-4b53-9d64-3ef2f750f200",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "729f0b2c-9b25-447a-a1ce-5350648c72c3",
+          "actor": 23,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "c84deab644b9c73d00074c937ea29c0e9fc21f10857f37131954b7c5463e89d3"
+        }
+      ]
+    },
+    {
+      "case": "test_policy_drift_is_refused",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 70,
+        "instance": "e77c95cc-2a2a-4405-b1d5-87d8a85cb485",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_purchase_and_refill_serialize_without_lost_stock",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199400,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 2
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 73,
+        "instance": "77909543-8a8c-4a87-ab0b-ac586b4f7c0f",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "b073b206-1dde-4d8b-bab2-a19b01591996"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 73,
+          "instance": "77909543-8a8c-4a87-ab0b-ac586b4f7c0f",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "b073b206-1dde-4d8b-bab2-a19b01591996",
+          "actor": 25,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 0
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 2
+          },
+          "digest": "d18afed2f7c1926430d2d0b22e6a567cbaba6aa018d6ac89877532362e0caff4"
+        }
+      ]
+    },
+    {
+      "case": "test_receipt_or_marker_drift_is_refused",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 76,
+        "instance": "ebb29285-6fd0-4a82-a5ba-0cd3d40834fd",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "636f5389-8907-4e0a-8ef3-2ef354d7407b"
+      },
+      "receipts_after": []
+    },
+    {
+      "case": "test_request_uuid_and_actor_identity",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": {
+        "schema": 1,
+        "room": 79,
+        "instance": "2db160ad-df32-483e-a5f6-fac866e8f757",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-26T23:59:00+00:00",
+        "sequence": 1,
+        "request": "48fd5b96-c52a-4c81-86cd-f5bddc2d6aa2"
+      },
+      "receipts_after": [
+        {
+          "schema": 1,
+          "room": 79,
+          "instance": "2db160ad-df32-483e-a5f6-fac866e8f757",
+          "policy": {
+            "source": "qa-refill-876",
+            "version": 1,
+            "offers": {
+              "Oran Berry": {
+                "price": 80,
+                "quantity": 3
+              },
+              "Potion": {
+                "price": 300,
+                "quantity": 2
+              }
+            }
+          },
+          "sequence": 1,
+          "request": "48fd5b96-c52a-4c81-86cd-f5bddc2d6aa2",
+          "actor": 27,
+          "previous_at": "2026-10-25T23:59:00+00:00",
+          "eligible_at": "2026-10-26T23:59:00+00:00",
+          "committed_at": "2026-10-26T23:59:00+00:00",
+          "before": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 1
+            }
+          },
+          "after": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          },
+          "delta": {
+            "Oran Berry": 0,
+            "Potion": 1
+          },
+          "digest": "5784fa692cedd187620cda43016625174151e6231b3bea9f855706e41ceee57f"
+        }
+      ]
+    },
+    {
+      "case": "test_sold_counter_cannot_bootstrap_new_caps",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 1}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 199700,
+      "bag_before": [],
+      "bag_after": [
+        {
+          "item_name": "potion",
+          "quantity": 1
+        }
+      ],
+      "marker_after": null,
+      "receipts_after": []
+    },
+    {
+      "case": "test_stock_and_flags_drift_are_refused",
+      "setup": "Tagged disposable stock/operator/wallet/native target; no item grants",
+      "evidence_kind": "production commands with captured transport and fresh SQL",
+      "stock_before": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "stock_after": {
+        "Oran Berry": "{'price': 80, 'quantity': 3}",
+        "Potion": "{'price': 300, 'quantity': 2}"
+      },
+      "wallet_before": 200000,
+      "wallet_after": 200000,
+      "bag_before": [],
+      "bag_after": [],
+      "marker_after": {
+        "schema": 1,
+        "room": 85,
+        "instance": "da569073-dd78-444f-bfbf-bde298a8459d",
+        "policy": {
+          "source": "qa-refill-876",
+          "version": 1,
+          "offers": {
+            "Oran Berry": {
+              "price": 80,
+              "quantity": 3
+            },
+            "Potion": {
+              "price": 300,
+              "quantity": 2
+            }
+          }
+        },
+        "initialized": "2026-10-25T23:59:00+00:00",
+        "last": "2026-10-25T23:59:00+00:00",
+        "sequence": 0,
+        "request": null
+      },
+      "receipts_after": []
+    }
+  ],
+  "fixture": {
+    "scope": "previously authorized task-owned loopback cluster; random disposable schemas",
+    "migrations": false,
+    "schemas_removed": true,
+    "stopped": true
+  },
+  "limits": [
+    "No game-world installation or refill opt-in",
+    "No deployment or socket login",
+    "Clock seam advances only isolated fixtures; production uses server UTC",
+    "Existing six-item Supply Corner remains finite/excluded",
+    "Plot-only and unrelated work excluded"
+  ],
+  "retained_diagnostic": {
+    "first_run": "2 failures / 1 error: missing Attribute.db_model",
+    "corrected": "Creation now supplies the actual ObjectDB model marker"
+  }
+}

@@ -11,6 +11,12 @@ import pytest
 
 def load_command(monkeypatch, filename):
     """Load a command with a small Evennia shell and an observable service."""
+    from django.db import transaction
+
+    # This parser fixture replaces the entire transaction-owning service. Run
+    # its success callback immediately; real commit/rollback is proved by the
+    # guarded PostgreSQL suites, never an offline database connection here.
+    monkeypatch.setattr(transaction, "on_commit", lambda callback, **kwargs: callback())
     evennia = ModuleType("evennia")
     evennia.Command = type("Command", (), {})
     monkeypatch.setitem(sys.modules, "evennia", evennia)
@@ -65,6 +71,26 @@ def test_evolve_validation_error_and_retry_are_reported(monkeypatch):
     service.evolve.return_value = None
     command.func()
     assert "already completed" in command.caller.msg.call_args.args[0]
+
+
+@pytest.mark.parametrize("original_name", ["Vulpix", "Ember Fox"])
+def test_evolve_notice_keeps_name_before_service_publication(monkeypatch, original_name):
+    """A refreshed object must not replace the original species or nickname."""
+    module, service, _ = load_command(monkeypatch, "cmd_learn_evolve.py")
+    pokemon = SimpleNamespace(name=original_name)
+    caller = Mock()
+    caller.get_pokemon_by_id.return_value = pokemon
+
+    def evolve(*args, **kwargs):
+        """Simulate the real service publishing a changed model before returning."""
+        pokemon.name = "Ninetales"
+        return "Ninetales"
+
+    service.evolve.side_effect = evolve
+    command = module.CmdEvolvePokemon()
+    command.caller, command.args = caller, "mon-1 Fire Stone"
+    command.func()
+    caller.msg.assert_called_once_with(f"{original_name} evolved into Ninetales!")
 
 
 @pytest.mark.parametrize("args", ["", "mon-1="])

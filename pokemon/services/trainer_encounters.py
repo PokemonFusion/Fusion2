@@ -5,10 +5,10 @@ from __future__ import annotations
 import random
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from typing import Any
 
 from utils.pokemon_config import RARITY_WEIGHTS, TIERS
-
 
 DEFAULT_TRAINER_CLASSES = (
     "Youngster",
@@ -324,6 +324,7 @@ def _build_battle_pokemon(spec: Mapping[str, Any], defaults: Mapping[str, Any], 
         is_wild=False,
         template_key=_text(spec.get("template_key") or defaults.get("template_key"), "random"),
         move_names=move_names,
+        tera_type=_text(spec.get("tera_type") or defaults.get("tera_type"), ""),
     )
 
 
@@ -348,10 +349,14 @@ def _battle_pokemon_from_template(template, trainer):
         or ["Tackle"]
     )[:4]
     move_cls, pokemon_cls = _battle_classes()
-    max_hp = getattr(getattr(generated, "stats", None), "hp", level)
     ability = _text(getattr(template, "ability", None), _text(getattr(generated, "ability", ""), ""))
     nature = _text(getattr(template, "nature", None), _text(getattr(generated, "nature", ""), "Hardy"))
     gender = _text(getattr(template, "gender", None), _text(getattr(generated, "gender", ""), "N"))
+    from pokemon.helpers.pokemon_helpers import get_max_hp
+
+    ivs = list(getattr(template, "ivs", []) or [0] * 6)
+    evs = list(getattr(template, "evs", []) or [0] * 6)
+    max_hp = get_max_hp(SimpleNamespace(species=species, level=level, ivs=ivs, evs=evs, nature=nature))
     encounter = _create_encounter_pokemon(
         species=getattr(getattr(generated, "species", None), "name", species),
         level=level,
@@ -359,8 +364,8 @@ def _battle_pokemon_from_template(template, trainer):
         gender=gender,
         nature=nature,
         ability=ability,
-        ivs=list(getattr(template, "ivs", []) or []),
-        evs=list(getattr(template, "evs", []) or []),
+        ivs=ivs,
+        evs=evs,
         held_item=_text(getattr(template, "held_item", None), ""),
         current_hp=max_hp,
         move_names=move_names,
@@ -375,8 +380,8 @@ def _battle_pokemon_from_template(template, trainer):
         max_hp=max_hp,
         moves=[move_cls(name=move_name) for move_name in move_names],
         ability=ability,
-        ivs=list(getattr(template, "ivs", []) or []),
-        evs=list(getattr(template, "evs", []) or []),
+        ivs=ivs,
+        evs=evs,
         nature=nature,
         model_id=_encounter_ref(encounter),
         gender=gender,

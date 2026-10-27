@@ -19,6 +19,7 @@ def load_cmd_module(characters=None):
         "evennia.objects.objects",
         "evennia.utils",
         "evennia.utils.evtable",
+        "commands.dbsafe",
     )}
 
     def search_object(query, *args, **kwargs):
@@ -29,6 +30,9 @@ def load_cmd_module(characters=None):
     fake_evennia.Command = type("Command", (), {})
     fake_evennia.search_object = search_object
     sys.modules["evennia"] = fake_evennia
+    fake_dbsafe = types.ModuleType("commands.dbsafe")
+    fake_dbsafe.DBSafeMuxCommand = fake_evennia.Command
+    sys.modules["commands.dbsafe"] = fake_dbsafe
 
     fake_objects = types.ModuleType("evennia.objects")
     fake_objects_objects = types.ModuleType("evennia.objects.objects")

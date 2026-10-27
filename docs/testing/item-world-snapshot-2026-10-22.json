@@ -1,0 +1,831 @@
+{
+  "observed_utc": "2026-10-22 20:04:00.522329+00:00",
+  "transaction_read_only": true,
+  "root": "/home/evennia/testing/fusion2",
+  "revision": "b7637cb8d810c5d1706b4ebade8ec4099c553c08",
+  "dirty": [],
+  "world_objects": [
+    {
+      "id": 2,
+      "name": "World object #2",
+      "typeclass": "typeclasses.rooms.Room",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": false,
+        "hunt_chart": [],
+        "is_item_shop": false
+      }
+    },
+    {
+      "id": 8,
+      "name": "World object #8",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": false,
+        "npc_chance": 15,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 9,
+      "name": "World object #9",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 2,
+      "destination": 8,
+      "attributes": {}
+    },
+    {
+      "id": 10,
+      "name": "World object #10",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 8,
+      "destination": 2,
+      "attributes": {}
+    },
+    {
+      "id": 11,
+      "name": "World object #11",
+      "typeclass": "typeclasses.rooms.Room",
+      "location": null,
+      "destination": null,
+      "attributes": {}
+    },
+    {
+      "id": 12,
+      "name": "World object #12",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 2,
+      "destination": 11,
+      "attributes": {}
+    },
+    {
+      "id": 13,
+      "name": "World object #13",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 11,
+      "destination": 2,
+      "attributes": {}
+    },
+    {
+      "id": 31,
+      "name": "World object #31",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": false,
+        "encounter_rate": 100,
+        "hunt_chart": [],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": true,
+        "npc_chance": 15,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 32,
+      "name": "World object #32",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": false,
+        "encounter_rate": 100,
+        "hunt_chart": [],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": true,
+        "npc_chance": 15,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 33,
+      "name": "World object #33",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Rattata",
+            "weight": 30,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "common",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Pidgey",
+            "weight": 25,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Caterpie",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Weedle",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Zigzagoon",
+            "weight": 5,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "rare",
+            "tiers": [
+              1
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 0,
+        "noitem": false,
+        "npc_chance": 0,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 34,
+      "name": "World object #34",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Magikarp",
+            "weight": 35,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "common",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Caterpie",
+            "weight": 25,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Pidgey",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Rattata",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 0,
+        "noitem": false,
+        "npc_chance": 0,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 35,
+      "name": "World object #35",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Nidoran-F",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Nidoran-M",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Machop",
+            "weight": 15,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Geodude",
+            "weight": 15,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Oddish",
+            "weight": 15,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Poliwag",
+            "weight": 15,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 0,
+        "noitem": false,
+        "npc_chance": 10,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 36,
+      "name": "World object #36",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Poliwag",
+            "weight": 35,
+            "min_level": 5,
+            "max_level": 7,
+            "frequency": "common",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Psyduck",
+            "weight": 25,
+            "min_level": 5,
+            "max_level": 7,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Wooper",
+            "weight": 20,
+            "min_level": 5,
+            "max_level": 7,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Lotad",
+            "weight": 15,
+            "min_level": 5,
+            "max_level": 7,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Magikarp",
+            "weight": 5,
+            "min_level": 5,
+            "max_level": 5,
+            "frequency": "rare",
+            "tiers": [
+              1
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 0,
+        "noitem": false,
+        "npc_chance": 0,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 37,
+      "name": "World object #37",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Eevee",
+            "weight": 10,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Pikachu",
+            "weight": 10,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Abra",
+            "weight": 10,
+            "min_level": 5,
+            "max_level": 8,
+            "frequency": "uncommon",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Dratini",
+            "weight": 5,
+            "min_level": 5,
+            "max_level": 7,
+            "frequency": "rare",
+            "tiers": [
+              1
+            ]
+          },
+          {
+            "name": "Rattata",
+            "weight": 65,
+            "min_level": 5,
+            "max_level": 6,
+            "frequency": "frequent",
+            "tiers": [
+              1
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 0,
+        "noitem": false,
+        "npc_chance": 0,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 38,
+      "name": "World object #38",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 2,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 39,
+      "name": "World object #39",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 2,
+      "attributes": {}
+    },
+    {
+      "id": 40,
+      "name": "World object #40",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 32,
+      "attributes": {}
+    },
+    {
+      "id": 41,
+      "name": "World object #41",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 32,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 42,
+      "name": "World object #42",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 33,
+      "attributes": {}
+    },
+    {
+      "id": 43,
+      "name": "World object #43",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 33,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 44,
+      "name": "World object #44",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 34,
+      "attributes": {}
+    },
+    {
+      "id": 45,
+      "name": "World object #45",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 34,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 46,
+      "name": "World object #46",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 35,
+      "attributes": {}
+    },
+    {
+      "id": 47,
+      "name": "World object #47",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 35,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 48,
+      "name": "World object #48",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 36,
+      "attributes": {}
+    },
+    {
+      "id": 49,
+      "name": "World object #49",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 36,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 50,
+      "name": "World object #50",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 37,
+      "attributes": {}
+    },
+    {
+      "id": 51,
+      "name": "World object #51",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 37,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 52,
+      "name": "Alpha Ball Dispenser",
+      "typeclass": "typeclasses.vendors.PokeballVendor",
+      "location": 82,
+      "destination": null,
+      "attributes": {
+        "dispense_item": "pokeball",
+        "dispense_quantity": 5,
+        "stock": null
+      }
+    },
+    {
+      "id": 56,
+      "name": "World object #56",
+      "typeclass": "typeclasses.rooms.MapRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {}
+    },
+    {
+      "id": 57,
+      "name": "World object #57",
+      "typeclass": "typeclasses.rooms.MapRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {}
+    },
+    {
+      "id": 63,
+      "name": "World object #63",
+      "typeclass": "typeclasses.rooms.MapRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {}
+    },
+    {
+      "id": 65,
+      "name": "World object #65",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": false,
+        "encounter_rate": 100,
+        "hunt_chart": [],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": true,
+        "npc_chance": 15,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 66,
+      "name": "World object #66",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 65,
+      "attributes": {}
+    },
+    {
+      "id": 67,
+      "name": "World object #67",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 65,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 70,
+      "name": "World object #70",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": false,
+        "encounter_rate": 100,
+        "hunt_chart": [],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": true,
+        "npc_chance": 15,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 71,
+      "name": "World object #71",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 31,
+      "destination": 70,
+      "attributes": {}
+    },
+    {
+      "id": 72,
+      "name": "World object #72",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 70,
+      "destination": 31,
+      "attributes": {}
+    },
+    {
+      "id": 73,
+      "name": "World object #73",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": false,
+        "encounter_rate": 100,
+        "hunt_chart": [],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": false,
+        "npc_chance": 15,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 74,
+      "name": "World object #74",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 70,
+      "destination": 73,
+      "attributes": {}
+    },
+    {
+      "id": 75,
+      "name": "World object #75",
+      "typeclass": "typeclasses.exits.Exit",
+      "location": 73,
+      "destination": 70,
+      "attributes": {}
+    },
+    {
+      "id": 80,
+      "name": "World object #80",
+      "typeclass": "typeclasses.rooms.MapRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {}
+    },
+    {
+      "id": 81,
+      "name": "World object #81",
+      "typeclass": "typeclasses.rooms.MapRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {}
+    },
+    {
+      "id": 88,
+      "name": "World object #88",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Magikarp",
+            "min_level": 5,
+            "max_level": 5,
+            "weight": 1,
+            "time": [
+              "any"
+            ],
+            "weather": [
+              "any"
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": true,
+        "npc_chance": 0,
+        "store_inventory": {}
+      }
+    },
+    {
+      "id": 92,
+      "name": "World object #92",
+      "typeclass": "typeclasses.rooms.FusionRoom",
+      "location": null,
+      "destination": null,
+      "attributes": {
+        "allow_hunting": true,
+        "encounter_rate": 100,
+        "hunt_chart": [
+          {
+            "name": "Magikarp",
+            "min_level": 5,
+            "max_level": 5,
+            "weight": 1,
+            "time": [
+              "any"
+            ],
+            "weather": [
+              "any"
+            ]
+          }
+        ],
+        "is_item_shop": false,
+        "is_item_store": false,
+        "itemfinder_rate": 5,
+        "noitem": true,
+        "npc_chance": 0,
+        "store_inventory": {}
+      }
+    }
+  ],
+  "source_columns": [
+    [
+      "pokemon_adventureparticipation",
+      "reward_amount"
+    ],
+    [
+      "pokemon_adventureparticipation",
+      "reward_claimed_at"
+    ],
+    [
+      "pokemon_adventureparticipation",
+      "reward_item"
+    ],
+    [
+      "pokemon_encounterpokemon",
+      "held_item"
+    ],
+    [
+      "pokemon_npcpokemontemplate",
+      "held_item"
+    ],
+    [
+      "pokemon_ownedpokemon",
+      "held_item"
+    ],
+    [
+      "pokemon_pokemon",
+      "held_item"
+    ]
+  ],
+  "npc_held_templates": [],
+  "source_sha256": {
+    "menus/item_store.py": "601737aa85f2b985f4cea90042635279eeab463b4f97572db49df669b331a78c",
+    "typeclasses/rooms.py": "713b5d30d2af77dc729b5ad3740a8eda4dcd6340afa44a2518c5f384e0de0e52",
+    "typeclasses/vendors.py": "1ab4e93916e5642a8391d3265a6101674b8462b2a631f8eecd46f8b0f50cb08a",
+    "world/hunt_system.py": "2ebf4c4f24b4692af3d690159feaada139b3ad231ffcbbde2915ca588af57fe4",
+    "world/alpha_test_zone.ev": "67100c2573b9b833b503f790a051969d4b1311116c35e2920eec5e5f0027d5f3",
+    "pokemon/services/post_battle_items.py": null,
+    "pokemon/items.py": "4a45b27c563cf47d464f9dd976eb5df2c83567e2c11f4e012abea5e114e61066",
+    "commands/player/cmd_inventory.py": "5dfef4b9be1f3bd586a747ae88a7f1b668b3d38a9682a67bb844d2bc51486744",
+    "pokemon/battle/engine.py": "6e696906e6c5568b005275ef8552185de16b4c19b784caedba4b2a31ce3e7135"
+  },
+  "privacy": "No player accounts, player-owned Pokemon or human inventories were inspected. Non-source room/exit labels are redacted."
+}

@@ -1,0 +1,2605 @@
+{
+  "issue": 863,
+  "date": "2026-10-25",
+  "status": "accepted bounded local two-source support",
+  "baseline": "6a6824844cb6303e5579ebc1bf3143479fffa92f",
+  "new_profiles": [
+    {
+      "crystal": "Firium Z",
+      "source": "Flamethrower",
+      "name": "Inferno Overdrive",
+      "power": 175,
+      "move_type": "Fire",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Waterium Z",
+      "source": "Surf",
+      "name": "Hydro Vortex",
+      "power": 175,
+      "move_type": "Water",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    }
+  ],
+  "reference": {
+    "showdown": "7e6cea3605c20b44142b2aab22acf08df75ea52b",
+    "power_conversion": "sim/dex-moves.ts:551-577",
+    "single_target": "sim/battle-actions.ts:getActiveZMove",
+    "native_learning": "Current project Charizard/Flamethrower30 and Slowpoke/Surf30; player fixtures capture100 and use actual teaching/menus"
+  },
+  "source_sha256_lf": {
+    "pokemon/battle/z_generic_pairs.py": "7e002e65beba01fc16e74b28c0f66be8812f693f190fdf6394f838227036195f",
+    "tools/audit_item_availability.py": "5f43cac4a892b12ab783cf1fd2af1fe2680a3950477a5600153402c1a607c950",
+    "pokemon/battle/tests/test_z_existing_sources.py": "388fd2f637b77a827ffc317ae9c15ec02e896919a91c03ce1aca9fb3fc583023",
+    "tests/integration/z_existing_sources_cases.py": "7425592e76f932da0e4899447e39131c933af3a0868a5809281c6d30f2b35940"
+  },
+  "qualification_manifest_sha256_lf": "32cd909e22b266679dfb09783a8534439898f6b4ab4e9567ef9597ddb667df48",
+  "python_sources": 1135,
+  "signature_profiles_sha256": "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43",
+  "existing_seventeen_generic_calls_unchanged": true,
+  "ordinary_moves_dex_unchanged": true,
+  "new_offline_tests": 11,
+  "baseline_red": "8 failed,3 passed",
+  "focused": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "pokemon/battle/tests/test_z_existing_sources.py",
+        "pokemon/battle/tests/test_z_move_effects.py",
+        "pokemon/battle/tests/test_z_special_effects.py",
+        "pokemon/battle/tests/test_live_checkpoint_effect_consumers.py",
+        "pokemon/battle/tests/test_native_form_and_postbattle_items.py",
+        "pokemon/battle/tests/test_item_form_ability_identity.py",
+        "tests/test_item_availability.py",
+        "--basetemp",
+        "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-z-sources-863-20261025\\focused-pilot-temp",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "exit_code": 0,
+      "seconds": 18.53,
+      "log_sha256": "4b4ee389c0a19e826ed6c91c7ccc12132a7e94fecea6aa104c5695122443fd20",
+      "pytest_counts": [
+        "119"
+      ],
+      "skips": [],
+      "unittest_counts": []
+    }
+  ],
+  "player": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/z_existing_sources_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 92.7,
+      "log_sha256": "3fff2c6bb79f3bf04c1f913820537fe61fd4fcebcd329f661b9f794df0505149",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "34"
+      ]
+    }
+  ],
+  "compatibility": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/z_move_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 70.55,
+      "log_sha256": "b7c521ceb3690c3369902ac68193a08e02ecc7726bcc4a5c38b7a3dda6410f57",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "37"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/z_generic_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 190.13,
+      "log_sha256": "62f543a6580df4068f6faa2bd018956de3484e054dcdf0dbc94471c11c49c870",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "17"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/z_status_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 109.95,
+      "log_sha256": "36747739059280249e63250a18f7441ef063c3b37c1c46bda73667cb9ed29f02",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "20"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/z_signature_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 207.83,
+      "log_sha256": "f4af315d6bf9d4f65d0c68a42b6eec148bd845a5a788777878801381161c66cb",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "22"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/z_native_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 42.88,
+      "log_sha256": "bba5cc9e78ad92732626aed469de339e747f09d4048740bef01e5cb4e3298896",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "9"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/necrozma_player_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 86.68,
+      "log_sha256": "3a3635b0801d11d5e573e34fc7981ba059130d61155b6c2915a9b6094331c763",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "15"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/item_availability_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 20.03,
+      "log_sha256": "e42fc0406108102951d433c0940d0ad90dd25b10e87553c53ae931f4411ab8d7",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "32"
+      ]
+    }
+  ],
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-z-sources-863-20261025\\qualified-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 2006.16,
+    "passed": [
+      "6153",
+      "6153",
+      "6153"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "f09267699434c06723b8b5f44da4a3661259fd481a7104c5f8adf3308c7e0083",
+    "source_count": 1505
+  },
+  "fixture_cleanup": {
+    "stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0
+  },
+  "cases": [
+    {
+      "test": "test_firiumz_active",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "active",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        0,
+        10
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          54,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "1d7a4ce2-62aa-429f-9123-7e4048fbd6b4",
+        "target_owned_id": "ee1e9329-a20f-407a-ae29-510852ef238a",
+        "source_sql": {
+          "unique_id": "1d7a4ce2-62aa-429f-9123-7e4048fbd6b4",
+          "trainer_id": 1,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "ee1e9329-a20f-407a-ae29-510852ef238a",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 186,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:1d7a4ce2-62aa-429f-9123-7e4048fbd6b4",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "f27826e0-c00a-42e9-bc19-03d6aa3b8539",
+            "turn": 0,
+            "team": "A",
+            "controller": "2",
+            "pokemon": "owned:1d7a4ce2-62aa-429f-9123-7e4048fbd6b4",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:ee1e9329-a20f-407a-ae29-510852ef238a",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_checkpoint_fault",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "checkpoint_fault",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        11,
+        21
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          54,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "e43fe16a-bc69-4983-8fe7-256e536af8a4",
+        "target_owned_id": "f5408429-c978-43a3-95f7-b36deb910004",
+        "source_sql": {
+          "unique_id": "e43fe16a-bc69-4983-8fe7-256e536af8a4",
+          "trainer_id": 3,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "f5408429-c978-43a3-95f7-b36deb910004",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 186,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:e43fe16a-bc69-4983-8fe7-256e536af8a4",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "dc8020f0-43d2-4e9e-a8ce-51580f79be30",
+            "turn": 0,
+            "team": "A",
+            "controller": "5",
+            "pokemon": "owned:e43fe16a-bc69-4983-8fe7-256e536af8a4",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:f5408429-c978-43a3-95f7-b36deb910004",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_embargo",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "embargo",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Mew",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+attack A1 Growl B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Embargo A1",
+        "+attack B2 Growl A2",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Safeguard B1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        22,
+        36
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          55,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "87a46416-3a54-4c48-9908-b3784b6c81c9",
+        "target_owned_id": "a3187d1f-d7c7-4c1d-abdd-a58a13a06fb6",
+        "source_sql": {
+          "unique_id": "87a46416-3a54-4c48-9908-b3784b6c81c9",
+          "trainer_id": 5,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "a3187d1f-d7c7-4c1d-abdd-a58a13a06fb6",
+          "species": "Mew",
+          "held_item": "",
+          "current_hp": 255,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:87a46416-3a54-4c48-9908-b3784b6c81c9",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "29c97529-67e6-4976-875b-c41f47decfcd",
+            "turn": 1,
+            "team": "A",
+            "controller": "8",
+            "pokemon": "owned:87a46416-3a54-4c48-9908-b3784b6c81c9",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:a3187d1f-d7c7-4c1d-abdd-a58a13a06fb6",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_immune",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "immune",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Vulpix",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Tail Whip A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        37,
+        47
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "5689d262-2a15-4703-8a08-3fa5ad28dfd4",
+        "target_owned_id": "cf533cfb-668b-4d06-bab6-89dccd83bf92",
+        "source_sql": {
+          "unique_id": "5689d262-2a15-4703-8a08-3fa5ad28dfd4",
+          "trainer_id": 7,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "cf533cfb-668b-4d06-bab6-89dccd83bf92",
+          "species": "Vulpix",
+          "held_item": "",
+          "current_hp": 186,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:5689d262-2a15-4703-8a08-3fa5ad28dfd4",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "a0e2da66-7150-4438-8430-14af08b5be57",
+            "turn": 0,
+            "team": "A",
+            "controller": "11",
+            "pokemon": "owned:5689d262-2a15-4703-8a08-3fa5ad28dfd4",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:cf533cfb-668b-4d06-bab6-89dccd83bf92",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_invalid_source",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "invalid_source",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1 2=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        48,
+        52
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_firiumz_invalid_target",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "invalid_target",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1 1=A9"
+      ],
+      "raw_receipt_range_inclusive": [
+        53,
+        57
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_firiumz_magicroom",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "magicroom",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Mew",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+attack A1 Growl B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Magic Room",
+        "+attack B2 Growl A2",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Safeguard B1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        58,
+        72
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          55,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "8c3d39ee-04ca-4264-bc2e-dcd3dd484675",
+        "target_owned_id": "77cf2515-bfd1-4997-802f-5393daa7efe8",
+        "source_sql": {
+          "unique_id": "8c3d39ee-04ca-4264-bc2e-dcd3dd484675",
+          "trainer_id": 13,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "77cf2515-bfd1-4997-802f-5393daa7efe8",
+          "species": "Mew",
+          "held_item": "",
+          "current_hp": 255,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:8c3d39ee-04ca-4264-bc2e-dcd3dd484675",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "f4c24f01-e63c-463c-b02b-4695dd33fc92",
+            "turn": 1,
+            "team": "A",
+            "controller": "20",
+            "pokemon": "owned:8c3d39ee-04ca-4264-bc2e-dcd3dd484675",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:77cf2515-bfd1-4997-802f-5393daa7efe8",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_missing",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "missing",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        73,
+        75
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_firiumz_native",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "native",
+      "setup": {
+        "native_acquisition": "ordinary hunt/capture/teach/moveset",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hunt ",
+        "+item Master Ball",
+        "+teach 3=Flamethrower",
+        "+movesets ",
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack B1 Leer A1",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        76,
+        90
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          234
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "71336f66-465b-454c-b8d7-b1d9bbfb8501",
+        "target_owned_id": "ca341d8d-01a9-403f-8565-b1717f15a4ad",
+        "source_sql": {
+          "unique_id": "71336f66-465b-454c-b8d7-b1d9bbfb8501",
+          "trainer_id": 17,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Lonely",
+          "level": 100,
+          "ivs": [
+            19,
+            30,
+            25,
+            9,
+            2,
+            23
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 1000000,
+          "held_item": "Firium Z",
+          "current_hp": 285,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "ca341d8d-01a9-403f-8565-b1717f15a4ad",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 6,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:71336f66-465b-454c-b8d7-b1d9bbfb8501",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "cc5283a6-4e07-4fe7-a4da-9f3852f0bf51",
+            "turn": 0,
+            "team": "A",
+            "controller": "26",
+            "pokemon": "owned:71336f66-465b-454c-b8d7-b1d9bbfb8501",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:ca341d8d-01a9-403f-8565-b1717f15a4ad",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_payment_fault",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "payment_fault",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        91,
+        101
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          54,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "f5096bbd-1527-431c-b02e-bb9c5b530e86",
+        "target_owned_id": "c807d013-d29f-401b-b4bf-2d022b3b8ab4",
+        "source_sql": {
+          "unique_id": "f5096bbd-1527-431c-b02e-bb9c5b530e86",
+          "trainer_id": 19,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "c807d013-d29f-401b-b4bf-2d022b3b8ab4",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 186,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:f5096bbd-1527-431c-b02e-bb9c5b530e86",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "f29ed04d-e2a2-4b4c-b87f-2d8afcc902c5",
+            "turn": 0,
+            "team": "A",
+            "controller": "29",
+            "pokemon": "owned:f5096bbd-1527-431c-b02e-bb9c5b530e86",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:c807d013-d29f-401b-b4bf-2d022b3b8ab4",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_plain",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "plain",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+attack A1 Flamethrower B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        102,
+        112
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          31,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [],
+        "source_owned_id": "5f63a2b6-bbd7-4146-9e43-b4de4f35d2a1",
+        "target_owned_id": "f9d76908-d1da-4f73-92a2-0bedbb6d923f",
+        "source_sql": {
+          "unique_id": "5f63a2b6-bbd7-4146-9e43-b4de4f35d2a1",
+          "trainer_id": 21,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "f9d76908-d1da-4f73-92a2-0bedbb6d923f",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 209,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:5f63a2b6-bbd7-4146-9e43-b4de4f35d2a1",
+          "species": "Charizard"
+        },
+        "source_profile": null,
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_protect",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "protect",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Protect B1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        113,
+        123
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          13,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "0c2d533e-b93d-4ad5-aede-6ed52e3a2420",
+        "target_owned_id": "83a3589b-ebe5-4fa2-8643-999adfa69031",
+        "source_sql": {
+          "unique_id": "0c2d533e-b93d-4ad5-aede-6ed52e3a2420",
+          "trainer_id": 23,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "83a3589b-ebe5-4fa2-8643-999adfa69031",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 227,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:0c2d533e-b93d-4ad5-aede-6ed52e3a2420",
+          "species": "Charizard"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "3c508e20-b59b-49eb-81d1-5f7dce908845",
+            "turn": 0,
+            "team": "A",
+            "controller": "35",
+            "pokemon": "owned:0c2d533e-b93d-4ad5-aede-6ed52e3a2420",
+            "slot": "0",
+            "crystal": "firiumz",
+            "native": "Charizard",
+            "source_slot": 1,
+            "source_id": 62,
+            "source": "Flamethrower",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:83a3589b-ebe5-4fa2-8643-999adfa69031",
+            "profile": "6c638f1281965e369b3f75a210c09a67a0b88952ccc88ac799d967b845ac35c2"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_sleep",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "sleep",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": "sleep"
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        124,
+        134
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 15,
+        "side_use": [],
+        "source_owned_id": "9f2f3edc-6e21-4fcb-b938-b095acb3a87b",
+        "target_owned_id": "5b4f7324-b9d7-4974-b165-71ac590a0fbc",
+        "source_sql": {
+          "unique_id": "9f2f3edc-6e21-4fcb-b938-b095acb3a87b",
+          "trainer_id": 25,
+          "species": "Charizard",
+          "ability": "Blaze",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Firium Z",
+          "current_hp": 138,
+          "status": "slp"
+        },
+        "target_sql": {
+          "unique_id": "5b4f7324-b9d7-4974-b165-71ac590a0fbc",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 240,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:9f2f3edc-6e21-4fcb-b938-b095acb3a87b",
+          "species": "Charizard"
+        },
+        "source_profile": null,
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_firiumz_transformed",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "transformed",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        135,
+        139
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_firiumz_wrong_crystal",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "wrong_crystal",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Normalium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        140,
+        144
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_firiumz_wrong_runtime",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "wrong_runtime",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        145,
+        149
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_firiumz_zero_pp",
+      "item": "Firium Z",
+      "source": "Flamethrower",
+      "facet": "zero_pp",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": "zero_pp"
+      },
+      "commands": [
+        "+hold 3=Firium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        150,
+        154
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_active",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "active",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        155,
+        165
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          21,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "86b12505-4417-4b37-a7c0-6e41d04805e2",
+        "target_owned_id": "b0a069c2-a5b3-4ea7-8e89-33d3816fbe02",
+        "source_sql": {
+          "unique_id": "86b12505-4417-4b37-a7c0-6e41d04805e2",
+          "trainer_id": 35,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "b0a069c2-a5b3-4ea7-8e89-33d3816fbe02",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 219,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:86b12505-4417-4b37-a7c0-6e41d04805e2",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "8b77fd48-cdba-4ee1-993d-a7aba5b0b3e6",
+            "turn": 0,
+            "team": "A",
+            "controller": "53",
+            "pokemon": "owned:86b12505-4417-4b37-a7c0-6e41d04805e2",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:b0a069c2-a5b3-4ea7-8e89-33d3816fbe02",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_checkpoint_fault",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "checkpoint_fault",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        166,
+        176
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          21,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "7d561199-1bec-4630-b8b9-2003f6409fce",
+        "target_owned_id": "1c5ca214-375d-4a59-ad1d-e5d5f1283c1e",
+        "source_sql": {
+          "unique_id": "7d561199-1bec-4630-b8b9-2003f6409fce",
+          "trainer_id": 37,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "1c5ca214-375d-4a59-ad1d-e5d5f1283c1e",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 219,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:7d561199-1bec-4630-b8b9-2003f6409fce",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "e9dc9f00-4e26-443c-a651-af8a32595015",
+            "turn": 0,
+            "team": "A",
+            "controller": "56",
+            "pokemon": "owned:7d561199-1bec-4630-b8b9-2003f6409fce",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:1c5ca214-375d-4a59-ad1d-e5d5f1283c1e",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_embargo",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "embargo",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Mew",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+attack A1 Growl B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Embargo A1",
+        "+attack B2 Growl A2",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Safeguard B1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        177,
+        191
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          22,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "4ee4a85b-322c-4959-b158-ac6a54d6d5be",
+        "target_owned_id": "d3c304a9-efa1-441a-a27f-7e1d7ad4285e",
+        "source_sql": {
+          "unique_id": "4ee4a85b-322c-4959-b158-ac6a54d6d5be",
+          "trainer_id": 39,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "d3c304a9-efa1-441a-a27f-7e1d7ad4285e",
+          "species": "Mew",
+          "held_item": "",
+          "current_hp": 288,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:4ee4a85b-322c-4959-b158-ac6a54d6d5be",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "a9ef29ab-2b67-4104-8299-05fa717a7b66",
+            "turn": 1,
+            "team": "A",
+            "controller": "59",
+            "pokemon": "owned:4ee4a85b-322c-4959-b158-ac6a54d6d5be",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:d3c304a9-efa1-441a-a27f-7e1d7ad4285e",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_immune",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "immune",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Vaporeon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Tail Whip A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        192,
+        202
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "6893e052-1a03-490e-a504-e6cacda94eb7",
+        "target_owned_id": "183c4450-f009-455d-b2e0-05d8e2d9b4a6",
+        "source_sql": {
+          "unique_id": "6893e052-1a03-490e-a504-e6cacda94eb7",
+          "trainer_id": 41,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "183c4450-f009-455d-b2e0-05d8e2d9b4a6",
+          "species": "Vaporeon",
+          "held_item": "",
+          "current_hp": 370,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:6893e052-1a03-490e-a504-e6cacda94eb7",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "6309bb78-3957-47c5-ace7-1f75550a3b49",
+            "turn": 0,
+            "team": "A",
+            "controller": "62",
+            "pokemon": "owned:6893e052-1a03-490e-a504-e6cacda94eb7",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:183c4450-f009-455d-b2e0-05d8e2d9b4a6",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_invalid_source",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "invalid_source",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1 2=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        203,
+        207
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_invalid_target",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "invalid_target",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1 1=A9"
+      ],
+      "raw_receipt_range_inclusive": [
+        208,
+        212
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_magicroom",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "magicroom",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Mew",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+attack A1 Growl B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Magic Room",
+        "+attack B2 Growl A2",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Safeguard B1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        213,
+        227
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          22,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "cb0895e9-7f69-4eb6-89bd-1510405f321b",
+        "target_owned_id": "a003be79-5f04-4dc3-b9e9-5d824f770f07",
+        "source_sql": {
+          "unique_id": "cb0895e9-7f69-4eb6-89bd-1510405f321b",
+          "trainer_id": 47,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "a003be79-5f04-4dc3-b9e9-5d824f770f07",
+          "species": "Mew",
+          "held_item": "",
+          "current_hp": 288,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:cb0895e9-7f69-4eb6-89bd-1510405f321b",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "5836d22a-f558-46dc-ae9e-63e63d8e153e",
+            "turn": 1,
+            "team": "A",
+            "controller": "71",
+            "pokemon": "owned:cb0895e9-7f69-4eb6-89bd-1510405f321b",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:a003be79-5f04-4dc3-b9e9-5d824f770f07",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_missing",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "missing",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        228,
+        230
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_native",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "native",
+      "setup": {
+        "native_acquisition": "ordinary hunt/capture/teach/moveset",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hunt ",
+        "+item Master Ball",
+        "+teach 3=Surf",
+        "+movesets ",
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack B1 Leer A1",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        231,
+        245
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          105
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "094834a9-3d14-4323-9f05-4f33749265ec",
+        "target_owned_id": "402f3192-741a-4d56-91cb-972491d78ab0",
+        "source_sql": {
+          "unique_id": "094834a9-3d14-4323-9f05-4f33749265ec",
+          "trainer_id": 51,
+          "species": "Slowpoke",
+          "ability": "Own Tempo",
+          "nature": "Modest",
+          "level": 100,
+          "ivs": [
+            11,
+            8,
+            24,
+            9,
+            26,
+            29
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 1000000,
+          "held_item": "Waterium Z",
+          "current_hp": 301,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "402f3192-741a-4d56-91cb-972491d78ab0",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 135,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:094834a9-3d14-4323-9f05-4f33749265ec",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "c966e66e-136e-4b34-9cd4-77f86f1faee1",
+            "turn": 0,
+            "team": "A",
+            "controller": "77",
+            "pokemon": "owned:094834a9-3d14-4323-9f05-4f33749265ec",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:402f3192-741a-4d56-91cb-972491d78ab0",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_payment_fault",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "payment_fault",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        246,
+        256
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          21,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "e6c28ae2-b800-47c2-9158-5ebbce2b560c",
+        "target_owned_id": "341e202c-a8ea-4751-a900-cf3a79513357",
+        "source_sql": {
+          "unique_id": "e6c28ae2-b800-47c2-9158-5ebbce2b560c",
+          "trainer_id": 53,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "341e202c-a8ea-4751-a900-cf3a79513357",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 219,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:e6c28ae2-b800-47c2-9158-5ebbce2b560c",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "7ef8618d-cfda-4664-a666-1c145ebf00b6",
+            "turn": 0,
+            "team": "A",
+            "controller": "80",
+            "pokemon": "owned:e6c28ae2-b800-47c2-9158-5ebbce2b560c",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:341e202c-a8ea-4751-a900-cf3a79513357",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_plain",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "plain",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+attack A1 Surf B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        257,
+        267
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          24,
+          9,
+          29
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [],
+        "source_owned_id": "9cb40a83-f016-4953-aea2-ba4c85226f0e",
+        "target_owned_id": "d433e3d2-6927-46c9-a7d8-588345623794",
+        "source_sql": {
+          "unique_id": "9cb40a83-f016-4953-aea2-ba4c85226f0e",
+          "trainer_id": 55,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "d433e3d2-6927-46c9-a7d8-588345623794",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 231,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:9cb40a83-f016-4953-aea2-ba4c85226f0e",
+          "species": "Slowpoke"
+        },
+        "source_profile": null,
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_protect",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "protect",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Protect B1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        268,
+        278
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          5,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 14,
+        "side_use": [
+          "A"
+        ],
+        "source_owned_id": "6fec2127-ed37-42f5-b45f-8379a7602b38",
+        "target_owned_id": "d9f08f74-78a6-40e8-840b-4ba16f65ee90",
+        "source_sql": {
+          "unique_id": "6fec2127-ed37-42f5-b45f-8379a7602b38",
+          "trainer_id": 57,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": ""
+        },
+        "target_sql": {
+          "unique_id": "d9f08f74-78a6-40e8-840b-4ba16f65ee90",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 235,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:6fec2127-ed37-42f5-b45f-8379a7602b38",
+          "species": "Slowpoke"
+        },
+        "source_profile": {
+          "version": 1,
+          "request": {
+            "version": 1,
+            "battle": "8952d3ee-65d6-41cf-8259-81938f3b30fd",
+            "turn": 0,
+            "team": "A",
+            "controller": "86",
+            "pokemon": "owned:6fec2127-ed37-42f5-b45f-8379a7602b38",
+            "slot": "0",
+            "crystal": "wateriumz",
+            "native": "Slowpoke",
+            "source_slot": 1,
+            "source_id": 109,
+            "source": "Surf",
+            "pp": 15,
+            "target": "B1",
+            "target_ref": "owned:d9f08f74-78a6-40e8-840b-4ba16f65ee90",
+            "profile": "c6e6cdd500d9c791a300512e2a12d13def70cc0c53bfa95fc02572a44dd09076"
+          }
+        },
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_sleep",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "sleep",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": "sleep"
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1",
+        "+zmove A1 1=B1",
+        "+attack A2 Growl B1",
+        "+attack B1 Leer A1",
+        "+attack B2 Growl A2",
+        "+hold 3="
+      ],
+      "raw_receipt_range_inclusive": [
+        279,
+        289
+      ],
+      "outcome": {
+        "damage_by_active_actor": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "pp_before": 15,
+        "pp_after": 15,
+        "side_use": [],
+        "source_owned_id": "6cb77f1b-6237-479d-9edd-f7651135a074",
+        "target_owned_id": "9eafbb9f-1d61-442c-a0ee-828198a3a2b6",
+        "source_sql": {
+          "unique_id": "6cb77f1b-6237-479d-9edd-f7651135a074",
+          "trainer_id": 59,
+          "species": "Slowpoke",
+          "ability": "Oblivious",
+          "nature": "Hardy",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "nickname": "",
+          "is_egg": false,
+          "total_exp": 125000,
+          "held_item": "Waterium Z",
+          "current_hp": 150,
+          "status": "slp"
+        },
+        "target_sql": {
+          "unique_id": "9eafbb9f-1d61-442c-a0ee-828198a3a2b6",
+          "species": "Shelgon",
+          "held_item": "",
+          "current_hp": 240,
+          "status": ""
+        },
+        "native_origin": {
+          "ref": "owned:6cb77f1b-6237-479d-9edd-f7651135a074",
+          "species": "Slowpoke"
+        },
+        "source_profile": null,
+        "returned_reusable_bag_copies": 1,
+        "stable_identity_and_genetics": true
+      }
+    },
+    {
+      "test": "test_wateriumz_transformed",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "transformed",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        290,
+        294
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_wrong_crystal",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "wrong_crystal",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Normalium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        295,
+        299
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_wrong_runtime",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "wrong_runtime",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": null
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        300,
+        304
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    },
+    {
+      "test": "test_wateriumz_zero_pp",
+      "item": "Waterium Z",
+      "source": "Surf",
+      "facet": "zero_pp",
+      "setup": {
+        "native_acquisition": "tagged native legal-move fixture",
+        "canonical_slot_setup": "tagged placement slot3",
+        "foe": "Shelgon",
+        "condition_setup": "zero_pp"
+      },
+      "commands": [
+        "+hold 3=Waterium Z",
+        "+zmove A1 1=B1"
+      ],
+      "raw_receipt_range_inclusive": [
+        305,
+        309
+      ],
+      "outcome": {
+        "rejected_before_action": true,
+        "all_observed_sql_runtime_and_queue_unchanged": true
+      }
+    }
+  ],
+  "raw_evidence": {
+    "sha256_lf": "a36ba95c7fe0793c7177ff11c3120ec05bd71d7ce82c5e6d0a9e2c420524246b",
+    "records": 310
+  },
+  "current_index": {
+    "path": "docs/testing/item-availability-z-sources-index-2026-10-25.json",
+    "sha256_lf": "f27873a1c25d4d1b81382229c29526ba72f0cfac7d4ad9d323cb2bbed2c28d60"
+  },
+  "unrelated_shared_paths": 25,
+  "limits": [
+    "Local production commands/menus and disposable PostgreSQL, not a fresh released socket or permanent source.",
+    "Two real hunt/capture/nickname/teach/moveset positives; remaining cases use explicitly labelled native/opponent/condition fixtures.",
+    "Transform/runtime-conflict negatives are labelled adapters; no copied appearance grants eligibility.",
+    "No new crystal, metadata-wide activation, ordinary source mutation, signature change, plot/CAP expansion or existing human data.",
+    "Earlier42-profile and reconciliation receipts/indices remain immutable; this is a separately dated expansion."
+  ]
+}

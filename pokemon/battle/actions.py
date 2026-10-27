@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional, Sequence, cast
+from typing import Any, Dict, Optional, Sequence, cast
 
 from pokemon.battle.contracts import BattleContextProtocol
 from pokemon.battle.participants import BattleParticipant
@@ -63,6 +63,14 @@ class Action:
 	priority_mod: float = 0.0
 	speed: int = 0
 	pokemon: Optional[Any] = None
+	target_pokemon: Optional[Any] = None
+	target_slot: Optional[int] = None
+	target_position: Optional[str] = None
+	switch_slot: Optional[int] = None
+	switch_from: Optional[Any] = None
+	player_selected: bool = False
+	item_move: Optional[str] = None
+	z_request: Optional[Dict[str, Any]] = None
 
 
 class BattleActions:
@@ -70,7 +78,8 @@ class BattleActions:
 
 	def check_victory(self) -> Optional[BattleParticipant]:
 		remaining = [p for p in self.participants if not p.has_lost]
-		if len(remaining) <= 1:
+		remaining_teams = {getattr(part, 'team', None) or id(part) for part in remaining}
+		if len(remaining_teams) <= 1:
 			self.battle_over = True
 			self.restore_transforms()
 			winner = remaining[0] if remaining else None
@@ -108,11 +117,19 @@ class BattleActions:
 			return winner
 		return None
 
-	def perform_switch_action(self, participant: BattleParticipant, new_pokemon) -> None:
+	def perform_switch_action(self, participant: BattleParticipant, new_pokemon, slot: int = 0) -> None:
 		"""Execute a switch action for ``participant``."""
 		if participant not in self.participants:
 			return
-		self.switch_pokemon(participant, new_pokemon)
+		from .active_slots import active_at
+		from .legal_actions import LegalActions
+
+		current = active_at(participant, slot)
+		if new_pokemon not in LegalActions(self, participant, current).reserves(slot=slot):
+			return
+		self.switch_pokemon(participant, new_pokemon, slot=slot)
+		if participant.is_ai and active_at(participant, slot) is new_pokemon:
+			participant.last_ai_switch_turn = self.turn_count
 		self.check_victory()
 
 	def check_win_conditions(self) -> Optional[BattleParticipant]:

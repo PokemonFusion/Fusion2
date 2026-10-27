@@ -1,0 +1,806 @@
+{
+  "issue": 884,
+  "date": "2026-10-25",
+  "status": "local_automated_opt_in_sources_qualified",
+  "evidence_kind": "ordinary production hunt/capture/hold/inventory/use; disposable PostgreSQL, captured transport, controlled rolls and real elapsed cooldown",
+  "sql_cases": 19,
+  "sql": {
+    "suite": "renewable_source",
+    "exit": 0,
+    "seconds": 24.33,
+    "cases": [
+      "19"
+    ],
+    "sha256": "bbb5242784cbc5f79e92c69208ce16da14c04676f545a5af28f48e5ac2eb23a4"
+  },
+  "real_elapsed": [
+    {
+      "label": "real-elapsed-five-percent-finder",
+      "rate": 5,
+      "elapsed": 3.2210071086883545,
+      "quantity": 2,
+      "commands": [
+        "+hunt",
+        "clear transient cooldown; close connection",
+        "+hunt rejected",
+        "wait real elapsed three seconds",
+        "+hunt"
+      ],
+      "socket": false
+    }
+  ],
+  "mandatory": {
+    "exit_code": 0,
+    "seconds": 2616.09,
+    "passed": [
+      "6592",
+      "6592",
+      "6592"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "7761a6afeba351e733f4f70ed35e0819cb04701e5a3ab2654943c3adcbfd8d74"
+  },
+  "qualification": {
+    "python_sources": 1179,
+    "manifest_sha256": "e9ac73b2fde058dc7008445b8466c2a7b22ecf9ce7a89a074f10750f07cb824f",
+    "unrelated_shared_dirty_paths_preserved": 25
+  },
+  "repaired_defect": {
+    "before": "An ordinary +hunt inside a containing transaction announced a found Potion even after the parent rolled back the credit.",
+    "after": "Itemfinder claim refuses a containing operation before bag/receipt mutation; normal fresh commands and durable cooldown remain unchanged.",
+    "failed_receipt": {
+      "exit": 1,
+      "seconds": 22.16,
+      "sha256": "405677f0cc810bc28fa15eab51a66e130a18dc63ae95c0f1ed160a5556c7c843"
+    }
+  },
+  "source_policy": {
+    "potion": {
+      "itemfinder_item": "Potion",
+      "itemfinder_rate": 5,
+      "allow_hunting": true,
+      "noitem": false
+    },
+    "held": {
+      "species": "Rattata",
+      "level": 5,
+      "item": "Oran Berry",
+      "chance": 5,
+      "noitem": false
+    },
+    "permanent_installation": false
+  },
+  "controls": [
+    "actual named hunt->inventory->use and native hunt->rebuild->capture->inspect->unhold->inventory->use",
+    "five/six exact percent-roll boundaries; actual level-five spawn asserted while percentage rolls alone are controlled",
+    "real elapsed cooldown, transient-cache loss/SQL reconnection, same/old receipt replay, failed-roll durable outcome",
+    "disabled/noitem/unknown/invalid rate/current room/battle/source guards",
+    "post-credit/receipt and capture-commit rollback, containing refusal and separate-connection finder contention",
+    "actual eaten/removed empty held persistence through reconstruction/capture; capture receipt replay"
+  ],
+  "limits": [
+    "No natural-frequency statistical claim: controlled percentage rolls select legal branches; the cooldown uses actual wall time",
+    "Capture Master Ball and injured field recipient are separate labelled prerequisites, not new capture supply or plot content",
+    "Tagged private rooms are not permanent stock, live sockets, a shared release or installed public access",
+    "Source-only item availability remains unverified; old public Supply Corner evidence is separate"
+  ],
+  "retained_fixture_diagnoses": [
+    "wait from latest rejected transient attempt as well as durable successful receipt",
+    "limit percentage-roll control so actual level range remains5; explicit native level assertion added"
+  ],
+  "observations": {
+    "finder": [
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 1,
+        "room_name": "availability-772-room-717541d267544f18813d9f8b44cdb411",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "finder-contention",
+        "results": [
+          "You need to wait before searching for items again.",
+          "You found a Potion! It was added to your inventory."
+        ],
+        "after": {
+          "state": {
+            "wallet": 200000,
+            "stock": {},
+            "bag": [
+              {
+                "item_name": "potion",
+                "quantity": 1
+              }
+            ],
+            "owned": [
+              {
+                "species": "Mew",
+                "level": 50,
+                "ability": "Synchronize",
+                "nature": "Hardy",
+                "gender": "N",
+                "ivs": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "evs": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "held_item": "",
+                "trained_stat_nature": null,
+                "unique_id": "88a40761-3236-41eb-9667-b2d7255bdd1e",
+                "created_at": "2026-10-26 02:17:35.506169+00:00",
+                "trainer_id": 1,
+                "nickname": "",
+                "is_shiny": false,
+                "met_location": "",
+                "met_level": null,
+                "met_date": null,
+                "obtained_method": "",
+                "original_trainer_id": null,
+                "original_trainer_name": "",
+                "is_egg": false,
+                "hatch_steps": null,
+                "friendship": 70,
+                "flags": [],
+                "tera_type": "",
+                "current_hp": 160,
+                "status": "",
+                "sleep_turns": null,
+                "total_exp": 125000,
+                "active_moveset_id": 1,
+                "pk": "88a40761-3236-41eb-9667-b2d7255bdd1e"
+              }
+            ],
+            "pp": [
+              {
+                "slot": 1,
+                "move__name": "Tackle",
+                "current_pp": 35
+              },
+              {
+                "slot": 2,
+                "move__name": "Watergun",
+                "current_pp": 25
+              }
+            ]
+          },
+          "receipt": {
+            "version": 1,
+            "attempt": "e5a822e1-531e-43d9-ada3-60c919ea42b2",
+            "started": 1000,
+            "room": 1,
+            "item": "Potion",
+            "quantity": 1
+          }
+        }
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 4,
+        "room_name": "availability-772-room-93ce73a3290948d486a7df4ba3c230ae",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 7,
+        "room_name": "availability-772-room-69c6fb3dd3874633be0cf599ca4ebd5e",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 10,
+        "room_name": "availability-772-room-14822a6459d24b3895fa4b61b740946b",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 13,
+        "room_name": "availability-772-room-fd564d9bc8874b468618529af91b187d",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 16,
+        "room_name": "availability-772-room-fbd37c4f144c49979ddd3b682e1861a9",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "ordinary-finder-to-use",
+        "commands": [
+          "+hunt",
+          "+inventory",
+          "+use Potion=3",
+          "SQL reload"
+        ],
+        "before": {
+          "state": {
+            "wallet": 200000,
+            "stock": {},
+            "bag": [],
+            "owned": [
+              {
+                "species": "Mew",
+                "level": 50,
+                "ability": "Synchronize",
+                "nature": "Hardy",
+                "gender": "N",
+                "ivs": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "evs": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "held_item": "",
+                "trained_stat_nature": null,
+                "unique_id": "9785c4e3-5a85-4203-b67b-3eb9cbd24e8f",
+                "created_at": "2026-10-26 02:17:36.962137+00:00",
+                "trainer_id": 11,
+                "nickname": "",
+                "is_shiny": false,
+                "met_location": "",
+                "met_level": null,
+                "met_date": null,
+                "obtained_method": "",
+                "original_trainer_id": null,
+                "original_trainer_name": "",
+                "is_egg": false,
+                "hatch_steps": null,
+                "friendship": 70,
+                "flags": [],
+                "tera_type": "",
+                "current_hp": 1,
+                "status": "",
+                "sleep_turns": null,
+                "total_exp": 125000,
+                "active_moveset_id": 6,
+                "pk": "9785c4e3-5a85-4203-b67b-3eb9cbd24e8f"
+              }
+            ],
+            "pp": [
+              {
+                "slot": 1,
+                "move__name": "Tackle",
+                "current_pp": 35
+              },
+              {
+                "slot": 2,
+                "move__name": "Watergun",
+                "current_pp": 25
+              }
+            ]
+          },
+          "receipt": null
+        },
+        "after": {
+          "state": {
+            "wallet": 200000,
+            "stock": {},
+            "bag": [],
+            "owned": [
+              {
+                "species": "Mew",
+                "level": 50,
+                "ability": "Synchronize",
+                "nature": "Hardy",
+                "gender": "N",
+                "ivs": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "evs": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "held_item": "",
+                "trained_stat_nature": null,
+                "unique_id": "9785c4e3-5a85-4203-b67b-3eb9cbd24e8f",
+                "created_at": "2026-10-26 02:17:36.962137+00:00",
+                "trainer_id": 11,
+                "nickname": "",
+                "is_shiny": false,
+                "met_location": "",
+                "met_level": null,
+                "met_date": null,
+                "obtained_method": "",
+                "original_trainer_id": null,
+                "original_trainer_name": "",
+                "is_egg": false,
+                "hatch_steps": null,
+                "friendship": 70,
+                "flags": [],
+                "tera_type": "",
+                "current_hp": 21,
+                "status": "",
+                "sleep_turns": null,
+                "total_exp": 125000,
+                "active_moveset_id": 6,
+                "pk": "9785c4e3-5a85-4203-b67b-3eb9cbd24e8f"
+              }
+            ],
+            "pp": [
+              {
+                "slot": 1,
+                "move__name": "Tackle",
+                "current_pp": 35
+              },
+              {
+                "slot": 2,
+                "move__name": "Watergun",
+                "current_pp": 25
+              }
+            ]
+          },
+          "receipt": {
+            "version": 1,
+            "attempt": "ce212de5-80cd-4340-841e-60a7cde16ee5",
+            "started": 1792981057.192176,
+            "room": 16,
+            "item": "Potion",
+            "quantity": 1
+          }
+        },
+        "messages": [
+          "You found a Potion! It was added to your inventory.",
+          "Your Inventory:\nPotion x1 - Restores 20 HP to one Pokemon.",
+          "Used Potion on 3."
+        ]
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 19,
+        "room_name": "availability-772-room-3389188acb30431fa51ef495adb35da4",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 22,
+        "room_name": "availability-772-room-003d78d11164403bbb71959dfecd6858",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "real-elapsed-five-percent-finder",
+        "rate": 5,
+        "elapsed": 3.2210071086883545,
+        "quantity": 2,
+        "commands": [
+          "+hunt",
+          "clear transient cooldown; close connection",
+          "+hunt rejected",
+          "wait real elapsed three seconds",
+          "+hunt"
+        ],
+        "socket": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 25,
+        "room_name": "availability-772-room-b998d5bc80d64b1fb3e7c2b5e254bc89",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-named-source-setup",
+        "room": 28,
+        "room_name": "availability-772-room-367fd98984b442f995832ef4268cb191",
+        "allow_hunting": true,
+        "noitem": false,
+        "itemfinder_item": "Potion",
+        "itemfinder_rate": 5,
+        "npc_chance": 0,
+        "encounter_rate": 0,
+        "permanent": false
+      }
+    ],
+    "held": [
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 31,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 5,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 5}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 34,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 5,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 5}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 43,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 5,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 5}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 46,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 5,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 5}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "ordinary-wild-held-acquisition",
+        "before": {
+          "wallet": 200000,
+          "stock": {},
+          "bag": [],
+          "owned": [
+            {
+              "species": "Mew",
+              "level": 50,
+              "ability": "Synchronize",
+              "nature": "Hardy",
+              "gender": "N",
+              "ivs": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "evs": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "held_item": "",
+              "trained_stat_nature": null,
+              "unique_id": "054d64a8-26b1-493d-87e3-a3a6e484cb37",
+              "created_at": "2026-10-26 02:17:44.052611+00:00",
+              "trainer_id": 31,
+              "nickname": "",
+              "is_shiny": false,
+              "met_location": "",
+              "met_level": null,
+              "met_date": null,
+              "obtained_method": "",
+              "original_trainer_id": null,
+              "original_trainer_name": "",
+              "is_egg": false,
+              "hatch_steps": null,
+              "friendship": 70,
+              "flags": [],
+              "tera_type": "",
+              "current_hp": 1,
+              "status": "",
+              "sleep_turns": null,
+              "total_exp": 125000,
+              "active_moveset_id": 19,
+              "pk": "054d64a8-26b1-493d-87e3-a3a6e484cb37"
+            }
+          ],
+          "pp": [
+            {
+              "slot": 1,
+              "move__name": "Tackle",
+              "current_pp": 35
+            },
+            {
+              "slot": 2,
+              "move__name": "Watergun",
+              "current_pp": 25
+            }
+          ]
+        },
+        "after": {
+          "wallet": 200000,
+          "stock": {},
+          "bag": [],
+          "owned": [
+            {
+              "species": "Mew",
+              "level": 50,
+              "ability": "Synchronize",
+              "nature": "Hardy",
+              "gender": "N",
+              "ivs": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "evs": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "held_item": "",
+              "trained_stat_nature": null,
+              "unique_id": "054d64a8-26b1-493d-87e3-a3a6e484cb37",
+              "created_at": "2026-10-26 02:17:44.052611+00:00",
+              "trainer_id": 31,
+              "nickname": "",
+              "is_shiny": false,
+              "met_location": "",
+              "met_level": null,
+              "met_date": null,
+              "obtained_method": "",
+              "original_trainer_id": null,
+              "original_trainer_name": "",
+              "is_egg": false,
+              "hatch_steps": null,
+              "friendship": 70,
+              "flags": [],
+              "tera_type": "",
+              "current_hp": 11,
+              "status": "",
+              "sleep_turns": null,
+              "total_exp": 125000,
+              "active_moveset_id": 19,
+              "pk": "054d64a8-26b1-493d-87e3-a3a6e484cb37"
+            }
+          ],
+          "pp": [
+            {
+              "slot": 1,
+              "move__name": "Tackle",
+              "current_pp": 35
+            },
+            {
+              "slot": 2,
+              "move__name": "Watergun",
+              "current_pp": 25
+            }
+          ]
+        },
+        "encounter": "788a30f9-dc13-4a20-8ad1-3ed85f8db7c3",
+        "owned": "8f8e78e6-d982-44d1-9ded-21c665da851f",
+        "party_slot": 1,
+        "commands": [
+          "+hunt",
+          "checkpoint rebuild",
+          "+item Master Ball",
+          "+party 1",
+          "+hold 1=",
+          "+inventory",
+          "+use Oran Berry=3",
+          "SQL reload"
+        ],
+        "messages": [
+          "Battle started!",
+          "Battle ID: 4",
+          "A wild Rattata appears!",
+          "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-cf09517509a3481c83e955e10daaec11|n\n1 Mew |x\u2013|n                   Lv 50      |WHP|n: |r|n|x--------------------|n 1/160 1%        \n|WTeam|n: |yo|n |x.|n |x.|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Rattata|n\n1 Rattata |M\u2640|n               Lv 5       |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+          "Choose an action for Mew.",
+          "The battle awaits your move.",
+          "A wild Rattata (Lv 5) appeared!",
+          "A1 (Mew) prepares Master Ball \u2192 B1.",
+          "The ball shook!",
+          "The ball shook!",
+          "The ball shook!",
+          "The ball shook!",
+          "Gotcha! Rattata was caught!",
+          "**availability-772-player-cf09517509a3481c83e955e10daaec11** won the battle!",
+          "The battle has ended.",
+          "______________________________________________________________________________\n\n|nWould you like to give Rattata a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m",
+          "|g------------------------------[|n|WSlot 1: Rattata|n|g] ------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mRattata\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[1m\u001b[37mNormal\u001b[0m \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m5\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m125\u001b[0m/216 \u001b[1m\u001b[30m(0% to next, 91 xp)\u001b[0m   \u001b[0m\n|xID|n: |w8f8e78e6-d982-44d1-9ded-21c665da851f|n\n|xHP|n: |w18|n/18 \u001b[1m\u001b[32m\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u001b[0m |x(100%)|n   |xStatus|n: NORM\n|xNature|n: |wCalm|n   |xAbility|n: |wHustle|n   |xHeld|n: |wOranberry|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 18 \u001b[0m\u001b[0m 9   \u001b[0m\u001b[0m 9   \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 9   \u001b[0m\u001b[0m 12  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 8  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 10  \u001b[0m\u001b[0m 16  \u001b[0m\u001b[0m 26  \u001b[0m\u001b[0m 3   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Quickattack (30/30 PP)\n  Tackle (35/35 PP)\n  Tailwhip (30/30 PP)",
+          "Rattata's Oranberry was returned to your inventory.",
+          "Your Inventory:\nOran Berry x1 - Restores 10 HP when at 1/2 max HP or less. Single use.",
+          "Used Oran Berry on 3."
+        ]
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 49,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 0,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 0}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 49,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": true,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': True}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 49,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Leader's Crest",
+        "held_item_chance": 100,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': \"Leader's Crest\", 'held_item_chance': 100}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 49,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Mega Ring",
+        "held_item_chance": 100,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Mega Ring', 'held_item_chance': 100}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 49,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Pikachu",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 100,
+        "chart": [
+          "{'name': 'Pikachu', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 100}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 52,
+        "allow_hunting": true,
+        "noitem": true,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 5,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 5}"
+        ],
+        "permanent": false
+      },
+      {
+        "label": "separate-reviewed-native-held-source",
+        "room": 55,
+        "allow_hunting": true,
+        "noitem": false,
+        "species": "Rattata",
+        "level": 5,
+        "item": "Oran Berry",
+        "held_item_chance": 5,
+        "chart": [
+          "{'name': 'Rattata', 'min_level': 5, 'max_level': 5, 'weight': 1, 'held_item': 'Oran Berry', 'held_item_chance': 5}"
+        ],
+        "permanent": false
+      }
+    ]
+  }
+}

@@ -23,71 +23,6 @@ class FakeMove:
 		self.name = name
 
 
-class FakeSlot:
-	def __init__(self, move_name, slot):
-		self.move = FakeMove(move_name)
-		self.slot = slot
-		self.current_pp = 10
-
-	def save(self):
-		pass
-
-
-class FakeQS(list):
-	def order_by(self, attr):
-		return FakeQS(sorted(self, key=lambda s: getattr(s, attr)))
-
-	def filter(self, **kwargs):
-		if "move" in kwargs:
-			mv = kwargs["move"]
-			return FakeQS([s for s in self if s.move == mv])
-		if "move__name__iexact" in kwargs:
-			name = kwargs["move__name__iexact"].lower()
-			return FakeQS([s for s in self if s.move.name.lower() == name])
-		return self
-
-	def all(self):
-		return self
-
-
-class FakeBoost:
-	def __init__(self, move):
-		self.move = move
-		self.bonus_pp = 0
-
-	def save(self):
-		pass
-
-
-class BoostManager(list):
-	def get_or_create(self, move, defaults=None):
-		for b in self:
-			if b.move.name.lower() == move.name.lower():
-				return b, False
-		b = FakeBoost(move)
-		self.append(b)
-		return b, True
-
-	def filter(self, **kwargs):
-		if "move__name__iexact" in kwargs:
-			name = kwargs["move__name__iexact"].lower()
-			res = [b for b in self if b.move.name.lower() == name]
-		elif "move" in kwargs:
-			mv = kwargs["move"]
-			res = [b for b in self if b.move == mv]
-		else:
-			res = list(self)
-
-		class _QS(list):
-			def first(self_inner):
-				return self_inner[0] if self_inner else None
-
-		return _QS(res)
-
-	def all(self):
-		return self
-
-
 class FakePokemon:
 	def __init__(self):
 		self.name = "Pika"
@@ -95,42 +30,6 @@ class FakePokemon:
 		self.level = 5
 		self.total_exp = 125
 		self.saved = False
-		self.activemoveslot_set = FakeQS([FakeSlot("tackle", 1)])
-		self.pp_boosts = BoostManager()
-
-	def save(self):
-		self.saved = True
-
-	def get_max_pp(self, move_name):
-		base = 10
-		boost = next((b.bonus_pp for b in self.pp_boosts if b.move.name.lower() == move_name.lower()), 0)
-		return base + boost
-
-	def apply_pp_up(self, move_name):
-		base = 10
-		step = max(1, base // 5)
-		max_bonus = (base * 3) // 5
-		boost, _ = self.pp_boosts.get_or_create(FakeMove(move_name))
-		if boost.bonus_pp >= max_bonus:
-			return False
-		new = min(boost.bonus_pp + step, max_bonus)
-		delta = new - boost.bonus_pp
-		boost.bonus_pp = new
-		for s in self.activemoveslot_set.filter(move__name__iexact=move_name):
-			s.current_pp += delta
-		return True
-
-	def apply_pp_max(self, move_name):
-		base = 10
-		max_bonus = (base * 3) // 5
-		boost, _ = self.pp_boosts.get_or_create(FakeMove(move_name))
-		if boost.bonus_pp >= max_bonus:
-			return False
-		delta = max_bonus - boost.bonus_pp
-		boost.bonus_pp = max_bonus
-		for s in self.activemoveslot_set.filter(move__name__iexact=move_name):
-			s.current_pp += delta
-		return True
 
 
 class DummyTrainer:
@@ -226,78 +125,104 @@ def restore_modules(orig_evennia, orig_core, orig_moves, orig_trainer, orig_inv,
 		sys.modules.pop("pokemon.dex", None)
 
 
-def test_ppup_flow():
+def _pp_boundary(monkeypatch, error=None):
+	"""Only test command routing here; real PP/SQL effects have PG coverage."""
+	from pokemon.services.field_pp import FieldPPCapacityUse
+
+	calls = []
+
+	def use(service, item, target, *, move=None):
+		"""Capture the target handoff and simulate a prompt at the boundary."""
+		calls.append((item, target, move))
+		service.caller.ndb.pending_pp_item = {"item": item, "pokemon_id": "stable-id"}
+		service.caller.msg("Choose a move")
+
+	def confirm(service, pending, selection):
+		"""Capture confirmation routing without implementing any PP math."""
+		calls.append((pending["item"], pending["pokemon_id"], selection))
+		if error:
+			raise ValueError(error)
+		return True
+
+	monkeypatch.setattr(FieldPPCapacityUse, "use", use)
+	monkeypatch.setattr(FieldPPCapacityUse, "confirm", confirm)
+	monkeypatch.setattr(FieldPPCapacityUse, "notify_success", lambda *args: None)
+	return calls
+
+
+def test_ppup_flow(monkeypatch):
+	"""Delegate initial target and exact confirmation text to the field service."""
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
-
-	poke = FakePokemon()
-	caller = DummyCaller(poke, remove_counter)
-
+	calls = _pp_boundary(monkeypatch)
+	caller = DummyCaller(FakePokemon(), remove_counter)
 	cmd = cmd_mod.CmdUseItem()
-	cmd.caller = caller
-	cmd.args = "ppup=1"
+	cmd.caller, cmd.args = caller, "ppup=1"
 	cmd.func()
-
-	assert hasattr(caller.ndb, "pending_pp_item")
-	assert "Choose a move" in caller.msgs[-1]
-
-	cmd.args = "1"
+	cmd.args = "3"
 	cmd.func()
-
-	assert remove_counter[0] == 1
-	boost = poke.pp_boosts.filter(move__name__iexact="tackle").first()
-	assert boost and boost.bonus_pp > 0
-
-
-def test_ppup_compatibility_target_first_flow():
-	remove_counter = [0]
-	origs = setup_modules(remove_counter)
-	cmd_mod = load_cmd_module()
-	restore_modules(*origs)
-
-	poke = FakePokemon()
-	caller = DummyCaller(poke, remove_counter)
-
-	cmd = cmd_mod.CmdUseItem()
-	cmd.caller = caller
-	cmd.args = "1=ppup"
-	cmd.func()
-
-	assert hasattr(caller.ndb, "pending_pp_item")
-	assert "Choose a move" in caller.msgs[-1]
-
-
-def test_ppup_at_max():
-	remove_counter = [0]
-	origs = setup_modules(remove_counter)
-	cmd_mod = load_cmd_module()
-	restore_modules(*origs)
-
-	poke = FakePokemon()
-	# pre-boost to max
-	poke.apply_pp_max("tackle")
-	caller = DummyCaller(poke, remove_counter)
-
-	cmd = cmd_mod.CmdUseItem()
-	cmd.caller = caller
-	cmd.args = "1=ppup"
-	cmd.func()
-	# choose move
-	cmd.args = "1"
-	cmd.func()
-
-	# no additional removal since move already maxed
+	assert calls == [("ppup", "1", None), ("ppup", "stable-id", "3")]
 	assert remove_counter[0] == 0
-	assert any("already" in m.lower() or "further" in m.lower() for m in caller.msgs)
 
 
-def test_rare_candy_levels_target_slot():
+def test_ppup_compatibility_target_first_flow(monkeypatch):
+	"""The legacy target-first spelling reaches the same safe route."""
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	calls = _pp_boundary(monkeypatch)
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller, cmd.args = caller, "1=ppup"
+	cmd.func()
+	assert calls == [("ppup", "1", None)]
+
+
+def test_ppup_at_max(monkeypatch):
+	"""A service rejection is reported without a command-side debit or effect."""
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+	_pp_boundary(monkeypatch, "That move already has maximum PP.")
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller, cmd.args = caller, "PP Up=1"
+	cmd.func()
+	cmd.args = "1"
+	cmd.func()
+	assert remove_counter[0] == 0
+	assert "already has maximum" in caller.msgs[-1]
+
+
+def _rare_candy_boundary(monkeypatch, error=None):
+	"""Capture command delegation; real effects belong to PostgreSQL coverage."""
+	from pokemon.services.field_progression import FieldRareCandyUse
+
+	calls = []
+
+	def use(service, item, target, *, move=None):
+		"""Represent the shared service outcome without faking its effect."""
+		calls.append((item, target, move))
+		if error:
+			raise ValueError(error)
+		return True
+
+	monkeypatch.setattr(FieldRareCandyUse, "use", use)
+	monkeypatch.setattr(FieldRareCandyUse, "success_message", lambda *args: "Pika grew to level 6.")
+	monkeypatch.setattr(FieldRareCandyUse, "notify_success", lambda service, *args: service.caller.msg("Pika grew to level 6."))
+	return calls
+
+
+def test_rare_candy_delegates_name_to_field_boundary(monkeypatch):
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+	calls = _rare_candy_boundary(monkeypatch)
 
 	poke = FakePokemon()
 	caller = DummyCaller(poke, remove_counter)
@@ -307,17 +232,17 @@ def test_rare_candy_levels_target_slot():
 	cmd.args = "Rare Candy=Pikachu"
 	cmd.func()
 
-	assert remove_counter[0] == 1
-	assert poke.level == 6
-	assert poke.saved is True
+	assert calls == [("rarecandy", "Pikachu", None)]
+	assert remove_counter[0] == 0
 	assert any("grew to level 6" in msg for msg in caller.msgs)
 
 
-def test_rare_candy_compatibility_target_first_flow():
+def test_rare_candy_compatibility_target_first_flow(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	calls = _rare_candy_boundary(monkeypatch)
 
 	poke = FakePokemon()
 	caller = DummyCaller(poke, remove_counter)
@@ -327,8 +252,8 @@ def test_rare_candy_compatibility_target_first_flow():
 	cmd.args = "1=Rare Candy"
 	cmd.func()
 
-	assert remove_counter[0] == 1
-	assert poke.level == 6
+	assert calls == [("rarecandy", "1", None)]
+	assert remove_counter[0] == 0
 	assert any("grew to level 6" in msg for msg in caller.msgs)
 
 
@@ -345,14 +270,15 @@ def test_rare_candy_requires_target_slot():
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "Usage: +use Rare Candy=<target>"
+	assert "Usage: +use Rare Candy=<party slot" in caller.msgs[-1]
 
 
-def test_rare_candy_does_not_apply_without_inventory():
+def test_rare_candy_does_not_apply_without_inventory(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	_rare_candy_boundary(monkeypatch, "You don't have any of that item to use.")
 
 	poke = FakePokemon()
 	caller = DummyCaller(poke, remove_counter, has_item=False)
@@ -363,7 +289,7 @@ def test_rare_candy_does_not_apply_without_inventory():
 
 	assert remove_counter[0] == 0
 	assert poke.level == 5
-	assert caller.msgs[-1] == "You don't have any Rare Candy to use."
+	assert caller.msgs[-1] == "You don't have any of that item to use."
 
 
 def test_unimplemented_field_item_does_not_consume_inventory():
@@ -375,11 +301,27 @@ def test_unimplemented_field_item_does_not_consume_inventory():
 	caller = DummyCaller(FakePokemon(), remove_counter)
 	cmd = cmd_mod.CmdUseItem()
 	cmd.caller = caller
-	cmd.args = "Potion=Pikachu"
+	cmd.args = "Leftovers=Pikachu"
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "Potion is not usable outside battle yet."
+	assert "Leftovers is not usable outside battle yet." in caller.msgs[-1]
+	assert "+heal at a Pokemon Center" in caller.msgs[-1]
+	assert "+item <item> during battle" in caller.msgs[-1]
+
+
+def test_pp_up_without_target_explains_supported_usage():
+	"""A supported field item needs a target, rather than claiming it is unavailable."""
+	remove_counter = [0]
+	origs = setup_modules(remove_counter)
+	cmd_mod = load_cmd_module()
+	restore_modules(*origs)
+	caller = DummyCaller(FakePokemon(), remove_counter)
+	cmd = cmd_mod.CmdUseItem()
+	cmd.caller, cmd.args = caller, "PP Up"
+	cmd.func()
+	assert remove_counter[0] == 0
+	assert caller.msgs[-1] == "Usage: +use PP Up=<party slot or Pokemon name>"
 
 
 def test_use_item_invalid_item_name_fails_before_target_lookup():
@@ -398,11 +340,12 @@ def test_use_item_invalid_item_name_fails_before_target_lookup():
 	assert "No such item 'Not An Item' exists." in caller.msgs[-1]
 
 
-def test_use_item_invalid_target_fails_before_item_removal():
+def test_use_item_invalid_target_fails_before_item_removal(monkeypatch):
 	remove_counter = [0]
 	origs = setup_modules(remove_counter)
 	cmd_mod = load_cmd_module()
 	restore_modules(*origs)
+	_rare_candy_boundary(monkeypatch, "Choose an owned party Pokemon by slot, name or full ID, or your current Fusion.")
 
 	caller = DummyCaller(FakePokemon(), remove_counter)
 	cmd = cmd_mod.CmdUseItem()
@@ -411,7 +354,7 @@ def test_use_item_invalid_target_fails_before_item_removal():
 	cmd.func()
 
 	assert remove_counter[0] == 0
-	assert caller.msgs[-1] == "No Pokemon target found for 'Missingno'."
+	assert "Choose an owned party Pokemon" in caller.msgs[-1]
 
 
 def test_use_item_ambiguous_two_item_names_fails():

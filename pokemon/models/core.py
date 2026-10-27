@@ -1,7 +1,6 @@
 """Core models for Pokémon, including base and owned Pokémon classes."""
 
 import logging
-import math
 import uuid
 
 from django.contrib.postgres.fields import ArrayField
@@ -11,9 +10,7 @@ from evennia.utils.idmapper.models import SharedMemoryModel
 
 from .enums import Gender, Nature
 from .validators import validate_evs, validate_ivs
-
-# Maximum multiplier to calculate PP when fully boosted (e.g. PP Max or 3 PP Ups)
-MAX_PP_MULTIPLIER = 1.6
+from pokemon.nature_training import NatureTraining, NatureTrainingError
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +137,28 @@ class Pokemon(BasePokemon):
 
 class OwnedPokemon(SharedMemoryModel, BasePokemon):
 	"""Persistent data for a player's Pokémon."""
+
+	trained_stat_nature = models.CharField(max_length=20, null=True, blank=True, default=None,
+		choices=[(name, name) for name in NatureTraining.mint_names])
+
+	class Meta:
+		"""Keep a trained preference bounded without rewriting genetic Nature."""
+
+		constraints = [models.CheckConstraint(name="owned_trained_nature_valid", condition=(
+			models.Q(trained_stat_nature__isnull=True) | models.Q(trained_stat_nature="")
+			| models.Q(trained_stat_nature__in=NatureTraining.mint_names)))]
+
+	def clean(self):
+		"""Expose malformed training/genetics as validation errors before model writes."""
+		super().clean()
+		from django.core.exceptions import ValidationError
+
+		try:
+			NatureTraining.validate_training(self.trained_stat_nature)
+			if self.trained_stat_nature:
+				NatureTraining.effective(self)
+		except NatureTrainingError as error:
+			raise ValidationError({"trained_stat_nature": str(error)}) from error
 
 	unique_id = models.UUIDField(
 		primary_key=True,
@@ -309,6 +328,11 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 
 	def heal(self) -> None:
 		"""Fully restore HP, clear status, and reset PP."""
+		from pokemon.services.necrozma_moves import heal_native, pair_for_model
+
+		if heal_native(self):
+			return
+		pair_for_model(self, "heal")
 		from pokemon.helpers.pokemon_helpers import get_max_hp
 		from pokemon.services.move_management import apply_current_pp
 
@@ -356,6 +380,19 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		except (ImportError, AttributeError):
 			return self.current_hp
 
+	def get_max_pp(self, move_name: str) -> int:
+		"""Return a move's PP capacity, including this Pokemon's stored boost."""
+		from pokemon.dex import MOVEDEX
+		from pokemon.names import find_named, resolve_dex_entry
+
+		move = find_named(self.learned_moves.all(), move_name)
+		if move is None:
+			return 0
+		entry = resolve_dex_entry(MOVEDEX, move.name)
+		base_pp = entry.get("pp", 0) if isinstance(entry, dict) else getattr(entry, "pp", 0)
+		boost = self.pp_boosts.filter(move=move).first()
+		return int(base_pp or 0) + int(getattr(boost, "bonus_pp", 0) or 0)
+
 	def apply_pp_up(self, move_name: str) -> bool:
 		"""Apply a PP Up to the given move and return success."""
 		return self._apply_pp_boost(move_name, 1)
@@ -365,49 +402,10 @@ class OwnedPokemon(SharedMemoryModel, BasePokemon):
 		return self._apply_pp_boost(move_name, 3)
 
 	def _apply_pp_boost(self, move_name: str, count: int) -> bool:
-		try:
-			from pokemon.dex import MOVEDEX  # type: ignore
-		except ImportError:
-			logger.debug("MOVEDEX unavailable while applying PP boost.", exc_info=True)
-			return False
+		"""Apply one Up or a Max using raw bonus PP and strict persistence."""
+		from pokemon.services.pp_capacity import PokemonPPCapacity
 
-		from pokemon.names import find_named, resolve_dex_entry
-
-		move = find_named(self.learned_moves.all(), move_name)
-		if not move:
-			return False
-
-		slots = self.activemoveslot_set.filter(move=move)
-		boost, _ = self.pp_boosts.get_or_create(move=move)
-		entry = resolve_dex_entry(MOVEDEX, move.name)
-		base_pp = entry.get("pp") if isinstance(entry, dict) else getattr(entry, "pp", None)
-		if base_pp is None:
-			return False
-		max_bonus = math.floor(base_pp * MAX_PP_MULTIPLIER) - base_pp
-		if boost.bonus_pp + count > max_bonus:
-			return False
-		boost.bonus_pp += count
-		boost.save()
-
-		updated = []
-		for slot in slots:
-			if base_pp is not None:
-				slot.current_pp = base_pp + boost.bonus_pp
-				updated.append(slot)
-		if updated:
-			try:
-				slots.bulk_update(updated, ["current_pp"])
-			except (AttributeError, TypeError):  # pragma: no cover
-				for slot in updated:
-					try:
-						slot.save()
-					except AttributeError:
-						logger.debug("Unable to save slot in PP boost fallback.", exc_info=True)
-		try:
-			self.save()
-		except (AttributeError, TypeError):
-			logger.debug("Unable to persist PP boost state.", exc_info=True)
-		return True
+		return PokemonPPCapacity.apply(self, move_name, maximize=count == 3)
 
 
 class EncounterPokemon(BasePokemon):

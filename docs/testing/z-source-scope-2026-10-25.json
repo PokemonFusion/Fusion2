@@ -1,0 +1,51 @@
+{
+  "issue": 864,
+  "date": "2026-10-25",
+  "source_commit": "8341564",
+  "status": "design/classification only; no runtime or world changes",
+  "ordinary_sources": 862,
+  "classifications": {
+    "special_or_variable_source_review": 263,
+    "ordinary_damage_with_native_level_learning": 269,
+    "unreviewed_status_bonus": 227,
+    "ordinary_damage_native_access_unresolved": 41,
+    "status_without_reference_z_bonus_excluded": 34,
+    "accepted_generic_or_status": 28
+  },
+  "accepted_mappings": 44,
+  "accepted_signatures": 16,
+  "followups": [
+    {
+      "issue": 910,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/910",
+      "sources": "Only the six type-matched crystal/source pairs in the linked table: Thunderbolt (Electric, Pikachu native level-learning example); Ice Beam (Ice, Lapras native level-learning example); Energy Ball (Grass, Voltorb-Hisui native level-learning example); Psychic (Psychic, Kadabra native level-learning example); Shadow Ball (Ghost, Gastly native level-learning example); Sludge Bomb (Poison, Grimer native level-learning example). Use pinned powers/categories/targets or exact status bonuses. No metadata-wide enablement; ordinary source/dex rows and16 signature fingerprints unchanged. Actual native obtain/teach/slots, buy/hold/discover/+zmove, single/double target/effect/PP once/reusable crystal/side budget. No secondary/spread/self carryover. Prevention/Protect/immunity/zero/stale PP/custody/native/suppression, queue/rollback/reconnect/end and #863/existing42/native-pair regressions.",
+      "dependencies": [
+        864,
+        863
+      ]
+    },
+    {
+      "issue": 911,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/911",
+      "sources": "Only the six type-matched crystal/source pairs in the linked table: Body Slam (Normal, Snorlax native level-learning example); Crunch (Dark, Arbok native level-learning example); Dragon Claw (Dragon, Axew native level-learning example); Earthquake (Ground, Diglett native level-learning example); Rock Slide (Rock, Growlithe-Hisui native level-learning example); Iron Head (Steel, Aron native level-learning example). Use pinned powers/categories/targets or exact status bonuses. No metadata-wide enablement; ordinary source/dex rows and16 signature fingerprints unchanged. Actual native obtain/teach/slots, buy/hold/discover/+zmove, single/double target/effect/PP once/reusable crystal/side budget. No secondary/spread/self carryover. Prevention/Protect/immunity/zero/stale PP/custody/native/suppression, queue/rollback/reconnect/end and #863/existing42/native-pair regressions.",
+      "dependencies": [
+        864,
+        863
+      ]
+    },
+    {
+      "issue": 912,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/912",
+      "sources": "Only the six type-matched crystal/source pairs in the linked table: Recover (Normal, Starmie native level-learning example); Roost (Flying, Pidgeot native level-learning example); Protect (Normal, Pelipper native level-learning example); Toxic (Poison, Clodsire native level-learning example); Thunder Wave (Electric, Mareep native level-learning example); Synthesis (Grass, Bulbasaur native level-learning example). Use pinned powers/categories/targets or exact status bonuses. No metadata-wide enablement; ordinary source/dex rows and16 signature fingerprints unchanged. Actual native obtain/teach/slots, buy/hold/discover/+zmove, single/double target/effect/PP once/reusable crystal/side budget. No secondary/spread/self carryover. Prevention/Protect/immunity/zero/stale PP/custody/native/suppression, queue/rollback/reconnect/end and #863/existing42/native-pair regressions.",
+      "dependencies": [
+        864,
+        863
+      ]
+    }
+  ],
+  "documents": {
+    "docs/design/z-source-batches.md": "91e7ede470da029bfddb9e161db00d3d508a4f01b283c8a70022b918265b96a2",
+    "docs/design/z-source-coverage-2026-10-25.json": "15b0e4f0f7f982801acc3b44c4f97b484b907bc842b0b1b315ac05f137eef014"
+  },
+  "limit": "Native level metadata is not installed world acquisition; all unselected sources remain deferred."
+}

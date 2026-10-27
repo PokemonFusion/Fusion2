@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
+from utils.character_reads import owned_characters
 
 from utils.character_profiles import (
     ProfileError,
@@ -33,10 +34,7 @@ def _character_id(character):
 
 
 def account_profile_characters(account) -> list:
-    try:
-        return _as_list(account.characters)
-    except Exception:
-        return []
+    return owned_characters(account)
 
 
 def character_label(character) -> str:
@@ -52,6 +50,7 @@ def select_profile_character(account, character_id=None):
         for character in characters:
             if str(_character_id(character)) == str(character_id):
                 return character
+        return None
 
     return characters[0]
 

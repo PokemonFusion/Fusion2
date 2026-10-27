@@ -1,0 +1,707 @@
+{
+  "completed_utc": "2026-10-20T19:28:57.042581+00:00",
+  "base_commit": "af0785018316d1da60ceec94998b67d253ad91d5",
+  "local_only": true,
+  "downloads": false,
+  "migrations": false,
+  "committed_or_pushed": false,
+  "confirmed_game_defects_fixed": 2,
+  "diagnoses": [
+    {
+      "kind": "confirmed_game_defect",
+      "subject": "Native form display-name checkpoints",
+      "cause": "SpeciesName is a str subclass. Evennia stored it as an iterable SaverList, corrupting restored Ogerpon/Terapagos display names and causing a waiting-message TypeError.",
+      "fix": "Store top-level names and nested string subclasses as plain text before saving Attributes.",
+      "proof": "Fresh live reproduction, failing disposable PostgreSQL regression, all four Ogerpon forms and Terapagos pass repeat rebuilds; live Hearthflame also passes a real reload."
+    },
+    {
+      "kind": "confirmed_game_defect",
+      "subject": "Weather and terrain after restore",
+      "cause": "The checkpoint retained field identifiers and durations but omitted runtime handlers; restored counters stopped advancing.",
+      "fix": "Reconnect handlers and the weather-state alias without replaying field Start hooks or resetting timers.",
+      "proof": "Fresh live and PostgreSQL reproductions; sun/rain/electric/grassy expiry including eight-turn item extensions; live sun/electric expiry through real reload."
+    },
+    {
+      "kind": "fixture_repair",
+      "subject": "Two PostgreSQL cleanup errors",
+      "cause": "Transport-only room/player wrappers had id but lacked pk, which native post-battle item cleanup now uses.",
+      "fix": "Expose real database primary keys on those integration fixtures; no cleanup or reward code weakened."
+    },
+    {
+      "kind": "runner_or_fixture_diagnoses",
+      "subject": "Observation and orchestration false flags",
+      "details": [
+        "Detach nested Evennia saver mappings to JSON instead of repr text.",
+        "Normalize persisted lowercase inventory item identifiers when counting resources.",
+        "Read field duration from the actual pseudo-weather entry.",
+        "Persist the test nickname before expecting the owned-model nickname after restore.",
+        "Compare public metadata only across a quiet disposable-suite run; intentional concurrent live QA legitimately advances battle IDs.",
+        "Keep pytest temporary fixtures outside the artifact folder to preserve the manifest-boundary test precondition. Focused safety tests and the full suite were rerun."
+      ]
+    }
+  ],
+  "source_changes": [
+    "pokemon/battle/_shared.py",
+    "pokemon/battle/battledata.py",
+    "pokemon/battle/logic.py",
+    "tests/integration/battle_recovery_cases.py"
+  ],
+  "live_recovery": [
+    {
+      "key": "partial-reconnect",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "partial-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "concurrent-ten-turns",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "invalid-preserves-queued",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "doubles-reconnect",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "doubles-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "revive-reconnect",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "revive-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "ether-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "potion-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "switch-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "fly-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "herb-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "booster-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "weather-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "tera-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "terminal-reconnect-retry",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "partial-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "doubles-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "ether-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "fly-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "revive-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "weather-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "terrain-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "terrain-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "booster-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "tera-teal-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "tera-wellspring-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "tera-cornerstone-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "tera-terapagos-rebuild",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    },
+    {
+      "key": "tera-real-reload",
+      "status": "passed",
+      "cleanup": {
+        "fallback": false,
+        "clear": true
+      }
+    }
+  ],
+  "live_recovery_audit": {
+    "audited_passes": 31,
+    "actual_local_reloads": 9,
+    "ordinary_commands": 262,
+    "snapshots": 184,
+    "natural_reward_replay_passed": true,
+    "pinned_files_unchanged": 1113,
+    "errors": [],
+    "evidence": [
+      {
+        "key": "partial-reconnect",
+        "evidence_sha256": "800cff37e123473456d7ef3ffe9e400d8c9392c5e38e443240f662567205fc80",
+        "ordinary_commands": 6,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "partial-rebuild",
+        "evidence_sha256": "952dd63a3993574a61165b6ad0208566e3b90a7f53674edea2d8cc4f6c182292",
+        "ordinary_commands": 6,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "concurrent-ten-turns",
+        "evidence_sha256": "e806d7cf8ddfb0ffa14df53cef27525322e24a460857a48ae143f9a9584988d0",
+        "ordinary_commands": 23,
+        "snapshots": 11,
+        "actual_reloads": 0
+      },
+      {
+        "key": "invalid-preserves-queued",
+        "evidence_sha256": "aefcf218dd63f970964806ed7ba4b4dec5ed80edcf838634bf645a5d64f3b2d2",
+        "ordinary_commands": 8,
+        "snapshots": 6,
+        "actual_reloads": 0
+      },
+      {
+        "key": "doubles-reconnect",
+        "evidence_sha256": "c6453acc3589d3a9d856644c207652f99d289dc6dcb3cda46bed7285546163af",
+        "ordinary_commands": 8,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "doubles-rebuild",
+        "evidence_sha256": "09c1829534b98e8b8a238eeff7ee038b55ddc0c2849f89d6f4932a2ae081a6dd",
+        "ordinary_commands": 8,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "revive-reconnect",
+        "evidence_sha256": "cd3df376639acee44370439ccac3386dfe93837a0048f81fa8949c1b87bd51cd",
+        "ordinary_commands": 6,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "revive-rebuild",
+        "evidence_sha256": "5fd5e11abd8c6babc3b032d8cdfca2c3b4c9670418ea40632fbbcea60a5fdee6",
+        "ordinary_commands": 6,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "ether-rebuild",
+        "evidence_sha256": "6a6d6836d6b08218a183f259def1922c893441845ea05b8c642aa5e42f81428f",
+        "ordinary_commands": 6,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "potion-rebuild",
+        "evidence_sha256": "9e5497ba5115bb54c8c777dd46d3f9f721217dfc3902034b17399f86c014a769",
+        "ordinary_commands": 6,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "switch-rebuild",
+        "evidence_sha256": "1ab00ae75025a01627db8e2cceae50b8769a4e15986416a4e3912f1793ce1ce7",
+        "ordinary_commands": 5,
+        "snapshots": 4,
+        "actual_reloads": 0
+      },
+      {
+        "key": "fly-rebuild",
+        "evidence_sha256": "8fafdf6d4aeb92dbc884ac0530c333e82466187107e43efb090205cd711579e7",
+        "ordinary_commands": 7,
+        "snapshots": 4,
+        "actual_reloads": 0
+      },
+      {
+        "key": "herb-rebuild",
+        "evidence_sha256": "dd7aad64b5225c08b94238181b365a3b9ff970859fb46fc4b04ff68f899144fe",
+        "ordinary_commands": 7,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "booster-rebuild",
+        "evidence_sha256": "46063e2962c8c914bfb73456b7cd42cabef69f799a84533f337feb4d4bea6429",
+        "ordinary_commands": 5,
+        "snapshots": 3,
+        "actual_reloads": 0
+      },
+      {
+        "key": "weather-rebuild",
+        "evidence_sha256": "16afa19ad3ee44c4d7097b5766e52120c4d289b5dfb604c63f3efb4219fb9ca1",
+        "ordinary_commands": 13,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "tera-rebuild",
+        "evidence_sha256": "8f861032538a370eca64b7ce2fd176d85c77418b98bf5ee6486fba0b16d62119",
+        "ordinary_commands": 9,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "terminal-reconnect-retry",
+        "evidence_sha256": "2db388bf182c50cfab1f6b3c67998fd748bc958cc1ea0c7f7341e06575bc2948",
+        "ordinary_commands": 11,
+        "snapshots": 5,
+        "actual_reloads": 0
+      },
+      {
+        "key": "partial-real-reload",
+        "evidence_sha256": "d018f43cfe97ec3a7675715c2ecd59bfa5ef1595d0e94951068b6430173b06b3",
+        "ordinary_commands": 6,
+        "snapshots": 6,
+        "actual_reloads": 1
+      },
+      {
+        "key": "doubles-real-reload",
+        "evidence_sha256": "d5db7de6d058c84b20f5ced54ced5c05b16c8417166f8482195f08cc9578e0c8",
+        "ordinary_commands": 8,
+        "snapshots": 6,
+        "actual_reloads": 1
+      },
+      {
+        "key": "ether-real-reload",
+        "evidence_sha256": "350fee94537f40261f3e7909db370f1395536d4e1fc7b9d1feb8c4c64873722e",
+        "ordinary_commands": 6,
+        "snapshots": 6,
+        "actual_reloads": 1
+      },
+      {
+        "key": "fly-real-reload",
+        "evidence_sha256": "30a0bf22b9e24c981ec6b37341255a9802f8d946873b3c81ec25943daa4469be",
+        "ordinary_commands": 7,
+        "snapshots": 5,
+        "actual_reloads": 1
+      },
+      {
+        "key": "revive-real-reload",
+        "evidence_sha256": "210e289818f0d19eb42bc0df1a1c5bda1b8be5dab8d03631edb0738925eef29e",
+        "ordinary_commands": 6,
+        "snapshots": 6,
+        "actual_reloads": 1
+      },
+      {
+        "key": "weather-real-reload",
+        "evidence_sha256": "93586ee04adfc41deb245619866ac438874e33e5179cb0f17678e3181b4427b2",
+        "ordinary_commands": 13,
+        "snapshots": 8,
+        "actual_reloads": 1
+      },
+      {
+        "key": "terrain-rebuild",
+        "evidence_sha256": "edf7f077b6bef17896b39e53ad96eb7c9ccdde81f6f9312d02f3c802a1135088",
+        "ordinary_commands": 13,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "terrain-real-reload",
+        "evidence_sha256": "f65750a45bc27d03730baa24c8881b8fe3d65815c5a694bfd53ee2b943e0f059",
+        "ordinary_commands": 13,
+        "snapshots": 8,
+        "actual_reloads": 1
+      },
+      {
+        "key": "booster-real-reload",
+        "evidence_sha256": "e0e4ef0ec350f77da3f1598273c57cdb618b2372072f7b26e4b90c2f7eaef941",
+        "ordinary_commands": 5,
+        "snapshots": 4,
+        "actual_reloads": 1
+      },
+      {
+        "key": "tera-teal-rebuild",
+        "evidence_sha256": "734db71f1d210def43dc39e01f436a246a77505d5e8241bf9eb35a78bc2c5beb",
+        "ordinary_commands": 9,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "tera-wellspring-rebuild",
+        "evidence_sha256": "2b4bd91d9b9cc94019152a8ef965307948e76104d7873f91a56a12e9e4977a7d",
+        "ordinary_commands": 9,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "tera-cornerstone-rebuild",
+        "evidence_sha256": "b829ca43715194d022d942a2cc95e5053a1eb29915ba3380ff098d8de0456864",
+        "ordinary_commands": 9,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "tera-terapagos-rebuild",
+        "evidence_sha256": "520670084ac312c41e99947aaea32dda6fe05c4f0b481028c983fbea8b06f6ba",
+        "ordinary_commands": 9,
+        "snapshots": 7,
+        "actual_reloads": 0
+      },
+      {
+        "key": "tera-real-reload",
+        "evidence_sha256": "639d43e323ebcc437333f52f3179b6abb604f80c0e5dd2b931788727b26f2c77",
+        "ordinary_commands": 9,
+        "snapshots": 8,
+        "actual_reloads": 1
+      }
+    ]
+  },
+  "natural_reward_replay": {
+    "key": "natural-wild-reward-reconnect-concurrent-retry",
+    "status": "passed",
+    "exp_gain": 36,
+    "ev_gain": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "encounters_deleted": true,
+    "cleanup": {
+      "fallback": false,
+      "clear": true
+    }
+  },
+  "pilot": {
+    "audited_passes": 20,
+    "errors": []
+  },
+  "postgres_suites": [
+    {
+      "suite": "battle_recovery",
+      "exit_code": 0,
+      "seconds": 23.61,
+      "tests": 36
+    },
+    {
+      "suite": "player_doubles",
+      "exit_code": 0,
+      "seconds": 14.92,
+      "tests": 10
+    },
+    {
+      "suite": "trainer_challenge",
+      "exit_code": 0,
+      "seconds": 4.89,
+      "tests": 10
+    },
+    {
+      "suite": "capture_ether",
+      "exit_code": 0,
+      "seconds": 5.16,
+      "tests": 21
+    },
+    {
+      "suite": "capture_pp_item",
+      "exit_code": 0,
+      "seconds": 4.62,
+      "tests": 16
+    },
+    {
+      "suite": "remaining_item",
+      "exit_code": 0,
+      "seconds": 4.31,
+      "tests": 8
+    },
+    {
+      "suite": "recovery",
+      "exit_code": 0,
+      "seconds": 3.58,
+      "tests": 9
+    },
+    {
+      "suite": "progression",
+      "exit_code": 0,
+      "seconds": 4.08,
+      "tests": 11
+    },
+    {
+      "suite": "terastallization",
+      "exit_code": 0,
+      "seconds": 8.89,
+      "tests": 6
+    },
+    {
+      "suite": "status_item",
+      "exit_code": 0,
+      "seconds": 3.44,
+      "tests": 9
+    },
+    {
+      "suite": "cloud_gameplay",
+      "exit_code": 0,
+      "seconds": 6.45,
+      "tests": 9
+    },
+    {
+      "suite": "adventure_lifecycle",
+      "exit_code": 0,
+      "seconds": 4.22,
+      "tests": 9
+    }
+  ],
+  "postgres_tests": 154,
+  "amp_wire_tests": 7,
+  "all_options_tests": 8213,
+  "automated_gates": [
+    {
+      "gate": "all-options",
+      "exit_code": 0,
+      "seconds": 361.45
+    },
+    {
+      "gate": "amp-wire",
+      "exit_code": 0,
+      "seconds": 0.73
+    }
+  ],
+  "runtime_modules": 50,
+  "runtime_functions": 2738,
+  "protected_data": {
+    "protected_rows": 7157,
+    "unchanged": true,
+    "changes": []
+  },
+  "accounts": {
+    "accounts": [
+      {
+        "label": "a",
+        "account_id": 76,
+        "character_id": 196,
+        "inactive": true,
+        "password_unusable": true,
+        "staff_removed": true
+      },
+      {
+        "label": "b",
+        "account_id": 77,
+        "character_id": 197,
+        "inactive": true,
+        "password_unusable": true,
+        "staff_removed": true
+      },
+      {
+        "label": "staff",
+        "account_id": 78,
+        "character_id": 198,
+        "inactive": true,
+        "password_unusable": true,
+        "staff_removed": true
+      }
+    ],
+    "credential_file_removed": true,
+    "remaining_qa_owned_pokemon": 1
+  },
+  "secret_scan": {
+    "checked_utc": "2026-10-20T19:26:14.997667+00:00",
+    "files_scanned": 2519,
+    "matches": [],
+    "errors": []
+  },
+  "source_files_pinned": 1113,
+  "unrelated_original_files_unchanged": 1109,
+  "all_disposable_schemas_removed": true,
+  "registry": {
+    "original_room_registry_restored_exactly": true,
+    "previous_registry_sha256": "391c9d054700f8cb43d21633be5286c901e10775005ae9441fb4db5fd6327c61",
+    "restored_registry_sha256": "391c9d054700f8cb43d21633be5286c901e10775005ae9441fb4db5fd6327c61",
+    "authorized_qa_battle_counter_retained": true,
+    "counter_sha256": "5c527c9cb6978ea327f065efe4e4be042648962d54974e28a6c63c3f700c51cd",
+    "protected_rows_unchanged": true,
+    "live_cache_refreshed": true,
+    "live_mapping": {}
+  },
+  "evidence_root": "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\battle-recovery-live-20261020",
+  "backup": {
+    "path": "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\battle-recovery-live-20261020\\before-qa.dump",
+    "bytes": 471212,
+    "sha256": "c46f89a8df38ba0280249d4854afff6f1b3d476a26f56bc549f32869c0cd0151",
+    "list_verified": true
+  },
+  "remaining_scope": [
+    "Abrupt process termination/power-loss and cold-boot acceptance were not run on the live game.",
+    "These bounded action/claim races are not sustained load or many-room concurrency testing.",
+    "The full species/move/ability/item catalog was not rerun after these recovery changes.",
+    "Remote deployment, migration rehearsal and browser-client acceptance remain separate."
+  ]
+}

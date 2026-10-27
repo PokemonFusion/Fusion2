@@ -1,0 +1,25 @@
+{
+  "issues": [
+    865,
+    885
+  ],
+  "date": "2026-10-25",
+  "source_candidate": "ddc56bfaf32261e47551ad893e0592fca3e86311",
+  "ordinary_learning_source": "pokemon/data/generation.py::get_valid_moves",
+  "photon_level_sources": {
+    "72": 9,
+    "50": 7
+  },
+  "accepted_at": {
+    "49": false,
+    "50": true,
+    "71": true,
+    "72": true
+  },
+  "released_observation": "#860 actual level50 native captures/knowledge/active Photon slots; no move or Pokemon grant",
+  "selected_policy": "Preserve legitimate existing ordinary cross-generation native learning; no new minimum72 gate. Require actual native learned/current active Photon distinct from the bound form slot.",
+  "previous_design_sha256_lf": "04748326c04a026e349461c787bb45260f86229ec20fb8d21115c3e4144bd1b2",
+  "current_design_sha256_lf": "4a90f7fc91115d3c627e5e201f75aa7cc751ead44ead9acfd21ac8a3d719ca8a",
+  "scope_limit": "Future Ultra design/follow-up correction only; no current runtime enablement, definition, migration or stock.",
+  "historical_receipt": "Initial ddc56bf scope decision/hash receipt remains immutable; this correction supersedes only Photon preparation wording."
+}

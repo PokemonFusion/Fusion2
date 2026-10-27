@@ -92,8 +92,8 @@ class NameResolutionCases(unittest.TestCase):
         moveset_manager.node_edit(self.player, "Water Gun")
         self.assertEqual(owned.active_moveset.slots.get().move_id, original)
         self.assertEqual(owned.activemoveslot_set.get().move_id, original)
-        self.assertEqual(owned.pp_boosts.get(move_id=original).bonus_pp, 1)
-        self.assertEqual(owned.activemoveslot_set.values_list("current_pp", flat=True).get(), 26)
+        self.assertEqual(owned.pp_boosts.get(move_id=original).bonus_pp, 5)
+        self.assertEqual(owned.activemoveslot_set.values_list("current_pp", flat=True).get(), 30)
 
     def test_moveset_edit_rejects_equivalent_duplicates_before_writing(self):
         """Two spellings of the same learned move cannot occupy two slots."""

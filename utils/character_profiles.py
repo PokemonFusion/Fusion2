@@ -60,6 +60,11 @@ def clean_field_text(text: str) -> str:
 
 
 def _raw_fields(character):
+    from utils.character_reads import persistent_character
+    if persistent_character(character):
+        from pokemon.services.battle_rewards import BattleRewards
+        raw = BattleRewards.stored_attribute(character, PROFILE_ATTR, default={})
+        return raw if isinstance(raw, Mapping) else {}
     db = getattr(character, "db", None)
     raw = getattr(db, PROFILE_ATTR, None) if db is not None else None
     return raw if isinstance(raw, Mapping) else {}
@@ -70,7 +75,7 @@ def get_profile_fields(character) -> OrderedDict[str, dict]:
 
     fields: OrderedDict[str, dict] = OrderedDict()
     for raw_key, raw_value in _raw_fields(character).items():
-        if isinstance(raw_value, dict):
+        if isinstance(raw_value, Mapping):
             label = clean_field_label(raw_value.get("label") or raw_key)
             text = clean_field_text(raw_value.get("text") or "")
             private = bool(raw_value.get("private", False))
@@ -154,6 +159,11 @@ def set_profile_field_privacy(character, key_or_label: str, private: bool) -> di
 
 
 def _same_character(left, right) -> bool:
+    left_meta, right_meta = getattr(left, "_meta", None), getattr(right, "_meta", None)
+    if left_meta or right_meta:
+        from utils.character_reads import persistent_character
+        if not persistent_character(left) or not persistent_character(right):
+            return False
     if left is right:
         return True
     for attr in ("id", "dbref"):
@@ -165,6 +175,10 @@ def _same_character(left, right) -> bool:
 
 
 def _owns_character(account, character) -> bool:
+    meta = getattr(account, "_meta", None)
+    if meta:
+        from utils.character_reads import owned_characters
+        return any(_same_character(candidate, character) for candidate in owned_characters(account))
     characters = getattr(account, "characters", None)
     if characters is None:
         return False

@@ -96,14 +96,18 @@ class HuntSystem:
 			hunter.ndb.field_ability = getattr(party[0], "ability", None)
 
 	def _check_itemfinder(self, hunter) -> Optional[str]:
-		"""Return an item message if itemfinder triggers."""
+		"""Use only the explicitly authored Potion source; never report a phantom item."""
 		room = self.room
 		if getattr(room.db, "noitem", False):
 			return None
-		rate = getattr(room.db, "itemfinder_rate", 0)
-		if random.randint(1, 100) <= rate:
-			return "You found a mysterious item!"  # placeholder
-		return None
+		if not getattr(room.db, "itemfinder_item", None):
+			return None
+		from pokemon.services.itemfinder import ItemfinderClaim
+
+		try:
+			return ItemfinderClaim(hunter, room, rng=random).claim()
+		except Exception:
+			return "The item search could not be saved. No item was granted; try again."
 
 	def _as_list(self, value) -> List[str]:
 		if not value:
@@ -236,7 +240,13 @@ class HuntSystem:
 			self.spawn_callback(hunter, result)
 
 		try:
-			poke = create_battle_pokemon(selected_name, level, is_wild=True)
+			from pokemon.services.wild_held_items import WildHeldItems
+
+			held_item = WildHeldItems.select(selected_name, selected_entry, random)
+			if getattr(self.room.db, "noitem", False):
+				held_item = ""
+			options = {"held_item": held_item} if held_item else {}
+			poke = create_battle_pokemon(selected_name, level, is_wild=True, **options)
 		except ValueError as err:
 			if is_species_not_found_error(err):
 				return species_not_found_message(selected_name)

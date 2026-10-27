@@ -8,45 +8,47 @@ from evennia.utils.evtable import EvTable
 from pokemon.dex import MOVEDEX, POKEDEX
 from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
 from pokemon.models.stats import (
-        DISPLAY_STAT_MAP,
-        STAT_KEY_MAP,
-        exp_for_level,
-        get_trainer_xp,
-        level_for_exp,
-        next_trainer_level_xp,
-        trainer_level_for_xp,
+	DISPLAY_STAT_MAP,
+	STAT_KEY_MAP,
+	exp_for_level,
+	get_trainer_xp,
+	level_for_exp,
+	next_trainer_level_xp,
+	trainer_level_for_xp,
 )
 from pokemon.utils.pokemon_like import PokemonLike
 from utils.ansi import ansi
 from utils.ansi_widgets import (
-        THEME as WIDGET_THEME,
-        apply_screen_reader,
-        bar,
-        chip,
-        get_theme,
-        header_box,
-        infer_hp_phrase,
-        infer_xp_phrase,
-        join_items,
-        kv_row,
-        money_line,
-        section_divider,
-        stat_summary_row,
-        status_code,
-        themed_line,
-        type_chip,
+	THEME as WIDGET_THEME,
 )
-from utils.inventory_view import (
-        gather_inventory_pairs,
-        format_inventory_by_category,
-        format_inventory_table,
+from utils.ansi_widgets import (
+	apply_screen_reader,
+	bar,
+	chip,
+	get_theme,
+	header_box,
+	infer_hp_phrase,
+	infer_xp_phrase,
+	join_items,
+	kv_row,
+	money_line,
+	section_divider,
+	stat_summary_row,
+	status_code,
+	themed_line,
+	type_chip,
 )
 from utils.display_helpers import (
-        format_move_details,
-        get_egg_description,
-        get_status_effects,
+	format_move_details,
+	get_egg_description,
+	get_status_effects,
 )
 from utils.faction_utils import get_faction_and_rank
+from utils.inventory_view import (
+	format_inventory_by_category,
+	format_inventory_table,
+	gather_inventory_pairs,
+)
 from utils.xp_utils import get_display_xp, get_next_level_xp
 
 __all__ = [
@@ -148,6 +150,7 @@ def _active_fusion_sheet(character):
         return SimpleNamespace(
                 species=owned.species, level=battle.level, hp=battle.hp, max_hp=battle.max_hp,
                 status=getattr(owned, "status", ""), types=battle.types, nature=owned.nature,
+                trained_stat_nature=getattr(owned, "trained_stat_nature", None),
                 ability=owned.ability, held_item=owned.held_item,
                 total_exp=getattr(owned, "_pf2_fusion_xp", owned.total_exp),
                 growth_rate=_growth_from_pokemon(owned), stats=stats,
@@ -168,6 +171,8 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
 
         width = 60
         char = character
+        from utils.character_reads import existing_trainer, refresh_character_reads
+        refresh_character_reads(char)
         db = getattr(char, "db", SimpleNamespace())
         fusion = _active_fusion_sheet(char) if getattr(db, "fusion_id", None) else None
 
@@ -222,6 +227,7 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
         faction_chip = _chip(faction_display, "None", "|C")
 
         nature = getattr(db, "nature", getattr(char, "nature", None)) or "—"
+        trained_stat_nature = getattr(fusion, "trained_stat_nature", None) if fusion else None
         ability = getattr(db, "ability", getattr(char, "ability", None)) or "—"
         held_item = (
                 getattr(db, "held_item", None)
@@ -355,7 +361,7 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 return None
 
         wallet_value = _first_attr("money", "wallet", "cash", "credits", "pokedollars")
-        trainer = getattr(char, "trainer", None)
+        trainer = existing_trainer(char)
         if trainer is not None and getattr(trainer, "money", None) is not None:
                 wallet_value = trainer.money
         bank_value = _first_attr("bank", "savings", "account")
@@ -428,6 +434,9 @@ def display_trainer_sheet(character, mode: str | None = None) -> str:
                 kv_row("Nature", str(nature), "Ability", str(ability), width=width, theme=palette, screen_reader=screen_reader),
                 kv_row("Held Item", str(held_item), width=width, theme=palette, screen_reader=screen_reader),
         ]
+        if trained_stat_nature:
+                traits_block.append(kv_row("Mint stats", str(trained_stat_nature), "Genetic Nature", str(nature),
+                                           width=width, theme=palette, screen_reader=screen_reader))
 
         vitals_block = [
                 section_divider("Vitals", width=width, theme=palette, screen_reader=screen_reader),
@@ -606,6 +615,13 @@ def _maybe_stat_breakdown(pokemon: PokemonLike) -> str | None:
 		table.add_row(*row_iv)
 	if row_ev:
 		table.add_row(*row_ev)
+	from pokemon.hyper_training import HyperTraining
+
+	trained = HyperTraining.trained(pokemon)
+	if trained and ivs:
+		table.add_row(*_row(HyperTraining.effective(ivs, pokemon), f"{THEME['muted']}Effective IV|n"))
+		labels = [HyperTraining.labels[HyperTraining.stats.index(stat)] for stat in trained]
+		return str(table) + "\nHyper Trained: " + ", ".join(labels) + ". IV row remains genetic."
 	return str(table)
 
 
@@ -615,13 +631,13 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	Parameters
 	----------
 	caller : object
-	    The calling object (unused but kept for API compatibility).
+		The calling object (unused but kept for API compatibility).
 	pokemon : PokemonLike
-	    The Pokémon to display.
+		The Pokémon to display.
 	slot : int or None, optional
-	    The party slot for labeling.
+		The party slot for labeling.
 	mode : str, optional
-	    One of ``"full"``, ``"brief"`` or ``"moves"``.
+		One of ``"full"``, ``"brief"`` or ``"moves"``.
 	"""
 	name = getattr(pokemon, "name", "Unknown")
 	species = getattr(pokemon, "species", name)
@@ -650,7 +666,11 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	held = getattr(pokemon, "held_item", None) or "Nothing"
 
 	xp_to = max(0, (next_xp or 0) - (xp or 0))
-	xp_pct = 0 if not next_xp else int(min(100, max(0, (xp / next_xp) * 100)))
+	growth = getattr(pokemon, "growth_rate", "medium_fast")
+	xp_floor = exp_for_level(level, growth)
+	xp_span = (next_xp or 0) - xp_floor
+	xp_pct = int(min(100, max(0, (xp - xp_floor) / xp_span * 100))) if xp_span > 0 else 0
+	xp_progress = "MAX LEVEL" if level >= 100 else f"{xp_pct}% to next, {xp_to} xp"
 
 	top = EvTable(border="none")
 	top.add_row(
@@ -661,9 +681,22 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 	top.add_row(
 		f"{THEME['muted']}Level|n: {THEME['value']}{level}|n    "
 		f"{THEME['muted']}XP|n: {THEME['value']}{xp}|n/{next_xp} "
-		f"{THEME['muted']}({xp_pct}% to next, {xp_to} xp)|n"
+		f"{THEME['muted']}({xp_progress})|n"
 	)
 	lines.append(str(top))
+	identifier = getattr(pokemon, "unique_id", None)
+	if identifier:
+		lines.append(f"{THEME['muted']}ID|n: {THEME['value']}{identifier}|n")
+	from pokemon.evolution_forms import AlcremieEvolution
+
+	appearance = AlcremieEvolution.describe(pokemon)
+	if appearance:
+		lines.append(f"{THEME['muted']}Appearance|n: {THEME['value']}{appearance}|n")
+	from pokemon.services.leader_crest import LeaderCrestProgress
+
+	leader_progress = LeaderCrestProgress.describe(caller, pokemon)
+	if leader_progress:
+		lines.append(leader_progress)
 
 	lines.append(
 		f"{THEME['muted']}HP|n: {THEME['value']}{hp}|n/{max_hp} {_hp_bar(hp, max_hp)}   "
@@ -674,6 +707,9 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 		f"{THEME['muted']}Ability|n: {THEME['value']}{ability}|n   "
 		f"{THEME['muted']}Held|n: {THEME['value']}{held}|n"
 	)
+	trained_stat_nature = getattr(pokemon, "trained_stat_nature", None)
+	if trained_stat_nature:
+		lines.append(f"{THEME['muted']}Mint stats|n: {THEME['value']}{trained_stat_nature}|n (genetic Nature remains {nature})")
 
 	stats = {STAT_KEY_MAP.get(k, k): v for k, v in get_stats(pokemon).items()}
 	headers = [
@@ -719,20 +755,24 @@ def display_pokemon_sheet(caller, pokemon: PokemonLike, slot: int | None = None,
 			except Exception:
 				qs = list(slots_qs)
 		bonuses = getattr(pokemon, "pp_bonuses", {}) or {}
+		get_max_pp = getattr(pokemon, "get_max_pp", None)
 		for slot_obj in qs[:4]:
 			move_obj = getattr(slot_obj, "move", None)
 			if not move_obj:
 				continue
 			mname = getattr(move_obj, "name", str(move_obj))
 			cur_pp = getattr(slot_obj, "current_pp", None)
-			norm = re.sub(r"[\s'\-]", "", mname.lower())
-			dex_entry = MOVEDEX.get(norm)
-			base_pp = getattr(dex_entry, "pp", None)
-			if base_pp is None and isinstance(dex_entry, dict):
-				base_pp = dex_entry.get("pp")
 			max_pp = None
-			if base_pp is not None:
-				max_pp = int(base_pp) + int(bonuses.get(norm, 0))
+			if callable(get_max_pp):
+				max_pp = get_max_pp(mname)
+			else:
+				norm = re.sub(r"[\s'\-]", "", mname.lower())
+				dex_entry = MOVEDEX.get(norm)
+				base_pp = getattr(dex_entry, "pp", None)
+				if base_pp is None and isinstance(dex_entry, dict):
+					base_pp = dex_entry.get("pp")
+				if base_pp is not None:
+					max_pp = int(base_pp) + int(bonuses.get(norm, 0))
 			if cur_pp is None:
 				cur_pp = max_pp
 			moves_display.append(SimpleNamespace(name=mname, current_pp=cur_pp, max_pp=max_pp))

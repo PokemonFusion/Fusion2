@@ -6,7 +6,7 @@ turn ordering and state tracking rather than full battle logic.
 
 Notes
 -----
-The file :mod:`simulator-doc.txt` from Pokémon Showdown describes the
+The file :mod:`simulator-doc.txt` from PokÃƒÆ’Ã‚Â©mon Showdown describes the
 expected control flow of that engine.  The important parts are included
 here as a reference for future work.  Individual functions below map to
 sections of that pseudocode and currently act as placeholders.
@@ -126,13 +126,7 @@ from ._shared import (
     ensure_movedex_aliases,
     get_raw,
     reset_tempvals,
-)
-from .ai_profiles import AIDebugTrace, attach_ai_debug_trace, build_battle_ai_context
-from .ai_scoring import (
-    candidate_band_for_context,
-    choose_weighted_ai_move,
-    fallback_scored_move,
-    score_ai_moves,
+    snapshot_battle_value,
 )
 from .battledata import (
     _REVEAL_ALL_VIEWERS,
@@ -257,14 +251,7 @@ def _apply_placeholders(
 
 
 def is_self_target(target: str | None) -> bool:
-    """Return ``True`` if ``target`` refers to the user or an ally.
-
-    Moves that nominally affect an adjacent ally are treated as targeting the
-    user when no ally is present, allowing these moves to be exercised in
-    single-Pokémon simulations.  The function tries to delegate to
-    :mod:`pokemon.battle.utils` so there is a single source of truth for this
-    logic, but falls back to a local check if that import is unavailable.
-    """
+    """Return whether the move intrinsically targets its own user."""
 
     try:
         from .utils import is_self_target as util_is_self_target  # type: ignore
@@ -273,13 +260,13 @@ def is_self_target(target: str | None) -> bool:
 
     if util_is_self_target:
         return util_is_self_target(target)
-    return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+    return target == "self"
 
 
 def _resolve_ability(ability):
     """Return an :class:`~pokemon.dex.entities.Ability` for ``ability``.
 
-    Pokémon instances within tests sometimes store their ability as a simple
+    PokÃƒÆ’Ã‚Â©mon instances within tests sometimes store their ability as a simple
     string identifier rather than an :class:`Ability` object.  This helper
     looks up such strings in :data:`pokemon.dex.ABILITYDEX` and returns the
     corresponding instance so callers can safely invoke callbacks.  If the
@@ -340,7 +327,12 @@ def _ability_try_hit_blocks(target, source, move, battle) -> bool:
 
     if target is None or move is None:
         return False
-    ability = _resolve_ability(getattr(target, "ability", None))
+    from .effect_context import EffectContext
+
+    ability = EffectContext.ability(target)
+    ignores = getattr(battle, "_move_ignores_target_ability", None)
+    if callable(ignores) and ignores(source, target, move):
+        return False
     raw = getattr(ability, "raw", {}) or {}
     if not ability or not raw.get("onTryHit"):
         return False
@@ -348,7 +340,9 @@ def _ability_try_hit_blocks(target, source, move, battle) -> bool:
     before_immune = getattr(target, "immune", None)
     try:
         if hasattr(ability, "call"):
-            result = ability.call("onTryHit", target, source, move, battle=battle)
+            state = dict(getattr(target, "ability_state", {}) or {})
+            state["target"] = target
+            result = ability.call("onTryHit", target, source, move, battle=battle, effect_state=state)
         else:
             try:
                 from pokemon.dex.functions import abilities_funcs  # type: ignore
@@ -370,7 +364,7 @@ def _ability_try_hit_blocks(target, source, move, battle) -> bool:
 
 
 def _apply_move_damage(
-    user, target, battle_move: "BattleMove", battle, *, spread: bool = False
+    user, target, battle_move: "BattleMove", battle, *, spread: bool = False, update_hp=True
 ):
     """Construct a temporary :class:`pokemon.dex.entities.Move` from ``battle_move``.
 
@@ -417,8 +411,10 @@ def _apply_move_damage(
     # relevant handlers here before building the temporary :class:`Move`
     # used for damage computation.
 
-    user_ability = _resolve_ability(getattr(user, "ability", None))
-    if user_ability and hasattr(user_ability, "call"):
+    from .effect_context import EffectContext
+
+    user_ability = _resolve_ability(EffectContext.ability(user))
+    if user_ability and hasattr(user_ability, "call") and not getattr(battle_move, "_ability_move_prepared", False):
         try:
             user_ability.call("onModifyMove", battle_move, user=user, target=target, battle=battle)
         except Exception:
@@ -427,11 +423,14 @@ def _apply_move_damage(
             except Exception:
                 pass
 
+    from .effect_context import EffectContext
+
     for owner in (user, target):
-        ability = _resolve_ability(getattr(owner, "ability", None))
+        ability = _resolve_ability(EffectContext.ability(owner))
         if not ability:
             ability = None
-        item = getattr(owner, "item", None) or getattr(owner, "held_item", None)
+        # Suppression keeps the owned item but disables its offensive hooks.
+        item = EffectContext.item(owner)
 
         # onAnyBasePower applies to moves used by any Pokemon on the field.
         new_power = None
@@ -451,6 +450,11 @@ def _apply_move_damage(
                     new_power = None
         if isinstance(new_power, (int, float)):
             battle_move.power = int(new_power)
+
+        # Ordinary offensive hooks belong to the move user. The defender can
+        # still contribute global hooks above and onSourceBasePower below.
+        if owner is not user:
+            continue
 
         # onModifyType may mutate ``battle_move`` in-place.  We attempt to
         # pass the ability's owner when supported but fall back to a simple
@@ -478,17 +482,23 @@ def _apply_move_damage(
         if ability:
             try:
                 new_power = ability.call(
-                    "onBasePower", battle_move.power, user=owner, move=battle_move
+                    "onBasePower", battle_move.power, user=owner, target=target,
+                    attacker=owner, defender=target, move=battle_move, battle=battle
                 )
             except Exception:
                 try:
                     new_power = ability.call("onBasePower", battle_move.power)
                 except Exception:
                     new_power = None
-        if new_power is None and item and hasattr(item, "call"):
+        if isinstance(new_power, (int, float)):
+            battle_move.power = int(new_power)
+        # Ability and held-item power results compose; a no-op ability result
+        # must not skip the item hook (for example Sand Force in clear weather).
+        if item and hasattr(item, "call"):
             try:
                 new_power = item.call(
-                    "onBasePower", battle_move.power, user=owner, move=battle_move
+                    "onBasePower", battle_move.power, user=owner, target=target,
+                    attacker=owner, defender=target, move=battle_move, battle=battle
                 )
             except Exception:
                 try:
@@ -516,7 +526,7 @@ def _apply_move_damage(
             )
             if same_team:
                 for ally in getattr(part, "active", []):
-                    ability = _resolve_ability(getattr(ally, "ability", None))
+                    ability = _resolve_ability(EffectContext.ability(ally))
                     if not ability:
                         continue
                     try:
@@ -561,7 +571,10 @@ def _apply_move_damage(
     # Defensive abilities may further adjust the power of incoming moves via
     # ``onSourceBasePower``.  This hook is separate from ``onBasePower`` above,
     # which applies when the ability's owner uses a move.
-    target_ability = _resolve_ability(getattr(target, "ability", None))
+    target_ability = _resolve_ability(EffectContext.ability(target))
+    ignores_ability = getattr(battle, "_move_ignores_target_ability", None)
+    if callable(ignores_ability) and ignores_ability(user, target, battle_move):
+        target_ability = None
     if target_ability:
         try:
             new_power = target_ability.call(
@@ -580,6 +593,7 @@ def _apply_move_damage(
             battle_move.power = int(new_power)
 
     raw = dict(battle_move.raw)
+    raw["flags"] = dict(getattr(battle_move, "flags", raw.get("flags", {})))
     if battle_move.basePowerCallback:
         raw["basePowerCallback"] = battle_move.basePowerCallback
     if battle_move.damageCallback:
@@ -616,8 +630,14 @@ def _apply_move_damage(
         setattr(move, "raw", raw)
         setattr(move, "flags", dict(raw.get("flags", {}) or {}))
 
-    for attr in ("sourceEffect", "hit", "pp", "pledge_combo"):
-        if attr in raw:
+    for attr in ("multihit", "multihit_type", "parental_bond_hit", "_z_paid"):
+        if hasattr(battle_move, attr):
+            setattr(move, attr, getattr(battle_move, attr))
+
+    for attr in ("sourceEffect", "hit", "pp", "pledge_combo", "ignoreImmunity", "ignore_immunity", "infiltrates"):
+        if attr == "pp" and getattr(battle_move, "pp", None) is not None:
+            setattr(move, attr, battle_move.pp)
+        elif attr in raw:
             setattr(move, attr, raw[attr])
         elif hasattr(battle_move, attr):
             setattr(move, attr, getattr(battle_move, attr))
@@ -634,7 +654,26 @@ def _apply_move_damage(
     if battle_move.onBasePower:
         move.onBasePower = battle_move.onBasePower
 
-    result = apply_damage(user, target, move, battle=battle, spread=spread)
+    move._stellar_boosts = getattr(battle_move, "_stellar_boosts", {})
+    battle_move._stellar_boosts = move._stellar_boosts
+    move._tera_shared_use = True
+    move._engine_secondaries = True
+    from .item_effects import HeldItemRules
+
+    HeldItemRules.apply_gem_power(battle_move)
+    if getattr(battle_move, "_gem_power_applied", False):
+        move.power = battle_move.power
+    hp_before = getattr(target, "hp", 0)
+    damage_options = {"update_hp": False} if not update_hp else {}
+    result = apply_damage(user, target, move, battle=battle, spread=spread, **damage_options)
+    ledger = (getattr(target, "tempvals", {}) or {}).get("last_damaged_by", {})
+    actual_damage = ledger.get("actual_damage", 0) if ledger.get("source") is user and ledger.get("move") is move else max(0, hp_before - getattr(target, "hp", 0))
+    battle_move.total_damage = getattr(battle_move, "total_damage", 0) + actual_damage
+    if actual_damage > 0:
+        HeldItemRules.commit_gem(user, battle_move)
+    from .terastallization import apply_stellar_cost
+
+    apply_stellar_cost(user, battle_move, result)
 
     try:
         move_power = getattr(move, "power", None)
@@ -647,110 +686,12 @@ def _apply_move_damage(
 
 
 def _select_ai_action(
-    participant: "BattleParticipant", active_pokemon, battle: "Battle"
+    participant: "BattleParticipant", active_pokemon, battle: "Battle", *, reserved=(), planned=()
 ) -> Optional[Action]:
-    """Select an AI action for ``active_pokemon``.
+    """Select a scored legal move or bounded voluntary reserve switch."""
+    from .ai_actions import select_ai_action
 
-    This helper consolidates the move and target selection logic used by
-    :meth:`BattleParticipant.choose_action` and
-    :meth:`BattleParticipant.choose_actions`.
-
-    Parameters
-    ----------
-    participant:
-        The :class:`BattleParticipant` controlling ``active_pokemon``.
-    active_pokemon:
-        The Pokémon for which an action should be chosen.
-    battle:
-        The active :class:`Battle` instance providing context.
-
-    Returns
-    -------
-    Optional[Action]
-        The selected action, or ``None`` if no valid move/target exists.
-    """
-
-    ai_context = build_battle_ai_context(participant, active_pokemon, battle)
-    trace = AIDebugTrace(
-        profile_key=ai_context.profile.key,
-        requested_profile_key=ai_context.requested_profile_key,
-        resolved_profile_key=ai_context.profile.key,
-        actor_name=getattr(active_pokemon, "name", None),
-        chosen_intent="safe_damage",
-    )
-
-    moves = getattr(active_pokemon, "moves", [])
-
-    opponents = battle.opponents_of(participant)
-    if not opponents:
-        attach_ai_debug_trace(participant, battle, trace)
-        return None
-
-    opponent = battle.rng.choice(opponents)
-    if not opponent.active:
-        attach_ai_debug_trace(participant, battle, trace)
-        return None
-    trace.target_name = getattr(opponent.active[0], "name", None)
-
-    scored_moves = score_ai_moves(
-        ai_context,
-        list(moves),
-        user=active_pokemon,
-        target=opponent.active[0],
-        movedex=MOVEDEX,
-        raw_getter=get_raw,
-    )
-    selected = choose_weighted_ai_move(scored_moves, rng=battle.rng, context=ai_context)
-    if selected is None:
-        for fallback_move in moves:
-            candidate = fallback_scored_move(
-                fallback_move,
-                movedex=MOVEDEX,
-                raw_getter=get_raw,
-                reason="fallback_first_legal",
-            )
-            if candidate.pp is None or candidate.pp > 0:
-                selected = candidate
-                break
-        if selected is None:
-            selected = fallback_scored_move(
-                SimpleNamespace(name="Flail"),
-                movedex=MOVEDEX,
-                raw_getter=get_raw,
-                reason="fallback_no_usable_moves" if moves else "fallback_no_moves",
-            )
-
-    selection_band = f"candidate_band_{candidate_band_for_context(ai_context):.2f}"
-    for candidate in scored_moves or [selected]:
-        reasons = list(candidate.reasons)
-        if scored_moves and candidate.key == selected.key:
-            insert_at = 1 if reasons[:1] == ["profile_weighted"] else 0
-            reasons.insert(insert_at, selection_band)
-        trace.add_action(candidate.key, candidate.score, *reasons)
-    trace.choose(selected.key, intent="safe_damage")
-
-    move = BattleMove(
-        selected.display_name,
-        key=selected.key,
-        power=selected.power,
-        accuracy=selected.accuracy,
-        priority=selected.priority,
-        type=selected.move_type,
-        raw=dict(selected.raw),
-        pp=selected.pp,
-    )
-    priority = selected.priority
-
-    battle_logger.info("%s chooses %s", participant.name, move.name)
-    attach_ai_debug_trace(participant, battle, trace)
-    return Action(
-        participant,
-        ActionType.MOVE,
-        opponent,
-        move,
-        priority,
-        pokemon=active_pokemon,
-    )
+    return select_ai_action(participant, active_pokemon, battle, logger=battle_logger, reserved=reserved, planned=planned)
 
 
 @dataclass
@@ -860,10 +801,39 @@ class BattleType(Enum):
     SCRIPTED = 3
 
 
+@dataclass(frozen=True)
+class _MoveResultState:
+    """Detached effects used to distinguish a successful move from no change."""
+
+    hp: int
+    boosts: dict
+    status: Any
+    volatiles: dict
+    item: str
+    ability: str
+
+    @classmethod
+    def capture(cls, pokemon):
+        """Copy condition state without following live battler or ORM graphs."""
+        from pokemon.utils.boosts import STAT_KEY_MAP
+
+        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        ability = getattr(pokemon, "ability", None)
+        return cls(
+            hp=getattr(pokemon, "hp", 0),
+            boosts={STAT_KEY_MAP.get(key, key): value for key, value in getattr(pokemon, "boosts", {}).items()},
+            status=getattr(pokemon, "status", None),
+            volatiles=snapshot_battle_value(getattr(pokemon, "volatiles", {}) or {}),
+            item=_normalize_key(getattr(item, "name", None) or item or ""),
+            ability=_normalize_key(getattr(ability, "name", None) or ability or ""),
+        )
+
+
 @dataclass
 class BattleMove:
     """Representation of a move used in battle."""
 
+    effectType = "Move"
     name: str
     key: Optional[str] = None
     power: int = 0
@@ -903,7 +873,7 @@ class BattleMove:
         if not self.key:
             self.key = _normalize_key(self.name)
         if not hasattr(self, "id") or getattr(self, "id", None) is None:
-            self.id = self.key
+            self.id = _normalize_key(self.key).lower()
         if not hasattr(self, "flags") or getattr(self, "flags", None) is None:
             raw_flags = {}
             if isinstance(self.raw, dict):
@@ -912,6 +882,7 @@ class BattleMove:
         if not hasattr(self, "category") or getattr(self, "category", None) is None:
             raw_category = self.raw.get("category") if isinstance(self.raw, dict) else None
             self.category = raw_category or ("Status" if not self.power else "Physical")
+        self.multihit = self.raw.get("multihit") if isinstance(self.raw, dict) else None
 
     def execute(self, user, target, battle: "Battle") -> None:
         """Execute this move's effect.
@@ -929,7 +900,11 @@ class BattleMove:
         bypasses_substitute = bool(
             (self.raw.get("bypassSub") if self.raw else None)
             or raw_flags.get("bypasssub")
+            or getattr(self, "infiltrates", False)
         )
+        side_gate = getattr(battle, "_passes_side_protection", None)
+        if target is not user and callable(side_gate) and not side_gate(target, user, self):
+            return
 
         if battle and hasattr(battle, "log_action"):
             default_messages = DEFAULT_TEXT.get("default", {})
@@ -951,18 +926,51 @@ class BattleMove:
             result = invoke_callback(self.onTry, user, target, self, battle=battle)
             if result is False:
                 return
+        if (getattr(self, "pranksterBoosted", False)
+                and str(self.category).lower() == "status" and target is not user
+                and not user.is_ally(target) and "Dark" in getattr(target, "types", [])):
+            battle.log_action(f"{target.name} is immune to the Prankster-boosted {self.name}!")
+            return
+        from .called_moves import CalledMoveExecutor
+
+        if CalledMoveExecutor(battle).reflect(user, target, self):
+            return
+        from .effect_context import EffectContext
+        target_item = EffectContext.item(target)
+        if target is not user and hasattr(target_item, "call") and target_item.call("onTryHit", target=target, source=user, move=self) is False:
+            return
         if target is not user and _ability_try_hit_blocks(target, user, self, battle):
             return
+        from .protection import StatusTypeImmunity
+
+        if target is not user and StatusTypeImmunity.blocks(target, self):
+            if battle and hasattr(battle, "log_action"):
+                battle.log_action(f"{target.name} is immune to {self.name}!")
+            return
+        if (str(self.category).lower() == "status" or self.raw.get("heal")) and target is not user:
+            from .accuracy import MoveAccuracy
+
+            if not MoveAccuracy.check_status(user, target, self, battle):
+                if battle and hasattr(battle, "log_action"):
+                    battle.log_action(f"{user.name} uses {self.name} but it missed!")
+                return
         if self.onHit:
             handled = invoke_callback(self.onHit, user, target, battle=battle)
             if handled is not True:
                 return
+            if (str(self.key).lower() == "pollenpuff"
+                    and getattr(user, "side", None) is not None
+                    and getattr(user, "side", None) is getattr(target, "side", None)):
+                # Its ally callback heals; the damaging default only applies
+                # to foes. Do not undo the heal with a friendly damage hit.
+                return
+        self._primary_hit_successful = True
 
         # Default behaviour for moves without custom handlers
-        move_category = self.raw.get("category") if self.raw else ""
+        move_category = self.raw.get("category", self.category) if self.raw else self.category
         category = str(move_category).lower()
         result = None
-        if category != "status":
+        if category != "status" and not self.raw.get("heal"):
             # Expose the canonical category for ability hooks that expect it as
             # an attribute on the move instance.
             setattr(self, "category", move_category)
@@ -971,7 +979,13 @@ class BattleMove:
                     return
 
             pre_hp = getattr(target, "hp", None)
-            result = _apply_move_damage(user, target, self, battle)
+            result = _apply_move_damage(user, target, self, battle, spread=getattr(self, "_spread", False))
+            if not sum(result.debug.get("damage", [])):
+                self._primary_hit_successful = False
+                return
+            from .z_effects import ZEffects
+
+            ZEffects.hit(battle, user, self, max(0, pre_hp - target.hp))
         else:
             boosts = self.raw.get("boosts") if self.raw else None
             if boosts:
@@ -979,7 +993,7 @@ class BattleMove:
 
                 affected = user if is_self_target(self.raw.get("target")) else target
                 if affected is not None:
-                    apply_boost(affected, boosts)
+                    apply_boost(affected, boosts, source=user, effect=self)
 
         # Apply draining effects (e.g. Absorb)
         drain = self.raw.get("drain") if self.raw else None
@@ -1018,13 +1032,22 @@ class BattleMove:
                     damage = sum(dmg_list)
             if damage > 0:
                 frac = recoil[0] / recoil[1]
-                user.hp = max(0, user.hp - int(damage * frac))
-                if battle:
+                from .indirect_damage import apply_recoil_damage
+
+                recoil_loss = apply_recoil_damage(user, int(damage * frac), self, battle=battle, source=target)
+                if battle and recoil_loss:
                     battle.log_action(
                         DEFAULT_TEXT["recoil"]["damage"].replace(
                             "[POKEMON]", getattr(user, "name", "Pokemon")
                         )
                     )
+
+        # Struggle uses maximum-HP recoil, independent of actual hit damage.
+        if str(self.key).lower() == "struggle" and result is not None:
+            from .indirect_damage import IndirectEffect, apply_indirect_damage
+
+            apply_indirect_damage(user, max(1, user.max_hp // 4), battle=battle,
+                                  source=user, effect=IndirectEffect("strugglerecoil", "Recoil"))
 
         # Apply flat healing (e.g. Recover)
         heal = self.raw.get("heal") if self.raw else None
@@ -1035,6 +1058,10 @@ class BattleMove:
                 max_hp = getattr(heal_target, "max_hp", getattr(heal_target, "hp", 1))
                 amount = max(1, int(max_hp * frac)) if frac else max_hp
                 applied = battle.heal(heal_target, amount, source=user, effect=self) if battle else 0
+                if applied > 0 and _effect_key(self) == "roost":
+                    from .recovery_moves import RoostTyping
+
+                    RoostTyping.start(heal_target)
                 if battle and applied > 0:
                     battle.log_action(
                         DEFAULT_TEXT["default"]["heal"].replace(
@@ -1084,7 +1111,7 @@ class BattleMove:
 
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected:
-                apply_boost(affected, boosts)
+                apply_boost(affected, boosts, source=user, effect=self)
 
         # Apply volatile status effects set by this move
         volatile = self.raw.get("volatileStatus") if self.raw else None
@@ -1092,14 +1119,17 @@ class BattleMove:
             effect = self.raw.get("condition", {})
             cb_name = effect.get("onStart")
             cb = _resolve_callback(cb_name, moves_funcs)
-            if callable(cb):
-                try:
-                    cb(user, target)
-                except Exception:
-                    cb(target)
             affected = user if is_self_target(self.raw.get("target")) else target
             if affected and hasattr(affected, "volatiles"):
-                affected.volatiles.setdefault(volatile, True)
+                if battle and hasattr(battle, "add_volatile"):
+                    battle.apply_volatile_status(affected, volatile, source=user, effect=self, start_callback=cb)
+                else:
+                    if callable(cb):
+                        invoke_callback(cb, user, target, battle=battle)
+                    if battle:
+                        battle.apply_volatile_status(affected, volatile)
+                    else:
+                        affected.volatiles.setdefault(volatile, True)
 
         # Apply major status conditions inflicted by this move
         status = self.raw.get("status") if self.raw else None
@@ -1126,11 +1156,11 @@ class BattleMove:
                 invoke_callback(cb, user, target, battle=battle)
 
         # Apply secondary effects such as additional boosts or status changes
-        secondaries: List[Dict[str, Any]] = []
-        sec = self.raw.get("secondary") if self.raw else None
-        if sec:
-            secondaries.append(sec)
-        secondaries.extend(self.raw.get("secondaries", [])) if self.raw else None
+        secondaries = getattr(self, "secondaries", None)
+        if secondaries is None:
+            secondaries = list(self.raw.get("secondaries", [])) if self.raw else []
+            if self.raw and self.raw.get("secondary"):
+                secondaries.append(self.raw["secondary"])
         if secondaries:
             from pokemon.battle.damage import percent_check
             from pokemon.utils.boosts import apply_boost
@@ -1175,7 +1205,7 @@ class BattleMove:
                         invoke_callback(cb, user, target, battle=battle)
 
                 if sec.get("boosts") and target:
-                    apply_boost(target, sec["boosts"])
+                    apply_boost(target, sec["boosts"], source=user, effect=self)
                 if sec.get("status") and target and battle:
                     battle.apply_status_condition(
                         target,
@@ -1188,8 +1218,12 @@ class BattleMove:
                     and target
                     and hasattr(target, "volatiles")
                 ):
-                    target.volatiles.setdefault(sec["volatileStatus"], True)
-                    battle.apply_volatile_status(target, sec["volatileStatus"])
+                    if battle and hasattr(battle, "add_volatile"):
+                        battle.apply_volatile_status(target, sec["volatileStatus"], source=user, effect=self)
+                    else:
+                        target.volatiles.setdefault(sec["volatileStatus"], True)
+                        if battle:
+                            battle.apply_volatile_status(target, sec["volatileStatus"])
 
                 if sec.get("drain") and result is not None and user:
                     dmg = 0
@@ -1224,8 +1258,10 @@ class BattleMove:
                             dmg = sum(dmg_list)
                     if dmg > 0:
                         frac = sec["recoil"][0] / sec["recoil"][1]
-                        user.hp = max(0, user.hp - int(dmg * frac))
-                        if battle:
+                        from .indirect_damage import apply_recoil_damage
+
+                        recoil_loss = apply_recoil_damage(user, int(dmg * frac), self, battle=battle, source=target)
+                        if battle and recoil_loss:
                             battle.log_action(
                                 DEFAULT_TEXT["recoil"]["damage"].replace(
                                     "[POKEMON]", getattr(user, "name", "Pokemon")
@@ -1248,7 +1284,7 @@ class BattleMove:
                 self_sec = sec.get("self")
                 if self_sec and user:
                     if self_sec.get("boosts"):
-                        apply_boost(user, self_sec["boosts"])
+                        apply_boost(user, self_sec["boosts"], source=user, effect=self)
                     if self_sec.get("status") and battle:
                             battle.apply_status_condition(
                                 user,
@@ -1257,8 +1293,12 @@ class BattleMove:
                                 effect=self,
                             )
                     if self_sec.get("volatileStatus") and hasattr(user, "volatiles"):
-                        user.volatiles.setdefault(self_sec["volatileStatus"], True)
-                        battle.apply_volatile_status(user, self_sec["volatileStatus"])
+                        if battle and hasattr(battle, "add_volatile"):
+                            battle.apply_volatile_status(user, self_sec["volatileStatus"], source=user, effect=self)
+                        else:
+                            user.volatiles.setdefault(self_sec["volatileStatus"], True)
+                            if battle:
+                                battle.apply_volatile_status(user, self_sec["volatileStatus"])
                     if self_sec.get("heal"):
                         heal = self_sec["heal"]
                         frac = (
@@ -1387,7 +1427,8 @@ class StatusService:
             eff = battle.calculate_type_effectiveness(target, move)
         if eff == 0:
             return True
-        if getattr(target, "volatiles", {}).get("protect"):
+        if getattr(target, "volatiles", {}).get("protect") and not (
+                getattr(move, "breaksProtect", False) or getattr(move, "raw", {}).get("breaksProtect")):
             return True
         return False
 
@@ -1413,6 +1454,8 @@ class RewardService:
     def handle_end_of_battle_rewards(self, battle: "Battle", winner: BattleParticipant) -> None:
         """Award post-battle rewards to the winning participant."""
 
+        if not getattr(battle, "award_prizes", True):
+            return
         if battle._rewards_granted:
             return
         if not winner or not getattr(winner, "player", None):
@@ -1454,7 +1497,7 @@ class RewardService:
                 return
             battle._rewards_granted = True
             if claimed:
-                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!")
+                battle.log_action(f"{getattr(recipient, 'key', 'Player')} received ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â½{prize_money} for winning!")
             return
         trainer = getattr(recipient, "trainer", None)
         if trainer and hasattr(trainer, "add_money"):
@@ -1466,7 +1509,7 @@ class RewardService:
 
         if hasattr(battle, "log_action"):
             battle.log_action(
-                f"{getattr(recipient, 'key', 'Player')} received ₽{prize_money} for winning!"
+                f"{getattr(recipient, 'key', 'Player')} received ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â½{prize_money} for winning!"
             )
 
         battle._rewards_granted = True
@@ -1505,6 +1548,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.sides = [getattr(part, "side", None) for part in participants]
         self.turn_count = 0
         self.battle_over = False
+        self.flee_allowed = True
         self.dispatcher = EventDispatcher(allow_arity_fallback=False)
         from .battledata import Field
 
@@ -1527,7 +1571,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.message_formatter = message_formatter or MessageFormatter()
         self.reward_service = reward_service or RewardService()
 
-        # If any participant already has active Pokémon assigned (common in
+        # If any participant already has active PokÃƒÆ’Ã‚Â©mon assigned (common in
         # tests or restored battles) make sure they are marked as having
         # participated so they receive rewards appropriately.
         for part in self.participants:
@@ -1545,10 +1589,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if hasattr(part, "record_participation"):
                     part.record_participation(poke)
                 setattr(poke, "battle", self)
-                if getattr(poke, "ability", None) and not getattr(poke, "ability_state", None):
-                    poke.ability_state = self.init_effect_state(getattr(poke, "ability", None), target=poke)
-                if (getattr(poke, "item", None) or getattr(poke, "held_item", None)) and not getattr(poke, "item_state", None):
-                    poke.item_state = self.init_effect_state(getattr(poke, "item", None) or getattr(poke, "held_item", None), target=poke)
+                for state_name, effect in (("ability_state", getattr(poke, "ability", None)),
+                                           ("item_state", getattr(poke, "item", None) or getattr(poke, "held_item", None))):
+                    if not effect:
+                        continue
+                    state = dict(getattr(poke, state_name, {}) or {})
+                    rebound = self.init_effect_state(effect, target=poke)
+                    rebound.update({key: value for key, value in state.items() if key != "target"})
+                    setattr(poke, state_name, rebound)
         for part in self.participants:
             side = getattr(part, "side", None)
             if side is None:
@@ -1758,12 +1806,21 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _move_ignores_target_ability(self, source, target, move) -> bool:
         """Return whether ``move`` should bypass target ability effects."""
 
+        from .effect_context import EffectContext
+
+        ability = EffectContext.ability(target)
+        if source is target or (getattr(ability, "raw", {}) or {}).get("flags", {}).get("cantsuppress"):
+            return False
+        if ability is not None and not self._ability_flags(ability).get("breakable"):
+            return False
+        if EffectContext.key(EffectContext.item(target)) == "abilityshield":
+            return False
         if getattr(move, "ignore_ability", False) or getattr(move, "ignoreAbility", False):
             return True
         raw = getattr(move, "raw", {}) or {}
         if raw.get("ignoreAbility"):
             return True
-        source_ability = _effect_key(_resolve_ability(getattr(source, "ability", None)) or getattr(source, "ability", None))
+        source_ability = EffectContext.key(EffectContext.ability(source))
         if source_ability in {"moldbreaker", "teravolt", "turboblaze"}:
             return True
         if getattr(target, "volatiles", {}).get("gastroacid"):
@@ -1778,7 +1835,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move_type = _normalize_key(relayVar or getattr(effect, "type", None)).lower()
         if move_type != "ground":
             return None
-        ability = _resolve_ability(getattr(target, "ability", None)) or getattr(target, "ability", None)
+        from .effect_context import EffectContext
+        ability = _resolve_ability(EffectContext.ability(target))
         if _effect_key(ability) != "levitate":
             return None
         if self._move_ignores_target_ability(source, target, effect):
@@ -1813,6 +1871,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         granted_type = self._ability_item_type(pokemon)
         if not granted_type:
             return
+        base = str(getattr(pokemon, "base_species", getattr(pokemon, "species", ""))).split("-")[0]
+        if base in {"Arceus", "Silvally"}:
+            previous = str(pokemon.species)
+            forme = base if granted_type == "Normal" else base + "-" + granted_type
+            pokemon.species = forme
+            if pokemon.name == previous:
+                pokemon.name = forme
         if hasattr(pokemon, "setType"):
             try:
                 pokemon.setType(granted_type)
@@ -1839,20 +1904,28 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         level = max(1, int(getattr(pokemon, "level", 1) or 1))
         return min(50, ((level - 1) // 10 + 1) * 5)
 
-    def resolve_post_battle_abilities(self, *, caught: bool = False, thrown_ball: str | None = None) -> None:
-        """Resolve deterministic post-battle ability item effects."""
+    def resolve_post_battle_abilities(self, *, caught: bool = False, thrown_ball: str | None = None,
+                                     participant=None):
+        """Resolve eligible item effects and return only the awarded runtime items."""
 
         rng = getattr(self, "rng", random)
-        for participant in getattr(self, "participants", []) or []:
-            for pokemon in getattr(participant, "pokemons", []) or []:
+        awards = []
+        participants = [participant] if participant is not None else getattr(self, "participants", []) or []
+        for owner in participants:
+            for pokemon in getattr(owner, "pokemons", []) or []:
+                if self._pokemon_has_item(pokemon):
+                    continue
                 ability_key = _effect_key(_resolve_ability(getattr(pokemon, "ability", None)) or getattr(pokemon, "ability", None))
                 if ability_key == "ballfetch":
                     if thrown_ball and not caught:
-                        self._assign_post_battle_item(pokemon, thrown_ball)
+                        if self._assign_post_battle_item(pokemon, thrown_ball):
+                            awards.append((pokemon, thrown_ball))
                 elif ability_key == "honeygather":
                     chance = self._honey_gather_chance(pokemon) / 100.0
                     if rng.random() < chance:
-                        self._assign_post_battle_item(pokemon, "Honey")
+                        if self._assign_post_battle_item(pokemon, "Honey"):
+                            awards.append((pokemon, "Honey"))
+        return awards
 
     def _trigger_dancer_copy(self, user, target, move) -> None:
         """Let active Dancer holders copy a dance-flag move once."""
@@ -1995,6 +2068,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         participant = self.participant_for(pokemon)
         if participant is None:
             return None
+        if getattr(participant, 'field_position', None):
+            return int(participant.field_position[1:]) - 1
         try:
             return list(getattr(participant, "active", [])).index(pokemon)
         except ValueError:
@@ -2039,11 +2114,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     holders.append((handler, state if isinstance(state, dict) else {}, self.field))
         return holders
 
-    def _event_scoped_holders(self, target=None, source=None) -> List[tuple[Any, Optional[Dict[str, Any]], Any]]:
+    def _event_scoped_holders(
+        self, target=None, source=None, effect=None, *, include_suppressed_items=False,
+    ) -> List[tuple[Any, Optional[Dict[str, Any]], Any]]:
         """Return effect holders participating in a scoped event."""
 
         holders: List[tuple[Any, Optional[Dict[str, Any]], Any]] = []
         seen: set[tuple[Any, int, int, int]] = set()
+        from .effect_context import EffectContext
+
+        # Physical removal rules still apply under Embargo, Klutz and Magic Room.
+        # Other event consumers continue to receive only effective held items.
+        item_for = self._holder_item if include_suppressed_items else EffectContext.item
 
         def add_holder(holder, state=None, owner=None) -> None:
             if holder is not None:
@@ -2063,8 +2145,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             add_holder(self._pokemon_status_handler(target), getattr(target, "status_state", None), target)
             for volatile_name, handler in self._pokemon_volatile_handlers(target):
                 add_holder(handler, getattr(target, "volatiles", {}).get(volatile_name), target)
-            add_holder(_resolve_ability(getattr(target, "ability", None)), getattr(target, "ability_state", None), target)
-            add_holder(self._holder_item(target), getattr(target, "item_state", None), target)
+            if not self._move_ignores_target_ability(source, target, effect):
+                add_holder(EffectContext.ability(target), getattr(target, "ability_state", None), target)
+            add_holder(item_for(target), getattr(target, "item_state", None), target)
             target_participant = self.participant_for(target)
             target_side = getattr(target_participant, "side", getattr(target, "side", None))
             if target_side is not None:
@@ -2083,9 +2166,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         for part in self.participants:
             side = getattr(part, "side", None)
             side_relation = "foe"
-            if source is not None and source in getattr(part, "active", []):
+            if source is not None and getattr(source, 'side', None) is side:
                 side_relation = "source"
-            elif target_participant is not None and part is target_participant:
+            elif target_participant is not None and self._allied(part, target_participant):
                 side_relation = "ally"
             if target is not None and side is not None and side is not target_side:
                 add_holder_with_relation(side_relation, side, None, side)
@@ -2097,13 +2180,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 relation = "foe"
                 if source is not None and pokemon is source:
                     relation = "source"
-                elif target is not None and self.participant_for(pokemon) is self.participant_for(target):
+                elif target is not None and self._allied(self.participant_for(pokemon), self.participant_for(target)):
                     relation = "ally"
                 add_holder_with_relation(relation, self._pokemon_status_handler(pokemon), getattr(pokemon, "status_state", None), pokemon)
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
                     add_holder_with_relation(relation, handler, getattr(pokemon, "volatiles", {}).get(volatile_name), pokemon)
-                ability = _resolve_ability(getattr(pokemon, "ability", None))
-                item = self._holder_item(pokemon)
+                ability = EffectContext.ability(pokemon)
+                item = item_for(pokemon)
                 slot = self._active_slot_index(pokemon)
                 if side is not None:
                     for _, handler, state in self._slot_condition_handlers(side, slot):
@@ -2127,8 +2210,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     slot = self._active_slot_index(pokemon)
                     for _, handler, state in self._slot_condition_handlers(part.side, slot):
                         add_holder(handler, state, pokemon)
-                    add_holder(_resolve_ability(getattr(pokemon, "ability", None)), getattr(pokemon, "ability_state", None), pokemon)
-                    add_holder(self._holder_item(pokemon), getattr(pokemon, "item_state", None), pokemon)
+                    add_holder(EffectContext.ability(pokemon), getattr(pokemon, "ability_state", None), pokemon)
+                    add_holder(item_for(pokemon), getattr(pokemon, "item_state", None), pokemon)
         return holders
 
     def singleEvent(
@@ -2195,12 +2278,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         elif eventid == "TryAddVolatile":
             relay_kw_name = "status"
             relay_positional = False
-        for holder, state, owner in self._event_scoped_holders(target=target, source=source):
+        for holder, state, owner in self._event_scoped_holders(
+            target=target, source=source, effect=effect,
+            include_suppressed_items=eventid == "TakeItem",
+        ):
             relation = None
             actual_holder = holder
             if isinstance(holder, tuple):
                 relation, actual_holder = holder
             hooks = [base_hook]
+            if eventid == "TryAddVolatile" and relation is None and owner is target:
+                hooks.append("onAllyTryAddVolatile")
             if relation == "source":
                 hooks = [f"onSource{eventid}"]
             elif relation == "ally":
@@ -2210,26 +2298,40 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
             if (
                 eventid == "RedirectTarget"
-                and relation == "ally"
+                and relation in {"ally", "foe"}
                 and source is not None
                 and owner is not None
-                and self.participant_for(owner) is not self.participant_for(source)
             ):
-                hooks = [f"onFoe{eventid}", *hooks]
+                # Redirect effects belong to the attacker's ally/foe relation.
+                # A separate controller can still be on the attacker's team.
+                owner_part = self.participant_for(owner)
+                source_part = self.participant_for(source)
+                if owner_part is not None and source_part is not None:
+                    prefix = "onAlly" if self._allied(owner_part, source_part) else "onFoe"
+                    hooks = [f"{prefix}{eventid}"]
 
             try:
                 call_kwargs = {
                     "battle": self,
                     "effect_state": state,
+                    "effect_owner": owner,
                 }
                 if relayVar is None:
                     call_args = (target, source, effect)
+                    if eventid == "PrepareHit":
+                        call_args = (effect, target, source)
                 else:
                     call_kwargs["relayVar"] = relay
                     if relay_kw_name:
                         call_kwargs[relay_kw_name] = relay
                     if item_event:
                         call_kwargs["pokemon"] = target
+                        call_kwargs["source"] = source
+                        call_kwargs["effect"] = effect
+                        call_args = ()
+                    elif relay_kw_name:
+                        call_kwargs["pokemon"] = target
+                        call_kwargs["target"] = target
                         call_kwargs["source"] = source
                         call_kwargs["effect"] = effect
                         call_args = ()
@@ -2287,12 +2389,15 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if eventid == "RedirectTarget":
                     # The target is already the relay for redirect callbacks.
                     any_args = (relay if relayVar is not None else target, source, effect)
+                elif eventid == "PrepareHit":
+                    any_args = (effect, target, source)
                 any_result = self._call_effect_event(
                     actual_holder,
                     any_hook,
                     *any_args,
                     battle=self,
                     effect_state=state,
+                    effect_owner=owner,
                 )
                 if any_result is not None:
                     result = any_result
@@ -2316,7 +2421,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     relay = result
                     if fastExit:
                         return relay
-                elif result is not True:
+                elif result is not True or eventid == "Accuracy":
                     relay = result
                     if fastExit:
                         return relay
@@ -2385,6 +2490,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             },
         )
         if message:
+            if participant.max_active > 1:
+                from .active_slots import slot_for
+                slot = slot_for(participant, pokemon)
+                label = participant.team or ("A" if self.participants[0] is participant else "B")
+                message = f"{label}{slot + 1}: " + message if slot is not None else message
             self.log_action(message)
 
     def _log_switch_out(self, participant: BattleParticipant, pokemon) -> None:
@@ -2404,7 +2514,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Battle initialisation helpers
     # ------------------------------------------------------------------
     def start_battle(self) -> None:
-        """Prepare the battle by sending out the first available Pokémon."""
+        """Prepare the battle by sending out the first available PokÃƒÆ’Ã‚Â©mon."""
         names = [
             getattr(part, "name", "Trainer")
             for part in self.participants
@@ -2441,28 +2551,26 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def send_out_pokemon(self, pokemon, slot: int = 0) -> None:
         """Place ``pokemon`` into the active slot for its participant."""
+        from .active_slots import active_at, assign_active
         part = self.participant_for(pokemon)
-        if not part:
+        if not part or not 0 <= slot < part.max_active:
             return
-        if len(part.active) > slot:
-            old = part.active[slot]
+        old = active_at(part, slot)
+        if old is not None:
             if old is pokemon:
                 return
             self.on_switch_out(old, source=pokemon)
-            part.active[slot] = pokemon
-        else:
-            if len(part.active) < getattr(part, "max_active", 1):
-                part.active.insert(slot, pokemon)
-            else:
-                return
-        self.on_enter_battle(pokemon, source=old if 'old' in locals() else None)
+        assign_active(part, slot, pokemon)
+        self.on_enter_battle(pokemon, source=old)
         self._log_switch_in(part, pokemon)
 
     def switch_pokemon(
         self, participant: BattleParticipant, new_pokemon, slot: int = 0
     ) -> None:
-        """Switch the active Pokémon for ``participant`` in ``slot``."""
-        current = participant.active[slot] if len(participant.active) > slot else None
+        """Switch the active PokÃƒÆ’Ã‚Â©mon for ``participant`` in ``slot``."""
+        from .active_slots import active_at, assign_active
+
+        current = active_at(participant, slot)
         if new_pokemon and self.runEvent(
             "BeforeSwitchIn",
             new_pokemon,
@@ -2470,8 +2578,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             getattr(self, "effect", None),
         ) is False:
             return
-        if len(participant.active) <= slot:
-            participant.active.append(new_pokemon)
+        if current is None:
+            assign_active(participant, slot, new_pokemon)
             self.on_enter_battle(new_pokemon, source=current)
             self._log_switch_in(participant, new_pokemon)
             return
@@ -2485,16 +2593,22 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         ) is False:
             return
         self.on_switch_out(current, source=new_pokemon)
-        participant.active[slot] = new_pokemon
+        assign_active(participant, slot, new_pokemon)
         self.on_enter_battle(new_pokemon, source=current)
         self._log_switch_in(participant, new_pokemon)
 
     def participant_for(self, pokemon) -> Optional[BattleParticipant]:
         """Return the participant owning ``pokemon`` if any."""
         for part in self.participants:
-            if pokemon in part.pokemons:
+            if any(member is pokemon for member in part.pokemons):
                 return part
         return None
+
+    @staticmethod
+    def _allied(left, right):
+        """Keep allegiance separate from controller/roster identity."""
+        return bool(left and right and (left is right or (getattr(left, 'team', None) is not None
+                    and left.team == getattr(right, 'team', None))))
 
     def opponent_of(
         self, participant: BattleParticipant
@@ -2527,9 +2641,22 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         return opponents
 
     def restore_transforms(self) -> None:
-        """Revert any Pokémon transformed via the Transform move."""
+        """Revert any PokÃƒÆ’Ã‚Â©mon transformed via the Transform move."""
+        from .terastallization import Terastallization
+
         for part in self.participants:
             for poke in part.pokemons:
+                self.remove_volatile(poke, "roost")
+                from .copied_moves import BattleCopyState
+
+                BattleCopyState.cleanup(poke)
+                from .appearance import BattleAppearance
+
+                BattleAppearance.restore(poke)
+                from .native_forms import NativeBattleForm
+
+                NativeBattleForm.restore(poke)
+                poke.bond_triggered = False
                 backup = getattr(poke, "tempvals", {}).get("transform_backup")
                 if backup:
                     for attr, value in backup.items():
@@ -2537,12 +2664,15 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     poke.tempvals.pop("transform_backup", None)
                     if hasattr(poke, "transformed"):
                         poke.transformed = False
+        # Transform can have backed up an already-Tera defensive type. Restore
+        # ordinary typing last so that backup cannot reintroduce the Tera type.
+        Terastallization.cleanup(self)
 
     # ------------------------------------------------------------------
     # Battle event hooks
     # ------------------------------------------------------------------
 
-    def _register_callbacks(self, data: Dict[str, Any], pokemon, *, registry: Any = None) -> None:
+    def _register_callbacks(self, data: Dict[str, Any], pokemon, *, registry: Any = None, ability_key=None, item_key=None) -> None:
         """Register typed callbacks from ability or item data at startup."""
         event_map = {
             "onPreStart": "pre_start",
@@ -2552,21 +2682,36 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             "onBeforeTurn": "before_turn",
             "onBeforeMove": "before_move",
             "onAfterMove": "after_move",
-            "onEnd": "end_turn",
             "onUpdate": "update",
         }
 
         owner_name = getattr(pokemon, "name", getattr(pokemon, "species", "pokemon"))
+        registered = getattr(self, "_registered_callback_keys", None)
+        if registered is None:
+            registered = self._registered_callback_keys = set()
         for key, event in event_map.items():
-            registered_key = f"{id(self)}:{id(pokemon)}:{key}"
+            identity = (id(pokemon), key, ability_key, item_key)
+            if identity in registered:
+                continue
+            registered_key = f"{id(self)}:{id(pokemon)}:{key}:{ability_key}:{item_key}"
             cb = CALLBACK_REGISTRY.register(registered_key, data.get(key), registry=registry)
             if not callable(cb):
                 continue
 
-            def wrapped(*, _pokemon=pokemon, _callback=cb, **ctx):
+            def wrapped(*, _pokemon=pokemon, _callback=cb, _ability_key=ability_key, _item_key=item_key, **ctx):
                 """Invoke a registered callback while preserving legacy arity behavior."""
                 if ctx.get("pokemon") is not _pokemon:
                     return
+                if _ability_key:
+                    from .effect_context import EffectContext
+
+                    if EffectContext.key(EffectContext.ability(_pokemon)) != _ability_key:
+                        return
+                if _item_key:
+                    from .effect_context import EffectContext
+
+                    if EffectContext.key(EffectContext.item(_pokemon)) != _item_key:
+                        return
                 try:
                     _callback(_pokemon, self)
                 except TypeError:
@@ -2579,6 +2724,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             # Register the wrapped callback once to avoid duplicate
             # notifications for the same event.
             self.dispatcher.register(event, wrapped)
+            registered.add(identity)
 
     def register_handlers(self, pokemon) -> None:
         """Register ability and item callbacks for ``pokemon``."""
@@ -2588,7 +2734,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         except Exception:
             ability_registry = None
         if ability and isinstance(getattr(ability, "raw", None), dict):
-            self._register_callbacks(ability.raw, pokemon, registry=ability_registry)
+            callbacks = dict(ability.raw)
+            if _effect_key(ability) == "gluttony":
+                callbacks["onUpdate"] = "Gluttony.onUpdate"
+            if _effect_key(ability) == "illusion":
+                callbacks["onStart"] = "Illusion.onBeforeSwitchIn"
+            self._register_callbacks(callbacks, pokemon, registry=ability_registry, ability_key=_effect_key(ability))
 
         item = self._holder_item(pokemon)
         try:
@@ -2596,20 +2747,62 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         except Exception:
             item_registry = None
         if item and isinstance(getattr(item, "raw", None), dict):
-            self._register_callbacks(item.raw, pokemon, registry=item_registry)
+            self._register_callbacks(item.raw, pokemon, registry=item_registry, item_key=_effect_key(item))
+
+    @staticmethod
+    def _item_forme_is_eligible(pokemon, forme: str) -> bool:
+        """Restrict item forms to their native species and required ability."""
+
+        from pokemon.dex import POKEDEX
+        from pokemon.names import resolve_dex_entry
+
+        from .effect_context import EffectContext
+
+        if getattr(pokemon, "transformed", False):
+            return False
+
+        def base_species(species):
+            entry = resolve_dex_entry(POKEDEX, str(species or ""))
+            raw = getattr(entry, "raw", {}) or {}
+            return EffectContext.key(raw.get("baseSpecies") or raw.get("name"))
+
+        required = base_species(forme)
+        current = getattr(pokemon, "species", None)
+        native = getattr(pokemon, "base_species", None) or current
+        if not required or base_species(native) != required or base_species(current) != required:
+            return False
+
+        ability = {"arceus": "multitype", "silvally": "rkssystem"}.get(required)
+        return not ability or EffectContext.key(EffectContext.ability(pokemon)) == ability
 
     def _apply_item_forme_effects(self, pokemon, *, source=None) -> None:
         """Apply held-item forme changes that take effect on battle entry."""
 
-        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        from .effect_context import EffectContext
+
+        item = EffectContext.item(pokemon)
         if not item:
             return
+        forms = {"blueorb": ("Kyogre", "Kyogre-Primal"), "redorb": ("Groudon", "Groudon-Primal"),
+                 "rustedsword": ("Zacian", "Zacian-Crowned"), "rustedshield": ("Zamazenta", "Zamazenta-Crowned")}
+        change = forms.get(EffectContext.key(item))
+        if change:
+            if not self._item_forme_is_eligible(pokemon, change[1]):
+                return
+            if getattr(pokemon, "species", None) == change[0]:
+                pokemon.formeChange(change[1], battle=self, source=source)
 
+        from .native_forms import OgerponForm
+
+        if OgerponForm.item_key(pokemon) in {"wellspringmask", "hearthflamemask", "cornerstonemask"}:
+            OgerponForm.apply_mask(pokemon)
+            return
         forced_forme = getattr(item, "forced_forme", None)
         if (
             forced_forme
             and hasattr(pokemon, "formeChange")
-            and getattr(pokemon, "name", None) != forced_forme
+            and getattr(pokemon, "species", None) != forced_forme
+            and self._item_forme_is_eligible(pokemon, forced_forme)
         ):
             try:
                 pokemon.formeChange(forced_forme, battle=self, source=source)
@@ -2688,6 +2881,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if pokemon is None or move is None:
             return
         self_switch = getattr(move, "raw", {}).get("selfSwitch")
+        if getattr(move, "raw", {}).get("slotCondition") == "revivalblessing":
+            # This dex flag requests a revival selection, not a switch-out.
+            return
         if not self_switch:
             return
         tempvals = getattr(pokemon, "tempvals", None)
@@ -2697,6 +2893,24 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         tempvals["switch_out"] = True
         if self_switch == "copyvolatile":
             tempvals["baton_pass"] = True
+
+    def _handle_side_condition_durations(self) -> None:
+        """Expire finite side effects once per turn and run their cleanup hooks."""
+        seen_sides = set()
+        for participant in self.participants:
+            side = getattr(participant, "side", None)
+            if side is None or id(side) in seen_sides:
+                continue
+            seen_sides.add(id(side))
+            for name, state in list(getattr(side, "conditions", {}).items()):
+                duration = state.get("duration") if isinstance(state, dict) else None
+                if not isinstance(duration, int) or duration <= 0:
+                    continue
+                state["duration"] = duration - 1
+                if state["duration"] == 0:
+                    self.remove_side_condition(participant, name)
+                    if name in {"quickguard", "wideguard", "craftyshield", "matblock"}:
+                        getattr(side, "volatiles", {}).pop(name, None)
 
     def _handle_slot_condition_residuals(self) -> None:
         """Process residual and duration expiry for active slot conditions."""
@@ -2710,6 +2924,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             for slot, pokemon in enumerate(list(getattr(participant, "active", []))):
                 if pokemon is None:
                     continue
+                if getattr(participant, 'field_position', None):
+                    slot = self._active_slot_index(pokemon)
                 for name, handler, state in list(self._slot_condition_handlers(side, slot)):
                     state_map = state if isinstance(state, dict) else {}
                     state_map["target"] = pokemon
@@ -2727,6 +2943,19 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def on_enter_battle(self, pokemon, *, source=None, effect=None) -> None:
         """Trigger events when ``pokemon`` enters the field."""
         part = self.participant_for(pokemon)
+        pokemon.battle = self
+        from .mega_evolution import MegaEvolution
+
+        MegaEvolution.prepare_entry(pokemon)
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma"):
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.prepare_entry(pokemon)
+        if part is not None:
+            pokemon.side = part.side
+        pokemon.ability_state = self.init_effect_state(getattr(pokemon, "ability", None), target=pokemon, source=source)
+        pokemon.item_state = self.init_effect_state(getattr(pokemon, "item", None), target=pokemon, source=source)
+        pokemon.tempvals["entry_action_turn"] = self.turn_count
         if part and hasattr(part, "record_participation"):
             part.record_participation(pokemon)
         self._apply_item_forme_effects(pokemon, source=source)
@@ -2735,6 +2964,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.dispatcher.dispatch("pre_start", pokemon=pokemon, battle=self)
         self.dispatcher.dispatch("start", pokemon=pokemon, battle=self)
         self.reveal_entry_ability(pokemon)
+        from .z_effects import ZEffects
+
+        ZEffects.switch_in(self, pokemon)
         self.runEvent("SwitchIn", pokemon, source, effect or getattr(self, "effect", None))
         self.dispatcher.dispatch("switch_in", pokemon=pokemon, battle=self)
         self._run_slot_swap_events(pokemon, source=source, effect=effect)
@@ -2748,15 +2980,55 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             self._log_switch_out(part, pokemon)
         self.runEvent("SwitchOut", pokemon, source, effect or getattr(self, "effect", None))
         self.dispatcher.dispatch("switch_out", pokemon=pokemon, battle=self)
+        self._end_holder_effects(pokemon, source=source, effect=effect)
+        if not getattr(pokemon, "tempvals", {}).get("baton_pass"):
+            self.reset_stat_changes(pokemon)
+        from .copied_moves import BattleCopyState
+
+        BattleCopyState.cleanup(pokemon)
         self._clear_choice_lock(pokemon)
+        getattr(pokemon, "tempvals", {}).pop("moves_used_since_entry", None)
+        getattr(pokemon, "tempvals", {}).pop("stat_overrides", None)
+        getattr(pokemon, "tempvals", {}).pop("entry_action_turn", None)
         vols = list(getattr(pokemon, "volatiles", {}).keys())
         for vol in vols:
             self.remove_volatile(pokemon, vol)
 
+    def _end_holder_effects(self, pokemon, *, source=None, effect=None) -> None:
+        """End the current ability/item when its holder leaves the field.
+
+        Showdown-style onEnd is a lifecycle hook, not an end-of-turn hook.
+        Resolve current holders here so replaced abilities/items cannot leave
+        stale registered cleanup callbacks behind.
+        """
+        for holder, state_name in (
+            (_resolve_ability(getattr(pokemon, "ability", None)), "ability_state"),
+            (self._holder_item(pokemon), "item_state"),
+        ):
+            if holder:
+                self.singleEvent("End", holder, getattr(pokemon, state_name, {}),
+                                 pokemon, source, effect)
+
     def on_faint(self, pokemon) -> None:
         """Mark ``pokemon`` as fainted and trigger callbacks."""
+        self.remove_volatile(pokemon, "roost")
+        self.remove_volatile(pokemon, "focusenergy")
+        if (getattr(pokemon, "tempvals", {}) or {}).pop("bag_boosters", False):
+            self.reset_stat_changes(pokemon)
         pokemon.is_fainted = True
-        self.runEvent("Faint", pokemon, None, getattr(self, "effect", None))
+        cause = (getattr(pokemon, "tempvals", {}) or {}).pop("faint_cause", {})
+        source, effect = cause.get("source"), cause.get("effect")
+        self.runEvent("Faint", pokemon, source, effect)
+        # Faint effects (including Aftermath) resolve before the win check.
+        # AfterFaint bonuses only matter while an opposing team can continue.
+        source_part = self.participant_for(source) if source is not None else None
+        opponents_remain = source_part is not None and any(
+            getattr(mon, "hp", 0) > 0
+            for opponent in self.opponents_of(source_part)
+            for mon in opponent.pokemons
+        )
+        if source is not None and getattr(source, "hp", 0) > 0 and opponents_remain:
+            self.runEvent("AfterFaint", pokemon, source, effect, 1)
 
         name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
         try:  # pragma: no cover - data package may be unavailable in tests
@@ -2769,7 +3041,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             message = template.replace("[POKEMON]", name)
             self.log_action(message)
 
-        ability = _resolve_ability(getattr(pokemon, "ability", None))
+        from .effect_context import EffectContext
+
+        ability = EffectContext.ability(pokemon)
         if ability and hasattr(ability, "call"):
             try:
                 ability.call("onFaint", pokemon, self)
@@ -2782,6 +3056,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 item.call("onFaint", pokemon=pokemon, battle=self)
             except Exception:
                 pass
+        self._end_holder_effects(pokemon)
+        if getattr(pokemon, "ultra_profile", None):
+            from .ultra_burst import UltraBurst
+
+            UltraBurst.revert(pokemon)
 
     def on_end_turn(self) -> None:
         """Apply end of turn effects."""
@@ -2789,14 +3068,14 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.handle_terrain()
 
     def _apply_misc_callbacks(self) -> None:
-        """Invoke seldom triggered ability callbacks for active Pokémon.
+        """Invoke seldom triggered ability callbacks for active PokÃƒÆ’Ã‚Â©mon.
 
         The lightweight battle engine used in tests omits many edge-case
         mechanics that would normally trigger hooks such as
         ``onAllyTryAddVolatile`` (Aroma Veil) or ``onFoeTryEatItem`` (As One).
         Without invoking these callbacks, the comprehensive ability tests
         would flag them as unused.  This helper calls the hooks once for each
-        active Pokémon, ignoring any errors so the minimal test doubles remain
+        active PokÃƒÆ’Ã‚Â©mon, ignoring any errors so the minimal test doubles remain
         compatible with the simplified environment.
         """
 
@@ -2832,16 +3111,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     pass
 
     def _apply_trap_callbacks(self) -> None:
-        """Invoke trapping related ability callbacks for active Pokémon.
+        """Invoke trapping related ability callbacks for active PokÃƒÆ’Ã‚Â©mon.
 
         Some abilities such as Arena Trap expose ``onFoeTrapPokemon`` hooks
         that are normally triggered by the battle engine when checking if a
-        Pokémon is allowed to switch out.  The simplified engine used for
+        PokÃƒÆ’Ã‚Â©mon is allowed to switch out.  The simplified engine used for
         testing does not implement full switching logic and therefore these
         callbacks were never invoked, causing ability tests to fail.  This
         helper manually calls the relevant ability callbacks for each active
-        Pokémon pair, swallowing any errors so the minimal test doubles used
-        in the suite do not need to implement the full Pokémon Showdown API.
+        PokÃƒÆ’Ã‚Â©mon pair, swallowing any errors so the minimal test doubles used
+        in the suite do not need to implement the full PokÃƒÆ’Ã‚Â©mon Showdown API.
         """
 
         for part in self.participants:
@@ -2851,7 +3130,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if opp is part or opp.has_lost:
                     continue
                 for pokemon in part.active:
-                    ability = _resolve_ability(getattr(pokemon, "ability", None))
+                    from .effect_context import EffectContext
+                    ability = _resolve_ability(EffectContext.ability(pokemon))
+                    if EffectContext.key(ability) == "shadowtag":
+                        # Voluntary switch legality queries the live owner, not
+                        # a sticky flag left behind after departure/suppression.
+                        continue
                     if not ability or not hasattr(ability, "call"):
                         continue
                     for foe in opp.active:
@@ -2870,28 +3154,28 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Pseudocode mapping
     # ------------------------------------------------------------------
     def run_switch(self) -> None:
-        """Handle Pokémon switches before moves are executed."""
+        """Handle PokÃƒÆ’Ã‚Â©mon switches before moves are executed."""
+
+        from .active_slots import active_at, assign_active
+        from .legal_actions import LegalActions
 
         self._apply_trap_callbacks()
 
         for part in self.participants:
             if part.has_lost:
                 continue
-            # Ensure correct number of active Pokémon
+            # Ensure correct number of active PokÃƒÆ’Ã‚Â©mon
             for slot in range(part.max_active):
-                if len(part.active) <= slot:
-                    replacement = None
-                    for poke in part.pokemons:
-                        if poke not in part.active and getattr(poke, "hp", 0) > 0:
-                            replacement = poke
-                            break
+                if active_at(part, slot) is None:
+                    reserves = LegalActions(self, part, None).reserves(slot=slot, forced=True)
+                    replacement = reserves[0] if reserves else None
                     if replacement:
-                        part.active.append(replacement)
+                        assign_active(part, slot, replacement)
                         setattr(replacement, "side", part.side)
                         self.on_enter_battle(replacement, source=None)
                     continue
 
-                active = part.active[slot]
+                active = active_at(part, slot)
 
                 if getattr(active, "tempvals", {}).get("baton_pass") or getattr(
                     active, "tempvals", {}
@@ -2908,16 +3192,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             getattr(self, "effect", None),
                         ) is False:
                             active.tempvals.pop("baton_pass", None)
+                            self.reset_stat_changes(active)
                             active.tempvals.pop("switch_out", None)
                             continue
                     for opp in self.participants:
                         if opp is part or opp.has_lost:
                             continue
-                        act = getattr(opp, "pending_action", None)
-                        if (
-                            act
-                            and act.action_type is ActionType.MOVE
-                        ):
+                        pending = getattr(opp, "pending_action", None)
+                        candidates = list(pending) if isinstance(pending, list) else [pending] if pending else []
+                        for act in candidates:
+                            if act.action_type is not ActionType.MOVE:
+                                continue
                             move = getattr(act, "move", None)
                             move_key = getattr(move, "key", None) or _normalize_key(
                                 getattr(move, "name", "")
@@ -2925,23 +3210,21 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             if str(move_key).lower() != "pursuit":
                                 continue
                             target_check = (
-                                act.target.active[0]
-                                if act.target and act.target.active
+                                active_at(act.target, act.target_slot or 0)
+                                if act.target
                                 else None
                             )
-                            if target_check is active or act.target is part:
+                            if target_check is active:
                                 active.tempvals["switching"] = True
                                 self.use_move(act)
                                 active.tempvals.pop("switching", None)
-                                opp.pending_action = None
+                                if isinstance(pending, list):
+                                    pending.remove(act)
+                                else:
+                                    opp.pending_action = None
 
-                    replacement = None
-                    for poke in part.pokemons:
-                        if poke is active:
-                            continue
-                        if getattr(poke, "hp", 0) > 0 and poke not in part.active:
-                            replacement = poke
-                            break
+                    reserves = LegalActions(self, part, active).reserves(slot=slot)
+                    replacement = reserves[0] if reserves else None
                     if replacement:
                         shedtail_substitute = active.tempvals.get("shedtail_substitute")
                         if self.runEvent(
@@ -2952,10 +3235,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         ) is False:
                             continue
                         passed_substitute = None
+                        passed_focus = None
                         if active.tempvals.get("baton_pass"):
                             passed_substitute = getattr(active, "volatiles", {}).get("substitute")
+                            passed_focus = getattr(active, "volatiles", {}).get("focusenergy")
                         self.on_switch_out(active, source=replacement)
-                        part.active[slot] = replacement
+                        assign_active(part, slot, replacement)
                         setattr(replacement, "side", part.side)
                         self.on_enter_battle(replacement, source=active)
                         if active.tempvals.get("baton_pass"):
@@ -2968,6 +3253,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 if not hasattr(replacement, "volatiles"):
                                     replacement.volatiles = {}
                                 replacement.volatiles["substitute"] = dict(sub)
+                            if passed_focus:
+                                replacement.volatiles["focusenergy"] = {
+                                    **(dict(passed_focus) if isinstance(passed_focus, dict) else {"id": "focusenergy", "source": active}),
+                                    "target": replacement}
+                            if active.tempvals.get("bag_boosters"):
+                                replacement.tempvals["bag_boosters"] = True
                             active.tempvals.pop("baton_pass", None)
                         if shedtail_substitute:
                             if not hasattr(replacement, "volatiles"):
@@ -2979,13 +3270,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     continue
 
                 if getattr(active, "hp", 0) <= 0:
-                    replacement = None
-                    for poke in part.pokemons:
-                        if poke is active or poke in part.active:
-                            continue
-                        if getattr(poke, "hp", 0) > 0:
-                            replacement = poke
-                            break
+                    reserves = LegalActions(self, part, active).reserves(slot=slot, forced=True)
+                    replacement = reserves[0] if reserves else None
                     if replacement:
                         if self.runEvent(
                             "BeforeSwitchIn",
@@ -2994,12 +3280,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                             getattr(self, "effect", None),
                         ) is False:
                             continue
-                        part.active[slot] = replacement
+                        assign_active(part, slot, replacement)
                         setattr(replacement, "side", part.side)
                         self.on_enter_battle(replacement, source=active)
 
     def run_after_switch(self) -> None:
-        """Trigger simple events after Pokémon have switched in."""
+        """Trigger simple events after PokÃƒÆ’Ã‚Â©mon have switched in."""
 
         for part in self.participants:
             if part.has_lost:
@@ -3022,8 +3308,27 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     # Move handling helpers
     # ------------------------------------------------------------------
 
-    def deduct_pp(self, pokemon, move: BattleMove) -> None:
-        """Spend PP on the matching stored slot and battle move snapshot."""
+    def mark_initial_prompt(self) -> None:
+        """The startup preview precedes the first playable turn's start hook."""
+        for part in self.participants:
+            for pokemon in part.active:
+                pokemon.tempvals["entry_action_turn"] = self.turn_count + 1
+
+    def deduct_pp(self, pokemon, move: BattleMove, target=None) -> None:
+        """Spend PP, including surcharges from the move's opposing targets."""
+        if getattr(move, "_z_paid", False):
+            return
+        if getattr(move, "_called_use", False):
+            return
+        if _effect_key(move) == "bide" and getattr(pokemon, "volatiles", {}).get("bide"):
+            return
+        history = getattr(pokemon, "tempvals", None)
+        if history is None:
+            history = pokemon.tempvals = {}
+        used = history.setdefault("moves_used_since_entry", [])
+        used_key = str(_normalize_key(getattr(move, "key", None) or move.name)).lower()
+        if used_key not in used:
+            used.append(used_key)
         pp_cost = 1
         event_cost = self.runEvent("DeductPP", pokemon, None, move, pp_cost)
         if event_cost is False:
@@ -3031,7 +3336,43 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if isinstance(event_cost, (int, float)):
             pp_cost = max(0, int(event_cost))
 
-        move_key = _normalize_key(getattr(move, "key", None) or move.name)
+        # Pressure belongs to the Pokemon being targeted, not the move user.
+        # Retain the ordinary user-side cost event for other PP modifiers, then
+        # dispatch target-side events with a zero-based additional cost.
+        participant = self.participant_for(pokemon)
+        target_class = move.raw.get("target", "normal")
+        must_pressure = move.raw.get("flags", {}).get("mustpressure")
+        if must_pressure and participant is not None:
+            pressure_targets = [mon for part in self.opponents_of(participant)
+                                for mon in part.active if getattr(mon, "hp", 0) > 0]
+        elif target_class == "foeSide":
+            pressure_targets = []
+        elif target_class in {"all", "allAdjacent", "allAdjacentFoes", "allies", "allySide", "allyTeam"} and participant is not None:
+            from .legal_actions import LegalActions
+
+            pressure_targets = LegalActions(self, participant, pokemon).targets(move)
+        else:
+            pressure_targets = [target] if target is not None else []
+        seen_targets = set()
+        for recipient in pressure_targets:
+            if recipient is pokemon or id(recipient) in seen_targets:
+                continue
+            seen_targets.add(id(recipient))
+            extra = self.runEvent("DeductPP", recipient, pokemon, move, 0)
+            if isinstance(extra, (int, float)) and not isinstance(extra, bool):
+                pp_cost += max(0, int(extra))
+
+        self.reduce_move_pp(pokemon, move, pp_cost)
+
+    def reduce_move_pp(self, pokemon, move: BattleMove, amount: int) -> int:
+        """Reduce authoritative PP without treating an external drain as a use."""
+        amount = max(0, int(amount))
+        from .copied_moves import BattleCopyState
+
+        temporary = BattleCopyState.spend_pp(pokemon, move, amount)
+        if temporary is not None:
+            return temporary
+        move_key = _normalize_key(getattr(move, "_pp_move_name", None) or getattr(move, "key", None) or move.name)
         moves = getattr(pokemon, "moves", [])
         slots = getattr(pokemon, "activemoveslot_set", None)
         if slots is not None:
@@ -3043,7 +3384,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if _normalize_key(getattr(getattr(slot, "move", None), "name", "")) == move_key:
                     current = getattr(slot, "current_pp", None)
                     if current is not None:
-                        updated = max(0, current - pp_cost)
+                        updated = max(0, current - amount)
                         slot.current_pp = updated
                         move.pp = updated
                         for cached_move in moves:
@@ -3058,7 +3399,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                     slot.save()
                             except Exception:
                                 battle_logger.exception("Unable to persist spent PP for move %s.", move.name)
-                    return
+                                if (getattr(pokemon, "native_origin", None) or {}).get("necrozma"):
+                                    raise
+                        return current - updated
+                    return 0
 
         for m in moves:
             cached_key = getattr(m, "key", None) or getattr(m, "name", "")
@@ -3067,12 +3411,58 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if current is None:
                     current = move.pp
                 if current is not None:
-                    m.pp = max(0, current - pp_cost)
+                    m.pp = max(0, current - amount)
                     move.pp = m.pp
-                    return
+                    return current - m.pp
 
         if move.pp is not None and move.pp > 0:
-            move.pp = max(0, move.pp - pp_cost)
+            previous = move.pp
+            move.pp = max(0, move.pp - amount)
+            return previous - move.pp
+        return 0
+
+    def _move_pp_states(self, pokemon):
+        """Yield current slots and their real PP capacity, including owned boosts."""
+        manager = getattr(pokemon, "activemoveslot_set", None)
+        slots = list(manager.all() if callable(getattr(manager, "all", None)) else manager or [])
+        if not slots:
+            slots = list(getattr(pokemon, "move_slots", None) or getattr(pokemon, "moves", []) or [])
+        for slot in slots:
+            name = getattr(getattr(slot, "move", slot), "name", "")
+            stored = hasattr(slot, "current_pp")
+            current = getattr(slot, "current_pp", None) if stored else getattr(slot, "pp", None)
+            capacity = getattr(slot, "max_pp", getattr(slot, "maxpp", None))
+            maximum = getattr(getattr(slot, "pokemon", None), "get_max_pp", None)
+            if callable(maximum):
+                capacity = maximum(name)
+            if capacity is None:
+                entry = MOVEDEX.get(_normalize_key(name))
+                capacity = get_raw(entry).get("pp", getattr(entry, "pp", None))
+            if capacity is None:
+                capacity = current
+            if capacity is not None and int(capacity) > 0:
+                yield slot, name, current, int(capacity), stored
+
+    def has_depleted_pp(self, pokemon) -> bool:
+        """Check authoritative PP rather than treating cached remaining PP as max."""
+        return any(current is not None and current < capacity
+                   for _, _, current, capacity, _ in self._move_pp_states(pokemon))
+
+    def restore_move_pp(self, pokemon) -> int:
+        """Restore owned and runtime PP to the same actual per-move capacity."""
+        restored = 0
+        for slot, name, current, capacity, stored in self._move_pp_states(pokemon):
+            setattr(slot, "current_pp" if stored else "pp", capacity)
+            if stored and current != capacity and callable(getattr(slot, "save", None)):
+                try:
+                    slot.save(update_fields=["current_pp"])
+                except TypeError:  # Legacy slot adapters omit update_fields.
+                    slot.save()
+            for move in getattr(pokemon, "moves", []) or []:
+                if move is slot or (name and _normalize_key(getattr(move, "name", "")) == _normalize_key(name)):
+                    move.pp = capacity
+            restored += max(0, capacity - (current if current is not None else capacity))
+        return restored
 
     def heal(self, pokemon, amount: int, *, source=None, effect=None) -> int:
         """Restore HP through the battle event system."""
@@ -3086,18 +3476,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             return 0
         max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 0))
         current_hp = getattr(pokemon, "hp", 0)
-        if max_hp <= current_hp:
-            return 0
         event_amount = self.runEvent("TryHeal", pokemon, source, effect, amount)
         if event_amount is False:
             return 0
         if isinstance(event_amount, (int, float)):
             amount = int(event_amount)
         if amount < 0:
-            actual = min(current_hp, abs(amount))
-            if actual <= 0:
-                return 0
-            pokemon.hp = current_hp - actual
+            from .indirect_damage import IndirectEffect, apply_indirect_damage
+
+            actual = apply_indirect_damage(pokemon, abs(amount), battle=self, source=source,
+                                            effect=IndirectEffect("healinversion"))
             return -actual
         if amount <= 0:
             return 0
@@ -3161,11 +3549,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def _set_choice_lock(self, pokemon, move) -> None:
         """Lock ``pokemon`` into ``move`` when holding a Choice item."""
+        if getattr(move, "_called_use", False):
+            return
 
         if not pokemon:
             return
         if not self._choice_item_key(pokemon):
             self._clear_choice_lock(pokemon)
+            return
+        from .effect_context import EffectContext
+
+        if not EffectContext.item(pokemon):
             return
         move_key = getattr(move, "key", None) or _normalize_key(getattr(move, "name", ""))
         move_key = str(move_key).lower()
@@ -3203,23 +3597,30 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def _move_control_holders(self, pokemon, *, include_foes: bool = False):
         """Return holders relevant to move lock/disable style callbacks."""
+        from .effect_context import EffectContext
+
         holders: list[tuple[Any, str]] = []
         status_handler = self._pokemon_status_handler(pokemon)
         if status_handler is not None:
             holders.append((status_handler, "self"))
         for _, handler in self._pokemon_volatile_handlers(pokemon):
             holders.append((handler, "self"))
-        ability = _resolve_ability(getattr(pokemon, "ability", None))
+        ability = EffectContext.ability(pokemon)
         if ability is not None:
             holders.append((ability, "self"))
-        item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+        item = EffectContext.item(pokemon)
         if item is not None:
             holders.append((item, "self"))
         if include_foes:
             for part in self.participants:
+                if self._allied(part, self.participant_for(pokemon)):
+                    continue
                 for active in getattr(part, "active", []):
                     if active is None or active is pokemon:
                         continue
+                    if part is not self.participant_for(pokemon):
+                        for _, volatile in self._pokemon_volatile_handlers(active):
+                            holders.append((volatile, "foe"))
                     foe_ability = _resolve_ability(getattr(active, "ability", None))
                     if foe_ability is not None:
                         holders.append((foe_ability, "foe"))
@@ -3337,6 +3738,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _modify_move_target(self, user, target, move):
         """Allow move and field effects to replace the chosen target."""
         modified = target
+        if (getattr(move, "raw", {}) or {}).get("target") == "scripted":
+            from .retaliation import RetaliationHit
+
+            hit = RetaliationHit.current(user, self)
+            if hit is not None:
+                modified = hit.target
         if move and getattr(move, "onModifyTarget", None):
             try:
                 candidate = invoke_callback(move.onModifyTarget, user, target, move, battle=self)
@@ -3351,8 +3758,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
     def _is_trapped(self, pokemon) -> bool:
         """Return whether ``pokemon`` is prevented from switching out."""
+        from .effect_context import EffectContext
+
+        owner = self.participant_for(pokemon)
+        if (owner is not None and "Ghost" not in getattr(pokemon, "types", [])
+                and EffectContext.key(EffectContext.item(pokemon)) != "shedshell"
+                and EffectContext.key(EffectContext.ability(pokemon)) != "shadowtag"):
+            if any(getattr(foe, "hp", 0) > 0
+                   and EffectContext.key(EffectContext.ability(foe)) == "shadowtag"
+                   for part in self.opponents_of(owner) for foe in part.active):
+                return True
         trapped = bool(getattr(pokemon, "trapped", False) or getattr(pokemon, "maybe_trapped", False))
         for holder, relation in self._switch_control_holders(pokemon, include_foes=True):
+            if EffectContext.key(holder) == "shadowtag":
+                continue
             hook = "onFoeTrapPokemon" if relation == "foe" else "onTrapPokemon"
             try:
                 result = self._call_effect_event(holder, hook, pokemon, battle=self)
@@ -3420,6 +3839,22 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return False
         return True
 
+    def _passes_side_protection(self, target, source, move) -> bool:
+        """Check each target's active side shields without cancelling spread peers."""
+        raw = getattr(move, "raw", {}) or {}
+        if getattr(move, "_z_paid", False) and move.category != "Status":
+            return True
+        if target is source or getattr(move, "breaksProtect", False) or raw.get("breaksProtect") or raw.get("flags", {}).get("bypassprotect"):
+            return True
+        participant = self.participant_for(target)
+        side = getattr(participant, "side", None)
+        for name, handler, state in self._side_condition_handlers(side):
+            if name not in {"quickguard", "wideguard", "craftyshield", "matblock"}:
+                continue
+            if self.singleEvent("TryHit", handler, state, target, source, move) is False:
+                return False
+        return True
+
     def _passes_try_primary_hit(self, target, source, move) -> bool:
         """Return whether primary-hit callbacks allow ``move`` to proceed."""
         if target is None or move is None:
@@ -3457,6 +3892,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         chance_value = 1.0
         stall_state = getattr(user, "volatiles", {}).get("stall")
+        last_turn = stall_state.get("last_turn") if isinstance(stall_state, dict) else None
+        if type(last_turn) is int and getattr(self, "mechanic_turn", 0) - last_turn > 1:
+            self.remove_volatile(user, "stall")
+            stall_state = None
         if stall_state is not None:
             handler = self._volatile_handler("stall")
             if handler is not None:
@@ -3473,14 +3912,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 except Exception:
                     chance_value = 1.0
         chance_value = max(0.0, min(1.0, chance_value))
-        if random.random() > chance_value:
+        from .random_source import resolve_rng
+
+        if chance_value < 1 and resolve_rng(battle=self).random() >= chance_value:
+            self.remove_volatile(user, "stall")
             return False
-        if getattr(user, "volatiles", {}).get("stall") is None:
-            self.add_volatile(user, "stall", source=user, effect=move)
+        self.add_volatile(user, "stall", source=user, effect=move)
         return True
 
     def _move_stage_holders(self, user, target=None):
         """Return holders that may react to pre-move gating events."""
+
+        from .effect_context import EffectContext
 
         holders: list[tuple[str | None, Any, Optional[Dict[str, Any]], Any]] = []
 
@@ -3492,7 +3935,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             add_holder(None, self._pokemon_status_handler(user), getattr(user, "status_state", None), user)
             for volatile_name, handler in self._pokemon_volatile_handlers(user):
                 add_holder(None, handler, getattr(user, "volatiles", {}).get(volatile_name), user)
-            add_holder(None, _resolve_ability(getattr(user, "ability", None)), getattr(user, "ability_state", None), user)
+            add_holder(None, EffectContext.ability(user), getattr(user, "ability_state", None), user)
             add_holder(None, self._holder_item(user), getattr(user, "item_state", None), user)
 
         user_participant = self.participant_for(user) if user is not None else None
@@ -3501,12 +3944,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 if pokemon is None or pokemon is user:
                     continue
                 relation = "foe"
-                if user_participant is not None and self.participant_for(pokemon) is user_participant:
+                if user_participant is not None and self._allied(self.participant_for(pokemon), user_participant):
                     relation = "ally"
                 add_holder(relation, self._pokemon_status_handler(pokemon), getattr(pokemon, "status_state", None), pokemon)
                 for volatile_name, handler in self._pokemon_volatile_handlers(pokemon):
                     add_holder(relation, handler, getattr(pokemon, "volatiles", {}).get(volatile_name), pokemon)
-                add_holder(relation, _resolve_ability(getattr(pokemon, "ability", None)), getattr(pokemon, "ability_state", None), pokemon)
+                add_holder(relation, EffectContext.ability(pokemon), getattr(pokemon, "ability_state", None), pokemon)
                 add_holder(relation, self._holder_item(pokemon), getattr(pokemon, "item_state", None), pokemon)
         return holders
 
@@ -3604,6 +4047,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _notify_after_use_item(self, pokemon, item, *, source=None, effect=None) -> None:
         """Trigger ability callbacks that react to item consumption or use."""
 
+        from .effect_context import EffectContext
+
         if not pokemon or not item:
             return
         ability = _resolve_ability(getattr(pokemon, "ability", None))
@@ -3618,15 +4063,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         for ally in getattr(participant, "active", []) or []:
             if ally is pokemon:
                 continue
-            ally_ability = _resolve_ability(getattr(ally, "ability", None))
+            ally_ability = EffectContext.ability(ally)
             if not ally_ability or not hasattr(ally_ability, "call"):
                 continue
             try:
-                ally_ability.call("onAllyAfterUseItem", item=item, source=pokemon, pokemon=ally, effect=effect, battle=self)
+                state = dict(getattr(ally, "ability_state", {}) or {})
+                state["target"] = ally
+                ally_ability.call("onAllyAfterUseItem", item=item, source=pokemon, pokemon=ally,
+                                  effect=effect, battle=self, effect_state=state)
             except Exception:
                 continue
 
-    def add_volatile(self, pokemon, condition: str, *, source=None, effect=None) -> bool:
+    def add_volatile(self, pokemon, condition: str, *, source=None, effect=None, start_callback=None) -> bool:
         """Add a volatile status through the battle event system."""
 
         if not pokemon or not condition:
@@ -3653,7 +4101,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             self.init_effect_state(condition, target=pokemon, source=source, source_effect=effect),
         )
         handler = self._volatile_handler(condition)
-        if handler:
+        if handler or callable(start_callback):
+            legacy_start = None
+            if callable(start_callback):
+                def legacy_start(*args, **kwargs):
+                    """Adapt move-data start hooks after the canonical immunity gate."""
+                    return invoke_callback(start_callback, source, pokemon, battle=self)
             result = self.singleEvent(
                 "Start",
                 handler,
@@ -3661,10 +4114,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pokemon,
                 source,
                 effect,
+                callback=legacy_start,
             )
             if result is False:
                 pokemon.volatiles.pop(condition, None)
                 return False
+        if condition == "attract" and source is not None:
+            self.runEvent("Attract", pokemon, source, effect)
         return True
 
     def remove_volatile(self, pokemon, condition: str) -> bool:
@@ -3689,6 +4145,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         source=None,
         is_from_forme_change: bool = False,
         is_transform: bool = False,
+        run_start: bool = True,
     ):
         """Assign a new ability to ``pokemon`` through explicit start/end hooks."""
 
@@ -3704,10 +4161,41 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if old_ability:
             self.singleEvent("End", old_ability, old_state, pokemon, source)
         pokemon.ability = resolved
+        if (getattr(pokemon, "native_origin", None) or {}).get("necrozma") and not is_from_forme_change:
+            pokemon.native_ability_provenance = "changed"
         pokemon.ability_state = self.init_effect_state(resolved, target=pokemon, source=source)
-        if resolved:
+        if resolved and run_start:
             self.singleEvent("Start", resolved, pokemon.ability_state, pokemon, source)
         return old_ability
+
+    def start_owned_ability(self, pokemon) -> None:
+        """Start an explicitly installed ability with named owner context.
+
+        Public Mega, Trace and native form installation use this boundary.
+        Propagate unexpected failures
+        to their whole-turn transaction; do not replay entry or item events.
+        Other ability installation paths retain their existing defaults.
+        """
+        from .effect_context import EffectContext
+        import inspect
+
+        ability = _resolve_ability(EffectContext.ability(pokemon))
+        raw_start = (getattr(ability, "raw", {}) or {}).get("onStart")
+        if not raw_start:
+            return
+        callback = resolve_callback_from_modules(raw_start, "pokemon.dex.functions.abilities_funcs")
+        if not callable(callback):
+            raise RuntimeError("The installed ability Start callback is unavailable.")
+        owner = getattr(callback, "__self__", None)
+        if owner is not None:
+            owner.effect_state = pokemon.ability_state
+        context = {"pokemon": pokemon, "target": pokemon, "source": pokemon,
+                   "user": pokemon, "battle": self, "effect_state": pokemon.ability_state}
+        signature = inspect.signature(callback)
+        if not any(p.kind == inspect.Parameter.VAR_KEYWORD for p in signature.parameters.values()):
+            context = {key: value for key, value in context.items() if key in signature.parameters}
+        signature.bind(**context)
+        callback(**context)
 
     def _pokemon_has_item(self, pokemon) -> bool:
         """Return whether ``pokemon`` is currently holding an item."""
@@ -3728,9 +4216,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def remove_item(self, pokemon, *, source=None, effect=None, used: bool = False):
         """Remove and return a held item, recording battle metadata."""
 
-        item_obj = self.take_item(pokemon, source=source, effect=effect)
+        # A consumption is a UseItem operation, not theft. TakeItem vetoes
+        # protect native identity items from transfer, including Booster Energy.
+        item_obj = self._holder_item(pokemon) if used else self.take_item(pokemon, source=source, effect=effect)
         if not item_obj:
             return None
+        if used:
+            self._clear_item(pokemon)
         item_name = getattr(item_obj, "name", str(item_obj))
         pokemon.last_used_item = item_obj
         if used:
@@ -3849,17 +4341,23 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def eat_item(self, pokemon, *, source=None, effect=None, force: bool = False):
         """Consume ``pokemon``'s held item following Showdown-style gates."""
 
+        from .effect_context import EffectContext
+
         item_obj = self._holder_item(pokemon)
         if not item_obj:
+            return False
+        if force and self.use_item(pokemon, item_obj, source=source, effect=effect) is False:
             return False
         if not force:
             if self.use_item(pokemon, item_obj, source=source, effect=effect) is False:
                 return False
-            for part in self.participants:
+            holder_participant = self.participant_for(pokemon)
+            for part in self.opponents_of(holder_participant) if holder_participant else []:
                 for foe in getattr(part, "active", []) or []:
-                    if foe is pokemon:
+                    if getattr(foe, "hp", 0) <= 0:
                         continue
-                    ability = _resolve_ability(getattr(foe, "ability", None))
+                    ability = (None if getattr(foe, "volatiles", {}).get("gastroacid") else
+                               _resolve_ability(EffectContext.ability(foe)))
                     if ability and hasattr(ability, "call"):
                         if ability.call("onFoeTryEatItem", item=item_obj, pokemon=pokemon, source=foe, effect=effect, battle=self) is False:
                             return False
@@ -3868,7 +4366,22 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if self.runEvent("EatItem", pokemon, source, effect, item_obj) is False:
                 return False
         item_name = getattr(item_obj, "name", str(item_obj))
+        hp_before_berry = getattr(pokemon, "hp", 0)
+        ripen_berry = (EffectContext.key(EffectContext.ability(pokemon)) == "ripen"
+                       and "berry" in EffectContext.key(item_obj))
+        if ripen_berry:
+            pokemon.ripen_active = True
         self.singleEvent("Eat", item_obj, getattr(pokemon, "item_state", {}), pokemon, source, effect)
+        # Legacy berries assign HP directly, bypassing TryHeal. Scale that
+        # actual berry heal once; normal healing callbacks clear this flag.
+        if getattr(pokemon, "ripen_active", False):
+            healed = max(0, getattr(pokemon, "hp", 0) - hp_before_berry)
+            pokemon.hp = min(pokemon.max_hp, pokemon.hp + healed)
+            pokemon.ripen_active = False
+        if force:
+            self.runEvent("EatItem", pokemon, source, effect, item_obj)
+        if ripen_berry:
+            pokemon.ripen_active = False
         pokemon.last_item = item_name
         pokemon.last_consumed_item = item_name
         pokemon.last_consumed_item_obj = item_obj
@@ -3919,6 +4432,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             return False
         pokemon.item = item_obj
         pokemon.item_state = self.init_effect_state(item_obj, target=pokemon, source=source, source_effect=effect)
+        self.register_handlers(pokemon)
         if hasattr(pokemon, "held_item"):
             pokemon.held_item = getattr(item_obj, "name", str(item_obj))
         pokemon.last_item = getattr(item_obj, "name", str(item_obj))
@@ -3937,20 +4451,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         return sum(result.debug.get("damage", []))
 
     def _do_move(self, user, target, move: BattleMove) -> bool:
-        """Execute ``move`` handling two-turn charge phases."""
-
-        cb_name = move.raw.get("onTryMove") if move.raw else None
-        cb = _resolve_callback(cb_name, moves_funcs)
-        if callable(cb):
-            try:
-                result = cb(user, target, move)
-            except Exception:
-                result = cb(user, target)
-            if result is False:
-                self.dispatcher.dispatch(
-                    "charge_move", user=user, target=target, move=move, battle=self
-                )
-                return False
+        """Execute a move already approved by the single pre-move hook pass."""
 
         self.dispatcher.dispatch(
             "execute_move", user=user, target=target, move=move, battle=self
@@ -3958,16 +4459,127 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         move.execute(user, target, self)
         return True
 
-    def use_move(self, action: Action) -> None:
+    def _announce_move_result(self, user, target, move, before_user, before_target, *, report_no_effect=True, field_changed=False):
+        """Describe one target's actual damage, conditions and stat changes."""
+        after_user, after_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
+        start_user_boosts, end_user_boosts = before_user.boosts, after_user.boosts
+        start_target_boosts, end_target_boosts = before_target.boosts, after_target.boosts
+        dmg = before_target.hp - after_target.hp
+        boosts_changed = (
+            start_user_boosts != end_user_boosts
+            or start_target_boosts != end_target_boosts
+        )
+        statuses_changed = (before_user.status, before_target.status) != (
+            after_user.status, after_target.status
+        )
+        effects_changed = any(
+            before.hp < after.hp or before.volatiles != after.volatiles
+            or before.item != after.item or before.ability != after.ability
+            for before, after in ((before_user, after_user), (before_target, after_target))
+        )
+        target_self = target is user
+        user_name = getattr(user, "name", "Pokemon")
+        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
+        if dmg > 0:
+            if getattr(self, "show_damage_numbers", False):
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name} and dealt {dmg} damage!"
+                )
+            if boosts_changed:
+                self.announce_stat_changes(
+                    user,
+                    start_user_boosts,
+                    end_user_boosts,
+                )
+                self.announce_stat_changes(
+                    target,
+                    start_target_boosts,
+                    end_target_boosts,
+                )
+        elif boosts_changed or statuses_changed or effects_changed or field_changed or getattr(move, "_queue_changed", False):
+            if target_self:
+                self.log_action(f"{user_name} used {move.name}!")
+            else:
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name}!"
+                )
+            self.announce_stat_changes(
+                user,
+                start_user_boosts,
+                end_user_boosts,
+                move.raw.get("boosts") if target_self else None,
+            )
+            self.announce_stat_changes(
+                target,
+                start_target_boosts,
+                end_target_boosts,
+                move.raw.get("boosts") if not target_self else None,
+            )
+        else:
+            if move.raw.get("boosts"):
+                fail_target = "its own" if target_self else f"{target_name}'s"
+                self.log_action(
+                    f"{user_name}'s {move.name} failed to affect {fail_target} stats!"
+                )
+                affected = user if target_self else target
+                start = start_user_boosts if target_self else start_target_boosts
+                end = end_user_boosts if target_self else end_target_boosts
+                self.announce_stat_changes(
+                    affected, start, end, move.raw.get("boosts")
+                )
+            elif report_no_effect:
+                self.log_action(
+                    f"{user_name} used {move.name} on {target_name} but it had no effect!"
+                )
+
+    def pending_move(self, pokemon):
+        """Return the current selected attack, never previous move history."""
+        queue = getattr(self, "queue", None)
+        if queue is not None:
+            action = queue.will_move(pokemon)
+            return getattr(action, "move", None)
+        participant = self.participant_for(pokemon)
+        pending = getattr(participant, "pending_action", None)
+        actions = pending if isinstance(pending, list) else [pending] if pending else []
+        for action in actions:
+            if getattr(action, "pokemon", None) is pokemon and getattr(getattr(action, "action_type", None), "name", "") == "MOVE":
+                return action.move
+        return None
+
+    def run_called_move(self, user, move, target=None, *, power_multiplier=1.0, spend_pp=False):
+        """Run a nested move, retaining normal costs for instructed repeats."""
+        from .called_moves import CalledMoveExecutor
+
+        return CalledMoveExecutor(self).execute(user, move, target, power_multiplier=power_multiplier,
+                                                spend_pp=spend_pp)
+
+    def use_move(self, action: Action, *, called: bool = False) -> None:
         """Attempt to use the chosen move applying simple failure rules."""
         if not action.move:
             return
+        if hasattr(action.move, "_gem_original_power"):
+            action.move.power = action.move._gem_original_power
+            del action.move._gem_original_power
+        action.move._gem_boosted = False
+        action.move._gem_consumed = False
+        action.move._gem_power_multiplier = 1
+        action.move._gem_power_applied = False
+        action.move.total_damage = 0
+        # One shared cache covers every hit/target of this use, never the next
+        # turn or a damage preview. Only the consumed type ledger is persisted.
+        action.move._stellar_boosts = {}
+        action.move._primary_hit_successful = False
+        called_before = len(getattr(self, "called_moves", []))
 
         user = action.pokemon or (
             action.actor.active[0] if action.actor.active else None
         )
         if not user:
             return
+        from .effect_context import EffectContext
+
+        if EffectContext.key(EffectContext.item(user)) != "metronome":
+            getattr(user, "volatiles", {}).pop("metronome", None)
 
         if getattr(user, "hp", 0) <= 0:
             tempvals = getattr(user, "tempvals", None)
@@ -3977,14 +4589,23 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             tempvals["switch_out"] = True
             return
 
+        # Crowned signatures replace only this runtime action; stored move
+        # identity and PP remain Iron Head in the owner's canonical slot.
+        signature = {"Zacian-Crowned": "Behemoth Blade", "Zamazenta-Crowned": "Behemoth Bash"}.get(str(getattr(user, "species", "")))
+        if signature and _effect_key(action.move) == "ironhead":
+            original_pp = next((state[2] for state in self._move_pp_states(user) if _normalize_key(state[1]).lower() == "ironhead"), getattr(action.move, "pp", None))
+            action.move = BattleMove(name=signature, pp=original_pp)
+            action.move._pp_move_name = "Iron Head"
+
         # Ensure we have full move data loaded from the dex
         key = getattr(action.move, "key", None)
         if not key and getattr(action.move, "name", None):
             key = _normalize_key(action.move.name)
         ensure_movedex_aliases(MOVEDEX)
-        dex_move = MOVEDEX.get(key) if key else None
+        private_z = getattr(action.move, "_z_paid", False)
+        dex_move = MOVEDEX.get(key) if key and not private_z else None
         dex_raw = get_raw(dex_move) if dex_move else {}
-        if not dex_move or not dex_raw:
+        if not private_z and (not dex_move or not dex_raw):
             try:
                 from pokemon import dex as _dex_mod
 
@@ -4011,6 +4632,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             action.move.raw = merged_raw
 
             raw = action.move.raw
+            action.move.multihit = raw.get("multihit")
 
             # POWER: prefer Showdown's `basePower` when present; otherwise fall back to dex_move.power.
             if action.move.power in (None, 0):
@@ -4030,7 +4652,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             # TYPE/CATEGORY/PRIORITY: ensure type present; category is kept in raw for _apply_move_damage.
             if action.move.type is None:
                 action.move.type = getattr(dex_move, "type", raw.get("type"))
-            if getattr(action.move, "category", None) is None:
+            if raw.get("category") is not None:
                 action.move.category = raw.get("category", getattr(dex_move, "category", None))
             if action.move.priority == 0:
                 action.move.priority = int(raw.get("priority", 0))
@@ -4092,30 +4714,48 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     action.move.pp = getattr(cached_move, "pp", None)
                     break
 
-        if action.move.pp is not None and action.move.pp <= 0:
+        if action.move.pp is not None and action.move.pp <= 0 and not private_z:
             return
-        action.move = self._locked_move_override(user, action.move)
-        action.move = self._override_action_move(user, action.move)
+        emergency_move = _normalize_key(action.move.key or action.move.name).lower() == "struggle"
+        if not emergency_move:
+            for override in (self._locked_move_override, self._override_action_move):
+                enforced = override(user, action.move)
+                if _normalize_key(getattr(enforced, "key", None) or enforced.name) != _normalize_key(action.move.key or action.move.name):
+                    from pokemon.dex.functions.moves.damage_moves import _battle_move_from_name
+
+                    action.move = enforced if hasattr(enforced, "execute") else (_battle_move_from_name(enforced.name) or enforced)
+                    return self.use_move(action, called=called)
         selected_move_key = getattr(action.move, "key", None) or _normalize_key(
             getattr(action.move, "name", "")
         )
         selected_move_key = str(selected_move_key).lower() if selected_move_key else None
         locked_move_key = getattr(user, "choice_locked_move", None)
-        if locked_move_key and self._choice_item_key(user):
-            if selected_move_key and selected_move_key != locked_move_key:
+        if locked_move_key and self._choice_item_key(user) and not called:
+            if selected_move_key and selected_move_key != locked_move_key and not emergency_move:
                 locked_move_name = str(locked_move_key).replace("-", " ").title()
                 self.log_action(
                     f"{getattr(user, 'name', 'Pokemon')} is locked into {locked_move_name}!"
                 )
                 return
-        elif locked_move_key:
+        elif locked_move_key and not called:
             self._clear_choice_lock(user)
-        if self._is_move_disabled(user, action.move):
+        if not called and not emergency_move and self._is_move_disabled(user, action.move):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} can't use {action.move.name}!")
             return
-        if self.status_prevents_move(user, action.move):
+        if not called and self.status_prevents_move(user, action.move):
             self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
             return
+        if getattr(action, "z_request", None) is not None:
+            from .z_moves import ZMoves
+
+            ZMoves.begin(self, action)
+            if action.move._z_profile.target == "allAdjacentFoes":
+                from .z_spread import ZSpread
+
+                ZSpread.execute(self, action)
+                return
+        from .effect_context import EffectContext
+
         if action.move.beforeMoveCallback:
             before_move_result = invoke_callback(
                 action.move.beforeMoveCallback,
@@ -4127,12 +4767,30 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if before_move_result is False:
                 return
 
+        if getattr(self, 'multi', False) and getattr(action, 'target_position', None):
+            field_part = next((part for part in self.participants if part.field_position == action.target_position), None)
+            if field_part is not None:
+                action.target, action.target_slot = field_part, 0
+                action.target_pokemon = next(iter(field_part.active), None)
         target_part = action.target
         if target_part not in self.participants or target_part.has_lost:
             opponents = self.opponents_of(action.actor)
             target_part = opponents[0] if opponents else None
         target = None
-        if is_self_target(action.move.raw.get("target")):
+        if getattr(action, "target_slot", None) is not None:
+            from .active_slots import active_at
+
+            slot = action.target_slot
+            if target_part:
+                candidate = active_at(target_part, slot)
+                if candidate is not None and getattr(candidate, "hp", 0) > 0:
+                    target = candidate
+        elif getattr(action, "target_pokemon", None) is not None:
+            candidate = action.target_pokemon
+            if target_part and any(mon is candidate for mon in target_part.active) and getattr(candidate, "hp", 0) > 0:
+                target = candidate
+        elif action.move.raw.get("target") in {"self", "allies", "allySide", "allyTeam"} or (
+                action.move.raw.get("target") == "adjacentAllyOrSelf" and len(action.actor.active) == 1):
             target_part = action.actor
             target = user
         elif target_part and target_part.active:
@@ -4140,12 +4798,27 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if getattr(candidate, "hp", 0) > 0:
                 target = candidate
 
+        action.move.flags = dict(action.move.raw.get("flags", {}) or {})
+        action.move.breaksProtect = bool(action.move.raw.get("breaksProtect"))
+        action.move.tracks_target = bool(action.move.raw.get("tracksTarget"))
+        action.move.secondaries = copy.deepcopy(action.move.raw.get("secondaries", []) or [])
+        if action.move.raw.get("secondary"):
+            action.move.secondaries.append(copy.deepcopy(action.move.raw["secondary"]))
+        move_ability = EffectContext.ability(user)
+        if move_ability and hasattr(move_ability, "call"):
+            move_ability.call("onModifyMove", action.move, user=user, pokemon=user, target=target,
+                              battle=self, effect_state=getattr(user, "ability_state", {}))
+        action.move._ability_move_prepared = True
+        move_item = EffectContext.item(user)
+        if hasattr(move_item, "call"):
+            move_item.call("onModifyMove", action.move, pokemon=user, battle=self)
         if target is not None:
             target = self._modify_move_target(user, target, action.move)
             modified_part = self.participant_for(target)
             if modified_part is not None:
                 target_part = modified_part
-            redirected = self.runEvent(
+            redirectable = action.move.raw.get("target", "normal") in {"normal", "any", "adjacentFoe"}
+            redirected = target if (not redirectable or action.move.tracks_target or getattr(action.move, "_z_spread_part", False)) else self.runEvent(
                 "RedirectTarget",
                 target,
                 user,
@@ -4160,7 +4833,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
 
         if not target:
             # no valid target, still deduct PP and end
-            self.deduct_pp(user, action.move)
+            self.deduct_pp(user, action.move, target=target)
             try:
                 user.tempvals["moved"] = True
             except Exception:
@@ -4173,13 +4846,34 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
+        charge_key = str(_normalize_key(action.move.key or action.move.name)).lower()
+        charge_move = bool(action.move.raw.get("flags", {}).get("charge"))
+        was_charging = charge_move and bool(getattr(user, "volatiles", {}).get(charge_key))
         if not self._passes_try_move(user, target, action.move):
             try:
                 user.tempvals["moved"] = True
             except Exception:
                 pass
-            if action.move.raw.get("selfdestruct") == "always":
-                user.hp = 0
+            if charge_move and not was_charging and getattr(user, "volatiles", {}).get(charge_key):
+                # The first phase deliberately defers execution. Spend PP once
+                # here; releasing the same move next turn does not spend it again.
+                item = EffectContext.item(user)
+                if hasattr(item, "call") and item.call("onChargeMove", pokemon=user, target=target, move=action.move) is False:
+                    self.use_move(action, called=True)
+                    self.deduct_pp(user, action.move, target=target)
+                    return
+                self.deduct_pp(user, action.move, target=target)
+                user.last_move = action.move
+                self._set_choice_lock(user, action.move)
+                self.dispatcher.dispatch("charge_move", user=user, target=target,
+                                         move=action.move, battle=self)
+                self.log_action(f"{getattr(user, 'name', 'Pokemon')} began charging {action.move.name}!")
+                return
+            if not was_charging:
+                self.deduct_pp(user, action.move, target=target)
+            # A TryMove prevention (for example Damp) stops execution before
+            # self-sacrifice. Protection/misses after execution retain their
+            # separate selfdestruct handling below.
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
                 f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
@@ -4197,7 +4891,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 "flags", {}
             ).get("snatch"):
                 # Deduct PP from the original user
-                self.deduct_pp(user, action.move)
+                self.deduct_pp(user, action.move, target=target)
                 self.log_action(
                     f"{getattr(snatcher, 'name', 'Pokemon')} snatched {getattr(user, 'name', 'Pokemon')}'s move!"
                 )
@@ -4225,7 +4919,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if target is not None:
             apply_boost(target, {}, source=user, effect=action.move)
 
-        self.deduct_pp(user, action.move)
+        if not was_charging:
+            self.deduct_pp(user, action.move, target=target)
         try:
             user.last_move = action.move
         except Exception:
@@ -4241,13 +4936,19 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
         self._set_choice_lock(user, action.move)
+        action.move.effective_priority = action.priority or action.move.priority
         if action.move.onModifyMove:
             invoke_callback(action.move.onModifyMove, action.move, user, target, battle=self)
         if action.move.onModifyType:
             invoke_callback(action.move.onModifyType, action.move, user, target, battle=self)
+        self.runEvent("ModifyType", user, target, action.move, action.move)
         self.dispatcher.dispatch(
             "before_move", user=user, target=target, move=action.move, battle=self
         )
+
+        if self.runEvent("PrepareHit", user, target, action.move) is False:
+            self._notify_move_aborted(user, target, action.move)
+            return
 
         if action.move.onPrepareHit:
             prepared = invoke_callback(action.move.onPrepareHit, user, target, action.move, battle=self)
@@ -4297,7 +4998,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
-        if getattr(target, "volatiles", {}).get("protect"):
+        from .protection import MoveProtection
+        if MoveProtection.blocks(target, user, action.move, self):
             try:
                 user.tempvals["moved"] = True
             except Exception:
@@ -4315,7 +5017,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             action.move,
             False,
         )
-        if blocked:
+        from .accuracy import MoveAccuracy
+        if blocked and not MoveAccuracy.locked_on(user, target):
             try:
                 user.tempvals["moved"] = True
             except Exception:
@@ -4328,10 +5031,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
+        if getattr(action.move, "multihit_type", "") == "parentalbond":
+            from .parental_bond import ParentalBondAttack
+
+            ParentalBondAttack.execute(self, user, target, action.move)
+            return
+
         sub = getattr(target, "volatiles", {}).get("substitute")
         move_flags = getattr(action.move, "flags", None) or action.move.raw.get("flags", {})
         bypasses_substitute = bool(
             action.move.raw.get("bypassSub") or move_flags.get("bypasssub")
+            or getattr(action.move, "infiltrates", False)
         )
         move_category = (
             getattr(action.move, "category", None)
@@ -4354,10 +5064,15 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
         if target is not user and sub and not bypasses_substitute:
+            if getattr(action.move, "_z_paid", False) and _ability_try_hit_blocks(target, user, action.move, self):
+                self._notify_move_aborted(user, target, action.move)
+                return
             Move = _get_move_class()
 
             from .damage import apply_damage
+            from .item_effects import HeldItemRules
 
+            HeldItemRules.apply_gem_power(action.move)
             raw = dict(action.move.raw)
             if action.move.basePowerCallback:
                 raw["basePowerCallback"] = action.move.basePowerCallback
@@ -4382,8 +5097,23 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 except Exception:
                     move.basePowerCallback = None
 
+            move._stellar_boosts = action.move._stellar_boosts
+            move._tera_shared_use = True
+            move._engine_secondaries = True
+            move._z_paid = getattr(action.move, "_z_paid", False)
             dmg_result = apply_damage(user, target, move, battle=self, update_hp=False)
+            from .terastallization import apply_stellar_cost
+
+            apply_stellar_cost(user, action.move, dmg_result)
             dmg = sum(dmg_result.debug.get("damage", []))
+            substitute_hp = sub.get("hp", 0) if isinstance(sub, dict) else dmg
+            actual_substitute_damage = min(max(0, substitute_hp), max(0, dmg))
+            action.move.total_damage += actual_substitute_damage
+            from .z_effects import ZEffects
+
+            ZEffects.hit(self, user, action.move, actual_substitute_damage)
+            if actual_substitute_damage > 0:
+                HeldItemRules.commit_gem(user, action.move)
             if isinstance(sub, dict):
                 remaining = sub.get("hp", 0) - dmg
                 if remaining <= 0:
@@ -4405,12 +5135,15 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 recoil = action.move.raw.get("recoil")
                 if recoil:
                     frac = recoil[0] / recoil[1]
-                    user.hp = max(0, user.hp - int(dmg * frac))
-                    self.log_action(
-                        DEFAULT_TEXT["recoil"]["damage"].replace(
-                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                    from .indirect_damage import apply_recoil_damage
+
+                    recoil_loss = apply_recoil_damage(user, int(dmg * frac), action.move, battle=self, source=target)
+                    if recoil_loss:
+                        self.log_action(
+                            _get_default_text()["recoil"]["damage"].replace(
+                                "[POKEMON]", getattr(user, "name", "Pokemon")
+                            )
                         )
-                    )
                 self._queue_self_switch(user, action.move)
             try:
                 user.tempvals["moved"] = True
@@ -4422,6 +5155,9 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.hp = 0
             if not hit:
                 self._notify_move_aborted(user, target, action.move)
+            else:
+                self.runEvent("AfterSubDamage", target, user, action.move, actual_substitute_damage)
+                self.runEvent("AfterMoveSecondarySelf", user, target, action.move)
             return
 
         # Allow moves to execute even when the target is normally immune.
@@ -4437,19 +5173,27 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         # as appropriate, so behaviour remains informative while enabling tests
         # to validate move side effects.
 
-        start_hp = getattr(target, "hp", 0)
-        start_user_boosts = dict(getattr(user, "boosts", {}))
-        start_target_boosts = dict(getattr(target, "boosts", {}))
-        start_statuses = (getattr(user, "status", None), getattr(target, "status", None))
+        before_user, before_target = _MoveResultState.capture(user), _MoveResultState.capture(target)
+        start_room = bool(self.field.get_pseudo_weather("trickroom"))
+        start_positions = tuple(part.field_position for part in self.participants) if getattr(self, 'multi', False) else None
         if action.move.onBeforeMove:
             try:
                 action.move.onBeforeMove(user, target, self)
             except Exception:
                 action.move.onBeforeMove(user, target)
+        from .legal_actions import LegalActions
+        z_part = getattr(action.move, "_z_spread_part", False)
+        spread_targets = (LegalActions(self, action.actor, user).targets(action.move)
+                          if not z_part and action.move.raw.get("target") in {"allAdjacent", "allAdjacentFoes", "allies"} else [])
+        if action.move.raw.get("target") == "allies" and action.move.onHit:
+            # Group support handlers already visit the user's party once.
+            spread_targets = []
+        # Some callbacks affect the whole group on the primary hit. Retain each
+        # target's original state so those effects also get an accurate summary.
+        spread_before = {id(mon): _MoveResultState.capture(mon) for mon in spread_targets}
+        if not z_part:
+            action.move._spread = len(spread_targets) > 1
         executed = self._do_move(user, target, action.move)
-        end_hp = getattr(target, "hp", 0)
-        end_user_boosts = dict(getattr(user, "boosts", {}))
-        end_target_boosts = dict(getattr(target, "boosts", {}))
         if not executed:
             try:
                 user.tempvals["moved"] = True
@@ -4461,68 +5205,19 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             )
             return
 
-        dmg = start_hp - end_hp
-        boosts_changed = (
-            start_user_boosts != end_user_boosts
-            or start_target_boosts != end_target_boosts
-        )
-        statuses_changed = start_statuses != (
-            getattr(user, "status", None), getattr(target, "status", None)
-        )
-        target_self = is_self_target(action.move.raw.get("target"))
-        user_name = getattr(user, "name", "Pokemon")
-        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
-        if dmg > 0:
-            if getattr(self, "show_damage_numbers", False):
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name} and dealt {dmg} damage!"
-                )
-            if boosts_changed:
-                self.announce_stat_changes(
-                    user,
-                    start_user_boosts,
-                    end_user_boosts,
-                )
-                self.announce_stat_changes(
-                    target,
-                    start_target_boosts,
-                    end_target_boosts,
-                )
-        elif boosts_changed or statuses_changed:
-            if target_self:
-                self.log_action(f"{user_name} used {action.move.name}!")
-            else:
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name}!"
-                )
-            self.announce_stat_changes(
-                user,
-                start_user_boosts,
-                end_user_boosts,
-                action.move.raw.get("boosts") if target_self else None,
-            )
-            self.announce_stat_changes(
-                target,
-                start_target_boosts,
-                end_target_boosts,
-                action.move.raw.get("boosts") if not target_self else None,
-            )
-        else:
-            if action.move.raw.get("boosts"):
-                fail_target = "its own" if target_self else f"{target_name}'s"
-                self.log_action(
-                    f"{user_name}'s {action.move.name} failed to affect {fail_target} stats!"
-                )
-                affected = user if target_self else target
-                start = start_user_boosts if target_self else start_target_boosts
-                end = end_user_boosts if target_self else end_target_boosts
-                self.announce_stat_changes(
-                    affected, start, end, action.move.raw.get("boosts")
-                )
-            else:
-                self.log_action(
-                    f"{user_name} used {action.move.name} on {target_name} but it had no effect!"
-                )
+        room_active = bool(self.field.get_pseudo_weather("trickroom"))
+        room_changed = start_room != room_active
+        positions_changed = (start_positions is not None and
+            start_positions != tuple(part.field_position for part in self.participants))
+        sacrifice = (action.move.raw.get("selfdestruct") == "ifHit"
+                     and getattr(action.move, "_primary_hit_successful", False))
+        called = (action.move.raw.get("callsMove") or _effect_key(action.move) == "instruct") and len(getattr(self, "called_moves", [])) > called_before
+        if called:
+            self.log_action(f"{user.name} used {action.move.name} and called {self.called_moves[-1]}!")
+        self._announce_move_result(user, target, action.move, before_user, before_target,
+                                   field_changed=room_changed or positions_changed, report_no_effect=not sacrifice and not called)
+        if room_changed:
+            self.log_action("Trick Room twisted the dimensions!" if room_active else "Trick Room's twisted dimensions returned to normal!")
 
         if action.move.raw.get("forceSwitch") and target is not None and getattr(target, "hp", 0) > 0:
             if self._can_drag_out(target, source=user, effect=action.move):
@@ -4547,8 +5242,29 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 move=action.move,
             )
 
+        for extra in spread_targets:
+            if extra is not target and getattr(extra, "hp", 0) > 0:
+                before_user = _MoveResultState.capture(user)
+                action.move.execute(user, extra, self)
+                if str(action.move.raw.get("category", "")).lower() == "status":
+                    self._announce_move_result(
+                        user, extra, action.move, before_user, spread_before[id(extra)],
+                        # Callback-only moves can change state outside this
+                        # summary's model; leave their failure text to the handler.
+                        report_no_effect=any(action.move.raw.get(key) for key in
+                                             ("boosts", "status", "volatileStatus", "heal")),
+                    )
+
+        # Status moves also change item-trigger conditions. Run the ordinary
+        # update phase before another queued combatant acts, just as damage
+        # already does for its target (for example Lum curing Confuse Ray).
+        for participant in self.participants:
+            for pokemon in participant.active:
+                if getattr(pokemon, "hp", 0) > 0:
+                    self.dispatcher.dispatch("update", pokemon=pokemon, battle=self)
         self.runEvent("AfterMoveSecondary", target, user, action.move)
-        self.runEvent("AfterMoveSecondarySelf", user, target, action.move)
+        if not z_part:
+            self.runEvent("AfterMoveSecondarySelf", user, target, action.move)
 
         if action.move.onUseMoveMessage:
             invoke_callback(
@@ -4570,6 +5286,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 move=action.move,
             )
 
+        if z_part:
+            return
         if action.move.onAfterMove:
             invoke_callback(action.move.onAfterMove, user, target, battle=self)
         self.runEvent("AfterMove", user, target, action.move)
@@ -4582,6 +5300,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         sd = action.move.raw.get("selfdestruct")
         if sd:
             hit = getattr(target, "tempvals", {}).get("took_damage")
+            if str(action.move.raw.get("category", "")).lower() == "status":
+                hit = getattr(action.move, "_primary_hit_successful", False)
             if sd == "always" or (sd == "ifHit" and hit):
                 user.hp = 0
         try:
@@ -4593,14 +5313,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         except Exception:
             pass
 
-        if action.move.raw.get("target") in {"allAdjacent", "allAdjacentFoes"}:
-            extra = []
-            if target_part and target_part.active:
-                for t in target_part.active:
-                    if t is not target and getattr(t, "hp", 0) > 0:
-                        extra.append(t)
-            for t in extra:
-                self._deal_damage(user, t, action.move, spread=True)
 
     def run_move(self) -> None:
         """Execute ordered actions for this turn."""
@@ -4609,7 +5321,10 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         self.execute_actions(actions)
 
     def run_faint(self) -> None:
-        """Handle fainted Pokémon and mark participants as losing if needed."""
+        """Handle fainted PokÃƒÆ’Ã‚Â©mon and mark participants as losing if needed."""
+
+        from .active_slots import active_at, active_slots, assign_active
+        from .legal_actions import LegalActions
 
         for part in self.participants:
             if part.has_lost:
@@ -4750,6 +5465,11 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                                 evs if self.award_xp else {}, txp if self.award_txp else 0,
                                 getattr(opponent, "participating_pokemon", None),
                             )
+                            from pokemon.services.leader_crest import LeaderCrestProgress
+
+                            candidate = LeaderCrestProgress.candidate(self, poke)
+                            if candidate is not None:
+                                payload["kingambit_defeat"] = candidate
                             identity = getattr(poke, "model_id", None) or str(part.pokemons.index(poke))
                             delivery.deliver(opponent.player, f"faint:{part.team}:{identity}", payload, caller=self,
                                              before_claim=lambda: self.on_faint(poke))
@@ -4778,30 +5498,32 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     for poke in fainted:
                         self.on_faint(poke)
 
-            # Remove fainted Pokémon from the active list
+            # Remove fainted PokÃƒÆ’Ã‚Â©mon from the active list
+            active_slots(part)
             part.active = [p for p in part.active if getattr(p, "hp", 0) > 0]
             if getattr(part, "side", None) is not None:
                 part.side.active = part.active
 
-            # Check if the participant has any Pokémon left
+            # Check if the participant has any PokÃƒÆ’Ã‚Â©mon left
             if not any(getattr(p, "hp", 0) > 0 for p in part.pokemons):
                 part.has_lost = True
                 continue
 
             for slot in range(part.max_active):
-                if len(part.active) <= slot:
-                    replacement = None
-                    for poke in part.pokemons:
-                        if poke not in part.active and getattr(poke, "hp", 0) > 0:
-                            replacement = poke
-                            break
+                if active_at(part, slot) is None:
+                    reserves = LegalActions(self, part, None).reserves(slot=slot, forced=True)
+                    replacement = reserves[0] if reserves else None
                     if replacement:
-                        part.active.append(replacement)
+                        assign_active(part, slot, replacement)
                         setattr(replacement, "side", part.side)
                         if hasattr(part, "record_participation"):
                             part.record_participation(replacement)
                         if getattr(part, "side", None) is not None:
                             part.side.active = part.active
+                        if getattr(replacement, "mega_profile", None) or (getattr(replacement, "native_origin", None) or {}).get("necrozma"):
+                            self.on_enter_battle(replacement)
+                            self._log_switch_in(part, replacement)
+                            continue
                         self.register_handlers(replacement)
                         self.dispatcher.dispatch(
                             "pre_start", pokemon=replacement, battle=self
@@ -4809,9 +5531,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         self.dispatcher.dispatch(
                             "start", pokemon=replacement, battle=self
                         )
+                        from .z_effects import ZEffects
+
+                        ZEffects.switch_in(self, replacement)
                         self.dispatcher.dispatch(
                             "switch_in", pokemon=replacement, battle=self
                         )
+                        self._run_slot_swap_events(replacement)
                         self.apply_entry_hazards(replacement)
                         self._log_switch_in(part, replacement)
 
@@ -4873,14 +5599,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     _log_status_damage(status, poke)
 
                 # Ability and item residual callbacks
-                ability = _resolve_ability(getattr(poke, "ability", None))
+                from .effect_context import EffectContext
+                ability = _resolve_ability(EffectContext.ability(poke))
                 if ability and hasattr(ability, "call"):
                     try:
-                        ability.call("onResidual", poke, self)
+                        ability.call("onResidual", pokemon=poke, battle=self,
+                                     effect_state=getattr(poke, "ability_state", {}))
                     except Exception:
                         pass
 
-                item = getattr(poke, "item", None) or getattr(poke, "held_item", None)
+                from .effect_context import EffectContext
+                item = EffectContext.item(poke)
                 if item and hasattr(item, "call"):
                     try:
                         item.call("onResidual", pokemon=poke, battle=self)
@@ -4895,10 +5624,17 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     except Exception:
                         VOLATILE_HANDLERS = {}
                     for vol in volatiles:
-                        handler = VOLATILE_HANDLERS.get(vol)
+                        handler = VOLATILE_HANDLERS.get(vol) or self._volatile_handler(vol)
                         if handler and hasattr(handler, "onResidual"):
                             handler.onResidual(poke, battle=self)
+                        if vol in {"protect", "magiccoat", "shelltrap", "endure", "banefulbunker",
+                                   "burningbulwark", "kingsshield", "obstruct", "silktrap", "spikyshield",
+                                   "electrify", "powder", "helpinghand", "followme", "ragepowder", "spotlight"}:
+                            # Protection ends with this turn, including restored
+                            # sessions whose old volatile had no duration state.
+                            self.remove_volatile(poke, vol)
 
+        self._handle_side_condition_durations()
         self._handle_slot_condition_residuals()
 
         # Handle field weather effects
@@ -4918,7 +5654,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         weather_handler.onWeather(poke)
                     except Exception:
                         pass
-                ability = _resolve_ability(getattr(poke, "ability", None))
+                ability = _resolve_ability(EffectContext.ability(poke))
                 if ability and hasattr(ability, "call"):
                     try:
                         ability.call("onWeather", pokemon=poke)
@@ -4928,17 +5664,20 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                         except Exception:
                             pass
         if weather_handler and weather not in self.field.pseudo_weather:
-            self.field.weather = None
-            self.field.weather_handler = None
+            self.clearWeather()
 
         # Handle terrain effects
         terrain = getattr(self.field, "terrain", None)
         terrain_handler = getattr(self.field, "terrain_handler", None)
         if terrain_handler:
-            try:
+            if callable(getattr(terrain_handler, "onFieldResidual", None)):
                 terrain_handler.onFieldResidual(self.field)
-            except Exception:
-                pass
+            else:
+                state = self.field.pseudo_weather.get(terrain, {})
+                if isinstance(state.get("duration"), int):
+                    state["duration"] -= 1
+                    if state["duration"] <= 0:
+                        self.field.pseudo_weather.pop(terrain, None)
             for part in self.participants:
                 if part.has_lost:
                     continue
@@ -4948,14 +5687,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     except Exception:
                         pass
             if terrain not in self.field.pseudo_weather:
-                self.field.terrain = None
-                self.field.terrain_handler = None
+                self.clearTerrain()
 
         # Handle pseudo weather effects
         for name, effect in list(self.field.pseudo_weather.items()):
             if name in {weather, terrain}:
                 continue
-            handler = None
+            handler = self._lookup_effect(name)
             if moves_funcs:
                 handler = getattr(moves_funcs, name.capitalize(), None)
                 if handler:
@@ -4977,8 +5715,18 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     pass
             if name not in self.field.pseudo_weather:
                 continue
+            if name == "trickroom":
+                # Older checkpoints stored only True; give those a bounded
+                # remaining lifetime as well as preserving new duration state.
+                if effect is True:
+                    effect = {"duration": 5}
+                    self.field.pseudo_weather[name] = effect
+                if isinstance(effect, dict) and isinstance(effect.get("duration"), (int, float)):
+                    effect["duration"] -= 1
+                    if effect["duration"] <= 0:
+                        self.remove_pseudo_weather(name)
 
-        # Remove Pokémon that fainted from residual damage
+        # Remove PokÃƒÆ’Ã‚Â©mon that fainted from residual damage
         self.run_faint()
 
         # Auto-switch in replacements for any empty sides
@@ -5086,7 +5834,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         Parameters
         ----------
         pokemon: Any
-            The Pokémon whose stat changes will be announced.
+            The PokÃƒÆ’Ã‚Â©mon whose stat changes will be announced.
         start: dict
             Mapping of stat names to their starting stage values.
         end: dict

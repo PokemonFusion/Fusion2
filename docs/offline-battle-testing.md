@@ -18,16 +18,43 @@ Import isolation applies to both test directories. The battle outcome harness
 uses normal imports so its classes and effect handlers share module identities.
 Exhaustive dex, generated callbacks, and Showdown checks remain opt-in.
 
-For the mandatory combined run, also enable generated callback checks in the
-same process:
+The canonical mandatory gate runs the application, semantic, engine and
+generated callback suites together in three fresh Python processes: application
+tests first, the identical command again, then battle tests first. Run it with
+the same interpreter used for your installed project dependencies:
+
+```powershell
+..\evenv\Scripts\python.exe -B tools/run_mandatory_tests.py
+```
+
+`make test-mandatory` and the lifecycle-integrity CI workflow call this same
+runner. It sets the offline environment, clears ambient `PYTEST_ADDOPTS`, runs
+without parallel workers, and stops on the first failure. Repeated runs reuse
+the checkout and pytest cache; they do not reuse Python module state or a game
+database. ORM checks in the default suite create their own disposable databases.
+
+For a single combined run while developing, use:
 
 ```powershell
 ..\evenv\Scripts\python.exe -m pytest tests pokemon/battle/tests --run-callback-tests
 ```
 
 This checks that legacy application stubs, semantic contracts, engine tests,
-and generated callback checks coexist. It does not prove live Evennia sessions,
-PostgreSQL concurrency, or migration/deployment readiness.
+and generated callback checks coexist. The focused import-isolation regression
+also injects a legacy battle-module stub and proves real Electric Terrain
+effects still work in either collection order. These checks do not prove live
+Evennia sessions, PostgreSQL concurrency, or migration/deployment readiness.
+
+The [September Week 1 evidence](testing/september-week-1.md) maps the test,
+result-commit and lifecycle criteria to their implementation and verification.
+
+The mandatory gate deliberately excludes `tests/test_all_moves_and_abilities.py`
+and `pokemon/battle/tests/test_exhaustive_dex_smoke.py` cases marked `dex`
+(high-volume construction/execution sweeps), and
+`pokemon/battle/tests/test_showdown_differential.py` cases marked `showdown`
+(requires a separate local Showdown checkout and runner). Those tests remain
+visible as skips and have explicit commands below. Generated callbacks are
+enabled in every mandatory pass.
 
 The following focused targets are useful while diagnosing a specific failure:
 
@@ -290,3 +317,41 @@ supported in combat, it needs at least one semantic contract for the expected
 state change. Use the dex smoke tests for broad "all entries load and can be
 exercised" coverage, and Showdown differential cases for mechanics where final
 state parity matters.
+
+## Reusable item verification fixtures
+
+The [current item support matrix](testing/battle-item-support-2026-10-21.json)
+links every retained item to declared normal-flow evidence and fixes the exact
+item/check lists and budgets for future reruns. Generate or verify it with:
+
+```powershell
+..\evenv\Scripts\python.exe -B tools/reconcile_item_support.py --check
+```
+
+When the retained local archives are available, rehash them without starting a
+server, logging in, or changing saved evidence:
+
+```powershell
+..\evenv\Scripts\python.exe -B tools/reconcile_item_support.py --check --evidence-root .codex-artifacts/full-items-postformfix-20261020 --compare-local-source
+```
+
+The matrix uses LF-normalized text identity so Git checkout newline conversion
+does not change its meaning. Compressed evidence archives retain exact byte
+hashes. The optional local source comparison checks raw bytes, including newline
+format, separately from the portable matrix.
+
+The checked-in catalog and supplemental Recycle cases start at 49% HP. The berry
+is consumed on entry and heals above half HP; Recycle can then restore a held
+berry that survives the completed turn. Starting at 20% can legally consume it
+again, which is a negative fixture control rather than a restoration defect.
+
+The paired Mycelium Might runner uses Good as Gold for a persistent status-bypass
+positive, Limber for a completed-turn cure negative, and an Electric target for
+innate paralysis immunity. Both negative triggers are explicitly excluded from
+positive-effect claims. The single-move immunity regression separately seeds the
+real Thunder Wave accuracy roll; it does not disable accuracy checks.
+
+Run `pokemon/battle/tests/test_reusable_probe_fixtures.py` for current native
+entry/action/residual proof. These automated tests do not establish a fresh live
+player run. The [closeout report](testing/item-support-closeout-2026-10-21.md)
+records that distinction and the affected and mandatory-suite commands/results.

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+
 import pytest
 
 from .helpers import build_battle, load_modules, physical_move
@@ -175,12 +177,15 @@ def test_invulnerability_event_blocks_move_execution():
 
 
 def test_modify_damage_event_runs_source_damage_modifier():
+    """A defender's source hook reduces incoming damage with fixed RNG."""
     modules = load_modules()
     damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
-    battle, attacker, defender = build_battle(attacker_ability=_SourceReduceDamageAbility())
+    battle, attacker, defender = build_battle(defender_ability=_SourceReduceDamageAbility())
     move = physical_move(name="Tackle", power=70)
 
     baseline_battle, baseline_attacker, baseline_defender = build_battle()
+    baseline_battle.rng = random.Random(0)
+    battle.rng = random.Random(0)
     baseline_move = physical_move(name="Tackle", power=70)
     baseline = damage_mod.apply_damage(
         baseline_attacker,
@@ -197,4 +202,4 @@ def test_modify_damage_event_runs_source_damage_modifier():
         update_hp=False,
     )
 
-    assert sum(modified.debug["damage"]) < sum(baseline.debug["damage"])
+    assert sum(modified.debug["damage"]) == sum(baseline.debug["damage"]) // 2

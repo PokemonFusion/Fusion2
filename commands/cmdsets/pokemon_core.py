@@ -16,6 +16,10 @@ from commands.debug.command import (
 	CmdUseMove,
 )
 from commands.player.cmd_account import CmdTradePokemon
+from commands.player.cmd_market import CmdMarket
+from commands.player.cmd_daycare import CmdDaycare
+from commands.player.cmd_breed import CmdBreed
+from commands.player.cmd_berry import CmdBerry
 from commands.player.cmd_alpha import CmdAlphaLearnMove, CmdAlphaPokemon, alpha_test_commands_enabled
 from commands.player.cmd_fusion import (
 	CmdFusionFight,
@@ -41,6 +45,7 @@ from commands.player.cmd_learn_evolve import (
 )
 from commands.player.cmd_movesets import CmdMovesets
 from commands.player.cmd_nickname import CmdCaptureNickname
+from commands.player.cmd_necrozma import CmdNecrozma
 from commands.player.cmd_party import (
 	CmdChargenInfo,
 	CmdDepositPokemon,
@@ -84,6 +89,8 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdAddItem,
 			CmdGiveItem,
 			CmdUseItem,
+			CmdBerry,
+			CmdNecrozma,
 			CmdTempFuse,
 			CmdPermFuse,
 			CmdUnfuse,
@@ -101,6 +108,9 @@ class PokemonCoreCmdSet(CmdSet):
 			CmdChooseMoveset,
 			CmdAdminHeal,
 			CmdTradePokemon,
+			CmdMarket,
+			CmdDaycare,
+			CmdBreed,
 			CmdAdventure,
 			CmdHunt,
 			CmdLeaveHunt,

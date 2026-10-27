@@ -9,6 +9,9 @@ sys.path.insert(0, ROOT)
 
 utils_stub = types.ModuleType("pokemon.battle.utils")
 utils_stub.apply_boost = lambda *args, **kwargs: None
+# This legacy fixture has no stages or field modifiers. Native staged-speed
+# comparisons also run through test_smoke_discovered_effects with real helpers.
+utils_stub.get_modified_stat = lambda pokemon, stat: getattr(pokemon.base_stats, stat)
 pkg_battle = types.ModuleType("pokemon.battle")
 pkg_battle.__path__ = [os.path.join(ROOT, "pokemon", "battle")]
 pkg_battle.utils = utils_stub

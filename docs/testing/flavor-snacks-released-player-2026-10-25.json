@@ -1,0 +1,610 @@
+{
+  "issues": [
+    889,
+    890,
+    891
+  ],
+  "date": "2026-10-25",
+  "candidate": "89b1ab40678b840c9ba6711966e3d534386c1a52",
+  "tag": "flavor-snack-release-5db0d53dd5024ac8a601d9a274d6814a",
+  "status": "accepted released ordinary-player snack flow; all task fixtures cleaned up",
+  "ordinary_players": [
+    "ItemRepairDuskd6814a",
+    "ItemRepairDawnd6814a"
+  ],
+  "ordinary_socket_inputs": 87,
+  "ordinary_game_commands": 79,
+  "independent_checks": [
+    {
+      "check": "all released Python matches frozen qualification",
+      "passed": true,
+      "files": 1136,
+      "candidate": "89b1ab40678b840c9ba6711966e3d534386c1a52"
+    },
+    {
+      "check": "ordinary self-service onboarding before source setup",
+      "passed": true
+    },
+    {
+      "check": "genuinely captured native Mew, current party slot2",
+      "passed": true
+    },
+    {
+      "check": "full guard and unsupported +use preserve HP/item",
+      "passed": true
+    },
+    {
+      "check": "labelled HP0 then fainted guard preserves bag and held copy",
+      "passed": true
+    },
+    {
+      "check": "ordinary useful Revive establishes half HP",
+      "passed": true,
+      "hp": [
+        0,
+        170
+      ],
+      "maximum": 340
+    },
+    {
+      "check": "Bluk exact useful HP/debit",
+      "passed": true,
+      "item": "Bluk Berry",
+      "hp": [
+        170,
+        180
+      ]
+    },
+    {
+      "check": "Bluk preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Nanab exact useful HP/debit",
+      "passed": true,
+      "item": "Nanab Berry",
+      "hp": [
+        180,
+        190
+      ]
+    },
+    {
+      "check": "Nanab preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Pinap exact useful HP/debit",
+      "passed": true,
+      "item": "Pinap Berry",
+      "hp": [
+        190,
+        200
+      ]
+    },
+    {
+      "check": "Pinap preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Wepear exact useful HP/debit",
+      "passed": true,
+      "item": "Wepear Berry",
+      "hp": [
+        200,
+        210
+      ]
+    },
+    {
+      "check": "Wepear preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Cornn exact useful HP/debit",
+      "passed": true,
+      "item": "Cornn Berry",
+      "hp": [
+        210,
+        220
+      ]
+    },
+    {
+      "check": "Cornn preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Magost exact useful HP/debit",
+      "passed": true,
+      "item": "Magost Berry",
+      "hp": [
+        220,
+        230
+      ]
+    },
+    {
+      "check": "Magost preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Nomel exact useful HP/debit",
+      "passed": true,
+      "item": "Nomel Berry",
+      "hp": [
+        230,
+        240
+      ]
+    },
+    {
+      "check": "Nomel preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Rabuta exact useful HP/debit",
+      "passed": true,
+      "item": "Rabuta Berry",
+      "hp": [
+        240,
+        250
+      ]
+    },
+    {
+      "check": "Rabuta preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Belue exact useful HP/debit",
+      "passed": true,
+      "item": "Belue Berry",
+      "hp": [
+        250,
+        260
+      ]
+    },
+    {
+      "check": "Belue preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Durin exact useful HP/debit",
+      "passed": true,
+      "item": "Durin Berry",
+      "hp": [
+        260,
+        270
+      ]
+    },
+    {
+      "check": "Durin preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Pamtre exact useful HP/debit",
+      "passed": true,
+      "item": "Pamtre Berry",
+      "hp": [
+        270,
+        280
+      ]
+    },
+    {
+      "check": "Pamtre preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Spelon exact useful HP/debit",
+      "passed": true,
+      "item": "Spelon Berry",
+      "hp": [
+        280,
+        290
+      ]
+    },
+    {
+      "check": "Spelon preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "Watmel exact useful HP/debit",
+      "passed": true,
+      "item": "Watmel Berry",
+      "hp": [
+        290,
+        300
+      ]
+    },
+    {
+      "check": "Watmel preserves non-HP owned fields, PP, Razz and held Bluk",
+      "passed": true
+    },
+    {
+      "check": "held-only, foreign, unknown and malformed controls conserve saved state",
+      "passed": true
+    },
+    {
+      "check": "ordinary unhold credits exactly one copy",
+      "passed": true
+    },
+    {
+      "check": "actual reconnect preserves HP300, status, PP and identity",
+      "passed": true
+    },
+    {
+      "check": "finite buy-only source, prices and quantities conserved",
+      "passed": true
+    },
+    {
+      "check": "wallet debit equals all ordinary purchases",
+      "passed": true,
+      "primary": [
+        10000,
+        6000
+      ],
+      "total_paid": 4000,
+      "berries": 1500,
+      "capture_prerequisite": 1000,
+      "revival": 1500
+    },
+    {
+      "check": "fifteen purchased berries = thirteen eaten + two retained",
+      "passed": true
+    },
+    {
+      "check": "secondary Pokemon untouched during field walkthrough",
+      "passed": true
+    },
+    {
+      "check": "all snapshots exact candidate, repeatable read-only, sentinel preserved",
+      "passed": true,
+      "snapshots": 20
+    },
+    {
+      "check": "ordinary permissions and no battle/pair leak",
+      "passed": true
+    },
+    {
+      "check": "loaded snack source and parser attributed to qualified archive",
+      "passed": true,
+      "process": 136268,
+      "observations": 2
+    },
+    {
+      "check": "old onboarding matcher discrepancy is not a source failure",
+      "passed": true
+    }
+  ],
+  "effects": [
+    {
+      "item": "Bluk Berry",
+      "hp_before": 170,
+      "hp_after": 180,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Nanab Berry",
+      "hp_before": 180,
+      "hp_after": 190,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Pinap Berry",
+      "hp_before": 190,
+      "hp_after": 200,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Wepear Berry",
+      "hp_before": 200,
+      "hp_after": 210,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Cornn Berry",
+      "hp_before": 210,
+      "hp_after": 220,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Magost Berry",
+      "hp_before": 220,
+      "hp_after": 230,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Nomel Berry",
+      "hp_before": 230,
+      "hp_after": 240,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Rabuta Berry",
+      "hp_before": 240,
+      "hp_after": 250,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Belue Berry",
+      "hp_before": 250,
+      "hp_after": 260,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Durin Berry",
+      "hp_before": 260,
+      "hp_after": 270,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Pamtre Berry",
+      "hp_before": 270,
+      "hp_after": 280,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Spelon Berry",
+      "hp_before": 280,
+      "hp_after": 290,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    },
+    {
+      "item": "Watmel Berry",
+      "hp_before": 290,
+      "hp_after": 300,
+      "bag_copy_debited": 1,
+      "pp_and_non_hp_fields_unchanged": true,
+      "held_bluk_preserved": true,
+      "razz_control": 1
+    }
+  ],
+  "runtime_observations": [
+    {
+      "label": "source-before",
+      "candidate": "89b1ab40678b840c9ba6711966e3d534386c1a52",
+      "pid": 136268,
+      "game_dir": "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\flavor-snacks-live-889-891-20261025\\released\\source",
+      "module_source_attribution": {
+        "pokemon.battle.engine": {
+          "loaded": true,
+          "path": "pokemon/battle/engine.py",
+          "sha256_lf": "a027bb785c4f8e0b620015553f4e6a2d700da145cee3e194d2c60837b2ce650f"
+        },
+        "pokemon.battle.logic": {
+          "loaded": true,
+          "path": "pokemon/battle/logic.py",
+          "sha256_lf": "3f3b145d68d8097ba2c2e34cdd488536f5f9e470f19262177b80b8af95aeb54c"
+        },
+        "pokemon.dex.functions.items_funcs": {
+          "loaded": true,
+          "path": "pokemon/dex/functions/items_funcs.py",
+          "sha256_lf": "d22830cad8f314384ba615a0b1140b157b80da3dbaf929325b16b6d120226816"
+        },
+        "pokemon.dex.functions.abilities_funcs": {
+          "loaded": true,
+          "path": "pokemon/dex/functions/abilities_funcs.py",
+          "sha256_lf": "5e11759723f84d8ce376aa2b16e81fd58ba249eda42f28c2368bd7bba96d4600"
+        },
+        "pokemon.dex.functions.moves.damage_moves": {
+          "loaded": true,
+          "path": "pokemon/dex/functions/moves/damage_moves.py",
+          "sha256_lf": "443f15aac12d8c4520fe0a549569fba0b39def5560779ea0727c2e69d494613f"
+        },
+        "pokemon.battle.z_generic_pairs": {
+          "loaded": false
+        },
+        "pokemon.services.berry_snack": {
+          "loaded": false
+        },
+        "commands.player.cmd_berry": {
+          "loaded": true,
+          "path": "commands/player/cmd_berry.py",
+          "sha256_lf": "7c66e3fa5741db2694d44a8b8c5f253daa0736592764c80e1fe32a2092a492fa"
+        }
+      },
+      "battles": {},
+      "read_only_observation": true
+    },
+    {
+      "label": "source-after",
+      "candidate": "89b1ab40678b840c9ba6711966e3d534386c1a52",
+      "pid": 136268,
+      "game_dir": "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\flavor-snacks-live-889-891-20261025\\released\\source",
+      "module_source_attribution": {
+        "pokemon.battle.engine": {
+          "loaded": true,
+          "path": "pokemon/battle/engine.py",
+          "sha256_lf": "a027bb785c4f8e0b620015553f4e6a2d700da145cee3e194d2c60837b2ce650f"
+        },
+        "pokemon.battle.logic": {
+          "loaded": true,
+          "path": "pokemon/battle/logic.py",
+          "sha256_lf": "3f3b145d68d8097ba2c2e34cdd488536f5f9e470f19262177b80b8af95aeb54c"
+        },
+        "pokemon.dex.functions.items_funcs": {
+          "loaded": true,
+          "path": "pokemon/dex/functions/items_funcs.py",
+          "sha256_lf": "d22830cad8f314384ba615a0b1140b157b80da3dbaf929325b16b6d120226816"
+        },
+        "pokemon.dex.functions.abilities_funcs": {
+          "loaded": true,
+          "path": "pokemon/dex/functions/abilities_funcs.py",
+          "sha256_lf": "5e11759723f84d8ce376aa2b16e81fd58ba249eda42f28c2368bd7bba96d4600"
+        },
+        "pokemon.dex.functions.moves.damage_moves": {
+          "loaded": true,
+          "path": "pokemon/dex/functions/moves/damage_moves.py",
+          "sha256_lf": "443f15aac12d8c4520fe0a549569fba0b39def5560779ea0727c2e69d494613f"
+        },
+        "pokemon.battle.z_generic_pairs": {
+          "loaded": false
+        },
+        "pokemon.services.berry_snack": {
+          "loaded": true,
+          "path": "pokemon/services/berry_snack.py",
+          "sha256_lf": "aa9d437dbaa2d5febb678c1867be9e810ed47ba3bc487e3dff7c14935ac06b94"
+        },
+        "commands.player.cmd_berry": {
+          "loaded": true,
+          "path": "commands/player/cmd_berry.py",
+          "sha256_lf": "7c66e3fa5741db2694d44a8b8c5f253daa0736592764c80e1fe32a2092a492fa"
+        }
+      },
+      "battles": {},
+      "read_only_observation": true
+    }
+  ],
+  "source_python_count": 1136,
+  "source_manifest": "412103f48c8d4e172bae4caf32eae76a74b65472f8f56b132646cd0c900c8065",
+  "qualified_mandatory": {
+    "orders": 3,
+    "passed_each": 6154,
+    "skipped_each": 4028,
+    "wrapper_exit": 0
+  },
+  "stock": {
+    "Master Ball": {
+      "price": 1000,
+      "quantity": 1
+    },
+    "Revive": {
+      "price": 1500,
+      "quantity": 1
+    },
+    "Razz Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Bluk Berry": {
+      "price": 100,
+      "quantity": 3
+    },
+    "Nanab Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Pinap Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Wepear Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Cornn Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Magost Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Nomel Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Rabuta Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Belue Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Durin Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Pamtre Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Spelon Berry": {
+      "price": 100,
+      "quantity": 4
+    },
+    "Watmel Berry": {
+      "price": 100,
+      "quantity": 4
+    }
+  },
+  "wallets": {
+    "primary": 6000,
+    "secondary": 10000
+  },
+  "final_bag": {
+    "blukberry": 1,
+    "razzberry": 1
+  },
+  "mew": {
+    "pokemon": "f69f0191-2dd2-4f66-ae91-a0b7b9cfb318",
+    "hp": 300,
+    "maximum": 340,
+    "held_item": ""
+  },
+  "prerequisites": "Separate tagged finite shop/wallet/Mew100 trail, two ordinary onboardings; captured source and nickname are player actions. Only later HP0 is a labelled staff prerequisite; Revive/snack healing are ordinary actions.",
+  "runner_diagnosis": "Two old onboarding checks expected the substring starter. Both actual outputs said Character generation complete, and separate SQL/source guards confirmed one starter per ordinary account. Original failed matcher evidence retained; no source edit/retry.",
+  "boundary": "New disposable local archive only. Public stock, PF2-Dev, hosted CI, plot and other human data unchanged.",
+  "cleanup": {
+    "server": {
+      "phase": "stopped",
+      "candidate": "89b1ab40678b840c9ba6711966e3d534386c1a52",
+      "schema": "pf2_recovery_test_167417bffaa147328a526ad5014c771a",
+      "ports_closed": true,
+      "existing_services_changed": false
+    },
+    "socket_driver_exit": 0,
+    "supervisor_exit": 0,
+    "task_postgres_stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0,
+    "initial_sandbox_stop": "Operation not permitted while signaling the exact fixture process; no other cluster touched",
+    "authorized_exact_controller_retry": "Sandbox escalation succeeded, exit0, same guarded task fixture only",
+    "all_five_game_ports_and_task_database_port_closed": true
+  },
+  "command_receipt": {
+    "path": "flavor-snacks-player-commands-2026-10-25.json",
+    "sha256": "d012a378c47a7696e9814c9fa289f72354cb02e0b53f8a3927ab24b3c8340c8a"
+  },
+  "private_raw_sha256": {
+    "staff-prerequisites.json": "7dc07240767011afbd01eec2ffffc122da051b7fae841e404dc7a87aeafbe07d",
+    "staff-field-prerequisites.json": "1b549da271ca3f51984ac47fd134f851461fb0a3f8754c8281ed6a22bd1636c0",
+    "sql-reconnected.json": "bfb7c3e26c3306037ecc659c169359b6e6c0bebc6bb5b90b4a99165d6f22286b",
+    "runtime-source-before.json": "b6673a297b7be132dcf2f4f0fe61e579239ed40aaa6c72d46230024ac6db57f4",
+    "runtime-source-after.json": "61bf2659253fa8bfb7d84c7f61a7b2b5f3a35fc6f74fe2fa069e32fa616da8f8",
+    "source-manifest.json": "1609c9024296363839e3018b836678dbb0ac813f778da3426eedcd04d0e43f9a",
+    "socket-history.json": "92d6c6a9faa31f4e138bed3694c22dcf1ed58725b19a5c34795a50cdbeca58d6"
+  }
+}

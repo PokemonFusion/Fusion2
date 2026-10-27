@@ -40,7 +40,9 @@ def _calc_stats_from_model(poke):
 
 	ivs_list = _stat_list(getattr(poke, "ivs", None))
 	evs_list = _stat_list(getattr(poke, "evs", None))
-	nature = getattr(poke, "nature", "Hardy")
+	from pokemon.nature_training import NatureTraining
+
+	nature = NatureTraining.effective(poke)
 	name = getattr(poke, "species", None) or getattr(poke, "name", "Pikachu")
 	level = getattr(poke, "_pf2_fusion_level", None) or getattr(poke, "level", 1)
 
@@ -52,6 +54,9 @@ def _calc_stats_from_model(poke):
 		"spd": ivs_list[4],
 		"spe": ivs_list[5],
 	}
+	from pokemon.hyper_training import HyperTraining
+
+	ivs = HyperTraining.effective(ivs, poke)
 	evs = {
 		"hp": evs_list[0],
 		"atk": evs_list[1],
@@ -97,6 +102,8 @@ def create_battle_pokemon(
 	is_wild: bool = False,
 	template_key: str = "",
 	move_names: list[str] | None = None,
+	tera_type: str = "",
+	held_item: str = "",
 ) -> Pokemon:
 	"""Return a ``Pokemon`` battle object for the given species/level."""
 
@@ -121,6 +128,7 @@ def create_battle_pokemon(
 			ability=getattr(inst, "ability", ""),
 			ivs=ivs_list,
 			evs=evs_list,
+			held_item=held_item,
 			current_hp=max_hp,
 			move_names=move_names,
 			move_pp=[move.pp for move in moves],
@@ -128,6 +136,10 @@ def create_battle_pokemon(
 			template_key=template_key,
 		)
 	except Exception:
+		if held_item:
+			# An authored acquisition cannot claim a persistent item on a fallback
+			# runtime with no encounter identity.
+			raise
 		encounter = SimpleNamespace(current_hp=max_hp, held_item="", encounter_id=None)
 
 	return Pokemon(
@@ -143,6 +155,7 @@ def create_battle_pokemon(
 		model_id=encounter_ref(encounter),
 		gender=getattr(inst, "gender", "N"),
 		item=getattr(encounter, "held_item", ""),
+		tera_type=tera_type,
 	)
 
 

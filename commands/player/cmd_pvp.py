@@ -6,6 +6,7 @@ from pokemon.battle.pvp import (
 	get_requests,
 	remove_request,
 	start_pvp_battle,
+	validate_format_party,
 )
 from pokemon.helpers.party_helpers import has_usable_pokemon as _has_usable_party
 from utils.locks import require_no_battle_lock
@@ -30,10 +31,10 @@ class CmdPvpHelp(Command):
           +pvp
 
 	Examples:
-	  +pvp
+      +pvp
 
 	Notes:
-	  PvP requests are room-local. Both players must be in the same room.
+      PvP requests are room-local. Both players must be in the same room.
 	"""
 
 	key = "+pvp"
@@ -45,10 +46,11 @@ class CmdPvpHelp(Command):
 			return
 		lines = ["|wPlayer vs Player commands|n"]
 		lines.append("  +pvp/list - list open PVP requests")
-		lines.append("  +pvp/create [password] - create a PVP request")
+		lines.append("  +pvp/create [single/double] [password] - create a PVP request")
 		lines.append("  +pvp/join <player> [password] - join a request")
 		lines.append("  +pvp/abort - abort your request")
 		lines.append("  +pvp/start - start the battle when ready")
+		lines.append("  +pvp/multi - four-trainer 2v2 lobby and consent; help multi battles")
 		self.caller.msg("\n".join(lines))
 
 
@@ -56,13 +58,13 @@ class CmdPvpList(Command):
 	"""List all open PvP requests in the room.
 
 	Usage:
-	  +pvp/list
+      +pvp/list
 
 	Examples:
-	  +pvp/list
+      +pvp/list
 
 	Notes:
-	  Only requests in your current room are listed.
+      Only requests in your current room are listed.
 	"""
 
 	key = "+pvp/list"
@@ -79,7 +81,7 @@ class CmdPvpList(Command):
 		lines = ["|wActive PVP requests|n"]
 		for req in reqs.values():
 			status = "(joined)" if req.opponent_id is not None else ""
-			lines.append(f"  {req.host_key} {status}")
+			lines.append(f"  {req.host_key} ({getattr(req, 'battle_format', 'single')}) {status}")
 		self.caller.msg("\n".join(lines))
 
 
@@ -87,14 +89,15 @@ class CmdPvpCreate(Command):
 	"""Create a new PvP request.
 
 	Usage:
-	  +pvp/create [password]
+      +pvp/create [single/double] [password]
 
 	Examples:
-	  +pvp/create
-	  +pvp/create sparring
+      +pvp/create
+      +pvp/create sparring
+      +pvp/create double
 
 	Notes:
-	  Add a password if you only want a specific player to join.
+      Add a password if you only want a specific player to join.
 	"""
 
 	key = "+pvp/create"
@@ -107,9 +110,14 @@ class CmdPvpCreate(Command):
 		if not _caller_has_usable_pokemon(self.caller):
 			self.caller.msg("You don't have any Pokémon able to battle.")
 			return
+		parts = self.args.strip().split(None, 1)
+		battle_format = "single"
 		password = self.args.strip() or None
+		if parts and parts[0].lower() in {"single", "double", "singles", "doubles"}:
+			battle_format = parts[0].lower().removesuffix("s")
+			password = parts[1] if len(parts) > 1 else None
 		try:
-			create_request(self.caller, password=password)
+			create_request(self.caller, password=password, battle_format=battle_format)
 		except ValueError as err:
 			self.caller.msg(str(err))
 			return
@@ -120,14 +128,14 @@ class CmdPvpJoin(Command):
 	"""Join an existing PvP request.
 
 	Usage:
-	  +pvp/join <player> [password]
+      +pvp/join <player> [password]
 
 	Examples:
-	  +pvp/join Ash
-	  +pvp/join Ash sparring
+      +pvp/join Ash
+      +pvp/join Ash sparring
 
 	Notes:
-	  The player name is the host who created the request.
+      The player name is the host who created the request.
 	"""
 
 	key = "+pvp/join"
@@ -161,7 +169,16 @@ class CmdPvpJoin(Command):
 			if not req.is_joinable():
 				self.caller.msg("No joinable request found.")
 				return
+			try:
+				if getattr(req, "battle_format", "single") == "double":
+					validate_format_party(self.caller, "double")
+			except ValueError as error:
+				self.caller.msg(str(error))
+				return
 			req.opponent_id = self.caller.id
+			reqs = get_requests(self.caller.location)
+			reqs[req.host_id] = req
+			self.caller.location.db.pvp_requests = reqs
 			self.caller.msg(f"You join {req.host_key}'s PVP request.")
 			host = req.get_host()
 			if host:
@@ -184,13 +201,13 @@ class CmdPvpAbort(Command):
 	"""Abort your active PvP request.
 
 	Usage:
-	  +pvp/abort
+      +pvp/abort
 
 	Examples:
-	  +pvp/abort
+      +pvp/abort
 
 	Notes:
-	  This only cancels your pending room request.
+      This only cancels your pending room request.
 	"""
 
 	key = "+pvp/abort"
@@ -208,13 +225,13 @@ class CmdPvpStart(Command):
 	"""Start a PvP battle after another player has joined.
 
 	Usage:
-	  +pvp/start
+      +pvp/start
 
 	Examples:
-	  +pvp/start
+      +pvp/start
 
 	Notes:
-	  The request host starts the battle after an opponent joins.
+      The request host starts the battle after an opponent joins.
 	"""
 
 	key = "+pvp/start"
@@ -241,5 +258,13 @@ class CmdPvpStart(Command):
 			self.caller.msg("Your opponent is already engaged in a battle.")
 			return
 
+		try:
+			battle_format = getattr(req, "battle_format", "single")
+			if battle_format == "single":
+				start_pvp_battle(self.caller, opponent)
+			else:
+				start_pvp_battle(self.caller, opponent, battle_format=battle_format)
+		except ValueError as error:
+			self.caller.msg(str(error))
+			return
 		remove_request(self.caller)
-		start_pvp_battle(self.caller, opponent)

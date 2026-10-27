@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "key": "nonplot-item-supply-v1",
+  "room": "Item Supply Corner",
+  "entrance": "supplies",
+  "return_exit": "back",
+  "refill": "none",
+  "buy_only": true,
+  "offers": [
+    {"item": "Potion", "price": 300, "quantity": 20},
+    {"item": "Oran Berry", "price": 80, "quantity": 20},
+    {"item": "Fresh Water", "price": 200, "quantity": 20},
+    {"item": "Fire Stone", "price": 3000, "quantity": 5},
+    {"item": "Leftovers", "price": 4000, "quantity": 2},
+    {"item": "Smoke Ball", "price": 4000, "quantity": 2}
+  ]
+}

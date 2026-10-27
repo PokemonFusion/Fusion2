@@ -131,6 +131,7 @@ class TurnManager:
 
 	def _sync_active_battle_state(self) -> None:
 		"""Mirror engine active slots into UI and persisted turn data."""
+		from .active_slots import active_at
 
 		battle = getattr(self, "battle", None)
 		participants = list(getattr(battle, "participants", []) or [])
@@ -165,11 +166,13 @@ class TurnManager:
 					log_warn("Failed to sync trainer active Pokemon", exc_info=True)
 
 			position_names = sorted(name for name in positions if str(name).startswith(team))
+			if getattr(participant, 'field_position', None):
+				position_names = [participant.field_position]
 			if not position_names:
 				position_names = [f"{team}{slot + 1}" for slot in range(len(active))]
 
 			for slot, pos_name in enumerate(position_names):
-				pokemon = active[slot] if slot < len(active) else None
+				pokemon = active_at(participant, slot)
 				pos = positions.get(pos_name)
 				if pos is not None:
 					try:
@@ -206,6 +209,10 @@ class TurnManager:
 		"""Advance the battle by one turn."""
 
 		if not self.battle:
+			return
+		guard = getattr(self, "_discard_unsupported_item_choices", None)
+		if callable(guard) and guard():
+			self._set_player_control(True)
 			return
 
 		log_info(f"Running turn for battle {self.battle_id}")

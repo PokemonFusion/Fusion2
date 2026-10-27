@@ -44,12 +44,13 @@ class Afteryou:
 		if all(len(getattr(p, "active", [])) <= 1 for p in getattr(battle, "participants", [])):
 			return False
 		queue = getattr(battle, "queue", None)
-		if queue:
-			action = getattr(queue, "will_move", lambda t: None)(target)
-			if not action:
-				return False
-			getattr(queue, "prioritize_action", lambda a: None)(action)
-		return True
+		action = queue.will_move(target) if queue is not None else None
+		if action is None:
+			return False
+		changed = queue.prioritize_action(action) is not False
+		if changed and getattr(user, "last_move", None):
+			user.last_move._queue_changed = True
+		return changed
 
 
 class Alluringvoice:
@@ -62,6 +63,14 @@ class Alluringvoice:
 class Allyswitch:
 	def onHit(self, user, target, battle):
 		"""Swap positions with the ally if possible."""
+		if getattr(battle, 'multi', False):
+			owner = battle.participant_for(user)
+			ally = next((part for part in battle.participants if part is not owner
+				and part.team == owner.team and part.active and part.active[0].hp > 0), None)
+			if ally is None:
+				return False
+			owner.field_position, ally.field_position = ally.field_position, owner.field_position
+			return True
 		side = getattr(user, "side", None)
 		if not side or len(getattr(side, "active", [])) <= 1:
 			return False
@@ -107,7 +116,8 @@ class Aquaring:
 class Aromatherapy:
 	def onHit(self, user, target, battle):
 		"""Cure status conditions of the user's party."""
-		for mon in getattr(user, "party", [user]):
+		from pokemon.battle.effect_context import EffectContext
+		for mon in EffectContext.party(user):
 			if hasattr(mon, "setStatus"):
 				mon.setStatus(0)
 		return True
@@ -116,23 +126,20 @@ class Aromatherapy:
 class Assist:
 	def onHit(self, user, target, battle):
 		"""Use a random move known by an ally."""
-		allies = [ally for ally in getattr(user, "party", []) if ally is not user]
+		participant = battle.participant_for(user) if battle and hasattr(battle, "participant_for") else None
+		party = getattr(participant, "pokemons", None) or getattr(user, "party", [])
+		allies = [ally for ally in party if ally is not user]
 		moves = []
 		for ally in allies:
 			moves.extend(getattr(ally, "moves", []))
-		moves = [m for m in moves if getattr(m, "name", "").lower() != "assist"]
+		moves = [m for m in moves if str(getattr(m, "name", "")).lower().replace(" ", "") != "assist"
+		         and not getattr(m, "raw", {}).get("flags", {}).get("noassist")]
 		if not moves:
 			return False
 		rng = getattr(battle, "rng", None)
 		move = rng.choice(moves) if rng and hasattr(rng, "choice") else choice(moves)
-		if user and hasattr(user, "tempvals"):
-			user.tempvals["called_move"] = getattr(move, "name", str(move))
-		if hasattr(move, "execute"):
-			move.execute(user, target, battle)
-			return True
-		if hasattr(move, "onHit"):
-			return bool(move.onHit(user, target, battle))
-		return False
+		from .damage_moves import _execute_called_move
+		return _execute_called_move(move, user, target, battle)
 
 
 class Attract:

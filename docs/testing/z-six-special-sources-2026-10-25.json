@@ -1,0 +1,2339 @@
+{
+  "issue": 910,
+  "date": "2026-10-25",
+  "source_baseline": "ac0b2c1a0e34e4fef4860089fab58b7cab94334a",
+  "status": "accepted bounded local ordinary-command and PostgreSQL six-source support",
+  "new_profiles": [
+    {
+      "crystal": "Electrium Z",
+      "source": "Thunderbolt",
+      "name": "Gigavolt Havoc",
+      "power": 175,
+      "move_type": "Electric",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Icium Z",
+      "source": "Ice Beam",
+      "name": "Subzero Slammer",
+      "power": 175,
+      "move_type": "Ice",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Grassium Z",
+      "source": "Energy Ball",
+      "name": "Bloom Doom",
+      "power": 175,
+      "move_type": "Grass",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Psychium Z",
+      "source": "Psychic",
+      "name": "Shattered Psyche",
+      "power": 175,
+      "move_type": "Psychic",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Ghostium Z",
+      "source": "Shadow Ball",
+      "name": "Never-Ending Nightmare",
+      "power": 160,
+      "move_type": "Ghost",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "name": "Acid Downpour",
+      "power": 175,
+      "move_type": "Poison",
+      "category": "Special",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    }
+  ],
+  "source_sha256_lf": {
+    "pokemon/battle/tests/test_z_special_sources.py": "f75f86d1269fa5d8fbbdd93fdf81e79b49a6d197fcb8bf093e1b3891c3f4b9a6",
+    "pokemon/battle/z_generic_pairs.py": "a922c37b778898fa9225f80c034efe455e4d4988b7b4cd3b6077f170195c360a",
+    "tests/integration/z_special_sources_cases.py": "cec920b455abac880b8f2faa58bea6b9bcd0b3683eedf5ec68aac7b5b5d871d0",
+    "tests/test_item_availability.py": "c6dcd6e602da9721954619e959cd9a67bbd2e8d210aaf61f19526e621c913bf6",
+    "tools/audit_item_availability.py": "a2cf8ce199853d46ac4f547ef645b545000201fccf4ab4fcf7bc69715a280097"
+  },
+  "qualification_manifest_sha256_lf": "8ed5e149ef00c14ae1668eaee83fd935c192af3cb6ff0904daca1927ffe1d662",
+  "frozen_copy_manifest_sha256_lf": "ee3a7997aaf2fb0e403f4b747acdec5fa4f9f0a465b53744846dbbb59ae440d0",
+  "python_sources": 1138,
+  "unrelated_dirty_shared_paths": 25,
+  "exact_changed_python": [
+    "pokemon/battle/tests/test_z_special_sources.py",
+    "pokemon/battle/z_generic_pairs.py",
+    "tests/integration/z_special_sources_cases.py",
+    "tests/test_item_availability.py",
+    "tools/audit_item_availability.py"
+  ],
+  "reference": {
+    "showdown": "7e6cea3605c20b44142b2aab22acf08df75ea52b",
+    "conversion": "sim/dex-moves.ts:551-577",
+    "verified_conversion_git_blob": "63f9a13afa73bcd089b3b8c68cb6bb190b2f2b77",
+    "ordinary_base_power": {
+      "Thunderbolt": 90,
+      "Ice Beam": 90,
+      "Energy Ball": 90,
+      "Psychic": 90,
+      "Shadow Ball": 80,
+      "Sludge Bomb": 90
+    }
+  },
+  "native_level_access": {
+    "Pikachu/Thunderbolt": 26,
+    "Lapras/Ice Beam": 31,
+    "Voltorb-Hisui/Energy Ball": 29,
+    "Kadabra/Psychic": 35,
+    "Gastly/Shadow Ball": 29,
+    "Grimer/Sludge Bomb": 26
+  },
+  "baseline_red": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "addopts=",
+      "pokemon/battle/tests/test_z_special_sources.py"
+    ],
+    "exit": 1,
+    "seconds": 4.65,
+    "passed": [
+      "6"
+    ],
+    "failed": [
+      "25"
+    ],
+    "skipped": [],
+    "sha256": "e8aa061bd16556945e5237196ea0c31a36377f163015d38a42bed3537747af08"
+  },
+  "new_offline_tests": 31,
+  "new_reporting_tests": 1,
+  "focused": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "addopts=",
+      "pokemon/battle/tests/test_z_special_sources.py",
+      "pokemon/battle/tests/test_z_existing_sources.py",
+      "pokemon/battle/tests/test_z_move_effects.py",
+      "pokemon/battle/tests/test_z_special_effects.py",
+      "tests/test_item_availability.py"
+    ],
+    "exit": 0,
+    "seconds": 16.82,
+    "passed": [
+      "111"
+    ],
+    "failed": [],
+    "skipped": [],
+    "sha256": "c227ebed2281ff060776a2325ced9c503aaedeaa7eb1c2fceeeb4e0fc77a11f1"
+  },
+  "player": [
+    {
+      "suite": "z_special_sources",
+      "exit": 0,
+      "seconds": 263.7,
+      "cases": [
+        "102"
+      ],
+      "sha256": "bf422e99defb33d6768b1f050f5a4c5af8e6a5de74fcd41550fb6a121ab7e7a6"
+    }
+  ],
+  "player_cases": 102,
+  "completed_effect_lifecycles": 60,
+  "independent_rejections": 42,
+  "raw_player_sha256": "a98bfa872dfd510071957bdd079dce05552b71c86ba4ff305f7e3ea25397c453",
+  "raw_record_count": 930,
+  "outcomes": [
+    {
+      "case": "test_electriumz_active",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "active",
+      "damage_by_active_actor": [
+        0,
+        0,
+        15,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "35ea7244-7409-4d33-b1c5-c005d5ca2249",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_checkpoint_fault",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "checkpoint_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        15,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d0b74ab2-2c6a-44f4-ad86-6c20568ced6b",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_embargo",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "embargo",
+      "damage_by_active_actor": [
+        0,
+        0,
+        27,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "a2b1075f-4e28-4a33-912a-a49e1fbc6d5a",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_immune",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "immune",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "5ec49f0f-ee24-4971-b60e-6eda7c44f0df",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_magicroom",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "magicroom",
+      "damage_by_active_actor": [
+        0,
+        0,
+        27,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d2caba1a-0f8b-4c99-b2df-31499816e786",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_native",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "native",
+      "damage_by_active_actor": [
+        0,
+        63
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "f2579fa7-7b05-4f57-a7e0-c1ac3fd059c2",
+      "native_species": "Pikachu",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_payment_fault",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "payment_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        15,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "b6ec9e81-dca7-4d0c-9ffb-61ef02a131b6",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_plain",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "plain",
+      "damage_by_active_actor": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [],
+      "pokemon": "15655ab4-acb7-49bf-b45e-8e3ab01a1f04",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_protect",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "protect",
+      "damage_by_active_actor": [
+        0,
+        0,
+        3,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "26a2fd6f-b4f1-42f9-adba-bb701b7b3e69",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_electriumz_sleep",
+      "item": "Electrium Z",
+      "source": "Thunderbolt",
+      "facet": "sleep",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 15,
+      "side_use": [],
+      "pokemon": "72cc0daf-26c0-466f-ba43-cc1837d55833",
+      "native_species": "Pikachu",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_active",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "active",
+      "damage_by_active_actor": [
+        0,
+        0,
+        25,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d45a26f4-5bf1-4b4e-ac9f-91c14c0ddfa2",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_checkpoint_fault",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "checkpoint_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        25,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "4b27cccf-3c2f-4ce9-95a3-0bb0e59958fc",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_embargo",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "embargo",
+      "damage_by_active_actor": [
+        0,
+        0,
+        96,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "ec203051-b9a9-426a-acdd-3930f1d13b55",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_immune",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "immune",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d004fc4d-f534-4569-aaf6-bf94a37d22fe",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_magicroom",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "magicroom",
+      "damage_by_active_actor": [
+        0,
+        0,
+        96,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "771a6a8d-f7da-4d82-8d79-11eb77c1c594",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "native",
+      "damage_by_active_actor": [
+        0,
+        112
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "be8e01a9-d4cd-4c41-8393-7634c01eb029",
+      "native_species": "Gastly",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_payment_fault",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "payment_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        25,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "f2128f6c-2214-4998-9b07-6541fbed3701",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_plain",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "plain",
+      "damage_by_active_actor": [
+        0,
+        0,
+        15,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [],
+      "pokemon": "a7a76ea1-45ec-43be-86fd-7d42f8574388",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_protect",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "protect",
+      "damage_by_active_actor": [
+        0,
+        0,
+        6,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "9fcd0c26-bbc2-48e6-b03e-ab3d59c10ef9",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_ghostiumz_sleep",
+      "item": "Ghostium Z",
+      "source": "Shadow Ball",
+      "facet": "sleep",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 15,
+      "pp_after": 15,
+      "side_use": [],
+      "pokemon": "0f0815d8-42eb-4d09-b221-4ddb64d3892b",
+      "native_species": "Gastly",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_active",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "active",
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "08870d6f-8595-4518-ad4d-60183d1fb322",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_checkpoint_fault",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "checkpoint_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d8eb0ea7-0d87-4a2f-96d5-0aba51143b5f",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_embargo",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "embargo",
+      "damage_by_active_actor": [
+        0,
+        0,
+        30,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "457b5178-2c00-4ca7-85f4-8c542bb3ee3a",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_immune",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "immune",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "332ece49-f6d6-43c8-a84c-696561b97e40",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_magicroom",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "magicroom",
+      "damage_by_active_actor": [
+        0,
+        0,
+        30,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d6064ed9-13e8-4e35-b939-af78486ab942",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_native",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "native",
+      "damage_by_active_actor": [
+        0,
+        72
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "3db0577d-ef9d-46eb-8d6c-cd6d1828138c",
+      "native_species": "Voltorb-Hisui",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_payment_fault",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "payment_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "2528a9a0-19af-4268-85ab-c4300a921280",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_plain",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "plain",
+      "damage_by_active_actor": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "pokemon": "61ab1213-b1bc-41aa-ac0b-a9addfe10062",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_protect",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "protect",
+      "damage_by_active_actor": [
+        0,
+        0,
+        4,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "2683cd2b-b174-469a-8302-a3d8d27bd0fa",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_grassiumz_sleep",
+      "item": "Grassium Z",
+      "source": "Energy Ball",
+      "facet": "sleep",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "pokemon": "0e601a66-520f-4c34-897f-e88d2cc76205",
+      "native_species": "Voltorb-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_active",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "active",
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "72577de2-881e-4ab3-ac55-0105da215ac2",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_checkpoint_fault",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "checkpoint_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "3d3bd1fb-101f-4466-b4d4-f3059e966786",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_embargo",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "embargo",
+      "damage_by_active_actor": [
+        0,
+        0,
+        43,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "9648a3ee-1c9a-4b67-a2ad-408df0153d30",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_immune",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "immune",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "38afccee-fe91-4dc3-aa78-3c7644d809a4",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_magicroom",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "magicroom",
+      "damage_by_active_actor": [
+        0,
+        0,
+        43,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "bc1240d6-0b2b-49c2-b3a2-c6285163549c",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_native",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "native",
+      "damage_by_active_actor": [
+        0,
+        50
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "890bed1f-107c-43db-9ba0-0f418b70cd23",
+      "native_species": "Lapras",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_payment_fault",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "payment_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "6e4cea66-4cf5-422a-a19e-9ec42ac1549d",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_plain",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "plain",
+      "damage_by_active_actor": [
+        0,
+        0,
+        6,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "pokemon": "668b8df1-905b-442f-b39e-108cbff8a990",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_protect",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "protect",
+      "damage_by_active_actor": [
+        0,
+        0,
+        3,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "1e8a4c25-69d9-4172-82bf-fdca1712d6a9",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_iciumz_sleep",
+      "item": "Icium Z",
+      "source": "Ice Beam",
+      "facet": "sleep",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "pokemon": "ee2c2107-b353-4f4d-9485-585734f15337",
+      "native_species": "Lapras",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_active",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "active",
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "9b819c12-86d8-4ce8-918a-293e9161b896",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_checkpoint_fault",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "checkpoint_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "6a309fdf-6189-49a1-9e00-1d9865b3adec",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_embargo",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "embargo",
+      "damage_by_active_actor": [
+        0,
+        0,
+        22,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "11941081-5944-4c98-9794-8880b47414d0",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_immune",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "immune",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "71b2d984-d1a4-4f65-b424-532edf38dd9c",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_magicroom",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "magicroom",
+      "damage_by_active_actor": [
+        0,
+        0,
+        22,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "4dae0e25-bdae-458d-829f-0e7779b9430d",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "native",
+      "damage_by_active_actor": [
+        0,
+        54
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "9988668d-be77-4288-b69f-88ae16fecd14",
+      "native_species": "Grimer",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_payment_fault",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "payment_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "b4ece04c-2050-4a2b-a7ba-4777e4c741e8",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_plain",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "plain",
+      "damage_by_active_actor": [
+        0,
+        0,
+        7,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "pokemon": "4053364f-9a83-46f1-88b4-8f34dccb592d",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_protect",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "protect",
+      "damage_by_active_actor": [
+        0,
+        0,
+        3,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "67359022-d919-4d93-9b27-caa899c443e0",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_poisoniumz_sleep",
+      "item": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "facet": "sleep",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "pokemon": "b749f161-0ec3-4a05-9013-c3dc5973f205",
+      "native_species": "Grimer",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_active",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "active",
+      "damage_by_active_actor": [
+        0,
+        0,
+        31,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "71caadab-2982-45d2-abaa-b033fbb2af2a",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_checkpoint_fault",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "checkpoint_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        31,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "a1623f7b-5dbb-43d5-8d94-e7da787c37ec",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_embargo",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "embargo",
+      "damage_by_active_actor": [
+        0,
+        0,
+        30,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "963eedf5-2694-4b2f-bf25-85d1d3d78e4c",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_immune",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "immune",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "fa72098e-fb14-4138-b06c-653030c54d1e",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_magicroom",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "magicroom",
+      "damage_by_active_actor": [
+        0,
+        0,
+        30,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "944d278a-5010-4417-b177-a91afa595985",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_native",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "native",
+      "damage_by_active_actor": [
+        0,
+        133
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "aee495b1-a748-4c67-880e-20159bf38e20",
+      "native_species": "Kadabra",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_payment_fault",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "payment_fault",
+      "damage_by_active_actor": [
+        0,
+        0,
+        31,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "d52a9dfe-9f54-433f-a176-709c9f7dc879",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_plain",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "plain",
+      "damage_by_active_actor": [
+        0,
+        0,
+        19,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "pokemon": "bf49e8fa-d040-40ca-9370-6da291e50957",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_protect",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "protect",
+      "damage_by_active_actor": [
+        0,
+        0,
+        7,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "pokemon": "632b690c-b2e2-4f5e-8cc6-3c0a193d6d27",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_psychiumz_sleep",
+      "item": "Psychium Z",
+      "source": "Psychic",
+      "facet": "sleep",
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "pokemon": "20f409f4-5cad-4d60-9a31-8d1a8eb8d9f8",
+      "native_species": "Kadabra",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_copy_preserved": true,
+      "end_unhold_bag_copy": 1
+    }
+  ],
+  "comparisons": [
+    {
+      "crystal": "Electrium Z",
+      "source": "Thunderbolt",
+      "power": 175,
+      "active_damage": 15,
+      "protected_damage": 3,
+      "ordinary_damage": 9,
+      "captured_level100_damage": 63,
+      "immune_damage": 0,
+      "sleep_damage": 0
+    },
+    {
+      "crystal": "Icium Z",
+      "source": "Ice Beam",
+      "power": 175,
+      "active_damage": 12,
+      "protected_damage": 3,
+      "ordinary_damage": 6,
+      "captured_level100_damage": 50,
+      "immune_damage": 0,
+      "sleep_damage": 0
+    },
+    {
+      "crystal": "Grassium Z",
+      "source": "Energy Ball",
+      "power": 175,
+      "active_damage": 16,
+      "protected_damage": 4,
+      "ordinary_damage": 9,
+      "captured_level100_damage": 72,
+      "immune_damage": 0,
+      "sleep_damage": 0
+    },
+    {
+      "crystal": "Psychium Z",
+      "source": "Psychic",
+      "power": 175,
+      "active_damage": 31,
+      "protected_damage": 7,
+      "ordinary_damage": 19,
+      "captured_level100_damage": 133,
+      "immune_damage": 0,
+      "sleep_damage": 0
+    },
+    {
+      "crystal": "Ghostium Z",
+      "source": "Shadow Ball",
+      "power": 160,
+      "active_damage": 25,
+      "protected_damage": 6,
+      "ordinary_damage": 15,
+      "captured_level100_damage": 112,
+      "immune_damage": 0,
+      "sleep_damage": 0
+    },
+    {
+      "crystal": "Poisonium Z",
+      "source": "Sludge Bomb",
+      "power": 175,
+      "active_damage": 12,
+      "protected_damage": 3,
+      "ordinary_damage": 7,
+      "captured_level100_damage": 54,
+      "immune_damage": 0,
+      "sleep_damage": 0
+    }
+  ],
+  "native_command_examples": [
+    {
+      "case": "test_electriumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 9",
+        "A wild Pikachu appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-0464bda07ec840039c91cec056b3faec|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Pikachu|n\n1 Pikachu |M\u2640|n               Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Pikachu (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Pikachu was caught!",
+        "**availability-772-player-0464bda07ec840039c91cec056b3faec** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Pikachu a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+teach 3=Thunderbolt",
+      "side": 0,
+      "messages": [
+        "Pikachu already knows Thunderbolt."
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Pikachu              |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+hold 3=Electrium Z",
+      "side": 0,
+      "messages": [
+        "Pikachu is now holding Electrium Z."
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Pikachu) Z choices; side use available:\n1: Thunderbolt (15/15 PP), Electrium Z \u2192 Gigavolt Havoc, Electric Special 175."
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Pikachu) prepares Gigavolt Havoc from Thunderbolt \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_electriumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Pikachu's Electrium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 27",
+        "A wild Gastly appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-a85d58e00b754edebe9128b1fe1fc6e9|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Gastly|n\n1 Gastly |M\u2640|n                Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Gastly (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Gastly was caught!",
+        "**availability-772-player-a85d58e00b754edebe9128b1fe1fc6e9** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Gastly a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+teach 3=Shadow Ball",
+      "side": 0,
+      "messages": [
+        "Gastly already knows Shadow Ball."
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Gastly               |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+hold 3=Ghostium Z",
+      "side": 0,
+      "messages": [
+        "Gastly is now holding Ghostium Z."
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Gastly) Z choices; side use available:\n1: Shadowball (15/15 PP), Ghostium Z \u2192 Never-Ending Nightmare, Ghost Special 160."
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Gastly) prepares Never-Ending Nightmare from Shadowball \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Gastly's Ghostium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 45",
+        "A wild Voltorb-Hisui appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-4ed01cf193fd407eb1ba56f8c09e4bee|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Voltorb-Hisui|n\n1 Voltorb-Hisui |x\u2013|n         Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Voltorb-Hisui (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Voltorb-Hisui was caught!",
+        "**availability-772-player-4ed01cf193fd407eb1ba56f8c09e4bee** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Voltorb-Hisui a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+teach 3=Energy Ball",
+      "side": 0,
+      "messages": [
+        "Voltorb-Hisui already knows Energy Ball."
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Voltorb-Hisui        |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+hold 3=Grassium Z",
+      "side": 0,
+      "messages": [
+        "Voltorb-Hisui is now holding Grassium Z."
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Voltorb-Hisui) Z choices; side use available:\n1: Energyball (10/10 PP), Grassium Z \u2192 Bloom Doom, Grass Special 175."
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Voltorb-Hisui) prepares Bloom Doom from Energyball \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_grassiumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Voltorb-Hisui's Grassium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 63",
+        "A wild Lapras appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-1d3079b0efae48a2ac3bfc8eb5dad2e4|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Lapras|n\n1 Lapras |M\u2640|n                Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Lapras (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Lapras was caught!",
+        "**availability-772-player-1d3079b0efae48a2ac3bfc8eb5dad2e4** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Lapras a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+teach 3=Ice Beam",
+      "side": 0,
+      "messages": [
+        "Lapras already knows Ice Beam."
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Lapras               |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+hold 3=Icium Z",
+      "side": 0,
+      "messages": [
+        "Lapras is now holding Icium Z."
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Lapras) Z choices; side use available:\n1: Icebeam (10/10 PP), Icium Z \u2192 Subzero Slammer, Ice Special 175."
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Lapras) prepares Subzero Slammer from Icebeam \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_iciumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Lapras's Icium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 81",
+        "A wild Grimer appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-e9c756f7487c4519acab6660194b837f|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Grimer|n\n1 Grimer |C\u2642|n                Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Grimer (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Grimer was caught!",
+        "**availability-772-player-e9c756f7487c4519acab6660194b837f** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Grimer a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+teach 3=Sludge Bomb",
+      "side": 0,
+      "messages": [
+        "Grimer already knows Sludge Bomb."
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Grimer               |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+hold 3=Poisonium Z",
+      "side": 0,
+      "messages": [
+        "Grimer is now holding Poisonium Z."
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Grimer) Z choices; side use available:\n1: Sludgebomb (10/10 PP), Poisonium Z \u2192 Acid Downpour, Poison Special 175."
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Grimer) prepares Acid Downpour from Sludgebomb \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Grimer's Poisonium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 99",
+        "A wild Kadabra appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-5f2b2ee4eecd40489bc15cc5f595aef0|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Kadabra|n\n1 Kadabra |C\u2642|n               Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Kadabra (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Kadabra was caught!",
+        "**availability-772-player-5f2b2ee4eecd40489bc15cc5f595aef0** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Kadabra a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+teach 3=Psychic",
+      "side": 0,
+      "messages": [
+        "Kadabra already knows Psychic."
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Kadabra              |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+hold 3=Psychium Z",
+      "side": 0,
+      "messages": [
+        "Kadabra is now holding Psychium Z."
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Kadabra) Z choices; side use available:\n1: Psychic (10/10 PP), Psychium Z \u2192 Shattered Psyche, Psychic Special 175."
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Kadabra) prepares Shattered Psyche from Psychic \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_psychiumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Kadabra's Psychium Z was returned to your inventory."
+      ]
+    }
+  ],
+  "capture_naming_answers": [
+    {
+      "case": "test_electriumz_native",
+      "event": "ordinary-capture-nickname",
+      "input": "no"
+    },
+    {
+      "case": "test_ghostiumz_native",
+      "event": "ordinary-capture-nickname",
+      "input": "no"
+    },
+    {
+      "case": "test_grassiumz_native",
+      "event": "ordinary-capture-nickname",
+      "input": "no"
+    },
+    {
+      "case": "test_iciumz_native",
+      "event": "ordinary-capture-nickname",
+      "input": "no"
+    },
+    {
+      "case": "test_poisoniumz_native",
+      "event": "ordinary-capture-nickname",
+      "input": "no"
+    },
+    {
+      "case": "test_psychiumz_native",
+      "event": "ordinary-capture-nickname",
+      "input": "no"
+    }
+  ],
+  "compatibility": [
+    {
+      "suite": "z_existing_sources",
+      "exit": 0,
+      "seconds": 101.13,
+      "cases": [
+        "34"
+      ],
+      "sha256": "f237d5bc772af0a6834fa4ca5457ce906d63f7cde879f30baae8cf4959c98046"
+    },
+    {
+      "suite": "z_move",
+      "exit": 0,
+      "seconds": 70.76,
+      "cases": [
+        "37"
+      ],
+      "sha256": "012c3316328464934323de0d384eb22bc93e0f03207fe3179e8bc13c7039c602"
+    },
+    {
+      "suite": "z_generic",
+      "exit": 0,
+      "seconds": 191.13,
+      "cases": [
+        "17"
+      ],
+      "sha256": "ccd2e7262f0d821e49927ae9ef63c765c1b07827c8586917071331a7b8421e0e"
+    },
+    {
+      "suite": "z_status",
+      "exit": 0,
+      "seconds": 107.65,
+      "cases": [
+        "20"
+      ],
+      "sha256": "9e625da5f6bf0d23224014f2cea9287f3fcb3179585a3dcedfd53d539b37b2ac"
+    },
+    {
+      "suite": "z_signature",
+      "exit": 0,
+      "seconds": 212.92,
+      "cases": [
+        "22"
+      ],
+      "sha256": "b02d9d1f6198b702a4cd06f0ea5b20a5b1f4a3898212f72dae95013dcff40e27"
+    },
+    {
+      "suite": "z_native",
+      "exit": 0,
+      "seconds": 46.1,
+      "cases": [
+        "9"
+      ],
+      "sha256": "a2aff9a33346d547ab62e623cb40f79f087e92b1aea2d1585340280e79109397"
+    },
+    {
+      "suite": "necrozma_player",
+      "exit": 0,
+      "seconds": 89.58,
+      "cases": [
+        "15"
+      ],
+      "sha256": "32360b508e9ac6e61500a7ae222c490ecf97911e8cd8348d8d4a040e9acb76a7"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 20.09,
+      "cases": [
+        "32"
+      ],
+      "sha256": "80c6754edc30885e2a9bd4163b01f41ce2447ce1d60342912a70b63fdf6c04af"
+    }
+  ],
+  "compatibility_cases": 186,
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\z-special-sources-910-20261025\\qualified-final-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 2122.71,
+    "passed": [
+      "6186",
+      "6186",
+      "6186"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "ebecde882c85e14a2dea028e0d10719ea89068cd9d56c603a3629ee704000744",
+    "source_count": 1546
+  },
+  "preserved": {
+    "generic_first19_sha256": "8531fef86a1f635abd4e8951b92a0a4c9d3161975f756b9ec7d59656fa01df78",
+    "signatures16_sha256": "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43",
+    "all_452_definition_fingerprints": true,
+    "ordinary_moves_and_dex": true,
+    "snack_field_and_other_item_sources": true
+  },
+  "retained_failed_player_pilot": {
+    "result": [
+      {
+        "suite": "z_special_sources",
+        "exit": 1,
+        "seconds": 52.56,
+        "cases": [
+          "18"
+        ],
+        "sha256": "6684b0706f30cb461d126a49b1a4d04285f1e566d29f41227632533516a34f2e"
+      }
+    ],
+    "diagnosis": "17 Electric cases passed; Ghost discovery displayed persisted Shadowball. Exact whitespace matcher expected Shadow Ball despite correct160-power Ghost profile/15PP. Normalize using project identity, then all102 pass. Private runner also needed UTF-8 diagnostic stdout; no game-source fix."
+  },
+  "fixture_rules": "Real native capture/teach/active-moveset positives at100, finite purchase/hold and PvP command paths. Other owned teams, wallets/charts, slot3, sleep/zero-PP and identity-conflict/fault adapters are labelled prerequisites. Legal level-source/passive moves are validated. Regice100 supplies a survivable neutral control; native immunity holders/default abilities are used, with Harden for Shedinja.",
+  "boundary": "Production command classes, menus and actual SQL/runtime/checkpoints, not socket login, deliberately released game build, permanent acquisition, hosted CI or PF2-Dev deployment.",
+  "current_index": "item-availability-six-z-sources-index-2026-10-25.json",
+  "current_index_sha256_lf": "635553d584c26f104a02e4a334f732adc7213f72503d0365607ef4fa90426e99",
+  "cleanup": {
+    "task_postgres_stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0,
+    "existing_games_or_services_changed": false
+  },
+  "retained_pre_docstring_gate": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\z-special-sources-910-20261025\\qualified-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 4294967295,
+    "seconds": 1452.15,
+    "passed": [
+      "6186"
+    ],
+    "skipped": [
+      "4028"
+    ],
+    "log_sha256": "aaaf857c92f105604646db420b2cfb7f786c7a37cedcddb02429a125c082fc25",
+    "source_count": 1546,
+    "status": "Superseded attempt: combined order passed; duplicate repeat intentionally cancelled after final test-helper docstring. Final qualification runs all three orders independently."
+  },
+  "retained_pre_docstring_gate_cancellation": {
+    "game_or_database_service_changed": false,
+    "final_qualification_stopped": false,
+    "process": {
+      "ProcessId": 42420,
+      "ParentProcessId": 121524,
+      "CreationDate": "2026-10-25T13:00:15.147834-04:00",
+      "CommandLine": "\"C:\\Users\\Koden\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B -m pytest -q tests pokemon/battle/tests --run-callback-tests -o addopts= --basetemp H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\z-special-sources-910-20261025\\qualified-tree\\.pytest-basetemp-mandatory-jaufdign\\repeat"
+    },
+    "reason": "Final review added a test-helper docstring. Preserve the earlier completed combined order; cancel this duplicate repeat and qualify only the exact final source."
+  }
+}

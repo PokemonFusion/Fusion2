@@ -69,7 +69,7 @@ ALPHA_MEADOW = AdventureTemplate(
     key="alpha_meadow",
     name="Alpha Meadow Survey",
     description=(
-        "A short authored survey with a route choice, a Pokemon encounter, "
+        "A short authored survey with an optional route encounter, "
         "field objectives, and a clean return to Adventure Hall."
     ),
     category="hunt/tutorial",
@@ -145,8 +145,9 @@ ALPHA_MEADOW = AdventureTemplate(
         AdventureObjective(
             key="resolve_encounter",
             type="encounter",
-            description="Choose a route and resolve its encounter.",
+            description="Choose a route and resolve its encounter (optional).",
             target_node="tall_grass",
+            required=False,
         ),
         AdventureObjective(
             key="reach_old_tree",

@@ -5,7 +5,24 @@ Hall. The current playable mission is `alpha_meadow` (Alpha Meadow Survey).
 
 ## Player Flow
 
-The player must be in Adventure Hall and have a battle-ready party.
+Start in Adventure Hall. The original survey can be completed without a battle:
+
+```text
++adventure/start alpha_meadow
+north
+north
++adventure/search
+south
+south
++adventure/leave
+```
+
+Reaching and searching the Old Tree, then returning to the entrance, completes
+the survey. The route encounter is optional until chosen. Bring a battle-ready
+party if you choose an encounter; once chosen, its result must resolve before
+completion, including after a failed result save.
+
+For either existing optional encounter:
 
 ```text
 +adventure/list
@@ -33,8 +50,9 @@ Useful commands during a run are `+adventure/look`, `+adventure/objectives`,
 and `+adventure/leave`. A route choice is locked once its encounter begins.
 If battle startup fails before a battle is created, repeat the same choice.
 
-The first completed clear records the chosen route and encounter result and
-grants one Potion. Later clears remain available for alternate outcomes,
+The first completed clear grants one Potion, whether or not an encounter was
+chosen. A chosen route retains its original encounter result; a survey-only
+clear invents no route or battle outcome. Later clears remain available for alternate outcomes,
 catching, and roleplay but do not duplicate the first-clear reward.
 
 If an encounter result cannot be saved, use `+adventure/retry`. This replays
@@ -74,6 +92,12 @@ part of the normal deployment process before enabling this version.
 - One authored mission and one fixed difficulty.
 - No weekly/monthly board goals or permanent milestone UI yet.
 - No reputation, procedural generation, crafting loop, or player-authored maps.
+
+The [September closeout](testing/september-closeout-2026-10-23.md) records the
+retained integration, non-combat route repair, current command/SQL checks and
+deferred November work. `tests/integration/adventure_player_cases.py` exercises
+the real player typeclass, persisted room pool, cardinal commands, reconnect
+seam, leave/expiry, reward recovery and the existing optional wild route.
 
 ## Recovery Change Validation
 

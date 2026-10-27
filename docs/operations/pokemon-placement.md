@@ -8,14 +8,19 @@ party/box membership. An owned Pokemon has exactly one of:
 | Party | Owner's storage, unique slot 1–6 | Box, box position |
 | Box | Owner's storage and box, unique positive box position | Party slot |
 | Fusion reservation | Owner's storage | Party slot, box, box position |
+| Daycare reservation | Owner's storage and matching active Daycare entry/claim | Party slot, box, box position |
+| Native combined companion | Owner's storage and reciprocal active Necrozma pair | Party slot, box, box position, active/boxed mirrors |
 
 Fusion reservations preserve the existing temporary and permanent fusion paths,
-including inactive unlocked permanent forms. This adds no October systems.
+including inactive unlocked permanent forms. Native combinations retain a
+separate host and companion; they never reuse trainer-Fusion placement.
 Legacy M2M/slot relations are compatibility mirrors, never ownership fallbacks.
 
 ## Write contract
 
 Use `PlacementService` for moves, swaps, fusion reservations and release.
+Use the [native combination service](necrozma-combination.md) for its reserved
+companion transition/return; ordinary placement/release rejects both linked roles.
 `move_to_party`, `move_to_box` and `UserStorage` methods delegate to it. The
 service locks storage, then freshly reads/locks Pokemon, and validates ownership
 before updating the canonical row and mirrors in one transaction. A storage
@@ -38,8 +43,10 @@ error. Battle tracking cleanup runs only after the outermost commit.
 
 The old `+trade` command is intentionally blocked before any mutation: it moved
 Pokemon across owners before changing the trainer, with non-atomic compensation.
-A correct transfer protocol belongs to the deferred trading work. No trading,
-Daycare, breeding or marketplace implementation is included here.
+A shared [ownership-transfer and reservation service](pokemon-transfers.md) now
+provides the October foundation (#722). Consent UI (#725), Daycare, breeding and
+marketplace player routes are separate work. The `+trade` command remains disabled
+until that consent UI is accepted.
 
 ## Staff audit and rollout
 

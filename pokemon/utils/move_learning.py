@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pokemon.names import find_named, normalize_name
 from pokemon.services.move_management import apply_active_moveset
+from pokemon.services.move_edits import after_move_commit, guarded_learning
 
 
 def get_learnable_levelup_moves(pokemon):
@@ -16,22 +17,27 @@ def get_learnable_levelup_moves(pokemon):
 	from pokemon.middleware import get_moveset_by_name
 
 	known = {normalize_name(m.name) for m in pokemon.learned_moves.all()}
-	_, moveset = get_moveset_by_name(pokemon.species)
+	from pokemon.services.necrozma_moves import progression_species
+
+	species = progression_species(pokemon)
+	level = pokemon.level if species != pokemon.species else pokemon.computed_level
+	_, moveset = get_moveset_by_name(species)
 	if moveset:
 		lvl_moves = [
-			(lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= pokemon.computed_level and normalize_name(mv) not in known
+			(lvl, mv) for lvl, mv in moveset["level-up"] if lvl <= level and normalize_name(mv) not in known
 		]
 		lvl_moves.sort(key=lambda x: x[0])
 		moves = [mv for lvl, mv in lvl_moves]
 		level_map = {mv: lvl for lvl, mv in lvl_moves}
 	else:
-		moves = [mv for mv in get_valid_moves(pokemon.species, pokemon.computed_level) if normalize_name(mv) not in known]
+		moves = [mv for mv in get_valid_moves(species, level) if normalize_name(mv) not in known]
 		level_map = {}
 
 	return moves, level_map
 
 
-def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None) -> None:
+@guarded_learning
+def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on_exit=None, knowledge_only=False) -> None:
 	"""Teach ``move_name`` to ``pokemon``.
 
 	If ``prompt`` is True and ``caller`` is provided, the caller will be asked
@@ -42,6 +48,10 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
 	"""
 
 	if not pokemon or not move_name:
+		return
+	from pokemon.services.necrozma_moves import remember_move
+
+	if remember_move(pokemon, move_name, knowledge_only=knowledge_only):
 		return
 
 	from pokemon.services.move_management import get_or_create_move
@@ -60,7 +70,7 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
 	active = [s.move.name for s in active_ms.slots.order_by("slot")] if active_ms else []
 	if find_named(active, move_name) is not None:
 		if on_exit:
-			on_exit(caller, None)
+			after_move_commit(caller, lambda: on_exit(caller, None))
 		return
 
 	# if there's space, add automatically
@@ -69,26 +79,25 @@ def learn_move(pokemon, move_name: str, *, caller=None, prompt: bool = False, on
 		pokemon.save()
 		apply_active_moveset(pokemon)
 		if caller:
-			caller.msg(f"{pokemon.name} learned {move_name.capitalize()}!")
+			message = f"{pokemon.name} learned {move_name.capitalize()}!"
+			after_move_commit(caller, lambda: caller.msg(message))
 		if on_exit:
-			on_exit(caller, None)
+			after_move_commit(caller, lambda: on_exit(caller, None))
 		return
 
 	pokemon.save()
 	if not (prompt and caller):
 		if caller:
-			caller.msg(f"{pokemon.name} learned {move_name.capitalize()} (stored).")
+			message = f"{pokemon.name} learned {move_name.capitalize()} (stored)."
+			after_move_commit(caller, lambda: caller.msg(message))
 		if on_exit:
-			on_exit(caller, None)
+			after_move_commit(caller, lambda: on_exit(caller, None))
 		return
 
 	from menus import learn_move as learn_menu
 	from utils.enhanced_evmenu import EnhancedEvMenu
 
-	EnhancedEvMenu(
-		caller,
-		learn_menu,
-		startnode="node_start",
-		start_kwargs={"pokemon": pokemon, "move_name": move_name},
-		cmd_on_exit=on_exit,
-	)
+	after_move_commit(caller, lambda: EnhancedEvMenu(
+		caller, learn_menu, startnode="node_start",
+		start_kwargs={"pokemon": pokemon, "move_name": move_name}, cmd_on_exit=on_exit,
+	))

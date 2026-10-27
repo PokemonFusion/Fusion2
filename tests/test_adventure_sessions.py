@@ -1,5 +1,6 @@
 import contextlib
 import types
+from collections import UserList
 from datetime import timedelta
 
 import pytest
@@ -167,6 +168,18 @@ def test_start_requires_adventure_hall(adventure_world):
     assert result.message == "You need to start adventures from the Adventure Hall."
 
 
+def test_instance_pool_accepts_persisted_mutable_sequences(adventure_world):
+    """Evennia saved lists implement the sequence protocol rather than list."""
+    hall, instance, player = adventure_world
+    hall.exits = []
+    hall.db.adventure_instance_rooms = UserList([instance])
+
+    result = sessions.start_session(player, "alpha_meadow")
+
+    assert result.ok
+    assert player.location is instance
+
+
 def test_movement_search_and_return_complete_objectives(adventure_world):
     _hall, _instance, player = adventure_world
     start = sessions.start_session(player, "alpha_meadow")
@@ -197,6 +210,42 @@ def test_movement_search_and_return_complete_objectives(adventure_world):
     assert session.objective_progress["return_entrance"] == 1
     assert session.state == STATE_COMPLETED
     assert "Adventure complete" in result.message
+
+
+def test_noncombat_survey_completes_without_fabricating_an_encounter(adventure_world):
+    """The original September survey remains playable without choosing battle."""
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    result = sessions.move_session(player, "south")
+
+    assert result.ok and session.state == STATE_COMPLETED
+    assert session.objective_progress["resolve_encounter"] == 0
+    assert session.metadata == {}
+    assert all(session.objective_progress[key] == 1 for key in (
+        "reach_old_tree", "search_old_tree", "return_entrance",
+    ))
+
+
+def test_chosen_encounter_still_blocks_survey_completion_until_result(adventure_world):
+    """Optional selection cannot turn a pending/failed battle result into a clear."""
+    _hall, _instance, player = adventure_world
+    session = sessions.start_session(player, "alpha_meadow").session
+    sessions.move_session(player, "north")
+    sessions.choose_session_route(player, "trainer")
+    sessions.move_session(player, "north")
+    sessions.search_session(player)
+    sessions.move_session(player, "south")
+    sessions.move_session(player, "south")
+
+    assert session.state != STATE_COMPLETED
+    assert session.completed_at is None
+    result = sessions.resolve_encounter_result(session.pk, player, "loss")
+    assert result.ok and session.state == STATE_COMPLETED
+    assert session.metadata["encounter_result"] == "loss"
 
 
 def test_route_choice_is_locked_and_encounter_result_is_idempotent(adventure_world):

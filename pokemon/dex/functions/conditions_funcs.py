@@ -183,9 +183,13 @@ class Confusion:
 	"""Confusion volatile status."""
 
 	def onBeforeMove(self, pokemon, *_, **__):
+		"""Advance confusion, repairing legacy boolean or incomplete state once."""
 		vol = getattr(pokemon, "volatiles", {}).get("confusion")
-		if not vol:
+		if vol is None or vol is False:
 			return True
+		if not isinstance(vol, dict) or "turns" not in vol:
+			self.onStart(pokemon)
+			vol = pokemon.volatiles["confusion"]
 		turns = vol.get("turns", 0)
 		if turns <= 0:
 			self.onEnd(pokemon)
@@ -204,8 +208,12 @@ class Confusion:
 		return True
 
 	def onStart(self, pokemon, *_, **__):
+		"""Initialize the duration inside the battle's existing effect state."""
 		if hasattr(pokemon, "volatiles"):
-			pokemon.volatiles.setdefault("confusion", {"turns": random.randint(2, 5)})
+			vol = pokemon.volatiles.get("confusion")
+			if not isinstance(vol, dict):
+				vol = pokemon.volatiles["confusion"] = {}
+			vol.setdefault("turns", random.randint(2, 5))
 		return True
 
 
@@ -236,40 +244,43 @@ class Trapper:
 
 
 class Partiallytrapped:
-	"""Damage over time trapping effect."""
+	"""Finite native trapping, with source-bound item modifiers."""
 
-	def durationCallback(self, *_, **__):
+	def durationCallback(self, *args, **kwargs):
 		return 5
 
-	def onEnd(self, pokemon, *_, **__):
-		if hasattr(pokemon, "volatiles"):
-			pokemon.volatiles.pop("partiallytrapped", None)
-		setattr(pokemon, "trapped", False)
+	def onEnd(self, pokemon, *args, **kwargs):
+		pokemon.volatiles.pop("partiallytrapped", None)
+		pokemon.trapped = False
 		return True
 
-	def onResidual(self, pokemon, *_, **__):
-		vol = getattr(pokemon, "volatiles", {}).get("partiallytrapped")
-		if not vol:
+	def onResidual(self, pokemon, *args, **kwargs):
+		state = pokemon.volatiles.get("partiallytrapped")
+		if not state:
 			return
-		turns = vol.get("turns", 0)
-		if turns <= 0:
+		battle = getattr(pokemon, "battle", None)
+		source = state.get("source")
+		if source is not None and battle is not None and not any(source is mon and mon.hp > 0 for part in battle.participants for mon in part.active):
 			self.onEnd(pokemon)
 			return
-		max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 1))
-		dmg = max(1, max_hp // 8)
-		pokemon.hp = max(0, pokemon.hp - dmg)
-		vol["turns"] = turns - 1
-		if vol["turns"] <= 0:
+		if state.get("turns", 0) <= 0:
 			self.onEnd(pokemon)
-		return dmg
+			return
+		from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+		damage = apply_indirect_damage(pokemon, max(1, pokemon.max_hp // state.get("divisor", 8)), battle=battle, source=source, effect=IndirectEffect("partiallytrapped", "Condition"))
+		state["turns"] -= 1
+		if state["turns"] <= 0:
+			self.onEnd(pokemon)
+		return damage
 
-	def onStart(self, pokemon, *_, **__):
-		if hasattr(pokemon, "volatiles"):
-			pokemon.volatiles["partiallytrapped"] = {"turns": self.durationCallback()}
-		setattr(pokemon, "trapped", True)
+	def onStart(self, pokemon, source=None, effect=None, **kwargs):
+		from pokemon.battle.effect_context import EffectContext
+		item = EffectContext.key(EffectContext.item(source))
+		pokemon.volatiles["partiallytrapped"] = {"turns": 7 if item == "gripclaw" else self.durationCallback(), "divisor": 6 if item == "bindingband" else 8, "source": source}
+		pokemon.trapped = True
 		return True
 
-	def onTrapPokemon(self, *_, **__):
+	def onTrapPokemon(self, *args, **kwargs):
 		return True
 
 
@@ -330,17 +341,25 @@ class Choicelock:
 	"""Represents being locked into using one move."""
 
 	def onBeforeMove(self, pokemon, move, *_, **__):
+		from pokemon.battle.effect_context import EffectContext
+		if not EffectContext.item(pokemon):
+			return True
 		vol = getattr(pokemon, "volatiles", {}).get("choicelock")
 		if not vol:
 			return True
 		locked = vol.get("move")
-		return move == locked
+		from pokemon.battle.effect_context import EffectContext
+		return EffectContext.key(move) == EffectContext.key(locked)
 
 	def onDisableMove(self, pokemon, move_name, *_, **__):
+		from pokemon.battle.effect_context import EffectContext
+		if not EffectContext.item(pokemon):
+			return False
 		vol = getattr(pokemon, "volatiles", {}).get("choicelock")
 		if not vol:
 			return False
-		return move_name != vol.get("move")
+		from pokemon.battle.effect_context import EffectContext
+		return EffectContext.key(move_name) != EffectContext.key(vol.get("move"))
 
 	def onStart(self, pokemon, move=None, *_, **__):
 		if hasattr(pokemon, "volatiles") and move:
@@ -412,27 +431,55 @@ class Healreplacement:
 
 
 class Stall:
-	"""Track success rate for consecutive Protect/Detect use."""
+	"""Version modern consecutive-protection denominators without free legacy retries."""
 
-	def onStart(self, pokemon, *_, **__):
+	@staticmethod
+	def state(pokemon):
+		"""Translate the former power-of-two counter once, retaining a paid streak."""
+		state = pokemon.volatiles["stall"]
+		if not isinstance(state, dict):
+			state = pokemon.volatiles["stall"] = {"version": 2, "counter": 729}
+		counter = state.get("counter")
+		if "version" not in state:
+			if type(counter) is int and 0 < counter < 729 and counter & (counter - 1) == 0:
+				counter = min(729, 3 ** counter.bit_length())
+			else:
+				counter = 729
+			state.update(version=2, counter=counter)
+		elif type(state.get("version")) is not int or state.get("version") != 2:
+			state.update(version=2, counter=729)
+		if type(state.get("counter")) is not int or state.get("counter") not in {3, 9, 27, 81, 243, 729}:
+			state["counter"] = 729
+		return state
+
+	@staticmethod
+	def expire(pokemon, turn):
+		"""One complete intervening turn ends the protection streak."""
+		state = getattr(pokemon, "volatiles", {}).get("stall")
+		last = state.get("last_turn") if isinstance(state, dict) else None
+		if type(last) is int and last < turn:
+			pokemon.volatiles.pop("stall", None)
+
+	def onStart(self, pokemon, *_, battle=None, **__):
+		"""A first success makes the next attempt one-third likely."""
 		if hasattr(pokemon, "volatiles"):
-			pokemon.volatiles["stall"] = {"counter": 1}
+			pokemon.volatiles["stall"] = {"version": 2, "counter": 3,
+				"last_turn": getattr(battle, "mechanic_turn", 0)}
 		return True
 
-	def onRestart(self, pokemon, *_, **__):
-		vol = getattr(pokemon, "volatiles", {}).get("stall")
-		if vol:
-			vol["counter"] = 1
+	def onRestart(self, pokemon, *_, battle=None, **__):
+		"""Advance only after another actual successful protection attempt."""
+		state = self.state(pokemon)
+		state.update(counter=min(729, state["counter"] * 3),
+			last_turn=getattr(battle, "mechanic_turn", 0))
 		return True
 
 	def onStallMove(self, pokemon, *_, **__):
+		"""Return the next success probability without paying or advancing it."""
 		vol = getattr(pokemon, "volatiles", {}).get("stall")
-		if not vol:
+		if vol is None:
 			return 1.0
-		counter = vol.get("counter", 1)
-		chance = 1.0 / counter
-		vol["counter"] = min(counter * 2, 729)
-		return chance
+		return 1.0 / self.state(pokemon)["counter"]
 
 
 class Gem:
@@ -446,9 +493,8 @@ class Raindance:
 	"""Standard rain weather effect."""
 
 	def durationCallback(self, source=None, *_, **__):
-		if getattr(source, "item", "").lower() == "damprock":
-			return 8
-		return 5
+		from pokemon.battle.item_effects import HeldItemRules
+		return HeldItemRules.field_duration(source, "damprock")
 
 	def onFieldStart(self, field, source=None, *_, **__):
 		field.pseudo_weather["raindance"] = {"duration": self.durationCallback(source=source)}
@@ -508,9 +554,8 @@ class Sunnyday:
 	"""Standard sunny weather."""
 
 	def durationCallback(self, source=None, *_, **__):
-		if getattr(source, "item", "").lower() == "heatrock":
-			return 8
-		return 5
+		from pokemon.battle.item_effects import HeldItemRules
+		return HeldItemRules.field_duration(source, "heatrock")
 
 	def onFieldStart(self, field, source=None, *_, **__):
 		field.pseudo_weather["sunnyday"] = {"duration": self.durationCallback(source=source)}
@@ -575,13 +620,44 @@ class Desolateland:
 		return 1.0
 
 
-class Sandstorm:
+class _WeatherChip:
+	"""Apply weather chip through actual types and the battle's guard events."""
+
+	effectType = "Weather"
+
+	def _chip(self, pokemon, weather, immune_types):
+		"""Keep weather damage distinct from direct moves and retaliation hits."""
+		if not pokemon or getattr(pokemon, "hp", 0) <= 0:
+			return 0
+		types = set(getattr(pokemon, "types", []) or [getattr(pokemon, "type1", ""), getattr(pokemon, "type2", "")])
+		if not types.isdisjoint(immune_types):
+			return 0
+		battle = getattr(pokemon, "battle", None)
+		from pokemon.battle._shared import weather_suppressed
+
+		if weather_suppressed(battle):
+			return 0
+		run_event = getattr(battle, "runEvent", None)
+		if callable(run_event) and run_event("Immunity", pokemon, None, self, weather) is False:
+			return 0
+		damage = max(1, getattr(pokemon, "max_hp", pokemon.hp) // 16)
+		if callable(run_event):
+			modified = run_event("Damage", pokemon, None, self, damage)
+			if modified is False:
+				return 0
+			if isinstance(modified, (int, float)):
+				damage = max(0, int(modified))
+		actual = min(pokemon.hp, damage)
+		pokemon.hp -= actual
+		return actual
+
+
+class Sandstorm(_WeatherChip):
 	"""Damage-over-time sandstorm."""
 
 	def durationCallback(self, source=None, *_, **__):
-		if getattr(source, "item", "").lower() == "smoothrock":
-			return 8
-		return 5
+		from pokemon.battle.item_effects import HeldItemRules
+		return HeldItemRules.field_duration(source, "smoothrock")
 
 	def onFieldStart(self, field, source=None, *_, **__):
 		field.pseudo_weather["sandstorm"] = {"duration": self.durationCallback(source=source)}
@@ -606,22 +682,15 @@ class Sandstorm:
 		return spd
 
 	def onWeather(self, pokemon, *_, **__):
-		types = {getattr(pokemon, "type1", ""), getattr(pokemon, "type2", "")}
-		if types.isdisjoint({"Rock", "Ground", "Steel"}):
-			max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 1))
-			damage = max(1, max_hp // 16)
-			pokemon.hp = max(0, pokemon.hp - damage)
-			return damage
-		return 0
+		return self._chip(pokemon, "sandstorm", {"Rock", "Ground", "Steel"})
 
 
-class Hail:
+class Hail(_WeatherChip):
 	"""Gen 3-7 hail weather."""
 
 	def durationCallback(self, source=None, *_, **__):
-		if getattr(source, "item", "").lower() == "icyrock":
-			return 8
-		return 5
+		from pokemon.battle.item_effects import HeldItemRules
+		return HeldItemRules.field_duration(source, "icyrock")
 
 	def onFieldStart(self, field, source=None, *_, **__):
 		field.pseudo_weather["hail"] = {"duration": self.durationCallback(source=source)}
@@ -640,27 +709,24 @@ class Hail:
 		return True
 
 	def onWeather(self, pokemon, *_, **__):
-		types = {getattr(pokemon, "type1", ""), getattr(pokemon, "type2", "")}
-		if "Ice" not in types:
-			max_hp = getattr(pokemon, "max_hp", getattr(pokemon, "hp", 1))
-			dmg = max(1, max_hp // 16)
-			pokemon.hp = max(0, pokemon.hp - dmg)
-			return dmg
-		return 0
+		return self._chip(pokemon, "hail", {"Ice"})
 
 
 class Snowscape:
 	"""Modern snowy weather."""
 
+	weather_id = "snowscape"
+
 	def durationCallback(self, source=None, *_, **__):
-		return 5
+		from pokemon.battle.item_effects import HeldItemRules
+		return HeldItemRules.field_duration(source, "icyrock")
 
 	def onFieldStart(self, field, source=None, *_, **__):
-		field.pseudo_weather["snowscape"] = {"duration": self.durationCallback(source=source)}
+		field.pseudo_weather[self.weather_id] = {"duration": self.durationCallback(source=source)}
 		return True
 
 	def onFieldResidual(self, field, *_, **__):
-		weather = field.pseudo_weather.get("snowscape")
+		weather = field.pseudo_weather.get(self.weather_id)
 		if not weather:
 			return
 		weather["duration"] -= 1
@@ -668,14 +734,20 @@ class Snowscape:
 			self.onFieldEnd(field)
 
 	def onFieldEnd(self, field, *_, **__):
-		field.pseudo_weather.pop("snowscape", None)
+		field.pseudo_weather.pop(self.weather_id, None)
 		return True
 
 	def onModifyDef(self, defense, pokemon=None, *_, **__):
-		types = {getattr(pokemon, "type1", ""), getattr(pokemon, "type2", "")}
+		types = set(getattr(pokemon, "types", []) or [getattr(pokemon, "type1", ""), getattr(pokemon, "type2", "")])
 		if "Ice" in types:
 			return int(defense * 1.5)
 		return defense
+
+
+class Snow(Snowscape):
+	"""Canonical snow ID used by the loaded moves and Snow Warning ability."""
+
+	weather_id = "snow"
 
 
 class Deltastream:
@@ -735,10 +807,13 @@ class Dynamax:
 
 
 class Commanded:
-	"""Effect applied to Tatsugiri when inside Dondozo."""
+	"""Dondozo receives five boosts and cannot switch while commanded."""
 
 	def onStart(self, pokemon, *_, **__):
 		setattr(pokemon, "commanded", True)
+		from pokemon.utils.boosts import apply_boost
+
+		apply_boost(pokemon, {"atk": 2, "def": 2, "spa": 2, "spd": 2, "spe": 2})
 		return True
 
 	def onDragOut(self, *_, **__):
@@ -747,18 +822,51 @@ class Commanded:
 	def onTrapPokemon(self, *_, **__):
 		return True
 
+	def onBeforeSwitchOut(self, *_, **__):
+		return False
+
 
 class Commanding:
-	"""Effect applied to Dondozo commanding Tatsugiri."""
+	"""Tatsugiri inside Dondozo cannot act, be targeted, or switch."""
 
 	def onBeforeTurn(self, *_, **__):
 		return True
 
+	def onBeforeMove(self, *_, **__):
+		return False
+
+	def onInvulnerability(self, *_, **__):
+		return False
+
+	def onBeforeSwitchOut(self, *_, **__):
+		return False
+
 	def onDragOut(self, *_, **__):
 		return False
 
 	def onTrapPokemon(self, *_, **__):
 		return True
+
+
+class Cudchew:
+	"""Repeat one queued berry on expiry without replacing a new held item."""
+	def onStart(self, pokemon, *args, **kwargs):
+		pokemon.volatiles["cudchew"]["duration"] = 2
+		return True
+
+	def onResidual(self, pokemon, battle=None):
+		state = pokemon.volatiles.get("cudchew", {})
+		state["duration"] = state.get("duration", 2) - 1
+		if state["duration"] <= 0 and battle:
+			battle.remove_volatile(pokemon, "cudchew")
+
+	def onEnd(self, pokemon, *args, battle=None, effect_state=None, **kwargs):
+		state = effect_state or pokemon.volatiles.get("cudchew", {})
+		if not battle or pokemon.hp <= 0 or not state.get("berry"):
+			return
+		item = battle._coerce_item(state["berry"])
+		battle.singleEvent("Eat", item, {}, pokemon)
+		battle.runEvent("EatItem", pokemon, None, "ability:cudchew", item)
 
 
 class Arceus:
@@ -803,4 +911,17 @@ CONDITION_HANDLERS = {
 	"twoturnmove": Twoturnmove(),
 	"choicelock": Choicelock(),
 	"mustrecharge": Mustrecharge(),
+	"commanding": Commanding(),
+	"commanded": Commanded(),
+	"cudchew": Cudchew(),
 }
+class Micleberry:
+	"""One eligible accuracy check, bounded by the volatile's duration."""
+
+	def onSourceAccuracy(self, accuracy, target=None, source=None, move=None):
+		if not source or not move or getattr(move, "ohko", False):
+			return accuracy
+		source.volatiles.pop("micleberry", None)
+		if isinstance(accuracy, (int, float)) and not isinstance(accuracy, bool):
+			return accuracy * 1.2
+		return accuracy

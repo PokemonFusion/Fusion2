@@ -56,17 +56,28 @@ class Trainer(models.Model):
         def add_badge(self, badge: GymBadge) -> None:
                 self.badges.add(badge)
 
+        def _change_money(self, amount: int, *, debit: bool) -> bool:
+                """Serialize every existing wallet writer against marketplace settlement."""
+                if type(amount) is not int or amount < 0:
+                        raise ValueError("Money changes require a nonnegative whole amount.")
+                with transaction.atomic():
+                        balance = type(self).objects.select_for_update().values_list("money", flat=True).get(pk=self.pk)
+                        if debit and balance < amount:
+                                self.money = balance
+                                return False
+                        if not debit and balance > 2_147_483_647 - amount:
+                                raise ValueError("Trainer wallet cannot receive this payment.")
+                        self.money = balance - amount if debit else balance + amount
+                        type(self).objects.filter(pk=self.pk).update(money=self.money)
+                        return True
+
         def add_money(self, amount: int) -> None:
-                self.money += amount
-                self.save()
+                """Credit the current saved wallet without overwriting concurrent payments."""
+                self._change_money(amount, debit=False)
 
         def spend_money(self, amount: int) -> bool:
-                """Remove money if available and return success."""
-                if self.money < amount:
-                        return False
-                self.money -= amount
-                self.save()
-                return True
+                """Debit only available current money, including after stale object reads."""
+                return self._change_money(amount, debit=True)
 
         def log_seen_pokemon(self, species: str | int) -> None:
                 """Record that the trainer has seen the given species."""
@@ -103,7 +114,7 @@ class Trainer(models.Model):
                 user = getattr(self, "user", None)
                 if not user:
                         return
-                character = getattr(user, "typeclass", None)
+                character = getattr(user, "typeclass", None) or user
                 if not character:
                         return
                 updater = getattr(character, "_update_inventory_cache_from_trainer", None)
@@ -203,6 +214,21 @@ class GymLeaderProfile(models.Model):
         required_badge_count = models.PositiveSmallIntegerField(default=0)
         is_enabled = models.BooleanField(default=True, db_index=True)
         sort_order = models.PositiveSmallIntegerField(default=1, db_index=True)
+
+        content_version = models.PositiveIntegerField(default=0)
+        content_digest = models.CharField(max_length=64, blank=True, default="")
+        content_definition = models.JSONField(default=dict, blank=True)
+
+        battle_format = models.CharField(max_length=10, default="single", choices=(("single", "Singles"), ("double", "Doubles")))
+        ai_profile = models.CharField(max_length=80, default="gym_leader")
+        strategy_key = models.CharField(max_length=40, blank=True, default="", choices=(("", "None"), ("trick_room", "Trick Room")))
+        content_stage = models.CharField(max_length=16, default="production", choices=(("production", "Production"), ("test", "Test")))
+        intro_text = models.TextField(blank=True)
+        victory_text = models.TextField(blank=True)
+        defeat_text = models.TextField(blank=True)
+        rules_text = models.TextField(blank=True)
+        reward_policy = models.CharField(max_length=16, default="legacy", choices=(("legacy", "Legacy"), ("badge_only", "Badge only")))
+        rematch_cooldown_seconds = models.PositiveIntegerField(default=0)
 
         class Meta:
                 ordering = ("sort_order", "league_key", "gym_key")

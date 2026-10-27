@@ -26,6 +26,256 @@ Each dict is on the form
 
 HELP_ENTRY_DICTS = [
 	{
+		"key": "native necrozma",
+		"aliases": ["necrozma combinations", "combine necrozma"],
+		"category": "Guide",
+		"text": """
+At a Pokemon Center in human form, combine your own conscious base Necrozma
+with native Solgaleo (Dusk-Mane) or Lunala (Dawn-Wings). This free reusable route
+needs two real owned sources, with no plot item, quest or currency.
+
++necrozma
++necrozma inspect 3
++necrozma combine 3=5/2
++necrozma separate 3
+
+Use actual gapped party slots, or full owned UUIDs for boxed sources. Review
+both identities, held items, the chosen source slot, displaced move/PP and
+companion return policy; answer yes or no. Reviews expire after five minutes.
+After reconnecting, +necrozma lists pending reviews you can reopen.
+
+The companion stays yours and can be inspected, but cannot act, move, receive
+items/training, transfer, release or enter trainer-Fusion until separation.
+The host keeps current health, status and progress. Healing, PP/training items,
+EXP and held-item changes work; active movesets, ability/species and ownership
+changes wait until separation. Earned base knowledge is stored without prompts.
+
+Sunsteel Strike or Moongeist Beam starts with 5 PP once. Later cycles retain
+remaining/zero PP and PP Up/Max bonuses; recombining never refills it. Hidden
+displaced moves and dormant form moves cannot be healed. Separation restores
+only the selected displaced slot, even if the host is fainted or statused.
+
+The party companion returns to its old free slot, then a free slot, then a box.
+A previously boxed companion prefers its valid old box. Nobody is evicted.
+Use ordinary moves/items/flee and the matching Solganium/Lunalium signature in
+human singles or two-controller doubles. Native pairs currently exclude Multi,
+Mega, Tera, Dynamax and Ultra. Source availability still depends on the world.
+
+This is separate from your trainer's +fuse. See help +necrozma and the
+repository docs/necrozma.md for the complete bounded route and release status.
+		""",
+	},
+	{
+		"key": "gyms",
+		"aliases": ["gym battles", "gym guide", "badges"],
+		"category": "Guide",
+		"text": """
+Find an available gym with +gym list, then inspect its requirements before
+challenging. Use the gym key shown in that list; not every area has a gym.
+
++gym list
++gym check tempo_gym
++gym challenge tempo_gym
+
+The check explains the gym's format, roster limits, location, badge requirements
+and rematch availability. Meet those requirements and bring conscious eligible
+Pokemon. If the gym is disabled, you are in the wrong room, or you are already
+in an activity, resolve the reported problem before trying again. A gym doubles
+challenge uses two active Pokemon controlled by you, not four human trainers.
+
+During battle use help battle basics, +status and the acting positions shown
+by the prompt. For example, +attack A1 Water Gun B1 uses A1's learned Water Gun
+against B1; the move must actually be known and have PP. +switch lists your own
+legal reserves. Healing and storage changes belong outside the battle.
+
+Win to earn the gym's badge once. A rematch does not award a duplicate badge;
+its availability and rewards follow the rules shown by +gym check. If a victory
+reports a pending badge, reconnect if needed and use +gym claim. Do not repeat
+the battle to repair an interrupted claim. Use +battle/retry for a pending
+battle save, and +request with the command and exact response if recovery fails.
+
+Use help pvp and spectating for two-player singles/doubles, or help multi
+battles for four human controllers. Gyms do not provide human partner matching.
+		""",
+	},
+	{
+		"key": "multi battles",
+		"aliases": ["multi pvp", "four trainer battles", "team battles"],
+		"category": "Guide",
+		"text": """
+Multi is two trainers versus two trainers: four different player accounts.
+Each controls one active Pokemon and switches only among their own party and
+supported current Fusion. Ordinary doubles is two players, each controlling two
+active Pokemon; it uses +pvp/create double instead.
+
+Meet in one room. One player hosts A1:
++pvp/multi create
+
+The other three players choose their own slots:
++pvp/multi join A2
++pvp/multi join B1
++pvp/multi join B2
+
+All four type +pvp/multi ready. The host then types +pvp/multi start.
++pvp/multi status shows names, teams, readiness and the ten-minute lobby expiry.
+Use +pvp/multi unready to revoke your consent. Joining/changing slots or leaving
+clears remaining readiness. +pvp/multi leave leaves; the host's leave cancels.
+The lobby holds no movement or Pokemon locks. Absent members are removed by the
+room timer; an absent host cancels the request. Everyone needs a conscious,
+eligible party/current Fusion, no conflicting reservation and no other battle
+when the host starts. Failed startup keeps the lobby and rolls back partial locks.
+
+In battle, the field shows each slot's trainer, Pokemon, public HP/status and
+which living slots owe a choice. Examples for the trainer currently in A2:
++attack A2 Water Gun B1
++attack A2 Helping Hand A1
++attack A2 Surf
++switch A2 6
++switch A2 fusion
++item A2 Potion=3
+
+Your own saved party numbers retain gaps. fusion selects your current form when
+it joins a full party. Items use your own bag and own eligible targets. A partner
+cannot choose your action, cancel your reservation or borrow your reserves.
+Surf can hit your teammate; use its legal target list. Shared screens, hazards,
+guards, ally support and redirection apply by team. Ally Switch changes physical
+cells while each trainer keeps control of their own Pokemon; check +status again.
+
+The team shares one use each of enabled Tera, Mega and Z, under their existing
+rules. +tera A2 reserves Tera, +tera A2 cancel cancels that actor's reservation.
++mega A2 reserves an eligible held-stone form. +zmove A2 Tackle=B1 queues one
+eligible reusable-crystal Z action. A partner's pending reservation blocks a
+competing one; it cannot be cancelled by another actor. Switching cancels only
+the switching actor's uncommitted mechanic. Mechanics cannot stack on one actor.
+
+An exhausted trainer leaves an empty cell while the teammate continues. No
+choice is owed by that empty cell and there is no partner takeover. The team
+loses only after both own rosters are exhausted. Simultaneous exhaustion draws.
+PvP gives no new EXP, trainer XP or prize money.
+
+Each turn has a five-minute action deadline. Reconnect restores your exact
+controller and retained choices without resetting that clock. The room timer
+checks within thirty seconds: a team with an overdue missing living controller
+forfeits; if both teams are missing choices, the result is a draw. +concede yes
+forfeits your whole team after your explicit confirmation. Eliminated trainers
+cannot concede for a still-active teammate. There is no disconnect takeover.
+
+If a turn cannot save, use +battle/retry to recover the retained choices. Pending
+results/cleanup keep the battle until they can be saved; +battle/retry and the
+room timer retry safely. +status shows the current field, controls and deadline.
+		""",
+	},
+	{
+		"key": "breeding",
+		"aliases": ["pokemon breeding", "eggs", "hatching"],
+		"category": "Guide",
+		"text": """
+Deposit two eligible hatched Pokemon with +daycare, then:
+
++breed check
++breed start
++breed
++breed collect <cycle ID>
++breed hatch <egg ID>
+
+A new cycle costs 500 trainer money and produces one fixed egg after 30 wall-clock
+minutes. Both parents have a 24-hour cooldown from start, even after cancellation,
+retrieval/redeposit or trading. A collected egg needs another 20 wall-clock
+minutes before hatching. Status, retries and reconnect never advance time or reroll.
+Repeated start while producing returns that same cycle without another charge.
+
+Opposite-gender parents need a compatible egg group, or one compatible Ditto.
+Two Ditto, eggs, Undiscovered parents and unsupported special/form families fail
+before the breeding fee. The beta supports ordinary base forms with Gen 9 move
+data; regional/cosmetic/special offspring, Nidoran, Volbeat/Illumise, Indeedee,
+Rockruff and Manaphy/Phione cases are excluded.
+
+Eggs inherit stored genetic IVs (not Hyper Training), nature, native ability slot
+and eligible Gen 9 moves. Held Destiny Knot, Everstone and Power items affect
+inheritance and stay on the parents. There is no passive EXP or healing.
+Masuda/Charm/Pokeball inheritance and hatch-speed modifiers are outside this MVP.
+
++breed cancel <cycle ID> stops uncollected production without a refund or resetting
+cooldown. Collect/cancel frees the parents for normal Daycare retrieval; they
+remain in Daycare until retrieved. Full parties receive eggs in a box. Eggs
+cannot battle, fuse, use ordinary field items or act as parents. They can be
+consent traded; only the current owner can hatch one, including from a box.
+
+Hatching changes the same Pokemon ID. Repeated collect/hatch returns a historical
+receipt, without another egg, payment or creature. Releasing an egg is permanent;
+a receipt cannot recreate it. The hatch records its current owner as original
+trainer and starts friendship at 100 under PF2's beta policy. Use +breed after
+reconnect to discover your cycles and current eggs; save IDs for older receipts.
+		""",
+	},
+	{
+		"key": "daycare",
+		"aliases": ["pokemon daycare", "parent custody"],
+		"category": "Guide",
+		"text": """
+Daycare holds two hatched owned Pokemon per character. Deposit costs 100 trainer
+money per stay; retrieval is free. Depositing and retrieving have no cooldown.
+There is no passive EXP, healing, friendship or evolution. Breeding production
+uses the separate +breed route; help breeding lists its costs, timing and scope.
+
++daycare deposit 3
++daycare
++daycare retrieve <entry ID>
+
+Deposit accepts party slots or a unique owned Pokemon ID prefix of at least
+eight hex characters, including boxed Pokemon. Status shows your entry IDs
+after reconnect. Repeating an active deposit using its Pokemon ID costs nothing
+more. Repeating retrieval returns the saved receipt without another move.
+
+Deposited Pokemon leave the party/box and cannot battle, fuse, trade, be listed,
+released or edited. Eggs and conflicting reservations are rejected before fees.
+Finish your battle before deposit or retrieval. A full Daycare or insufficient
+money changes nothing; retrieval never requires money.
+
+Retrieval prefers the old party slot, then another free slot, then a box if full.
+The same Pokemon keeps its HP, status, moves, PP, genetics, training and held item.
+A later deliberate new stay costs another 100. Save the entry ID for historical
+receipts. Ask staff to inspect conflicting custody; do not pay again to repair it.
+		""",
+	},
+	{
+		"key": "marketplace",
+		"aliases": ["pokemon market", "player sales"],
+		"category": "Guide",
+		"text": """
+Sell hatched owned Pokemon for existing trainer money. Eggs use help trading.
+Prices are whole amounts from 1 to 1,000,000; there is no fee or sales tax.
+
+Seller: +market list 3=100
+Buyer:  +market
+Buyer:  +market inspect <listing ID>
+Buyer:  +market buy <listing ID>
+Seller: +market mine
+
+Use a party slot or a unique owned Pokemon ID prefix of at least eight hex
+characters for a boxed source. The buyer must inspect the exact advertised
+Pokemon and price first. Full parties receive purchases in a box. Purchases
+preserve HP, status, moves and PP, and grant no EXP or automatic evolution.
+
+Listings last 24 hours. +market cancel <listing ID> closes your own listing.
++market mine reclaims your expired listings and shows active entries first.
+Attempting to buy an expired listing also releases its reservation. Repeating a
+completed purchase returns its historical receipt; it never pays or transfers
+again. Inspect shows participants their own saved balance and asset destination.
+Later spending or Pokemon moves can change the current balance/location.
+
+A listed Pokemon cannot be moved, released, fused, edited, traded or used in
+battle. Boxed listings allow battles using other party members, but both buyer
+and seller must finish battle before a purchase. A failed check changes no money
+or ownership. Each character uses their own wallet even on a shared account.
+
+Browse and mine show up to thirty records. Save the listing ID to inspect or
+cancel an older one directly. Cancel and relist if the Pokemon's advertised state
+changed. Ask staff to inspect a missing/conflicting reservation; do not repeatedly
+pay or move another Pokemon to try to repair it.
+		""",
+	},
+	{
 		"key": "getting started",
 		"aliases": ["start", "new player", "quickstart", "first steps"],
 		"category": "Guide",
@@ -53,6 +303,10 @@ short introduction to moving, talking, and trying your first wild battle.
    chargen
    Choose a human trainer with a starter Pokemon, or a Fusion who can battle
    as their own Pokemon form. Follow the menu's prompts one at a time.
+   Beta setup is self-service; no staff validation is required. Accepted choices
+   are saved. If you abort or disconnect, type chargen again to resume.
+   Completion saves one starting choice; repeating it never grants another
+   starter or Fusion form, including after trading or releasing that Pokemon.
 5. Human trainers choose their starter in the menu. Type starterlist when
    asked for a species. Outside the menu, +starters lists starter options;
    +starter opens or resumes human starter selection if needed.
@@ -65,6 +319,25 @@ command. Type +sheet to see your character and battle information.
 Your next guide is help first outing. It walks through the Alpha Test Hub's
 beginner route and +hunt, with instructions for getting help along the way.
 You can also stay and chat: public Hi, I'm new! speaks on the public channel.
+
+# Choose Your Next Topic
+
+help core commands         Everyday command index.
+help pokemon and storage   Party slots, boxes and held items.
+help growth and moves      Healing, teaching moves, saved sets and evolution.
+help fusion                Temporary and permanent personal forms.
+help trading               Reviewed, consensual Pokemon gifts and swaps.
+help marketplace           Fixed-price player listings.
+help daycare               Paid parent custody; no passive progression.
+help breeding              Explicit paid cycles, eggs and hatching timers.
+help gyms                  Requirements, challenges, badges and recovery.
+help pvp and spectating    Two-player singles or ordinary doubles.
+help multi battles         Four human controllers in two teams.
+help item availability     Real item sources and supported use routes.
+
+The website's Guide contains these same topics. The browser client's Start here
+link opens this beginner guide. Adoption is deferred from beta; use the consent
+trade or marketplace routes for supported ownership exchange.
 
 # Useful Website Links
 
@@ -178,6 +451,9 @@ party                 Alias for +sheet.
 		"category": "Guide",
 		"text": """
 Character mail is private asynchronous mail between IC characters.
+Each character has a separate inbox and read state, including your alts.
+Reading, marking unread or archiving shared mail leaves other recipients' state
+unchanged. Archiving hides your entry and does not delete their copy.
 
 # Commands
 
@@ -274,6 +550,64 @@ They are not player-facing profile fields.
 		""",
 	},
 	{
+		"key": "trading",
+		"aliases": ["pokemon trading", "consent trades", "pokemon gifts"],
+		"category": "Guide",
+		"text": """
+Trades are private offers between two characters. Even characters sharing an
+account must each act for themselves. There are no fees, payments, EXP grants or
+automatic evolutions. Pokemon keep their ID, original trainer, held item, HP,
+status, moves and PP.
+
+# Gift
+
+Ash:   +trade offer Misty=3
+Misty: +trade inspect <offer ID>
+Misty: +trade accept <offer ID>
+
+The offer command shows its ID. +trade lists your pending offers and recent
+outcomes after reconnect. Inspect the exact offer before accepting or countering;
+another character's inspection cannot supply your consent.
+
+# Swap
+
+After inspecting Ash's offer, Misty chooses her own Pokemon:
+Misty: +trade counter <offer ID>=<her Pokemon ID>
+Ash:   +trade inspect <new offer ID>
+Ash:   +trade accept <new offer ID>
+
+A counteroffer closes the old offer and creates new terms. Previous inspection
+or consent does not carry forward. Each side offers one Pokemon. Use a party
+slot (1-6 or slot3), or a full/unique Pokemon ID prefix of at least eight hex
+characters from +box or +pokemon to offer a boxed Pokemon directly.
+
+# Closing And Recovery
+
++trade decline <offer ID>   Intended recipient declines.
++trade cancel <offer ID>    Either participant closes the offer.
++trade inspect <offer ID>   Inspect pending or completed/cancelled outcomes.
+
+Offers last 15 minutes. Expired offers cannot complete; cancel them to release
+their reservations. Changed Pokemon state requires new terms. Pending offers
+are shown first (up to 30); close them to expose older offers. Repeating a
+completed acceptance returns its historical outcome and never trades again.
+
+The offered Pokemon is reserved: finish/cancel the offer before moving, using
+items on, editing moves for, releasing or fusing it. Battles, Fusion forms and
+market/Daycare/breeding reservations block transfer. A boxed offer lets its
+owner battle with other party members, but the trade itself must wait until
+both characters finish battle. Failed checks move nothing.
+
+Recipients use a free party slot, otherwise a box. Existing boxes have no size
+limit. Both sides of a swap save together. Trades do not automatically evolve
+Pokemon; help growth and moves describes the supported manual held-item
+evolution equivalents.
+
+Saved moveset activation/management requires a Pokemon Center. A pending trade
+or an old move menu cannot edit a Pokemon after ownership changes.
+		""",
+	},
+	{
 		"key": "pokemon and storage",
 		"aliases": ["storage", "party management", "boxes", "pokemon storage"],
 		"category": "Guide",
@@ -296,15 +630,36 @@ boxes and can be moved around outside battle.
 +box/withdraw <pokemon_id> [box]             Move a boxed Pokemon into your party.
 +box/swap <pokemon_id> <party_slot> [box]    Swap a boxed Pokemon with a party slot.
 +storage                                      Open Pokemon storage at a Pokemon Center.
-+trade <pokemon_id>=<character>               Trade a Pokemon to another character.
+
+Trading uses private, persistent offers. Type help trading for the gift/swap flow.
+No Pokemon changes owner until the intended recipient inspects and accepts the
+exact offer. Party and boxed Pokemon are supported; active activities block trades.
 
 # Held Items
 
-+hold <slot>=<item>    Give a party Pokemon a held item from your carried
-                       objects.
++hold <slot>=<item>    Equip or replace a party Pokemon's held item.
++hold <slot>=          Remove its held item.
+
+Held items come from trainer inventory or an exact carried item. Replacing or
+removing an item returns the previous item to trainer inventory. For example:
++hold 2=Oran Berry, then +hold 2= to remove it.
+Use a slot that actually appears in +party and an item you own. For a shop,
+type +store, choose Buy items, then enter Potion 1. Type back within the menu
+and q before taking an exit. A catalogue description does not guarantee stock.
+
+Party numbers stay the same across +party, +switch, storage and moveset menus,
+including empty slots. Box menu numbers identify entries within that box.
+If your active Fusion joins a full party in battle, use +switch fusion to
+select it. +switch lists the available party slots and Fusion choice.
 
 Storage commands cannot be used while your character is locked into an active
 battle.
+Copy the full Pokemon ID from +party <slot> for box commands; an item or move
+selector is not a storage ID. A reserved trade/market/Daycare/Fusion source is
+unavailable for other uses. Cancel the offer/listing, retrieve the Daycare entry,
+or +unfuse as appropriate before retrying. A completed permanent Fusion source
+does not become a transferable party Pokemon again. Use +battle/retry if an
+ended battle says its save is pending; do not rearrange the party to bypass it.
 		""",
 	},
 	{
@@ -333,6 +688,11 @@ your party while fused and returns to your party or storage when you use
 
 Permanent fusion requires Bond 255. The source Pokemon becomes part of the
 character and is not returned as a separate party Pokemon when you unfuse.
+An active form remains unavailable to trade, sell or deposit in Daycare.
+Temporary Fusion reserves its original source until +unfuse returns that same
+Pokemon. Permanent Fusion keeps its own form after +unfuse; use +fusion to
+choose it again. A full party can still have the separately labelled fusion
+battle reserve. Your participating form is controlled by you, including in Multi.
 
 # Form Control
 
@@ -390,6 +750,7 @@ battle commands such as +attack, +switch, +item, or +flee.
 +movesets         Manage saved movesets at a Pokemon Center.
 +store            Open an item shop when one is present.
 +vend [amount]    Use a nearby vending machine.
+help item availability  Explain item sources, stock and supported use routes.
 		""",
 	},
 	{
@@ -415,13 +776,18 @@ refresh the battle view.
 +battle/concede                  Forfeit an active battle after confirmation.
 +concede yes                     Confirm concession without the prompt.
 
+Equip Smoke Ball before battle with +hold <slot>=Smoke Ball. Its acting holder
+can +flee from eligible wild encounters, including trapping abilities, without
+consuming it. Item suppression, trainer/PvP and no-flee restrictions still apply.
+Use +flee for this held effect; +item Smoke Ball does not throw a capture ball.
+
 # Battle Information
 
 +battleui              Redraw your current battle view.
 +battleui <character>  View another character's current battle if visible.
 +status                Show field, side, status, and active Pokemon effects.
 +status brief          Show a shorter effects panel.
-+status me             Focus the panel on your side.
++status me             Focus on your side, or your own controller in Multi.
 +status opp            Focus the panel on the opposing side.
 
 # Spectating
@@ -433,6 +799,18 @@ refresh the battle view.
 
 For multi-target battles, targets are written as positions such as A1, A2, B1,
 or B2. If there is only one valid target, the game usually chooses it for you.
+In ordinary doubles or Multi, name the acting slot. Examples:
++attack A2 Water Gun B1
++switch A2 6
++item A2 Potion=3
+Use learned moves, your saved reserve
+numbers and your own stock. A2 can target its ally A1 with Helping Hand; Surf
+also hits its real adjacent recipients, including a teammate. If a move has
+several legal targets, provide the physical target label from the current field.
++attack A2 without a move opens that actor's move/target prompt; cancel backs out.
+After Ally Switch, read +status again: physical labels can change while each
+trainer keeps control of their own Pokemon. A queued action cannot be replaced.
+Four human controllers use help multi battles; +pvp/create double is two players.
 		""",
 	},
 	{
@@ -453,19 +831,129 @@ Most maintenance commands are used outside battle.
 +learn                 List Pokemon with level-up moves available.
 +learn <slot>          Open the move-learning flow for a party slot.
 +teach <slot>=<move>   Teach a valid move to a party Pokemon.
-+moves/use <slot>=<set> Switch a Pokemon to a saved moveset.
++moves/use <slot>=<set> Switch to a saved moveset at a Pokemon Center.
 +movesets              Manage saved movesets at a Pokemon Center.
+
+For example, +party/moves 3 shows slot 3's current moves and PP, +learn 3 opens
+its eligible level-up choices, and +teach 3=Water Gun teaches that move only if
+that Pokemon can currently learn it. Follow the replacement prompt if all four
+active move slots are occupied; cancel leaves them unchanged. An unknown move,
+wrong level, egg, battle or reserved source is refused without changing the set.
+At a Pokemon Center, +movesets manages saved sets and +moves/use 3=2 activates
+an existing second set. Switching sets preserves PP; it is not free healing.
+If there is no second saved set, choose one that exists or leave the menu.
 
 # Items
 
 +inventory             Show your inventory.
-+use <item>            Use an item outside battle.
-+use <item>=<target>   Use an item on a target when supported.
++use Rare Candy=2      Give a Rare Candy to the Pokemon in party slot 2.
++use PP Up=2           Increase a move's maximum PP (prompts for the move).
++use PP Max=2          Increase PP capacity with a PP Max (prompts for a move).
+
++use Potion=3          Heal the Pokemon in canonical party slot 3.
++use Full Heal=3       Cure a persistent status condition.
++use Revive=6          Revive the fainted Pokemon in party slot 6.
++use Energy Root=3     Heal with an herb (also lowers friendship on success).
++use Ether=3/Water Gun Restore PP for a selected active move.
++use Max Ether=3/4     Fully restore PP in active move slot 4.
++use Elixir=fusion     Restore PP to all moves of your current Fusion.
+
+Medicine targets accept canonical party slots (including gaps), unambiguous
+Pokemon names, full Pokemon IDs, or fusion for your current Fusion. Eggs and
+boxed Pokemon cannot use medicine. Ether and Max Ether restore the first
+depleted active move if no /move is supplied. Elixirs restore all active moves.
+An ineffective use consumes no item and applies no herbal friendship penalty.
+Each successful medicine use consumes one item. Energy Powder/Heal Powder
+lower friendship by 5 below 200 or 10 at 200+; Energy Root by 10/15 and Revival
+Herb by 15/20, with a floor of zero.
+PP Up and PP Max increase PP capacity; at their prompt use +use <move name or number>.
+During battle use +item <item>. +heal restores your party at a Pokemon Center.
+
++use Oran Berry=3      Feed an existing recovery berry to a party Pokemon.
++use Berry Juice=3     Restore up to 20 HP.
++use Leppa Berry=3/4   Restore up to 10 PP in active move slot 4.
++use Pomeg Berry=3     Lower HP EVs by up to 10 and raise friendship.
+
+Feedable HP items: Oran (10 HP), Sitrus (1/4 max HP), Figy/Wiki/Mago/Aguav/
+Iapapa (1/3 max HP), and Berry Juice (20 HP). Field flavor recovery does not
+apply combat-only confusion. Cheri/Chesto/Pecha/Rawst/Aspear cure paralysis/
+sleep/poison or toxic/burn/freeze; Lum cures any major saved condition.
+Leppa uses the same move selector and caps as Ether. Recovery cannot revive.
+Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato reduce HP/Atk/Def/SpA/SpD/Spe EVs
+by up to 10, floored at zero. EV berries add friendship: 10 below 100, 5 below
+200, or 2 at 200+, capped at 255. They work if either effect is useful, including
+friendship at zero EVs. Pomeg preserves missing HP after max HP falls, keeps
+living Pokemon at least at 1 HP and leaves fainted Pokemon fainted.
+Other combat-trigger, confusion-only and contest berries cannot be fed with
++use. These field rules do not change held berry consumption during battle.
+Escape Rope field use is not implemented.
+
++use Fresh Water=3    Restore up to 30 HP (Soda Pop 50, Lemonade 70,
+                     Moomoo Milk 100, Sweet Heart 20).
++use Lava Cookie=3    Cure a major saved status (also Old Gateau,
+                     Casteliacone, Lumiose Galette, Shalour Sable,
+                     Big Malasada and Pewter Crunchies).
++use Max Honey=6      Revive one fainted target to full HP; no unlock effect.
++use Sacred Ash=party Revive eligible fainted canonical party members with
+                     one item. Living members, eggs, boxes and all Fusion
+                     reservations remain untouched.
+These equivalents use field medicine checks and accept no /move selector.
+During battle, use +item Fresh Water=3 or +item Max Honey=3. Sacred Ash stays
+field-only. Ineffective uses and failed writes consume nothing.
+Buy only from shops/rewards deliberately configured to offer them; adding the
+definitions does not stock a room or grant a player anything.
 
 # Evolution
 
-+evolve <pokemon_id> [item]    Attempt to evolve a Pokemon. Some evolutions may
++evolve <pokemon_id> [item] [=<target>]
+                            Attempt to evolve a Pokemon. Some evolutions may
                                need an item or other condition.
+
+For ordinary Ursaluna, copy Ursaring's full ID from +party <slot> and use
++evolve <pokemon_id> Peat Block. This consumes one bag copy. PF2 replaces the
+full-moon requirement with this explicit item action: no time/region/moon flag
+is needed. A held-only copy does not activate it. Bloodmoon is not a target.
+Peat Block acquisition uses shops/rewards deliberately configured to offer it.
+
+Kubfu uses +evolve <full ID> Scroll of Darkness for Urshifu (Single Strike), or
++evolve <full ID> Scroll of Waters for Urshifu-Rapid-Strike. One bag copy is
+consumed on success. No tower completion, extra level or friendship condition
+is required. Optional =Urshifu or =Urshifu-Rapid-Strike must match the Scroll.
+Held-only copies do not activate evolution, and evolved Urshifu cannot switch
+style with a Scroll. Acquisition uses deliberately configured shops/rewards.
+
+For Kingambit, your native Bisharp must personally finish three authored
+Crest-bearing Bisharp leaders in won NPC/wild battles, then gain a level.
++party <slot> shows the count and next level. Use +evolve <full ID> without a
+bag item. Your Crest/held item is not consumed. PvP, losses, flee/capture,
+aborted battles, EXP Share, transformed holders and fake flags give no credit.
+
+For Milcery, first equip Berry, Clover, Flower, Love, Ribbon, Star or Strawberry
+Sweet with +hold <slot>=<complete Sweet name>. Then +evolve <pokemon_id> is PF2's
+spin equivalent and selects Vanilla Cream. Copy the full ID from +party <slot>.
+To choose a listed cream, use e.g.
++evolve <pokemon_id>=Alcremie-Ruby-Cream. Other allowed cream suffixes are
+Matcha-Cream, Mint-Cream, Lemon-Cream, Salted-Cream, Ruby-Swirl, Caramel-Swirl
+and Rainbow-Swirl (all with the Alcremie- prefix). The held Sweet is consumed
+once; do not supply a second bag Sweet to +evolve. +party <slot> shows the saved
+cream and Sweet decoration. Gmax is not an evolution target. Eggs, reserved
+Pokemon and Pokemon in battle cannot use this route.
+
+Existing trade-held items have a direct, non-transfer evolution equivalent:
+equip with +hold, copy the full ID from +party <slot>, then +evolve <pokemon_id>
+without a bag item. Clamperl: Deep Sea Scale -> Gorebyss / Deep Sea Tooth ->
+Huntail; Seadra: Dragon Scale -> Kingdra; Porygon: Up-Grade -> Porygon2;
+Porygon2: Dubious Disc -> Porygon-Z; Electabuzz: Electirizer -> Electivire;
+Magmar: Magmarizer -> Magmortar; Poliwhirl/Slowpoke: King's Rock ->
+Politoed/Slowking; Onix/Scyther/Nohface: Metal Coat -> Steelix/Scizor/Kitsunoh;
+Feebas: Prism Scale -> Milotic; Rhydon: Protector -> Rhyperior; Dusclops:
+Reaper Cloth -> Dusknoir; Spritzee: Sachet -> Aromatisse; Swirlix: Whipped Dream
+-> Slurpuff. Only the held copy is consumed; bag copies, owner and party/box
+placement stay unchanged. Eggs, Fusion reservations, battles and Everstone
+still block evolution. At the same level, explicitly choose =Porygon-Z after
+equipping Dubious Disc for Porygon's second evolution. A trade does not trigger
+automatic evolution; use these manual item equivalents. Non-item and
+partner-species trade evolution triggers remain unsupported.
 		""",
 	},
 	{
@@ -508,12 +996,25 @@ players need usable Pokemon and must not already be in battle.
 
 +pvp                   Show the PvP command summary.
 +pvp/list              List open PvP requests in the room.
-+pvp/create            Create an open request.
-+pvp/create <password> Create a passworded request.
++pvp/create single     Create an open singles request (also the default).
++pvp/create double     Create ordinary doubles: two trainers, two actives each.
++pvp/create double <password>  Restrict that doubles request with a password.
 +pvp/join <player>     Join a request.
 +pvp/join <player> <password>
 +pvp/start             Start the battle once someone has joined your request.
 +pvp/abort             Cancel your request.
+
+For example, one trainer uses +pvp/create double, a second uses +pvp/join Ash
+(replace Ash with the host), then the host uses +pvp/start. Both must remain
+present and have at least two conscious eligible battlers at launch. If a party
+changed, heal or restore the eligible roster and retry; +pvp/list shows the
+current room's requests and format. This flow does not add two more controllers.
+
+Four players use +pvp/multi create, join A2/B1/B2, each ready, then the host starts.
+See help multi battles for that separate consent flow, shared team mechanics,
+independent reserves, deadlines and team concession. Eligible active Pokemon
+can use +tera, +mega and +zmove under their existing item/species/format rules;
+their own help explains prerequisites. These are not automatic battle grants.
 
 # Watching Battles
 
@@ -524,6 +1025,51 @@ players need usable Pokemon and must not already be in battle.
 +status list                 List battles you are in or watching.
 +status next                 Move your status focus to the next watched battle.
 +status prev                 Move your status focus to the previous watched battle.
+		""",
+	},
+	{
+		"key": "item availability",
+		"aliases": ["item sources", "finding items", "obtainable items"],
+		"category": "Guide",
+		"text": """
+Use +store in a configured shop, choose Buy items, then enter a displayed name
+and amount, such as Potion 1. The shop needs stock and you need enough money.
+Use +vend <machine name> 1 at a dispenser; one request may give a bundle.
++inventory shows owned copies. +itemdex descriptions do not prove shop stock.
+
+The authored Alpha Meadow Survey gives a Potion on your first completion.
+Use +adventure/list and +adventure/info alpha_meadow to inspect the route.
+Use +adventure/claim for a pending completed reward; repeats do not farm it.
+The alpha build recipe includes Rare Candy vending, but a recipe does not
+guarantee that its dispenser exists in the current world.
+
+Outside battle, examples include +use Potion=3, +use Oran Berry=3,
++use Ether=3/Water Gun and +use Pomeg Berry=3. +use PP Up=3 asks you to select
+an active move. Only eligible useful field effects consume a copy.
+Use +party 3 to inspect your Pokemon and its full ID. Equip held items with
++hold 3=Leftovers; +hold 3= returns an uneaten copy. Bag copies do not activate
+held effects. Use +evolve <full-id> Fire Stone for a matching bag evolution.
+Milcery's Sweet and trade-held equivalents must be equipped before +evolve.
+
+Smoke Ball uses +hold before battle and +flee in eligible wild battles.
+Manual +item supports the recovery foods above (except Sacred Ash), Oran,
+Sitrus, Berry Juice, Cheri/Chesto/Pecha/Rawst/Aspear/Lum/Leppa, and legacy
+Berry/Gold/Burnt/Ice/Mint/Miracle/PRZ Cure/PSN Cure/Mystery berries.
+Use +item A1 Leppa Berry=3/Water Gun for selected-move PP. Flavor/EV berries
+stay field/held-only. Bag effects do not invoke held eating callbacks.
+Accepted Mega Stones use +mega; accepted Z-Crystal/source pairs use +zmove.
+These are bounded mappings, not every possible source move. +berry supports
+one private Oran bed and the Razz field snack. Native Necrozma combinations use
++necrozma at a Center; see help native necrozma for companion and PP limits.
+Leader's Crest qualifies authored opponent victories, not a bag-item shortcut.
+Itemfinder grants a Potion only at a configured bounded source; a mysterious
+item message elsewhere does not prove an inventory grant.
+
+Stock and deployed commands can differ from the item catalog. The October 22
+audit found no enabled shops or Candy dispenser on the inspected older server
+build. This is a dated observation; consult current world availability.
+
+See the repository's docs/item-availability.md for examples and audit limits.
 		""",
 	},
 	{

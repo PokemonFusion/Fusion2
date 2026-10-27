@@ -1,7 +1,56 @@
+import copy
 from random import choice, random
 
 from pokemon.dex.functions.moves_funcs import type_effectiveness
-from pokemon.utils.boosts import apply_boost
+from pokemon.utils.boosts import STAT_KEY_MAP, apply_boost
+
+
+def _form_guard_hit(pokemon, move, forms, *, physical_only=False):
+	"""Check a living intact form and a real move that reaches its own HP."""
+	if not pokemon or not move or getattr(pokemon, "hp", 0) <= 0:
+		return False
+	species = getattr(pokemon, "species", "")
+	form = "".join(char for char in str(getattr(species, "name", species)).lower() if char.isalnum())
+	raw = getattr(move, "raw", {}) or {}
+	category = getattr(move, "category", None) or raw.get("category")
+	if form not in forms or category not in {"Physical", "Special"}:
+		return False
+	if physical_only and category != "Physical":
+		return False
+	flags = getattr(move, "flags", None) or raw.get("flags", {})
+	if getattr(pokemon, "volatiles", {}).get("substitute") and not (
+		flags.get("bypasssub") or raw.get("bypassSub") or getattr(move, "infiltrates", False)
+	):
+		return False
+	return True
+
+
+def _prepare_type_change(move, pokemon, flag):
+	"""Keep Protean/Libero activation in the holder's persisted ability state."""
+	if not pokemon or not move or getattr(pokemon, "terastallized", None):
+		return
+	move_id = str(getattr(move, "id", getattr(move, "name", ""))).replace(" ", "").lower()
+	if move_id == "struggle" or not getattr(move, "type", None):
+		return
+	state = getattr(pokemon, "ability_state", None)
+	if state is None:
+		state = pokemon.ability_state = {}
+	if state.get("type_change_used") or getattr(pokemon, flag, False) or getattr(pokemon, "types", []) == [move.type]:
+		return
+	setter = getattr(pokemon, "setType", None)
+	if callable(setter) and setter(move.type) is False:
+		return
+	if not callable(setter):
+		pokemon.types = [move.type]
+	state["type_change_used"] = True
+	setattr(pokemon, flag, True)
+
+
+def _damaging_z(move):
+	"""Type-conversion abilities cannot change a damaging Z descriptor."""
+	raw = getattr(move, "raw", {}) or {}
+	return bool((getattr(move, "isZ", False) or raw.get("isZ"))
+		and (getattr(move, "category", None) or raw.get("category")) != "Status")
 
 
 class Adaptability:
@@ -49,23 +98,17 @@ class Aerilate:
 
 class Aftermath:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		"""Damage the attacker when hit by a contact move.
-
-		In the official games Aftermath activates only if the Pokémon
-		faints from the attack.  The simplified battle engine used in the
-		tests does not model fainting logic in detail, so this implementation
-		applies the recoil whenever a contact move connects.  This ensures the
-		ability still produces an observable effect during automated testing.
-		"""
+		"""Apply contact-KO damage through the recipient's prevention events."""
 
 		if source is None or move is None:
 			return
 		if getattr(target, "hp", 1) > 0:
 			return
 		if getattr(move, "flags", {}).get("contact"):
+			from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+
 			recoil = getattr(source, "max_hp", 0) // 4
-			if hasattr(source, "hp"):
-				source.hp = max(0, source.hp - recoil)
+			apply_indirect_damage(source, recoil, source=target, effect=IndirectEffect("aftermath"))
 
 
 class Airlock:
@@ -102,9 +145,11 @@ class Angerpoint:
 		"""Maximize Attack when hit by a critical move."""
 		if not target or not move:
 			return
-		if getattr(move, "crit", False):
+		hit = getattr(target, "tempvals", {}).get("last_damaged_by", {})
+		if hit.get("critical", getattr(move, "crit", False)) and getattr(target, "hp", 0) > 0:
 			if hasattr(target, "boosts"):
-				target.boosts["atk"] = 6
+				stat = "attack" if "attack" in target.boosts else "atk"
+				target.boosts[stat] = 6
 
 
 class Angershell:
@@ -148,16 +193,19 @@ class Anticipation:
 		"""Inform if foes have a super-effective or OHKO move."""
 		if not pokemon:
 			return
+		from pokemon.dex.functions.moves.damage_moves import _battle_move_from_name
+
 		for foe in getattr(pokemon, "foes", lambda: [])():
 			for move in getattr(foe, "moves", []):
+				move = _battle_move_from_name(getattr(move, "name", "")) or move
 				mtype = getattr(move, "type", None)
 				if not mtype or getattr(move, "category", "Status") == "Status":
 					continue
-				if getattr(move, "ohko", False):
+				if getattr(move, "raw", {}).get("ohko") or type_effectiveness(pokemon, move) > 1:
 					setattr(pokemon, "anticipated", True)
-					return
-				if hasattr(pokemon, "types") and mtype in pokemon.types:
-					setattr(pokemon, "anticipated", True)
+					battle = getattr(pokemon, "battle", None)
+					if battle:
+						battle.log_action(f"{pokemon.name} shuddered with Anticipation!")
 					return
 
 
@@ -205,7 +253,7 @@ class Aromaveil:
 			if effect and getattr(effect, "effectType", "") == "Move":
 				if target and hasattr(target, "tempvals"):
 					target.tempvals.setdefault("blocked", []).append("Aroma Veil")
-			return None
+			return False
 
 
 class Asoneglastrier:
@@ -297,8 +345,13 @@ class Battlebond:
 		):
 			species = getattr(source, "species", "")
 			species_name = species.get("name", "") if hasattr(species, "get") else getattr(species, "name", species)
-			if str(species_name).lower() == "greninjabond" and source.hp > 0:
+			battle = getattr(source, "battle", None)
+			part = battle.participant_for(source) if battle else None
+			remaining = any(mon.hp > 0 for opponent in battle.opponents_of(part) for mon in opponent.pokemons) if part else True
+			if (str(species_name).lower().replace("-", "") in {"greninja", "greninjabond"}
+			        and source.hp > 0 and remaining and not getattr(source, "bond_triggered", False)):
 				apply_boost(source, {"atk": 1, "spa": 1, "spe": 1})
+				source.bond_triggered = True
 				source.abilityState = getattr(source, "abilityState", {})
 				source.abilityState["battleBondTriggered"] = True
 
@@ -354,12 +407,26 @@ class Beastboost:
 
 class Berserk:
 	def onAfterMoveSecondary(self, target=None, source=None, move=None):
-		if not target or not source or not move:
+		"""Use the current direct hit's actual HP crossing before allowing berries."""
+		if not target:
 			return
-		last_hp = getattr(target, "max_hp", 1) // 2
-		if target.hp <= last_hp and getattr(target, "_berserk_prev", target.hp + 1) > last_hp:
-			apply_boost(target, {"spa": 1})
-		target._berserk_prev = target.hp
+		target._berserk_checked = True
+		battle = getattr(target, "battle", None)
+		hit = (getattr(target, "tempvals", {}) or {}).get("last_damaged_by", {})
+		if source and source is not target and move and getattr(target, "hp", 0) > 0 and hit.get("source") is source:
+			from pokemon.battle._shared import _normalize_key
+
+			same_move = _normalize_key(getattr(hit.get("move"), "name", "")) == _normalize_key(getattr(move, "name", ""))
+			fresh = battle is None or hit.get("turn") == battle.turn_count
+			damage = max(0, int(hit.get("damage", 0)))
+			if same_move and fresh and not hit.get("berserk_processed"):
+				hit["berserk_processed"] = True
+				if (not getattr(move, "sheer_force_boosted", False)
+						and target.hp * 2 <= target.max_hp < (target.hp + damage) * 2):
+					apply_boost(target, {"spa": 1}, source=target, effect=self)
+		item = getattr(battle, "_holder_item", lambda mon: None)(target)
+		if item is not None and callable(getattr(item, "call", None)):
+			item.call("onUpdate", pokemon=target, battle=battle)
 
 	def onDamage(self, damage, target=None, source=None, effect=None):
 		if effect and getattr(effect, "effectType", "") == "Move" and not getattr(effect, "multihit", False):
@@ -380,7 +447,9 @@ class Berserk:
 			"oranberry",
 			"berryjuice",
 		}
-		if item and getattr(item, "id", "").lower() in healing_items:
+		from pokemon.battle._shared import _normalize_key
+
+		if item and _normalize_key(getattr(item, "id", None) or getattr(item, "name", "")).lower() in healing_items:
 			return getattr(pokemon, "_berserk_checked", True)
 		return True
 
@@ -476,45 +545,30 @@ class Colorchange:
 
 
 class Comatose:
-	"""Implementation of the Comatose ability.
-
-	Comatose causes the Pokémon to behave as if it is asleep while also
-	preventing other major status conditions.  The lightweight battle engine
-	used in tests only recognises stat or weather changes as observable
-	effects.  To make the status application visible to the tests, this
-	implementation also applies a small Speed drop when the ability activates.
-	"""
+	"""Virtual sleep allows normal actions while preventing major status."""
 
 	def onSetStatus(self, status, target=None, source=None, effect=None):
-		"""Deny setting a status if one is already being applied."""
-		if effect and getattr(effect, "status", None):
+		"""Reject every real major status, including sleep from a move."""
+		if status not in {None, "", 0}:
+			if target:
+				target.immune = "Comatose"
 			return False
 
 	def onStart(self, pokemon=None):
-		"""Trigger the sleep status and mark the Pokémon as comatose."""
+		"""Mark virtual sleep without applying actual sleep or stat changes."""
 		if not pokemon:
 			return
 
-		# Flag the Pokémon as comatose for downstream checks.
 		setattr(pokemon, "comatose", True)
-
-		# Attempt to set the sleep status, invoking the wrapped ``onSetStatus``
-		# callback so tests register its execution.
-		status_cb = getattr(self, "raw", {}).get("onSetStatus")
-		if callable(status_cb):
-			status_cb("slp", pokemon, pokemon, None)
-		if hasattr(pokemon, "setStatus"):
-			pokemon.setStatus("slp")
-
-		# Apply a small Speed drop so the test framework observes an effect
-		# from the ``onStart`` hook.
-		if hasattr(pokemon, "boosts"):
-			pokemon.boosts["spe"] -= 1
+		if getattr(pokemon, "status", None) and hasattr(pokemon, "setStatus"):
+			pokemon.setStatus(0)
 
 
 class Commander:
 	def onUpdate(self, pokemon=None, battle=None):
-		if not pokemon or getattr(battle, "gameType", "singles") != "doubles":
+		doubles = (getattr(battle, "gameType", "") == "doubles"
+		           or any(len(getattr(part, "active", [])) > 1 for part in getattr(battle, "participants", [])))
+		if not pokemon or not doubles:
 			return
 		allies = pokemon.allies() if hasattr(pokemon, "allies") else []
 		ally = allies[0] if allies else None
@@ -525,9 +579,9 @@ class Commander:
 		if not getattr(pokemon, "volatiles", {}).get("commanding"):
 			if getattr(ally, "volatiles", {}).get("commanded"):
 				return
-			if battle and hasattr(battle, "queue"):
+			if battle and getattr(battle, "queue", None) is not None:
 				battle.queue.cancel_action(pokemon)
-			pokemon.addVolatile("commanding") if hasattr(pokemon, "addVolatile") else None
+			pokemon.addVolatile("commanding", ally) if hasattr(pokemon, "addVolatile") else None
 			ally.addVolatile("commanded", pokemon) if hasattr(ally, "addVolatile") else None
 
 
@@ -574,14 +628,18 @@ class Costar:
 class Cottondown:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		if target and source and getattr(move, "category", "") != "Status":
-			apply_boost(target, {"spe": -1})
+			battle = getattr(target, "battle", None)
+			others = [mon for part in getattr(battle, "participants", []) for mon in part.active] if battle else [source]
+			for mon in others:
+				if mon is not target and mon and getattr(mon, "hp", 0) > 0:
+					apply_boost(mon, {"spe": -1}, source=target, effect=self)
 
 
 class Cudchew:
 	def onEatItem(self, item=None, pokemon=None):
-		if pokemon and item:
-			pokemon.addVolatile("cudchew") if hasattr(pokemon, "addVolatile") else None
-			pokemon.consumed_item = item
+		if pokemon and item and (getattr(item, "raw", {}) or {}).get("isBerry"):
+			if pokemon.addVolatile("cudchew"):
+				pokemon.volatiles["cudchew"]["berry"] = getattr(item, "name", str(item))
 
 	def onEnd(self, pokemon=None):
 		if pokemon and hasattr(pokemon, "volatiles"):
@@ -602,9 +660,14 @@ class Curiousmedicine:
 
 class Cursedbody:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
-		if source and move and hasattr(source, "disable_move"):
-			if random.random() < 0.3:
-				source.disable_move(move.id)
+		if not source or not target or not move or damage <= 0 or source.hp <= 0 or source.volatiles.get("disable"):
+			return
+		battle = getattr(target, "battle", None)
+		if battle and random() < .3 and battle.apply_volatile_status(source, "disable", source=target, effect=self):
+			from pokemon.battle.effect_context import EffectContext
+
+			source.volatiles["disable"] = {"id": "disable", "move": EffectContext.key(move),
+			                                "duration": 5, "source": target, "target": source}
 
 
 class Cutecharm:
@@ -620,13 +683,21 @@ class Cutecharm:
 
 
 class Damp:
+	"""Prevent explosive sources using the shared normalized effect identity."""
+
 	def onAnyDamage(self, damage, target=None, source=None, effect=None):
-		if effect and effect.id in {"aftermath", "explosion", "mindblown", "selfdestruct"}:
+		"""Preserve unrelated weather, status, recoil and ordinary move damage."""
+		from pokemon.battle.effect_context import EffectContext
+
+		if EffectContext.key(effect) in {"aftermath", "explosion", "mindblown", "mistyexplosion", "selfdestruct"}:
 			return 0
 		return damage
 
 	def onAnyTryMove(self, pokemon=None, target=None, move=None):
-		if move and move.id in {"explosion", "selfdestruct", "mindblown"}:
+		"""Block the attempt before damage or self-sacrifice can execute."""
+		from pokemon.battle.effect_context import EffectContext
+
+		if EffectContext.key(move) in {"explosion", "selfdestruct", "mindblown", "mistyexplosion"}:
 			return False
 
 
@@ -708,7 +779,9 @@ class Desolateland:
 		if getattr(self, "field_weather", "") == "desolateland" and weather and weather.id not in strong:
 			return False
 
-	def onEnd(self, pokemon=None, battle=None):
+	def onEnd(self, pokemon=None, source=None, effect=None, battle=None):
+		"""Clear this holder's weather with named or legacy battle context."""
+		battle = battle or (source if hasattr(source, "weather_state") else None)
 		if battle and battle.weather_state.get("source") == pokemon:
 			battle.clearWeather()
 
@@ -719,34 +792,40 @@ class Desolateland:
 
 class Disguise:
 	def onCriticalHit(self, crit=None, target=None, source=None, move=None):
-		if target and target.species.name.lower().startswith("mimikyu"):
-			if not target.volatiles.get("substitute"):
-				return False
+		if _form_guard_hit(target, move, {"mimikyu", "mimikyutotem"}):
+			return False
 
 	def onDamage(self, damage, target=None, source=None, effect=None):
-		cb = getattr(self, "raw", {}).get("onCriticalHit")
-		if callable(cb):
-			cb(target=target, source=source, move=effect)
-		eff_cb = getattr(self, "raw", {}).get("onEffectiveness")
-		if callable(eff_cb):
-			eff_cb(0, target=target, type_=getattr(effect, "type", None), move=effect)
-		if effect and target and target.species.name.lower().startswith("mimikyu"):
-			target.volatiles["disguise_busted"] = True
+		"""Consume the disguise on the hit, including its one-time HP cost."""
+		if damage > 0 and _form_guard_hit(target, effect, {"mimikyu", "mimikyutotem"}):
+			self._break_disguise(target)
 			return 0
 		return damage
 
+	def _break_disguise(self, pokemon):
+		"""Retain the ability while changing to the matching busted form."""
+		native, nickname = str(pokemon.species), pokemon.name
+		form = "Mimikyu-Busted-Totem" if "totem" in str(pokemon.species).lower() else "Mimikyu-Busted"
+		pokemon.formeChange(form, preserve_ability=True)
+		if not getattr(pokemon, "transformed", False):
+			origin = dict(getattr(pokemon, "native_origin", None) or {})
+			origin["disguise_busted"] = {"ref": str(pokemon.model_id), "species": native, "form": form}
+			pokemon.native_origin = origin
+		if nickname != native:
+			pokemon.name = nickname
+		pokemon.volatiles.pop("disguise_busted", None)
+		pokemon.hp = max(0, pokemon.hp - pokemon.max_hp // 8)
+
 	def onEffectiveness(self, type_mod, target=None, type_=None, move=None):
-		if target and move and move.category != "Status" and target.species.name.lower().startswith("mimikyu"):
-			if not target.volatiles.get("substitute") and target.runImmunity(move.type):
-				return 0
+		# This engine relays multipliers: 1 is neutral; 0 is an immunity.
+		if type_mod > 0 and _form_guard_hit(target, move, {"mimikyu", "mimikyutotem"}):
+			return 1
 		return type_mod
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.volatiles.get("disguise_busted"):
-			speciesid = "Mimikyu-Busted" if pokemon.species.name.lower() == "mimikyu" else "Mimikyu-Busted-Totem"
-			pokemon.formeChange(speciesid)
-			dmg = pokemon.max_hp // 8
-			pokemon.hp = max(0, pokemon.hp - dmg)
+		"""Finish a legacy pending break once without charging a busted form."""
+		if pokemon and pokemon.volatiles.get("disguise_busted") and str(pokemon.species).lower() in {"mimikyu", "mimikyu-totem"}:
+			self._break_disguise(pokemon)
 
 
 class Download:
@@ -844,44 +923,51 @@ class Electricsurge:
 class Electromorphosis:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		if target:
-			target.volatiles = getattr(target, "volatiles", {})
-			target.volatiles["charged"] = True
+			target.addVolatile("charge", source=target, effect=self)
 
 
-class Embodyaspectcornerstone:
+class _EmbodyAspect:
+	"""Each holder receives its entry boost once across both startup hooks."""
+	stat = "def"
+	forme = "Ogerpon-Cornerstone-Tera"
 	def onStart(self, pokemon=None):
-		if pokemon:
-			apply_boost(pokemon, {"def": 1})
+		if pokemon is None:
+			return
+		from pokemon.battle.effect_context import EffectContext
+		from pokemon.battle.native_forms import OgerponForm
+		if (not OgerponForm.native(pokemon) or str(getattr(pokemon, "species", "")) != self.forme
+				or getattr(pokemon, "terastallized", None) != {"atk": "Fire", "def": "Rock", "spd": "Water", "spe": "Grass"}[self.stat]
+				or EffectContext.ability(pokemon) is None):
+			return
+		state = getattr(pokemon, "ability_state", None)
+		if state is None:
+			state = pokemon.ability_state = {}
+		if state.get("embody_aspect"):
+			return
+		state["embody_aspect"] = True
+		apply_boost(pokemon, {self.stat: 1})
 
 	def onSwitchIn(self, pokemon=None):
 		self.onStart(pokemon)
 
 
-class Embodyaspecthearthflame:
-	def onStart(self, pokemon=None):
-		if pokemon:
-			apply_boost(pokemon, {"atk": 1})
-
-	def onSwitchIn(self, pokemon=None):
-		self.onStart(pokemon)
+class Embodyaspectcornerstone(_EmbodyAspect):
+	stat = "def"
 
 
-class Embodyaspectteal:
-	def onStart(self, pokemon=None):
-		if pokemon:
-			apply_boost(pokemon, {"spe": 1})
-
-	def onSwitchIn(self, pokemon=None):
-		self.onStart(pokemon)
+class Embodyaspecthearthflame(_EmbodyAspect):
+	stat = "atk"
+	forme = "Ogerpon-Hearthflame-Tera"
 
 
-class Embodyaspectwellspring:
-	def onStart(self, pokemon=None):
-		if pokemon:
-			apply_boost(pokemon, {"spd": 1})
+class Embodyaspectteal(_EmbodyAspect):
+	stat = "spe"
+	forme = "Ogerpon-Teal-Tera"
 
-	def onSwitchIn(self, pokemon=None):
-		self.onStart(pokemon)
+
+class Embodyaspectwellspring(_EmbodyAspect):
+	stat = "spd"
+	forme = "Ogerpon-Wellspring-Tera"
 
 
 class Emergencyexit:
@@ -905,7 +991,7 @@ class Fairyaura:
 
 
 class Filter:
-	def onSourceModifyDamage(self, damage, target=None, source=None, move=None):
+	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
 		if target and move and type_effectiveness(target, move) > 1:
 			return int(damage * 0.75)
 		return damage
@@ -976,11 +1062,12 @@ class Flowergift:
 			return
 		species = getattr(pokemon, "species", None)
 		name = getattr(species, "name", "").lower() if species else ""
-		if name != "cherrim":
+		if name not in {"cherrim", "cherrim-sunshine"}:
 			return
 		sunny = getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"}
 		form = "Cherrim-Sunshine" if sunny else "Cherrim"
-		pokemon.formeChange(form)
+		if str(getattr(species, "name", species)).lower() != form.lower():
+			pokemon.formeChange(form, preserve_ability=True)
 
 	def onStart(self, pokemon=None):
 		self._update_form(pokemon)
@@ -995,7 +1082,7 @@ class Flowergift:
 		if callable(spd_cb):
 			spd_cb(1, pokemon)
 
-	def onWeatherChange(self, pokemon=None):
+	def onWeatherChange(self, pokemon=None, source=None, effect=None, **kwargs):
 		self._update_form(pokemon)
 
 
@@ -1006,7 +1093,7 @@ class Flowerveil:
 
 	def onAllyTryAddVolatile(self, status, target=None, source=None, effect=None):
 		if target and "Grass" in getattr(target, "types", []) and status == "attract":
-			return None
+			return False
 
 	def onAllyTryBoost(self, boost, target=None, source=None, effect=None):
 		if target and "Grass" in getattr(target, "types", []):
@@ -1028,7 +1115,7 @@ class Fluffy:
 
 class Forecast:
 	def _update_form(self, pokemon=None):
-		if not pokemon or pokemon.base_species != "Castform":
+		if not pokemon or not str(pokemon.base_species).lower().startswith("castform"):
 			return
 		weather = getattr(pokemon, "effective_weather", lambda: "")()
 		form = "Castform"
@@ -1038,12 +1125,14 @@ class Forecast:
 			form = "Castform-Rainy"
 		elif weather in {"hail", "snow"}:
 			form = "Castform-Snowy"
-		pokemon.formeChange(form)
+		current = getattr(pokemon, "species", "")
+		if str(getattr(current, "name", current)).lower() != form.lower():
+			pokemon.formeChange(form, preserve_ability=True)
 
 	def onStart(self, pokemon=None):
 		self._update_form(pokemon)
 
-	def onWeatherChange(self, pokemon=None):
+	def onWeatherChange(self, pokemon=None, source=None, effect=None, **kwargs):
 		self._update_form(pokemon)
 
 
@@ -1053,14 +1142,20 @@ class Forewarn:
 			return
 		best_move = None
 		best_power = -1
+		from pokemon.dex.functions.moves.damage_moves import _battle_move_from_name
+
 		for foe in pokemon.foes():
 			for move in getattr(foe, "moves", []):
+				move = _battle_move_from_name(getattr(move, "name", "")) or move
 				power = getattr(move, "power", 0) or 0
 				if power > best_power:
 					best_power = power
 					best_move = move.name
 		if best_move:
 			pokemon.forewarn = best_move
+			battle = getattr(pokemon, "battle", None)
+			if battle:
+				battle.log_action(f"{pokemon.name}'s Forewarn alerted it to {best_move}!")
 
 
 class Friendguard:
@@ -1080,6 +1175,9 @@ class Frisk:
 			if item:
 				pokemon.frisked = getattr(pokemon, "frisked", [])
 				pokemon.frisked.append(item)
+				battle = getattr(pokemon, "battle", None)
+				if battle:
+					battle.log_action(f"{pokemon.name} used Frisk and found {foe.name}'s {getattr(item, 'name', item)}!")
 
 
 class Fullmetalbody:
@@ -1110,6 +1208,8 @@ class Galvanize:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if move and move.type == "Normal":
 			move.type = "Electric"
 			move.typeChangerBoosted = True
@@ -1117,11 +1217,17 @@ class Galvanize:
 
 class Gluttony:
 	def onDamage(self, damage, pokemon=None, source=None, effect=None):
-		berries = {"aguavberry", "figyberry", "iapapaberry", "magoberry", "wikiberry"}
-		item = getattr(pokemon, "item", None)
-		if item and item.id.lower() in berries and pokemon.hp - damage <= pokemon.max_hp // 2:
-			pokemon.eat_item = item
 		return damage
+
+	def onUpdate(self, pokemon=None, battle=None):
+		"""Use the normal item gates at the eligible half-HP threshold."""
+		from pokemon.battle.effect_context import EffectContext
+
+		if not pokemon or getattr(pokemon, "hp", 0) <= 0 or pokemon.hp > pokemon.max_hp // 2:
+			return
+		item = EffectContext.item(pokemon)
+		if EffectContext.key(item) in {"aguavberry", "figyberry", "iapapaberry", "magoberry", "wikiberry"}:
+			pokemon.eat_item(battle=battle)
 
 	def onStart(self, pokemon=None):
 		setattr(pokemon, "gluttony", True)
@@ -1176,7 +1282,8 @@ class Gorillatactics:
 
 class Grasspelt:
 	def onModifyDef(self, defense, pokemon=None):
-		terrain = getattr(pokemon, "terrain", "")
+		from pokemon.battle.effect_context import EffectContext
+		terrain = EffectContext.terrain(pokemon)
 		if terrain == "grassyterrain":
 			return int(defense * 1.5)
 		return defense
@@ -1206,18 +1313,35 @@ class Guarddog:
 
 class Gulpmissile:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
+		current = getattr(target, "species", "")
+		form = str(getattr(current, "name", current)).lower().replace("-", "")
 		state = getattr(target, "volatiles", {}).pop("gulpmissile", None)
+		if not state:
+			state = {"cramorantgulping": "gulping", "cramorantgorging": "gorging"}.get(form)
 		if state and source:
-			source.hp = max(0, source.hp - source.max_hp // 4)
-			if state == "gorging":
-				apply_boost(source, {"def": -1})
+			target.formeChange("Cramorant", preserve_ability=True)
+			battle = getattr(target, "battle", None)
+			amount = source.max_hp // 4
+			if battle and hasattr(battle, "runEvent"):
+				amount = battle.runEvent("Damage", source, target, self, amount)
+			if amount is not False and isinstance(amount, (int, float)):
+				source.hp = max(0, source.hp - int(amount))
+			if state == "gulping":
+				apply_boost(source, {"def": -1}, source=target, effect=self)
 			else:
-				apply_boost(source, {"spe": -1})
+				if battle and hasattr(battle, "apply_status_condition"):
+					battle.apply_status_condition(source, "par", source=target, effect=self)
+				elif hasattr(source, "setStatus"):
+					source.setStatus("par")
 
-	def onSourceTryPrimaryHit(self, user=None, target=None, move=None):
-		if user and move and move.id in {"surf", "dive"}:
-			user.volatiles = getattr(user, "volatiles", {})
-			user.volatiles["gulpmissile"] = "gorging" if user.species.name.endswith("2") else "gulping"
+	def onSourceTryPrimaryHit(self, target=None, source=None, move=None):
+		current = getattr(source, "species", "")
+		form = str(getattr(current, "name", current)).lower()
+		if source and form == "cramorant" and move and move.id in {"surf", "dive"}:
+			state = "gulping" if source.hp > source.max_hp // 2 else "gorging"
+			source.volatiles = getattr(source, "volatiles", {})
+			source.volatiles["gulpmissile"] = state
+			source.formeChange("Cramorant-" + state.capitalize(), preserve_ability=True)
 
 
 class Guts:
@@ -1229,9 +1353,10 @@ class Guts:
 
 class Hadronengine:
 	def onModifySpA(self, spa, pokemon=None, target=None, move=None):
-		terrain = getattr(pokemon, "terrain", "")
+		from pokemon.battle.effect_context import EffectContext
+		terrain = EffectContext.terrain(pokemon)
 		if terrain == "electricterrain":
-			return int(spa * 1.3)
+			return int(spa * 4 / 3)
 		return spa
 
 	def onStart(self, source=None, battle=None):
@@ -1248,24 +1373,26 @@ class Harvest:
 			return
 		chance = 1.0 if getattr(pokemon, "effective_weather", lambda: "")() in {"sunnyday", "desolateland"} else 0.5
 		if random() < chance:
+			from pokemon.battle.item_consumption import ItemUseHistory
 			battle = getattr(pokemon, "battle", None)
 			if battle and hasattr(battle, "set_item"):
 				if battle.set_item(pokemon, berry, source=pokemon, effect="ability:harvest"):
-					pokemon.consumed_berry = None
-					pokemon.berry_consumed = None
+					ItemUseHistory.recovered(pokemon)
 			else:
 				pokemon.item = berry
 				pokemon.held_item = getattr(berry, "name", str(berry))
-				pokemon.consumed_berry = None
-				pokemon.berry_consumed = None
+				ItemUseHistory.recovered(pokemon)
 
 
 class Healer:
 	def onResidual(self, pokemon=None):
+		"""Use the rollback-owned battle RNG for eligible living active allies."""
 		if not pokemon:
 			return
+		rng = getattr(getattr(pokemon, "battle", None), "rng", None)
 		for ally in pokemon.allies():
-			if ally.status and random() < 0.3:
+			if (ally is not pokemon and getattr(ally, "hp", 0) > 0 and ally.status
+					and (rng.random() if rng is not None else random()) < 0.3):
 				ally.setStatus(0)
 
 
@@ -1294,10 +1421,15 @@ class Heavymetal:
 class Hospitality:
 	def onStart(self, pokemon=None):
 		allies = [a for a in pokemon.allies() if a is not pokemon] if pokemon else []
-		if allies:
-			ally = allies[0]
-			heal = ally.max_hp // 3
-			ally.hp = min(ally.max_hp, ally.hp + heal)
+		for ally in allies:
+			if getattr(ally, "hp", 0) <= 0:
+				continue
+			heal = ally.max_hp // 4
+			battle = getattr(pokemon, "battle", None)
+			if battle and hasattr(battle, "heal"):
+				battle.heal(ally, heal, source=pokemon, effect=self)
+			else:
+				ally.hp = min(ally.max_hp, ally.hp + heal)
 
 
 class Hugepower:
@@ -1357,36 +1489,40 @@ class Icebody:
 
 class Iceface:
 	def onCriticalHit(self, crit=None, target=None, source=None, move=None):
-		if getattr(target, "abilityState", {}).get("iceface_intact"):
+		if _form_guard_hit(target, move, {"eiscue"}, physical_only=True):
 			return False
 
 	def onDamage(self, damage, target=None, source=None, move=None):
-		if move and move.category == "Physical" and target and target.abilityState.get("iceface_intact"):
+		if damage > 0 and _form_guard_hit(target, move, {"eiscue"}, physical_only=True):
 			target.abilityState["iceface_intact"] = False
-			if target.species.name.lower().startswith("eiscue") and not target.species.name.lower().endswith("noice"):
-				target.formeChange("Eiscue-Noice")
+			target.formeChange("Eiscue-Noice", preserve_ability=True)
 			return 0
 		return damage
 
 	def onEffectiveness(self, type_mod, target=None, type_=None, move=None):
-		if move and move.category == "Physical" and target and target.abilityState.get("iceface_intact"):
-			return 0
+		if type_mod > 0 and _form_guard_hit(target, move, {"eiscue"}, physical_only=True):
+			return 1
 		return type_mod
 
 	def onStart(self, pokemon=None):
 		if pokemon:
 			pokemon.abilityState = getattr(pokemon, "abilityState", {})
-			pokemon.abilityState["iceface_intact"] = True
+			pokemon.abilityState["iceface_intact"] = str(pokemon.species).lower() == "eiscue"
+			self._restore_face(pokemon)
 
 	def onUpdate(self, pokemon=None):
+		"""The breaking hit already changes form; ongoing snow does not rearm it."""
+		return None
+
+	def _restore_face(self, pokemon):
+		"""Restore Noice form only on entry or a new cold-weather change."""
 		weather = getattr(pokemon, "effective_weather", lambda: "")() if pokemon else ""
-		if pokemon and not pokemon.abilityState.get("iceface_intact") and weather in {"hail", "snow"}:
-			if pokemon.species.name.lower().endswith("noice"):
-				pokemon.formeChange("Eiscue")
+		if pokemon and pokemon.hp and weather in {"hail", "snow", "snowscape"} and str(pokemon.species).lower() == "eiscue-noice":
+			pokemon.formeChange("Eiscue", preserve_ability=True)
 			pokemon.abilityState["iceface_intact"] = True
 
 	def onWeatherChange(self, pokemon=None):
-		self.onUpdate(pokemon)
+		self._restore_face(pokemon)
 
 
 class Icescales:
@@ -1411,14 +1547,12 @@ class Illusion:
 	def onBeforeSwitchIn(self, pokemon=None):
 		if not pokemon:
 			return
-		bench = [
-			p
-			for p in getattr(pokemon, "side", {}).get("pokemon", [])
-			if not getattr(p, "fainted", False) and p is not pokemon
-		]
-		if bench:
-			pokemon.abilityState = getattr(pokemon, "abilityState", {})
-			pokemon.abilityState["illusion"] = bench[-1]
+		from pokemon.battle.appearance import BattleAppearance
+
+		battle = getattr(pokemon, "battle", None)
+		part = battle.participant_for(pokemon) if battle else None
+		last = next((mon for mon in reversed(getattr(part, "pokemons", [])) if mon.hp > 0), None)
+		BattleAppearance.disguise(pokemon, last)
 
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		"""Remove the stored illusion state on damage.
@@ -1429,14 +1563,17 @@ class Illusion:
 		gracefully instead of raising an :class:`AttributeError`.
 		"""
 
-		if target and getattr(target, "abilityState", {}).get("illusion"):
-			target.abilityState.pop("illusion", None)
+		if target and damage > 0:
+			from pokemon.battle.appearance import BattleAppearance
+
+			BattleAppearance.restore(target)
 		return damage
 
 	def onEnd(self, pokemon=None):
 		if pokemon:
-			pokemon.abilityState = getattr(pokemon, "abilityState", {})
-			pokemon.abilityState.pop("illusion", None)
+			from pokemon.battle.appearance import BattleAppearance
+
+			BattleAppearance.restore(pokemon)
 
 	def onFaint(self, pokemon=None):
 		self.onEnd(pokemon)
@@ -1495,14 +1632,17 @@ class Infiltrator:
 class Innardsout:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		if target and getattr(target, "hp", 0) <= 0 and source:
-			recoil = getattr(target, "max_hp", 0)
-			source.hp = max(0, source.hp - recoil)
+			from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+
+			hit = getattr(target, "tempvals", {}).get("last_damaged_by", {})
+			recoil = min(int(damage), int(hit.get("hp_before", damage)))
+			apply_indirect_damage(source, recoil, source=target, effect=IndirectEffect("innardsout"))
 
 
 class Innerfocus:
 	def onTryAddVolatile(self, status, pokemon=None):
 		if status == "flinch":
-			return None
+			return False
 
 	def onTryBoost(self, boost, target=None, source=None, effect=None):
 		if effect and getattr(effect, "id", "") == "intimidate" and "atk" in boost and boost["atk"] < 0:
@@ -1518,7 +1658,7 @@ class Insomnia:
 
 	def onTryAddVolatile(self, status, pokemon=None):
 		if status == "yawn":
-			return None
+			return False
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and pokemon.status == "slp":
@@ -1529,8 +1669,11 @@ class Intimidate:
 	def onStart(self, pokemon=None):
 		if not pokemon:
 			return
+		from types import SimpleNamespace
+
+		effect = SimpleNamespace(id="intimidate", name="Intimidate", effectType="Ability")
 		for foe in pokemon.foes() if hasattr(pokemon, "foes") else []:
-			apply_boost(foe, {"atk": -1})
+			apply_boost(foe, {"atk": -1}, source=pokemon, effect=effect)
 
 
 class Intrepidsword:
@@ -1543,7 +1686,9 @@ class Ironbarbs:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		if source and move and move.flags.get("contact"):
 			recoil = getattr(source, "max_hp", 0) // 8
-			source.hp = max(0, source.hp - recoil)
+			from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+
+			apply_indirect_damage(source, recoil, source=target, effect=IndirectEffect("ironbarbs"))
 
 
 class Ironfist:
@@ -1584,18 +1729,17 @@ class Leafguard:
 	def onTryAddVolatile(self, status, pokemon=None):
 		weather = getattr(pokemon, "effective_weather", lambda: "")() if pokemon else ""
 		if status == "yawn" and weather in {"sunnyday", "desolateland"}:
-			return None
+			return False
 
 
 class Libero:
 	def onPrepareHit(self, move=None, pokemon=None, target=None):
-		if pokemon and move and not getattr(pokemon, "libero_used", False):
-			pokemon.types = [move.type]
-			pokemon.libero_used = True
+		_prepare_type_change(move, pokemon, "libero_used")
 
 	def onSwitchIn(self, pokemon=None):
 		if pokemon:
 			pokemon.libero_used = False
+			getattr(pokemon, "ability_state", {}).pop("type_change_used", None)
 
 
 class Lightmetal:
@@ -1639,13 +1783,16 @@ class Lingeringaroma:
 
 class Liquidooze:
 	def onSourceTryHeal(self, damage, source=None, target=None, move=None):
-		if move and move.flags.get("drain"):
+		raw = getattr(move, "raw", {}) or {}
+		if move and ((getattr(move, "flags", {}) or {}).get("drain") or raw.get("drain")):
 			return -damage
 		return damage
 
 
 class Liquidvoice:
 	def onModifyType(self, move, user=None):
+		if _damaging_z(move):
+			return
 		if move and move.flags.get("sound"):
 			move.type = "Water"
 
@@ -1659,13 +1806,13 @@ class Longreach:
 
 class Magicbounce:
 	def onAllyTryHitSide(self, target=None, source=None, move=None):
-		if move and move.category == "Status" and source is not target:
+		if move and move.raw.get("flags", {}).get("reflectable") and not getattr(move, "has_bounced", False) and source is not target:
 			if target:
 				target.immune = "Magic Bounce"
 			return False
 
 	def onTryHit(self, target=None, source=None, move=None):
-		if move and move.category == "Status" and source is not target:
+		if move and move.raw.get("flags", {}).get("reflectable") and not getattr(move, "has_bounced", False) and source is not target:
 			if target:
 				target.immune = "Magic Bounce"
 			return False
@@ -1733,14 +1880,18 @@ class Megalauncher:
 
 class Merciless:
 	def onModifyCritRatio(self, crit_ratio, attacker=None, defender=None):
-		if defender and defender.status:
-			return crit_ratio + 1
+		if defender and getattr(defender, "status", None) in {"psn", "tox"}:
+			return 5
 		return crit_ratio
 
 
 class Mimicry:
 	def _apply(self, pokemon):
-		terrain = getattr(pokemon, "terrain", "") if pokemon else ""
+		if pokemon is None:
+			return
+		from pokemon.battle.effect_context import EffectContext
+
+		terrain = EffectContext.terrain(pokemon)
 		mapping = {
 			"electricterrain": "Electric",
 			"grassyterrain": "Grass",
@@ -1749,12 +1900,17 @@ class Mimicry:
 		}
 		new = mapping.get(terrain)
 		if new and hasattr(pokemon, "setType"):
+			pokemon.abilityState.setdefault("mimicry_original_types", list(pokemon.types))
 			pokemon.setType(new)
+		elif not new:
+			original = pokemon.abilityState.pop("mimicry_original_types", None)
+			if original and hasattr(pokemon, "setType"):
+				pokemon.setType(original)
 
 	def onStart(self, pokemon=None):
 		self._apply(pokemon)
 
-	def onTerrainChange(self, pokemon=None):
+	def onTerrainChange(self, pokemon=None, source=None, effect=None, battle=None):
 		self._apply(pokemon)
 
 
@@ -1780,12 +1936,19 @@ class Minus:
 
 
 class Mirrorarmor:
+	id = "mirrorarmor"
+	name = "Mirror Armor"
+	effectType = "Ability"
+
 	def onTryBoost(self, boost, target=None, source=None, effect=None):
-		if source and source is not target:
+		if source and source is not target and getattr(effect, "id", None) != self.id:
 			for stat, val in list(boost.items()):
-				if val < 0:
+				current = getattr(target, "boosts", {}) or {}
+				stage = current.get(stat, current.get(STAT_KEY_MAP.get(stat, stat), 0))
+				if val < 0 and stage > -6:
 					boost[stat] = 0
-					apply_boost(source, {stat: val})
+					if getattr(source, "hp", 0) > 0:
+						apply_boost(source, {stat: val}, source=target, effect=self)
 
 
 class Mistysurge:
@@ -1808,7 +1971,7 @@ class Moody:
 	def onResidual(self, pokemon=None):
 		if not pokemon:
 			return
-		stats = ["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]
+		stats = ["atk", "def", "spa", "spd", "spe"]
 		raise_stat = choice(stats)
 		lower_stat = choice([s for s in stats if s != raise_stat])
 		apply_boost(pokemon, {raise_stat: 2, lower_stat: -1})
@@ -1883,7 +2046,7 @@ class Naturalcure:
 class Neuroforce:
 	def onModifyDamage(self, damage, source=None, target=None, move=None):
 		if move and target:
-			eff = type_effectiveness(move, target)
+			eff = type_effectiveness(target, move)
 			if eff > 1:
 				return int(damage * 1.25)
 		return damage
@@ -1919,6 +2082,8 @@ class Normalize:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if not move or move.type == "Normal" or move.category == "Status":
 			return
 		block = {
@@ -2014,7 +2179,7 @@ class Owntempo:
 
 	def onTryAddVolatile(self, status, pokemon=None):
 		if status == "confusion":
-			return None
+			return False
 
 	def onTryBoost(self, boost, target=None, source=None, effect=None):
 		if effect and getattr(effect, "id", "") == "intimidate" and "atk" in boost:
@@ -2027,13 +2192,14 @@ class Owntempo:
 
 class Parentalbond:
 	def onPrepareHit(self, move=None, pokemon=None, target=None):
-		if move and move.category != "Status" and not getattr(move, "multihit", False):
+		"""Only supported single-target attacks gain the reusable second hit."""
+		from pokemon.battle.parental_bond import ParentalBondAttack
+		if ParentalBondAttack.eligible(move):
 			move.multihit = 2
 			move.multihit_type = "parentalbond"
 
 	def onSourceModifySecondaries(self, secondaries, source=None, target=None, move=None):
-		if move and getattr(move, "multihit_type", "") == "parentalbond" and getattr(move, "hit", 1) == 2:
-			return []
+		"""Ordinary eligible secondary effects roll independently on each real hit."""
 		return secondaries
 
 
@@ -2099,17 +2265,25 @@ class Pickpocket:
 class Pickup:
 	def onResidual(self, pokemon=None):
 		if pokemon and not getattr(pokemon, "item", None) and not getattr(pokemon, "held_item", None):
+			from pokemon.battle.item_consumption import ItemUseHistory
 			side = getattr(pokemon, "side", None)
 			used = getattr(side, "used_items", []) if side else []
 			if used:
 				item = used[-1]
+				owners = ItemUseHistory.recovery_owners(side, item)
+				if len(owners) > 1:
+					return
 				battle = getattr(pokemon, "battle", None)
 				if battle and hasattr(battle, "set_item"):
 					if battle.set_item(pokemon, item, source=pokemon, effect="ability:pickup"):
+						for owner in owners:
+							ItemUseHistory.recovered(owner, retire_side=False)
 						used.pop()
 				else:
 					pokemon.item = item
 					pokemon.held_item = getattr(item, "name", str(item))
+					for owner in owners:
+						ItemUseHistory.recovered(owner, retire_side=False)
 					used.pop()
 
 
@@ -2120,6 +2294,8 @@ class Pixilate:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if move and move.type == "Normal":
 			ban = {
 				"judgment",
@@ -2140,7 +2316,7 @@ class Plus:
 		if not pokemon:
 			return spa
 		for ally in pokemon.allies() if hasattr(pokemon, "allies") else []:
-			if ally.ability in {"minus", "plus"} and ally is not pokemon:
+			if ally is not pokemon and ally.hasAbility(("minus", "plus")):
 				return int(spa * 1.5)
 		return spa
 
@@ -2207,12 +2383,22 @@ class Powerspot:
 class Prankster:
 	def onModifyPriority(self, priority, pokemon=None, target=None, move=None):
 		if move and move.category == "Status":
-			return priority + 0.1
+			move.pranksterBoosted = True
+			return priority + 1
 		return priority
 
 
 class Pressure:
-	def onDeductPP(self, deduction, target=None):
+	def onDeductPP(self, deduction, target=None, source=None, move=None, battle=None):
+		"""Charge an extra PP only when an opponent targets this holder."""
+		if target is None or source is None or source is target or battle is None:
+			return deduction
+		if getattr(target, "volatiles", {}).get("gastroacid"):
+			return deduction
+		source_part = battle.participant_for(source)
+		target_part = battle.participant_for(target)
+		if source_part is None or target_part not in battle.opponents_of(source_part):
+			return deduction
 		return deduction + 1
 
 	def onStart(self, pokemon=None):
@@ -2227,7 +2413,9 @@ class Primordialsea:
 		if getattr(self, "field_weather", "") == "primordialsea" and weather and weather.id not in strong:
 			return False
 
-	def onEnd(self, pokemon=None, battle=None):
+	def onEnd(self, pokemon=None, source=None, effect=None, battle=None):
+		"""Clear this holder's weather with named or legacy battle context."""
+		battle = battle or (source if hasattr(source, "weather_state") else None)
 		if battle and battle.weather_state.get("source") == pokemon:
 			battle.clearWeather()
 
@@ -2239,7 +2427,7 @@ class Primordialsea:
 class Prismarmor:
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
 		if move and target:
-			eff = type_effectiveness(move, target)
+			eff = type_effectiveness(target, move)
 			if eff > 1:
 				return int(damage * 0.75)
 		return damage
@@ -2253,65 +2441,50 @@ class Propellertail:
 
 class Protean:
 	def onPrepareHit(self, move=None, pokemon=None, target=None):
-		if pokemon and move and not getattr(pokemon, "protean_used", False):
-			pokemon.types = [move.type]
-			pokemon.protean_used = True
+		_prepare_type_change(move, pokemon, "protean_used")
 
 	def onSwitchIn(self, pokemon=None):
 		if pokemon:
 			pokemon.protean_used = False
+			getattr(pokemon, "ability_state", {}).pop("type_change_used", None)
 
 
 class Protosynthesis:
-	def onEnd(self, pokemon=None):
-		if pokemon:
-			pokemon.protosynthesis_active = False
-
-	def _boost_active(self, pokemon):
-		return getattr(pokemon, "protosynthesis_active", False)
-
-	def onModifyAtk(self, atk, pokemon=None, target=None, move=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "protosynthesis_stat", "") == "atk":
-			return int(atk * 1.3)
-		return atk
-
-	def onModifyDef(self, value, pokemon=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "protosynthesis_stat", "") == "def":
-			return int(value * 1.3)
-		return value
-
-	def onModifySpA(self, value, pokemon=None, target=None, move=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "protosynthesis_stat", "") == "spa":
-			return int(value * 1.3)
-		return value
-
-	def onModifySpD(self, value, pokemon=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "protosynthesis_stat", "") == "spd":
-			return int(value * 1.3)
-		return value
-
-	def onModifySpe(self, spe, pokemon=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "protosynthesis_stat", "") == "spe":
-			return int(spe * 1.5)
-		return spe
-
-	def _choose_stat(self, pokemon):
-		stats = {k: v for k, v in getattr(pokemon, "stats", {}).items() if k != "hp"}
-		if not stats:
-			return None
-		return max(stats, key=stats.get)
+	"""Use checkpointed highest-stat activation from the real field."""
+	def _controller(self):
+		from pokemon.battle.stat_activation import HighestStatActivation
+		return HighestStatActivation("protosynthesis")
 
 	def onStart(self, pokemon=None):
-		if not pokemon:
-			return
-		weather = pokemon.effective_weather()
-		item = getattr(pokemon, "item", None)
-		if weather in {"sunnyday", "desolateland"} or (item and item.id == "boosterenergy"):
-			pokemon.protosynthesis_active = True
-			pokemon.protosynthesis_stat = self._choose_stat(pokemon)
+		self._controller().activate(pokemon)
 
-	def onWeatherChange(self, pokemon=None):
-		self.onStart(pokemon)
+	def onEnd(self, pokemon=None):
+		self._controller().end(pokemon)
+
+	def onWeatherChange(self, pokemon=None, source=None, effect=None, battle=None):
+		self._controller().activate(pokemon)
+
+	def _boost_active(self, pokemon):
+		return bool(pokemon and self._controller().state(pokemon).get("active"))
+
+	def _choose_stat(self, pokemon):
+		return self._controller().choose_stat(pokemon)
+
+	def onModifyAtk(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "atk")
+
+	def onModifyDef(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "def")
+
+	def onModifySpA(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "spa")
+
+	def onModifySpD(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "spd")
+
+	def onModifySpe(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "spe")
+
 
 
 class Psychicsurge:
@@ -2355,59 +2528,45 @@ class Purifyingsalt:
 
 	def onTryAddVolatile(self, status, pokemon=None):
 		if status in {"yawn", "confusion", "attract"}:
-			return None
+			return False
 
 
 class Quarkdrive:
-	def onEnd(self, pokemon=None):
-		if pokemon:
-			pokemon.quarkdrive_active = False
-
-	def _boost_active(self, pokemon):
-		return getattr(pokemon, "quarkdrive_active", False)
-
-	def onModifyAtk(self, atk, pokemon=None, target=None, move=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "quarkdrive_stat", "") == "atk":
-			return int(atk * 1.3)
-		return atk
-
-	def onModifyDef(self, value, pokemon=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "quarkdrive_stat", "") == "def":
-			return int(value * 1.3)
-		return value
-
-	def onModifySpA(self, value, pokemon=None, target=None, move=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "quarkdrive_stat", "") == "spa":
-			return int(value * 1.3)
-		return value
-
-	def onModifySpD(self, value, pokemon=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "quarkdrive_stat", "") == "spd":
-			return int(value * 1.3)
-		return value
-
-	def onModifySpe(self, spe, pokemon=None):
-		if pokemon and self._boost_active(pokemon) and getattr(pokemon, "quarkdrive_stat", "") == "spe":
-			return int(spe * 1.5)
-		return spe
-
-	def _choose_stat(self, pokemon):
-		stats = {k: v for k, v in getattr(pokemon, "stats", {}).items() if k != "hp"}
-		if not stats:
-			return None
-		return max(stats, key=stats.get)
+	"""Use checkpointed highest-stat activation from the real field."""
+	def _controller(self):
+		from pokemon.battle.stat_activation import HighestStatActivation
+		return HighestStatActivation("quarkdrive")
 
 	def onStart(self, pokemon=None):
-		if not pokemon:
-			return
-		terrain = getattr(pokemon, "terrain", "")
-		item = getattr(pokemon, "item", None)
-		if terrain == "electricterrain" or (item and item.id == "boosterenergy"):
-			pokemon.quarkdrive_active = True
-			pokemon.quarkdrive_stat = self._choose_stat(pokemon)
+		self._controller().activate(pokemon)
 
-	def onTerrainChange(self, pokemon=None):
-		self.onStart(pokemon)
+	def onEnd(self, pokemon=None):
+		self._controller().end(pokemon)
+
+	def onTerrainChange(self, pokemon=None, source=None, effect=None, battle=None):
+		self._controller().activate(pokemon)
+
+	def _boost_active(self, pokemon):
+		return bool(pokemon and self._controller().state(pokemon).get("active"))
+
+	def _choose_stat(self, pokemon):
+		return self._controller().choose_stat(pokemon)
+
+	def onModifyAtk(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "atk")
+
+	def onModifyDef(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "def")
+
+	def onModifySpA(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "spa")
+
+	def onModifySpD(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "spd")
+
+	def onModifySpe(self, value, pokemon=None, target=None, move=None):
+		return self._controller().modify(value, pokemon, "spe")
+
 
 
 class Queenlymajesty:
@@ -2453,16 +2612,12 @@ class Rattled:
 
 class Rebound:
 	def onAllyTryHitSide(self, target=None, source=None, move=None):
-		if move and move.category == "Status" and source is not target:
-			if target:
-				target.immune = "Rebound"
-			return False
+		# Reflection is performed by the called-move pipeline, which also owns
+		# entry-turn eligibility, reflectable flags, and the recursion guard.
+		return True
 
 	def onTryHit(self, target=None, source=None, move=None):
-		if move and move.category == "Status" and source is not target:
-			if target:
-				target.immune = "Rebound"
-			return False
+		return True
 
 
 class Receiver:
@@ -2476,7 +2631,12 @@ class Receiver:
 
 class Reckless:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if move and (getattr(move, "recoil", False) or getattr(move, "hasCrashDamage", False)):
+		"""Read recoil/crash metadata from both live and dex move representations."""
+		raw = (getattr(move, "raw", {}) or {}) if move else {}
+		if move and (
+			getattr(move, "recoil", False) or raw.get("recoil")
+			or getattr(move, "hasCrashDamage", False) or raw.get("hasCrashDamage")
+		):
 			return int(base_power * 1.2)
 		return base_power
 
@@ -2488,6 +2648,8 @@ class Refrigerate:
 		return base_power
 
 	def onModifyType(self, move, pokemon=None):
+		if _damaging_z(move):
+			return
 		if move and move.type == "Normal":
 			ban = {
 				"judgment",
@@ -2545,7 +2707,8 @@ class Rivalry:
 
 class Rockhead:
 	def onDamage(self, damage, target=None, source=None, effect=None):
-		if effect and getattr(effect, "recoil", False):
+		if (effect and getattr(effect, "id", "") == "recoil"
+				and getattr(effect, "move_id", "") != "struggle"):
 			return 0
 		return damage
 
@@ -2566,7 +2729,9 @@ class Roughskin:
 	def onDamagingHit(self, damage, target=None, source=None, move=None):
 		if source and move and move.flags.get("contact"):
 			recoil = source.max_hp // 8
-			source.hp = max(0, source.hp - recoil)
+			from pokemon.battle.indirect_damage import IndirectEffect, apply_indirect_damage
+
+			apply_indirect_damage(source, recoil, source=target, effect=IndirectEffect("roughskin"))
 
 
 class Sandforce:
@@ -2633,9 +2798,11 @@ class Sapsipper:
 
 class Schooling:
 	def _update_form(self, pokemon):
-		if not pokemon or not pokemon.species.name.lower().startswith("wishiwashi"):
+		"""Only living, native Wishiwashi of level 20 or higher can school."""
+		if (not pokemon or not pokemon.species.name.lower().startswith("wishiwashi")
+				or getattr(pokemon, "transformed", False) or pokemon.hp <= 0):
 			return
-		if pokemon.hp > pokemon.max_hp // 4:
+		if getattr(pokemon, "level", 0) >= 20 and pokemon.hp > pokemon.max_hp // 4:
 			form = "Wishiwashi-School"
 		else:
 			form = "Wishiwashi"
@@ -2679,10 +2846,24 @@ class Seedsower:
 
 class Serenegrace:
 	def onModifyMove(self, move, pokemon=None):
-		if move and getattr(move, "secondaries", None):
-			for sec in move.secondaries:
-				if "chance" in sec:
-					sec["chance"] *= 2
+		if move is None:
+			return
+		raw = copy.deepcopy(getattr(move, "raw", {}) or {})
+		original = getattr(move, "_serene_grace_original", None)
+		if original is None:
+			original = {name: copy.deepcopy(raw.get(name)) for name in ("secondary", "secondaries")}
+			if not original["secondary"] and not original["secondaries"]:
+				original["secondaries"] = copy.deepcopy(getattr(move, "secondaries", None))
+			move._serene_grace_original = original
+		raw.update(copy.deepcopy(original))
+		for name in ("secondary", "secondaries"):
+			if raw.get(name) is None:
+				raw.pop(name, None)
+		secondaries = raw.get("secondaries") or ([raw["secondary"]] if raw.get("secondary") else [])
+		for secondary in secondaries:
+			if "chance" in secondary:
+				secondary["chance"] = min(100, secondary["chance"] * 2)
+		move.secondaries, move.raw = secondaries, raw
 
 
 class Shadowshield:
@@ -2720,13 +2901,19 @@ class Shedskin:
 
 class Sheerforce:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if move and getattr(move, "secondaries", None):
+		if move and getattr(move, "sheer_force_boosted", False):
 			return int(base_power * 1.3)
 		return base_power
 
 	def onModifyMove(self, move, user=None):
-		if move and getattr(move, "secondaries", None):
+		"""Remove per-use secondary data while retaining its power eligibility."""
+		if not move:
+			return
+		raw = getattr(move, "raw", {}) or {}
+		secondaries = getattr(move, "secondaries", None) or raw.get("secondaries") or raw.get("secondary")
+		if secondaries:
 			move.secondaries = []
+			move.raw = dict(raw, secondary=None, secondaries=[])
 			move.sheer_force_boosted = True
 
 
@@ -2739,14 +2926,16 @@ class Shielddust:
 
 class Shieldsdown:
 	def _update_form(self, pokemon):
-		if not pokemon or "minior" not in pokemon.species.name.lower():
+		"""Use loaded native form names and retain the original core colour."""
+		if (not pokemon or not pokemon.species.name.lower().startswith("minior")
+				or getattr(pokemon, "transformed", False) or pokemon.hp <= 0):
 			return
-		if pokemon.hp <= pokemon.max_hp // 2:
-			if "meteor" in pokemon.species.name.lower():
-				pokemon.formeChange(pokemon.species.name.replace("Meteor", "Core"))
-		else:
-			if "core" in pokemon.species.name.lower():
-				pokemon.formeChange(pokemon.species.name.replace("Core", "Meteor"))
+		core = str(getattr(pokemon, "base_species", "Minior"))
+		if not core.lower().startswith("minior") or "meteor" in core.lower():
+			core = "Minior"
+		form = "Minior-Meteor" if pokemon.hp > pokemon.max_hp // 2 else core
+		if pokemon.species.name != form:
+			pokemon.formeChange(form, preserve_ability=True)
 
 	def onResidual(self, pokemon=None):
 		self._update_form(pokemon)
@@ -2761,7 +2950,7 @@ class Shieldsdown:
 
 	def onTryAddVolatile(self, status, pokemon=None):
 		if status == "yawn" and pokemon and "meteor" in pokemon.species.name.lower():
-			return None
+			return False
 
 
 class Simple:
@@ -2775,8 +2964,6 @@ class Skilllink:
 		if move and getattr(move, "multihit", None):
 			if isinstance(move.multihit, (list, tuple)):
 				move.multihit = max(move.multihit)
-			elif isinstance(move.multihit, int) and move.multihit < 5:
-				move.multihit = 5
 
 
 class Slowstart:
@@ -2832,7 +3019,10 @@ class Snowcloak:
 
 
 class Snowwarning:
-	def onStart(self, source=None, battle=None):
+	def onStart(self, source=None, *context, battle=None, **__):
+		"""Start snow through either entry dispatch or explicit ability events."""
+		if battle is None and context and hasattr(context[0], "setWeather"):
+			battle = context[0]
 		if battle:
 			battle.setWeather("snow", source)
 
@@ -2850,15 +3040,16 @@ class Solarpower:
 
 class Solidrock:
 	def onSourceModifyDamage(self, damage, source=None, target=None, move=None):
-		if target and move and type_effectiveness(move, target) > 1:
+		if target and move and type_effectiveness(target, move) > 1:
 			return int(damage * 0.75)
 		return damage
 
 
 class Soulheart:
-	def onAnyFaint(self, length=1, target=None, source=None):
+	def onAnyFaint(self, target=None, source=None, effect=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and target is not holder:
+		if (holder and getattr(holder, "hp", 0) > 0 and target is not None
+				and target is not holder and getattr(target, "hp", 1) <= 0):
 			apply_boost(holder, {"spa": 1})
 
 
@@ -2964,7 +3155,15 @@ class Steelyspirit:
 class Stench:
 	def onModifyMove(self, move, user=None):
 		if move and move.category != "Status":
-			move.secondaries = getattr(move, "secondaries", []) + [{"chance": 10, "volatileStatus": "flinch"}]
+			import copy
+
+			raw = move.raw
+			secondaries = ([raw["secondary"]] if raw.get("secondary") else []) + list(raw.get("secondaries") or [])
+			if not any(effect.get("volatileStatus") == "flinch" for effect in secondaries):
+				secondaries = copy.deepcopy(secondaries) + [{"chance": 10, "volatileStatus": "flinch"}]
+				raw.pop("secondary", None)
+				raw["secondaries"] = secondaries
+				move.secondaries = secondaries
 
 
 class Stickyhold:
@@ -3042,7 +3241,8 @@ class Supremeoverlord:
 
 class Surgesurfer:
 	def onModifySpe(self, spe, pokemon=None):
-		if pokemon and getattr(pokemon, "terrain", "") == "electricterrain":
+		from pokemon.battle.effect_context import EffectContext
+		if pokemon and EffectContext.terrain(pokemon) == "electricterrain":
 			return int(spe * 2)
 		return spe
 
@@ -3068,7 +3268,7 @@ class Sweetveil:
 
 	def onAllyTryAddVolatile(self, status, target=None):
 		if status == "yawn":
-			return None
+			return False
 
 	def onSetStatus(self, status, target=None, source=None, effect=None):
 		if status == "slp":
@@ -3106,22 +3306,32 @@ class Symbiosis:
 
 
 class Synchronize:
-        def onAfterSetStatus(self, status, target=None, source=None, effect=None):
-                if target and source and target is getattr(self, "effect_state", {}).get("target") and source is not target:
-                        if status not in {0, None} and hasattr(source, "setStatus"):
-                                battle = getattr(target, "battle", None)
-                                source.setStatus(
-                                        status,
-                                        source=target,
-                                        battle=battle,
-                                        effect="ability:synchronize",
-                                )
+    def onAfterSetStatus(self, status, target=None, source=None, effect=None):
+        """Reflect a qualifying major status once into a healthy source."""
+        from pokemon.battle.effect_context import EffectContext
+
+        if (target is None or source is None or source is target
+                or target is not getattr(self, "effect_state", {}).get("target")):
+            return
+        status_key = EffectContext.key(status)
+        effect_key = EffectContext.key(
+            getattr(effect, "id", None) or getattr(effect, "name", None) or effect
+        )
+        if status_key not in {"psn", "tox", "brn", "par"} or effect_key in {
+            "toxicspikes", "movetoxicspikes", "synchronize", "abilitysynchronize",
+        }:
+            return
+        setter = getattr(source, "trySetStatus", None)
+        if callable(setter):
+            setter(status_key, source=target, battle=getattr(target, "battle", None),
+                   effect="ability:synchronize")
 
 
 class Tabletsofruin:
 	def onAnyModifyAtk(self, atk, target=None, source=None, move=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if target and holder and target is not holder and getattr(move, "category", None) != "Status":
+		affected = source or target
+		if affected and holder and affected is not holder and getattr(move, "category", None) != "Status":
 			return int(atk * 0.75)
 		return atk
 
@@ -3146,7 +3356,8 @@ class Tanglinghair:
 
 class Technician:
 	def onBasePower(self, base_power, user=None, target=None, move=None):
-		if move and getattr(move, "base_power", 0) <= 60:
+		"""Qualify the actual positive current power supplied by the engine hook."""
+		if move and 0 < base_power <= 60:
 			return int(base_power * 1.5)
 		return base_power
 
@@ -3161,30 +3372,41 @@ class Telepathy:
 
 
 class Teraformzero:
-	def onAfterTerastallization(self, pokemon=None):
-		if pokemon and "Terapagos" in pokemon.species.name:
-			pokemon.formeChange("Terapagos-Stellar")
+	def onAfterTerastallization(self, pokemon=None, source=None, effect=None, battle=None, **kwargs):
+		holder = getattr(self, "effect_state", {}).get("target")
+		if (pokemon is not holder or str(getattr(pokemon, "species", "")) != "Terapagos-Stellar"
+		        or getattr(pokemon, "terastallized", None) != "Stellar"
+		        or getattr(pokemon, "transformed", False)):
+			return
+		battle = battle or getattr(pokemon, "battle", None)
+		if battle and (battle.field.weather or battle.field.terrain):
+			battle.log_action(f"{pokemon.name}'s Teraform Zero cleared the weather and terrain!")
+			battle.clearWeather()
+			battle.clearTerrain()
 
 
 class Terashell:
 	def onAnyAfterMove(self, pokemon=None, source=None, move=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if holder and pokemon is holder and move and move.category != "Status":
-			holder.abilityState = getattr(holder, "abilityState", {})
-			holder.abilityState["terashell_broken"] = True
+		if holder:
+			getattr(holder, "ability_state", {}).pop("terashell_broken", None)
 
 	def onEffectiveness(self, type_mod, target=None, type_=None, move=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if target is holder and not getattr(holder, "abilityState", {}).get("terashell_broken"):
-			if type_mod > 0:
-				return type_mod - 1
+		if (target is holder and str(getattr(holder, "species", "")) == "Terapagos-Terastal"
+		        and holder.hp == holder.max_hp and type_mod >= 1
+		        and getattr(move, "category", None) != "Status"
+		        and str(getattr(move, "name", "")).lower() != "struggle"):
+			# This engine relays a multiplier, rather than Showdown's exponent.
+			return .5
 		return type_mod
 
 
 class Terashift:
 	def onPreStart(self, pokemon=None):
-		if pokemon and getattr(pokemon, "terastal_type", None):
-			pokemon.teratype = pokemon.terastal_type
+		if pokemon:
+			from pokemon.battle.native_forms import NativeBattleForm
+			NativeBattleForm.tera_shift(pokemon)
 
 
 class Teravolt:
@@ -3228,7 +3450,7 @@ class Thickfat:
 
 class Tintedlens:
 	def onModifyDamage(self, damage, source=None, target=None, move=None):
-		if move and target and type_effectiveness(move, target) < 1:
+		if move and target and type_effectiveness(target, move) < 1:
 			return int(damage * 2)
 		return damage
 
@@ -3260,10 +3482,37 @@ class Toxicboost:
 
 
 class Toxicchain:
-	def onSourceDamagingHit(self, damage, source=None, target=None, move=None):
-		if source and target and move and move.category != "Status" and random() < 0.3:
-			if not target.status:
-				target.setStatus("tox")
+	@staticmethod
+	def _effect_key(effect):
+		"""Normalize real dex entities whose optional id may be absent."""
+		value = getattr(effect, "name", None) or getattr(effect, "id", None) or effect
+		return "".join(char for char in str(value).lower() if char.isalnum())
+
+	def _prevented(self, target):
+		"""Honor active Shield Dust and Covert Cloak prevention."""
+		ability = self._effect_key(getattr(target, "ability", None))
+		suppressed = bool(getattr(target, "ability_suppressed", False))
+		if ability == "shielddust" and not suppressed:
+			return True
+		item = getattr(target, "item", None) or getattr(target, "held_item", None)
+		if self._effect_key(item) != "covertcloak":
+			return False
+		battle = getattr(target, "battle", None)
+		field = getattr(battle, "field", None)
+		pseudo = getattr(field, "pseudo_weather", {}) or {}
+		volatiles = getattr(target, "volatiles", {}) or {}
+		inactive = ((ability == "klutz" and not suppressed) or "magicroom" in pseudo
+			or bool(volatiles.get("embargo")) or bool(getattr(target, "item_suppressed", False)))
+		return not inactive
+
+	def onSourceDamagingHit(self, damage, target=None, source=None, move=None):
+		"""Poison the actual damaged foe with its real attacking source."""
+		if (not source or not target or not move or not damage or damage <= 0
+			or getattr(target, "hp", 1) <= 0 or getattr(move, "category", None) == "Status"
+			or self._prevented(target)):
+			return
+		if random() < 0.3 and not getattr(target, "status", None):
+			target.setStatus("tox", source=source, battle=getattr(source, "battle", None), effect="ability:toxicchain")
 
 
 class Toxicdebris:
@@ -3276,17 +3525,35 @@ class Toxicdebris:
 
 class Trace:
 	def _copy(self, pokemon):
-		foes = [f for f in pokemon.foes() if f.ability not in {"trace", None}]
-		if foes:
-			choice_foe = choice(foes)
-			pokemon.ability = choice_foe.ability
+		"""Choose an eligible living foe and install its executable owned effect."""
+		from pokemon.battle.effect_context import EffectContext
+		from pokemon.battle.engine import _resolve_ability
+		battle = getattr(pokemon, "battle", None)
+		if not battle or EffectContext.key(EffectContext.ability(pokemon)) != "trace":
+			return
+		if EffectContext.key(EffectContext.item(pokemon)) == "abilityshield":
+			return
+		foes = []
+		for foe in pokemon.foes():
+			ability = _resolve_ability(EffectContext.ability(foe))
+			if (getattr(foe, "hp", 0) > 0 and ability
+					and EffectContext.key(ability) not in {"trace", "noability"}
+					and not (getattr(ability, "raw", {}) or {}).get("flags", {}).get("notrace")):
+				foes.append((foe, ability))
+		if not foes:
+			return
+		foe, ability = battle.rng.choice(foes)
+		pokemon.setAbility(ability, source=foe, battle=battle,
+						   is_from_forme_change=True, run_start=False)
+		battle.register_handlers(pokemon)
+		battle.start_owned_ability(pokemon)
 
 	def onStart(self, pokemon=None):
 		if pokemon:
 			self._copy(pokemon)
 
 	def onUpdate(self, pokemon=None):
-		if pokemon and pokemon.ability == "trace":
+		if pokemon:
 			self._copy(pokemon)
 
 
@@ -3305,7 +3572,7 @@ class Transistor:
 class Triage:
 	def onModifyPriority(self, priority, pokemon=None, target=None, move=None):
 		if move and move.flags.get("heal"):
-			return priority + 0.1
+			return priority + 3
 		return priority
 
 
@@ -3371,7 +3638,7 @@ class Unnerve:
 				foe.nerve = False
 
 	def onFoeTryEatItem(self, item=None, pokemon=None):
-		if item and getattr(item, "isBerry", False):
+		if item and (getattr(item, "isBerry", False) or (getattr(item, "raw", {}) or {}).get("isBerry")):
 			if pokemon:
 				pokemon.immune = "Unnerve"
 			return False
@@ -3394,7 +3661,8 @@ class Unseenfist:
 class Vesselofruin:
 	def onAnyModifySpA(self, spa, target=None, source=None, move=None):
 		holder = getattr(self, "effect_state", {}).get("target")
-		if target and holder and target is not holder and getattr(move, "category", None) != "Status":
+		affected = source or target
+		if affected and holder and affected is not holder and getattr(move, "category", None) != "Status":
 			return int(spa * 0.75)
 		return spa
 
@@ -3421,7 +3689,7 @@ class Vitalspirit:
 
 	def onTryAddVolatile(self, status, pokemon=None):
 		if status == "yawn":
-			return None
+			return False
 
 	def onUpdate(self, pokemon=None):
 		if pokemon and pokemon.status == "slp":
@@ -3561,9 +3829,10 @@ class Windrider:
 
 class Wonderguard:
 	def onTryHit(self, target=None, source=None, move=None):
+		"""Allow damaging hits that are super-effective against the actual target."""
 		if not move or move.category == "Status" or move.id == "struggle":
 			return
-		if target and type_effectiveness(move, target) <= 1:
+		if target and type_effectiveness(target, move) <= 1:
 			target.immune = "Wonder Guard"
 			return False
 
@@ -3576,18 +3845,31 @@ class Wonderskin:
 
 
 class Zenmode:
+	"""Change Darmanitan's regional form without ending Zen Mode recursively."""
+
+	def _base_form(self, pokemon):
+		"""Resolve a regional base even when the prepared species is already Zen."""
+		if not pokemon or getattr(pokemon, "transformed", False):
+			return None
+		original = str(getattr(pokemon, "base_species", ""))
+		if not original.lower().startswith("darmanitan"):
+			return None
+		return "Darmanitan-Galar" if "galar" in original.lower() else "Darmanitan"
+
 	def _update_form(self, pokemon):
-		if not pokemon or "darmanitan" not in pokemon.base_species.lower():
+		"""Apply the half-health threshold while keeping the hidden ability."""
+		base = self._base_form(pokemon)
+		if not base or not pokemon.hp:
 			return
-		if pokemon.hp <= pokemon.max_hp // 2:
-			if "zen" not in pokemon.species.name.lower():
-				pokemon.formeChange(f"{pokemon.base_species}-Zen")
-		else:
-			if "zen" in pokemon.species.name.lower():
-				pokemon.formeChange(pokemon.base_species)
+		form = base + "-Zen" if pokemon.hp <= pokemon.max_hp // 2 else base
+		if str(pokemon.species) != form:
+			pokemon.formeChange(form, preserve_ability=True)
 
 	def onEnd(self, pokemon=None):
-		self._update_form(pokemon)
+		"""Return a living carrier to its regional base when the ability ends."""
+		base = self._base_form(pokemon)
+		if base and pokemon.hp and str(pokemon.species) != base:
+			pokemon.formeChange(base, preserve_ability=True)
 
 	def onResidual(self, pokemon=None):
 		self._update_form(pokemon)
@@ -3600,12 +3882,15 @@ class Zerotohero:
 	def onStart(self, pokemon=None):
 		if pokemon and pokemon.base_species.lower() == "palafin":
 			pokemon.abilityState = getattr(pokemon, "abilityState", {})
-			pokemon.abilityState["hero_ready"] = False
+			pokemon.abilityState.setdefault("hero_ready", False)
 
 	def onSwitchIn(self, pokemon=None):
-		if pokemon and pokemon.abilityState.get("hero_ready") and pokemon.species.name.lower() == "palafin":
-			pokemon.formeChange("Palafin-Hero")
+		if pokemon and getattr(pokemon, "abilityState", {}).get("hero_ready") and str(pokemon.species).lower() == "palafin":
+			pokemon.formeChange("Palafin-Hero", preserve_ability=True)
 
 	def onSwitchOut(self, pokemon=None):
 		if pokemon and pokemon.base_species.lower() == "palafin":
+			pokemon.abilityState = getattr(pokemon, "abilityState", {})
 			pokemon.abilityState["hero_ready"] = True
+			if str(pokemon.species).lower() == "palafin":
+				pokemon.formeChange("Palafin-Hero", preserve_ability=True)

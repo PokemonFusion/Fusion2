@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "league_key": "independent",
+  "gym_key": "validation_singles",
+  "leader": {
+    "name": "Gym Author Validation",
+    "description": "Optional author validation content; no league placement is implied."
+  },
+  "badge": {
+    "name": "Validation Badge",
+    "region": "QA Validation",
+    "description": "Disposable content-authoring validation badge."
+  },
+  "profile": {
+    "badge_key": "validation_badge",
+    "required_badge_count": 1,
+    "is_enabled": true,
+    "sort_order": 1,
+    "battle_format": "single",
+    "ai_profile": "gym_leader",
+    "strategy_key": "",
+    "content_stage": "production",
+    "reward_policy": "badge_only",
+    "rematch_cooldown_seconds": 0,
+    "rules_text": "Singles against one level 5 Eevee. Requires one badge. First clear: one Validation Badge. Practice rematches have no cooldown. No money, items, Pokemon XP, EVs or trainer XP; losses and concessions have no cooldown.",
+    "intro_text": "Author validation singles challenge.",
+    "victory_text": "Validation complete.",
+    "defeat_text": "Heal and retry the validation challenge."
+  },
+  "team": [
+    {
+      "template_key": "validation-eevee",
+      "species": "Eevee",
+      "level": 5,
+      "ability": "Run Away",
+      "nature": "Hardy",
+      "gender": "F",
+      "ivs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "held_item": "",
+      "move_names": [
+        "Tackle"
+      ]
+    }
+  ]
+}

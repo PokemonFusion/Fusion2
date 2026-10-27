@@ -1,0 +1,191 @@
+{
+  "issue": 862,
+  "date": "2026-10-25",
+  "environment": "PF2-Dev /home/evennia/testing/fusion2",
+  "before": "af0eca6e63924c9108c3adbce389cc875be4c702",
+  "migration_from": "0045_production_strategy_gym",
+  "migration_to": "0058_necrozma_integrity",
+  "migration_scope": "0046-0058 includes berries, ownership/market/daycare/breeding integrity, gyms, onboarding and native Necrozma",
+  "public_hub": {
+    "id": 31,
+    "name": "Alpha Test Hub",
+    "from_limbo": 2,
+    "entry_exit": 38,
+    "return_exit": 39,
+    "source_entry": "supplies",
+    "source_return": "back"
+  },
+  "recipe": {
+    "version": 1,
+    "key": "nonplot-item-supply-v1",
+    "room": "Item Supply Corner",
+    "entrance": "supplies",
+    "return_exit": "back",
+    "refill": "none",
+    "buy_only": true,
+    "offers": [
+      {
+        "item": "Potion",
+        "price": 300,
+        "quantity": 20
+      },
+      {
+        "item": "Oran Berry",
+        "price": 80,
+        "quantity": 20
+      },
+      {
+        "item": "Fresh Water",
+        "price": 200,
+        "quantity": 20
+      },
+      {
+        "item": "Fire Stone",
+        "price": 3000,
+        "quantity": 5
+      },
+      {
+        "item": "Leftovers",
+        "price": 4000,
+        "quantity": 2
+      },
+      {
+        "item": "Smoke Ball",
+        "price": 4000,
+        "quantity": 2
+      }
+    ]
+  },
+  "public_source_permanent": true,
+  "automatic_refill": false,
+  "tagged_qa": {
+    "tag": "item-source-862-4b17eea80a4a443dbdb091253ed7cb66",
+    "ordinary_player_names": [
+      "ItemSupplyDuskd7cb66",
+      "ItemSupplyDawnd7cb66"
+    ],
+    "permissions": "Player only; never elevate",
+    "primary_wallet_fixture": 20000,
+    "secondary_wallet_fixture": 0,
+    "private_rooms": "Center+finite helper counter, Mew100, Eevee5, Magikarp5",
+    "private_source_access": "traverse only attr(key,<exact first QA name>) or attr(key,<exact second QA name>); no human source/row reused",
+    "helper_offers": [
+      {
+        "item": "Master Ball",
+        "price": 1000,
+        "quantity": 4
+      },
+      {
+        "item": "Revive",
+        "price": 1500,
+        "quantity": 2
+      }
+    ],
+    "source_rule": "normal hunt/capture/learning/party/hold/use/evolve/flee; no Pokemon/move/item-effect grant",
+    "labelled_preconditions": [
+      "wallet fixtures above",
+      "HP0 only on a tagged current owned out-of-battle Mew, followed by ordinary Revive"
+    ],
+    "cleanup": "only exact newly tagged QA characters/accounts/Pokemon/rooms/exits/helper stock; preserve public source and existing human data",
+    "public_stock_after_one_each_success": [
+      {
+        "item": "Potion",
+        "quantity": 19
+      },
+      {
+        "item": "Oran Berry",
+        "quantity": 19
+      },
+      {
+        "item": "Fresh Water",
+        "quantity": 19
+      },
+      {
+        "item": "Fire Stone",
+        "quantity": 4
+      },
+      {
+        "item": "Leftovers",
+        "quantity": 1
+      },
+      {
+        "item": "Smoke Ball",
+        "quantity": 1
+      }
+    ],
+    "refill_or_wallet_restoration": false
+  },
+  "limits": [
+    "Existing game database/Evennia operations are NOT authorized by prior local-dev approval.",
+    "No sudo, PostgreSQL/nginx restart, whole-database restore, automatic legacy repair, unrelated source edit or plot content.",
+    "Migration failure must leave0045 through outer rollback; only then may clean source switch back to af0. Never downgrade a committed0058 database.",
+    "After purchases never delete human ownership/items or reset wallets/stock; only the explicitly tagged QA teardown is included. Retain or disable entry for review; no silent restock."
+  ],
+  "status": "replacement proposal; requires explicit approval for this exact candidate",
+  "candidate": "b13c43953451970cce68f2a47829e261ef9a7346",
+  "operator_task_root": "/home/evennia/testing/.item-source-862-retry-20261025",
+  "production_changes_performed_for_this_candidate": false,
+  "previous_plan": "item-source-release-plan-2026-10-25.md",
+  "compatibility_report": "item-source-migration-compatibility-2026-10-25.md",
+  "required_framework_node": "0013_defaultobject_alter_objectdb_id_defaultcharacter_and_more",
+  "framework_package_changes": false,
+  "qualified_python_count": 1139,
+  "full_gate": {
+    "exit_code": 0,
+    "seconds": 2065.49,
+    "passed": [
+      "6188",
+      "6188",
+      "6188"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "7249b6a4681b1fd79ac11bcc68520cd9ed20fc78addd037932076da2c1bbc6c1"
+  },
+  "isolated_migration_rehearsals": 28,
+  "isolated_acquisition_cases": 43,
+  "additional_candidate_scope_since_previous_plan": "Previously published thirteen flavor snacks and six Special Z source mappings; no additional world offers or policy changes.",
+  "approval_template": {
+    "approved": false,
+    "candidate": "b13c43953451970cce68f2a47829e261ef9a7346",
+    "scope": "PF2-Dev item source862 release, six-offer install and tagged QA only",
+    "database_fingerprint_sha256": "66918cd5417f4924c99cdd6879380c38b3ea57838d1a983e19c5a3e0acbf3a13"
+  },
+  "controllers": {
+    "backup.py": {
+      "sha256_lf": "7f569579256707c35ea6cccfb4b344591455c5d58408e022c65429dca551ce0c",
+      "source": "\"\"\"Back up only the fingerprinted PF2-Dev game database after explicit approval.\"\"\"\nimport hashlib,json,os,shutil,stat,subprocess,sys\nfrom pathlib import Path\nROOT=Path(\"/home/evennia/testing/fusion2\")\nTASK=Path(\"/home/evennia/testing/.item-source-862-retry-20261025\")\nBEFORE=\"af0eca6e63924c9108c3adbce389cc875be4c702\"\nCANDIDATE=\"b13c43953451970cce68f2a47829e261ef9a7346\"\ndef secure_open(path):\n    \"\"\"Never overwrite a prior backup or expose it to other users.\"\"\"\n    return os.fdopen(os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600),\"wb\")\nif __name__==\"__main__\":\n    assert sys.argv[1:]==[\"--backup-approved\"]\n    assert Path.cwd().resolve()==ROOT and TASK.resolve()==TASK\n    approval=json.loads((TASK/\"operator-approval.json\").read_text())\n    assert approval[\"approved\"] is True and approval[\"candidate\"]==CANDIDATE\n    assert approval[\"scope\"]==\"PF2-Dev item source862 release, six-offer install and tagged QA only\"\n    assert stat.S_IMODE(TASK.stat().st_mode)==0o700\n    assert subprocess.check_output([\"git\",\"rev-parse\",\"HEAD\"],cwd=ROOT,text=True).strip()==BEFORE\n    assert not subprocess.check_output([\"git\",\"status\",\"--porcelain\"],cwd=ROOT,text=True)\n    sys.path.insert(0,str(ROOT))\n    os.environ[\"DJANGO_SETTINGS_MODULE\"]=\"server.conf.settings\"\n    os.environ[\"PYTHONDONTWRITEBYTECODE\"]=\"1\"\n    import django\n    django.setup()\n    from django.db import connection,transaction\n    assert connection.vendor==\"postgresql\"\n    with transaction.atomic():\n        with connection.cursor() as cursor:\n            cursor.execute(\"SET TRANSACTION READ ONLY\")\n            cursor.execute(\"SELECT current_database(),current_user,current_schema(),inet_server_addr()::text,inet_server_port()\")\n            identity=cursor.fetchone()\n            cursor.execute(\"SELECT pg_database_size(current_database())\")\n            database_bytes=cursor.fetchone()[0]\n    assert hashlib.sha256(json.dumps(identity).encode()).hexdigest()==approval[\"database_fingerprint_sha256\"]\n    assert shutil.disk_usage(ROOT).free >= 2*database_bytes+1024**3\n    params=connection.get_connection_params()\n    driver=connection.connection\n    resolved=driver.get_dsn_parameters() if hasattr(driver,\"get_dsn_parameters\") else driver.info.dsn_parameters\n    params.update({key:resolved[key] for key in (\"host\",\"port\",\"user\") if key in resolved})\n    env=os.environ.copy()\n    for key in (\"PGHOST\",\"PGHOSTADDR\",\"PGPORT\",\"PGDATABASE\",\"PGUSER\",\"PGSERVICE\",\"PGSERVICEFILE\"):\n        env.pop(key,None)\n    for setting,param in ((\"PGHOST\",\"host\"),(\"PGPORT\",\"port\"),(\"PGUSER\",\"user\"),(\"PGPASSWORD\",\"password\")):\n        if params.get(param) is not None:env[setting]=str(params[param])\n    path=TASK/\"pre-release.dump\"\n    with secure_open(path) as output:\n        result=subprocess.run([\"/usr/bin/pg_dump\",\"--format=custom\",\"--no-owner\",\"--no-acl\",str(identity[0])],env=env,stdout=output,stderr=subprocess.PIPE)\n    assert result.returncode==0,\"Backup failed; retain partial artifact privately, do not release\"\n    toc=TASK/\"pre-release.toc\"\n    with secure_open(toc) as output:\n        result=subprocess.run([\"/usr/bin/pg_restore\",\"--list\",str(path)],stdout=output,stderr=subprocess.PIPE)\n    assert result.returncode==0 and path.stat().st_size>0 and toc.stat().st_size>0\n    receipt={\"candidate\":CANDIDATE,\"before\":BEFORE,\"database_fingerprint_sha256\":approval[\"database_fingerprint_sha256\"],\n             \"backup_sha256\":hashlib.sha256(path.read_bytes()).hexdigest(),\"toc_sha256\":hashlib.sha256(toc.read_bytes()).hexdigest(),\n             \"backup_bytes\":path.stat().st_size,\"mode\":\"0600\",\"restore_performed\":False}\n    with secure_open(TASK/\"backup-receipt.json\") as output:output.write(json.dumps(receipt,indent=2).encode())\n    print(\"ITEM_SOURCE_862_BACKUP_VERIFIED\",receipt[\"backup_sha256\"],receipt[\"backup_bytes\"])\n\n"
+    },
+    "atomic_upgrade.py": {
+      "sha256_lf": "54b4dfe7b5a846602c89dc0d83e0876fd54c87775e1f0dd9f8d492acc303fdc7",
+      "source": "\"\"\"Guarded whole-chain upgrade; production entry requires a separately recorded approval.\"\"\"\nimport hashlib,json,os,subprocess,sys\nfrom pathlib import Path\nROOT=Path(\"/home/evennia/testing/fusion2\")\nTASK=Path(\"/home/evennia/testing/.item-source-862-retry-20261025\")\nCANDIDATE=\"b13c43953451970cce68f2a47829e261ef9a7346\"\nBEFORE=\"0045_production_strategy_gym\"\nTARGET=\"0058_necrozma_integrity\"\nclass RehearsalRollback(RuntimeError):\n    \"\"\"Deliberate local-only outer-transaction rollback probe.\"\"\"\ndef upgrade(*,fail_after=False):\n    \"\"\"Apply the complete remaining Pokemon chain in one PostgreSQL transaction.\"\"\"\n    from django.core.management import call_command\n    from django.db import connection,transaction\n    from django.db.migrations.recorder import MigrationRecorder\n    assert connection.vendor==\"postgresql\"\n    latest=MigrationRecorder.Migration.objects.filter(app=\"pokemon\").order_by(\"-name\").values_list(\"name\",flat=True).first()\n    assert latest==BEFORE, \"Unexpected predecessor; refuse instead of repairing data\"\n    with transaction.atomic():\n        call_command(\"migrate\",\"pokemon\",TARGET,interactive=False,verbosity=1)\n        latest=MigrationRecorder.Migration.objects.filter(app=\"pokemon\").order_by(\"-name\").values_list(\"name\",flat=True).first()\n        assert latest==TARGET\n        if fail_after:raise RehearsalRollback(\"Probe after full chain and post_migrate, before outer commit\")\ndef authorize():\n    \"\"\"Require exact human-authorized target, source and database identity.\"\"\"\n    assert Path.cwd().resolve()==ROOT\n    approval=json.loads((TASK/\"operator-approval.json\").read_text())\n    assert approval[\"approved\"] is True and approval[\"candidate\"]==CANDIDATE\n    assert approval[\"scope\"]==\"PF2-Dev item source862 release, six-offer install and tagged QA only\"\n    assert subprocess.check_output([\"git\",\"rev-parse\",\"HEAD\"],cwd=ROOT,text=True).strip()==CANDIDATE\n    assert not subprocess.check_output([\"git\",\"status\",\"--porcelain\"],cwd=ROOT,text=True)\n    sys.path.insert(0,str(ROOT))\n    os.environ[\"DJANGO_SETTINGS_MODULE\"]=\"server.conf.settings\"\n    os.environ[\"PYTHONDONTWRITEBYTECODE\"]=\"1\"\n    import django\n    django.setup()\n    from django.db import connection\n    with connection.cursor() as cursor:\n        cursor.execute(\"SELECT current_database(),current_user,current_schema(),inet_server_addr()::text,inet_server_port()\")\n        values=cursor.fetchone()\n    digest=hashlib.sha256(json.dumps(values).encode()).hexdigest()\n    assert digest==approval[\"database_fingerprint_sha256\"]\n    import pokemon\n    assert Path(pokemon.__file__).resolve().is_relative_to(ROOT)\nif __name__==\"__main__\":\n    assert sys.argv[1:]==[\"--apply-approved\"]\n    authorize()\n    upgrade()\n    print(\"ITEM_SOURCE_862_ATOMIC_UPGRADE_COMMITTED\",CANDIDATE,TARGET)\n\n"
+    },
+    "install.py": {
+      "sha256_lf": "02783daf370cd28cc7f230e92e103923a1f1d1baf2b28c1c250cacedda64a4e6",
+      "source": "\"\"\"Install the exact six-offer permanent source only during approved maintenance.\"\"\"\nimport hashlib,json,socket,sys\nfrom pathlib import Path\nfrom atomic_upgrade import authorize,TASK,CANDIDATE\ndef protected_digest():\n    \"\"\"Keep existing owned/placement/trainer data private and unchanged.\"\"\"\n    from pokemon.models.core import OwnedPokemon\n    from pokemon.models.trainer import Trainer\n    from pokemon.models.storage import PokemonPlacement\n    from pokemon.models.moves import ActiveMoveslot\n    data={model._meta.label:list(model.objects.order_by(\"pk\").values()) for model in (OwnedPokemon,Trainer,PokemonPlacement,ActiveMoveslot)}\n    return hashlib.sha256(json.dumps(data,default=str,sort_keys=True).encode()).hexdigest()\nif __name__==\"__main__\":\n    assert sys.argv[1:] in ([\"--install-approved\"],[\"--retry-approved\"])\n    retry=sys.argv[1]==\"--retry-approved\"\n    authorize()\n    import evennia\n    evennia._init()\n    from django.conf import settings\n    from django.db import transaction\n    from evennia.objects.models import ObjectDB\n    from pokemon.services.item_supply import ItemSupplyRoute\n    if not retry:\n        with socket.socket() as probe:\n            probe.settimeout(1)\n            assert probe.connect_ex((\"127.0.0.1\",int(settings.AMP_PORT)))!=0,\"Game still active; refuse offline world changes\"\n    before=protected_digest()\n    with transaction.atomic():\n        hub=ObjectDB.objects.get(pk=31,db_key=\"Alpha Test Hub\")\n        if retry:\n            original=json.loads((TASK/\"source-install-receipt.json\").read_text())\n            prior=dict(hub.attributes.get(ItemSupplyRoute.marker))\n            assert prior==original[\"marker\"]\n            original_room=ObjectDB.objects.get(pk=original[\"room\"])\n            prior_stock={name:dict(value) for name,value in original_room.db.store_inventory.items()}\n        room=ItemSupplyRoute.install(hub)\n        marker=dict(hub.attributes.get(ItemSupplyRoute.marker))\n        if retry:\n            assert room.pk==original[\"room\"]\n            assert prior_stock=={name:dict(value) for name,value in room.db.store_inventory.items()}\n        assert protected_digest()==before\n    record={\"candidate\":CANDIDATE,\"hub\":31,\"room\":room.pk,\"marker\":marker,\"recipe\":ItemSupplyRoute.recipe(),\n            \"stock\":{name:dict(value) for name,value in room.db.store_inventory.items()},\n            \"protected_digest_before\":before,\"protected_digest_after\":protected_digest(),\n            \"permanent\":True,\"refill\":\"none\",\"buy_only\":True,\"existing_human_data_changed\":False}\n    path=TASK/(\"source-retry-receipt.json\" if retry else \"source-install-receipt.json\")\n    assert not path.exists()\n    path.write_text(json.dumps(record,indent=2)+\"\\n\")\n    print(\"ITEM_SOURCE_862_PERMANENT_SOURCE_INSTALLED\",room.pk,\"six finite offers, no protected data change\")\n\n"
+    }
+  },
+  "controller_behavior_unchanged_from_reviewed_original": true,
+  "cli_environment": {
+    "prepend_path": "/home/evennia/testing/evenv/bin",
+    "evennia": "/home/evennia/testing/evenv/bin/evennia",
+    "require_twistd": "/home/evennia/testing/evenv/bin/twistd",
+    "verify_listeners": [
+      4000,
+      4001,
+      4002,
+      4005,
+      4006
+    ]
+  },
+  "additional_guards": [
+    "Freshly validate required framework migration files and all candidate project dependencies; version labels alone are insufficient.",
+    "Retain a private baseline of all existing accounts and Pokemon/trainer/placement/move/inventory columns. Compare after stop and before upgrade; preserve every existing row and refuse unexplained drift without repairing it.",
+    "Compare every original column after upgrade; separately validate intended new null/default columns. Do not confuse a new nullable schema column with altered old data.",
+    "Supply virtualenv bin on PATH to the exact Evennia CLI; require actual process, source and five-listener checks, not launcher exit zero alone.",
+    "Leave all unrelated/legacy accounts and existing human characters untouched. Only this exact newly tagged QA setup may be cleaned."
+  ]
+}

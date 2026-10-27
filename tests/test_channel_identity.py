@@ -33,8 +33,9 @@ class FakeCharacter:
 
 
 class FakeSession:
-    def __init__(self, puppet=None):
+    def __init__(self, puppet=None, account=None):
         self.puppet = puppet
+        self.account = account or getattr(puppet, "account", None)
 
     def get_puppet(self):
         return self.puppet

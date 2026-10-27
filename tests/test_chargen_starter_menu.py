@@ -76,6 +76,8 @@ def load_chargen_with_stubs():
         mod = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = mod
         spec.loader.exec_module(mod)
+        # Pure menu tests capture persistence; real grant/draft coverage uses PostgreSQL.
+        mod._persist_draft = lambda caller: True
         return mod
     finally:
         for name, module in patched.items():

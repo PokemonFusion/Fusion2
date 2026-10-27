@@ -1,0 +1,420 @@
+{
+  "issue": 820,
+  "date": "2026-10-23",
+  "baseline": "ec1203c47564c8e712831d8764394a4300a9b629",
+  "evidence_kind": "static design/source/issue validation; not runtime or player acceptance",
+  "status": "passed",
+  "runtime_enabled": false,
+  "forms_reviewed": 2,
+  "source_files_unchanged": 20,
+  "tracked_python_files_with_no_diff": 1034,
+  "source_sha256": {
+    "pokemon/models/storage.py": "81afa3bd5d38b99d17fb89219f9e26e35620be22ab8350e7ac5db4eec5506b20",
+    "pokemon/services/placement.py": "5d9bbff1120e0cf1e4c5d26a4e05a7f225d267d627bf22ebab82715989d06280",
+    "pokemon/migrations/0041_placement_integrity_triggers.py": "73c433bc9ef1c354ef18d878fa7cf3d21d7cdae2f0f8a946e096fa184d8b2610",
+    "pokemon/services/placement_audit.py": "4ab9ada2308f8915cef2274159e15837c3e0c7da6962ac097d1c254fc54805df",
+    "pokemon/models/core.py": "385b2cca90fcf9640ecf62a723e857a2876b788f045754b430a308a4ae9b1664",
+    "pokemon/models/moves.py": "848445d5c6fd7d199420592bdaf0b6f879c2c93fd7d6b7571e8d7bdb4cd5891a",
+    "pokemon/services/move_management.py": "3faaa1f0cb4f3bf7ed7d4d83a3f810390a13c2ec34862f7f1d2b9ab01b7cedc6",
+    "pokemon/data/generation.py": "7d5c367caa1cad91a3b0fc7270979ab24064298d82145d6c5800f78900172da3",
+    "utils/fusion.py": "094b0dd204e045026f39bbce7ec307cff6ac036ca39b76485fd7e8f60b92b3aa",
+    "utils/locks.py": "84ac0377b772b141933636ef8e6266b5e1b2cdaa934999885d5c7472036957cf",
+    "utils/pokemon_utils.py": "7c7b20104d1438ed803230d7ed5a1a8fafb1a3e08fce5d440a2e96548d54cd74",
+    "pokemon/battle/owned_battle_actor.py": "51eb108d609770b24ee4514e089e3ed5d8acf6d9450c6f403803631a2a3c4e4a",
+    "pokemon/battle/z_moves.py": "e59c8100960cce39380c81cc196fbb19f60e86c13d8dde780e1c800339b54dca",
+    "pokemon/battle/z_signature_pairs.py": "03421685294a98fd06922af6a97687e5a80104a0971b12cb18a4ea77ee7706a5",
+    "commands/player/cmd_learn_evolve.py": "fcb3dd1add0c3cf7140e5d838d8e0fc5c28602f2bf26b398853feb2fd8e40ffb",
+    "pokemon/dex/pokedex/alola.py": "f118f83e276f3596d32c0b0e9fc0b29f4d328c776f9b877e5d7cfce7ae3be7cc",
+    "pokemon/data/learnsets/learnsets.py": "5ace8ca8d474b89bf7832bd609edd85b23a1f8941bd4a155e7d64d41377472a1",
+    "pokemon/dex/moves/movesdex.py": "862cc9142c9af4e32a6b1110f9b696c729fcbf93f9631aa329d355dcd04ce419",
+    "pokemon/services/pp_capacity.py": "666ff1732581f24d1f49d072d9481f13d2e8278a2cd61b7a5ed8bae01b68d80e",
+    "pokemon/helpers/pokemon_helpers.py": "0ea863bf9e6737b7977720bb6d3523070afcb754cf997ba185e07382419dc829"
+  },
+  "signature_fingerprints_unchanged": {
+    "Solganium Z": "cdd04dcef8a3f54994f987bddcb670a4279611402c66106acee554b64ff9577b",
+    "Lunalium Z": "d9bc5e51f0209fabb8c54f9696eb626fdb47b4a0262ac20e12a3e5c2562a92e9"
+  },
+  "issues": [
+    {
+      "issue": 825,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/825",
+      "state_observed": "open",
+      "depends_on": [],
+      "unchecked_criteria": 5,
+      "criteria_sha256": "59f7527c200b156682f275f86aeed0d9b366de38d272715c08f57b4358d56739"
+    },
+    {
+      "issue": 826,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/826",
+      "state_observed": "open",
+      "depends_on": [
+        825
+      ],
+      "unchecked_criteria": 6,
+      "criteria_sha256": "0647de04c436ec864e40bc8a60912bd1da199e73d9ad2afb763f38b2c7ed3df5"
+    },
+    {
+      "issue": 827,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/827",
+      "state_observed": "open",
+      "depends_on": [
+        825,
+        826
+      ],
+      "unchecked_criteria": 7,
+      "criteria_sha256": "9a705dd10c5ac9b98d85fce6e7631d16ddcabcbfc75658a321eb77b0c672651b"
+    },
+    {
+      "issue": 828,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/828",
+      "state_observed": "open",
+      "depends_on": [
+        827
+      ],
+      "unchecked_criteria": 6,
+      "criteria_sha256": "09292012492578ad719cb88ac824be7531ba1ae4b353ea25b845ca357c3b3b04"
+    },
+    {
+      "issue": 829,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/829",
+      "state_observed": "open",
+      "depends_on": [
+        827,
+        828
+      ],
+      "unchecked_criteria": 6,
+      "criteria_sha256": "549dcb470dd092be145ceac1d236106414ece2d15c150800c1743ee87c097ca5"
+    },
+    {
+      "issue": 830,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/830",
+      "state_observed": "open",
+      "depends_on": [
+        826,
+        828,
+        829
+      ],
+      "unchecked_criteria": 6,
+      "criteria_sha256": "dc1dc300266bdddc2c0b916a6cc2b4c7878c871fd40811aeb624f7bc03946e9f"
+    },
+    {
+      "issue": 831,
+      "url": "https://github.com/PokemonFusion/Fusion2/issues/831",
+      "state_observed": "open",
+      "depends_on": [
+        829,
+        830
+      ],
+      "unchecked_criteria": 6,
+      "criteria_sha256": "f4c48110d5d793709dd056277b5ab856c6218084dbc3e5a09dfe0e637a4b15f8"
+    }
+  ],
+  "graph_acyclic": true,
+  "local_links_checked": [
+    {
+      "from": "docs/design/necrozma-combination.md",
+      "target": "necrozma-combination.json"
+    },
+    {
+      "from": "docs/design/necrozma-combination.md",
+      "target": "z-crystals.md"
+    },
+    {
+      "from": "docs/design/necrozma-combination.md",
+      "target": "../operations/pokemon-placement.md"
+    },
+    {
+      "from": "docs/design/necrozma-combination.md",
+      "target": "../testing/necrozma-design-2026-10-23.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "../testing/z-core-2026-10-23.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "../testing/z-special-2026-10-23.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "../z-moves.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "necrozma-combination.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "necrozma-combination.md#delivery-gates"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "z-moves.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "z-crystals.json"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "necrozma-combination.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "necrozma-combination.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "../testing/item-designs-2026-10-22.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "z-move-source-review.md"
+    },
+    {
+      "from": "docs/design/z-crystals.md",
+      "target": "z-signature-source-review.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "code-map.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "offline-battle-testing.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "held-incense.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "battle-recovery-items.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "item-availability.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "testing/item-live-2026-10-22.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "mega-evolution.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/mega-evolution.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/mega-stones.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/z-moves.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/z-crystals.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "z-moves.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/necrozma-combination.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/berry-player-routes.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "berry-nursery.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "gimmighoul-evolution.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "recovery-equivalents.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "hunt-item-sources.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "item-supply-route.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "alpha-reliability-validation.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "battle-coverage-report.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "move-inventory-audit-2026-06-22.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/npc_trainer_battles.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/adventure-system.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "adventure-operations.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "static-npc-trainer-battles.md"
+    },
+    {
+      "from": "docs/index.md",
+      "target": "design/battle_ai.md"
+    },
+    {
+      "from": "docs/testing/necrozma-design-2026-10-23.md",
+      "target": "../design/necrozma-combination.md"
+    },
+    {
+      "from": "docs/testing/necrozma-design-2026-10-23.md",
+      "target": "../design/necrozma-combination.json"
+    },
+    {
+      "from": "docs/testing/necrozma-design-2026-10-23.md",
+      "target": "necrozma-design-2026-10-23.json"
+    },
+    {
+      "from": "docs/z-moves.md",
+      "target": "design/z-crystals.md"
+    },
+    {
+      "from": "docs/z-moves.md",
+      "target": "testing/z-core-2026-10-23.md"
+    },
+    {
+      "from": "docs/z-moves.md",
+      "target": "testing/z-special-2026-10-23.md"
+    },
+    {
+      "from": "docs/z-moves.md",
+      "target": "design/necrozma-combination.md"
+    },
+    {
+      "from": "docs/z-moves.md",
+      "target": "design/necrozma-combination.md#delivery-gates"
+    }
+  ],
+  "checks_passed": 82,
+  "checks": [
+    "design is bounded and runtime disabled",
+    "baseline agrees with frozen source review",
+    "exactly two native source pairs",
+    "Necrozma-Dusk-Mane matches current native data",
+    "Necrozma-Dusk-Mane source base PP and teaching gap verified",
+    "Solganium Z existing native profile unchanged",
+    "Necrozma-Dusk-Mane runtime remains gated",
+    "Necrozma-Dawn-Wings matches current native data",
+    "Necrozma-Dawn-Wings source base PP and teaching gap verified",
+    "Lunalium Z existing native profile unchanged",
+    "Necrozma-Dawn-Wings runtime remains gated",
+    "all 20 reviewed source files unchanged",
+    "no tracked Python change from baseline",
+    "no generated data or migrations changed",
+    "character identity and separate companion reservation",
+    "no plot or inventory gate and explicit current-terms confirmation",
+    "recoverable separation and no dormant PP healing",
+    "exact seven-issue implementation and acceptance graph",
+    "dependency graph acyclic and resolved",
+    "#825 published open scope and criteria match",
+    "#826 published open scope and criteria match",
+    "#827 published open scope and criteria match",
+    "#828 published open scope and criteria match",
+    "#829 published open scope and criteria match",
+    "#830 published open scope and criteria match",
+    "#831 published open scope and criteria match",
+    "public activation and live release gates distinct",
+    "published graph agrees with human contract and has no placeholders",
+    "matrix keeps 42 existing mappings and explicitly gates fused holders",
+    "only seven scoped documentation artifacts changed",
+    "local link docs/design/necrozma-combination.md -> necrozma-combination.json",
+    "local link docs/design/necrozma-combination.md -> z-crystals.md",
+    "local link docs/design/necrozma-combination.md -> ../operations/pokemon-placement.md",
+    "local link docs/design/necrozma-combination.md -> ../testing/necrozma-design-2026-10-23.md",
+    "local link docs/design/z-crystals.md -> ../testing/z-core-2026-10-23.md",
+    "local link docs/design/z-crystals.md -> ../testing/z-special-2026-10-23.md",
+    "local link docs/design/z-crystals.md -> ../z-moves.md",
+    "local link docs/design/z-crystals.md -> necrozma-combination.md",
+    "local link docs/design/z-crystals.md -> necrozma-combination.md#delivery-gates",
+    "local link docs/design/z-crystals.md -> z-moves.md",
+    "local link docs/design/z-crystals.md -> z-crystals.json",
+    "local link docs/design/z-crystals.md -> necrozma-combination.md",
+    "local link docs/design/z-crystals.md -> necrozma-combination.md",
+    "local link docs/design/z-crystals.md -> ../testing/item-designs-2026-10-22.md",
+    "local link docs/design/z-crystals.md -> z-move-source-review.md",
+    "local link docs/design/z-crystals.md -> z-signature-source-review.md",
+    "local link docs/index.md -> code-map.md",
+    "local link docs/index.md -> offline-battle-testing.md",
+    "local link docs/index.md -> held-incense.md",
+    "local link docs/index.md -> battle-recovery-items.md",
+    "local link docs/index.md -> item-availability.md",
+    "local link docs/index.md -> testing/item-live-2026-10-22.md",
+    "local link docs/index.md -> mega-evolution.md",
+    "local link docs/index.md -> design/mega-evolution.md",
+    "local link docs/index.md -> design/mega-stones.md",
+    "local link docs/index.md -> design/z-moves.md",
+    "local link docs/index.md -> design/z-crystals.md",
+    "local link docs/index.md -> z-moves.md",
+    "local link docs/index.md -> design/necrozma-combination.md",
+    "local link docs/index.md -> design/berry-player-routes.md",
+    "local link docs/index.md -> berry-nursery.md",
+    "local link docs/index.md -> gimmighoul-evolution.md",
+    "local link docs/index.md -> recovery-equivalents.md",
+    "local link docs/index.md -> hunt-item-sources.md",
+    "local link docs/index.md -> item-supply-route.md",
+    "local link docs/index.md -> alpha-reliability-validation.md",
+    "local link docs/index.md -> battle-coverage-report.md",
+    "local link docs/index.md -> move-inventory-audit-2026-06-22.md",
+    "local link docs/index.md -> design/npc_trainer_battles.md",
+    "local link docs/index.md -> design/adventure-system.md",
+    "local link docs/index.md -> adventure-operations.md",
+    "local link docs/index.md -> static-npc-trainer-battles.md",
+    "local link docs/index.md -> design/battle_ai.md",
+    "local link docs/testing/necrozma-design-2026-10-23.md -> ../design/necrozma-combination.md",
+    "local link docs/testing/necrozma-design-2026-10-23.md -> ../design/necrozma-combination.json",
+    "local link docs/testing/necrozma-design-2026-10-23.md -> necrozma-design-2026-10-23.json",
+    "local link docs/z-moves.md -> design/z-crystals.md",
+    "local link docs/z-moves.md -> testing/z-core-2026-10-23.md",
+    "local link docs/z-moves.md -> testing/z-special-2026-10-23.md",
+    "local link docs/z-moves.md -> design/necrozma-combination.md",
+    "local link docs/z-moves.md -> design/necrozma-combination.md#delivery-gates",
+    "git diff whitespace validation"
+  ],
+  "scoped_paths": [
+    "docs/design/necrozma-combination.json",
+    "docs/design/necrozma-combination.md",
+    "docs/design/z-crystals.md",
+    "docs/index.md",
+    "docs/testing/necrozma-design-2026-10-23.json",
+    "docs/testing/necrozma-design-2026-10-23.md",
+    "docs/z-moves.md"
+  ],
+  "not_run": [
+    "runtime pytest/mandatory suites (no tracked Python change)",
+    "production-model PostgreSQL lifecycle/effect/concurrency tests (unimplemented)",
+    "ordinary live player walkthrough",
+    "migration/deployment/service operations"
+  ],
+  "limits": "Open implementation/acceptance issues #825-#831 must pass before enabling the proposed commands or fused holders. No game database or service was operated."
+}

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from evennia import Command
 
-from pokemon.names import normalize_name
+from pokemon.items import is_capture_ball
+from pokemon.services.battle_items import BattleItemCapability
 from world.system_init import get_system
 
 from .cmd_battle_utils import NOT_IN_BATTLE_MSG, _get_participant
@@ -23,13 +24,32 @@ class CmdBattleItem(Command):
 
     Usage:
       +battle/item <item>
+      +item <acting slot> <item>
+      +item [acting slot] <item>=<party slot>[/<move slot or name>]
 
     Examples:
       +item Potion
       +battle/item Poke Ball
+      +item Revive=2
+      +item A1 Max Ether=3/Water Gun
 
     Notes:
       This queues an item as your battle action. Field-use items use +use.
+      Supported: battle medicine (including revival and PP restoration) and
+      reviewed recovery foods/berries (including Leppa/Mystery selected-move
+      PP) and capture balls in wild battles. Use +item Max Honey=3 to revive
+      a reserve, or +item A1 Leppa Berry=3/Water Gun. Flavor/EV berries,
+      Sacred Ash and other unsupported items are rejected before queuing.
+      A supported medicine that has no effect still spends its queued action,
+      but consumes no item. Smoke Ball uses +hold before battle, then +flee.
+      X Attack/Defense/Sp. Atk/Sp. Def/Speed/Accuracy add two matching stages
+      through ordinary ability rules. Use +item A1 X Attack=1, targeting the
+      actor's own current party slot. Two-participant singles/doubles only;
+      already capped targets reject before queuing. Embargo prevents these
+      bag boosters; Magic Room, Klutz and Heal Block do not suppress them.
+      Dire Hit gives Focus Energy (+2 critical stages); an active copy has
+      no effect. Guard Spec. gives side Mist for five turns, including the
+      activation turn; an active copy cannot refresh its duration.
     """
 
     key = "+battle/item"
@@ -44,9 +64,19 @@ class CmdBattleItem(Command):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
 
-        item_name = self.args.strip()
+        from .battle_choice_prompts import split_actor
+        actor, item_name = split_actor(self.args)
+        item_name, separator, target = item_name.partition("=")
+        item_name = item_name.strip()
+        target = target.strip() if separator else None
         if not item_name:
             self.caller.msg("Usage: +battle/item <item>")
+            return
+
+        try:
+            BattleItemCapability.validate(item_name)
+        except ValueError as error:
+            self.caller.msg(str(error))
             return
 
         if not self.caller.has_item(item_name):
@@ -76,9 +106,26 @@ class CmdBattleItem(Command):
         if not inst or not getattr(inst, "battle", None):
             self.caller.msg(NOT_IN_BATTLE_MSG)
             return
+        if callable(getattr(inst, "choices_for", None)):
+            try:
+                inst.choices_for(self.caller).item(item_name, target=target, actor=actor)
+            except ValueError as error:
+                self.caller.msg(str(error))
+            return
 
+        from pokemon.items import BATTLE_BOOSTER_ITEMS
+        from pokemon.names import normalize_name
+
+        if normalize_name(item_name) in BATTLE_BOOSTER_ITEMS:
+            self.caller.msg("Refresh this battle's ordinary choices before using a battle booster.")
+            return
+        try:
+            BattleItemCapability.validate(item_name, battle=inst.battle)
+        except ValueError as error:
+            self.caller.msg(str(error))
+            return
         participant = _get_participant(inst, self.caller)
-        is_ball = normalize_name(item_name).endswith("ball")
+        is_ball = is_capture_ball(item_name)
         target = inst.battle.opponent_of(participant) if is_ball else participant
         action = Action(
             participant,

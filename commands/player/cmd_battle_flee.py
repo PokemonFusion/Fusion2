@@ -21,13 +21,16 @@ class CmdBattleFlee(Command):
     """Attempt to flee from battle.
 
     Usage:
-      +battle/flee
+      +battle/flee [acting slot]
 
     Examples:
       +flee
 
     Notes:
       Fleeing is intended for wild battles; trainer battles may require +concede.
+      A living acting holder of an effective Smoke Ball is guaranteed to escape
+      eligible wild battles without consuming it. Suppression and server-authored
+      no-flee restrictions still apply; a bag or benched copy does not help.
     """
 
     key = "+battle/flee"
@@ -36,6 +39,7 @@ class CmdBattleFlee(Command):
     help_category = "Pokemon/Battle"
 
     def func(self):
+        """Queue a validated owned actor before changing input or reservations."""
         if not getattr(self.caller.db, "battle_control", False):
             self.caller.msg("|rWe aren't waiting for you to command right now.")
             return
@@ -55,6 +59,16 @@ class CmdBattleFlee(Command):
             inst = BattleSession.ensure_for_player(self.caller)
         if not inst or not getattr(inst, "battle", None):
             self.caller.msg(NOT_IN_BATTLE_MSG)
+            return
+        if callable(getattr(inst, "choices_for", None)):
+            args = (self.args or "").split()
+            if len(args) > 1:
+                self.caller.msg("Usage: +flee [acting slot]")
+                return
+            try:
+                inst.choices_for(self.caller).run(actor=args[0] if args else None)
+            except ValueError as error:
+                self.caller.msg(str(error))
             return
         participant = _get_participant(inst, self.caller)
         action = Action(participant, ActionType.RUN, priority=9)

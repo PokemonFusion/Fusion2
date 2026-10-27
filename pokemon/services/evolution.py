@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from copy import copy
 from hashlib import sha256
 
-from django.db import transaction
+from django.db import connection, transaction
 
 from pokemon.data.evolution import (
     EvolutionContext,
@@ -13,8 +13,11 @@ from pokemon.data.evolution import (
     get_evolution_items,
 )
 from pokemon.items import GAMEPLAY_ITEMS
+from pokemon.evolution_forms import AlcremieEvolution
+from pokemon.evolution_items import GimmighoulEvolution
 from pokemon.names import normalize_name
 from pokemon.services.placement import PlacementError, PlacementService
+from utils.locks import require_no_battle_lock
 
 
 class EvolutionError(ValueError):
@@ -52,7 +55,7 @@ class EvolutionService:
         self.placement = PlacementService(caller.storage)
 
     @contextmanager
-    def locked(self, mon=None, slot=None):
+    def locked(self, mon=None, slot=None, *, operation="evolution"):
         """Read fresh locked rows and restore Evennia's shared instance on failure."""
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import PokemonPlacement
@@ -76,12 +79,14 @@ class EvolutionService:
                 row = OwnedPokemon.objects.select_for_update().filter(pk=mon.pk).values().get()
                 cached = OwnedPokemon.objects.get(pk=mon.pk)
                 self._restore_row(cached, row)
-                pokemon, placement = self.placement._pokemon(cached, storage)
+                pokemon, placement = self.placement._pokemon(cached, storage, operation=operation)
                 pokemon = copy(pokemon)
                 pokemon._state = copy(pokemon._state)
                 self.placement._check_reservation(placement, False)
                 if pokemon.is_egg:
                     raise EvolutionError("Eggs cannot evolve or hold items.")
+                if not require_no_battle_lock(self.caller):
+                    raise EvolutionError("You cannot do that during battle.")
                 yield pokemon, trainer, storage
                 transaction.on_commit(trainer._sync_character_inventory)
         except (OwnedPokemon.DoesNotExist, PlacementError) as error:
@@ -90,11 +95,21 @@ class EvolutionService:
             # Model instances are not rolled back by transaction.atomic(). This also
             # handles stale references from Evennia's identity mapper after success.
             if pokemon is not None:
-                row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().get()
-                for instance in (pokemon, cached, mon):
-                    if instance is not None:
-                        self._restore_row(instance, row)
-                OwnedPokemon.cache_instance(cached)
+                def resync():
+                    """Publish fresh committed fields to retained references."""
+                    row = OwnedPokemon.objects.filter(pk=pokemon.pk).values().get()
+                    for instance in (pokemon, cached, mon):
+                        if instance is not None:
+                            self._restore_row(instance, row)
+                    OwnedPokemon.cache_instance(cached)
+
+                if connection.in_atomic_block:
+                    for instance in (pokemon, cached, mon):
+                        if instance is not None:
+                            OwnedPokemon.flush_cached_instance(instance)
+                    transaction.on_commit(resync, robust=True)
+                else:
+                    resync()
 
     @staticmethod
     def _restore_row(pokemon, row):
@@ -123,7 +138,13 @@ class EvolutionService:
         room = getattr(self.caller, "location", None)
         db = getattr(room, "db", None)
         stats = get_stats(pokemon)
+        kingambit_ready = False
+        if normalize_name(pokemon.species) == "bisharp":
+            from pokemon.services.leader_crest import LeaderCrestProgress
+
+            kingambit_ready = LeaderCrestProgress.read(self.caller, pokemon).ready(pokemon.level)
         return EvolutionContext(
+            kingambit_ready=kingambit_ready,
             friendship=pokemon.friendship,
             moves=moves,
             move_types=move_types,
@@ -152,6 +173,12 @@ class EvolutionService:
                 return None
             context = self._context(pokemon, storage)
             options = evolution_options(pokemon.species, level=pokemon.level, item=display, context=context)
+            cream = None
+            sweet = AlcremieEvolution.sweet(context.held_item)
+            if any(normalize_name(option.name) == "alcremie" for option in options):
+                cream = AlcremieEvolution.select(target)
+                if cream:
+                    target = "Alcremie"
             if target:
                 options = [e for e in options if normalize_name(e.name) == normalize_name(target)]
             if len(options) != 1:
@@ -161,11 +188,25 @@ class EvolutionService:
                     "It doesn't seem to be able to evolve right now (condition or target unavailable)."
                 )
             if item_key:
-                if not trainer.remove_item(item_key):
-                    raise EvolutionError(f"You do not have a {display}.")
+                quantity = 1
+                if normalize_name(options[0].name) == "gholdengo":
+                    from pokemon.data.evolution import lookup_species
+                    from pokemon.models.stats import level_for_exp
+
+                    growth = lookup_species(pokemon.species).raw.get("growthRate", "medium_fast")
+                    if pokemon.total_exp < 0 or level_for_exp(pokemon.total_exp, growth) != pokemon.level:
+                        raise EvolutionError("Invalid saved level/EXP; no coins were consumed.")
+                    quantity = GimmighoulEvolution.quantity
+                consumed = trainer.remove_item(item_key, quantity) if quantity != 1 else trainer.remove_item(item_key)
+                if not consumed:
+                    message = (f"You need {quantity} {display} in your bag." if quantity != 1
+                               else f"You do not have a {display}.")
+                    raise EvolutionError(message)
             result = attempt_evolution(pokemon, item=display, context=context, target=options[0].name)
             if not result:
                 raise EvolutionError("Evolution conditions changed; try again.")
+            if cream:
+                AlcremieEvolution.decorate(pokemon, cream, sweet)
             pokemon.flags = [f for f in pokemon.flags if not f.startswith("evo:")] + [receipt]
             pokemon.save()
             return result
@@ -175,7 +216,7 @@ class EvolutionService:
         if slot not in range(1, 7):
             raise EvolutionError("Slot must be a number between 1 and 6.")
         item_key, display = resolve_item(item) if item else (None, None)
-        with self.locked(slot=slot) as (pokemon, trainer, _storage):
+        with self.locked(slot=slot, operation="held") as (pokemon, trainer, _storage):
             previous = pokemon.held_item or ""
             if normalize_name(previous) == "nothing":
                 previous = ""

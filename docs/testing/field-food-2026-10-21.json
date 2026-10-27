@@ -1,0 +1,1004 @@
+{
+  "issue": 758,
+  "completed_utc": "2026-10-21T23:34:37.091949+00:00",
+  "result": "passed_all_14_field_food_drink_revival_equivalents",
+  "python": "3.12.4",
+  "baseline_commit": "9835c3ffe47d5f2f5742df255d5fe49b10406fd1",
+  "source_sha256_lf": {
+    "pokemon/items.py": "0718d7189d64012b9eee5f3926ff94d31090a5361cc41e4ec6e56811a9f90e8f",
+    "pokemon/middleware.py": "9e9d613144230807debad09b844ecf782095c089b3d37c7facebc38d2b82ae6d",
+    "pokemon/services/field_items.py": "5c276d44d4d42c129a62629765c227f05cf28ce803d8ecae21f7dbb036a7f0e9",
+    "pokemon/services/field_food.py": "ce2c55cacd5202c5aa572261124637a10adfb186040df7871551f4759839568b",
+    "pokemon/services/field_berries.py": "1e6a9f480bd9ed7f70ed3296838fdaaf565a1a307777fe66fc3cb45be5425d41",
+    "pokemon/services/battle_items.py": "8fa04630ddb740b9935ba568743e0dadb95b06a55f904d410c13a80f355ddefa",
+    "pokemon/services/placement.py": "5fa4d9e2b80c2b1a9eab6330e8d9907d497ca23e3da6f93a24e78ee3270930b9",
+    "commands/player/cmd_inventory.py": "79280017f864164b0a43d04e65fd273a8fc6ef5372d52d2ca27884f5112ff6f5",
+    "commands/player/cmd_pokedex.py": "2d33957b4553933a837db9eb60cbc11f0330c075f5b57f811312cb728cd5c50e",
+    "commands/player/cmd_sheet.py": "c56a1e317bf3cefcce1bd7b6fc12460813ed1b1c1aed9ea284233b7ce1fa8351",
+    "utils/inventory_view.py": "d1341f83e0266c717ee325183c0030199fa35161d90749c600328381a754893b",
+    "utils/pokemon_utils.py": "373c63cc95d3693eb5868b8f0c202c17891c11c6948d07add4fe257200881e51",
+    "pokemon/user.py": "7016b47bbf45c9a0d192d6c9a0b5e606454494db2f59670a8b4f816aee599168",
+    "pokemon/models/trainer.py": "b25af6ac140457b8a4cafca7264e5152ae6eb06f54fdaa40c734143ad993817d",
+    "pokemon/data/item_prices.csv": "fe19ff5131d9821abfa9173e8a9df1f27f5864540e2fb903246346db6ec10392",
+    "menus/item_store.py": "601737aa85f2b985f4cea90042635279eeab463b4f97572db49df669b331a78c",
+    "world/help_entries.py": "da4a021d687d6dcb8ce805ce32836004042bb9124b4871e46b78895b20e4d445",
+    "tests/test_field_food.py": "11eccaf9103b499fb7bfbc91a5fa973aefcfadf62ccd8519eea028c264546690",
+    "tests/integration/field_food_cases.py": "499cc9853a3c0b6ac2d1a3cee32a5ee5d351dcd843317e516818ba50d3c2f849",
+    "docs/field-food-medicine.md": "6cede14f32e6f28e931808193bdf7456f86232bd6f64048affcb88e0b7c451f4",
+    "docs/field-items.md": "70c2a9c8afd09e06ce22c2f23fe022fe62270e76246a2c7eadaa55e2b25967e1",
+    ".github/workflows/lifecycle-integrity.yml": "c19c95df53b0a8ec72adf532007bd12bd1ffea2228d955f1cffcd72a92d7efea"
+  },
+  "dependency_review": {
+    "747": "all ten P1/P2 children closed; existing-item sequencing gate satisfied in documented scopes",
+    "748_749": "existing medicine/PP/herb field service reused",
+    "754": "existing berry service and regressions retained"
+  },
+  "definitions": [
+    {
+      "key": "freshwater",
+      "name": "Fresh Water",
+      "desc": "Field use: restores up to 30 HP to one living Pokemon.",
+      "price": 200,
+      "category": "Medicine",
+      "effect": "heal",
+      "amount": 30,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_freshwater",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "sodapop",
+      "name": "Soda Pop",
+      "desc": "Field use: restores up to 50 HP to one living Pokemon.",
+      "price": 300,
+      "category": "Medicine",
+      "effect": "heal",
+      "amount": 50,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_sodapop",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "lemonade",
+      "name": "Lemonade",
+      "desc": "Field use: restores up to 70 HP to one living Pokemon.",
+      "price": 400,
+      "category": "Medicine",
+      "effect": "heal",
+      "amount": 70,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_lemonade",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "moomoomilk",
+      "name": "Moomoo Milk",
+      "desc": "Field use: restores up to 100 HP to one living Pokemon.",
+      "price": 600,
+      "category": "Medicine",
+      "effect": "heal",
+      "amount": 100,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_moomoomilk",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "sweetheart",
+      "name": "Sweet Heart",
+      "desc": "Field use: restores up to 20 HP to one living Pokemon.",
+      "price": 3000,
+      "category": "Medicine",
+      "effect": "heal",
+      "amount": 20,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_sweetheart",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "lavacookie",
+      "name": "Lava Cookie",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 350,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_lavacookie",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "oldgateau",
+      "name": "Old Gateau",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 350,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_oldgateau",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "casteliacone",
+      "name": "Casteliacone",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 350,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_casteliacone",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "lumiosegalette",
+      "name": "Lumiose Galette",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 350,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_lumiosegalette",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "shaloursable",
+      "name": "Shalour Sable",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 350,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_shaloursable",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "bigmalasada",
+      "name": "Big Malasada",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 350,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_bigmalasada",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "pewtercrunchies",
+      "name": "Pewter Crunchies",
+      "desc": "Field use: cures one living Pokemon's major status condition.",
+      "price": 250,
+      "category": "Medicine",
+      "effect": "status",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_pewtercrunchies",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "maxhoney",
+      "name": "Max Honey",
+      "desc": "Field use: revives one fainted Pokemon to full HP. No unlock effect.",
+      "price": 4000,
+      "category": "Medicine",
+      "effect": "revive",
+      "amount": null,
+      "targetScope": "single",
+      "fieldOnly": true,
+      "test": "test_flow_maxhoney",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    },
+    {
+      "key": "sacredash",
+      "name": "Sacred Ash",
+      "desc": "Field use with =party: revives eligible fainted party Pokemon to full HP.",
+      "price": 50000,
+      "category": "Medicine",
+      "effect": "revive",
+      "amount": null,
+      "targetScope": "party",
+      "fieldOnly": true,
+      "test": "test_flow_sacredash",
+      "result": "passed_shop_to_use_and_SQL_reload"
+    }
+  ],
+  "omitted_brands": [],
+  "status_cases": [
+    {
+      "item": "Lava Cookie",
+      "status": "brn",
+      "test": "test_cure_lavacookie_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lava Cookie",
+      "status": "psn",
+      "test": "test_cure_lavacookie_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lava Cookie",
+      "status": "tox",
+      "test": "test_cure_lavacookie_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lava Cookie",
+      "status": "frz",
+      "test": "test_cure_lavacookie_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lava Cookie",
+      "status": "slp",
+      "test": "test_cure_lavacookie_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lava Cookie",
+      "status": "par",
+      "test": "test_cure_lavacookie_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Old Gateau",
+      "status": "brn",
+      "test": "test_cure_oldgateau_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Old Gateau",
+      "status": "psn",
+      "test": "test_cure_oldgateau_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Old Gateau",
+      "status": "tox",
+      "test": "test_cure_oldgateau_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Old Gateau",
+      "status": "frz",
+      "test": "test_cure_oldgateau_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Old Gateau",
+      "status": "slp",
+      "test": "test_cure_oldgateau_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Old Gateau",
+      "status": "par",
+      "test": "test_cure_oldgateau_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Casteliacone",
+      "status": "brn",
+      "test": "test_cure_casteliacone_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Casteliacone",
+      "status": "psn",
+      "test": "test_cure_casteliacone_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Casteliacone",
+      "status": "tox",
+      "test": "test_cure_casteliacone_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Casteliacone",
+      "status": "frz",
+      "test": "test_cure_casteliacone_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Casteliacone",
+      "status": "slp",
+      "test": "test_cure_casteliacone_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Casteliacone",
+      "status": "par",
+      "test": "test_cure_casteliacone_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lumiose Galette",
+      "status": "brn",
+      "test": "test_cure_lumiosegalette_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lumiose Galette",
+      "status": "psn",
+      "test": "test_cure_lumiosegalette_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lumiose Galette",
+      "status": "tox",
+      "test": "test_cure_lumiosegalette_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lumiose Galette",
+      "status": "frz",
+      "test": "test_cure_lumiosegalette_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lumiose Galette",
+      "status": "slp",
+      "test": "test_cure_lumiosegalette_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Lumiose Galette",
+      "status": "par",
+      "test": "test_cure_lumiosegalette_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Shalour Sable",
+      "status": "brn",
+      "test": "test_cure_shaloursable_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Shalour Sable",
+      "status": "psn",
+      "test": "test_cure_shaloursable_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Shalour Sable",
+      "status": "tox",
+      "test": "test_cure_shaloursable_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Shalour Sable",
+      "status": "frz",
+      "test": "test_cure_shaloursable_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Shalour Sable",
+      "status": "slp",
+      "test": "test_cure_shaloursable_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Shalour Sable",
+      "status": "par",
+      "test": "test_cure_shaloursable_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Big Malasada",
+      "status": "brn",
+      "test": "test_cure_bigmalasada_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Big Malasada",
+      "status": "psn",
+      "test": "test_cure_bigmalasada_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Big Malasada",
+      "status": "tox",
+      "test": "test_cure_bigmalasada_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Big Malasada",
+      "status": "frz",
+      "test": "test_cure_bigmalasada_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Big Malasada",
+      "status": "slp",
+      "test": "test_cure_bigmalasada_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Big Malasada",
+      "status": "par",
+      "test": "test_cure_bigmalasada_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Pewter Crunchies",
+      "status": "brn",
+      "test": "test_cure_pewtercrunchies_brn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Pewter Crunchies",
+      "status": "psn",
+      "test": "test_cure_pewtercrunchies_psn",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Pewter Crunchies",
+      "status": "tox",
+      "test": "test_cure_pewtercrunchies_tox",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Pewter Crunchies",
+      "status": "frz",
+      "test": "test_cure_pewtercrunchies_frz",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Pewter Crunchies",
+      "status": "slp",
+      "test": "test_cure_pewtercrunchies_slp",
+      "result": "living_cure_and_fainted_rejection_passed"
+    },
+    {
+      "item": "Pewter Crunchies",
+      "status": "par",
+      "test": "test_cure_pewtercrunchies_par",
+      "result": "living_cure_and_fainted_rejection_passed"
+    }
+  ],
+  "policy": {
+    "context": "field only; no new battle medicine or held effect",
+    "category": "Medicine",
+    "prices": "unchanged reference costs from checked-in item_prices.csv; actual shop price is configured stock price",
+    "hp_recovery": "living injured target only, capped at calculated maximum HP",
+    "status_foods": "one living target; major persistent burn/poison/toxic/freeze/sleep/paralysis, including saved sleep cleanup",
+    "max_honey": "single eligible fainted target to full HP; no transformation, raid or storyline unlock",
+    "sacred_ash": "explicit =party; owned non-egg canonical party only; full HP for fainted members; one item for whole effect",
+    "party_exclusions": [
+      "living members",
+      "eggs",
+      "boxes",
+      "other owners",
+      "all Fusion reservations"
+    ],
+    "single_target_rules": "canonical gapped party slots, exact unambiguous names/IDs, or current Fusion; no move selector",
+    "preservation": "HP/revival leave status, sleep and PP unchanged; status foods clear status/sleep without HP/PP change; all preserve other gameplay scalars/placement/mirrors",
+    "retries": "revival/cure/full-HP retries are no-ops without debit; fixed HP items can be used again while injury remains, with one debit per useful use"
+  },
+  "transaction": {
+    "common_service": "FieldMedicineUse",
+    "single_and_party_target_hook": true,
+    "lock_order": [
+      "storage",
+      "trainer",
+      "Pokemon rows in deterministic UUID order for party use"
+    ],
+    "effect_service": "BattleMedicineUse subclass using shared metadata, isolated from battle allowlists",
+    "party_debits": 1,
+    "party_failure": "outer field transaction rolls back all earlier member writes and debit, then restores shared instances",
+    "schema_change": false,
+    "competitive_ITEMDEX_modified": false,
+    "supplemental_definitions_added": 14
+  },
+  "acquisition": {
+    "automatic_grants": false,
+    "live_shop_or_reward_changes": false,
+    "intentional_path": "opt-in existing shop/reward mechanisms; no catalog auto-population",
+    "shop_flows_tested": 14,
+    "actual_money_stock_and_inventory_asserted": true,
+    "editor_example": "staff catalog setup: add FreshWater 200 5; ordinary Buy: FreshWater 1; +use Fresh Water=3",
+    "editor_scope": "existing one-token stock keys; no shop parser rewrite; full display-name stock keys also tested through Buy"
+  },
+  "production_model_checks": {
+    "proof_kind": "automated ordinary parsers/functions and production ORM; captured session transport, fixture setup kept separate",
+    "food": {
+      "passed": 70,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 14.222,
+      "log": ".codex-artifacts\\field-food-20261021\\field-food-final.log",
+      "log_sha256": "8ca4837d8ff24552da483051b6810dd0067c1d5dda606cd6dcf287c9c356d710",
+      "command": "python -B tests/integration/field_food_cases.py",
+      "shop_to_use_flows": 14,
+      "status_pairs": 42,
+      "other_cases": 14
+    },
+    "existing_field_medicine": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 6.318,
+      "log": ".codex-artifacts\\field-food-20261021\\medicine-regression.log",
+      "log_sha256": "f7af5198b82d68fb833482b4af36cc215b582c6828d3967712d10043c1432550",
+      "command": "python -B tests/integration/field_item_cases.py"
+    },
+    "existing_field_berries": {
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 7.796,
+      "log": ".codex-artifacts\\field-food-20261021\\berry-regression.log",
+      "log_sha256": "5468d25d3796c5717f4e97c1f509b41ebc9324de8bba1f42d79a0052a3ec62d2",
+      "command": "python -B tests/integration/field_berry_cases.py"
+    },
+    "existing_battle_medicine": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 1.534,
+      "log": ".codex-artifacts\\field-food-20261021\\battle-medicine-regression.log",
+      "log_sha256": "44633c548d654d9aa0e93588223b75835d34c5957a623f06bcaee99db21ed3b2",
+      "command": "python -B tests/integration/remaining_item_cases.py"
+    },
+    "total_passed": 127,
+    "database": "fresh loopback PostgreSQL 16.9 cluster, explicit private DSN and isolated schemas"
+  },
+  "focused_pytest": {
+    "passed": 62,
+    "failed": 0,
+    "exit_code": 0,
+    "selection": [
+      "tests/test_field_food.py",
+      "tests/test_gameplay_items.py",
+      "tests/test_inventory_command.py",
+      "tests/test_useitem_pp.py",
+      "tests/test_itemdex_command.py",
+      "tests/test_item_store_safety.py"
+    ],
+    "command": "python -B -m pytest -q tests/test_field_food.py tests/test_gameplay_items.py tests/test_inventory_command.py tests/test_useitem_pp.py tests/test_itemdex_command.py tests/test_item_store_safety.py --run-callback-tests -o addopts= -p no:cacheprovider --basetemp=.pytest-basetemp-758-focused-final2",
+    "log": ".codex-artifacts\\field-food-20261021\\focused-final.log",
+    "log_sha256": "2368407270328da46a24db52a8d09d76e34cd32557f3889bbc6c943084b00ab2"
+  },
+  "mandatory_gate": {
+    "command": "python -B tools/run_mandatory_tests.py",
+    "runs": [
+      {
+        "name": "combined",
+        "passed": 4428,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 303.37,
+        "exit_code": 0
+      },
+      {
+        "name": "repeat",
+        "passed": 4428,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 237.64,
+        "exit_code": 0
+      },
+      {
+        "name": "battle-first",
+        "passed": 4428,
+        "skipped": 4014,
+        "warnings": 1401,
+        "duration_seconds": 214.54,
+        "exit_code": 0
+      }
+    ],
+    "exit_code": 0,
+    "log": ".codex-artifacts\\field-food-20261021\\mandatory-final.log",
+    "log_sha256": "4eaabad3e2d6c662c9834ebb752feaef4c9ecc455685f7bc98da938c31fc6bb8",
+    "skipped_scope": "4014 skipped per run are outside enabled gate scope; PostgreSQL evidence is separate",
+    "warnings": "existing model-reload and pytest-cache permission warnings retained"
+  },
+  "controls": [
+    "all HP caps",
+    "fainted HP/status guards",
+    "status-free and already-revived no-ops",
+    "party with no eligible members",
+    "empty party",
+    "strict party selector",
+    "no move selectors",
+    "missing inventory",
+    "failed debit",
+    "full normalized item names",
+    "legacy inventory aliases",
+    "ambiguous Pokemon names",
+    "foreign ownership",
+    "conflicting canonical owner",
+    "eggs/boxes/inactive Fusion",
+    "active Fusion single use",
+    "all Fusion reservations excluded from Sacred Ash",
+    "battle at command and locked service",
+    "failure after second party SQL save and retry",
+    "shared-instance rollback",
+    "concurrent identical party completions",
+    "competing party/single revival",
+    "competing deposit",
+    "real shop editor compact stock identity",
+    "real category renderer"
+  ],
+  "walkthrough": [
+    {
+      "item": "Big Malasada",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 350,
+      "commands": [
+        "+party 3",
+        "shop Buy: Big Malasada 2",
+        "+inventory",
+        "+itemdex Big Malasada",
+        "+use Big Malasada=7b7154fd-283e-4da5-8926-1f10d4e5d04e",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Big Malasada for $700.",
+      "use_output": "Used Big Malasada on 7b7154fd-283e-4da5-8926-1f10d4e5d04e.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Casteliacone",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 350,
+      "commands": [
+        "+party 3",
+        "shop Buy: Casteliacone 2",
+        "+inventory",
+        "+itemdex Casteliacone",
+        "+use Casteliacone=08b68c27-9142-4117-b957-312e27265408",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Casteliacone for $700.",
+      "use_output": "Used Casteliacone on 08b68c27-9142-4117-b957-312e27265408.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Fresh Water",
+      "effect": "heal",
+      "scope": "single",
+      "reference_price": 200,
+      "commands": [
+        "+party 3",
+        "shop Buy: Fresh Water 2",
+        "+inventory",
+        "+itemdex Fresh Water",
+        "+use Fresh Water=f3658bbf-614b-4286-a346-15d262989153",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Fresh Water for $400.",
+      "use_output": "Used Fresh Water on f3658bbf-614b-4286-a346-15d262989153.",
+      "hp_before": 1,
+      "hp_after": 31,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Lava Cookie",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 350,
+      "commands": [
+        "+party 3",
+        "shop Buy: Lava Cookie 2",
+        "+inventory",
+        "+itemdex Lava Cookie",
+        "+use Lava Cookie=08ddaf8a-cd1c-44db-ada8-3f46cbee0d86",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Lava Cookie for $700.",
+      "use_output": "Used Lava Cookie on 08ddaf8a-cd1c-44db-ada8-3f46cbee0d86.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Lemonade",
+      "effect": "heal",
+      "scope": "single",
+      "reference_price": 400,
+      "commands": [
+        "+party 3",
+        "shop Buy: Lemonade 2",
+        "+inventory",
+        "+itemdex Lemonade",
+        "+use Lemonade=d86df291-4a04-4adf-a9b3-511e497ee76f",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Lemonade for $800.",
+      "use_output": "Used Lemonade on d86df291-4a04-4adf-a9b3-511e497ee76f.",
+      "hp_before": 1,
+      "hp_after": 71,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Lumiose Galette",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 350,
+      "commands": [
+        "+party 3",
+        "shop Buy: Lumiose Galette 2",
+        "+inventory",
+        "+itemdex Lumiose Galette",
+        "+use Lumiose Galette=d2df92ed-1bc9-4704-8473-b986783784e9",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Lumiose Galette for $700.",
+      "use_output": "Used Lumiose Galette on d2df92ed-1bc9-4704-8473-b986783784e9.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Max Honey",
+      "effect": "revive",
+      "scope": "single",
+      "reference_price": 4000,
+      "commands": [
+        "+party 3",
+        "shop Buy: Max Honey 2",
+        "+inventory",
+        "+itemdex Max Honey",
+        "+use Max Honey=04027880-fdb7-409d-bba4-053e9fc8ac80",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Max Honey for $8000.",
+      "use_output": "Used Max Honey on 04027880-fdb7-409d-bba4-053e9fc8ac80.",
+      "hp_before": 0,
+      "hp_after": 160,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 1,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Moomoo Milk",
+      "effect": "heal",
+      "scope": "single",
+      "reference_price": 600,
+      "commands": [
+        "+party 3",
+        "shop Buy: Moomoo Milk 2",
+        "+inventory",
+        "+itemdex Moomoo Milk",
+        "+use Moomoo Milk=ddbf6a01-8c27-4d52-82b9-c305d7256780",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Moomoo Milk for $1200.",
+      "use_output": "Used Moomoo Milk on ddbf6a01-8c27-4d52-82b9-c305d7256780.",
+      "hp_before": 1,
+      "hp_after": 101,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Old Gateau",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 350,
+      "commands": [
+        "+party 3",
+        "shop Buy: Old Gateau 2",
+        "+inventory",
+        "+itemdex Old Gateau",
+        "+use Old Gateau=d3b5f16d-abe2-4d0f-b2c1-2509108569b8",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Old Gateau for $700.",
+      "use_output": "Used Old Gateau on d3b5f16d-abe2-4d0f-b2c1-2509108569b8.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Pewter Crunchies",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 250,
+      "commands": [
+        "+party 3",
+        "shop Buy: Pewter Crunchies 2",
+        "+inventory",
+        "+itemdex Pewter Crunchies",
+        "+use Pewter Crunchies=6f20d7b5-a85d-4036-b050-b20ed97f3fc9",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Pewter Crunchies for $500.",
+      "use_output": "Used Pewter Crunchies on 6f20d7b5-a85d-4036-b050-b20ed97f3fc9.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Sacred Ash",
+      "effect": "revive",
+      "scope": "party",
+      "reference_price": 50000,
+      "commands": [
+        "+party 3",
+        "shop Buy: Sacred Ash 2",
+        "+inventory",
+        "+itemdex Sacred Ash",
+        "+use Sacred Ash=party",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Sacred Ash for $100000.",
+      "use_output": "Used Sacred Ash on party.",
+      "hp_before": 0,
+      "hp_after": 160,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 2,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Shalour Sable",
+      "effect": "status",
+      "scope": "single",
+      "reference_price": 350,
+      "commands": [
+        "+party 3",
+        "shop Buy: Shalour Sable 2",
+        "+inventory",
+        "+itemdex Shalour Sable",
+        "+use Shalour Sable=f4002f65-a028-4006-9ada-2a355d8c49d5",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Shalour Sable for $700.",
+      "use_output": "Used Shalour Sable on f4002f65-a028-4006-9ada-2a355d8c49d5.",
+      "hp_before": 1,
+      "hp_after": 1,
+      "status_after": "",
+      "sleep_after": null,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Soda Pop",
+      "effect": "heal",
+      "scope": "single",
+      "reference_price": 300,
+      "commands": [
+        "+party 3",
+        "shop Buy: Soda Pop 2",
+        "+inventory",
+        "+itemdex Soda Pop",
+        "+use Soda Pop=44a74d08-9a89-45cb-b1cc-8a01d9503af3",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Soda Pop for $600.",
+      "use_output": "Used Soda Pop on 44a74d08-9a89-45cb-b1cc-8a01d9503af3.",
+      "hp_before": 1,
+      "hp_after": 51,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    },
+    {
+      "item": "Sweet Heart",
+      "effect": "heal",
+      "scope": "single",
+      "reference_price": 3000,
+      "commands": [
+        "+party 3",
+        "shop Buy: Sweet Heart 2",
+        "+inventory",
+        "+itemdex Sweet Heart",
+        "+use Sweet Heart=06500082-5fa8-4df3-bbff-426918e7c530",
+        "+party 3 after SQL reload"
+      ],
+      "purchase_output": "You purchase 2 x Sweet Heart for $6000.",
+      "use_output": "Used Sweet Heart on 06500082-5fa8-4df3-bbff-426918e7c530.",
+      "hp_before": 1,
+      "hp_after": 21,
+      "status_after": "slp",
+      "sleep_after": 2,
+      "bag_after": 1,
+      "revived_count": 0,
+      "other_state_preserved": true
+    }
+  ],
+  "cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_field_food_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_postgres_stopped": true
+  },
+  "development_diagnoses": [
+    {
+      "kind": "unit_environment_requirement",
+      "detail": "An added category renderer assertion imported Evennia without configured Django settings in standalone unit tests (14 failures). Moved that UI assertion to all 14 configured production-model flows; product code was unchanged. Final 62 focused and 70 food-model checks passed.",
+      "retained_log": ".codex-artifacts\\field-food-20261021\\focused-category-environment-error.log"
+    }
+  ],
+  "acceptance_boundaries": {
+    "live_player_session": false,
+    "game_database_used": false,
+    "game_services_reloaded": false,
+    "migration_runner_invoked": false,
+    "remote_deployment": false,
+    "main_merge": "not established by these checks",
+    "hosted_CI": "new production-model suite wired into workflow; local execution does not establish hosted completion",
+    "publication": "See #758 closure for the staging commit containing this report",
+    "out_of_scope": [
+      "plot-only/key/quest items",
+      "cooking/crafting",
+      "capture",
+      "Max Soup/Gigantamax or story unlock",
+      "automatic grants",
+      "live shop/reward population",
+      "unrelated work",
+      "battle runtime changes"
+    ]
+  }
+}

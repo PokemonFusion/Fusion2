@@ -1,24 +1,12 @@
 """Commands for viewing trainer and Pokémon information."""
 
 import shlex
-from types import SimpleNamespace
 from typing import Optional
 
 from evennia import Command
 
-from pokemon.helpers.party_helpers import get_active_party
-from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
-from pokemon.models.stats import level_for_exp
+from pokemon.helpers.party_helpers import get_party_slots
 from utils.display import display_pokemon_sheet, display_trainer_sheet
-from utils.display_helpers import get_status_effects
-from utils.xp_utils import get_display_xp
-
-try:
-    from utils.fusion import get_active_fusion_pokemon
-except Exception:  # pragma: no cover - import-only tests may stub utils
-
-    def get_active_fusion_pokemon(character):
-        return None
 
 
 def _parse_slash_switches(command):
@@ -41,9 +29,7 @@ def _parse_slash_switches(command):
 
 def _party_slots(caller):
     """Use canonical slot positions for list displays and numbered sheets."""
-    getter = getattr(caller.storage, "get_party_slots", None)
-    party = list(getter() if callable(getter) else get_active_party(caller))
-    return (party + [None] * 6)[:6]
+    return get_party_slots(caller)
 
 
 class CmdSheet(Command):
@@ -130,6 +116,9 @@ class CmdSheet(Command):
     def func(self):
         """Execute the command."""
         caller = self.caller
+        from utils.character_reads import existing_trainer, persistent_character
+        if persistent_character(caller) and existing_trainer(caller) is None:
+            caller.msg("Trainer setup is incomplete; no data was created.")
         if self.screen_reader_switch:
             caller.attributes.add("sheet_screen_reader", True)
         if self.disable_screen_reader:
@@ -171,8 +160,9 @@ class CmdSheet(Command):
         if isinstance(self.slot, int):
             try:
                 party = _party_slots(caller)
-            except Exception:  # pragma: no cover - best effort compatibility
-                party = []
+            except ValueError as error:
+                caller.msg(str(error))
+                return
 
             if not any(party):
                 caller.msg("You have no Pokémon in your party.")
@@ -210,14 +200,17 @@ class CmdSheetPokemon(Command):
       +sheet/pokemon [<slot>||all] [/brief||/moves||/full]
 
     Examples:
-      +party                 List your party with one-line summaries.
+      +party                 List your party with two-line health cards.
       +party 1               Show the full sheet for slot 1.
       +party/brief 2         Show a brief view for slot 2.
       +party/moves 3         Show a moves-focused view for slot 3.
       +party/all             Show full sheets for all occupied slots.
+      +party fusion          Show your active Fusion, including with a full party.
 
     Notes:
-      Party slots run from 1 to 6.
+      Party slots run from 1 to 6; gaps retain their numbers.
+      Fusion uses a free slot, or the fusion selector when all six are full.
+      LEAD marks the first conscious member in your configured battle order.
     """
 
     key = "+party"
@@ -238,157 +231,46 @@ class CmdSheetPokemon(Command):
         if "full" in switches:
             self.mode = "full"
         arg = self.args.strip().lower()
-        if arg == "all":
+        if arg == "all" or "all" in switches:
             self.show_all = True
+        elif arg == "fusion":
+            self.slot = "fusion"
         elif arg.isdigit():
             self.slot = int(arg)
 
     def func(self):
-        """Execute the command."""
+        """Display party cards or the selected member's detailed sheet."""
+        from utils.party_view import PartyView
+
         caller = self.caller
-
-        party = _party_slots(caller)
-
-        trainer = getattr(caller, "trainer", None)
-        fusion_species = getattr(getattr(caller, "db", None), "fusion_species", None)
-        fusion_id = getattr(getattr(caller, "db", None), "fusion_id", None)
-        if fusion_species or fusion_id:
-            hp_val = getattr(caller.db, "hp", None)
-            stats = getattr(caller.db, "stats", None)
-            stats = stats.copy() if isinstance(stats, dict) else {}
-            try:
-                search = list(caller.storage.get_party())
-            except Exception:
-                search = []
-            if not search:
-                active = getattr(caller.storage, "active_pokemon", None)
-                try:
-                    search = list(active.all())
-                except Exception:
-                    try:
-                        search = list(active or [])
-                    except Exception:
-                        search = []
-            fused = get_active_fusion_pokemon(caller)
-            if fusion_id:
-                fused = fused or next(
-                    (mon for mon in search if str(getattr(mon, "unique_id", "")) == str(fusion_id)),
-                    None,
-                )
-            if not fused and fusion_species:
-                fused = next(
-                    (
-                        mon
-                        for mon in search
-                        if getattr(getattr(mon, "species", None), "name", getattr(mon, "species", None))
-                        == fusion_species
-                    ),
-                    None,
-                )
-            if fused:
-                fusion_id = fusion_id or getattr(fused, "unique_id", None)
-                if not fusion_species:
-                    fusion_species = getattr(getattr(fused, "species", None), "name", getattr(fused, "species", None))
-                if not stats:
-                    stats = get_stats(fused) or {}
-                if hp_val is None:
-                    hp_val = getattr(fused, "hp", getattr(fused, "current_hp", None))
-            if hp_val is None:
-                hp_val = stats.get("hp", 0)
-            if stats.get("hp") is None:
-                stats["hp"] = hp_val
-            level_val = getattr(caller.db, "level", None)
-            exp_val = getattr(caller.db, "total_exp", None)
-            if fused:
-                if level_val is None:
-                    level_val = getattr(fused, "level", None)
-                if exp_val is None:
-                    exp_val = getattr(fused, "total_exp", None)
-            fusion_mon = SimpleNamespace(
-                name=fusion_species,
-                species=fusion_species,
-                ability=getattr(caller.db, "fusion_ability", None),
-                nature=getattr(caller.db, "fusion_nature", None),
-                gender=getattr(caller.db, "gender", "?"),
-                level=level_val,
-                total_exp=exp_val,
-                hp=hp_val or 0,
-            )
-            if fusion_id is not None:
-                setattr(fusion_mon, "unique_id", fusion_id)
-                setattr(fusion_mon, "id", fusion_id)
-            if fused:
-                for attr in ("activemoveslot_set", "pp_bonuses", "moves", "ivs", "evs"):
-                    if hasattr(fused, attr):
-                        setattr(fusion_mon, attr, getattr(fused, attr))
-                if fused in party:
-                    party[party.index(fused)] = None
-            required = {"hp", "attack", "defense", "sp_attack", "sp_defense", "speed"}
-            if required.issubset(stats):
-                setattr(fusion_mon, "_cached_stats", stats)
-            setattr(fusion_mon, "_pf2_is_fusion_slot", True)
-            setattr(fusion_mon, "_pf2_fusion_owner_name", getattr(caller, "key", ""))
-            try:
-                empty_idx = party.index(None)
-                party[empty_idx] = fusion_mon
-            except ValueError:
-                if len(party) < 6:
-                    party.append(fusion_mon)
-
+        try:
+            view = PartyView(caller)
+        except ValueError as error:
+            caller.msg(str(error))
+            return
+        if self.slot is None and not self.show_all:
+            caller.msg(view.render())
+            return
+        if not view.entries:
+            caller.msg("You have no Pokémon in your party.")
+            return
         if self.show_all:
-            if not any(party):
-                caller.msg("You have no Pokémon in your party.")
+            entries = view.entries
+        else:
+            entry = view.select(self.slot)
+            if entry is None:
+                if self.slot == "fusion":
+                    caller.msg("You have no active Fusion form.")
+                elif self.slot < 1 or self.slot > 6:
+                    caller.msg("No Pokémon in that slot.")
+                else:
+                    caller.msg("That slot is empty.")
                 return
-            sheets = []
-            for idx, mon in enumerate(party, 1):
-                if not mon:
-                    continue
-                sheet = display_pokemon_sheet(caller, mon, slot=idx, mode=self.mode)
-                if getattr(mon, "_pf2_is_fusion_slot", False):
-                    sheet += "\n|yNote: This slot shows your active Fusion form.|n"
-                sheets.append(sheet)
-            caller.msg("\n-------\n".join(sheets))
-            return
-
-        if self.slot is None:
-            if not any(party):
-                caller.msg("You have no Pokémon in your party.")
-                return
-            lines = ["|wParty Pokémon|n"]
-            for idx, mon in enumerate(party, 1):
-                if not mon:
-                    continue
-                level = getattr(mon, "level", None)
-                if level is None:
-                    xp_val = get_display_xp(mon)
-                    growth = getattr(mon, "growth_rate", "medium_fast")
-                    level = level_for_exp(xp_val, growth)
-                hp = getattr(mon, "hp", getattr(mon, "current_hp", 0))
-                max_hp = get_max_hp(mon)
-                status = get_status_effects(mon)
-                gender = getattr(mon, "gender", "?")
-                name = mon.name
-                label = ""
-                if getattr(mon, "_pf2_is_fusion_slot", False):
-                    owner = getattr(mon, "_pf2_fusion_owner_name", "")
-                    base = getattr(mon, "species", name)
-                    if owner:
-                        name = f"{owner} ({base})"
-                    label = " (fusion)"
-                lines.append(f"{idx}: {name}{label} (Lv {level} HP {hp}/{max_hp} {gender} {status})")
-            caller.msg("\n".join(lines))
-            return
-
-        if self.slot < 1 or self.slot > len(party):
-            caller.msg("No Pokémon in that slot.")
-            return
-
-        mon = party[self.slot - 1]
-        if not mon:
-            caller.msg("That slot is empty.")
-            return
-
-        sheet = display_pokemon_sheet(caller, mon, slot=self.slot, mode=self.mode)
-        if getattr(mon, "_pf2_is_fusion_slot", False):
-            sheet += "\n|yNote: This slot shows your active Fusion form.|n"
-        caller.msg(sheet)
+            entries = [entry]
+        sheets = []
+        for entry in entries:
+            sheet = display_pokemon_sheet(caller, entry.pokemon, slot=entry.selector, mode=self.mode)
+            if entry.is_fusion:
+                sheet += "\n|yNote: This slot shows your active Fusion form.|n"
+            sheets.append(sheet)
+        caller.msg("\n-------\n".join(sheets))

@@ -12,7 +12,7 @@ from utils.locks import require_no_battle_lock
 
 
 class CmdChooseMoveset(Command):
-    """Select which stored moveset a Pokemon should use.
+    """Select which stored moveset a Pokemon should use at a Pokemon Center.
 
     Usage:
       +moves/use <slot>=<set#>
@@ -49,6 +49,19 @@ class CmdChooseMoveset(Command):
         pokemon = self.caller.get_active_pokemon_by_slot(self.slot)
         if not pokemon:
             self.caller.msg("No Pokémon in that slot.")
+            return
+        from pokemon.services.battle_rewards import BattleRewards
+
+        if BattleRewards.supports(self.caller):
+            from pokemon.services.move_edits import MoveEdits
+            from pokemon.services.placement import PlacementError
+
+            try:
+                name = MoveEdits(self.caller).activate_set(pokemon, self.index, expected_slot=self.slot)
+            except PlacementError as error:
+                self.caller.msg(str(error))
+                return
+            self.caller.msg(f"{name} is now using moveset {self.index + 1}.")
             return
         sets = list(pokemon.movesets.order_by("index"))
         if self.index < 0 or self.index >= len(sets):
@@ -124,6 +137,8 @@ class CmdLearn(Command):
 
     Usage:
       +learn <slot>
+      +learn pending
+      +learn pending <current token>=<active slot1-4 or store>
 
     Examples:
       +learn
@@ -145,6 +160,25 @@ class CmdLearn(Command):
 
     def func(self):
         if not require_no_battle_lock(self.caller):
+            return
+        raw = self.args.strip()
+        prefix, _, tail = raw.partition(" ")
+        if prefix.casefold() == "pending":
+            from pokemon.services.item_learning import ItemLearning, ItemLearningError
+
+            service = ItemLearning(self.caller)
+            try:
+                if not tail.strip():
+                    service.present()
+                else:
+                    token, separator, choice = tail.strip().partition("=")
+                    if not separator:
+                        raise ItemLearningError("Use +learn pending <current token>=<1-4 or store>.")
+                    choice = choice.strip().casefold()
+                    selection = int(choice) if choice in {"1", "2", "3", "4"} else choice
+                    service.choose(token.strip(), selection)
+            except ValueError as error:
+                self.caller.msg(str(error))
             return
         from pokemon.utils.move_learning import get_learnable_levelup_moves
 
@@ -194,9 +228,32 @@ class CmdEvolvePokemon(Command):
     Examples:
       +evolve abc123
       +evolve abc123 Fire Stone
+      +evolve abc123 Peat Block
+      +evolve abc123 Scroll of Darkness
+      +evolve abc123 Scroll of Waters=Urshifu-Rapid-Strike
+      +evolve abc123=Alcremie-Ruby-Cream
 
     Notes:
       Some Pokemon need an item or other evolution condition.
+      For Milcery, equip a Sweet with +hold first. +evolve performs the spin
+      equivalent; no target selects Vanilla Cream. Only listed Alcremie
+      cosmetic targets are supported. +party <slot> shows the full ID needed
+      by +evolve and the saved decoration afterward.
+      Existing trade-held items use +hold then +evolve without a bag item.
+      For example, Scyther holding Metal Coat evolves into Scizor. Ownership
+      and placement stay the same; the held copy is consumed once. +trade
+      remains unavailable. Non-item trade evolutions remain unsupported.
+      Ursaring uses a Peat Block from your bag for ordinary Ursaluna. PF2's
+      explicit item action replaces the full-moon condition; no moon flag,
+      time or region is needed. Held-only copies and Bloodmoon are excluded.
+      Bisharp must personally KO three authored Crest-bearing Bisharp leaders
+      in won NPC/wild battles, then gain a level. +party <slot> shows progress.
+      Use +evolve without a bag item; your Crest/held item is not consumed.
+      Kubfu uses a bag Scroll of Darkness for Urshifu (Single Strike), or
+      Scroll of Waters for Urshifu-Rapid-Strike. One bag copy is consumed.
+      No tower completion is required; an optional target must match the item.
+      Chest Gimmighoul at level 2–100 uses +evolve <id> Gimmighoul Coin.
+      This PF2 manual equivalent consumes 999 bag coins; Roaming is deferred.
     """
 
     key = "+evolve"
@@ -219,6 +276,7 @@ class CmdEvolvePokemon(Command):
             return
         from pokemon.services.evolution import EvolutionError, EvolutionService
 
+        original_name = pokemon.name
         try:
             result = EvolutionService(self.caller).evolve(
                 pokemon, item=parts[1] if len(parts) > 1 else None,
@@ -233,6 +291,16 @@ class CmdEvolvePokemon(Command):
             self.caller.msg("Evolution failed; no item was consumed and the Pokemon was unchanged.")
             return
         if result:
-            self.caller.msg(f"{pokemon.name} evolved into {result}!")
+            from django.db import transaction
+
+            def notify():
+                """Only describe the saved transition after its containing commit."""
+                from pokemon.evolution_forms import AlcremieEvolution
+
+                appearance = AlcremieEvolution.describe(pokemon)
+                detail = f" ({appearance})" if appearance else ""
+                self.caller.msg(f"{original_name} evolved into {result}{detail}!")
+
+            transaction.on_commit(notify, robust=True)
         else:
             self.caller.msg("That evolution request was already completed. Use =<target> for the next stage.")

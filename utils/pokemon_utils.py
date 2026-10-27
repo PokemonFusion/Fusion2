@@ -100,6 +100,14 @@ def _fusion_boost_enabled() -> bool:
 def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemon:
     """Return a battle-ready ``Pokemon`` object from a stored model."""
 
+    from pokemon.hyper_training import HyperTraining
+    from pokemon.services.necrozma_moves import pair_for_model
+
+    native_pair = pair_for_model(model, "battle")
+    from pokemon.nature_training import NatureTraining
+
+    NatureTraining.effective(model)  # Reject malformed training before any fallback.
+
     if Pokemon is None:
         raise RuntimeError("Battle modules not available")
 
@@ -114,7 +122,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
 
     level = getattr(model, "_pf2_fusion_level", None)
     if level is None:
-        level = getattr(model, "computed_level", getattr(model, "level", 1))
+        level = model.level if native_pair else getattr(model, "computed_level", getattr(model, "level", 1))
     name = getattr(model, "name", getattr(model, "species", "Pikachu"))
 
     move_names = getattr(model, "moves", None) or []
@@ -189,13 +197,23 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
         max_hp=max_hp if max_hp is not None else current_hp,
         moves=moves,
         ability=getattr(model, "ability", None),
+        item=getattr(model, "held_item", None) or getattr(model, "item", None),
         ivs=ivs,
         evs=evs,
         nature=nature,
         model_id=model_id,
         gender=getattr(model, "gender", "N"),
+        tera_type=getattr(model, "tera_type", ""),
+        friendship=getattr(model, "friendship", 70),
+        hyper_training=HyperTraining.trained(model),
+        trained_stat_nature=getattr(model, "trained_stat_nature", None),
     )
     battle_poke.name = name
+    battle_poke.native_origin = ({"ref": str(model_id), "species": str(getattr(model, "species", battle_poke.species))}
+                                 if model_id else None)
+    from pokemon.battle.necrozma import NativeNecrozmaBattle
+
+    NativeNecrozmaBattle.bind(model, battle_poke)
     status = PersistentStatus() if full_heal else PersistentStatus.from_pokemon(model)
     status.apply_to_battle(battle_poke)
     if slots is not None:
@@ -216,6 +234,7 @@ def build_battle_pokemon_from_model(model, *, full_heal: bool = False) -> Pokemo
                     "speed": battle_poke.getStat("spe", True, True) * 11 // 10,
                 }
                 battle_poke.base_stats = Stats(**boosted)
+                battle_poke.native_origin["stat_scale"] = 110
                 battle_poke.stats = battle_poke._battle_stats()
             except Exception:
                 logger.debug("Unable to apply active fusion battle stat boost.", exc_info=True)
@@ -422,6 +441,7 @@ def make_pokemon_from_dict(data: dict) -> Pokemon:
         nature=nature,
         model_id=model_id,
         gender=gender,
+        trained_stat_nature=data.get("trained_stat_nature"),
     )
 
 

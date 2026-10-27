@@ -34,11 +34,13 @@ def _safe_get_stats(pokemon) -> Dict[str, int]:
 		return {name: getattr(base, name, 0) if base else 0 for name in STAT_KEY_MAP.values()}
 
 
-def get_modified_stat(pokemon, stat: str) -> int:
+def get_modified_stat(pokemon, stat: str, *, ignore_boosts: bool = False) -> int:
 	"""Return a stat value after applying temporary boosts."""
 
 	stat = STAT_KEY_MAP.get(stat, stat)
 	base = _safe_get_stats(pokemon).get(stat, 0)
+	overrides = (getattr(pokemon, "tempvals", {}) or {}).get("stat_overrides", {})
+	base = overrides.get(stat, base)
 	boosts = getattr(pokemon, "boosts", {})
 	if isinstance(boosts, dict):
 		boosts = {STAT_KEY_MAP.get(k, k): v for k, v in boosts.items()}
@@ -47,6 +49,8 @@ def get_modified_stat(pokemon, stat: str) -> int:
 	else:
 		stage = getattr(boosts, stat, 0)
 
+	if ignore_boosts:
+		stage = 0
 	if stat in {"accuracy", "evasion"}:
 		if stage >= 0:
 			modifier = (3 + stage) / 3
@@ -61,16 +65,8 @@ def get_modified_stat(pokemon, stat: str) -> int:
 
 
 def is_self_target(target: Optional[str]) -> bool:
-	"""Return ``True`` if ``target`` refers to the user or its allies.
-
-	The battle engine simplifies targeting by treating moves that would
-	normally affect an ally (such as ``"adjacentAlly"``) as if they target
-	the user when no ally is present.  This helper centralises that logic so
-	callers can easily determine whether a move's effects should apply to the
-	user or to their opponent.
-	"""
-
-	return target in {"self", "adjacentAlly", "adjacentAllyOrSelf", "ally"}
+	"""Return whether a move intrinsically targets its own user."""
+	return target == "self"
 
 
 def apply_boost(pokemon, boosts, source=None, effect=None) -> None:
@@ -84,11 +80,11 @@ def apply_boost(pokemon, boosts, source=None, effect=None) -> None:
 	Parameters
 	----------
 	pokemon: Any
-	    The Pokémon receiving the boost.
+        The Pokémon receiving the boost.
 	boosts: dict | None
-	    Mapping of stat identifiers to stage deltas.
+        Mapping of stat identifiers to stage deltas.
 	source, effect: Any, optional
-	    Additional context forwarded to ability callbacks.
+        Additional context forwarded to ability callbacks.
 	"""
 
 	_apply_boost(pokemon, boosts, source=source, effect=effect)

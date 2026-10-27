@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
-
 
 DEFAULT_INTENT = "safe_damage"
 
@@ -38,6 +37,7 @@ class AIProfile:
     knowledge_policy: str = "visible_only"
     allowed_intents: tuple[str, ...] = (DEFAULT_INTENT,)
     strategy_key: str | None = None
+    tera_policy: str = "none"
     scoring: AIScoringWeights = field(default_factory=AIScoringWeights)
 
 
@@ -65,6 +65,7 @@ class AIScoreReason:
     action: str
     score: float
     reasons: tuple[str, ...] = ()
+    target: str | None = None
 
 
 @dataclass
@@ -85,12 +86,12 @@ class AIDebugTrace:
         if self.resolved_profile_key is None:
             self.resolved_profile_key = self.profile_key
 
-    def add_action(self, action: str, score: float = 0.0, *reasons: str) -> None:
+    def add_action(self, action: str, score: float = 0.0, *reasons: str, target: str | None = None) -> None:
         """Record one legal action candidate."""
 
         key = str(action)
         self.legal_actions_considered.append(key)
-        self.scores.append(AIScoreReason(key, float(score), tuple(reasons)))
+        self.scores.append(AIScoreReason(key, float(score), tuple(reasons), target))
 
     def choose(self, action: str, *, intent: str | None = None) -> None:
         """Record the final chosen action and optional intent."""
@@ -115,6 +116,7 @@ class AIDebugTrace:
                     "action": score.action,
                     "score": score.score,
                     "reasons": list(score.reasons),
+                    **({"target": score.target} if score.target is not None else {}),
                 }
                 for score in self.scores
             ],
@@ -123,6 +125,10 @@ class AIDebugTrace:
 
 
 DEFAULT_AI_PROFILES: dict[str, AIProfile] = {
+    "trainer_tera": AIProfile(
+        key="trainer_tera", level=3, tera_policy="matching_attack",
+        scoring=AIScoringWeights(randomness=0.0, top_candidate_band=1.0),
+    ),
     "wild_basic": AIProfile(
         key="wild_basic",
         level=0,
@@ -150,7 +156,7 @@ DEFAULT_AI_PROFILES: dict[str, AIProfile] = {
         risk_tolerance=0.5,
         switch_likelihood=0.02,
         item_policy="none",
-        allowed_intents=(DEFAULT_INTENT, "status_target"),
+        allowed_intents=(DEFAULT_INTENT, "status_target", "support_ally", "preserve_self", "stall_turn"),
         scoring=AIScoringWeights(
             top_candidate_band=0.78,
             randomness=0.55,
@@ -168,6 +174,8 @@ DEFAULT_AI_PROFILES: dict[str, AIProfile] = {
             "setup",
             "status_target",
             "preserve_self",
+            "support_ally",
+            "stall_turn",
         ),
         scoring=AIScoringWeights(
             damage_weight=1.05,
@@ -197,6 +205,8 @@ DEFAULT_AI_PROFILES: dict[str, AIProfile] = {
             "control_field",
             "preserve_self",
             "pivot",
+            "support_ally",
+            "stall_turn",
         ),
         strategy_key="gym",
         scoring=AIScoringWeights(
@@ -247,6 +257,13 @@ DEFAULT_AI_PROFILES: dict[str, AIProfile] = {
     ),
 }
 
+# The first production gym's bounded reference strategy. Content and durable
+# GymLeaderProfile configuration belong to #712; encounters can select this
+# preset now and retain it through the existing metadata/checkpoint seam.
+DEFAULT_AI_PROFILES["gym_trick_room"] = replace(
+    DEFAULT_AI_PROFILES["gym_leader"], key="gym_trick_room", strategy_key="trick_room"
+)
+
 AI_PROFILE_ALIASES: dict[str, str] = {
     "basic": "trainer_basic",
     "trainer": "trainer_basic",
@@ -257,6 +274,8 @@ AI_PROFILE_ALIASES: dict[str, str] = {
     "gym": "gym_leader",
     "leader": "gym_leader",
     "boss": "feature_boss",
+    "trick_room": "gym_trick_room",
+    "gym_speed_control": "gym_trick_room",
 }
 
 

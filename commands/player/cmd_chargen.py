@@ -16,7 +16,7 @@ class CmdChargen(Command):
       chargen
 
     Notes:
-      Chargen can only be run before your character is validated.
+      Beta setup is self-service. Accepted choices resume after reconnect; completion grants one starter or initial Fusion once.
     """
 
     key = "chargen"
@@ -24,15 +24,25 @@ class CmdChargen(Command):
     help_category = "General"
 
     def func(self):
-        if self.caller.db.validated:
-            self.caller.msg("You are already validated and cannot run chargen again.")
+        from pokemon.services.onboarding import Onboarding, OnboardingError
+
+        service = Onboarding(self.caller)
+        if service.completion() or self.caller.db.chargen_completed or self.caller.db.validated:
+            self.caller.msg("Your character setup is already complete. No additional starter or form can be granted. Use +sheet and help getting started.")
             return
+        try:
+            node, kwargs = service.resume()
+        except OnboardingError as error:
+            self.caller.msg(str(error))
+            return
+        self.caller.msg("Beta setup is self-service; no staff validation is required. Your accepted choices are saved until completion.")
         EnhancedEvMenu(
             self.caller,
             chargen_menu,
-            startnode="start",
+            startnode=node,
+            startnode_input=("", kwargs),
             cmd_on_exit=None,
-            on_abort=lambda caller: caller.msg("Character generation aborted."),
+            on_abort=lambda caller: caller.msg("Character setup paused. Use chargen to resume your saved choices."),
             numbered_options=False,
             show_options=False,
         )

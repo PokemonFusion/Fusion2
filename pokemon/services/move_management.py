@@ -232,7 +232,12 @@ def level_up_move_names_for_pokemon(pokemon) -> list[str]:
 	"""Return all level-up moves available at ``pokemon``'s current level."""
 
 	species = getattr(pokemon, "species", getattr(pokemon, "name", "")) or ""
-	level = _pokemon_level(pokemon)
+	from pokemon.services.necrozma_moves import pair_for_model
+
+	pair = pair_for_model(pokemon)
+	if pair and str(pair["host_id"]) == str(pokemon.pk):
+		species = "Necrozma"
+	level = pokemon.level if pair and species == "Necrozma" else _pokemon_level(pokemon)
 
 	try:
 		from pokemon.middleware import get_moveset_by_name
@@ -310,6 +315,9 @@ def initialize_generated_moveset(
 
 	if not pokemon:
 		return {"learned": 0, "active": []}
+	from pokemon.services.necrozma_moves import pair_for_model
+
+	pair_for_model(pokemon, "moves")
 
 	level_moves = level_up_move_names_for_pokemon(pokemon)
 	raw_active_names = list(active_move_names or default_active_move_names_for_pokemon(pokemon))
@@ -385,6 +393,9 @@ def apply_current_pp(pokemon) -> int:
 	Returns the number of updated slots.
 	"""
 
+	from pokemon.services.necrozma_moves import pair_for_model
+
+	linked = pair_for_model(pokemon, "heal")
 	movedex = _get_movedex()
 	bonuses = getattr(pokemon, "pp_bonuses", {}) or {}
 	if not bonuses:
@@ -434,6 +445,8 @@ def apply_current_pp(pokemon) -> int:
 		try:
 			slots.bulk_update(updated, ["current_pp"])
 		except Exception:
+			if linked:
+				raise
 			for slot in updated:
 				try:
 					slot.save()
@@ -457,6 +470,10 @@ def learn_level_up_moves(pokemon, *, caller=None, prompt: bool = False) -> None:
 	    active moveset is full.
 	"""
 
+	from pokemon.services.necrozma_moves import remember_progression
+
+	if remember_progression(pokemon):
+		return
 	try:
 		from pokemon.utils.move_learning import (
 			get_learnable_levelup_moves,
@@ -482,6 +499,9 @@ def apply_active_moveset(pokemon) -> None:
 	and adjusted for any stored PP bonuses.
 	"""
 
+	from pokemon.services.necrozma_moves import pair_for_model
+
+	pair_for_model(pokemon, "moves")
 	active_ms = getattr(pokemon, "active_moveset", None)
 	if not active_ms:
 		return

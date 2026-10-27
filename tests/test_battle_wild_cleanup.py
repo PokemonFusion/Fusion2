@@ -78,9 +78,20 @@ def test_ownedpokemon_delete_if_wild_keeps_owned_pokemon(monkeypatch):
 def test_ownedpokemon_delete_if_wild_deletes_temporary_wild_pokemon(monkeypatch):
 	deleted = []
 	monkeypatch.setattr(OwnedPokemon, "delete", lambda self, *a, **k: deleted.append(self))
+	# This is an unsaved unit fixture. Mock its relation cleanup as well as
+	# the final delete; real related managers would query the game database.
+	cleared = []
+	for name in ("learned_moves", "activemoveslot_set", "movesets", "pp_boosts"):
+		relation = types.SimpleNamespace()
+		relation.all = lambda relation=relation: relation
+		relation.clear = lambda name=name: cleared.append((name, "clear"))
+		relation.delete = lambda name=name: cleared.append((name, "delete"))
+		monkeypatch.setattr(OwnedPokemon, name, property(lambda self, relation=relation: relation), raising=False)
 
 	mon = OwnedPokemon(species="Zubat")
 	mon.is_wild = True
 
 	assert mon.delete_if_wild() is True
 	assert deleted == [mon]
+	assert cleared == [("learned_moves", "clear"), ("activemoveslot_set", "delete"),
+	                   ("movesets", "delete"), ("pp_boosts", "delete")]

@@ -27,7 +27,7 @@
 ## Project Structure
 
 - `commands/` - player command handlers
-- `pokemon/` - core Pokémon game logic and data
+- `pokemon/` - core PokÃ©mon game logic and data
 - `server/` - server configuration and startup scripts
 - `typeclasses/` - Evennia typeclasses for game objects
 - `utils/` - shared utility helpers
@@ -37,8 +37,74 @@
 See [code-map.md](code-map.md) for more details on the codebase layout.
 See [offline-battle-testing.md](offline-battle-testing.md) for the non-live
 battle validation workflow.
+See [held-incense.md](held-incense.md) for the five existing incense boosters,
+ordinary equip/battle routes and current bounded acceptance evidence.
+See [battle-recovery-items.md](battle-recovery-items.md) for the named manual
+battle food/berry allowlist, exclusions and action/rollback policy.
+See [item-availability.md](item-availability.md) for acquisition, ordinary item
+commands and the dated limits of authored stock and current-world evidence.
+The [current October25 index](testing/item-availability-field-training-seeds-index-2026-10-25.json)
+and [report](testing/item-availability-2026-10-25.md) reconcile explicit accepted
+registries, six item-repair receipts and unverified world sources.
+See the [released nine-item walkthrough](testing/item-live-2026-10-22.md) for
+PF2-Dev purchase/effect/reconnect proof, fixture cleanup and remaining feedback.
+The [October 25 repaired-item local walkthrough](testing/item-repair-released-player-2026-10-25.md)
+records 716 ordinary commands, 102 effect/conservation checks and complete
+disposable cleanup on the pinned repaired candidate. Permanent public stock
+remains separate from these temporary QA sources.
+The [Supply Corner migration compatibility receipt](testing/item-source-migration-compatibility-2026-10-25.md)
+qualifies the shared framework dependency needed for its release. Permanent
+installation and ordinary-player source acceptance remain separate requirements.
+The [replacement Supply Corner release proposal](testing/item-source-retry-release-plan-2026-10-25.md)
+pins the qualified candidate, exact six-offer stock, operational guards and tagged
+walkthrough; it requires explicit approval before execution.
+The approved [permanent Supply Corner acceptance](testing/item-source-released-player-2026-10-25.md)
+records the later PF2-Dev release, ordinary hub travel, six purchases/effects,
+retry/reconnect, finite remaining stock and complete tagged QA teardown.
+See [explicit operator replenishment](item-replenishment.md) for the separate
+rolling-24-hour opt-in API and [disposable checks](testing/item-replenishment-2026-10-25.md).
+This adds no startup refill and leaves the original Supply Corner finite.
+The [seven additional finite recipes](finite-item-supply.md) cover status,
+stronger medicine, PP, stones, vitamins, capacity/ability and held staples.
+Their [automated checks](testing/finite-item-sources-2026-10-25.md) do not install public stock.
+The [EV mochi guide](ev-mochi.md) covers six supplements and Fresh-Start;
+the [nursery guide](berry-nursery.md) adds four selected status-berry seeds.
+Their command/SQL checks do not complete shared deployment or real elapsed growing.
+See the [Mega Stone player guide](mega-evolution.md),
+[activation contract](design/mega-evolution.md) and
+[per-stone rollout](design/mega-stones.md) for the bounded non-plot Mega route,
+its optional source and the 47 locally accepted canonical pairs.
+See [design/z-moves.md](design/z-moves.md) and its
+[crystal inventory](design/z-crystals.md) plus [Z-Move guide](z-moves.md) for the
+62 accepted generic/status/signature mappings and remaining gates. The
+[Necrozma guide](necrozma.md) documents the accepted non-plot combine/separate
+lifecycle and two pair-proved signatures, with separate released local evidence.
+The [original plan](design/necrozma-combination.md) retains its design history. See
+[design/berry-player-routes.md](design/berry-player-routes.md) for the separate
+Oran growing/Razz snack contracts. The [berry nursery guide](berry-nursery.md)
+describes their implemented commands, optional source and release requirements.
+It also lists the thirteen later explicit flavor snacks, each a bounded 10-HP
+field equivalent through +berry snack with separately unverified acquisition.
+Their [released local walkthrough](testing/flavor-snacks-released-player-2026-10-25.md)
+checks all thirteen effects and reconnect persistence; its fixtures are removed.
+See [gimmighoul-evolution.md](gimmighoul-evolution.md) for the 999-coin Chest
+equivalent, [recovery-equivalents.md](recovery-equivalents.md) for two field-only
+medicines, [hunt-item-sources.md](hunt-item-sources.md) for reviewed hunt sources,
+and [item-supply-route.md](item-supply-route.md) for optional six-item supply.
+The [acquisition policy](design/item-acquisition-policy.md) preserves finite supply
+and links bounded future counters. Future families have explicit contracts for
+[Ultra Burst](design/ultra-burst.md), [flavor snacks](design/flavor-berry-snacks.md),
+[nursery seeds](design/nursery-seeds.md), [EXP Candy](design/exp-candy.md),
+[mints](design/nature-mints.md), [mochi](design/ev-mochi.md) and
+[battle boosters](design/battle-boosters.md). Their [dated scope receipt](testing/item-scope-decisions-2026-10-25.md)
+links 34 future deliveries; these designs add no runtime effects or public stock.
+The [remaining Z-source plan](design/z-source-batches.md) classifies the full
+ordinary move inventory and selects three later six-source batches.
 See [alpha-reliability-validation.md](alpha-reliability-validation.md) for the
 Adventure, trainer-team, gym recovery, and onboarding branch validation record.
+See the [September closeout](testing/september-closeout-2026-10-23.md) for the
+current issue reconciliation, Adventure survey/room-pool repairs and the
+separate fresh regression and dated player-protocol evidence.
 See [battle-coverage-report.md](battle-coverage-report.md) for the current
 offline battle proof coverage inventory.
 See [move-inventory-audit-2026-06-22.md](move-inventory-audit-2026-06-22.md)
@@ -55,7 +121,7 @@ reference and phased implementation roadmap.
 
 ## Battle HP Display
 
-During a battle, trainers see exact hit point numbers for their own Pokémon
+During a battle, trainers see exact hit point numbers for their own PokÃ©mon
 (for example, `25/40 HP`) while viewing the opposing team as percentages.
 Spectators watching the fight see percentage-based values for both teams so
 they know the relative health of each combatant without exact numbers.
@@ -94,3 +160,9 @@ value during debugging allows the sequence of random events to be
 reconstructed.  Create a ``random.Random(rng_seed)`` instance and pass it
 through battle helpers to reproduce move accuracy checks, damage rolls and
 capture attempts exactly.
+
+The later [six physical Z sources](testing/z-six-physical-sources-2026-10-25.md)
+and [six status sources](testing/z-six-status-sources-2026-10-25.md) retain
+bounded command/SQL acceptance. Their [ordinary prerequisites](testing/recovery-move-prerequisites-2026-10-25.md)
+repair Roost, Synthesis, Protect repetition and Thunder Wave immunity.
+These later source receipts do not extend the earlier released build or its finite stock.

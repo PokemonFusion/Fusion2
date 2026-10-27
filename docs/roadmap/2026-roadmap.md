@@ -32,6 +32,11 @@ This roadmap is based on a repository audit of the current implementation. Exist
 
 September focuses on making the systems that already exist trustworthy, complete enough for normal player use, and safe to build on.
 
+**October 23 closeout:** the [criterion-by-criterion September record](../testing/september-closeout-2026-10-23.md)
+reconciles issues #705–#717, current regression checks, retained dated player
+acceptance and the bounded Adventure repairs. The sections below retain the
+original scope; local acceptance and remote deployment are separate evidence.
+
 ## Battle and Test Foundation
 
 - `[TEST]` Fix battle test-suite order/import isolation so mandatory suites can run reliably together.
@@ -82,6 +87,20 @@ PF2's existing battle and Pokémon-management foundation is trustworthy enough t
 
 October focuses on the major player capabilities that are genuinely missing or incomplete.
 
+October 24 closeout: #722–#733 and #746 are implemented and verified in the
+dependency order below. Adoption is the explicit deferred decision in #724.
+The [final ordinary-player record](../testing/october-player-live-2026-10-24.md)
+and [automated integration report](../testing/october-multi-2026-10-24.md) separate
+actual local browser/game acceptance, PostgreSQL fixtures and shared-server
+deployment. This closeout does not deploy the current staging candidate.
+
+| Batch | Completed capability and evidence |
+|---|---|
+| W1 | #722 canonical ownership/placement, #723 atomic Fusion integrity, #724 Adoption deferred; [ownership](../testing/october-ownership-2026-10-23.md), [Fusion](../testing/october-fusion-2026-10-23.md). |
+| W2 | #725 reviewed transactional trade, #726 transactional marketplace, #727 canonical Daycare; [trade](../testing/october-trading-2026-10-23.md), [market](../testing/october-market-2026-10-23.md), [Daycare](../testing/october-daycare-2026-10-23.md). |
+| W3 | #728 bounded breeding/eggs/hatching, #729 versioned gym content/installer, #730 self-service resumable onboarding; [breeding](../testing/october-breeding-2026-10-23.md), [gyms](../testing/october-gyms-2026-10-23.md), [onboarding](../testing/october-onboarding-2026-10-23.md). |
+| W4 | #731 shared current guidance, #732 character-scoped communications, #733 fresh read-only game/web sheets and #746 four human controllers in two teams; [communications](../testing/october-communications-2026-10-23.md), [sheets](../testing/october-sheets-2026-10-23.md), [live acceptance](../testing/october-player-live-2026-10-24.md), [Multi](../testing/october-multi-2026-10-24.md). |
+
 ## Trading and Marketplace
 
 - `[FINISH]` Replace immediate gift-style Pokémon transfers with consent-based, transactional trading.
@@ -128,8 +147,11 @@ The goal is to make new gyms primarily a content-authoring task rather than a ne
 
 ## Adoption
 
-- `[DECISION]` Confirm whether Adoption was a core PF1 player capability.
-- `[BUILD]` Implement an Adoption MVP only if PF1 parity requires it.
+Adoption is **deferred from beta**, per the project owner's October 23 decision
+in #724. The [source review and decision](../design/adoption-beta-decision.md)
+confirm PF1's coded donate/browse/buy capability and document the economy and
+custody reasons for deferral. There is no active Adoption build requirement;
+consent trading and the marketplace remain the beta ownership-exchange work.
 
 ### October Exit Condition
 
@@ -249,7 +271,7 @@ PF2 should not be declared closed beta until all of the following are true:
 - [ ] Catching, party/storage, move learning, evolution, and held-item transitions do not have known duplication or loss defects.
 - [ ] Trading requires recipient consent and completes safely.
 - [ ] Breeding, Daycare, and player Marketplace MVPs are player accessible and recoverable.
-- [ ] Adoption has been resolved against PF1 parity and implemented if required.
+- [x] Adoption parity decision recorded: deferred from beta (#724).
 - [ ] At least one strategy-oriented gym is fully player accessible with correct victory, loss, rematch, and badge behavior.
 - [ ] Combat AI selects legal actions, handles core battle state correctly, supports switching and doubles targeting, and can execute the first gym's intended strategy.
 - [ ] Fusion creation/state transitions are persistent, recoverable, and adequately explained during onboarding.
@@ -269,6 +291,7 @@ PF2 should not be declared closed beta until all of the following are true:
 
 The following are not required to declare PF2 closed beta:
 
+- Adoption (explicit October 23 decision; a future proposal needs separate scope)
 - Multiple complete leagues
 - Large numbers of finished gyms
 - Faction/reputation systems

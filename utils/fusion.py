@@ -80,6 +80,10 @@ def set_fusion_boost_enabled(enabled: bool | None) -> bool:
 
 
 def _db_get(character, attr: str, default: Any = None) -> Any:
+    from pokemon.services.battle_rewards import BattleRewards
+
+    if BattleRewards.supports(character):
+        return BattleRewards.stored_attribute(BattleRewards.character(character), attr, default=default)
     db = _db(character)
     if db is None:
         return default
@@ -99,6 +103,11 @@ def _db_set(character, attr: str, value: Any) -> None:
 
 
 def _db_clear(character, attr: str) -> None:
+    from pokemon.services.battle_rewards import BattleRewards
+
+    if BattleRewards.supports(character):
+        BattleRewards.character(character).attributes.remove(attr)
+        return
     db = _db(character)
     if db is None:
         return
@@ -182,7 +191,12 @@ def _fighter_xp(character, fallback: int = 0) -> int:
 
 
 def _set_fighter_xp(character, amount: int) -> None:
-    _db_set(character, "total_exp", max(0, int(amount)))
+    """Keep existing legacy fighter-XP aliases coherent with the canonical total."""
+    amount = max(0, int(amount))
+    _db_set(character, "total_exp", amount)
+    for attr in ("fighter_xp", "fxp", "xp", "experience"):
+        if _db_get(character, attr, None) is not None:
+            _db_set(character, attr, amount)
 
 
 def award_fusion_experience(character, pokemon: Any, amount: int) -> None:
@@ -310,6 +324,19 @@ def resolve_owned_pokemon(character, pokemon_id: str | None) -> Any | None:
     if not pokemon_id:
         return None
 
+    from pokemon.services.battle_rewards import BattleRewards
+    if BattleRewards.supports(character):
+        from pokemon.models.core import OwnedPokemon
+        from pokemon.services.ownership import fresh_owned
+        from django.core.exceptions import ValidationError
+
+        actor = BattleRewards.character(character)
+        try:
+            identifier = OwnedPokemon.objects.filter(pk=pokemon_id, trainer__user_id=actor.pk).values_list("pk", flat=True).first()
+            return fresh_owned(identifier) if identifier else None
+        except (ValueError, TypeError, ValidationError, OwnedPokemon.DoesNotExist):
+            return None
+
     finder = getattr(character, "get_pokemon_by_id", None)
     if callable(finder):
         try:
@@ -361,11 +388,20 @@ def fusion_form_ids(character) -> list[str]:
         raw = list(raw.values())
     if isinstance(raw, (str, bytes)):
         raw = [raw]
-    ids = [str(value) for value in raw if value]
+    from uuid import UUID
+
+    def canonical(value):
+        """Keep legacy stand-in IDs while normalizing persisted UUID spelling."""
+        try:
+            return str(UUID(str(value)))
+        except (ValueError, TypeError):
+            return str(value)
+
+    ids = list(dict.fromkeys(canonical(value) for value in raw if value))
 
     active = _db_get(character, "fusion_id", None)
-    if active and get_fusion_kind(character) == PERMANENT and str(active) not in ids:
-        ids.append(str(active))
+    if active and get_fusion_kind(character) == PERMANENT and canonical(active) not in ids:
+        ids.append(canonical(active))
     return ids
 
 
@@ -417,8 +453,9 @@ def get_active_fusion_pokemon(character) -> Any | None:
 def get_battle_party_with_fusion(character, base_party: Iterable | None = None) -> list:
     """Return the battle party including the active fusion form when enabled."""
 
-    storage = getattr(character, "storage", None)
     if base_party is None:
+        from utils.character_reads import existing_storage
+        storage = existing_storage(character)
         try:
             party = list(storage.get_party()) if storage is not None else []
         except Exception:
@@ -437,7 +474,7 @@ def get_battle_party_with_fusion(character, base_party: Iterable | None = None) 
     return party + [active]
 
 
-def deactivate_fusion(character) -> tuple[bool, str]:
+def _legacy_deactivate_fusion(character) -> tuple[bool, str]:
     """Turn off the current fusion and return ``(success, message)``."""
 
     active_id = _db_get(character, "fusion_id", None)
@@ -464,10 +501,10 @@ def deactivate_fusion(character) -> tuple[bool, str]:
     return True, message
 
 
-def activate_temporary_fusion(character, pokemon: Any, *, slot: int | None = None) -> tuple[bool, str]:
+def _legacy_activate_temporary_fusion(character, pokemon: Any, *, slot: int | None = None) -> tuple[bool, str]:
     """Activate a temporary fusion with ``pokemon``."""
 
-    ok, message = deactivate_fusion(character)
+    ok, message = _legacy_deactivate_fusion(character)
     if not ok:
         return ok, message
 
@@ -479,10 +516,10 @@ def activate_temporary_fusion(character, pokemon: Any, *, slot: int | None = Non
     return True, f"You temporarily fused with {_display_name(pokemon)}."
 
 
-def activate_permanent_fusion(character, pokemon: Any) -> tuple[bool, str]:
+def _legacy_activate_permanent_fusion(character, pokemon: Any) -> tuple[bool, str]:
     """Unlock and activate a permanent fusion form with ``pokemon``."""
 
-    ok, message = deactivate_fusion(character)
+    ok, message = _legacy_deactivate_fusion(character)
     if not ok:
         return ok, message
 
@@ -494,13 +531,52 @@ def activate_permanent_fusion(character, pokemon: Any) -> tuple[bool, str]:
     return True, f"You permanently fused with {_display_name(pokemon)}."
 
 
-def activate_permanent_form(character, pokemon: Any) -> tuple[bool, str]:
+def _legacy_activate_permanent_form(character, pokemon: Any) -> tuple[bool, str]:
     """Switch to an already unlocked permanent fusion form."""
 
     remember_permanent_form(character, pokemon)
-    ok, message = deactivate_fusion(character)
+    ok, message = _legacy_deactivate_fusion(character)
     if not ok:
         return ok, message
     _remove_from_party(character, pokemon)
     _set_character_fusion_view(character, pokemon, kind=PERMANENT)
     return True, f"You took your {_pokemon_species(pokemon)} fusion form."
+
+
+def _persistent_transition(character, action, pokemon=None, **kwargs):
+    """Send actual characters through the atomic service; retain engine stand-ins."""
+    from pokemon.services.battle_rewards import BattleRewards
+
+    if not BattleRewards.supports(character):
+        return None
+    from pokemon.services.fusion_transitions import FusionTransitions
+    from pokemon.services.placement import PlacementError
+
+    try:
+        return FusionTransitions(character).run(action, pokemon, **kwargs)
+    except PlacementError as error:
+        return False, str(error)
+
+
+def deactivate_fusion(character, *, request_id=None):
+    """Atomically leave the active form and return a temporary source exactly once."""
+    result = _persistent_transition(character, "deactivate", request_id=request_id)
+    return result if result is not None else _legacy_deactivate_fusion(character)
+
+
+def activate_temporary_fusion(character, pokemon, *, slot=None, request_id=None):
+    """Atomically validate the current target and activate a temporary form."""
+    result = _persistent_transition(character, "temporary", pokemon, slot=slot, request_id=request_id)
+    return result if result is not None else _legacy_activate_temporary_fusion(character, pokemon, slot=slot)
+
+
+def activate_permanent_fusion(character, pokemon, *, slot=None, request_id=None):
+    """Unlock once; later retries or switches cannot repeat the EXP award."""
+    result = _persistent_transition(character, "permanent", pokemon, slot=slot, request_id=request_id)
+    return result if result is not None else _legacy_activate_permanent_fusion(character, pokemon)
+
+
+def activate_permanent_form(character, pokemon, *, request_id=None):
+    """Switch only to an owned, already unlocked permanent form."""
+    result = _persistent_transition(character, "switch", pokemon, request_id=request_id)
+    return result if result is not None else _legacy_activate_permanent_form(character, pokemon)

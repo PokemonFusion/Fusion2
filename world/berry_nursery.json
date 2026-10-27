@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "key": "oran-razz-nursery-v1",
+  "room": "Berry Nursery",
+  "entrance": "nursery",
+  "return_exit": "back",
+  "refill": "none",
+  "buy_only": true,
+  "description": "Use +store then Buy to purchase Oran or Razz Berry. +berry help explains your one personal Oran bed: one bag seed, four real hours, free watering once per stage, yield 1-5 and no decay or automatic replant. +berry status, +berry plant Oran Berry, +berry water, +berry harvest. +berry snack Razz Berry=<party slot, name, full ID or fusion> feeds a PF2 food equivalent for up to 10 HP outside battle. It is independent of growing; it grants no contest, lure or friendship effect. The back exit returns to the hub. Stock is finite with no refill or resale.",
+  "room_attributes": {"berry_nursery": true},
+  "offers": [
+    {"item": "Oran Berry", "price": 100, "quantity": 5},
+    {"item": "Razz Berry", "price": 100, "quantity": 5}
+  ]
+}

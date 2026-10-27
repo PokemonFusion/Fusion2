@@ -21,7 +21,7 @@ class Paralysis(StatusCondition):
 	def at_apply(self, pokemon, battle, *, source=None, effect=None, previous=None, allow_self_inflict=False, **kwargs) -> bool:
 		if has_type(pokemon, 'electric'):
 			return False
-		if has_ability(pokemon, self.IMMUNE_ABILITIES):
+		if has_ability(pokemon, self.IMMUNE_ABILITIES, battle=battle, source=source, effect=effect):
 			return False
 		return can_apply_status(
 			pokemon,

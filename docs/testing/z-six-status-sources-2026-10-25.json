@@ -1,0 +1,2837 @@
+{
+  "date": "2026-10-25",
+  "source_commit": "86e9eba8f50bcbae803fc5cd900a1f0c40ec63c0",
+  "source_baseline": "03e1da5db8770e4d89cc6fcfdc4f7b5a9a5fda77",
+  "status": "qualified local production-command/menu/PostgreSQL support; no released socket or world-stock claim",
+  "python_sources": 1149,
+  "changed_python_sha256_lf": {
+    "pokemon/battle/engine.py": "69f5397b34d65c4bef9399455590fdb81902bfb2f7b3c630c300f5085d72ce98",
+    "pokemon/battle/protection.py": "6b820ce94874604bc2f16584fa4dd2c749e1e8affaa7e7808e218eea2cb76cc4",
+    "pokemon/battle/recovery_moves.py": "f70b37b3971042a060c2bfaad24ac2e7e43b888795b4247fb5a734e1a5e7ff9a",
+    "pokemon/battle/tests/test_protect_repeat_policy.py": "253fa4aaebeebd3460bdc66185f36857cd28d4048a4a5b7c1bb186d4c1f19790",
+    "pokemon/battle/tests/test_recovery_move_sources.py": "9fccaae07d0041caa958281836c69d27c2a1c97d492defa7c6bbf49886e56fba",
+    "pokemon/battle/tests/test_showdown_event_core.py": "879ce9dd10af67dc48a4401cb23b2aef9bd1de26c844a75ca58de2396d8255e2",
+    "pokemon/battle/tests/test_status_move_type_immunity.py": "194c3f0ff65ab57a42c135778da78c0e1fbe04253a0ac583fb205467cbc6570e",
+    "pokemon/battle/tests/test_z_physical_sources.py": "4baec850301308dc33a15c6e873a41c5137078fe8f5eb459d1a8d7c4e093f199",
+    "pokemon/battle/tests/test_z_special_sources.py": "5ad0ea0f4734eecb97a14632fc84ca5c7e7274350042f6954ec19f973076b715",
+    "pokemon/battle/tests/test_z_status_sources.py": "6760d1cc672ce951099b56a2e153c78bf31a55170ee85dc8e05dd72273adb17f",
+    "pokemon/battle/turns.py": "068c88ce7d8a468e826ca90e08d196f86b59440fd58fd334fa9778f10146fe59",
+    "pokemon/battle/z_effects.py": "3d1946fc3953bbeaf00bf5cdf22d171e2e8d22642cdb7497b6b45d9c14c6fda7",
+    "pokemon/battle/z_generic_pairs.py": "e3812b3cf5dd8f2e2a5faad2e2d908ff9ee95d53cc87192c7cad4df7255da0d8",
+    "pokemon/battle/z_status_pairs.py": "935a43427f0aeed824622db4e1d7776a057e91f62df0faeaed0e33a23e5ccf6a",
+    "pokemon/dex/functions/conditions_funcs.py": "8c7c8112b0034000c4049f6212aee86107d02a10d1e18cac5c3aeec2a460285d",
+    "pokemon/dex/functions/moves/damage_moves.py": "35866e423e0811b1dbda211fef927e72372fe34bd2ee3e45066c2238a877c5ed",
+    "tests/integration/recovery_move_sources_cases.py": "4806530c1c54248081d7367576f1be7f36c934bde10703c8a7a8d5762b4c7543",
+    "tests/integration/status_move_type_sources_cases.py": "bed9554bea6844715c33f957c7ed210d9458836dfe139b183f91f94950fca075",
+    "tests/integration/z_additional_status_sources_cases.py": "687d2bdaa5b987e205d10d204448a1d26194b239c728ddeb1f367c3913c7abd9",
+    "tests/integration/z_physical_sources_cases.py": "41dd867553bda4b17e0c5d6d3bb864c6dcc800489c91a867956a98eb3ad9b246",
+    "tests/test_item_availability.py": "95896b57028369d6bb082449d8f84b26f558f7a50d2cdceb3f4836c9c11df75e",
+    "tools/audit_item_availability.py": "6c38eeff7477b969f8c049e6f25d4c372796b3a9802c1878f72a69011218fdfc"
+  },
+  "unrelated_shared_dirty_paths_preserved": 25,
+  "qualification_manifest_sha256_lf": "126c2e5db0814ee9fda26fd246aa7bfba9ba81c137d4bfa662ba8d88e9f2cde2",
+  "frozen_copy_manifest_sha256_lf": "8759c3add0a02fe126d888cbf46ee280a4c1343de26304b28c957ea27e03e641",
+  "mandatory": {
+    "exit_code": 0,
+    "passed": [
+      "6287",
+      "6287",
+      "6287"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "2bf080d6ca7a4c662a2665d3ace895143442a983da533318dfde832fcb55090c",
+    "seconds": 1975.54
+  },
+  "focused": {
+    "exit": 0,
+    "passed": [
+      "271"
+    ],
+    "sha256": "b1fa61cbbc1ba45ad739809ad2ebd17511cfd3a2ba18d504ff4f48bea4bae104",
+    "seconds": 32.65
+  },
+  "compatibility": [
+    {
+      "suite": "z_existing_sources",
+      "exit": 0,
+      "seconds": 96.34,
+      "cases": [
+        "34"
+      ],
+      "sha256": "eb0a82b2f2954618b2116c6f1378be107069d16edf481e31c291d224728a624e"
+    },
+    {
+      "suite": "z_move",
+      "exit": 0,
+      "seconds": 69.23,
+      "cases": [
+        "37"
+      ],
+      "sha256": "a82ca197f8f5d0166e631e4d7f90c0be1669585c66faf2b3384528e4103ba8ee"
+    },
+    {
+      "suite": "z_generic",
+      "exit": 0,
+      "seconds": 189.44,
+      "cases": [
+        "17"
+      ],
+      "sha256": "ab65d840f4024c8029a36c7d3b3953aa0f2307516d05d52fd3cc99b63ad638ba"
+    },
+    {
+      "suite": "z_status",
+      "exit": 0,
+      "seconds": 106.86,
+      "cases": [
+        "20"
+      ],
+      "sha256": "a914bfb21c61080bffb3f5b4a3d2126455a8ea4241281d82c8ce85d1ce25be90"
+    },
+    {
+      "suite": "z_signature",
+      "exit": 0,
+      "seconds": 192.99,
+      "cases": [
+        "22"
+      ],
+      "sha256": "133759a9ab5c1ad896f0c59698df5d8ab48acc47ce0418008496348f641cbb8a"
+    },
+    {
+      "suite": "z_native",
+      "exit": 0,
+      "seconds": 39.93,
+      "cases": [
+        "9"
+      ],
+      "sha256": "60e4f88d0f53b6d5c8cb4dbe9345651d1dcbec6cb11b0cd62fe2c1d9142a5865"
+    },
+    {
+      "suite": "necrozma_player",
+      "exit": 0,
+      "seconds": 80.66,
+      "cases": [
+        "15"
+      ],
+      "sha256": "7e17ce0bd37502c08711cb9f0e917c099957417d66dda7f4225bf6a6f8a381d5"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 19.11,
+      "cases": [
+        "32"
+      ],
+      "sha256": "0a44f2ac35bbf7d7229bdf35cbb4b588adbdc4e2381eaa92d3bc2856e31c6259"
+    },
+    {
+      "suite": "z_special_sources",
+      "exit": 0,
+      "seconds": 261.36,
+      "cases": [
+        "102"
+      ],
+      "sha256": "18dc2451515a193d653bf03784eb69a9a276c57060e6f10f6ac9d6768c9b22fe"
+    }
+  ],
+  "compatibility_cases": 288,
+  "reference_commit": "7e6cea3605c20b44142b2aab22acf08df75ea52b",
+  "cleanup": {
+    "task_postgres_stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0,
+    "existing_game_data_or_services_changed": false
+  },
+  "formatting": {
+    "new_files": 10,
+    "all_abstract_syntax_trees_identical": true
+  },
+  "supplementary_paid_descriptor_adapters": {
+    "cases": 6,
+    "passed": true,
+    "scope": "Already-paid offline descriptors, distinct from the actual command/SQL PP/custody proof",
+    "outcomes": [
+      {
+        "source": "Z-Roost",
+        "actual_ground_immunity_removed_and_restored": true,
+        "actual_type_checkpoint_round_trip": true,
+        "same_turn_ground_damage": 27
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": null,
+        "hp_before": 10,
+        "hp_after": 62,
+        "expected_fraction": [
+          1,
+          2
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "sunnyday",
+        "hp_before": 10,
+        "hp_after": 80,
+        "expected_fraction": [
+          2,
+          3
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "raindance",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "sandstorm",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "snow",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      }
+    ]
+  },
+  "current_source_only_index": "item-availability-physical-status-z-index-2026-10-25.json",
+  "current_index_sha256_lf": "c030b6a88717db9e63741607ffe1bb49fc9325ae2e4a3c5b58a95fddb7b80f49",
+  "preserved": {
+    "all_452_definition_fingerprints": true,
+    "old_generic25_sha256": "26af9ea21e624e102c7a2d7c36640b221b78b3064d611fd0e6ab9ad3500a26de",
+    "old_status8_sha256": "0b86cdd34a0a26058ef128c66a40c7d116af104a362ec5ec25bfe91826a1d02d",
+    "signatures16_sha256": "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43",
+    "ordinary_source_and_item_dex_metadata": true,
+    "public_stock_or_runtime_mutation_performed": false
+  },
+  "limits": [
+    "Native chart/stock/wallet/party/status/stage prerequisites are labelled isolated fixtures.",
+    "Command transport is captured; no ordinary socket login or shared deployment is claimed.",
+    "The existing Damp/weather callback defect is #915 and remains separate.",
+    "Earlier reports and classified inventories remain immutable; other source moves and Ultra stay deferred."
+  ],
+  "issue": 912,
+  "profiles": [
+    {
+      "crystal": "Normalium Z",
+      "source": "Recover",
+      "name": "Z-Recover",
+      "power": 0,
+      "move_type": "Normal",
+      "category": "Status",
+      "target": "self",
+      "kind": "status",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "clearnegative",
+      "bonus": []
+    },
+    {
+      "crystal": "Flyinium Z",
+      "source": "Roost",
+      "name": "Z-Roost",
+      "power": 0,
+      "move_type": "Flying",
+      "category": "Status",
+      "target": "self",
+      "kind": "status",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "clearnegative",
+      "bonus": []
+    },
+    {
+      "crystal": "Normalium Z",
+      "source": "Protect",
+      "name": "Z-Protect",
+      "power": 0,
+      "move_type": "Normal",
+      "category": "Status",
+      "target": "self",
+      "kind": "status",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "clearnegative",
+      "bonus": []
+    },
+    {
+      "crystal": "Poisonium Z",
+      "source": "Toxic",
+      "name": "Z-Toxic",
+      "power": 0,
+      "move_type": "Poison",
+      "category": "Status",
+      "target": "normal",
+      "kind": "status",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "boost",
+      "bonus": [
+        [
+          "def",
+          1
+        ]
+      ]
+    },
+    {
+      "crystal": "Electrium Z",
+      "source": "Thunder Wave",
+      "name": "Z-Thunder Wave",
+      "power": 0,
+      "move_type": "Electric",
+      "category": "Status",
+      "target": "normal",
+      "kind": "status",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "boost",
+      "bonus": [
+        [
+          "spd",
+          1
+        ]
+      ]
+    },
+    {
+      "crystal": "Grassium Z",
+      "source": "Synthesis",
+      "name": "Z-Synthesis",
+      "power": 0,
+      "move_type": "Grass",
+      "category": "Status",
+      "target": "self",
+      "kind": "status",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "clearnegative",
+      "bonus": []
+    }
+  ],
+  "player": {
+    "suite": "z_additional_status_sources",
+    "exit": 0,
+    "seconds": 312.65,
+    "cases": [
+      "112"
+    ],
+    "sha256": "33201fc03ddceb47de88d5ed33ab69fcad6a003bb0abab1e35f02d0448b4588a"
+  },
+  "player_cases": 112,
+  "completed_effect_lifecycles": 70,
+  "independent_rejections": 42,
+  "outcomes": [
+    {
+      "case": "test_protect_active",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "active",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_checkpoint_fault",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "checkpoint_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_embargo",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "embargo",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_full",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "full",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 230,
+      "hp_after": 230,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_magicroom",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "magicroom",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_native",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "native",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 58,
+      "hp_after": 58,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_payment_fault",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "payment_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_plain",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "plain",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_repeat",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "repeat",
+      "pp_before": 9,
+      "pp_after": 8,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 12,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_sleep",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "sleep",
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 0,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_protect_taunt",
+      "item": "Normalium Z",
+      "source": "Protect",
+      "facet": "taunt",
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 0,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pelipper",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_active",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "active",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 172,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_checkpoint_fault",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "checkpoint_fault",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 172,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_embargo",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "embargo",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 172,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_full",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "full",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 230,
+      "hp_after": 230,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_healblock",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "healblock",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_magicroom",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "magicroom",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 172,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_native",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "native",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 65,
+      "hp_after": 195,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_payment_fault",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "payment_fault",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 57,
+      "hp_after": 172,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_plain",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "plain",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 172,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_sleep",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "sleep",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_recover_taunt",
+      "item": "Normalium Z",
+      "source": "Recover",
+      "facet": "taunt",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 57,
+      "hp_after": 57,
+      "user_stages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0,
+        "attack": -2,
+        "defense": 2,
+        "special_defense": -1
+      },
+      "target_status": 0,
+      "native_species": "Starmie",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_active",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "active",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 69,
+      "hp_after": 207,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_checkpoint_fault",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "checkpoint_fault",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 69,
+      "hp_after": 207,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_embargo",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "embargo",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 69,
+      "hp_after": 207,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 2,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_full",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "full",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 276,
+      "hp_after": 276,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_healblock",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "healblock",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 69,
+      "hp_after": 69,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_magicroom",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "magicroom",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 69,
+      "hp_after": 207,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 2,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_native",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "native",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 72,
+      "hp_after": 217,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_payment_fault",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "payment_fault",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 69,
+      "hp_after": 207,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_plain",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "plain",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [],
+      "hp_before": 69,
+      "hp_after": 207,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_sleep",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "sleep",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 69,
+      "hp_after": 69,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_roost_taunt",
+      "item": "Flyinium Z",
+      "source": "Roost",
+      "facet": "taunt",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 69,
+      "hp_after": 69,
+      "user_stages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0,
+        "attack": -2,
+        "defense": 2,
+        "special_defense": -1
+      },
+      "target_status": 0,
+      "native_species": "Pidgeot",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_active",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "active",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 50,
+      "hp_after": 150,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_checkpoint_fault",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "checkpoint_fault",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 50,
+      "hp_after": 150,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_embargo",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "embargo",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 50,
+      "hp_after": 150,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_full",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "full",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 200,
+      "hp_after": 200,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_healblock",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "healblock",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 50,
+      "hp_after": 50,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_magicroom",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "magicroom",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 50,
+      "hp_after": 150,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_native",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "native",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 54,
+      "hp_after": 163,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_payment_fault",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "payment_fault",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 50,
+      "hp_after": 150,
+      "user_stages": {
+        "attack": 0,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_plain",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "plain",
+      "pp_before": 5,
+      "pp_after": 4,
+      "side_use": [],
+      "hp_before": 50,
+      "hp_after": 150,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_sleep",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "sleep",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 50,
+      "hp_after": 50,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_synthesis_taunt",
+      "item": "Grassium Z",
+      "source": "Synthesis",
+      "facet": "taunt",
+      "pp_before": 5,
+      "pp_after": 5,
+      "side_use": [],
+      "hp_before": 50,
+      "hp_after": 50,
+      "user_stages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0,
+        "attack": -2,
+        "defense": 2,
+        "special_defense": -1
+      },
+      "target_status": 0,
+      "native_species": "Bulbasaur",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_active",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "active",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "par",
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_bounce",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "bounce",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_checkpoint_fault",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "checkpoint_fault",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "par",
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_embargo",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "embargo",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_full",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "full",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 220,
+      "hp_after": 220,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "par",
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_immune",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "immune",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": -1,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_magicroom",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "magicroom",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_native",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "native",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 60,
+      "hp_after": 60,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "par",
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_payment_fault",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "payment_fault",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "par",
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_plain",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "plain",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "par",
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_protect",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "protect",
+      "pp_before": 20,
+      "pp_after": 19,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": 0,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_sleep",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "sleep",
+      "pp_before": 20,
+      "pp_after": 20,
+      "side_use": [],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_thunderwave_taunt",
+      "item": "Electrium Z",
+      "source": "Thunder Wave",
+      "facet": "taunt",
+      "pp_before": 20,
+      "pp_after": 20,
+      "side_use": [],
+      "hp_before": 55,
+      "hp_after": 55,
+      "user_stages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0,
+        "attack": -2,
+        "defense": 2,
+        "special_defense": -1
+      },
+      "target_status": 0,
+      "native_species": "Mareep",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_active",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "active",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "tox",
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_bounce",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "bounce",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_checkpoint_fault",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "checkpoint_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "tox",
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_embargo",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "embargo",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_full",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "full",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 370,
+      "hp_after": 370,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "tox",
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_immune",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "immune",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -3,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_magicroom",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "magicroom",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_native",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "native",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "tox",
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_payment_fault",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "payment_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "tox",
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_plain",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "plain",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": "tox",
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_protect",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "protect",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 3,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_sleep",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "sleep",
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "attack": -2,
+        "defense": 2,
+        "special_attack": 0,
+        "special_defense": -1,
+        "speed": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_toxic_taunt",
+      "item": "Poisonium Z",
+      "source": "Toxic",
+      "facet": "taunt",
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "hp_before": 92,
+      "hp_after": 92,
+      "user_stages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0,
+        "attack": -2,
+        "defense": 2,
+        "special_defense": -1
+      },
+      "target_status": 0,
+      "native_species": "Clodsire",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    }
+  ],
+  "prerequisite_issues": [
+    913,
+    914,
+    916
+  ],
+  "retained_fixture_diagnoses": [
+    "Missing fixture native-method binding corrected before player effects ran.",
+    "Paid offline Synthesis adapter now binds the ordinary callback before copying, as production begin does.",
+    "Spread Growl peer actions were replaced by legal Splash controls so they cannot undo the measured Z stages.",
+    "After a prevented shield caused a legitimate faint/replacement, assertions follow the original owned UUID.",
+    "Safeguard in the suppression controls correctly blocks the ordinary status while preserving the started Z bonus.",
+    "Damp/weather callback failure retained as #915; labelled native Water Absorb opponents bound this recovery proof.",
+    "Legacy Protect event tests updated for version2 counters; a misplaced new-test assertion was corrected."
+  ],
+  "native_command_examples": [
+    {
+      "case": "test_protect_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 9",
+        "A wild Pelipper appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-3df3a2b862ce4692aba9bedccf955a68|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Pelipper|n\n1 Pelipper |M\u2640|n              Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Pelipper (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Pelipper was caught!",
+        "**availability-772-player-3df3a2b862ce4692aba9bedccf955a68** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Pelipper a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+teach 3=Protect",
+      "side": 0,
+      "messages": [
+        "Pelipper already knows Protect."
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Pelipper             |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+hold 3=Normalium Z",
+      "side": 0,
+      "messages": [
+        "Pelipper is now holding Normalium Z."
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Pelipper) Z choices; side use available:\n1: Protect (10/10 PP), Normalium Z \u2192 Z-Protect, Normal Status 0."
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+zmove A1 1=A1",
+      "side": 0,
+      "messages": [
+        "A1 (Pelipper) prepares Z-Protect from Protect \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+attack B1 Powder Snow A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Powder Snow \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Pelipper's Normalium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 29",
+        "A wild Starmie appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-c811dea354c64e718ab629cfb49a095c|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Starmie|n\n1 Starmie |x\u2013|n               Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Starmie (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Starmie was caught!",
+        "**availability-772-player-c811dea354c64e718ab629cfb49a095c** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Starmie a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+teach 3=Recover",
+      "side": 0,
+      "messages": [
+        "Starmie already knows Recover."
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Starmie              |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+hold 3=Normalium Z",
+      "side": 0,
+      "messages": [
+        "Starmie is now holding Normalium Z."
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Starmie) Z choices; side use available:\n1: Recover (5/5 PP), Normalium Z \u2192 Z-Recover, Normal Status 0."
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+zmove A1 1=A1",
+      "side": 0,
+      "messages": [
+        "A1 (Starmie) prepares Z-Recover from Recover \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_recover_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Starmie's Normalium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 48",
+        "A wild Pidgeot appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-1fd7f91f68b1485ab25c7d051f560f2e|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Pidgeot|n\n1 Pidgeot |C\u2642|n               Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Pidgeot (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Pidgeot was caught!",
+        "**availability-772-player-1fd7f91f68b1485ab25c7d051f560f2e** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Pidgeot a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+teach 3=Roost",
+      "side": 0,
+      "messages": [
+        "Pidgeot already knows Roost."
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Pidgeot              |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+hold 3=Flyinium Z",
+      "side": 0,
+      "messages": [
+        "Pidgeot is now holding Flyinium Z."
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Pidgeot) Z choices; side use available:\n1: Roost (5/5 PP), Flyinium Z \u2192 Z-Roost, Flying Status 0."
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+zmove A1 1=A1",
+      "side": 0,
+      "messages": [
+        "A1 (Pidgeot) prepares Z-Roost from Roost \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Pidgeot's Flyinium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 67",
+        "A wild Bulbasaur appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-7f459f4d654c420d95d3838de16b4415|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Bulbasaur|n\n1 Bulbasaur |C\u2642|n             Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Bulbasaur (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Bulbasaur was caught!",
+        "**availability-772-player-7f459f4d654c420d95d3838de16b4415** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Bulbasaur a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+teach 3=Synthesis",
+      "side": 0,
+      "messages": [
+        "Bulbasaur already knows Synthesis."
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Bulbasaur            |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+hold 3=Grassium Z",
+      "side": 0,
+      "messages": [
+        "Bulbasaur is now holding Grassium Z."
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Bulbasaur) Z choices; side use available:\n1: Synthesis (5/5 PP), Grassium Z \u2192 Z-Synthesis, Grass Status 0."
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+zmove A1 1=A1",
+      "side": 0,
+      "messages": [
+        "A1 (Bulbasaur) prepares Z-Synthesis from Synthesis \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Bulbasaur's Grassium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 87",
+        "A wild Mareep appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-4761c928236f4200b47882874911e9c2|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Mareep|n\n1 Mareep |C\u2642|n                Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Mareep (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Mareep was caught!",
+        "**availability-772-player-4761c928236f4200b47882874911e9c2** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Mareep a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+teach 3=Thunder Wave",
+      "side": 0,
+      "messages": [
+        "Mareep already knows Thunder Wave."
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Mareep               |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+hold 3=Electrium Z",
+      "side": 0,
+      "messages": [
+        "Mareep is now holding Electrium Z."
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Mareep) Z choices; side use available:\n1: Thunderwave (20/20 PP), Electrium Z \u2192 Z-Thunder Wave, Electric Status 0."
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Mareep) prepares Z-Thunder Wave from Thunderwave \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_thunderwave_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Mareep's Electrium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 108",
+        "A wild Clodsire appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-00a7f5c0325a4d75878e90c73ea3ca8e|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Clodsire|n\n1 Clodsire |C\u2642|n              Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Clodsire (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Clodsire was caught!",
+        "**availability-772-player-00a7f5c0325a4d75878e90c73ea3ca8e** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Clodsire a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+teach 3=Toxic",
+      "side": 0,
+      "messages": [
+        "Clodsire already knows Toxic."
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Clodsire             |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+hold 3=Poisonium Z",
+      "side": 0,
+      "messages": [
+        "Clodsire is now holding Poisonium Z."
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Clodsire) Z choices; side use available:\n1: Toxic (10/10 PP), Poisonium Z \u2192 Z-Toxic, Poison Status 0."
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Clodsire) prepares Z-Toxic from Toxic \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regice) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_toxic_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Clodsire's Poisonium Z was returned to your inventory."
+      ]
+    }
+  ],
+  "new_offline_tests": 20
+}

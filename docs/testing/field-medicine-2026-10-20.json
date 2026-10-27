@@ -1,0 +1,261 @@
+{
+  "scope": "Existing field medicine, issues #748 and #749",
+  "baseline_commit": "fd402f935e9e6c8980d41cd3beb9f86d2c9849a8",
+  "implementation": "local working tree",
+  "proof": "automated real command parser/function and production models in disposable PostgreSQL schemas",
+  "public_deployment_verified": false,
+  "live_player_session_verified": false,
+  "integration_tests": {
+    "field_item_cases": 23,
+    "cloud_gameplay_cases": 9,
+    "remaining_item_cases": 8,
+    "status_item_cases": 9,
+    "capture_pp_item_cases": 16
+  },
+  "focused_legacy_command_tests": 17,
+  "mandatory_gate": [
+    {
+      "name": "combined",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1356,
+      "seconds": 201.0
+    },
+    {
+      "name": "repeat",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1356,
+      "seconds": 182.11
+    },
+    {
+      "name": "battle-first",
+      "passed": 4333,
+      "skipped": 4014,
+      "warnings": 1366,
+      "seconds": 196.13
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "pokemon/services/field_items.py",
+      "sha256": "61668307EA277B8DA6B2044D3106433909885C97455E308DA3A9F73744D25F3A"
+    },
+    {
+      "path": "commands/player/cmd_inventory.py",
+      "sha256": "97FC19BBA89BCAC1CC3C3A6C2D263127ACED002B63F8846389522F4B3E4A2292"
+    },
+    {
+      "path": "tests/integration/field_item_cases.py",
+      "sha256": "04C92154A75DD393231E2A6EB12E8E685EEF0DD4C750CDF863CFB6CDB3FD2AA5"
+    },
+    {
+      "path": "tests/integration/cloud_gameplay_cases.py",
+      "sha256": "D9F572A2EB901CA8E8AFC31814873107D6250D898DCC41DE90242380FE14038F"
+    },
+    {
+      "path": "tests/test_useitem_pp.py",
+      "sha256": "74248FBC9448E2F79D50FA620041121FB77671F416B17F337CF459DA2C1A99BB"
+    },
+    {
+      "path": "world/help_entries.py",
+      "sha256": "DE0D83A4F616EB3547ED930AC35368B995F55299AD5932374591844643F749EC"
+    },
+    {
+      "path": ".github/workflows/lifecycle-integrity.yml",
+      "sha256": "197B3DF79F7DFA5FE3D513D4687714E6FAD1509418496166A6D63B1B832480D4"
+    }
+  ],
+  "preserved_work": [
+    {
+      "path": "pokemon/battle/engine.py",
+      "sha256": "63862F26DA0DA7EA09134E086B42C443D1E5932F1B40A2D65B4042EC3BFAAE3E",
+      "unchanged": true
+    },
+    {
+      "path": "pokemon/battle/tests/test_showdown_runtime_hooks.py",
+      "sha256": "C36D5DCC3C0E5ED3E996390CF5BAB4AFAA0706FF90ECC7A0311D996C23CD8ED4",
+      "unchanged": true
+    },
+    {
+      "path": "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+      "sha256": "1079A86AC58C110A5D58FBE28148DB752656FECC1FB79262E97FCF52F46F3C24",
+      "unchanged": true
+    },
+    {
+      "path": "docs/testing/forced-form-item-repair-2026-10-20.json",
+      "sha256": "C1F693DDE34A1486FEC9ECB789B87C1ECA68CE3241763C5A557C2C214F1A075E",
+      "unchanged": true
+    },
+    {
+      "path": "docs/testing/forced-form-item-repair-2026-10-20.md",
+      "sha256": "307070243BFA6006CB910AD60629E3DB3AD98BED0D597EB8FFC1496C454F3976",
+      "unchanged": true
+    },
+    {
+      "path": "docs/testing/full-battle-postformfix-2026-10-20.json",
+      "sha256": "2637C501BC0D92370FD01CD35E6F46B0DD7F0F219DC62362496381E24C453B1E",
+      "unchanged": true
+    },
+    {
+      "path": "docs/testing/full-battle-postformfix-2026-10-20.md",
+      "sha256": "3B63E85E2CC8C3533B07B353FC47FBF91160270D9CF171D8382E2D858C42F3D4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/testing/full-battle-postrecovery-2026-10-20.json",
+      "sha256": "1F92BD95C65FA4D48270F696DB23EC29ACE35102918F2F5352452032CDF1B984",
+      "unchanged": true
+    },
+    {
+      "path": "docs/testing/full-battle-postrecovery-2026-10-20.md",
+      "sha256": "0D87F58A07722CF898FA2C0F18F1524A88B24CD65720687161507111766585F6",
+      "unchanged": true
+    }
+  ],
+  "walkthrough": [
+    {
+      "command": "+use Potion=3",
+      "output": "Used Potion on 3.",
+      "before": {
+        "current_hp": 1,
+        "status": "psn",
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 21,
+        "status": "psn",
+        "friendship": 70
+      },
+      "party_3_pp": [
+        0,
+        0
+      ],
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Antidote=3",
+      "output": "Used Antidote on 3.",
+      "before": {
+        "current_hp": 21,
+        "status": "psn",
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 21,
+        "status": "",
+        "friendship": 70
+      },
+      "party_3_pp": [
+        0,
+        0
+      ],
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Revive=6",
+      "output": "Used Revive on 6.",
+      "before": {
+        "current_hp": 0,
+        "status": "",
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 57,
+        "status": "",
+        "friendship": 70
+      },
+      "party_3_pp": [
+        0,
+        0
+      ],
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Max Ether=3/Water Gun",
+      "output": "Used Max Ether on 3.",
+      "before": {
+        "current_hp": 21,
+        "status": "",
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 21,
+        "status": "",
+        "friendship": 70
+      },
+      "party_3_pp": [
+        0,
+        40
+      ],
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Elixir=3",
+      "output": "Used Elixir on 3.",
+      "before": {
+        "current_hp": 21,
+        "status": "",
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 21,
+        "status": "",
+        "friendship": 70
+      },
+      "party_3_pp": [
+        10,
+        40
+      ],
+      "remaining_item": 0
+    },
+    {
+      "command": "+use Energy Root=3",
+      "output": "Used Energy Root on 3.",
+      "before": {
+        "current_hp": 21,
+        "status": "",
+        "friendship": 70
+      },
+      "after": {
+        "current_hp": 141,
+        "status": "",
+        "friendship": 60
+      },
+      "party_3_pp": [
+        10,
+        40
+      ],
+      "remaining_item": 0
+    }
+  ],
+  "mandatory_runner_exit": 0,
+  "disposable_schemas_remaining": 0,
+  "disposable_postgres_stopped": true,
+  "github": {
+    "closed_issues": [
+      748,
+      749
+    ],
+    "evidence_comments": [
+      "https://github.com/PokemonFusion/Fusion2/issues/748#issuecomment-6305599791",
+      "https://github.com/PokemonFusion/Fusion2/issues/749#issuecomment-6305600684"
+    ],
+    "tracker": 747,
+    "tracker_state": "open",
+    "completed_children": 6,
+    "total_children": 15,
+    "remaining_open_issues": [
+      754,
+      755,
+      756,
+      757,
+      758,
+      759,
+      760,
+      761,
+      762
+    ]
+  },
+  "verification_snapshot": "Local working-tree tests before commit and publication; implementation status describes that verification snapshot."
+}

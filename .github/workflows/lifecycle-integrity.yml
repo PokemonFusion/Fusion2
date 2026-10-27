@@ -4,19 +4,39 @@ on:
     paths:
       - 'pokemon/**'
       - 'utils/fusion.py'
+      - 'utils/character_mail.py'
+      - 'utils/character_mail_state.py'
+      - 'utils/channel_identity.py'
+      - 'typeclasses/channels.py'
+      - 'commands/player/cmd_mail.py'
+      - 'commands/player/cmd_channel.py'
+      - 'bboard/**'
+      - 'menus/bboard.py'
+      - 'utils/locks.py'
       - 'utils/pokemon_utils.py'
       - 'utils/display.py'
+      - 'utils/character_reads.py'
+      - 'utils/character_profiles.py'
+      - 'utils/party_view.py'
+      - 'commands/player/cmd_profile.py'
+      - 'web/website/views/**'
+      - 'web/templates/website/**'
       - 'utils/inventory_view.py'
       - 'utils/battle_display.py'
       - 'commands/cmdsets/pokemon_core.py'
       - 'commands/cmdsets/battle.py'
       - 'commands/player/cmd_challenge.py'
+      - 'commands/player/cmd_pvp_multi.py'
+      - 'commands/player/cmd_pvp.py'
+      - 'commands/cmdsets/pvp.py'
+      - 'typeclasses/multi_battle.py'
       - 'commands/debug/command.py'
       - 'commands/player/cmd_sheet.py'
       - 'commands/player/cmd_battle_retry.py'
       - 'server/conf/at_server_startstop.py'
       - 'server/conf/settings.py'
       - 'server/conf/telnet.py'
+      - 'server/conf/amp.py'
       - 'utils/server_logging.py'
       - 'commands/player/cmd_nickname.py'
       - 'menus/capture_nickname.py'
@@ -25,14 +45,22 @@ on:
       - 'commands/player/cmd_account.py'
       - 'commands/player/cmd_learn_evolve.py'
       - 'commands/player/cmd_party.py'
+      - 'commands/player/cmd_inventory.py'
       - 'commands/player/cmd_battle_concede.py'
+      - 'commands/player/cmd_battle_flee.py'
+      - 'commands/player/cmd_battle_item.py'
       - 'commands/player/cmd_gym.py'
       - 'world/hunt_system.py'
+      - 'world/content/gyms/**'
       - 'typeclasses/accounts.py'
       - 'menus/chargen.py'
       - 'conftest.py'
       - 'pytest.ini'
       - 'Makefile'
+      - 'tools/run_mandatory_tests.py'
+      - 'tools/audit_item_availability.py'
+      - 'docs/testing/item-stat-type-plan-2026-10-22.json'
+      - 'docs/offline-battle-testing.md'
       - 'tests/**'
       - 'services/battle/commit_adapter.py'
       - '.github/workflows/lifecycle-integrity.yml'
@@ -64,39 +92,138 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Real ORM transactions, deferred constraints and concurrent writers
         run: python tests/integration/placement_cases.py
+      - name: Cross-owner consent, reservations, atomic swaps and competing writers
+        run: python tests/integration/ownership_cases.py
+      - name: Atomic Fusion commands, legacy starter compatibility and bounded recovery
+        run: python tests/integration/fusion_cases.py
+      - name: Ordinary consent trades, immutable counteroffers and stale menu ownership
+        run: python tests/integration/trade_cases.py
+      - name: Fixed-price marketplace, current wallets and atomic competing purchases
+        run: python tests/integration/market_cases.py
+      - name: Daycare canonical custody, atomic fees, retrieval and reservation races
+        run: python tests/integration/daycare_cases.py
+      - name: Character mail, persistent boards and channel recipient permissions
+        run: python tests/integration/communication_cases.py
+      - name: Character sheet ownership, read-only resources and private profile requests
+        run: python tests/integration/sheet_cases.py
+      - name: Four-account Multi lobbies, exact controllers, team mechanics and rollback
+        run: python tests/integration/multi_battle_cases.py
+      - name: Persistent human and Fusion onboarding, saved choices and atomic one-time grants
+        run: python tests/integration/onboarding_cases.py
+      - name: Breeding cycles, fixed traits, egg collection and same-identity hatch retries
+        run: python tests/integration/breeding_cases.py
+      - name: Real Gen 9 breeding species, native ability slots and genetic inheritance
+        run: pytest -q tests/integration/breeding_rule_cases.py
+      - name: Ownership fresh install, upgrade and guarded invalid-data rollback
+        run: python tests/integration/ownership_migrations.py
       - name: Evolution and held-item transactions and concurrent retries
         run: python tests/integration/evolution_cases.py
+      - name: Alcremie Sweets, cosmetic reloads and ordinary command flow
+        run: python tests/integration/alcremie_cases.py
+      - name: Existing trade-held item equivalents, player commands and safe retries
+        run: python tests/integration/trade_held_cases.py
+      - name: Peat Block purchase, ordinary Ursaluna evolution and atomic retries
+        run: python tests/integration/peat_block_cases.py
+      - name: Kubfu Scroll purchase, both Urshifu styles and atomic retries
+        run: python tests/integration/kubfu_cases.py
+      - name: Leader's Crest KO evidence, committed victories and Kingambit player flow
+        run: python tests/integration/leader_crest_cases.py
       - name: NPC challenge constructor failure and persistent cleanup retries
         run: python tests/integration/trainer_challenge_cases.py
       - name: Evolution conditions and commands
-        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py
+        run: pytest -q tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_trade_held_evolution.py tests/test_trade_safety.py
       - name: Adventure and gym recovery with concurrent PostgreSQL claims
         run: python tests/integration/recovery_cases.py
       - name: Battle EXP, HP, PP and post-win healing on PostgreSQL
         run: python tests/integration/progression_cases.py
       - name: Battle reward retries, atomic turn checkpoints and lifecycle recovery
         run: python tests/integration/battle_recovery_cases.py
+      - name: Legal AI actions, reserve switches and checkpoint rebuilds
+        run: python tests/integration/ai_action_cases.py
+      - name: Doubles AI scoring, Trick Room and checkpoint rebuilds
+        run: python tests/integration/ai_scoring_cases.py
+      - name: Versioned authored gyms, ordinary singles launch and pending reward snapshots
+        run: python tests/integration/gym_content_cases.py
+      - name: Production gym configuration, strategy, rematches and reward integrity
+        run: python tests/integration/production_gym_cases.py
+      - name: Player doubles commands, targets and complete battle
+        run: python tests/integration/player_doubles_cases.py
+      - name: Smoke Ball equip, normal flee, suppression, capture separation and rebuilds
+        run: python tests/integration/smoke_ball_cases.py
+      - name: Tera commands, Stellar boosts and transactional checkpoint rollback
+        run: python tests/integration/terastallization_cases.py
       - name: Move and species name variants on PostgreSQL
         run: python tests/integration/name_resolution_cases.py
       - name: Battle item targets and persistent status on PostgreSQL
         run: python tests/integration/status_item_cases.py
       - name: Center healing locks and canonical party-slot commands on PostgreSQL
         run: python tests/integration/cloud_gameplay_cases.py
+      - name: Real AMP input routing through reload and session synchronization
+        run: python tests/integration/amp_reload_cases.py
       - name: Capture replay debits and durable Ether restoration on PostgreSQL
         run: python tests/integration/capture_ether_cases.py
       - name: Captured PP, Full Restore and inventory name aliases on PostgreSQL
         run: python tests/integration/capture_pp_item_cases.py
+      - name: Field medicine commands, exact targets, rollback and concurrent debits
+        run: python tests/integration/field_item_cases.py
+      - name: Rare Candy targets, atomic levels, learning and concurrent debits
+        run: python tests/integration/rare_candy_cases.py
+      - name: Food and drink medicine equivalents, shop-to-use and atomic party revival
+        run: python tests/integration/field_food_cases.py
+      - name: Field berry feeding, EV reduction, friendship and transactional persistence
+        run: python tests/integration/field_berry_cases.py
+      - name: Legacy recovery berry field routes, guards, rollback and final-copy use
+        run: python tests/integration/legacy_berry_cases.py
+      - name: Vitamin and feather field training, caps, HP and atomic concurrent use
+        run: python tests/integration/field_training_cases.py
+      - name: Ability item native slots, reversible Patch, evolution and atomic field use
+        run: python tests/integration/ability_item_cases.py
+      - name: Bottle Cap Hyper Training, genetic IV preservation, battle reload and atomic use
+        run: python tests/integration/hyper_training_cases.py
+      - name: Existing incense equip, battle power, suppression and checkpoint persistence
+        run: python tests/integration/incense_cases.py
+      - name: Native stat and critical items through nickname, hold and battle routes
+        run: python tests/integration/native_stat_item_cases.py
+      - name: Native legendary type boosters, forms and ordinary player persistence
+        run: python tests/integration/legendary_item_cases.py
+      - name: Plate native theft protection, nickname controls and durable player transfers
+        run: python tests/integration/plate_theft_cases.py
+      - name: Memory and Drive native theft protection and ordinary typed-move persistence
+        run: python tests/integration/memory_drive_theft_cases.py
+      - name: Origin, Primal and Rusted item native removal roles and player persistence
+        run: python tests/integration/origin_primal_rusted_theft_cases.py
+      - name: Held status berries, Synchronize and restored item updates
+        run: python tests/integration/held_status_berry_cases.py
+      - name: Explicit flavor berry snacks, owned field effects and atomic item conservation
+        run: python tests/integration/flavor_snack_cases.py
+      - name: Flamethrower and Surf through owned generic Z source routes
+        run: python tests/integration/z_existing_sources_cases.py
+      - name: Six explicit special Z sources, native acquisition, effects and persistent PP
+        run: python tests/integration/z_special_sources_cases.py
+      - name: Obtainable item menu, inventory, field/evolution/held effects and documented acquisition gaps
+        run: python tests/integration/item_availability_cases.py
+      - name: Bounded current stat and type item command replays
+        run: |
+          for batch in stat-type-1 stat-type-2 stat-type-3 stat-type-4; do
+            PF2_ITEM_SUPPORT_BATCH="$batch" python tests/integration/item_stat_batch_cases.py || exit 1
+          done
+      - name: PP capacity prompts, atomic use and legacy raw bonuses on PostgreSQL
+        run: python tests/integration/pp_capacity_cases.py
+      - name: Battle medicine, reserve revival and PP snapshot regressions
+        run: python tests/integration/remaining_item_cases.py
+      - name: Battle item capability, rejection before actions and restored choices
+        run: python tests/integration/battle_item_validation_cases.py
+      - name: Manual recovery foods and berries, normal item actions and atomic checkpoints
+        run: python tests/integration/battle_recovery_food_cases.py
       - name: Capture nickname input and Fusion character sheets on PostgreSQL
         run: python tests/integration/ui_cases.py
       - name: Adventure battle startup, concession and capture replay recovery
         run: python tests/integration/adventure_lifecycle_cases.py
+      - name: Non-combat Adventure survey commands, reconnect, expiry and optional encounters
+        run: python tests/integration/adventure_player_cases.py
       - name: Fresh install and three upgrade histories on PostgreSQL
         run: python tests/integration/recovery_migrations.py
       - name: Merged migration graph
         run: python tests/integration/migration_graph.py
-      - name: Combined application, battle and callback tests
-        run: pytest -q tests pokemon/battle/tests --run-callback-tests
-        env:
-          PF2_NO_EVENNIA: '1'
-          PYTHONDONTWRITEBYTECODE: '1'
-          PYTHONPATH: '.'
+      - name: Mandatory combined suite, repeat and reversed suite order
+        run: python -B tools/run_mandatory_tests.py

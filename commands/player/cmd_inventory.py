@@ -157,21 +157,6 @@ def _resolve_use_target(caller, query: str) -> tuple[_ResolvedUseTarget | None, 
     return None, f"No Pokemon target found for '{raw}'."
 
 
-def _growth_rate_for_pokemon(pokemon) -> str:
-    growth = getattr(pokemon, "growth_rate", None)
-    if growth:
-        return growth
-    species_name = getattr(pokemon, "species", getattr(pokemon, "name", ""))
-    if species_name:
-        from pokemon.dex import POKEDEX
-        from pokemon.names import resolve_dex_entry
-
-        entry = resolve_dex_entry(POKEDEX, species_name)
-        if entry:
-            return (getattr(entry, "raw", {}) or {}).get("growthRate", "medium_fast")
-    return "medium_fast"
-
-
 def _trainer_has_item(trainer, item_key: str, amount: int = 1) -> bool:
     checker = getattr(trainer, "has_item", None)
     if callable(checker):
@@ -180,48 +165,6 @@ def _trainer_has_item(trainer, item_key: str, amount: int = 1) -> bool:
     if callable(quantity):
         return int(quantity(item_key) or 0) >= amount
     return True
-
-
-def _consume_trainer_item(trainer, item_key: str) -> bool:
-    remover = getattr(trainer, "remove_item", None)
-    if not callable(remover):
-        return False
-    return bool(remover(item_key))
-
-
-def _apply_rare_candy(caller, trainer, pokemon, item_key: str) -> None:
-    if not _trainer_has_item(trainer, item_key):
-        caller.msg("You don't have any Rare Candy to use.")
-        return
-
-    level = getattr(pokemon, "computed_level", getattr(pokemon, "level", 1))
-    if level >= 100:
-        caller.msg(f"{pokemon.name} is already level 100.")
-        return
-
-    from pokemon.models.stats import add_experience, exp_for_level
-
-    growth = _growth_rate_for_pokemon(pokemon)
-    target_exp = exp_for_level(level + 1, growth)
-    current_exp = int(getattr(pokemon, "total_exp", 0) or 0)
-    gained = max(0, target_exp - current_exp)
-
-    if gained:
-        add_experience(pokemon, gained, rate=growth, caller=caller)
-    elif hasattr(pokemon, "set_level"):
-        pokemon.set_level(level + 1)
-    else:
-        pokemon.level = level + 1
-    if hasattr(pokemon, "save"):
-        try:
-            pokemon.save()
-        except Exception:
-            pass
-    new_level = getattr(pokemon, "computed_level", getattr(pokemon, "level", level + 1))
-    if not _consume_trainer_item(trainer, item_key):
-        caller.msg("Unable to consume Rare Candy after applying its effect. Please contact staff.")
-        return
-    caller.msg(f"{pokemon.name} grew to level {new_level}.")
 
 
 class CmdInventory(Command):
@@ -364,14 +307,89 @@ class CmdUseItem(Command):
       +use <item>=<target>
 
     Examples:
-      +use Potion
-      +use Potion=Pikachu
-      +use Potion=1
+      +use Rare Candy=1
       +use Rare Candy=Charizard
-      +use Escape Rope=self
+      +use PP Up=2
+      +use PP Max=2
+      +use Potion=3
+      +use Revive=6
+      +use Ether=3/Water Gun
+      +use Max Elixir=fusion
+      +use Oran Berry=3
+      +use Leppa Berry=3/Water Gun
+      +use Mystery Berry=3/4
+      +use Gold Berry=fusion
+      +use Pomeg Berry=3
+      +use Protein=3
+      +use Health Feather=fusion
+      +use Ability Capsule=3
+      +use Ability Patch=fusion
+      +use Bottle Cap=3/Atk
+      +use Gold Bottle Cap=fusion
+      +use Fresh Water=3
+      +use Max Honey=6
+      +use Sacred Ash=party
 
     Notes:
-      Battle items use +battle/item while a battle is waiting for your action.
+      Field medicine heals HP, cures status, revives fainted Pokemon and
+      restores PP. Targets accept canonical party slots, unambiguous names,
+      full Pokemon IDs or your current Fusion. Ether and Max Ether accept
+      /<move name or slot>; omitting it selects the first depleted active move.
+      Elixirs restore all active moves. Herbs also lower friendship on success.
+      PP Up and PP Max prompt for an exact active move name or displayed slot.
+      PP Up adds one fifth of base PP, up to three times; PP Max fills the cap.
+      Each raises current PP by the capacity gain. Use +use cancel to cancel.
+      Targets use the same fresh owned-party/current-Fusion checks as medicine.
+      An expired or changed target/moveset needs a new prompt. Eggs cannot use it.
+      Rare Candy uses the same fresh target checks and atomically raises one
+      level with one bag item, up to level 100. Eggs, boxes, foreign Pokemon
+      and inactive Fusion reservations cannot use it. Failed uses spend none.
+      Recovery berries and Berry Juice share medicine limits. Leppa restores
+      10 PP and Mystery Berry restores 5 PP to one active move, selected by
+      /<move name or real slot>, or the first depleted move if omitted.
+      Berry/Gold Berry heal 10/30 HP. Burnt thaws freeze; Ice cures burn;
+      Mint cures sleep; PRZ Cure handles paralysis; PSN Cure handles poison
+      or toxic poison. Miracle cures major saved status, as Lum does.
+      Bitter/Persim are confusion-only held berries with no field effect.
+      Pomeg/Kelpsy/Qualot/Hondew/Grepa/Tamato lower the matching
+      HP/Atk/Def/SpA/SpD/Spe EVs by up to 10 and raise friendship by 10 below
+      100, 5 below 200, or 2 at 200+ (cap 255). Either useful effect allows use.
+      An ineffective use consumes nothing. EV berries do not revive Pokemon.
+      HP Up/Protein/Iron/Calcium/Zinc/Carbos add up to 10 EVs to
+      HP/Atk/Def/SpA/SpD/Spe. Health/Muscle/Resist/Genius/Clever/Swift Feather
+      add 1 EV to those same stats. Caps are 252 per stat and 510 total;
+      partial increases use one item, capped or invalid EVs use none.
+      Training preserves HP deficit and fainting; it accepts no move selector.
+      Health/Muscle/Resist/Genius/Clever/Swift Mochi share those +10 EV rules.
+      Fresh-Start Mochi resets all six valid EVs together; all-zero has no effect.
+      Exp. Candy XS/S/M/L/XL grant bounded EXP. Use +learn pending afterward
+      for stored crossed-level moves; no automatic evolution or revival occurs.
+      Nature Mints set a stat preference; genetic Nature, breeding, nature
+      evolution and berry preferences stay unchanged. Use a full name such
+      as +use Adamant Mint=3. Equivalent modifiers consume nothing.
+      Ability Capsule switches ordinary ability slots 0/1. Ability Patch
+      switches an ordinary slot to hidden H, or hidden H back to ordinary 0.
+      Both use the saved native species/form slots; special abilities, absent
+      destinations and single-ability Capsule uses have no effect. Invalid
+      saved abilities and transformed/locked forms cannot use these items.
+      Hyper Training requires level 50+. Bottle Cap needs /<stat name>:
+      HP/Atk/Def/SpA/SpD/Spe. Gold Bottle Cap trains all remaining eligible
+      stats with one copy and no selector. Trained stats use effective IV 31;
+      genetic IVs remain unchanged. Perfect/already-trained stats spend none.
+      Training preserves HP deficit/fainting and appears on +party <slot>.
+      Other combat-trigger and contest berries have no manual field route.
+      Healing foods/drinks and status foods use the same field medicine rules.
+      Max Honey revives one fainted target to full HP; Sacred Ash=party revives
+      eligible fainted party members with one item, excluding eggs/boxes/Fusion.
+      These field equivalents accept no move selector. During battle, use
+      +item Fresh Water=3 or +item Max Honey=3; Sacred Ash stays field-only.
+      Recovery berries use +item Oran Berry=3 or +item Leppa Berry=3/Water Gun.
+      Rage Candy Bar cures major status through +use only. Hopo Berry restores
+      up to 10 PP through +use Hopo Berry=3/<actual move slot or full name>.
+      Both are field-only; held Hopo and plot/lure uses have no added effect.
+      Flavor/EV and confusion-only berries remain excluded from +item.
+      Bag feeding preserves held copies and does not invoke eating callbacks.
+      +heal restores your party at a Pokemon Center.
     """
 
     key = "+use"
@@ -391,50 +409,21 @@ class CmdUseItem(Command):
 
         pending = getattr(self.caller.ndb, "pending_pp_item", None)
 
-        if pending:
-            move_sel = args.strip()
-            if not move_sel:
-                self.caller.msg("Please specify which move to apply the item to.")
-                return
-            pokemon = pending["pokemon"]
-            item = pending["item"]
-            display_name = _display_item_name(None, item)
-            if not _trainer_has_item(trainer, item):
-                self.caller.msg(f"You don't have any {display_name} to use.")
+        if pending and "=" not in args:
+            if args.casefold() == "cancel":
                 self.caller.ndb.pending_pp_item = None
+                self.caller.msg("PP item selection cancelled. No item was consumed.")
                 return
-            slots = list(pokemon.activemoveslot_set.order_by("slot"))
-            move_name = None
-            if move_sel.isdigit():
-                idx = int(move_sel) - 1
-                if 0 <= idx < len(slots):
-                    move_name = slots[idx].move.name
-            else:
-                for s in slots:
-                    from pokemon.names import normalize_name
+            from pokemon.services.field_pp import FieldPPCapacityUse
 
-                    if normalize_name(s.move.name) == normalize_name(move_sel):
-                        move_name = s.move.name
-                        break
-            if not move_name:
-                self.caller.msg("Invalid move selection.")
+            service = FieldPPCapacityUse(self.caller)
+            try:
+                used = service.confirm(pending, args)
+            except ValueError as error:
+                self.caller.msg(str(error))
                 return
-            if item == "ppup":
-                applied = pokemon.apply_pp_up(move_name)
-                fail_msg = "That move's PP can't be raised any further."
-            else:
-                applied = pokemon.apply_pp_max(move_name)
-                fail_msg = "That move already has maximum PP."
-            if not applied:
-                self.caller.msg(fail_msg)
-                self.caller.ndb.pending_pp_item = None
-                return
-            if not _consume_trainer_item(trainer, item):
-                self.caller.msg(f"Unable to consume {display_name} after applying its effect. Please contact staff.")
-                self.caller.ndb.pending_pp_item = None
-                return
-            self.caller.msg(f"{pokemon.name}'s {move_name} PP was increased.")
-            self.caller.ndb.pending_pp_item = None
+            if used:
+                service.notify_success(pending["item"], pending["pokemon_id"])
             return
 
         if not args:
@@ -462,47 +451,73 @@ class CmdUseItem(Command):
             )
             return
 
-        target = None
+        from pokemon.services.field_berries import FieldBerryUse
+        from pokemon.services.field_food import FieldFoodUse
+        from pokemon.services.field_items import FieldMedicineUse
+        from pokemon.services.field_progression import FieldRareCandyUse
+        from pokemon.services.exp_candy import FieldExpCandyUse
+        from pokemon.services.field_mints import FieldMintUse
+        from pokemon.services.field_training import FieldTrainingUse
+        from pokemon.services.field_abilities import FieldAbilityUse
+        from pokemon.services.field_hyper_training import FieldHyperTrainingUse
+        from pokemon.services.field_recovery_equivalents import FieldRecoveryEquivalentUse
+
+        field_service = next((service for service in (FieldMedicineUse, FieldBerryUse, FieldFoodUse,
+                                                     FieldRareCandyUse, FieldExpCandyUse, FieldMintUse, FieldTrainingUse, FieldAbilityUse,
+                                                     FieldHyperTrainingUse, FieldRecoveryEquivalentUse)
+                              if service.supports(item_name)), None)
+        if field_service is not None:
+            display_name = _display_item_name(item_data, canonical)
+            if not parsed.target_query:
+                selector = "party" if getattr(item_data, "target_scope", "") == "party" else "<party slot, Pokemon name or fusion>[/<move>]"
+                if hasattr(field_service, "usage_target"):
+                    selector = field_service.usage_target(item_name)
+                self.caller.msg(f"Usage: +use {display_name}={selector}")
+                return
+            target_query, separator, move = parsed.target_query.partition("/")
+            if not target_query.strip() or (separator and not move.strip()):
+                label = getattr(field_service, "selection_label", "move name or slot")
+                self.caller.msg(f"Specify a Pokemon target and, after '/', a {label}.")
+                return
+            try:
+                service = field_service(self.caller)
+                used = service.use(
+                    item_name, target_query.strip(), move=move.strip() if separator else None
+                )
+            except ValueError as error:
+                self.caller.msg(str(error))
+                return
+            if used:
+                service.notify_success(display_name, target_query.strip())
+            elif used is not None:
+                self.caller.msg(f"{display_name} had no effect. No item was consumed.")
+            return
+
+        if item_name in {"ppup", "ppmax"}:
+            if not parsed.target_query:
+                self.caller.msg(f"Usage: +use {_display_item_name(item_data, canonical)}=<party slot or Pokemon name>")
+                return
+            from pokemon.services.field_pp import FieldPPCapacityUse
+
+            try:
+                FieldPPCapacityUse(self.caller).use(item_name, parsed.target_query)
+            except ValueError as error:
+                self.caller.msg(str(error))
+            return
+
         if parsed.target_query is not None:
-            target, error = _resolve_use_target(self.caller, parsed.target_query)
+            _target, error = _resolve_use_target(self.caller, parsed.target_query)
             if error:
                 self.caller.msg(error)
                 return
-
-        if item_name in {"ppup", "ppmax"} and target is not None:
-            if not _trainer_has_item(trainer, item_name):
-                self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
-                return
-            pokemon = target.pokemon
-            if not pokemon:
-                self.caller.msg("That item needs a Pokemon target.")
-                return
-            slots = list(pokemon.activemoveslot_set.order_by("slot"))
-            if not slots:
-                self.caller.msg("That Pokémon knows no moves.")
-                return
-            self.caller.ndb.pending_pp_item = {"pokemon": pokemon, "item": item_name.replace(" ", "")}
-            lines = ["Choose a move to increase PP:"]
-            for s in slots:
-                max_pp = pokemon.get_max_pp(s.move.name)
-                lines.append(f"{s.slot}. {s.move.name.title()} ({s.current_pp}/{max_pp})")
-            lines.append("Use +use <move name or number> to select.")
-            self.caller.msg("\n".join(lines))
-            return
-
-        if item_name == "rarecandy":
-            if target is None:
-                self.caller.msg("Usage: +use Rare Candy=<target>")
-                return
-            pokemon = target.pokemon
-            if not pokemon:
-                self.caller.msg("That item needs a Pokemon target.")
-                return
-            _apply_rare_candy(self.caller, trainer, pokemon, item_name)
-            return
 
         if not _trainer_has_item(trainer, item_name):
             self.caller.msg(f"You don't have any {_display_item_name(item_data, canonical)} to use.")
             return
 
-        self.caller.msg(f"{_display_item_name(item_data, canonical)} is not usable outside battle yet.")
+        self.caller.msg(
+            f"{_display_item_name(item_data, canonical)} is not usable outside battle yet. "
+            "Supported field items include medicine, recovery/EV berries, Berry Juice, vitamins/feathers/mochi, Ability Capsule/Patch, Bottle Caps, Rare Candy, PP Up and PP Max. "
+            "Use +heal at a Pokemon Center to restore your party; "
+            "battle items use +item <item> during battle."
+        )

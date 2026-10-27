@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from pokemon.names import normalize_name
+from pokemon.evolution_forms import AlcremieEvolution
+from pokemon.evolution_items import GimmighoulEvolution, KingambitEvolution, KubfuEvolution, PeatBlockEvolution, TradeHeldEvolution
 
 from ..dex import POKEDEX
 
@@ -55,6 +57,7 @@ class EvolutionContext:
     party_species: tuple = ()
     party_types: tuple = ()
     stats: dict = field(default_factory=dict)
+    kingambit_ready: bool = False
 
     def meets(self, condition):
         """Evaluate only enumerated conditions, not arbitrary dex prose."""
@@ -84,9 +87,16 @@ class EvolutionContext:
 
 
 def required_item(evo):
-    """Include the dex's Kleavor spelling/field exception without editing data."""
+    """Provide reviewed supplemental requirements without editing the dex."""
     if normalize_name(evo.name) == "kleavor":
         return "Black Augurite"
+    if normalize_name(evo.name) == "ursaluna":
+        return PeatBlockEvolution.item
+    if normalize_name(evo.name) == "gholdengo":
+        return GimmighoulEvolution.item
+    scroll = KubfuEvolution.required_item(evo)
+    if scroll:
+        return scroll
     return evo.raw.get("evoItem")
 
 
@@ -118,11 +128,24 @@ def evolution_options(species, *, level, item=None, context=None):
         raw, key = evo.raw, normalize_name(evo.name)
         kind = raw.get("evoType", "level")
         condition = raw.get("evoCondition", "")
+        sweet_evolution = AlcremieEvolution.eligible(current, evo, context.held_item)
+        trade_held_evolution = TradeHeldEvolution.eligible(current, evo, context.held_item)
+        peat_evolution = PeatBlockEvolution.eligible(current, evo, item)
+        kingambit_evolution = KingambitEvolution.eligible(current, evo, context.kingambit_ready)
+        kubfu_evolution = KubfuEvolution.eligible(current, evo, item)
+        coin_evolution = GimmighoulEvolution.eligible(current, evo, item, level, context.ability)
         if key == "kleavor":
             condition = ""
-        if kind not in SUPPORTED_TYPES or key in UNSUPPORTED_TARGETS:
+        if (
+            kind not in SUPPORTED_TYPES and not sweet_evolution
+            and not trade_held_evolution and not peat_evolution and not kingambit_evolution
+            and not kubfu_evolution and not coin_evolution
+        ) or key in UNSUPPORTED_TARGETS:
             continue
-        if level < (evo.evo_level or 0) or not context.meets(condition):
+        if level < (evo.evo_level or 0) or (
+            not sweet_evolution and not peat_evolution and not kingambit_evolution
+            and not kubfu_evolution and not coin_evolution and not context.meets(condition)
+        ):
             continue
         gender = raw.get("gender")
         if gender in {"M", "F"} and context.gender != gender:
@@ -133,7 +156,7 @@ def evolution_options(species, *, level, item=None, context=None):
             region = "Hisui"
         if region and normalize_name(context.region) != normalize_name(region):
             continue
-        if kind == "useItem":
+        if kind == "useItem" or peat_evolution or kubfu_evolution or coin_evolution:
             if not item or not required_item(evo) or normalize_name(item) != normalize_name(required_item(evo)):
                 continue
         elif item:  # Never spend a supplied item on an unrelated level evolution.
@@ -223,7 +246,11 @@ def attempt_evolution(pokemon, *, item=None, context=None, target=None):
         pokemon.name = result
     if hasattr(pokemon, "type_"):
         pokemon.type_ = ", ".join(data.types)
-    if data.raw.get("evoType") == "levelHold":
+    if (
+        data.raw.get("evoType") == "levelHold"
+        or AlcremieEvolution.eligible(source, data, context.held_item)
+        or TradeHeldEvolution.eligible(source, data, context.held_item)
+    ):
         pokemon.held_item = ""
     # Stats are calculated from species on demand; invalidate legacy overrides.
     for attr in ("_cached_stats", "_types_override"):

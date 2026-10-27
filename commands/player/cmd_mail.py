@@ -1,7 +1,8 @@
-from evennia import Command, search_object
+from evennia import search_object
 from evennia.objects.objects import DefaultCharacter
 from evennia.utils.evtable import EvTable
 
+from commands.dbsafe import DBSafeMuxCommand
 from utils import character_mail
 
 
@@ -11,7 +12,7 @@ def _is_character(obj) -> bool:
 
 
 def _search_character(query: str) -> list:
-    matches = search_object(query, exact=False, typeclass="typeclasses.characters.Character")
+    matches = search_object(query, exact=False)
     return [match for match in matches if _is_character(match)]
 
 
@@ -36,7 +37,7 @@ def _split_subject_body(raw: str) -> tuple[str, str]:
     return subject.strip(), body.strip()
 
 
-class CmdMail(Command):
+class CmdMail(DBSafeMuxCommand):
     """Send and read character mail.
 
     Usage:
@@ -57,6 +58,9 @@ class CmdMail(Command):
     help_category = "General"
 
     def func(self):
+        if not _is_character(self.caller):
+            self.caller.msg("Use +mail as your active character.")
+            return
         switches = {switch.lower() for switch in getattr(self, "switches", []) or []}
         if "help" in switches or (self.args or "").strip().lower() in {"help", "#help"}:
             self._show_help()
@@ -120,7 +124,7 @@ class CmdMail(Command):
                 character_mail.sender_name(message),
                 _preview(character_mail.mail_subject(message)),
                 _format_date(character_mail.mail_date(message)),
-                "Unread" if character_mail.is_unread(message) else "Read",
+                "Unread" if character_mail.is_unread(message, self.caller) else "Read",
             )
         self.caller.msg(f"Mailbox for {character_mail.character_name(self.caller)}:\n{table}")
 
@@ -201,9 +205,9 @@ class CmdMail(Command):
 
         try:
             message = character_mail.get_character_mail(self.caller, mail_id)
+            character_mail.mark_unread(message, self.caller)
         except character_mail.CharacterMailError as err:
             self.caller.msg(str(err))
             return
 
-        character_mail.mark_unread(message)
         self.caller.msg(f"Mail #{character_mail.mail_id(message)} marked unread.")

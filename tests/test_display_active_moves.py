@@ -149,6 +149,46 @@ def test_sheet_displays_active_moves_with_pp():
 	assert "Ember (10/25 PP)" in sheet
 
 
+@pytest.mark.parametrize("mode", ["full", "moves"])
+def test_sheet_uses_owned_capacity_instead_of_transient_bonus(mode):
+	"""A stale display-only bonus cannot override the owned capacity reader."""
+	mon = DummyPokemon()
+	mon.pp_bonuses = {"tackle": 1, "ember": 2}
+	mon.get_max_pp = lambda name: {"Tackle": 56, "Ember": 30}[name]
+	sheet = display.display_pokemon_sheet(None, mon, slot=1, mode=mode)
+	assert "Tackle (20/56 PP)" in sheet
+	assert "Ember (10/30 PP)" in sheet
+
+
+def test_sheet_without_owned_reader_preserves_runtime_bonus():
+	"""Non-model display adapters still support their explicit runtime bonuses."""
+	mon = DummyPokemon()
+	mon.pp_bonuses = {"tackle": 7}
+	assert "Tackle (20/42 PP)" in display.display_pokemon_sheet(None, mon)
+
+
+@pytest.mark.parametrize("growth", ["medium_fast", "fast", "slow", "medium_slow", "fluctuating", "erratic"])
+@pytest.mark.parametrize("progress, expected", [(0, 0), (0.5, 49), (1, 99)])
+def test_sheet_xp_progress_is_within_current_level(growth, progress, expected):
+	"""The level floor is zero progress, including non-cubic growth curves."""
+	mon = DummyPokemon()
+	mon.level, mon.growth_rate = 70, growth
+	floor = display.exp_for_level(70, growth)
+	ceiling = display.exp_for_level(71, growth)
+	mon.total_exp = floor + int((ceiling - floor - 1) * progress)
+	sheet = display.display_pokemon_sheet(None, mon)
+	assert f"({expected}% to next, {ceiling - mon.total_exp} xp)" in sheet
+
+
+def test_sheet_max_level_has_no_next_level_progress():
+	"""The level cap should not promise another level or divide by zero."""
+	mon = DummyPokemon()
+	mon.level, mon.total_exp = 100, 1000000
+	sheet = display.display_pokemon_sheet(None, mon)
+	assert "MAX LEVEL" in sheet
+	assert "% to next" not in sheet
+
+
 def test_iv_ev_breakdown_handles_lists():
 	"""_maybe_stat_breakdown should accept IV/EV data as lists."""
 	mon = DummyPokemon()

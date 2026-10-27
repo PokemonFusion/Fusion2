@@ -53,9 +53,10 @@ def active_sender_puppet(sender: Any, sender_session=None):
     """Find the character puppet associated with this channel send, if any."""
 
     if sender_session:
+        if getattr(sender_session, "account", None) != sender:
+            return None
         puppet = _session_puppet(sender_session)
-        if _puppet_belongs_to_sender(puppet, sender):
-            return puppet
+        return puppet if _puppet_belongs_to_sender(puppet, sender) else None
 
     get_all_puppets = getattr(sender, "get_all_puppets", None)
     if callable(get_all_puppets):
@@ -64,13 +65,13 @@ def active_sender_puppet(sender: Any, sender_session=None):
         except Exception:
             puppets = []
         if len(puppets) == 1:
-            return puppets[0]
+            return puppets[0] if _puppet_belongs_to_sender(puppets[0], sender) else None
 
     puppet = getattr(sender, "puppet", None)
     if isinstance(puppet, Iterable) and not isinstance(puppet, (str, bytes)):
         puppets = [candidate for candidate in puppet if candidate]
-        return puppets[0] if len(puppets) == 1 else None
-    return puppet or None
+        return puppets[0] if len(puppets) == 1 and _puppet_belongs_to_sender(puppets[0], sender) else None
+    return puppet if _puppet_belongs_to_sender(puppet, sender) else None
 
 
 def _session_puppet(session):
@@ -86,7 +87,12 @@ def _puppet_belongs_to_sender(puppet, sender) -> bool:
     if not puppet:
         return False
     account = getattr(puppet, "account", None)
-    return account in (None, sender)
+    if account != sender:
+        return False
+    characters = getattr(sender, "characters", None)
+    if characters is not None and puppet not in _as_list(characters):
+        return False
+    return True
 
 
 def _looks_like_account(sender) -> bool:

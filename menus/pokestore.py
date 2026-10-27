@@ -1,5 +1,7 @@
 """Menu nodes and helpers for the Pokemon storage system."""
 
+from pokemon.helpers.party_helpers import get_party_slots
+
 
 def _get_boxes(caller):
 	storage = caller.storage
@@ -7,8 +9,8 @@ def _get_boxes(caller):
 
 
 def _get_party(caller):
-	"""Return the caller's party."""
-	return caller.storage.get_party()
+	"""Return all six canonical party positions, including empty slots."""
+	return get_party_slots(caller)
 
 
 def node_start(caller, raw_input=None, **kwargs):
@@ -45,7 +47,7 @@ def node_box(caller, raw_input=None, **kwargs):
 		for i, mon in enumerate(mons, 1):
 			disp = mon.nickname or mon.species
 			lines.append(f"  {i}. {disp}")
-		if len(_get_party(caller)) >= 6:
+		if all(_get_party(caller)):
 			lines.append("Select a Pokemon to swap with your party.")
 		lines.append("B. Back")
 		return "\n".join(lines), [{"key": "_default", "goto": "node_box"}]
@@ -57,7 +59,7 @@ def node_box(caller, raw_input=None, **kwargs):
 		i = int(cmd) - 1
 		if 0 <= i < len(mons):
 			mon = mons[i]
-			if len(_get_party(caller)) >= 6:
+			if all(_get_party(caller)):
 				kwargs["poke_id"] = mon.unique_id
 				return node_choose_party_slot(caller, **kwargs)
 			caller.msg(caller.withdraw_pokemon(mon.unique_id, idx + 1))
@@ -71,6 +73,8 @@ def node_deposit(caller, raw_input=None, **kwargs):
 	if raw_input is None:
 		lines = ["Select a Pokemon to deposit:"]
 		for i, mon in enumerate(party, 1):
+			if mon is None:
+				continue
 			disp = mon.nickname or mon.species
 			lines.append(f"  {i}. {disp}")
 		lines.append("B. Back")
@@ -81,7 +85,7 @@ def node_deposit(caller, raw_input=None, **kwargs):
 		return node_start(caller)
 	if cmd.isdigit():
 		i = int(cmd) - 1
-		if 0 <= i < len(party):
+		if 0 <= i < len(party) and party[i] is not None:
 			kwargs["poke_id"] = party[i].unique_id
 			return node_choose_box(caller, **kwargs)
 	caller.msg("Invalid choice.")
@@ -116,6 +120,8 @@ def node_choose_party_slot(caller, raw_input=None, **kwargs):
 	if raw_input is None:
 		lines = ["Swap with which party slot?"]
 		for i, mon in enumerate(party, 1):
+			if mon is None:
+				continue
 			disp = mon.nickname or mon.species
 			lines.append(f"  {i}. {disp}")
 		lines.append("B. Back")
@@ -126,7 +132,7 @@ def node_choose_party_slot(caller, raw_input=None, **kwargs):
 		return node_box(caller, **kwargs)
 	if cmd.isdigit():
 		i = int(cmd)
-		if 1 <= i <= len(party):
+		if 1 <= i <= len(party) and party[i - 1] is not None:
 			pid = kwargs.get("poke_id")
 			caller.msg(caller.swap_pokemon(pid, i, box_index + 1))
 			return node_box(caller, **kwargs)

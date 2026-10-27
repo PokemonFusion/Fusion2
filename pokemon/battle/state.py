@@ -22,6 +22,7 @@ class BattleState:
 	positions: Dict[str, int] = field(default_factory=dict)
 	declare: Dict[str, Dict[str, str]] = field(default_factory=dict)
 	recycle: Dict[str, str] = field(default_factory=dict)
+	used_item_history: Dict[str, List[str]] = field(default_factory=dict)
 	expshare: Dict[str, str] = field(default_factory=dict)
 	roomweather: str = "clear"
 	watchers: Set[int] = field(default_factory=set)
@@ -35,11 +36,27 @@ class BattleState:
 	reward_id: str = field(default_factory=lambda: str(uuid4()))
 	rewards_granted: bool = False
 	battle_over: bool = False
+	flee_allowed: bool = True
 	ending: bool = False
 	flee_result: Dict = field(default_factory=dict)
 	flee_attempts: Dict[str, int] = field(default_factory=dict)
+	ai_switch_turns: Dict[str, int] = field(default_factory=dict)
 	participants: Dict[str, List[str]] = field(default_factory=dict)
 	capture_succeeded: bool = False
+	failed_capture_ball: str = ""
+	tera_used: List[str] = field(default_factory=list)
+	tera_pending: Dict[str, Dict[str, str]] = field(default_factory=dict)
+	mechanic_version: int = 1
+	mechanic_turn: int = 0
+	mega_used: List[str] = field(default_factory=list)
+	mega_pending: Dict[str, Dict] = field(default_factory=dict)
+	z_used: List[str] = field(default_factory=list)
+	z_pending: Dict[str, Dict] = field(default_factory=dict)
+	ultra_used: List[str] = field(default_factory=list)
+	ultra_pending: Dict[str, Dict] = field(default_factory=dict)
+	z_effects: Dict = field(default_factory=dict)
+	booster_effects: Dict = field(default_factory=dict)
+	multi: Dict = field(default_factory=dict)
 
 	def to_dict(self) -> Dict:
 		"""Return a serialisable representation of this state."""

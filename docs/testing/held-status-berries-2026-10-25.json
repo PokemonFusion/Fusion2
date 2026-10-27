@@ -1,0 +1,5495 @@
+{
+  "date": "2026-10-25",
+  "tracker": 852,
+  "baseline": "65e8e246bb50f4672ffdffa79740999251950b7a",
+  "status": "accepted local repair",
+  "evidence_kind": "Local automated ordinary production commands/menus/full turns and isolated PostgreSQL; no new released socket, hosted CI, permanent stock or deployment claim",
+  "source_sha256_lf": {
+    "pokemon/battle/logic.py": "3f3b145d68d8097ba2c2e34cdd488536f5f9e470f19262177b80b8af95aeb54c",
+    "pokemon/dex/functions/abilities_funcs.py": "5e11759723f84d8ce376aa2b16e81fd58ba249eda42f28c2368bd7bba96d4600",
+    "pokemon/dex/functions/items_funcs.py": "d22830cad8f314384ba615a0b1140b157b80da3dbaf929325b16b6d120226816",
+    "pokemon/dex/functions/moves/damage_moves.py": "443f15aac12d8c4520fe0a549569fba0b39def5560779ea0727c2e69d494613f",
+    "tests/integration/battle_recovery_food_cases.py": "543b259c8aede25ad61eb052559b28cb7825e6c991dab274bdcc2a3ca5189db9",
+    "tests/integration/held_status_berry_cases.py": "10fe7728e51059d3853ce1a0fb0e075bdcf3671dc1e98bc9fffa568884ab9ce2",
+    "pokemon/battle/tests/test_held_status_berry_identity.py": "1055775955b0e94d2f6f2f846917afaf702ef6adbc30ea863fe6cf1b52dfad2f",
+    "pokemon/battle/tests/test_synchronize_status_berries.py": "37e510a2967235aea6485bb9545b35c391735ff04d2fe133208d8355e63e8c36",
+    "pokemon/battle/tests/test_restored_item_update_handlers.py": "850efc521188e7aeb7e249359270f3b25c2f56d45bce6861cda0e45f3851c985",
+    "pokemon/battle/tests/test_embargo_item_duration.py": "c7442d78cdad3c219a40e6745c91d560f2aef41b96a770acb445a3faf6b9e009"
+  },
+  "qualification_manifest_sha256_lf": "b98c962aff3c1635df5f99a28078d82fd6cdb462f6edded5de1457056aa2a2e0",
+  "qualification_python_sources": 1133,
+  "unrelated_shared_work": {
+    "paths": 25,
+    "unchanged": true
+  },
+  "focused": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "pokemon/battle/tests/test_embargo_item_duration.py",
+        "pokemon/battle/tests/test_restored_item_update_handlers.py",
+        "tests/test_multi_battle.py",
+        "tests/test_battle_rebuild.py",
+        "tests/test_pvp_team_restore.py",
+        "tests/test_battle_restore_missing_state.py",
+        "pokemon/battle/tests/test_held_status_berry_identity.py",
+        "pokemon/battle/tests/test_synchronize_status_berries.py",
+        "pokemon/battle/tests/test_status_poison.py",
+        "pokemon/battle/tests/test_status_freeze.py",
+        "pokemon/battle/tests/test_status_burn.py",
+        "pokemon/battle/tests/test_status_sleep.py",
+        "pokemon/battle/tests/test_status_paralysis.py",
+        "tests/test_turn_status.py",
+        "tests/test_status_persistence.py",
+        "tests/test_status_move_messages.py",
+        "tests/test_status_moves_no_damage.py",
+        "tests/test_battle_recovery_food.py",
+        "tests/test_recovery_equivalents.py",
+        "pokemon/battle/tests/test_origin_primal_rusted_theft_identity.py",
+        "pokemon/battle/tests/test_item_form_ability_identity.py",
+        "pokemon/battle/tests/test_memory_drive_theft_identity.py",
+        "pokemon/battle/tests/test_plate_theft_identity.py",
+        "pokemon/battle/tests/test_legendary_item_identity.py",
+        "pokemon/battle/tests/test_item_core_runtime.py",
+        "pokemon/battle/tests/test_native_stat_items.py",
+        "pokemon/battle/tests/test_incense.py",
+        "pokemon/battle/tests/test_diagnosed_item_effects.py",
+        "pokemon/battle/tests/test_additional_item_effects.py",
+        "pokemon/battle/tests/test_remaining_item_effects.py",
+        "pokemon/battle/tests/test_forced_item_form_eligibility.py",
+        "pokemon/battle/tests/test_native_form_and_postbattle_items.py",
+        "pokemon/battle/tests/test_copied_move_persistence.py",
+        "tests/test_item_support_reconciliation.py",
+        "--basetemp",
+        "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-status-858-873-20261025\\focused-temp",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "exit_code": 0,
+      "seconds": 93.47,
+      "log_sha256": "bc20f5c2a2a328e40ec03d85b10017d680efc2f7110c02df12420ad7f0d23f58",
+      "pytest_counts": [
+        "1776"
+      ],
+      "skips": [],
+      "unittest_counts": []
+    }
+  ],
+  "player": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/held_status_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 78.15,
+      "log_sha256": "7281293a371592569e41b0000d471b71198d7b8cc76a8854c08394559e0ba212",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "31"
+      ]
+    }
+  ],
+  "compatibility": [
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/field_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 31.91,
+      "log_sha256": "defa8e25f0f868b3b9b9ac227327a22d76ea36eccbf43a0ea953a50b7f948a4d",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "26"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/legacy_berry_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 33.15,
+      "log_sha256": "75190c5c532db21f6f5a80753033ad9725896bbcd9fb25bb3848fe5054815d24",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "26"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/battle_recovery_food_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 81.23,
+      "log_sha256": "a91500f56baa53a3cd170f135eef980ee4e3071d4ed1e8312b2bf9defb407feb",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "50"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/status_item_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 9.99,
+      "log_sha256": "3d4f7a142d43fa49070ecf36b835cc6e6d99b24433b2fe0faec82e9d52199511",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "9"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/recovery_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 9.9,
+      "log_sha256": "f11c80767a2e4d014cd28029e74a89a129cf8b0fdef958d71a842dbbe8dab54c",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "9"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/battle_recovery_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 47.76,
+      "log_sha256": "337c1f3544ee1da8679137a41096c8c3758629970cc8b1837148836306906535",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "36"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/multi_battle_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 93.18,
+      "log_sha256": "ca5d8d032408edcdf985be78b9f94194fba281d856aa180f2c4cd7de6f75c8f3",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "33"
+      ]
+    },
+    {
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tests/integration/origin_primal_rusted_theft_cases.py"
+      ],
+      "exit_code": 0,
+      "seconds": 350.23,
+      "log_sha256": "bd2c01ba3c6747d833ace3807596b70abd7f895af87051c3341c4daca9f39e21",
+      "pytest_counts": [],
+      "skips": [],
+      "unittest_counts": [
+        "237"
+      ]
+    }
+  ],
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-repairs-reporting-v2-20261025\\qualified-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 2097.88,
+    "passed": [
+      "6142",
+      "6142",
+      "6142"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "2ec4fa064c3a0284fbecb06d5334ce6b4a54317af8ead38831bfaee40982454a",
+    "source_count": 1503
+  },
+  "legacy_boolean_checkpoint": {
+    "kind": "labelled legacy boolean checkpoint; not newly granted gameplay",
+    "remaining_by_residual": [
+      4,
+      3,
+      2,
+      1,
+      0
+    ],
+    "source_untouched": true,
+    "consumed_once_on_next_update": true,
+    "observations": [
+      {
+        "duration": 4,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 140
+      },
+      {
+        "duration": 3,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 120
+      },
+      {
+        "duration": 2,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 100
+      },
+      {
+        "duration": 1,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 80
+      },
+      {
+        "duration": 0,
+        "status": "psn",
+        "held": "Pechaberry",
+        "hp": 60
+      }
+    ]
+  },
+  "raw_player_receipts": {
+    "path": "private task artifact/player-v2-evidence.json",
+    "sha256_lf": "30e2237b2eade13eb58bea129a6df7959d95458dfe134674bab3b40a6b8189a2",
+    "records": 215
+  },
+  "coqualification": "Four separate repair commits and #859 reporting share the corrected complete v2 frozen source tree. No isolated intermediate commit-only acceptance is claimed.",
+  "diagnostics": [
+    "Original 39+29 regression baseline: 26 failed, 42 passed; scoped fixes: 68 passed.",
+    "Restored update baseline: 10 failed, 6 passed; rebind fix: 16 passed.",
+    "Embargo timer baseline: 7 failed; timer plus restore tests: 23 passed.",
+    "Final direct-condition target probe found a second Embargo adapter defect: both source and holder were suppressed. New matched source guards: 2 failed,7 passed before fix;9 passed after fix. Actual ordinary move route had always targeted the holder correctly. A complete corrected replacement gate supersedes the retained earlier frozen runs.",
+    "Initial sleep/freeze reflection exposed actual Synchronize recursion; retained private seed diagnostics.",
+    "A draft residual assertion used the wrong engine boundary, then was corrected before accepted runs.",
+    "First new manual Burnt negative fixture incorrectly expected no action. Corrected to existing supported-no-effect action/no-debit policy; 50 manual cases pass.",
+    "Player pilots separately reproduced unregistered reconnect handlers and immortal boolean Embargo.",
+    "First timed Embargo pilot correctly expired but fixture expected eating at residual expiry. Corrected to next ordinary update; final source does not force a callback or override accuracy/secondary chance."
+  ],
+  "limits": [
+    "Tagged capture finalization and stock are separate prerequisites; no wild ball command or item obtainability claim.",
+    "Ice Beam uses native moves, normal RNG seed3 and its natural freeze chance; no forced effect. Other cases use seed853.",
+    "Offline Klutz/status prerequisites are named adapters, not ordinary native player acquisition.",
+    "Old boolean Embargo checkpoints have no elapsed timer; first resumed residual starts a bounded five-residual countdown.",
+    "Plot/CAP items, definition expansion, unrelated shared work and existing human characters/Pokemon are excluded."
+  ],
+  "fixture_cleanup": {
+    "stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0
+  },
+  "issue": 858,
+  "rule": "Pecha Berry and PSN Cure Berry cure psn/tox; Burnt Berry cures frz only.",
+  "item_rules": {
+    "Pecha Berry": "psn/tox",
+    "PSN Cure Berry": "psn/tox",
+    "Burnt Berry": "frz only"
+  },
+  "new_offline_tests": 39,
+  "cases": [
+    {
+      "item": "Burnt Berry",
+      "facet": "healthy",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 2,
+          "owned_id": "3f529897-c88e-4b71-9178-79a89c8a3d58",
+          "trainer_id": 1
+        },
+        {
+          "side": 1,
+          "character_id": 3,
+          "owned_id": "8929c57b-2548-4109-b79c-532904deacb0",
+          "trainer_id": 2
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        0,
+        6
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "outcome": {
+        "move": "Safeguard",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 25,
+        "pp_after": 24
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "3f529897-c88e-4b71-9178-79a89c8a3d58",
+          "trainer_id": 1,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Burnt Berry",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "8929c57b-2548-4109-b79c-532904deacb0",
+          "trainer_id": 2,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:3f529897-c88e-4b71-9178-79a89c8a3d58",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": "Burntberry",
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:8929c57b-2548-4109-b79c-532904deacb0",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Burnt Berry",
+      "facet": "missing",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 5,
+          "owned_id": "c4ed7bfc-2c34-466b-b494-586e66786691",
+          "trainer_id": 3
+        },
+        {
+          "side": 1,
+          "character_id": 6,
+          "owned_id": "4cf66dc0-0f11-4e02-99dd-7c6ce2a06eb4",
+          "trainer_id": 4
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 0
+      },
+      "raw_receipt_range_inclusive": [
+        7,
+        10
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry"
+      ],
+      "outcome": {
+        "rejected": true,
+        "all_state_unchanged": true,
+        "injected_failures": 0
+      }
+    },
+    {
+      "item": "Burnt Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 8,
+          "owned_id": "aca3a3b3-47e8-4603-8a85-5df5bb403e25",
+          "trainer_id": 5
+        },
+        {
+          "side": 1,
+          "character_id": 9,
+          "owned_id": "e130b642-1f32-4620-abbb-02b21e86274a",
+          "trainer_id": 6
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        11,
+        17
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Ice Beam"
+      ],
+      "outcome": {
+        "move": "Ice Beam",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "aca3a3b3-47e8-4603-8a85-5df5bb403e25",
+          "trainer_id": 5,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 150,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "e130b642-1f32-4620-abbb-02b21e86274a",
+          "trainer_id": 6,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:aca3a3b3-47e8-4603-8a85-5df5bb403e25",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 150,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:e130b642-1f32-4620-abbb-02b21e86274a",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['icebeam']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Ice Beam"
+          ],
+          "seed": 3,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source uses Ice Beam on Buddy and deals moderate damage!",
+              "[DEBUG] lvl=50 pow=90 atk=105 def=105 stab=1.00 eff=1.00 roll=1.00 crit=False dmg=41",
+              "[DEBUG] total damage=41",
+              "  Buddy was frozen solid!",
+              "  Buddy's Burntberry defrosted it!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Ice Beam \u2192 A1.",
+              "Source uses Ice Beam on Buddy and deals moderate damage!",
+              "[DEBUG] lvl=50 pow=90 atk=105 def=105 stab=1.00 eff=1.00 roll=1.00 crit=False dmg=41",
+              "[DEBUG] total damage=41",
+              "  Buddy was frozen solid!",
+              "  Buddy's Burntberry defrosted it!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Burnt Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 11,
+          "owned_id": "930b21e3-2022-473f-b895-192d6b48cb23",
+          "trainer_id": 7
+        },
+        {
+          "side": 1,
+          "character_id": 12,
+          "owned_id": "20bcd1bc-ec80-4fad-8562-99c16783da0a",
+          "trainer_id": 8
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        18,
+        24
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Thunder Wave"
+      ],
+      "outcome": {
+        "move": "Thunder Wave",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 20,
+        "pp_after": 19
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "930b21e3-2022-473f-b895-192d6b48cb23",
+          "trainer_id": 7,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Burnt Berry",
+          "current_hp": 191,
+          "status": "par",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "20bcd1bc-ec80-4fad-8562-99c16783da0a",
+          "trainer_id": 8,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "par",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:930b21e3-2022-473f-b895-192d6b48cb23",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": "Burntberry",
+          "status": "par",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:20bcd1bc-ec80-4fad-8562-99c16783da0a",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": "par",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['thunderwave']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Thunder Wave"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source is paralyzed! It may be unable to move!",
+              "  Buddy is paralyzed! It may be unable to move!",
+              "Source used Thunder Wave on Buddy!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Thunder Wave \u2192 A1.",
+              "  Source is paralyzed! It may be unable to move!",
+              "  Buddy is paralyzed! It may be unable to move!",
+              "Source used Thunder Wave on Buddy!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Burnt Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 14,
+          "owned_id": "41a2826c-f888-4e2c-bea8-9e2be7ca13ee",
+          "trainer_id": 9
+        },
+        {
+          "side": 1,
+          "character_id": 15,
+          "owned_id": "ae7f37e0-7eee-457d-a0b8-94987c3b7cb5",
+          "trainer_id": 10
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        25,
+        31
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "41a2826c-f888-4e2c-bea8-9e2be7ca13ee",
+          "trainer_id": 9,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Burnt Berry",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "ae7f37e0-7eee-457d-a0b8-94987c3b7cb5",
+          "trainer_id": 10,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:41a2826c-f888-4e2c-bea8-9e2be7ca13ee",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": "Burntberry",
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:ae7f37e0-7eee-457d-a0b8-94987c3b7cb5",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Burnt Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 17,
+          "owned_id": "48fc8da4-f621-4511-8b80-c6f4289f8553",
+          "trainer_id": 11
+        },
+        {
+          "side": 1,
+          "character_id": 18,
+          "owned_id": "3542660b-2008-4618-a708-0c7eb4dd3c0b",
+          "trainer_id": 12
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        32,
+        38
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Will-O-Wisp"
+      ],
+      "outcome": {
+        "move": "Will-O-Wisp",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 15,
+        "pp_after": 14
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "48fc8da4-f621-4511-8b80-c6f4289f8553",
+          "trainer_id": 11,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Burnt Berry",
+          "current_hp": 180,
+          "status": "brn",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "3542660b-2008-4618-a708-0c7eb4dd3c0b",
+          "trainer_id": 12,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "brn",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:48fc8da4-f621-4511-8b80-c6f4289f8553",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": "Burntberry",
+          "status": "brn",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:3542660b-2008-4618-a708-0c7eb4dd3c0b",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "brn",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['willowisp']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Will-O-Wisp"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was burned!",
+              "  Buddy was burned!",
+              "Source used Will-O-Wisp on Buddy!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by its burn!",
+              "  Source was hurt by its burn!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Will-O-Wisp \u2192 A1.",
+              "  Source was burned!",
+              "  Buddy was burned!",
+              "Source used Will-O-Wisp on Buddy!",
+              "  (Buddy used its Burntberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by its burn!",
+              "  Source was hurt by its burn!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Burnt Berry",
+      "facet": "rollback",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 20,
+          "owned_id": "bba02ca2-3a64-40d4-8864-642f237f58d6",
+          "trainer_id": 13
+        },
+        {
+          "side": 1,
+          "character_id": 21,
+          "owned_id": "fcc8a1b6-4af5-4387-bdaa-244dc832f731",
+          "trainer_id": 14
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        39,
+        42
+      ],
+      "commands": [
+        "+hold 3=Burnt Berry"
+      ],
+      "outcome": {
+        "rejected": true,
+        "all_state_unchanged": true,
+        "injected_failures": 1
+      }
+    },
+    {
+      "item": "Lum Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 23,
+          "owned_id": "062b7d8a-7c67-45af-894d-b8bfd326b83d",
+          "trainer_id": 15
+        },
+        {
+          "side": 1,
+          "character_id": 24,
+          "owned_id": "367907b5-1ea2-419e-b687-9b1fb0a181c8",
+          "trainer_id": 16
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        43,
+        49
+      ],
+      "commands": [
+        "+hold 3=Lum Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "062b7d8a-7c67-45af-894d-b8bfd326b83d",
+          "trainer_id": 15,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "367907b5-1ea2-419e-b687-9b1fb0a181c8",
+          "trainer_id": 16,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:062b7d8a-7c67-45af-894d-b8bfd326b83d",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:367907b5-1ea2-419e-b687-9b1fb0a181c8",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy's Lumberry cured its poison!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy's Lumberry cured its poison!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Miracle Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 26,
+          "owned_id": "52ae938f-7675-44b5-80ab-246ff748e725",
+          "trainer_id": 17
+        },
+        {
+          "side": 1,
+          "character_id": 27,
+          "owned_id": "459ac105-46eb-4410-a63e-c93edda694a9",
+          "trainer_id": 18
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        50,
+        56
+      ],
+      "commands": [
+        "+hold 3=Miracle Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "52ae938f-7675-44b5-80ab-246ff748e725",
+          "trainer_id": 17,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "459ac105-46eb-4410-a63e-c93edda694a9",
+          "trainer_id": 18,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:52ae938f-7675-44b5-80ab-246ff748e725",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:459ac105-46eb-4410-a63e-c93edda694a9",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Lumberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Lumberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "checkpoint",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 29,
+          "owned_id": "0fe647e7-7dbf-4d6b-9fc1-6673d6cde181",
+          "trainer_id": 19
+        },
+        {
+          "side": 1,
+          "character_id": 30,
+          "owned_id": "c2c8d53b-b94d-45ca-b68f-47377922316e",
+          "trainer_id": 20
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        57,
+        63
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "0fe647e7-7dbf-4d6b-9fc1-6673d6cde181",
+          "trainer_id": 19,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "c2c8d53b-b94d-45ca-b68f-47377922316e",
+          "trainer_id": 20,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:0fe647e7-7dbf-4d6b-9fc1-6673d6cde181",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:c2c8d53b-b94d-45ca-b68f-47377922316e",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 2,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "embargo",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 32,
+          "owned_id": "2d989b30-b93b-4162-88ac-2706068cdaa2",
+          "trainer_id": 21
+        },
+        {
+          "side": 1,
+          "character_id": 33,
+          "owned_id": "27392aa2-ede4-418d-9c15-3855c6893813",
+          "trainer_id": 22
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        64,
+        75
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Embargo",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "embargo_duration_by_completed_turn": [
+        4,
+        3,
+        2,
+        1,
+        0,
+        0
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "2d989b30-b93b-4162-88ac-2706068cdaa2",
+          "trainer_id": 21,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 75,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "27392aa2-ede4-418d-9c15-3855c6893813",
+          "trainer_id": 22,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 16,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:2d989b30-b93b-4162-88ac-2706068cdaa2",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 75,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:27392aa2-ede4-418d-9c15-3855c6893813",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 16,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 6,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['embargo', 'toxic', 'safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Embargo"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Embargo \u2192 A1.",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Buddy's Pechaberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "  Buddy's Pechaberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "healthy",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 35,
+          "owned_id": "63e0120d-8f45-41cf-992f-b2fd1a0da488",
+          "trainer_id": 23
+        },
+        {
+          "side": 1,
+          "character_id": 36,
+          "owned_id": "0682e40c-9723-4da4-92bb-60503087ac32",
+          "trainer_id": 24
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        76,
+        82
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "outcome": {
+        "move": "Safeguard",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 25,
+        "pp_after": 24
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "63e0120d-8f45-41cf-992f-b2fd1a0da488",
+          "trainer_id": 23,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Pecha Berry",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "0682e40c-9723-4da4-92bb-60503087ac32",
+          "trainer_id": 24,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:63e0120d-8f45-41cf-992f-b2fd1a0da488",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": "Pechaberry",
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:0682e40c-9723-4da4-92bb-60503087ac32",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "magicroom",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 38,
+          "owned_id": "71efd1cd-f91f-422f-96dc-8c9efd9563e8",
+          "trainer_id": 25
+        },
+        {
+          "side": 1,
+          "character_id": 39,
+          "owned_id": "3d57852a-7595-4e4f-97ba-dab78d00d6c9",
+          "trainer_id": 26
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        83,
+        91
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Magic Room",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Iron Defense",
+        "+attack B1 Magic Room"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "71efd1cd-f91f-422f-96dc-8c9efd9563e8",
+          "trainer_id": 25,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "3d57852a-7595-4e4f-97ba-dab78d00d6c9",
+          "trainer_id": 26,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 157,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:71efd1cd-f91f-422f-96dc-8c9efd9563e8",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:3d57852a-7595-4e4f-97ba-dab78d00d6c9",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 157,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 3,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['magicroom', 'toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Magic Room"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Magic Room \u2192 A1, B1.",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Magic Room"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Magic Room \u2192 A1, B1.",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "missing",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 41,
+          "owned_id": "80580312-5ac4-4343-b13e-fca8ed3d0e5b",
+          "trainer_id": 27
+        },
+        {
+          "side": 1,
+          "character_id": 42,
+          "owned_id": "43828ae2-6565-4f8c-b04f-6543936cc5b1",
+          "trainer_id": 28
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 0
+      },
+      "raw_receipt_range_inclusive": [
+        92,
+        95
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry"
+      ],
+      "outcome": {
+        "rejected": true,
+        "all_state_unchanged": true,
+        "injected_failures": 0
+      }
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 44,
+          "owned_id": "5e78aa06-5b25-4b30-9ee2-4f3e56df1ae2",
+          "trainer_id": 29
+        },
+        {
+          "side": 1,
+          "character_id": 45,
+          "owned_id": "c5d2264a-4778-46e4-971a-bb587f8a73d5",
+          "trainer_id": 30
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        96,
+        102
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Poison Powder"
+      ],
+      "outcome": {
+        "move": "Poison Powder",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 35,
+        "pp_after": 34
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "5e78aa06-5b25-4b30-9ee2-4f3e56df1ae2",
+          "trainer_id": 29,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "c5d2264a-4778-46e4-971a-bb587f8a73d5",
+          "trainer_id": 30,
+          "species": "Venomoth",
+          "nickname": "Source",
+          "ability": "Shield Dust",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 161,
+          "status": "",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:5e78aa06-5b25-4b30-9ee2-4f3e56df1ae2",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:c5d2264a-4778-46e4-971a-bb587f8a73d5",
+          "species": "Venomoth",
+          "base_species": "Venomoth",
+          "ability": "Shield Dust",
+          "hp": 161,
+          "max_hp": 161,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['poisonpowder']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Poison Powder"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was poisoned!",
+              "Source used Poison Powder on Buddy!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Poison Powder \u2192 A1.",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was poisoned!",
+              "Source used Poison Powder on Buddy!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 47,
+          "owned_id": "2b297552-0d64-41c7-aee3-722124149aab",
+          "trainer_id": 31
+        },
+        {
+          "side": 1,
+          "character_id": 48,
+          "owned_id": "55cd1d45-e410-4907-8ae9-3d36ce6ae821",
+          "trainer_id": 32
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        103,
+        109
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Thunder Wave"
+      ],
+      "outcome": {
+        "move": "Thunder Wave",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 20,
+        "pp_after": 19
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "2b297552-0d64-41c7-aee3-722124149aab",
+          "trainer_id": 31,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Pecha Berry",
+          "current_hp": 191,
+          "status": "par",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "55cd1d45-e410-4907-8ae9-3d36ce6ae821",
+          "trainer_id": 32,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "par",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:2b297552-0d64-41c7-aee3-722124149aab",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": "Pechaberry",
+          "status": "par",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:55cd1d45-e410-4907-8ae9-3d36ce6ae821",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": "par",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['thunderwave']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Thunder Wave"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source is paralyzed! It may be unable to move!",
+              "  Buddy is paralyzed! It may be unable to move!",
+              "Source used Thunder Wave on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Thunder Wave \u2192 A1.",
+              "  Source is paralyzed! It may be unable to move!",
+              "  Buddy is paralyzed! It may be unable to move!",
+              "Source used Thunder Wave on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 50,
+          "owned_id": "0b462bf7-0ba4-4628-afef-929d88d608b7",
+          "trainer_id": 33
+        },
+        {
+          "side": 1,
+          "character_id": 51,
+          "owned_id": "4417296a-23d7-46f5-b391-2b2e5ecac877",
+          "trainer_id": 34
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        110,
+        116
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "0b462bf7-0ba4-4628-afef-929d88d608b7",
+          "trainer_id": 33,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "4417296a-23d7-46f5-b391-2b2e5ecac877",
+          "trainer_id": 34,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:0b462bf7-0ba4-4628-afef-929d88d608b7",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:4417296a-23d7-46f5-b391-2b2e5ecac877",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 53,
+          "owned_id": "2883302a-1f46-4645-a366-eb6c2651540f",
+          "trainer_id": 35
+        },
+        {
+          "side": 1,
+          "character_id": 54,
+          "owned_id": "447c4fb5-5350-4e7b-a41b-95ebc79cc9e3",
+          "trainer_id": 36
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        117,
+        123
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Will-O-Wisp"
+      ],
+      "outcome": {
+        "move": "Will-O-Wisp",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 15,
+        "pp_after": 14
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "2883302a-1f46-4645-a366-eb6c2651540f",
+          "trainer_id": 35,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "Pecha Berry",
+          "current_hp": 180,
+          "status": "brn",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "447c4fb5-5350-4e7b-a41b-95ebc79cc9e3",
+          "trainer_id": 36,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "brn",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:2883302a-1f46-4645-a366-eb6c2651540f",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": "Pechaberry",
+          "status": "brn",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:447c4fb5-5350-4e7b-a41b-95ebc79cc9e3",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "brn",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['willowisp']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Will-O-Wisp"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was burned!",
+              "  Buddy was burned!",
+              "Source used Will-O-Wisp on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by its burn!",
+              "  Source was hurt by its burn!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Will-O-Wisp \u2192 A1.",
+              "  Source was burned!",
+              "  Buddy was burned!",
+              "Source used Will-O-Wisp on Buddy!",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by its burn!",
+              "  Source was hurt by its burn!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "rollback",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 56,
+          "owned_id": "fda5f507-e4a2-46ff-8809-04b681cc01e4",
+          "trainer_id": 37
+        },
+        {
+          "side": 1,
+          "character_id": 57,
+          "owned_id": "f4e6739c-c047-4889-9a81-6f2cefb5fd20",
+          "trainer_id": 38
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        124,
+        127
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry"
+      ],
+      "outcome": {
+        "rejected": true,
+        "all_state_unchanged": true,
+        "injected_failures": 1
+      }
+    },
+    {
+      "item": "Pecha Berry",
+      "facet": "unnerve",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 59,
+          "owned_id": "deb288eb-3353-4fe7-ad5e-2d23cc255f07",
+          "trainer_id": 39
+        },
+        {
+          "side": 1,
+          "character_id": 60,
+          "owned_id": "8353dea3-61a7-4d6c-9537-1be6cc9fab3c",
+          "trainer_id": 40
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        128,
+        135
+      ],
+      "commands": [
+        "+hold 3=Pecha Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Skill Swap",
+        "+attack B1 Iron Defense"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "deb288eb-3353-4fe7-ad5e-2d23cc255f07",
+          "trainer_id": 39,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "8353dea3-61a7-4d6c-9537-1be6cc9fab3c",
+          "trainer_id": 40,
+          "species": "Tyranitar",
+          "nickname": "Source",
+          "ability": "Unnerve",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 157,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:deb288eb-3353-4fe7-ad5e-2d23cc255f07",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Unnerve",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense', 'skillswap']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:8353dea3-61a7-4d6c-9537-1be6cc9fab3c",
+          "species": "Tyranitar",
+          "base_species": "Tyranitar",
+          "ability": "Synchronize",
+          "hp": 157,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 3,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic', 'irondefense']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Skill Swap",
+            "+attack B1 Iron Defense"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Skill Swap \u2192 B1.",
+              "Waiting on Source...",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Skill Swap on Source!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Source used Iron Defense!",
+              "  Source's Defense rose sharply!",
+              "  Source's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Iron Defense \u2192 B1.",
+              "  (Buddy used its Pechaberry!)",
+              "Buddy used Skill Swap on Source!",
+              "  Buddy's Pechaberry cured its poison!",
+              "Source used Iron Defense!",
+              "  Source's Defense rose sharply!",
+              "  Source's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "checkpoint",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 62,
+          "owned_id": "cc5d15e5-fb01-4e55-83f9-73cb1bd1b8ab",
+          "trainer_id": 41
+        },
+        {
+          "side": 1,
+          "character_id": 63,
+          "owned_id": "52ea50ad-2b95-40c2-b486-6c59c4cb0fe1",
+          "trainer_id": 42
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        136,
+        142
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "cc5d15e5-fb01-4e55-83f9-73cb1bd1b8ab",
+          "trainer_id": 41,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "52ea50ad-2b95-40c2-b486-6c59c4cb0fe1",
+          "trainer_id": 42,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:cc5d15e5-fb01-4e55-83f9-73cb1bd1b8ab",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:52ea50ad-2b95-40c2-b486-6c59c4cb0fe1",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 2,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "embargo",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 65,
+          "owned_id": "80e8b9a1-c406-49a9-88ca-3b4778f804a4",
+          "trainer_id": 43
+        },
+        {
+          "side": 1,
+          "character_id": 66,
+          "owned_id": "95345049-6755-4707-91b2-b5da1a0f0e5c",
+          "trainer_id": 44
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        143,
+        154
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Embargo",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "embargo_duration_by_completed_turn": [
+        4,
+        3,
+        2,
+        1,
+        0,
+        0
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "80e8b9a1-c406-49a9-88ca-3b4778f804a4",
+          "trainer_id": 43,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 75,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "95345049-6755-4707-91b2-b5da1a0f0e5c",
+          "trainer_id": 44,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 16,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:80e8b9a1-c406-49a9-88ca-3b4778f804a4",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 75,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:95345049-6755-4707-91b2-b5da1a0f0e5c",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 16,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 6,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['embargo', 'toxic', 'safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Embargo"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Embargo \u2192 A1.",
+              "Source used Embargo on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Buddy's Psncureberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "  Buddy's Psncureberry cured its poison!",
+              "Source used Safeguard on itself but it had no effect!",
+              "Buddy's Iron Defense failed to affect its own stats!",
+              "  Buddy's Defense won't go any higher!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "healthy",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 68,
+          "owned_id": "b9bfe8de-b996-4991-9797-a31007d0546f",
+          "trainer_id": 45
+        },
+        {
+          "side": 1,
+          "character_id": 69,
+          "owned_id": "2116139c-83f5-4190-9f74-32b3ccb90a6b",
+          "trainer_id": 46
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        155,
+        161
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Safeguard"
+      ],
+      "outcome": {
+        "move": "Safeguard",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 25,
+        "pp_after": 24
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "b9bfe8de-b996-4991-9797-a31007d0546f",
+          "trainer_id": 45,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "PSN Cure Berry",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "2116139c-83f5-4190-9f74-32b3ccb90a6b",
+          "trainer_id": 46,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:b9bfe8de-b996-4991-9797-a31007d0546f",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": "Psncureberry",
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:2116139c-83f5-4190-9f74-32b3ccb90a6b",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['safeguard']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Safeguard"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Safeguard \u2192 B1.",
+              "Source used Safeguard on itself but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "magicroom",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 71,
+          "owned_id": "eaea5e87-5627-4e8d-a806-da751070cfc4",
+          "trainer_id": 47
+        },
+        {
+          "side": 1,
+          "character_id": 72,
+          "owned_id": "11759500-aee0-4cdd-aadf-e70a089eb241",
+          "trainer_id": 48
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        162,
+        170
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Magic Room",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Iron Defense",
+        "+attack B1 Magic Room"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "eaea5e87-5627-4e8d-a806-da751070cfc4",
+          "trainer_id": 47,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "11759500-aee0-4cdd-aadf-e70a089eb241",
+          "trainer_id": 48,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 157,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:eaea5e87-5627-4e8d-a806-da751070cfc4",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:11759500-aee0-4cdd-aadf-e70a089eb241",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 157,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 3,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['magicroom', 'toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Magic Room"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Magic Room \u2192 A1, B1.",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Magic Room"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Magic Room \u2192 A1, B1.",
+              "Source used Magic Room on Buddy but it had no effect!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "missing",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 74,
+          "owned_id": "3eb48585-f818-4a27-9165-324f2ac78fd3",
+          "trainer_id": 49
+        },
+        {
+          "side": 1,
+          "character_id": 75,
+          "owned_id": "309b4d53-e479-4871-8c48-aeb867eff1f5",
+          "trainer_id": 50
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 0
+      },
+      "raw_receipt_range_inclusive": [
+        171,
+        174
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry"
+      ],
+      "outcome": {
+        "rejected": true,
+        "all_state_unchanged": true,
+        "injected_failures": 0
+      }
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 77,
+          "owned_id": "5daca5be-d8a2-4d5f-988b-e398075d38ee",
+          "trainer_id": 51
+        },
+        {
+          "side": 1,
+          "character_id": 78,
+          "owned_id": "c6b7abdb-2b56-45f9-b3a3-6d0b80f95578",
+          "trainer_id": 52
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        175,
+        181
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Poison Powder"
+      ],
+      "outcome": {
+        "move": "Poison Powder",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 35,
+        "pp_after": 34
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "5daca5be-d8a2-4d5f-988b-e398075d38ee",
+          "trainer_id": 51,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "c6b7abdb-2b56-45f9-b3a3-6d0b80f95578",
+          "trainer_id": 52,
+          "species": "Venomoth",
+          "nickname": "Source",
+          "ability": "Shield Dust",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 161,
+          "status": "",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:5daca5be-d8a2-4d5f-988b-e398075d38ee",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:c6b7abdb-2b56-45f9-b3a3-6d0b80f95578",
+          "species": "Venomoth",
+          "base_species": "Venomoth",
+          "ability": "Shield Dust",
+          "hp": 161,
+          "max_hp": 161,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['poisonpowder']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Poison Powder"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was poisoned!",
+              "Source used Poison Powder on Buddy!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Poison Powder \u2192 A1.",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was poisoned!",
+              "Source used Poison Powder on Buddy!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 80,
+          "owned_id": "3f60782e-b5d9-4d77-aba2-8fb711a2591a",
+          "trainer_id": 53
+        },
+        {
+          "side": 1,
+          "character_id": 81,
+          "owned_id": "21d7d8c1-f228-40fa-ac07-245b045d1c8b",
+          "trainer_id": 54
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        182,
+        188
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Thunder Wave"
+      ],
+      "outcome": {
+        "move": "Thunder Wave",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 20,
+        "pp_after": 19
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "3f60782e-b5d9-4d77-aba2-8fb711a2591a",
+          "trainer_id": 53,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "PSN Cure Berry",
+          "current_hp": 191,
+          "status": "par",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "21d7d8c1-f228-40fa-ac07-245b045d1c8b",
+          "trainer_id": 54,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "par",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:3f60782e-b5d9-4d77-aba2-8fb711a2591a",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": "Psncureberry",
+          "status": "par",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:21d7d8c1-f228-40fa-ac07-245b045d1c8b",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": "par",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['thunderwave']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Thunder Wave"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source is paralyzed! It may be unable to move!",
+              "  Buddy is paralyzed! It may be unable to move!",
+              "Source used Thunder Wave on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Thunder Wave \u2192 A1.",
+              "  Source is paralyzed! It may be unable to move!",
+              "  Buddy is paralyzed! It may be unable to move!",
+              "Source used Thunder Wave on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 83,
+          "owned_id": "eb5d1c5d-1b24-4ae8-b7ae-c33fb6dcce2c",
+          "trainer_id": 55
+        },
+        {
+          "side": 1,
+          "character_id": 84,
+          "owned_id": "ca9a0733-3aa9-4ca0-89fe-a8dad2f0f9d1",
+          "trainer_id": 56
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        189,
+        195
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": false,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "eb5d1c5d-1b24-4ae8-b7ae-c33fb6dcce2c",
+          "trainer_id": 55,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 191,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "ca9a0733-3aa9-4ca0-89fe-a8dad2f0f9d1",
+          "trainer_id": 56,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:eb5d1c5d-1b24-4ae8-b7ae-c33fb6dcce2c",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 191,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:ca9a0733-3aa9-4ca0-89fe-a8dad2f0f9d1",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 2,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "normal",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 86,
+          "owned_id": "0956d25a-d6d5-4478-9879-06e0c99f3654",
+          "trainer_id": 57
+        },
+        {
+          "side": 1,
+          "character_id": 87,
+          "owned_id": "7b517748-dcd9-4570-9129-996c63050eae",
+          "trainer_id": 58
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        196,
+        202
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Will-O-Wisp"
+      ],
+      "outcome": {
+        "move": "Will-O-Wisp",
+        "useful": false,
+        "prevented": false,
+        "pp_before": 15,
+        "pp_after": 14
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "0956d25a-d6d5-4478-9879-06e0c99f3654",
+          "trainer_id": 57,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "PSN Cure Berry",
+          "current_hp": 180,
+          "status": "brn",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "7b517748-dcd9-4570-9129-996c63050eae",
+          "trainer_id": 58,
+          "species": "Mew",
+          "nickname": "Source",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "brn",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:0956d25a-d6d5-4478-9879-06e0c99f3654",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": "Psncureberry",
+          "status": "brn",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:7b517748-dcd9-4570-9129-996c63050eae",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Synchronize",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": "brn",
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['willowisp']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 2,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Will-O-Wisp"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  Source was burned!",
+              "  Buddy was burned!",
+              "Source used Will-O-Wisp on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by its burn!",
+              "  Source was hurt by its burn!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Will-O-Wisp \u2192 A1.",
+              "  Source was burned!",
+              "  Buddy was burned!",
+              "Source used Will-O-Wisp on Buddy!",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy was hurt by its burn!",
+              "  Source was hurt by its burn!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "rollback",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 89,
+          "owned_id": "215b9ed1-f591-4f9e-a34b-74eae089d709",
+          "trainer_id": 59
+        },
+        {
+          "side": 1,
+          "character_id": 90,
+          "owned_id": "dc059dd2-4715-4e4b-a3e7-57939071a4e4",
+          "trainer_id": 60
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        203,
+        206
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry"
+      ],
+      "outcome": {
+        "rejected": true,
+        "all_state_unchanged": true,
+        "injected_failures": 1
+      }
+    },
+    {
+      "item": "PSN Cure Berry",
+      "facet": "unnerve",
+      "controllers": [
+        {
+          "side": 0,
+          "character_id": 92,
+          "owned_id": "6674e5ee-8be7-4317-9435-99beadf9d470",
+          "trainer_id": 61
+        },
+        {
+          "side": 1,
+          "character_id": 93,
+          "owned_id": "123a6641-5d44-4763-af1e-dbf4efc21e8e",
+          "trainer_id": 62
+        }
+      ],
+      "source_setup": {
+        "source": "Tagged encounter/capture finalization and stock; normal nickname menu",
+        "stock_grant": 2
+      },
+      "raw_receipt_range_inclusive": [
+        207,
+        214
+      ],
+      "commands": [
+        "+hold 3=PSN Cure Berry",
+        "+attack A1 Iron Defense",
+        "+attack B1 Toxic",
+        "+attack A1 Skill Swap",
+        "+attack B1 Iron Defense"
+      ],
+      "outcome": {
+        "move": "Toxic",
+        "useful": true,
+        "prevented": true,
+        "pp_before": 10,
+        "pp_after": 9
+      },
+      "after_end_owned": [
+        {
+          "unique_id": "6674e5ee-8be7-4317-9435-99beadf9d470",
+          "trainer_id": 61,
+          "species": "Mew",
+          "nickname": "Buddy",
+          "ability": "Synchronize",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 180,
+          "status": "",
+          "sleep_turns": null
+        },
+        {
+          "unique_id": "123a6641-5d44-4763-af1e-dbf4efc21e8e",
+          "trainer_id": 62,
+          "species": "Tyranitar",
+          "nickname": "Source",
+          "ability": "Unnerve",
+          "nature": "Bold",
+          "level": 50,
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            252,
+            0,
+            252,
+            0,
+            0,
+            0
+          ],
+          "is_egg": false,
+          "held_item": "",
+          "current_hp": 157,
+          "status": "tox",
+          "sleep_turns": null
+        }
+      ],
+      "restored_runtime": [
+        {
+          "model_id": "owned:6674e5ee-8be7-4317-9435-99beadf9d470",
+          "species": "Mew",
+          "base_species": "Mew",
+          "ability": "Unnerve",
+          "hp": 180,
+          "max_hp": 191,
+          "item": null,
+          "status": 0,
+          "toxic_counter": 0,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['irondefense', 'skillswap']"
+          },
+          "volatiles": {}
+        },
+        {
+          "model_id": "owned:123a6641-5d44-4763-af1e-dbf4efc21e8e",
+          "species": "Tyranitar",
+          "base_species": "Tyranitar",
+          "ability": "Synchronize",
+          "hp": 157,
+          "max_hp": 191,
+          "item": null,
+          "status": "tox",
+          "toxic_counter": 3,
+          "tempvals": {
+            "entry_action_turn": 2,
+            "moves_used_since_entry": "['toxic', 'irondefense']"
+          },
+          "volatiles": {}
+        }
+      ],
+      "stable_identity_genetics_placements": true,
+      "conserved_bag_and_held_units": true,
+      "final_bag_units": 1,
+      "ordinary_turn_receipts": [
+        {
+          "commands": [
+            "+attack A1 Iron Defense",
+            "+attack B1 Toxic"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Iron Defense \u2192 A1.",
+              "Waiting on Source...",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Toxic \u2192 A1.",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Iron Defense!",
+              "  Buddy's Defense rose sharply!",
+              "  Buddy's Defense rose sharply!",
+              "  Source was badly poisoned!",
+              "  Buddy was badly poisoned!",
+              "Source used Toxic on Buddy!",
+              "  Buddy was hurt by poison!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        },
+        {
+          "commands": [
+            "+attack A1 Skill Swap",
+            "+attack B1 Iron Defense"
+          ],
+          "seed": 853,
+          "queued_rebuilds": 0,
+          "messages": [
+            [
+              "A1 (Buddy) prepares Skill Swap \u2192 B1.",
+              "Waiting on Source...",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Skill Swap on Source!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Source used Iron Defense!",
+              "  Source's Defense rose sharply!",
+              "  Source's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Buddy.",
+              "The battle awaits your move."
+            ],
+            [
+              "B1 (Source) prepares Iron Defense \u2192 B1.",
+              "  (Buddy used its Psncureberry!)",
+              "Buddy used Skill Swap on Source!",
+              "  Buddy's Psncureberry cured its poison!",
+              "Source used Iron Defense!",
+              "  Source's Defense rose sharply!",
+              "  Source's Defense rose sharply!",
+              "  Source was hurt by poison!",
+              "Choose an action for Source.",
+              "The battle awaits your move."
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

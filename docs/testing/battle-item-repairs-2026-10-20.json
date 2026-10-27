@@ -1,0 +1,5791 @@
+{
+  "updated_utc": "2026-10-20T17:49:22.963245+00:00",
+  "summary": {
+    "current_build_item_checks": 130,
+    "verified_checks": 130,
+    "failed_checks": 0,
+    "unobserved_chance_checks": 0,
+    "unique_items": 79,
+    "unique_pvp_cases": 176,
+    "previous_flagged_checks_resolved": 51,
+    "previous_needs_work_items_represented": 62,
+    "pilot_passes": 20,
+    "mandatory_passes_each": 4199,
+    "mandatory_fresh_processes": 3,
+    "all_options_passes": 8213,
+    "isolated_postgresql_passes": [
+      8,
+      16,
+      21
+    ],
+    "complete_team_matches": 5,
+    "reward_control_battles": 9,
+    "wild_consumption_lifecycle_verified": true
+  },
+  "scope": "Affected-item repair acceptance on the local server. Historical 283-item/576-definition coverage is not reclassified as current-build proof. Only declared effects are verified.",
+  "existing_github_issues": {
+    "747": "https://github.com/PokemonFusion/Fusion2/issues/747",
+    "748": "https://github.com/PokemonFusion/Fusion2/issues/748",
+    "749": "https://github.com/PokemonFusion/Fusion2/issues/749",
+    "751": "https://github.com/PokemonFusion/Fusion2/issues/751",
+    "752": "https://github.com/PokemonFusion/Fusion2/issues/752",
+    "753": "https://github.com/PokemonFusion/Fusion2/issues/753",
+    "757": "https://github.com/PokemonFusion/Fusion2/issues/757"
+  },
+  "candidate": "candidate07",
+  "loaded_code_versions": {
+    "pokemon.battle.engine": "adbc4a8c3c3e8a6b0d706bf9ac4bebde4cd550f96430f773fa4aef9c3c9b00f1",
+    "pokemon.battle.damage": "31dc9be3442f6e3be1d00127d9e36a0ae9ee76aca39050a7055fe9ca2de861ba",
+    "pokemon.battle.battledata": "09d6969f6e5b602e75234ae34052062ad207b20a41414ebb82e765e0da26b147",
+    "pokemon.battle.turns": "db55cc0301404b6cc9adeb49c156b54d1377aeeeb016ff96a052b7c5fbd32ae6",
+    "pokemon.battle.logic": "6c191aeb04c94008eb75979674ad3f3010a715dabfecb073e7e4e18bac968fc7",
+    "pokemon.battle.conditions": "409f56e8257f415428ac8343b0d68073f80ffb4b89ae13fad0cf656f00367009",
+    "pokemon.battle.legal_actions": "5b127dff99c6cdc926b96bf8d8a6eb701146ba4da4fcd061f80e75ed10aadea0",
+    "pokemon.battle.retaliation": "4410c8b45bb03af206df21419dd62a0ad5b7a0d2252220c69388cbc24c440ff1",
+    "pokemon.dex.entities": "53dd80f3c97d685d75eeb0211813ad04644d555540c3a3c50c62bbab26bf1986",
+    "pokemon.dex.functions.abilities_funcs": "889fa9d8f1b1e3561ab6c538adb9cb34fc344298fc604cd33cc406c5922edb7b",
+    "pokemon.dex.functions.conditions_funcs": "8856091bd31069da53639a76157a8927893d72d0323be33fcfa8752ea8055c30",
+    "pokemon.dex.functions.items_funcs": "c583d5addadf1afdf7a319fe4bd8295a74bf5c32187a1a101ba8165819c54f81",
+    "pokemon.dex.functions.moves.damage_moves": "91783438ce1fb6d4540a6ef23e844ef7906dd7791de00d43abfd7dc52ead9fb3",
+    "pokemon.dex.functions.moves.status_moves": "35df36d4dfad1139ee29894f27e57bd26f48caeb282ae6b8952203819bd0000c",
+    "pokemon.dex.functions.moves.misc_moves": "4e963b8a7479c78d482caaf4fc0aeec5bca55ec5fa3c924d43e7dbfde24695d9",
+    "pokemon.utils.boosts": "c3d9f6e7461f6944a0caf3f89239ce59a7c29642595b41e4e2926cb0177a5aa9",
+    "pokemon.battle._shared": "592a05916a829c67a6bd27cb6de4234a14c3ede3af55dea5e8e8d0c0552edcf2",
+    "pokemon.battle.utils": "8ef61e6d4a6aa6cc4fba9e718dd1fee6fbe0db327f6b65ec779a443c57e086ce",
+    "pokemon.battle.indirect_damage": "6575dafff4db4422663ae2b98a4ee8a4e1250b1e2449be55b939a9463eb1e3af",
+    "pokemon.battle.effect_context": "1a4a4f1716ce4a6e0d0aa9395d603717927b9fcd8e2e279a3d20a36f1c286361",
+    "pokemon.battle.stat_activation": "73b9084c3875235aa762e34f2c24c2f746ace26a6d808d418f7c14e60a75ce67",
+    "pokemon.battle.action_queue": "5245ed387b7339eba7ea01aa2b6697577988bf731a72f8c37481785e5c81937f",
+    "pokemon.battle.item_effects": "e41c3b474de7e484c918991010dc535b17872dc5ee9762f3e44910a4086c06ac",
+    "pokemon.services.battle_items": "2e2a994ad656a881e26df619ad1db674df0b647918fcb695ef4f776c0bef2e7e",
+    "pokemon.battle.actions": "709e30f2585cba3b5c643a783b4832d036392e3d8ca6eee81a6e9d4f90a6aa19",
+    "commands.player.cmd_battle_item": "5c7aecc586a2a3697d2f4905edee7d46e738b6488bbb889683e25a63c0fbf0a4",
+    "pokemon.battle.called_moves": "8f25101f6af9045deff901ec5b633ca78cfdf6b972ea7aff46d877ccd3027b41",
+    "pokemon.battle.delayed_moves": "c788ebf625cfcac42e8231fa3fecb2907f18f1c41c3476d0d0c7d93eabdc65ea",
+    "pokemon.battle.copied_moves": "6bc2f59d895b3d3f04960556919c515749dc53779c09d77af2570d3f167cbbd7",
+    "pokemon.battle.terastallization": "db2efb2b5ddb8519acdc611281ec21e068a9cd25bec348927e05573f63a2c71a",
+    "pokemon.battle.player_choices": "5cbd6a1953c91a19f263d5f2ab5fa2cc1c99394ce2e1b5f689853c11f72c8189",
+    "commands.player.cmd_battle_tera": "0171c555b4e4c7f0e93c01a45e53e1e37cf0ee0350253820c4ce7aa5335bfc7d",
+    "pokemon.services.sketch": "603f365a88658687a6512283e0e8f7076071b6d782e4ba1b245277f73bd89f12",
+    "pokemon.models.stats": "ff2ef947a8be133adbabb6e749c364b90eb4db26613a090cb8c2950fb9ffdf5b",
+    "pokemon.helpers.pokemon_helpers": "7b5a658303848eefbd65b0e9c12134e8b701eee655e8bf3ce45f586873cc9bc8",
+    "pokemon.battle.battleinstance": "3169d65c5c141327f65108bbe5a1590b58c83fc8cc634f42593aa880334d5ac5",
+    "pokemon.battle.appearance": "5b00025c62ffb14bfc24e90df78f72a755fa4c5e12936588112adeca3a083983",
+    "pokemon.battle.native_forms": "8b8c67c8f4fa0ca382c09a30b960efc6b159924d1ae812b5e5367bb5edff5920",
+    "pokemon.services.post_battle_items": "382092015289f3d628a1080a461c938aa260a0b6b2a9aa53d10e61388f7c5c99",
+    "pokemon.battle.accuracy": "604e5b57b41406c1abcaaa624397e18c3c0694469e79b05ede9e3e34df99d001",
+    "pokemon.battle.state": "c97ab927ae98ecee1e25d4dfc505c5a08581d3dd2cd1b03b17eba6de42d90fad",
+    "pokemon.ui.battle_render": "637e71717478b459b8da59b0a5d19257ac960ce2cb344f2a022a0e13ea895cc7",
+    "pokemon.battle.status.status_core": "f5b3dcf5c610dae026ef0f497b3776d29b42f8cac760d50ca0abdcc68bf749e8",
+    "pokemon.battle.status.burn": "3ff7091a70298ca1c93aa78e68c2c28a0c941d3adc760e94c1a8a22e14b82701",
+    "pokemon.battle.status.freeze": "2ac816b39feaf291d6d09ac6651f1f6275b42ffa84179b4b54f3f40484bf708c",
+    "pokemon.battle.status.paralysis": "4ca32fe9467ea5a54ddd29666097e7fcd654d7681e55d2dcc44a4fc7d95cf0b7",
+    "pokemon.battle.status.poison": "9e72fc0fbf2579c472ec8d07d554fefdc48109a3feaa66b4916943d13bf984c2",
+    "pokemon.battle.status.sleep": "db20f3cabc7e72e0b37eaca5ac14b61bed987a08db014aacde50806261088b05",
+    "pokemon.battle.protection": "1beb9e726c8dd11e4db07fa78abe01d94a14b7490c165a975cb90378e5b3f5ce",
+    "utils.pokemon_utils": "974d4c80700c9e2074ec16505960ee3686a0e889fad2a9a2dcc890a5d4daff50",
+    "qa_observer_algorithm": "efd952c0181ca7305bbb6842f0edf4b115f89f1294234a56d074b638a1b81a2e",
+    "qa_observer_snapshot": "713032a44a27c63fcf1283d2ea185674c0361ac879f3306580ee11e10c22668a"
+  },
+  "loaded_source_audit": {
+    "modules": 50,
+    "functions_checked": 2738,
+    "errors": []
+  },
+  "checks": [
+    {
+      "label": "reserve-revival-route-Revival Herb",
+      "item": "Revival Herb",
+      "group": "medicine-targeting",
+      "issues": [
+        748,
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-revivalherb-reserve-target-route-positive-v4",
+          "sha256": "3511440e3873905872535b12d87376cfa546a3c2705f4fafb9dc7280f8111645",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "inventory"
+        },
+        {
+          "type": "friendship_delta",
+          "before": 70,
+          "after": 55
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "adrenaline-trigger",
+      "item": "Adrenaline Orb",
+      "group": "threshold-trigger",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-adrenalineorb-intimidate-trigger",
+          "sha256": "929f63b4b8cb2a5b37379ef792aa506f5fd93746807d894545de50881fa6ff9c",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-Rusted Sword",
+      "item": "Rusted Sword",
+      "group": "native-form",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-rustedsword-native-form",
+          "sha256": "8962823ef0f6ec6a225cc0ba9e2b59bee0c93eccb086428e5a2c2bc9fb664fb6",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Rustedsword"
+        },
+        {
+          "type": "executed_name"
+        },
+        {
+          "type": "pp"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "booster-Flutter Mane",
+      "item": "Booster Energy",
+      "group": "native-ability",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-boosterenergy-activate-fluttermane-native-effect-v3-control",
+          "sha256": "0bd2c8d801bad2ab3ae397f46fd90b2dac7cc7ca0f240ca1702ed40e249de0b8",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-boosterenergy-activate-fluttermane-native-effect-v3",
+          "sha256": "9b61ba0831b081596595704b2a60425c52c2482bc0c5c67fd44c6b33531191df",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            70,
+            91
+          ]
+        },
+        {
+          "type": "highest_stat_activation",
+          "state": {
+            "active": true,
+            "stat": "spa",
+            "from_booster": true
+          }
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "booster-Iron Bundle",
+      "item": "Booster Energy",
+      "group": "native-ability",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-boosterenergy-activate-ironbundle-native-effect-v3-control",
+          "sha256": "910ef1091863177e6ed3349c2a12ce969970c1b93299d4a5ef3d0c4ac5fad8a1",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-boosterenergy-activate-ironbundle-native-effect-v3",
+          "sha256": "4c7198db686fb02cc294e39bc36182afef4501b2eb02f745a9bd41318fc5b6f2",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "move_order_gain",
+          "first_actors": [
+            "B",
+            "A"
+          ]
+        },
+        {
+          "type": "highest_stat_activation",
+          "state": {
+            "active": true,
+            "stat": "spe",
+            "from_booster": true
+          }
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "switch-Eject Button",
+      "item": "Eject Button",
+      "group": "switching",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ejectbutton-forced-switch",
+          "sha256": "c92fc459148350253064f8992438d72e525303ff8c6438bb7c21745c8e81d7b0",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "destiny-attract",
+      "item": "Destiny Knot",
+      "group": "volatile-reflection",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-destinyknot-reflect-attract-v2",
+          "sha256": "f8e6a25a24fb6f96a8a4f3c6fed48bad8b7443fcbec7a7a052ac06b07a26178e",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "volatile"
+        },
+        {
+          "type": "held",
+          "held": "Destinyknot"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "shell-spread-heal",
+      "item": "Shell Bell",
+      "group": "damage-healing",
+      "issues": [
+        751
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-shellbell-spread-healing",
+          "sha256": "f0cb23ceeb4fa6041478ad617af9394fa977f2bb13619999bae59e78ca781221",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "spread_shell_bell",
+          "actual_damage_by_target": [
+            32,
+            15,
+            13
+          ],
+          "healed": 7
+        },
+        {
+          "type": "held",
+          "held": "Shellbell"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "shell-bell-heal",
+      "item": "Shell Bell",
+      "group": "sustain",
+      "issues": [
+        751
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-shellbell-actual-damage",
+          "sha256": "4fdc484e8f9fc2a0da03e23b173218b77c0e391b594b585852ee021ec80fa21a",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "shell_bell",
+          "actual_damage": 18,
+          "healed": 2
+        },
+        {
+          "type": "held",
+          "held": "Shellbell"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "eviolite-native",
+      "item": "Eviolite",
+      "group": "stat-modifiers",
+      "issues": [
+        751
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-eviolite-eligible-control",
+          "sha256": "1b3af425b4ed743f15184cecedfac86e861351661fc39560a4a4d71b1953d7a3",
+          "raw_status": "smoke_completed"
+        },
+        {
+          "key": "item-eviolite-eligible-held",
+          "sha256": "ef9274030dcf6a3d47e2d1e1c8bff83b6f172df0b7fefc9927217a887d37bf54",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            32,
+            21
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Eviolite"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "boots-stealth-rock",
+      "item": "Heavy-Duty Boots",
+      "group": "protection",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heavydutyboots-hazard-switch-v2",
+          "sha256": "315bc9ffcdc664af0d6d5f9f2ab861cff27f29eaafc05f798ef5fa0fdedc21e3",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "held",
+          "held": "Heavydutyboots"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "pads-helmet",
+      "item": "Protective Pads",
+      "group": "protection",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-protectivepads-helmet-contact",
+          "sha256": "0adc594962337da8c76d7ba2aff796c22bab865f40d4f09d9de7c35987e8eb2b",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Protectivepads"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "bug-gem-one-move",
+      "item": "Bug Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-buggem-one-move-control",
+          "sha256": "f3f2fa5a9784e6403beaaf2c450eca02d4019447f542a2a7b0170b72ea13fe8e",
+          "raw_status": "smoke_completed"
+        },
+        {
+          "key": "item-buggem-one-move-held",
+          "sha256": "ca3b76983cf9b553f692bd40c18918372e2bae72d57700ff221a62afa4c9b244",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            27,
+            34
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-buggem",
+      "item": "Bug Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-buggem-matching-one-use-control",
+          "sha256": "4c17b9a00014dd8849da7741045ca4be49502f89ddfa24716aef595f929b09ad",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-buggem-matching-one-use-held",
+          "sha256": "c66c0d7a58d39acf54ae84b9c36cb588dbc0150ac461716c6fa0e80964f6ca68",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            25,
+            32
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            24,
+            24
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "natural-gift-custapberry",
+      "item": "Custap Berry",
+      "group": "natural-gift",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-custapberry-natural-gift",
+          "sha256": "6e903834bd5b2ed0fcf2f351d6e18e87a8a23a6dc90b81528ec1cfbcf63c91f8",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage",
+          "damage": 48
+        },
+        {
+          "type": "executed_type"
+        },
+        {
+          "type": "executed_power"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-darkgem",
+      "item": "Dark Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-darkgem-matching-one-use-control",
+          "sha256": "64805c1b5cb29f01e2ea6aa360d91216676bc36b2fbba391f15b5ab710a26491",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-darkgem-matching-one-use-held",
+          "sha256": "3a3c14830e0330f78c65f8dec7b78117f7c47de57a0b0b056ebd3f3b134700bd",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            27,
+            34
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            26,
+            26
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-dragongem",
+      "item": "Dragon Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-dragongem-matching-one-use-control",
+          "sha256": "069bc68742086b3b47c8749a5c8e73404ada51d504223d525cfc7c17cdd8d110",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-dragongem-matching-one-use-held",
+          "sha256": "f9d13cf9768d053057df8c02c16d467860ea5868bc0ecc73c64763c0e80662ad",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            30,
+            37
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            29,
+            29
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-electricgem",
+      "item": "Electric Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-electricgem-matching-one-use-control",
+          "sha256": "be181ae395ddba620db2040da16f10c2d3f2c75ffb7bee63a486163aa463c2b6",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-electricgem-matching-one-use-held",
+          "sha256": "b8f6b6dd8aa8797fc0737e9243bc54c185199564669fc6892e557f0125a88bda",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            40,
+            52
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            38,
+            38
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "natural-gift-enigmaberry",
+      "item": "Enigma Berry",
+      "group": "natural-gift",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-enigmaberry-natural-gift",
+          "sha256": "8bbde4e9e5c979b03d3d398530478950c5c4923e60bc68891efb49041b0d07cf",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage",
+          "damage": 48
+        },
+        {
+          "type": "executed_type"
+        },
+        {
+          "type": "executed_power"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-fairygem",
+      "item": "Fairy Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-fairygem-matching-one-use-control",
+          "sha256": "c785e248bcc0c13bbeaafe730fb3d50f1c9e76d713e0977d0cd73b3f5e41cb0c",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-fairygem-matching-one-use-held",
+          "sha256": "4a5e1fcce270a14f3b309007287c713cea9c08eb0158a55a131b7fd5e8c2817c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            38,
+            50
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            37,
+            37
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-fightinggem",
+      "item": "Fighting Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-fightinggem-matching-one-use-control",
+          "sha256": "feb2ea289c405bae4f6430374d03b25eee4889956b41c1ed0d764663227385fb",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-fightinggem-matching-one-use-held",
+          "sha256": "26e336dcd9caad08c9ea0fbaab32e04450d765c862de67d697e0f3e1e606ad04",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            37,
+            48
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            24,
+            24
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-firegem",
+      "item": "Fire Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-firegem-matching-one-use-control",
+          "sha256": "eb6f5424fbba32010e9bd177ae1d0948c99d05f0a7ae6482273626827d278509",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-firegem-matching-one-use-held",
+          "sha256": "8b9745c2e0df78e60ae99db5176376288e4c35d2b84dbaf3a24ab0ae721a2804",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            38,
+            41
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            37,
+            37
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-flyinggem",
+      "item": "Flying Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-flyinggem-matching-one-use-control",
+          "sha256": "77a6ce261e6b7970d613aac745d1e50a896fc30475504e28b9cbe847818abe56",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-flyinggem-matching-one-use-held",
+          "sha256": "5258915950a2335d9c4a623d24ad2c64fc0d1f8992a69a314570d6ddfac71d43",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            20,
+            26
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            19,
+            19
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-ghostgem",
+      "item": "Ghost Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ghostgem-matching-one-use-control",
+          "sha256": "4e1844a1fb83c8114db46b3b7e8c180919e4d0120d699c96c10cdf3644ff76df",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-ghostgem-matching-one-use-held",
+          "sha256": "2003041884e0b127e30ff18f52040a35a6d410bff023d34422da498342c2709a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            15,
+            19
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            15,
+            15
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-grassgem",
+      "item": "Grass Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-grassgem-matching-one-use-control",
+          "sha256": "272795cd335c50987bf2837e0e7f640387de1cfedfe35f920d9729d689c148b9",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-grassgem-matching-one-use-held",
+          "sha256": "adec3d5df374c4540f0e50eddd2b1a32bcd6c373a62572354f7b53f29e8e608e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            44,
+            58
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            42,
+            42
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-groundgem",
+      "item": "Ground Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-groundgem-matching-one-use-control",
+          "sha256": "4490b3b55be3c91600206e58fc665aec8f056c6455b4109963c9b190dd532071",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-groundgem-matching-one-use-held",
+          "sha256": "98120b314a3b9d6eb29275ad5466dc981384b06681f95b8a1330aedadc7e8661",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            10,
+            13
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            10,
+            10
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-icegem",
+      "item": "Ice Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-icegem-matching-one-use-control",
+          "sha256": "58dedca9980ad8254b9c0d1b650f5da29576543d51952fe5844034697ce03c2d",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-icegem-matching-one-use-held",
+          "sha256": "d3edc65a8437530dba7f05d27e923325a2ac31e4198230dbfc63be4f3a6c9b97",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            21,
+            28
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            19,
+            19
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-normalgem",
+      "item": "Normal Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-normalgem-matching-one-use-control",
+          "sha256": "c64b8e6fc34b22311b65271e00606eb26212c61dce48edd104c3836c062e5602",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-normalgem-matching-one-use-held",
+          "sha256": "cf59289d03cf3ee47121c6e66c0f043840b84cf7c6a4b5ed3ea423f27a453692",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            20,
+            26
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            19,
+            19
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-poisongem",
+      "item": "Poison Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-poisongem-matching-one-use-control",
+          "sha256": "d42911eea6b2eaa7a7b64a3bf74b97dd15fc3b994a913b22942bc3bb23cae411",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-poisongem-matching-one-use-held",
+          "sha256": "a1c20728e96b0c4f592e479f532fe2907fa2b72eedba34c40e58aaed73ff52ee",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            20,
+            26
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            29,
+            29
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-psychicgem",
+      "item": "Psychic Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-psychicgem-matching-one-use-control",
+          "sha256": "c8181fba82d460463cdaa101e43b5c42bdd8efb29f8ef1ba02e5c8c383663b0b",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-psychicgem-matching-one-use-held",
+          "sha256": "d1453dcfa43e86d9509ccc606ae93bd48e6380c8761a7cfc0617363ed4a9b7d0",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            37,
+            48
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            36,
+            36
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-rockgem",
+      "item": "Rock Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-rockgem-matching-one-use-control",
+          "sha256": "a9b6fec27424670497262bb66a455f306ff63830b02be4ccca3afc584544a9e5",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-rockgem-matching-one-use-held",
+          "sha256": "01acd6eabeaa94420b7536a7a8d09a9db9e5f8bb07dd7b2b58ce8d7ffccf57a7",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            25,
+            32
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            24,
+            24
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-steelgem",
+      "item": "Steel Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-steelgem-matching-one-use-control",
+          "sha256": "f6bd93b7b2bde360f0e94cd8ae4a419a84cb67f94edefa48f55733772c42f13f",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-steelgem-matching-one-use-held",
+          "sha256": "9fb91c8b035713cedd67d6e16f1c1421251b1672fd247c8a05541bf41b29db55",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            10,
+            13
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            9,
+            9
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-watergem",
+      "item": "Water Gem",
+      "group": "gems",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-watergem-matching-one-use-control",
+          "sha256": "db391a4ee12b81140a91c4d83ebd50b89330925b315c05e8a308ee84cace2cd8",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-watergem-matching-one-use-held",
+          "sha256": "07539a8ed52611ec2d51badabe9cd1a254bfc05de03e853abc44ea5f834dc86c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            10,
+            13
+          ]
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            9,
+            9
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Potion",
+      "item": "Potion",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-potion-medicine-heal",
+          "sha256": "c7408073058e61c39d7f796e9646c0a3c9a2412d4fc4ca320f1d5152667acdfd",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "heal_prepared",
+          "prepared_hp": 32,
+          "final_hp": 52,
+          "heal": 20
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Super Potion",
+      "item": "Super Potion",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-superpotion-medicine-heal",
+          "sha256": "9dae4981e13b1b6927d7e45de48c6a7c0eb10845c79a2e23cf98b34279cb1b6c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "heal_prepared",
+          "prepared_hp": 32,
+          "final_hp": 92,
+          "heal": 60
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Hyper Potion",
+      "item": "Hyper Potion",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-hyperpotion-medicine-heal",
+          "sha256": "a9f770d21ea7b6a2e0914f6f3d2c654db29f1ead9b60c803bf1dd8351c330fa8",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "heal_prepared",
+          "prepared_hp": 32,
+          "final_hp": 152,
+          "heal": 120
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Max Potion",
+      "item": "Max Potion",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-maxpotion-medicine-heal",
+          "sha256": "80ec7cb00a5185c038ceeec36c08611cfa2b4dbefc868c30561c843b97e40bd8",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Full Restore",
+      "item": "Full Restore",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-fullrestore-medicine-heal",
+          "sha256": "7e7b57ec80e1736dead50dbecf732b5da59b65cd50d5d12b412ad7db6cb2d66b",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Energy Powder",
+      "item": "Energy Powder",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-energypowder-medicine-heal",
+          "sha256": "c977b30b42aea21eca1bae1a2d2b0d7666e83e4ad2ab3069165418736ae75f2a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "heal_prepared",
+          "prepared_hp": 32,
+          "final_hp": 92,
+          "heal": 60
+        },
+        {
+          "type": "inventory"
+        },
+        {
+          "type": "friendship_delta",
+          "before": 70,
+          "after": 65
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-heal-Energy Root",
+      "item": "Energy Root",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-energyroot-medicine-heal",
+          "sha256": "a3e36d5e68bac4181e0397e56ee17d309216e2b0be62111b47793e8064c165cf",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "heal_prepared",
+          "prepared_hp": 32,
+          "final_hp": 152,
+          "heal": 120
+        },
+        {
+          "type": "inventory"
+        },
+        {
+          "type": "friendship_delta",
+          "before": 70,
+          "after": 60
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Antidote",
+      "item": "Antidote",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-antidote-medicine-status",
+          "sha256": "9306afba772c6d21e36c7ddb483392363a1a5c70c4f4257c374ec002cd7ce351",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Paralyze Heal",
+      "item": "Paralyze Heal",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-paralyzeheal-medicine-status",
+          "sha256": "338d679d7e763720ebfc40c8d470d53e78f8ba939f710435ff8954cfdf7c446e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Burn Heal",
+      "item": "Burn Heal",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-burnheal-medicine-status",
+          "sha256": "b0e36a0422f114e4c6437887b6a64ba84ab3ceab99978477fb3f82e9a3f4b82a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Ice Heal",
+      "item": "Ice Heal",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-iceheal-medicine-status",
+          "sha256": "6cbb4313bfd4e61a235e6acaca4354b4cf3bf4441c5e4ccb05e6cd5184a4b056",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Awakening",
+      "item": "Awakening",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-awakening-medicine-status",
+          "sha256": "d32926d1895bc8c5e7f3e9ffacc8ba5b1112aa49d9830856b795cc12bdf71b9d",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Full Heal",
+      "item": "Full Heal",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-fullheal-medicine-status",
+          "sha256": "11cd04eade9f287a2fb22dc897d7c2df6bc97baee248d4d2f6498731cb91b4d3",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Full Restore",
+      "item": "Full Restore",
+      "group": "medicine",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-fullrestore-medicine-status",
+          "sha256": "cf84058a92b6f503a4ccbf42fec84e0a68369cf6f3eb1ed56922876df14bb016",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-status-Heal Powder",
+      "item": "Heal Powder",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-healpowder-medicine-status",
+          "sha256": "38c9d9d35d1826249d053d01430db4367d80efedff18abfd88f3294b0cb223fc",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "inventory"
+        },
+        {
+          "type": "friendship_delta",
+          "before": 70,
+          "after": 65
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-pp-Ether",
+      "item": "Ether",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ether-medicine-pp",
+          "sha256": "4fb34e1f3b30fd683ba970a11befcf02cb36e19a02f7381f66b304b2c11e5433",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-pp-Max Ether",
+      "item": "Max Ether",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-maxether-medicine-pp",
+          "sha256": "cd415c57992352477a63ac77c05d0b53a0e3b8e904d0983c8f1fd4edc13f7bd7",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-pp-Elixir",
+      "item": "Elixir",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-elixir-medicine-pp",
+          "sha256": "ee83dec72cca700ea3442869dd0329cdb880ad3c2cc37c2627f48670497e99ab",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "medicine-pp-Max Elixir",
+      "item": "Max Elixir",
+      "group": "medicine",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-maxelixir-medicine-pp",
+          "sha256": "3dcb80ac149a042dfe1ac2fe0a6be8ad6b6ed0a2583eeaf71781fe388dee5b16",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "reserve-revival-route-Revive",
+      "item": "Revive",
+      "group": "medicine-targeting",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-revive-reserve-target-route-positive-v4",
+          "sha256": "db3befa10013c944242a5efe06ff4b45e8d35b72b01f911c0b348f05d2b21085",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "heal"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "reserve-revival-route-Max Revive",
+      "item": "Max Revive",
+      "group": "medicine-targeting",
+      "issues": [
+        748
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-maxrevive-reserve-target-route-positive-v4",
+          "sha256": "8b0b72314d047ec2c174417091035ac287b4d071d35beb054076f368dcbe1317",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "offense-Choice Band-Mew-Tackle",
+      "item": "Choice Band",
+      "group": "stat-offense",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-choiceband-offense-Mew-Tackle-control",
+          "sha256": "11ce24d3e9ac73204e3e2c6c11841c88f829c4ecca86b5d84da923daa5798756",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-choiceband-offense-Mew-Tackle-held",
+          "sha256": "4c906d24069543a0df7db520c218b781fa916d309bdbe0cc46b698f60a6758ed",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            20,
+            30
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Choiceband"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "offense-Choice Specs-Mew-Water Gun",
+      "item": "Choice Specs",
+      "group": "stat-offense",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-choicespecs-offense-Mew-WaterGun-control",
+          "sha256": "88fcbb516a7ecf27ec693c624f5a0ff65fd1d9f9b688376f86a60c408bf06348",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-choicespecs-offense-Mew-WaterGun-held",
+          "sha256": "2909480b387d069f55055aaa7a2a0ff2431ccea8d52c5efa6d1cc63332d4274f",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            10,
+            15
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Choicespecs"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "offense-Life Orb-Mew-Tackle",
+      "item": "Life Orb",
+      "group": "stat-offense",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-lifeorb-offense-Mew-Tackle-control",
+          "sha256": "dceb74a04c2e1d56625c86e25e3984f55cac121bf6f3b6d3a0982193406841de",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-lifeorb-offense-Mew-Tackle-held",
+          "sha256": "f5660194065fafa5be7719f77fe05047f7b7b67299b607a0475ce76095940496",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            20,
+            26
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Lifeorb"
+        },
+        {
+          "type": "hp_loss_fraction"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "defense-Assault Vest",
+      "item": "Assault Vest",
+      "group": "stat-defense",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-assaultvest-defense-control",
+          "sha256": "6ac6795996cbeb71bd431cb64b6e22729cb1727335efd801a555588f4af3a488",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-assaultvest-defense-held",
+          "sha256": "b2e029e81989c93c930e2cd71d2f2216939307e40e1d649a737cea31f1711365",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            9,
+            6
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Assaultvest"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "defense-Eviolite",
+      "item": "Eviolite",
+      "group": "stat-defense",
+      "issues": [
+        751
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-eviolite-defense-control",
+          "sha256": "63c5855459e87d3940775140c975392d147d5ac52e883cbc0637e495f42c66e3",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-eviolite-defense-held",
+          "sha256": "7194c8ddd5ae479fce03d444378a565bc723e266e18e29651d11c86e44f7701f",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            7,
+            5
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Eviolite"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "scarf-order",
+      "item": "Choice Scarf",
+      "group": "turn-order",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-choicescarf-actual-order",
+          "sha256": "ae942a47e90fa2bac0c756dc3e46fa98e8872c13b66d930a3d9ba0a8c232402c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "move_order",
+          "actual_order": [
+            "Snorlax",
+            "Squirtle"
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Choicescarf"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "duration-Terrain Extender",
+      "item": "Terrain Extender",
+      "group": "field-duration",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-terrainextender-duration-control",
+          "sha256": "519a27393215677f12f6056f5a72f0573bcdbe5b9ee464d210be6d990e6cfba9",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-terrainextender-duration-held",
+          "sha256": "2b478f47069bb2cceca73cda942260f22e7cb9b595811587b5c62ec0fc244113",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "duration_relation",
+          "durations": [
+            4,
+            7
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Terrainextender"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "enigma-heal",
+      "item": "Enigma Berry",
+      "group": "hit-trigger",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-enigmaberry-super-effective-heal-control-wounded-v2",
+          "sha256": "309c6f9d6b884f9265c7915fffa0f70108457054f8a3c4a739a81f1bc21c3b86",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-enigmaberry-super-effective-heal-wounded-v2",
+          "sha256": "151e950c98a5e210ecbfd8bd608b1fe24c7f8f8ae29126f71377dbf3c34bccd8",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "matched_hit_heal",
+          "actual_damage": 16,
+          "expected_hp": 216
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "field-trigger-Room Service",
+      "item": "Room Service",
+      "group": "field-trigger",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-roomservice-field-trigger",
+          "sha256": "93d5a936d31d62f15aa8c5c7696ab4223ec75b659cff9239978082dc91ba3be9",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "balloon-immunity-pop",
+      "item": "Air Balloon",
+      "group": "immunity",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-airballoon-ground-immunity-pop",
+          "sha256": "d5578ba0e819d6acb910646f8746832eca786080620187f21507da7efe42b80e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "damage",
+          "damage": 11
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "immunity-Ring Target",
+      "item": "Ring Target",
+      "group": "immunity",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ringtarget-negate-immunity",
+          "sha256": "d54e7c3302da4fb4fa1a92abdd39ad24b5caf3b41339234ec232a23de6251c5d",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage",
+          "damage": 10
+        },
+        {
+          "type": "held",
+          "held": "Ringtarget"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "goggles-powder-weather",
+      "item": "Safety Goggles",
+      "group": "immunity",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-safetygoggles-powder-weather",
+          "sha256": "f56cc5f31369258a9d0c5c4cb01bbce549223447d6e151875e0cd5e9a0fa1186",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "status"
+        },
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Safetygoggles"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "glove-contact",
+      "item": "Punching Glove",
+      "group": "contact-prevention",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-punchingglove-punch-no-contact",
+          "sha256": "0d9dfaff1fb5666194f549bb5bf475f1d5fb4e11fe0d6e1c9e342af5d44de7fb",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Punchingglove"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "herb-charge",
+      "item": "Power Herb",
+      "group": "charge",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-powerherb-skip-charge",
+          "sha256": "b21c6d068e3d3bdbc934af2841ab3bbd8c76f10c76e5f8626161a7701895c434",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage",
+          "damage": 106
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "dice-hit-count",
+      "item": "Loaded Dice",
+      "group": "multihit",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-loadeddice-four-five-hits",
+          "sha256": "0d1f39f8de0f13203afe111df4ca99f64c2e47a22f37196370131dee8731c726",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hit_count"
+        },
+        {
+          "type": "held",
+          "held": "Loadeddice"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "metronome-repeat",
+      "item": "Metronome",
+      "group": "repeat-power",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-metronome-repeat-ramp",
+          "sha256": "15fe56dcefe5ae517480268d8f497f4b4ee514f246fe52e24afe9b48666f156f",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "series_growth",
+          "damage": [
+            18,
+            21,
+            25
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Metronome"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "priority-Custap Berry",
+      "item": "Custap Berry",
+      "group": "turn-order",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-custapberry-priority-branch",
+          "sha256": "b801d5e123e109a42199e1720227149fac84fc1178242bf082ed35d878c5afbf",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "move_order",
+          "actual_order": [
+            "Snorlax",
+            "Squirtle"
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-Blue Orb",
+      "item": "Blue Orb",
+      "group": "native-form",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-blueorb-native-form",
+          "sha256": "9f97e8412be511f4ac31ec277f161bff8d65ef626885f8f98c95d7d80409ba45",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Blueorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-Red Orb",
+      "item": "Red Orb",
+      "group": "native-form",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-redorb-native-form",
+          "sha256": "9736eacf328692ad67f30c94dc916bc5075f621aff01c69889b66228fdada2c0",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Redorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-Rusted Shield",
+      "item": "Rusted Shield",
+      "group": "native-form",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-rustedshield-native-form",
+          "sha256": "4c77e66ebc077a7cb85ddb33991eea90a098d5985e6616de9ee9cd0fb5d314b1",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Rustedshield"
+        },
+        {
+          "type": "executed_name"
+        },
+        {
+          "type": "pp"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "switch-Eject Pack",
+      "item": "Eject Pack",
+      "group": "switching",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ejectpack-forced-switch",
+          "sha256": "f03f85cfd8ae8af6378ef9a6b6d58b7ef45e2f1d3d13e64e515d31cecf4575c1",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "switch-Red Card",
+      "item": "Red Card",
+      "group": "switching",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-redcard-forced-switch",
+          "sha256": "c966e99343e0388de5bff1ae7247d451183ac033b2285947929de167b8c8f866",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "trap-Binding Band",
+      "item": "Binding Band",
+      "group": "trapping",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-bindingband-trap-control",
+          "sha256": "37a2948ac4433bcfc756b2c73ca48dbcf866367bfce873895ef1b0fc1f4e9d07",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-bindingband-trap-held",
+          "sha256": "74a5817b22d4a30a42cf83837e845e81068598369529d5d15a4492f4b27547f6",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            64,
+            83
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Bindingband"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "trap-Grip Claw",
+      "item": "Grip Claw",
+      "group": "trapping",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-gripclaw-trap-control",
+          "sha256": "d0d968df301ed74dad51a54a40cd92eefde2a07eb00f4ff01fef5a4f0d4032d7",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-gripclaw-trap-held",
+          "sha256": "df30f750e2985c79dc268550af07b4c55d5b2c564d813f0a5e6ec4049d7f155c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "duration_relation",
+          "durations": [
+            4,
+            6
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Gripclaw"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "mirror-copy",
+      "item": "Mirror Herb",
+      "group": "copy-boost",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-mirrorherb-copy-foe-boost",
+          "sha256": "9d18f8e2569c4336fe98f5cb2eb933cea2e883af3e2c701c3370a76500ff4c16",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "umbrella-Rain Dance",
+      "item": "Utility Umbrella",
+      "group": "holder-weather",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-utilityumbrella-weather-raindance-control",
+          "sha256": "172da5f168be1cd402a9ea83805121d66f80e3dcc2e6dc3d2ff3a00b4706e85f",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-utilityumbrella-weather-raindance-held",
+          "sha256": "b786816619d2bd76bcb5d72453e37f2f14738f7a6569e155d6f4eebf527ce01e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            13,
+            9
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Utilityumbrella"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "umbrella-Sunny Day",
+      "item": "Utility Umbrella",
+      "group": "holder-weather",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-utilityumbrella-weather-sunnyday-control",
+          "sha256": "6df1777db823c01553d4f1f7855812e1f002c100ba25517963495cbcbbb43f5c",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-utilityumbrella-weather-sunnyday-held",
+          "sha256": "4c8553c490b212c78bc37c7b7654d89ad242d9f6fb0b58f1de3c0482266df8a8",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            9,
+            6
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Utilityumbrella"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "float-weight-damage",
+      "item": "Float Stone",
+      "group": "weight",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-floatstone-weight-power-control",
+          "sha256": "91794fb0ab40f524a8f61f24c4b58d03db8eb74705120c2076ee5feea8963e90",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-floatstone-weight-power-held",
+          "sha256": "c376eb9fdd3b438d423e27f953ed2a79a1cc9f63d417331f8778157ef3431a6c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage_relation",
+          "damage": [
+            41,
+            32
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Floatstone"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "nonmatching-Normal Gem",
+      "item": "Normal Gem",
+      "group": "gem-negative",
+      "issues": [
+        753
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-normalgem-nonmatching-negative",
+          "sha256": "8e7c892458aeeb883779f46b2c80a750abdea4dbd1ee454e2f3f0d6fd47ef49a",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Normalgem"
+        },
+        {
+          "type": "boosts"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "nonmatching-Fire Gem",
+      "item": "Fire Gem",
+      "group": "gem-negative",
+      "issues": [
+        753
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-firegem-nonmatching-negative",
+          "sha256": "6a3a3e789803c869734bdb23aa901387f119af3831cd8c85145197cbca77de17",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Firegem"
+        },
+        {
+          "type": "boosts"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "ineligible-eviolite-Mew",
+      "item": "Eviolite",
+      "group": "evolution-negative",
+      "issues": [
+        751
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-eviolite-fully-evolved-Mew-control",
+          "sha256": "7051539048311a6033f46f2b35ad72eece1dbaf09efb4a67ee3c82b1f0611ea0",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-eviolite-fully-evolved-Mew-held",
+          "sha256": "3acb1d60bc05cebb166727ba54862ef8313aea911871d8cd7dfe2229b1ce69f7",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "equal_damage",
+          "damage": [
+            6,
+            6
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Eviolite"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "ineligible-eviolite-Venusaur",
+      "item": "Eviolite",
+      "group": "evolution-negative",
+      "issues": [
+        751
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-eviolite-fully-evolved-Venusaur-control",
+          "sha256": "f5ba1b94862134c3119a635676fba9d2f79503038eef0effd49c0284ecfa04b2",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-eviolite-fully-evolved-Venusaur-held",
+          "sha256": "ce992f2c50b97885e15ef8d8f481289100dd3aceef421e327fce116dbb5e6aa8",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "equal_damage",
+          "damage": [
+            3,
+            3
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Eviolite"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "boots-spikes",
+      "item": "Heavy-Duty Boots",
+      "group": "hazard-prevention",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heavydutyboots-all-hazards-spikes",
+          "sha256": "38e83e788d086e4481c5fe7b4de6954675bb46c860ec0d203b9dc1883391f119",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "status"
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": "Heavydutyboots"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "boots-stealthrock",
+      "item": "Heavy-Duty Boots",
+      "group": "hazard-prevention",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heavydutyboots-all-hazards-stealthrock",
+          "sha256": "b51bdac2389ee7ffc3a96ebd4d1e62af0876a83469642b5140b47ea33cf9c748",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "status"
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": "Heavydutyboots"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "boots-toxicspikes",
+      "item": "Heavy-Duty Boots",
+      "group": "hazard-prevention",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heavydutyboots-all-hazards-toxicspikes",
+          "sha256": "e8c4e54b6c1fd0f34832cf6c536ab0f2179605761d3148a5183da8fe69029e51",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "status"
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": "Heavydutyboots"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "boots-stickyweb",
+      "item": "Heavy-Duty Boots",
+      "group": "hazard-prevention",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heavydutyboots-all-hazards-stickyweb",
+          "sha256": "5be04038469014b7e54afc0178376caf16d2963e888d78a26e339bb650afdc48",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "status"
+        },
+        {
+          "type": "boosts"
+        },
+        {
+          "type": "held",
+          "held": "Heavydutyboots"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "boots-klutz",
+      "item": "Heavy-Duty Boots",
+      "group": "suppression-negative",
+      "issues": [
+        752
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heavydutyboots-klutz-negative",
+          "sha256": "23408c5c0b9c4bca19af2fca7a5a790835510278ba9c6ef61da7420542cf7f27",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_loss_fraction"
+        },
+        {
+          "type": "held",
+          "held": "Heavydutyboots"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "pads-klutz",
+      "item": "Protective Pads",
+      "group": "suppression-negative",
+      "issues": [
+        752
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-protectivepads-klutz-negative",
+          "sha256": "1ab06fd2c8a0d3e5a86b0ca6ebb3c36db2487dffbf823370d486fe263dc47ae1",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_loss_fraction"
+        },
+        {
+          "type": "held",
+          "held": "Protectivepads"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "shell-substitute",
+      "item": "Shell Bell",
+      "group": "damage-healing",
+      "issues": [
+        751
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-shellbell-substitute-damage",
+          "sha256": "6fc6e27afce661132184bf74d144541a0ffeb1ec8e3e2bd87004d2c2a0d9d299",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "substitute_damage_heal",
+          "substitute_damage": 20,
+          "healed": 2
+        },
+        {
+          "type": "held",
+          "held": "Shellbell"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "lifetime-Terrain Extender",
+      "item": "Terrain Extender",
+      "group": "full-lifetime",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-terrainextender-full-lifetime-control",
+          "sha256": "5d1c4ad7eb9063989721d5b832f75fb8bb44fddc42e75dfb608e82cba94abd8b",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-terrainextender-full-lifetime-held",
+          "sha256": "8fec9c1938c229c490ef5f6843ff5320fd05e3590c2cadead341fd7c13b3122f",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Terrainextender"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "restriction-Choice Band",
+      "item": "Choice Band",
+      "group": "choice-lock",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-choiceband-choice-lock-and-switch-reset-point-in-time-v2",
+          "sha256": "b28ada0fc34d2e9c1438d4658d92c94f5b342c755078849517d7740c68b5304a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "held",
+          "held": "Choiceband"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "restriction-Choice Specs",
+      "item": "Choice Specs",
+      "group": "choice-lock",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-choicespecs-choice-lock-and-switch-reset-point-in-time-v2",
+          "sha256": "22e6751919e05a2db58790bc94101e5f2d963701f6cb84e682221a6eddd90f3e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "held",
+          "held": "Choicespecs"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "restriction-Choice Scarf",
+      "item": "Choice Scarf",
+      "group": "choice-lock",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-choicescarf-choice-lock-and-switch-reset-point-in-time-v2",
+          "sha256": "ca382f7a92ee0e39d99aa526ef2786e60c2e3ff37e8887d5f5215c1be66e01ff",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "held",
+          "held": "Choicescarf"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "restriction-Assault Vest",
+      "item": "Assault Vest",
+      "group": "choice-restriction",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-assaultvest-status-choice-negative",
+          "sha256": "2da3e8d804e1baa4d70fa8df809ec45dd1b63e4ad7ac51f1da19b1e4fa1ae6eb",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "held",
+          "held": "Assaultvest"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "life-orb-immunity-negative",
+      "item": "Life Orb",
+      "group": "recoil-negative",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-lifeorb-immunity-negative",
+          "sha256": "08894cbf12339f748e9cd5d7291cf46e9e4fed6fd4899a929b12e677dabc644f",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Lifeorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "life-orb-recoil-Magic Guard",
+      "item": "Life Orb",
+      "group": "recoil-negative",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-lifeorb-recoil-MagicGuard",
+          "sha256": "3e6997c516c14455285ebcef95f409acfbbcd3ebff7b17f63455563718b43c3c",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Lifeorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "life-orb-recoil-Sheer Force",
+      "item": "Life Orb",
+      "group": "recoil-negative",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-lifeorb-recoil-SheerForce",
+          "sha256": "45edd17046428bdffe657e4b6a26e19ea23133715690e7d852bf8ea69e1e27a1",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Lifeorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-immunity-negative",
+      "item": "Normal Gem",
+      "group": "gem-negative",
+      "issues": [
+        753
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-normalgem-immunity-negative",
+          "sha256": "efbf0b4c3e96eaa7403237efd08c813bbe6a877cfbc8f27ed042c5336e630d76",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Normalgem"
+        },
+        {
+          "type": "boosts"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-protect-negative",
+      "item": "Normal Gem",
+      "group": "gem-negative",
+      "issues": [
+        753
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-normalgem-protect-negative",
+          "sha256": "8f84015e2dfef6141c8d82db760fdb2c925bba0bcd2338c49e6fd2fe15da5212",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Normalgem"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-substitute",
+      "item": "Normal Gem",
+      "group": "gem-damage",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-normalgem-substitute-control",
+          "sha256": "2097cdbcdd70c4255de50cef1742ce1b5069fb15dc70e90b51b9ae6fd225469d",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-normalgem-substitute-held",
+          "sha256": "77fc11b26d551c6f9dc9fc48a3e320f2cc6ba315e559e4a538acc43241a85d4a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "substitute_damage_relation",
+          "substitute_damage": [
+            20,
+            26
+          ]
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "shell-no-stale-heal",
+      "item": "Shell Bell",
+      "group": "damage-healing",
+      "issues": [
+        751
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-shellbell-no-stale-healing",
+          "sha256": "b73f5f6712edfa47e4bebf9429ed8b62b24a4f4514dc8de0d707bc3dc7f25b3e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "shell_bell",
+          "actual_damage": 18,
+          "healed": 2
+        },
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "held",
+          "held": "Shellbell"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "selected-pp-Ether",
+      "item": "Ether",
+      "group": "repair-protocol",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ether-selected-watergun-v3",
+          "sha256": "17dcb9f052eb8cf656623f1920e39fce4808c0e8d6bc5f5d594d365452c65cbb",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "selected-pp-Max Ether",
+      "item": "Max Ether",
+      "group": "repair-protocol",
+      "issues": [
+        749
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-maxether-selected-watergun-v3",
+          "sha256": "cd2b85b1f9ce15c396ff589665660501914cfb553353838983e2ac4fa4d6904b",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "healthy-medicine-negative",
+      "item": "Potion",
+      "group": "repair-protocol",
+      "issues": [
+        748
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-potion-healthy-negative-v3",
+          "sha256": "7b6dd465666f6133c92693508eae6f75f03868dd54fe54941d5555a9347f9046",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "unknown-selected-pp-negative",
+      "item": "Ether",
+      "group": "repair-protocol",
+      "issues": [
+        749
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ether-unknown-selected-negative-v3",
+          "sha256": "f3d3c2e53835e5a75d086cb75f3429c1323c1859d04874cacae022c0d7718338",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "pp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "healthy-reserve-negative",
+      "item": "Max Revive",
+      "group": "repair-protocol",
+      "issues": [
+        748
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-maxrevive-healthy-reserve-negative-v3",
+          "sha256": "54f9026640a48bb8fd20f07e8c302841e4eb4b654606bdd00e71602ac7f28e3b",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "full_hp"
+        },
+        {
+          "type": "inventory"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "power-herb-sun-negative",
+      "item": "Power Herb",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-powerherb-sun-skips-charge-negative-v3",
+          "sha256": "8ddb67d93a284a23ca5eb012fb35ff197e13338374e1b4eb677aad91966ea4fc",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "damage",
+          "damage": 116
+        },
+        {
+          "type": "held",
+          "held": "Powerherb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-ineligible-Blue Orb",
+      "item": "Blue Orb",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-blueorb-wrong-species-negative-v3",
+          "sha256": "6a890ef9ba056deb43bd06d4bcdae270ab85f8a441d79aefdf3bc5779a687e9e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Blueorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-ineligible-Red Orb",
+      "item": "Red Orb",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-redorb-wrong-species-negative-v3",
+          "sha256": "77b93ca70710f90150662b5ea34d7def26462534ff3bf4c1af14060231c0e88d",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Redorb"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-ineligible-Rusted Sword",
+      "item": "Rusted Sword",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-rustedsword-wrong-species-negative-v3",
+          "sha256": "eb7709c98df305b75a3c2cafa7f0a9389fa05ff0d8cc3b54568b89cb845a49b9",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Rustedsword"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "native-form-ineligible-Rusted Shield",
+      "item": "Rusted Shield",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-rustedshield-wrong-species-negative-v3",
+          "sha256": "80d056225a1e0bc7cebd017ff4e56dc7f60a28032e242d65d493f6c520bed9f3",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "active_species"
+        },
+        {
+          "type": "held",
+          "held": "Rustedshield"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "switch-no-reserve-Eject Button",
+      "item": "Eject Button",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ejectbutton-no-reserves-negative-v3",
+          "sha256": "c42987e0cc6182ed2558ee5d2defa738d083c9e6f670588edcb8284a3bae94a7",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Ejectbutton"
+        },
+        {
+          "type": "active_species"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "switch-no-reserve-Red Card",
+      "item": "Red Card",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-redcard-no-reserves-negative-v3",
+          "sha256": "f5e2efdd2117a3aa20917b47e335d4bbe33cb4558124197647e6e04ee1caca4d",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Redcard"
+        },
+        {
+          "type": "active_species"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "switch-no-reserve-Eject Pack",
+      "item": "Eject Pack",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-ejectpack-no-reserves-negative-v3",
+          "sha256": "42bab55ddf9fc704cac607ec019db6254a30817c6f9759d247344569d764b85b",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "held",
+          "held": "Ejectpack"
+        },
+        {
+          "type": "active_species"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "terrain-expiry-ends-quark-drive",
+      "item": "Terrain Extender",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-terrainextender-native-ability-expiry-v5",
+          "sha256": "3a7158c6af5756767e12ad8547d686ead8c1c7e2d59681e394dfe1ae27e244cf",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "field_activation_ended",
+          "state": {}
+        },
+        {
+          "type": "field_expiry_order",
+          "first_actors": [
+            "B",
+            "A"
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Terrainextender"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "weather-expiry-ends-protosynthesis",
+      "item": "Heat Rock",
+      "group": "repair-protocol",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-heatrock-native-ability-expiry-control-v5",
+          "sha256": "80686958d82f54f185908ec211a890929d528a38703c2b41d689ffc01376f3d4",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-heatrock-native-ability-expiry-held-v5",
+          "sha256": "cf6916636ee8496b6f92dcfa8442c28239b15ae497b9eacac58d529d4189a5ab",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "field_activation_ended",
+          "state": {}
+        },
+        {
+          "type": "equal_damage",
+          "damage": [
+            68,
+            68
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Heatrock"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "healthy-herb-keeps-friendship",
+      "item": "Energy Root",
+      "group": "repair-protocol",
+      "issues": [
+        749
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-energyroot-healthy-herb-negative-v4",
+          "sha256": "2eaf6a42ae5c846a653473fb5c03504e8d6ff21e81003cee6624b2407d53571a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hp_unchanged"
+        },
+        {
+          "type": "inventory"
+        },
+        {
+          "type": "friendship_delta",
+          "before": 70,
+          "after": 70
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "accuracy-Zoom Lens",
+      "item": "Zoom Lens",
+      "group": "accuracy",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 7,
+      "cases": [
+        {
+          "key": "item-zoomlens-observed-accuracy-control",
+          "sha256": "43ff605fc24ba33decc2de494dabc709ccf3d8c1da506f66c78b2f0a5c8bbbe2",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-zoomlens-observed-accuracy",
+          "sha256": "f043ed4a6e56f5d93321cac4573f62997a8b1422c2a9bfb8f5fca490ddedf19a",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hit_gain",
+          "damage": [
+            0,
+            8
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Zoomlens"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "zoom-first-negative",
+      "item": "Zoom Lens",
+      "group": "accuracy-negative",
+      "issues": [
+        753
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 7,
+      "cases": [
+        {
+          "key": "item-zoomlens-moves-first-negative-control",
+          "sha256": "f354d4d83418ef8bc7ab2fa34acde0901364d461b31b5207b0fea1b9f0111e49",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-zoomlens-moves-first-negative",
+          "sha256": "89b62744c61c027dfe276544aa599d644c92d351cce8deae240ca6b4b248b85f",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "matched_miss_negative"
+        },
+        {
+          "type": "held",
+          "held": "Zoomlens"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "flinch-King's Rock",
+      "item": "King's Rock",
+      "group": "flinch",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-kingsrock-natural-flinch-v2-matched-v3-control",
+          "sha256": "8a5779af26017305727fd192aa7939e12707869e6033eacff9506a91b9c6c603",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-kingsrock-natural-flinch-v2-matched-v3",
+          "sha256": "d979b9734902384db2ffc246c624c6b8dd57d05160c75834e7bd1f0772a8ad6e",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "matched_flinch",
+          "control_pp_spent": 1,
+          "held_pp_spent": 0,
+          "cause": "sole added item flinch secondary; no status, other abilities or prevention volatiles"
+        },
+        {
+          "type": "held",
+          "held": "Kingsrock"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "flinch-Razor Fang",
+      "item": "Razor Fang",
+      "group": "flinch",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-razorfang-natural-flinch-v2-matched-v3-control",
+          "sha256": "394d6a18ed72fd0d3f4faa070011e68a6face1b0c942476c7f1560b2e38ed714",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-razorfang-natural-flinch-v2-matched-v3",
+          "sha256": "91b57bf0b6f52f1eed7548ad60da311108b16457319b03bd9733b77a9f6c2bbe",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "matched_flinch",
+          "control_pp_spent": 1,
+          "held_pp_spent": 0,
+          "cause": "sole added item flinch secondary; no status, other abilities or prevention volatiles"
+        },
+        {
+          "type": "held",
+          "held": "Razorfang"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "blunder-miss",
+      "item": "Blunder Policy",
+      "group": "accuracy-miss",
+      "issues": [
+        753
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 1,
+      "cases": [
+        {
+          "key": "item-blunderpolicy-accuracy-miss",
+          "sha256": "e129e14a09b29457f1ca0e138583ec7a3a14ff18232be6b22b87903b3aaa1f65",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "accuracy_miss_boost"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "gem-miss-negative",
+      "item": "Fire Gem",
+      "group": "gem-negative",
+      "issues": [
+        753
+      ],
+      "positive_trigger": false,
+      "status": "outcome_verified",
+      "seed_offset": 1,
+      "cases": [
+        {
+          "key": "item-firegem-accuracy-miss-negative",
+          "sha256": "6c82ffd835e587ce2cbda699ca17f1d8b724cd4b20138b33958e2aac64c1fe96",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "miss_retains_item"
+        },
+        {
+          "type": "held",
+          "held": "Firegem"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "umbrella-accuracy-Thunder",
+      "item": "Utility Umbrella",
+      "group": "repair-protocol",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 1,
+      "cases": [
+        {
+          "key": "item-utilityumbrella-rain-accuracy-Thunder-control-v3",
+          "sha256": "899731aefefe7d6a392d4c4b15e1396fdb5e6241d0126b83d64c36aa25358018",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-utilityumbrella-rain-accuracy-Thunder-held-v3",
+          "sha256": "4f00cd22a6ef354e5e6c79df4e6b472f2b29aa406a2c366bdfbfadffd08fb709",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hit_gain",
+          "damage": [
+            102,
+            0
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Utilityumbrella"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "umbrella-accuracy-Hurricane",
+      "item": "Utility Umbrella",
+      "group": "repair-protocol",
+      "issues": [
+        752
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 1,
+      "cases": [
+        {
+          "key": "item-utilityumbrella-rain-accuracy-Hurricane-control-v3",
+          "sha256": "02475f5bfea574be118667f569ef7443d9e408f53e2e41d8ab458d35a6e84f69",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-utilityumbrella-rain-accuracy-Hurricane-held-v3",
+          "sha256": "29d7682b0fa519e0ca1d7d4a77d2876ce856315039035bc2d9b934eca5b4b407",
+          "raw_status": "outcome_verified"
+        }
+      ],
+      "observed": [
+        {
+          "type": "hit_gain",
+          "damage": [
+            51,
+            0
+          ]
+        },
+        {
+          "type": "held",
+          "held": "Utilityumbrella"
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b07a1fd9036d54578f2c0d2832d181c084a773163d9838cbcc7937237abbb623",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    },
+    {
+      "label": "enigma-heal-full-hp-cap",
+      "item": "Enigma Berry",
+      "group": "hit-trigger",
+      "issues": [
+        757
+      ],
+      "positive_trigger": true,
+      "status": "outcome_verified",
+      "seed_offset": 0,
+      "cases": [
+        {
+          "key": "item-enigmaberry-super-effective-heal-control-capped-v2",
+          "sha256": "437cf9d3ab0cefbee01893182d48b6728d36386c926ffe5021b6288c72191e2c",
+          "raw_status": "outcome_verified"
+        },
+        {
+          "key": "item-enigmaberry-super-effective-heal-capped-v2",
+          "sha256": "bb1208fac69c2072bc5e6979c32adf4728ab41f644babc0a754f2ea4d3adb658",
+          "raw_status": "smoke_completed"
+        }
+      ],
+      "observed": [
+        {
+          "type": "matched_hit_heal",
+          "actual_damage": 16,
+          "expected_hp": 310
+        },
+        {
+          "type": "held",
+          "held": ""
+        }
+      ],
+      "runner_sha256": {
+        ".codex-artifacts/item-repairs-20261020/item_probe_core.py": "b3a4a4bd8ca8a824a377e03644211973797416ed4682f79997a96934645e36fd",
+        ".codex-artifacts/item-repairs-20261020/item_probe_server.py": "2eec33993cd6910b5e247cd6307e1a43049a05df0c5aa581c510b771d2d70c17",
+        "tools/live_dex_runner.py": "4e5db03ea73932bf2af804148f0b3e35163422490f0fea37052c8bb6a6a7a813",
+        "tools/live_dex_server.py": "56cacf0542e83ff7ffe0bc0149f5932ea43a35ab79721544a1ef14d6bf31fc01"
+      }
+    }
+  ],
+  "resolved_previous_flags": [
+    {
+      "label": "medicine-heal-Energy Powder",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "medicine-heal-Energy Root",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "medicine-status-Heal Powder",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "medicine-pp-Max Ether",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "medicine-pp-Elixir",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "medicine-pp-Max Elixir",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "reserve-revival-route-Revive",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "reserve-revival-route-Max Revive",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "reserve-revival-route-Revival Herb",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "enigma-heal",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "field-trigger-Room Service",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "adrenaline-trigger",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "balloon-immunity-pop",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "immunity-Ring Target",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "goggles-powder-weather",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "glove-contact",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "herb-charge",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "dice-hit-count",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "metronome-repeat",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "priority-Custap Berry",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "native-form-Blue Orb",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "native-form-Red Orb",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "native-form-Rusted Sword",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "native-form-Rusted Shield",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "booster-Flutter Mane",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "booster-Iron Bundle",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "switch-Eject Button",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "switch-Eject Pack",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "switch-Red Card",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "trap-Binding Band",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "trap-Grip Claw",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "mirror-copy",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "destiny-attract",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "umbrella-Rain Dance",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "umbrella-Sunny Day",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "float-weight-damage",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "flinch-King's Rock",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "flinch-Razor Fang",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "blunder-miss",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "lifetime-Terrain Extender",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "restriction-Choice Band",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "restriction-Choice Specs",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "restriction-Choice Scarf",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "restriction-Assault Vest",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "life-orb-immunity-negative",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "life-orb-recoil-Magic Guard",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "life-orb-recoil-Sheer Force",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "gem-immunity-negative",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "gem-protect-negative",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "gem-miss-negative",
+      "status": "outcome_verified"
+    },
+    {
+      "label": "shell-spread-heal",
+      "status": "outcome_verified"
+    }
+  ],
+  "complete_battles": [
+    {
+      "key": "ordinary-full-single",
+      "status": "outcome_verified",
+      "turns": 18,
+      "surviving": {
+        "A": 0,
+        "B": 3
+      },
+      "evidence_sha256": "342ca10f67242155005e43131a7da0a47341e4d802f464e9aba83e9b50e34bd0"
+    },
+    {
+      "key": "ordinary-full-single-reverse",
+      "status": "outcome_verified",
+      "turns": 19,
+      "surviving": {
+        "A": 2,
+        "B": 0
+      },
+      "evidence_sha256": "e83fb5cb84a33370c842fbd2bf332f8990a080f50e85f975acdd272b6a75e9d2"
+    },
+    {
+      "key": "ordinary-full-double",
+      "status": "outcome_verified",
+      "turns": 7,
+      "surviving": {
+        "A": 0,
+        "B": 2
+      },
+      "evidence_sha256": "7e1939d27b6dd5eb35f80a30c40223ca072bed6298b31c41cc47c43d9d3c7ac7"
+    },
+    {
+      "key": "ordinary-npc-single",
+      "status": "outcome_verified",
+      "turns": 12,
+      "surviving": {
+        "A": 0,
+        "B": 1
+      },
+      "evidence_sha256": "d7be59f70fb6afc7d9d703f74592d8b65489776554d52d57679ade08a8995ce7"
+    },
+    {
+      "key": "ordinary-npc-double",
+      "status": "outcome_verified",
+      "turns": 4,
+      "surviving": {
+        "A": 0,
+        "B": 2
+      },
+      "evidence_sha256": "7b2a53268520b090b07de92231d823cbbd81aede9c73ed7bce6026c91bee8e51"
+    },
+    {
+      "key": "reward-control",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "f7f16e6f64a51fad8432f14ae8705dc82d700b856906c89f2f4215d272b8a1e3"
+    },
+    {
+      "key": "reward-luckyegg",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "36600659ba42b73ba087ac86a2c42296b0ffa4df1c7bfa5f851bb81e908307a9"
+    },
+    {
+      "key": "reward-machobrace",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "f21fb860251dcc0c4ae7042da3fd0271a782dd49ebba25da71218ac0f2095c85"
+    },
+    {
+      "key": "reward-poweranklet",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "2dc7dbce2e52055c34cba22e1d8d1a4d9e18350e03c23969ca26cf05ac0fd646"
+    },
+    {
+      "key": "reward-powerband",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "7ba7716fcaa41163cb1b027ede7a6508938e8f0fcd50cee5da6045d9f6430ade"
+    },
+    {
+      "key": "reward-powerbelt",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "0229422c62c8096eb0ea313d8af24e045c75da0324955d995258ae0d9a0f7702"
+    },
+    {
+      "key": "reward-powerbracer",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "efc4aedd8cb1809ea9e10b940f0a6ef64f7ccd810e18b803ddd0c2daecf56a40"
+    },
+    {
+      "key": "reward-powerlens",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "f5a4f24aafe6dd7369bfbb5eeef88e3f091f65d7f7754a59a17d30637855df92"
+    },
+    {
+      "key": "reward-powerweight",
+      "status": "outcome_verified",
+      "turns": 2,
+      "surviving": {
+        "A": 1,
+        "B": 0
+      },
+      "evidence_sha256": "8d1c6cfcda6d70a53e0fbe3be6e1008c3fd6900e82f8be343e958da829f6427b"
+    }
+  ],
+  "rewards": [
+    {
+      "item": "",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "status": "control_verified",
+      "evidence": "reward-control",
+      "evidence_sha256": "f7f16e6f64a51fad8432f14ae8705dc82d700b856906c89f2f4215d272b8a1e3"
+    },
+    {
+      "item": "Lucky Egg",
+      "exp_gain": 54,
+      "ev_gains": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-luckyegg",
+      "evidence_sha256": "36600659ba42b73ba087ac86a2c42296b0ffa4df1c7bfa5f851bb81e908307a9",
+      "expected": {
+        "exp_gain": 54,
+        "ev_gains": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "item": "Macho Brace",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-machobrace",
+      "evidence_sha256": "f21fb860251dcc0c4ae7042da3fd0271a782dd49ebba25da71218ac0f2095c85",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "item": "Power Anklet",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        9
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-poweranklet",
+      "evidence_sha256": "2dc7dbce2e52055c34cba22e1d8d1a4d9e18350e03c23969ca26cf05ac0fd646",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          9
+        ]
+      }
+    },
+    {
+      "item": "Power Band",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        0,
+        0,
+        0,
+        8,
+        1
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-powerband",
+      "evidence_sha256": "7ba7716fcaa41163cb1b027ede7a6508938e8f0fcd50cee5da6045d9f6430ade",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          0,
+          0,
+          0,
+          0,
+          8,
+          1
+        ]
+      }
+    },
+    {
+      "item": "Power Belt",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        0,
+        8,
+        0,
+        0,
+        1
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-powerbelt",
+      "evidence_sha256": "0229422c62c8096eb0ea313d8af24e045c75da0324955d995258ae0d9a0f7702",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          0,
+          0,
+          8,
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "item": "Power Bracer",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        8,
+        0,
+        0,
+        0,
+        1
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-powerbracer",
+      "evidence_sha256": "efc4aedd8cb1809ea9e10b940f0a6ef64f7ccd810e18b803ddd0c2daecf56a40",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          0,
+          8,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "item": "Power Lens",
+      "exp_gain": 36,
+      "ev_gains": [
+        0,
+        0,
+        0,
+        8,
+        0,
+        1
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-powerlens",
+      "evidence_sha256": "f5a4f24aafe6dd7369bfbb5eeef88e3f091f65d7f7754a59a17d30637855df92",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          0,
+          0,
+          0,
+          8,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "item": "Power Weight",
+      "exp_gain": 36,
+      "ev_gains": [
+        8,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "status": "outcome_verified",
+      "evidence": "reward-powerweight",
+      "evidence_sha256": "8d1c6cfcda6d70a53e0fbe3be6e1008c3fd6900e82f8be343e958da829f6427b",
+      "expected": {
+        "exp_gain": 36,
+        "ev_gains": [
+          8,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    }
+  ],
+  "protected_data": {
+    "tables": 32,
+    "protected_rows": 6917,
+    "unchanged": true,
+    "changes": []
+  },
+  "qa_accounts": {
+    "accounts": [
+      {
+        "label": "a",
+        "account_id": 70,
+        "character_id": 188,
+        "inactive": true,
+        "password_unusable": true,
+        "staff_removed": true
+      },
+      {
+        "label": "b",
+        "account_id": 71,
+        "character_id": 189,
+        "inactive": true,
+        "password_unusable": true,
+        "staff_removed": true
+      },
+      {
+        "label": "staff",
+        "account_id": 72,
+        "character_id": 190,
+        "inactive": true,
+        "password_unusable": true,
+        "staff_removed": true
+      }
+    ],
+    "credential_file_removed": true,
+    "remaining_qa_owned_pokemon": 1
+  },
+  "source_protection": {
+    "original_nonignored_source_files": 1106,
+    "unchanged_original_source_files": 1080,
+    "scoped_modified_files": [
+      "commands/player/cmd_battle_item.py",
+      "conftest.py",
+      "pokemon/battle/accuracy.py",
+      "pokemon/battle/actions.py",
+      "pokemon/battle/battledata.py",
+      "pokemon/battle/battleinstance.py",
+      "pokemon/battle/damage.py",
+      "pokemon/battle/effect_context.py",
+      "pokemon/battle/engine.py",
+      "pokemon/battle/item_effects.py",
+      "pokemon/battle/player_choices.py",
+      "pokemon/battle/tests/outcome_harness.py",
+      "pokemon/battle/tests/test_item_core_runtime.py",
+      "pokemon/battle/turns.py",
+      "pokemon/dex/functions/abilities_funcs.py",
+      "pokemon/dex/functions/conditions_funcs.py",
+      "pokemon/dex/functions/items_funcs.py",
+      "pokemon/dex/functions/moves/damage_moves.py",
+      "pokemon/dex/items/itemsdex.py",
+      "pokemon/services/battle_items.py",
+      "tests/battle_contract_catalog.py",
+      "tests/test_ability_item_effects.py",
+      "tests/test_all_moves_and_abilities.py",
+      "tests/test_battle_wild_cleanup.py",
+      "tests/test_move_management_services.py",
+      "tools/live_dex_server.py"
+    ],
+    "new_source_files": [
+      "pokemon/battle/tests/test_remaining_item_effects.py",
+      "tests/integration/remaining_item_cases.py",
+      "tests/test_offline_database_guard.py"
+    ],
+    "unexpected_source_changes": [],
+    "frozen_candidate_unchanged": true
+  },
+  "registry_protection": {
+    "original_room_registry_restored_exactly": true,
+    "previous_registry_sha256": "391c9d054700f8cb43d21633be5286c901e10775005ae9441fb4db5fd6327c61",
+    "restored_registry_sha256": "391c9d054700f8cb43d21633be5286c901e10775005ae9441fb4db5fd6327c61",
+    "authorized_qa_battle_counter_retained": true,
+    "counter_sha256": "5f8a5b5f64912f8881473c76a7644616a147b28e2afd037999eaf5f613f6f4c3",
+    "protected_rows_unchanged": true,
+    "live_cache_refreshed": true,
+    "live_mapping": {}
+  },
+  "secret_scan": {
+    "files_scanned": 631,
+    "matches": [],
+    "errors": []
+  },
+  "remaining_acceptance": [
+    "Fresh full 283-item rerun after shared engine changes; historical coverage remains separate.",
+    "Field +use medicine, manual berries, field evolution/training/acquisition and excluded/new definitions where missing.",
+    "Global field moves can print redundant no-effect narration despite successful state/effect; presentation follow-up.",
+    "Pairwise combinations, probability distributions, reconnect/concurrency, browser UI and remote deployment acceptance."
+  ]
+}

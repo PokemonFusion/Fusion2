@@ -5,7 +5,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
 
 BASE_PATH = Path(__file__).resolve().parents[2]
 
@@ -39,6 +39,8 @@ def _invoke_raw_callback(
 			pass
 
 	cb = raw.get(func)
+	if isinstance(cb, (bool, int, float)):
+		return cb
 	if callable(cb):
 		if invoke_callback:
 			return invoke_callback(cb, *args, **kwargs)
@@ -83,8 +85,23 @@ class Ability:
 
 	def call(self, func: str, *args, **kwargs):
 		"""Call a stored ability callback if it exists."""
+		raw = self.raw
+		# Some abilities keep their stat hooks in an activated condition.
+		# Do not invoke those hooks for an inactive condition (or flatten the
+		# shared dex): activation belongs to this individual holder's state.
+		condition = raw.get("condition")
+		state = kwargs.get("effect_state") or {}
+		owner = state.get("target") or kwargs.get("pokemon") or kwargs.get("attacker") or kwargs.get("user")
+		if owner is None and args and func in {"onResidual", "onStart", "onEnd"}:
+			owner = args[0]
+		if owner is None and len(args) > 1:
+			owner = args[1]
+		state_key = re.sub(r"[^a-z0-9]", "", str(raw.get("name", self.name)).lower())
+		active = bool(getattr(owner, "ability_state", {}).get(state_key))
+		if func not in raw and active and isinstance(condition, dict):
+			raw = condition
 		return _invoke_raw_callback(
-			self.raw,
+			raw,
 			func,
 			registry_modules="pokemon.dex.functions.abilities_funcs",
 			args=args,
@@ -94,6 +111,7 @@ class Ability:
 
 @dataclass
 class Move:
+	effectType: ClassVar[str] = "Move"
 	name: str
 	num: int
 	type: Optional[str] = None
@@ -102,6 +120,11 @@ class Move:
 	accuracy: Any = None
 	pp: Any = None
 	raw: Dict[str, Any] = field(default_factory=dict)
+
+	def __post_init__(self):
+		"""Keep the Showdown callback ID distinct from legacy display/dex keys."""
+		raw = self.raw if isinstance(self.raw, dict) else {}
+		self.id = re.sub(r"[^a-z0-9]", "", str(raw.get("id") or self.name or "").casefold())
 
 	@classmethod
 	def from_dict(cls, name: str, data: Dict[str, Any]):

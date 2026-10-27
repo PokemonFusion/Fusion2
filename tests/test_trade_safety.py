@@ -100,7 +100,7 @@ class FakeCharacter:
         return None
 
 
-def test_trade_is_blocked_before_removing_party_pokemon(monkeypatch):
+def test_legacy_immediate_trade_syntax_never_removes_party_pokemon(monkeypatch):
     cmd_account = load_cmd_account(monkeypatch)
     pokemon = FakePokemon()
     target = FakeCharacter("Misty", storage=FakeStorage(fail_add=True))
@@ -120,11 +120,11 @@ def test_trade_is_blocked_before_removing_party_pokemon(monkeypatch):
     assert caller.storage.get_party() == [pokemon]
     assert target.storage.get_party() == []
     assert pokemon.trainer is None
-    assert "temporarily unavailable" in caller.messages[0]
+    assert "Gifts require recipient acceptance" in caller.messages[0]
     assert target.messages == []
 
 
-def test_trade_is_blocked_even_when_target_has_capacity(monkeypatch):
+def test_legacy_immediate_trade_syntax_never_changes_owner_when_target_has_capacity(monkeypatch):
     cmd_account = load_cmd_account(monkeypatch)
     source_trainer = types.SimpleNamespace(name="Ash trainer")
     target_trainer = types.SimpleNamespace(name="Misty trainer")
@@ -148,11 +148,11 @@ def test_trade_is_blocked_even_when_target_has_capacity(monkeypatch):
     assert target.storage.get_party() == []
     assert pokemon.trainer is source_trainer
     assert pokemon.save_updates == []
-    assert "temporarily unavailable" in caller.messages[0]
+    assert "Gifts require recipient acceptance" in caller.messages[0]
     assert target.messages == []
 
 
-def test_boxed_trade_is_explicitly_unsupported_and_does_not_move_pokemon(monkeypatch):
+def test_legacy_boxed_trade_syntax_never_calls_the_old_move_writer(monkeypatch):
     cmd_account = load_cmd_account(monkeypatch)
     pokemon = FakePokemon()
     target = FakeCharacter("Misty", storage=FakeStorage())
@@ -174,5 +174,5 @@ def test_boxed_trade_is_explicitly_unsupported_and_does_not_move_pokemon(monkeyp
     assert caller.storage.get_stored_pokemon() == [pokemon]
     assert target.storage.get_party() == []
     assert move_calls == []
-    assert "temporarily unavailable" in caller.messages[0]
+    assert "Gifts require recipient acceptance" in caller.messages[0]
     assert target.messages == []

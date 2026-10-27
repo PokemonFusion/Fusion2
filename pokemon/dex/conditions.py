@@ -284,4 +284,9 @@ py_dict = {
 		"duration": 2,
 		"onBasePower": "Rolloutstorage.onBasePower",
 	},
+	"micleberry": {
+		"name": "Micle Berry",
+		"duration": 2,
+		"onSourceAccuracy": "Micleberry.onSourceAccuracy",
+	},
 }

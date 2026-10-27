@@ -60,4 +60,6 @@ def test_double_turn_order_and_spread_damage():
 
 	damage_first = 100 - b1.hp
 	damage_second = 100 - b2.hp
-	assert damage_second == int(damage_first * 0.75)
+	# Both identical foes receive the spread reduction, including the first.
+	assert damage_first > 0
+	assert damage_second == damage_first

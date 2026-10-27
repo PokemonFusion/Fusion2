@@ -299,7 +299,7 @@ def _resolve_room_refs(raw_refs: Any) -> list[Any]:
         return []
     if isinstance(raw_refs, str):
         refs = [part.strip() for part in raw_refs.split(",") if part.strip()]
-    elif isinstance(raw_refs, (list, tuple, set)):
+    elif isinstance(raw_refs, Iterable):
         refs = list(raw_refs)
     else:
         refs = [raw_refs]
@@ -426,7 +426,10 @@ def update_location_objectives(session: Any) -> bool:
             changed = _set_objective_done(progress, objective) or changed
         elif objective.type == "return" and _required_before_return_complete(template, progress, objective):
             changed = _set_objective_done(progress, objective) or changed
-    if _all_required_complete(template, progress):
+    # The survey needs no encounter, but a chosen route must finish first.
+    # In particular, a failed result save cannot be bypassed by walking home.
+    encounter_pending = (getattr(session, "metadata", None) or {}).get("encounter_state") == "pending"
+    if _all_required_complete(template, progress) and not encounter_pending:
         _mark_completed(session)
         changed = True
     session.objective_progress = progress

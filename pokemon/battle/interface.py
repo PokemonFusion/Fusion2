@@ -173,6 +173,12 @@ def display_battle_interface(
 
 		@property
 		def field(self):
+			session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
+			field = getattr(getattr(session, "battle", None), "field", None)
+			room = getattr(field, "pseudo_weather", {}).get("trickroom")
+			if room:
+				remaining = room.get("duration") if isinstance(room, dict) else None
+				return f"Trick Room ({remaining})" if remaining is not None else "Trick Room"
 			return getattr(self._state, "field", "-")
 
 		@property
@@ -192,13 +198,35 @@ def display_battle_interface(
 	if total_width is None:
 		total_width = get_battle_ui_width(viewer) if viewer is not None else 78
 	adapter = _StateAdapter(captain_a, captain_b, battle_state)
-	return render_battle_ui(
+	output = render_battle_ui(
 		adapter,
 		viewer,
 		total_width=total_width,
 		waiting_on=waiting_on,
 		style=style,
 	)
+	# Include every active slot, including a doubles partner. The ordinary HUD
+	# currently displays one lead per trainer; Tera must remain visible at A2/B2.
+	session = getattr(getattr(captain_a, "ndb", None), "battle_instance", None)
+	positions = getattr(getattr(getattr(session, "data", None), "turndata", None), "positions", {})
+	for label, position in positions.items():
+		mon = getattr(position, "pokemon", None)
+		tera = getattr(mon, "terastallized", None)
+		if tera:
+			output += f"\n{label}: Tera {tera} ({getattr(mon, 'name', 'Pokemon')})"
+		if getattr(mon, "mega_evolved", False):
+			output += f"\n{label}: Mega {mon.species} ({mon.name})"
+	for side, request in getattr(getattr(session, "battle", None), "mega_pending", {}).items():
+		if side == viewer_team:
+			output += f"\n{side}: Mega reserved for {request.get('target')} (choose +attack)."
+	for side in sorted(getattr(getattr(session, "battle", None), "mega_used", set())):
+		output += f"\n{side}: Mega Evolution use spent."
+	for side, request in getattr(getattr(session, "battle", None), "z_pending", {}).items():
+		if side == viewer_team:
+			output += f"\n{side}: Z-Move queued from {request.get('source')} toward {request.get('target')}."
+	for side in sorted(getattr(getattr(session, "battle", None), "z_used", set())):
+		output += f"\n{side}: Z-Move use spent."
+	return output
 
 
 def render_interfaces(captain_a, captain_b, state, *, waiting_on=None, style: str | None = None):
@@ -262,6 +290,11 @@ def render_interfaces(captain_a, captain_b, state, *, waiting_on=None, style: st
 
 def broadcast_interfaces(session, *, waiting_on=None) -> None:
         """Render and send interfaces for ``session`` to all participants."""
+        if getattr(getattr(session, 'state', None), 'multi', None):
+                from .multi_battle import field_text
+                for target in [*session.trainers, *getattr(session, 'observers', [])]:
+                        session._msg_to(target, field_text(session))
+                return
 
         for t in getattr(session, "teamA", []):
                 session._msg_to(
@@ -308,6 +341,10 @@ def send_interface_to(session, target, *, waiting_on=None) -> None:
         """Render and send the battle interface for ``target`` only."""
 
         if not target:
+                return
+        if getattr(getattr(session, 'state', None), 'multi', None):
+                from .multi_battle import field_text
+                session._msg_to(target, field_text(session))
                 return
 
         if target in getattr(session, "teamA", []):

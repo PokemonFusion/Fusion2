@@ -124,11 +124,16 @@ def _emit_to_location(caller, location, message, html_only=False):
 
 
 def heal_party(char):
-    """Heal all active Pokemon for the given character."""
+    """Heal the canonical party and active reserved Fusion form once each."""
+    from utils.fusion import get_active_fusion_pokemon
+
     storage = getattr(char, "storage", None)
     if not storage:
         return
-    party = storage.get_party()
+    party = list(storage.get_party())
+    fusion = get_active_fusion_pokemon(char)
+    if fusion is not None and fusion not in party:
+        party.append(fusion)
     for mon in party:
         if hasattr(mon, "heal"):
             mon.heal()
@@ -371,7 +376,7 @@ class CmdChooseStarter(Command):
                 )
             return
 
-        if _db_bool(caller, "validated", False):
+        if _db_bool(caller, "validated", False) or _db_bool(caller, "chargen_completed", False):
             caller.msg("You have already completed chargen; starter selection is closed.")
             return
 
@@ -416,6 +421,12 @@ def _caller_has_party_pokemon(caller) -> bool:
 
 def _starter_menu_target(caller):
     data = getattr(getattr(caller, "ndb", None), "chargen", None)
+    if not isinstance(data, dict) or not data:
+        from collections.abc import Mapping
+        saved = getattr(getattr(caller, "db", None), "chargen_draft", None)
+        if isinstance(saved, Mapping):
+            data = dict(saved)
+            caller.ndb.chargen = data
     if not isinstance(data, dict) or not data:
         return "start", "", {}
 

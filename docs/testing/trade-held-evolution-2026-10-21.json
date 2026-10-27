@@ -1,0 +1,630 @@
+{
+  "issue": 755,
+  "completed_utc": "2026-10-21T22:06:50.037896+00:00",
+  "result": "passed_existing_trade_held_non_transfer_evolution_scope",
+  "baseline_commit": "f7391988768a58a8c1e2ca76a40c31222623ca95",
+  "python": "3.12.4",
+  "source_sha256_lf": {
+    "pokemon/evolution_items.py": "7bc21af84918a55f2e3080d074bc65d083db4e18bc8c56441a9269b640cf41fb",
+    "pokemon/data/evolution.py": "e20514c0a66578bf45960c56fdabaca3fb9b937c37f847f38cb3930737900684",
+    "pokemon/services/evolution.py": "a6a6d83fa1cf617590520e04ea00fe8b10848fca91c744c2e2461cbd3ff1f93f",
+    "pokemon/services/placement.py": "5fa4d9e2b80c2b1a9eab6330e8d9907d497ca23e3da6f93a24e78ee3270930b9",
+    "pokemon/evolution_forms.py": "d4764711565c1341620512f799f859d8023877c944d458bb38c721156c5d1a74",
+    "pokemon/user.py": "7016b47bbf45c9a0d192d6c9a0b5e606454494db2f59670a8b4f816aee599168",
+    "commands/player/cmd_account.py": "5d70a73432ae46ab49c23e3fb1c112c541a18bcfc44faf6f7c980c0263a866c8",
+    "commands/player/cmd_learn_evolve.py": "93a2769d8c7b3ed92bcdc493947d43889cdf853a58a9c2f197fe5dd661cbf52b",
+    "commands/player/cmd_party.py": "5ea34bd6b38dcede4f5b9af6b5010fa898b7d89d0bff118979b101697da8c12d",
+    "commands/player/cmd_sheet.py": "c56a1e317bf3cefcce1bd7b6fc12460813ed1b1c1aed9ea284233b7ce1fa8351",
+    "utils/display.py": "7d929fb607ea3fa24e6a4e82bdda48def94b049355d36233105fd1fe1c72218a",
+    "world/help_entries.py": "df9f73cdcbf52d93af7f56396c7f9a5be97996ea581435f677e967aa4c2c3988",
+    "tests/test_trade_held_evolution.py": "0ebc48707557ea70338575440d143b8b49a8825f111038daa2f682517ea00fc7",
+    "tests/integration/trade_held_cases.py": "2f039b6bb8b02853907f3560167cb6d53c2d60c85702c8116ee3f5dd428380f1",
+    ".github/workflows/lifecycle-integrity.yml": "d6397de2e8250289da952b05486fc6ec867e9970d0ed8c7c099a7dcbdf99b896",
+    "docs/trade-held-evolution.md": "444ace5dd7a18b37b08e8cb7cfb2cbf2ea39d17b825800d51fc92d0129b7f9ad",
+    "docs/evolution.md": "64215d08d536c5ff4f6cffbb58c74673f863c9fd519bf9bf36efd0dbb9ae4330"
+  },
+  "dependency_review": {
+    "reviewed_date": "2026-10-21",
+    "722": "open; shared ownership-transfer primitives absent",
+    "725": "open; consent trading absent and legacy +trade still disabled",
+    "723": "open; current Fusion reservations preserved through PlacementService checks",
+    "decision": "Use #755's explicit non-transfer equivalent; do not implement or reopen actual trading",
+    "731": "broader guidance acceptance remains open; command help, guide entry and evolution docs updated"
+  },
+  "trigger": "+party <slot> discovers ID; +hold <slot>=<required item>; +evolve <copied ID>[=<exact target>] without a bag item",
+  "items": [
+    "Deep Sea Scale",
+    "Deep Sea Tooth",
+    "Dragon Scale",
+    "Dubious Disc",
+    "Electirizer",
+    "King's Rock",
+    "Magmarizer",
+    "Metal Coat",
+    "Prism Scale",
+    "Protector",
+    "Reaper Cloth",
+    "Sachet",
+    "Up-Grade",
+    "Whipped Dream"
+  ],
+  "mapping_results": [
+    {
+      "source": "Clamperl",
+      "target": "Gorebyss",
+      "held_item": "Deep Sea Scale",
+      "test": "test_mapping_Gorebyss",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Clamperl",
+      "target": "Huntail",
+      "held_item": "Deep Sea Tooth",
+      "test": "test_mapping_Huntail",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Seadra",
+      "target": "Kingdra",
+      "held_item": "Dragon Scale",
+      "test": "test_mapping_Kingdra",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Porygon2",
+      "target": "Porygon-Z",
+      "held_item": "Dubious Disc",
+      "test": "test_mapping_Porygon_Z",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Electabuzz",
+      "target": "Electivire",
+      "held_item": "Electirizer",
+      "test": "test_mapping_Electivire",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Poliwhirl",
+      "target": "Politoed",
+      "held_item": "King's Rock",
+      "test": "test_mapping_Politoed",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Slowpoke",
+      "target": "Slowking",
+      "held_item": "King's Rock",
+      "test": "test_mapping_Slowking",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Magmar",
+      "target": "Magmortar",
+      "held_item": "Magmarizer",
+      "test": "test_mapping_Magmortar",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Onix",
+      "target": "Steelix",
+      "held_item": "Metal Coat",
+      "test": "test_mapping_Steelix",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Scyther",
+      "target": "Scizor",
+      "held_item": "Metal Coat",
+      "test": "test_mapping_Scizor",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Nohface",
+      "target": "Kitsunoh",
+      "held_item": "Metal Coat",
+      "test": "test_mapping_Kitsunoh",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Feebas",
+      "target": "Milotic",
+      "held_item": "Prism Scale",
+      "test": "test_mapping_Milotic",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Rhydon",
+      "target": "Rhyperior",
+      "held_item": "Protector",
+      "test": "test_mapping_Rhyperior",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Dusclops",
+      "target": "Dusknoir",
+      "held_item": "Reaper Cloth",
+      "test": "test_mapping_Dusknoir",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Spritzee",
+      "target": "Aromatisse",
+      "held_item": "Sachet",
+      "test": "test_mapping_Aromatisse",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Porygon",
+      "target": "Porygon2",
+      "held_item": "Up-Grade",
+      "test": "test_mapping_Porygon2",
+      "status": "passed_command_flow_and_SQL_reload"
+    },
+    {
+      "source": "Swirlix",
+      "target": "Slurpuff",
+      "held_item": "Whipped Dream",
+      "test": "test_mapping_Slurpuff",
+      "status": "passed_command_flow_and_SQL_reload"
+    }
+  ],
+  "transaction": {
+    "owner": "unchanged",
+    "canonical_placement_and_compatibility_mirrors": "unchanged",
+    "actual_transfer": false,
+    "actual_trade_hook": false,
+    "lock_order": [
+      "storage",
+      "trainer",
+      "Pokemon"
+    ],
+    "save": "species, ability slot, held consumption and existing evo receipt in one transaction",
+    "held_item_consumed": 1,
+    "extra_bag_debit_on_evolution": 0,
+    "receipt": "existing evo: hash of stored level, supplied item and requested target; repeated identical completion is a no-op",
+    "second_Porygon_stage": "equip Dubious Disc then explicitly request =Porygon-Z at the same level",
+    "schema_change": false,
+    "new_item_definitions": false
+  },
+  "production_model_checks": {
+    "proof_kind": "automated ordinary command parsers/functions and production ORM; captured session transport, no live login",
+    "trade_held": {
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 7.784,
+      "log": ".codex-artifacts\\trade-held-20261021\\trade-held-final.log",
+      "log_sha256": "3ee8a20e88094ec795c19d4eb1405dd48289a7784fe0840654c3442261c7fa2d",
+      "command": "python -B tests/integration/trade_held_cases.py",
+      "mapping_walkthroughs": 17,
+      "other_cases": 16
+    },
+    "existing_evolution_equip": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 3.14,
+      "log": ".codex-artifacts\\trade-held-20261021\\evolution-regression.log",
+      "log_sha256": "5a6c3c0fe3a9c7c98890580e856c053be782aa0ff94292824338fb4f46463456",
+      "command": "python -B tests/integration/evolution_cases.py"
+    },
+    "existing_Alcremie": {
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 16.838,
+      "log": ".codex-artifacts\\trade-held-20261021\\alcremie-regression.log",
+      "log_sha256": "3e2e33ef36c283583a1c2eea6d34c9c5349369b27b321b6189c9a5211c14f19c",
+      "command": "python -B tests/integration/alcremie_cases.py"
+    },
+    "total_passed": 137,
+    "database": "fresh private loopback PostgreSQL 16.9 cluster, explicit test DSN and generated schemas"
+  },
+  "focused_pytest": {
+    "passed": 115,
+    "failed": 0,
+    "warnings": 7,
+    "exit_code": 0,
+    "selection": [
+      "tests/test_trade_held_evolution.py",
+      "tests/test_evolution.py",
+      "tests/test_evolution_conditions.py",
+      "tests/test_alcremie_evolution.py",
+      "tests/test_evolve_command_safety.py",
+      "tests/test_hold_command_safety.py",
+      "tests/test_trade_safety.py"
+    ],
+    "command": "python -B -m pytest -q tests/test_trade_held_evolution.py tests/test_evolution.py tests/test_evolution_conditions.py tests/test_alcremie_evolution.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_trade_safety.py --run-callback-tests -o addopts= -p no:cacheprovider --basetemp=.pytest-basetemp-755-focused-final",
+    "log": ".codex-artifacts\\trade-held-20261021\\focused-final.log",
+    "log_sha256": "671183f6a4d5e2d4b2ad2e48985cdb9e204bc97e2105494032008320d19770b0"
+  },
+  "mandatory_gate": {
+    "command": "python -B tools/run_mandatory_tests.py",
+    "runs": [
+      {
+        "name": "combined",
+        "passed": 4392,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 205.69,
+        "exit_code": 0
+      },
+      {
+        "name": "repeat",
+        "passed": 4392,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 200.23,
+        "exit_code": 0
+      },
+      {
+        "name": "battle-first",
+        "passed": 4392,
+        "skipped": 4014,
+        "warnings": 1401,
+        "duration_seconds": 192.01,
+        "exit_code": 0
+      }
+    ],
+    "exit_code": 0,
+    "log": ".codex-artifacts\\trade-held-20261021\\mandatory-final.log",
+    "log_sha256": "b2f7558d438aa2b77cf9115b88e8837b944dbf01ce09f1a163946c3a6584c38f",
+    "skipped_scope": "4014 skipped per run remain outside the enabled gate; PostgreSQL proof is separate",
+    "warnings": "existing Django model-reload and pytest-cache permission warnings retained"
+  },
+  "negative_and_concurrency_controls": [
+    "held-only copy without spare bag item",
+    "missing/wrong/partial held item",
+    "Everstone",
+    "bag argument rejected",
+    "wrong species/regional form/branch/partial target",
+    "egg",
+    "Fusion reservation",
+    "battle guard at command and locked service",
+    "foreign owner at ID lookup and service",
+    "conflicting placement owner",
+    "failure after SQL save rolls back held item, receipt, species and identity cache",
+    "stale cached species/item",
+    "boxed evolution preserves placement/mirrors",
+    "explicit second-stage request",
+    "replay with a newly equipped copy",
+    "legacy +trade still disabled",
+    "non-item and partner-species trades still blocked",
+    "simultaneous identical completions",
+    "competing held removal",
+    "competing Fusion reservation",
+    "unknown dex metadata remains fail closed"
+  ],
+  "walkthrough": [
+    {
+      "source": "Spritzee",
+      "target": "Aromatisse",
+      "item": "Sachet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Sachet",
+        "+evolve 2cf426c4-3fd3-442d-bc20-b72305c492c7",
+        "+party 3"
+      ],
+      "discovered_id": "2cf426c4-3fd3-442d-bc20-b72305c492c7",
+      "output": "Buddy evolved into Aromatisse!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAromatisse\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m   \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w2cf426c4-3fd3-442d-bc20-b72305c492c7|n\n|xHP|n: |w3|n/100 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wAroma Veil|n   |xHeld|n: |wNothing|n\n+------------------------------+\n|\u001b[0m HP  \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 100 \u001b[0m\u001b[0m 49  \u001b[0m\u001b[0m 49  \u001b[0m\u001b[0m 66  \u001b[0m\u001b[0m 59  \u001b[0m\u001b[0m 24  \u001b[0m|\n+------------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Dusclops",
+      "target": "Dusknoir",
+      "item": "Reaper Cloth",
+      "commands": [
+        "+party 3",
+        "+hold 3=Reaper Cloth",
+        "+evolve a09bb6a6-0eed-4580-8037-9fa625c3d97f",
+        "+party 3"
+      ],
+      "discovered_id": "a09bb6a6-0eed-4580-8037-9fa625c3d97f",
+      "output": "Buddy evolved into Dusknoir!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mDusknoir\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[35mGhost\u001b[0m       \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wa09bb6a6-0eed-4580-8037-9fa625c3d97f|n\n|xHP|n: |w3|n/67 \u001b[1m\u001b[31m                    \u001b[0m |x(4%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wFrisk|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 67 \u001b[0m\u001b[0m 66  \u001b[0m\u001b[0m 86  \u001b[0m\u001b[0m 46  \u001b[0m\u001b[0m 87  \u001b[0m\u001b[0m 33  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Electabuzz",
+      "target": "Electivire",
+      "item": "Electirizer",
+      "commands": [
+        "+party 3",
+        "+hold 3=Electirizer",
+        "+evolve e1900759-2d57-4f4f-8fcc-fdb1cbeb5339",
+        "+party 3"
+      ],
+      "discovered_id": "e1900759-2d57-4f4f-8fcc-fdb1cbeb5339",
+      "output": "Buddy evolved into Electivire!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mElectivire\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[1m\u001b[33mElectric\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |we1900759-2d57-4f4f-8fcc-fdb1cbeb5339|n\n|xHP|n: |w3|n/85 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wVital Spirit|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 85 \u001b[0m\u001b[0m 80  \u001b[0m\u001b[0m 46  \u001b[0m\u001b[0m 64  \u001b[0m\u001b[0m 57  \u001b[0m\u001b[0m 63  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Clamperl",
+      "target": "Gorebyss",
+      "item": "Deep Sea Scale",
+      "commands": [
+        "+party 3",
+        "+hold 3=Deep Sea Scale",
+        "+evolve ad6ac20d-2834-4a63-96bd-a453d1baccf5",
+        "+party 3"
+      ],
+      "discovered_id": "ad6ac20d-2834-4a63-96bd-a453d1baccf5",
+      "output": "Buddy evolved into Gorebyss!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mGorebyss\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[34mWater\u001b[0m       \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wad6ac20d-2834-4a63-96bd-a453d1baccf5|n\n|xHP|n: |w3|n/73 \u001b[1m\u001b[31m                    \u001b[0m |x(4%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wHydration|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 73 \u001b[0m\u001b[0m 56  \u001b[0m\u001b[0m 68  \u001b[0m\u001b[0m 75  \u001b[0m\u001b[0m 51  \u001b[0m\u001b[0m 38  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Clamperl",
+      "target": "Huntail",
+      "item": "Deep Sea Tooth",
+      "commands": [
+        "+party 3",
+        "+hold 3=Deep Sea Tooth",
+        "+evolve 9d15fb1a-b556-45a9-a4ac-e89f58ae4edd",
+        "+party 3"
+      ],
+      "discovered_id": "9d15fb1a-b556-45a9-a4ac-e89f58ae4edd",
+      "output": "Buddy evolved into Huntail!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mHuntail\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[34mWater\u001b[0m        \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w9d15fb1a-b556-45a9-a4ac-e89f58ae4edd|n\n|xHP|n: |w3|n/73 \u001b[1m\u001b[31m                    \u001b[0m |x(4%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wWater Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 73 \u001b[0m\u001b[0m 68  \u001b[0m\u001b[0m 68  \u001b[0m\u001b[0m 63  \u001b[0m\u001b[0m 51  \u001b[0m\u001b[0m 38  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Seadra",
+      "target": "Kingdra",
+      "item": "Dragon Scale",
+      "commands": [
+        "+party 3",
+        "+hold 3=Dragon Scale",
+        "+evolve afb7df2b-e762-43d2-9eff-9b1d4fa46d55",
+        "+party 3"
+      ],
+      "discovered_id": "afb7df2b-e762-43d2-9eff-9b1d4fa46d55",
+      "output": "Buddy evolved into Kingdra!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mKingdra\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[34mWater\u001b[0m / \u001b[1m\u001b[34mDragon\u001b[0m \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m   \u001b[0m\n|xID|n: |wafb7df2b-e762-43d2-9eff-9b1d4fa46d55|n\n|xHP|n: |w3|n/85 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wDamp|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 85 \u001b[0m\u001b[0m 63  \u001b[0m\u001b[0m 62  \u001b[0m\u001b[0m 64  \u001b[0m\u001b[0m 63  \u001b[0m\u001b[0m 57  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Nohface",
+      "target": "Kitsunoh",
+      "item": "Metal Coat",
+      "commands": [
+        "+party 3",
+        "+hold 3=Metal Coat",
+        "+evolve caaba1b2-1348-42d1-b0c3-bfb63905abb6",
+        "+party 3"
+      ],
+      "discovered_id": "caaba1b2-1348-42d1-b0c3-bfb63905abb6",
+      "output": "Buddy evolved into Kitsunoh!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mKitsunoh\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[35mGhost\u001b[0m / \u001b[22m\u001b[37mSteel\u001b[0m \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m   \u001b[0m\n|xID|n: |wcaaba1b2-1348-42d1-b0c3-bfb63905abb6|n\n|xHP|n: |w3|n/88 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wIron Fist|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 88 \u001b[0m\u001b[0m 68  \u001b[0m\u001b[0m 56  \u001b[0m\u001b[0m 40  \u001b[0m\u001b[0m 54  \u001b[0m\u001b[0m 72  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Magmar",
+      "target": "Magmortar",
+      "item": "Magmarizer",
+      "commands": [
+        "+party 3",
+        "+hold 3=Magmarizer",
+        "+evolve 9a63be5b-b8ea-4ead-9dba-a6d72dc27166",
+        "+party 3"
+      ],
+      "discovered_id": "9a63be5b-b8ea-4ead-9dba-a6d72dc27166",
+      "output": "Buddy evolved into Magmortar!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mMagmortar\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[1m\u001b[31mFire\u001b[0m       \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w9a63be5b-b8ea-4ead-9dba-a6d72dc27166|n\n|xHP|n: |w3|n/85 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wVital Spirit|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 85 \u001b[0m\u001b[0m 63  \u001b[0m\u001b[0m 46  \u001b[0m\u001b[0m 82  \u001b[0m\u001b[0m 63  \u001b[0m\u001b[0m 56  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Feebas",
+      "target": "Milotic",
+      "item": "Prism Scale",
+      "commands": [
+        "+party 3",
+        "+hold 3=Prism Scale",
+        "+evolve 4e1aca4f-9acc-4936-a42d-37f4ae43024c",
+        "+party 3"
+      ],
+      "discovered_id": "4e1aca4f-9acc-4936-a42d-37f4ae43024c",
+      "output": "Buddy evolved into Milotic!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mMilotic\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[34mWater\u001b[0m        \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w4e1aca4f-9acc-4936-a42d-37f4ae43024c|n\n|xHP|n: |w3|n/97 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wCute Charm|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 97 \u001b[0m\u001b[0m 42  \u001b[0m\u001b[0m 53  \u001b[0m\u001b[0m 67  \u001b[0m\u001b[0m 81  \u001b[0m\u001b[0m 55  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Poliwhirl",
+      "target": "Politoed",
+      "item": "King's Rock",
+      "commands": [
+        "+party 3",
+        "+hold 3=King's Rock",
+        "+evolve a2e8d4b3-3cf6-4062-a8e3-e44f6394d02d",
+        "+party 3"
+      ],
+      "discovered_id": "a2e8d4b3-3cf6-4062-a8e3-e44f6394d02d",
+      "output": "Buddy evolved into Politoed!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mPolitoed\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[34mWater\u001b[0m       \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wa2e8d4b3-3cf6-4062-a8e3-e44f6394d02d|n\n|xHP|n: |w3|n/94 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wDrizzle|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 94 \u001b[0m\u001b[0m 51  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 61  \u001b[0m\u001b[0m 66  \u001b[0m\u001b[0m 48  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Porygon",
+      "target": "Porygon2",
+      "item": "Up-Grade",
+      "commands": [
+        "+party 3",
+        "+hold 3=Up-Grade",
+        "+evolve b0558057-ad4f-4a06-a717-aec4a6b59b9f",
+        "+party 3"
+      ],
+      "discovered_id": "b0558057-ad4f-4a06-a717-aec4a6b59b9f",
+      "output": "Buddy evolved into Porygon2!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mPorygon2\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[1m\u001b[37mNormal\u001b[0m      \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wb0558057-ad4f-4a06-a717-aec4a6b59b9f|n\n|xHP|n: |w3|n/91 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wAnalytic|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 91 \u001b[0m\u001b[0m 54  \u001b[0m\u001b[0m 59  \u001b[0m\u001b[0m 70  \u001b[0m\u001b[0m 63  \u001b[0m\u001b[0m 42  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Porygon2",
+      "target": "Porygon-Z",
+      "item": "Dubious Disc",
+      "commands": [
+        "+party 3",
+        "+hold 3=Dubious Disc",
+        "+evolve 65a35703-ed44-47ee-8b74-63fd5c3eb71b",
+        "+party 3"
+      ],
+      "discovered_id": "65a35703-ed44-47ee-8b74-63fd5c3eb71b",
+      "output": "Buddy evolved into Porygon-Z!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mPorygon-Z\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[1m\u001b[37mNormal\u001b[0m     \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w65a35703-ed44-47ee-8b74-63fd5c3eb71b|n\n|xHP|n: |w3|n/91 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wAnalytic|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 91 \u001b[0m\u001b[0m 54  \u001b[0m\u001b[0m 47  \u001b[0m\u001b[0m 88  \u001b[0m\u001b[0m 51  \u001b[0m\u001b[0m 60  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Rhydon",
+      "target": "Rhyperior",
+      "item": "Protector",
+      "commands": [
+        "+party 3",
+        "+hold 3=Protector",
+        "+evolve cdfb04b9-3841-4277-92fe-b3df3a6a353e",
+        "+party 3"
+      ],
+      "discovered_id": "cdfb04b9-3841-4277-92fe-b3df3a6a353e",
+      "output": "Buddy evolved into Rhyperior!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mRhyperior\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[33mGround\u001b[0m / \u001b[22m\u001b[33mRock\u001b[0m \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m    \u001b[0m\n|xID|n: |wcdfb04b9-3841-4277-92fe-b3df3a6a353e|n\n|xHP|n: |w3|n/109 \u001b[1m\u001b[31m                    \u001b[0m |x(2%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wReckless|n   |xHeld|n: |wNothing|n\n+------------------------------+\n|\u001b[0m HP  \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 109 \u001b[0m\u001b[0m 90  \u001b[0m\u001b[0m 83  \u001b[0m\u001b[0m 40  \u001b[0m\u001b[0m 39  \u001b[0m\u001b[0m 30  \u001b[0m|\n+------------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Scyther",
+      "target": "Scizor",
+      "item": "Metal Coat",
+      "commands": [
+        "+party 3",
+        "+hold 3=Metal Coat",
+        "+evolve 8bc7c569-b8d4-4554-a432-014e05950c82",
+        "+party 3"
+      ],
+      "discovered_id": "8bc7c569-b8d4-4554-a432-014e05950c82",
+      "output": "Buddy evolved into Scizor!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mScizor\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[32mBug\u001b[0m / \u001b[22m\u001b[37mSteel\u001b[0m   \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w8bc7c569-b8d4-4554-a432-014e05950c82|n\n|xHP|n: |w3|n/82 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wLight Metal|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 82 \u001b[0m\u001b[0m 84  \u001b[0m\u001b[0m 65  \u001b[0m\u001b[0m 40  \u001b[0m\u001b[0m 54  \u001b[0m\u001b[0m 45  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Slowpoke",
+      "target": "Slowking",
+      "item": "King's Rock",
+      "commands": [
+        "+party 3",
+        "+hold 3=King's Rock",
+        "+evolve ea4cbf11-0a5d-4358-9e98-6f988054b738",
+        "+party 3"
+      ],
+      "discovered_id": "ea4cbf11-0a5d-4358-9e98-6f988054b738",
+      "output": "Buddy evolved into Slowking!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mSlowking\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[34mWater\u001b[0m / \u001b[22m\u001b[35mPsychic\u001b[0m \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m     \u001b[0m\n|xID|n: |wea4cbf11-0a5d-4358-9e98-6f988054b738|n\n|xHP|n: |w3|n/97 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wRegenerator|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 97 \u001b[0m\u001b[0m 51  \u001b[0m\u001b[0m 53  \u001b[0m\u001b[0m 67  \u001b[0m\u001b[0m 72  \u001b[0m\u001b[0m 24  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Swirlix",
+      "target": "Slurpuff",
+      "item": "Whipped Dream",
+      "commands": [
+        "+party 3",
+        "+hold 3=Whipped Dream",
+        "+evolve 8fc28ccb-b6d2-44ea-b187-79421af687b0",
+        "+party 3"
+      ],
+      "discovered_id": "8fc28ccb-b6d2-44ea-b187-79421af687b0",
+      "output": "Buddy evolved into Slurpuff!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mSlurpuff\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m     \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w8fc28ccb-b6d2-44ea-b187-79421af687b0|n\n|xHP|n: |w3|n/89 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wUnburden|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 89 \u001b[0m\u001b[0m 54  \u001b[0m\u001b[0m 57  \u001b[0m\u001b[0m 58  \u001b[0m\u001b[0m 51  \u001b[0m\u001b[0m 50  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "source": "Onix",
+      "target": "Steelix",
+      "item": "Metal Coat",
+      "commands": [
+        "+party 3",
+        "+hold 3=Metal Coat",
+        "+evolve f2a26e81-b64e-4748-b9ed-439b91ad892a",
+        "+party 3"
+      ],
+      "discovered_id": "f2a26e81-b64e-4748-b9ed-439b91ad892a",
+      "output": "Buddy evolved into Steelix!",
+      "held_after": "",
+      "bag_after": 1,
+      "owner_and_placement_unchanged": true,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Buddy|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mSteelix\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37m\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: \u001b[22m\u001b[37mSteel\u001b[0m / \u001b[22m\u001b[33mGround\u001b[0m \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m   \u001b[0m\n|xID|n: |wf2a26e81-b64e-4748-b9ed-439b91ad892a|n\n|xHP|n: |w3|n/85 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: slp\n|xNature|n: |wHardy|n   |xAbility|n: |wSheer Force|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 85 \u001b[0m\u001b[0m 57  \u001b[0m\u001b[0m 125 \u001b[0m\u001b[0m 40  \u001b[0m\u001b[0m 45  \u001b[0m\u001b[0m 24  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 1  \u001b[0m\u001b[0m 2   \u001b[0m\u001b[0m 3   \u001b[0m\u001b[0m 4   \u001b[0m\u001b[0m 5   \u001b[0m\u001b[0m 6   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    }
+  ],
+  "cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_trade_held_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_postgres_stopped": true
+  },
+  "development_diagnoses": [
+    {
+      "kind": "fixture_quantity_assumption",
+      "detail": "Initial helper expected newly added copies minus one rather than including pre-existing inventory. The replay fixture was corrected; product code was unchanged and all 33 cases reran successfully.",
+      "retained_log": ".codex-artifacts\\trade-held-20261021\\trade-held-fixture-quantity-error.log"
+    }
+  ],
+  "acceptance_boundaries": {
+    "live_player_session": false,
+    "game_database_used": false,
+    "game_services_reloaded": false,
+    "migration_runner_invoked": false,
+    "remote_deployment": false,
+    "main_merge": "not established by these tests",
+    "hosted_CI": "new suite wired into existing workflow; local success does not establish hosted completion",
+    "publication": "See #755 closure for the staging commit containing these reports",
+    "out_of_scope": [
+      "actual transfers and consent trading (#722/#725)",
+      "new Linking Cord",
+      "non-item trades",
+      "plot-only items",
+      "new item definitions",
+      "acquisition",
+      "held-item battle mechanics"
+    ],
+    "unrelated_battle_runtime_changes": false
+  }
+}

@@ -49,7 +49,7 @@ def ensure_model_modules_loaded(*, require_ready: bool = False) -> bool:
     if not (require_ready or apps.apps_ready):  # pragma: no cover - wait until Django is ready.
         return False
 
-    for module_name in ("core", "trainer", "moves", "storage", "adventures", "gym"):
+    for module_name in ("core", "trainer", "moves", "storage", "adventures", "gym", "berries", "ownership", "market", "daycare", "breeding", "onboarding", "necrozma"):
         full_name = f"{__name__}.{module_name}"
         try:
             importlib.import_module(full_name)
@@ -72,6 +72,7 @@ try:  # pragma: no cover - best-effort model re-exports for runtime helpers
     from .adventures import AdventureParticipation, AdventureSession  # noqa: F401
     from .core import EncounterPokemon, OwnedPokemon, Pokemon, SpeciesEntry  # noqa: F401
     from .gym import GymVictory  # noqa: F401
+    from .onboarding import OnboardingCompletion  # noqa: F401
     from .moves import Move  # noqa: F401
     from .storage import ActivePokemonSlot, PokemonPlacement, StorageBox, UserStorage  # noqa: F401
     from .trainer import GymLeaderProfile, InventoryEntry, NPCPokemonTemplate, NPCTrainer, Trainer  # noqa: F401

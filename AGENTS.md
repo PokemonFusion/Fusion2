@@ -23,6 +23,12 @@ This repository hosts a text-based Pokémon game built on the Evennia MUD framew
 2. After modifying Python code, run the test suite with `pytest -q` from the repository root.  Ensure tests pass before committing.
 3. Summarize your changes in the PR description and mention any test results.
 
+### Diagnosing battle test failures
+
+- A failed scenario or a "failed/no effect" move message is not by itself a game defect. Check the intended rules and the actual preconditions first: legal moves and targets, PP, accuracy rolls, immunities, abilities, status prevention, protection, field effects, and charging/recharge turns.
+- Separate expected gameplay failures, fixture or runner errors, and confirmed mechanics defects. Retain the exact commands and before/after state; reproduce unexpected behavior with fresh isolated fixtures before changing battle code.
+- Add positive and relevant negative regression cases, and record the diagnosis and evidence in the pilot report. Never force a move to succeed when the rules require it to fail.
+
 ## Operational Guardrails
 
 - Never run migrations without asking first.

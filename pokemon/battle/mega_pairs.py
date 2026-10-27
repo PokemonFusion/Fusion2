@@ -1,0 +1,51 @@
+"""Explicit canonical stone pairs qualified by the per-pair player suite."""
+
+MEGA_PAIRS = {
+    "abomasite": ("Abomasnow", "Abomasnow-Mega"),  # #789
+    "absolite": ("Absol", "Absol-Mega"),  # #792
+    "aerodactylite": ("Aerodactyl", "Aerodactyl-Mega"),  # #788
+    "aggronite": ("Aggron", "Aggron-Mega"),  # #793
+    "alakazite": ("Alakazam", "Alakazam-Mega"),  # #792
+    "altarianite": ("Altaria", "Altaria-Mega"),  # #790
+    "ampharosite": ("Ampharos", "Ampharos-Mega"),  # #795
+    "audinite": ("Audino", "Audino-Mega"),  # #794
+    "banettite": ("Banette", "Banette-Mega"),  # #792
+    "beedrillite": ("Beedrill", "Beedrill-Mega"),  # #791
+    "blastoisinite": ("Blastoise", "Blastoise-Mega"),  # #791
+    "blazikenite": ("Blaziken", "Blaziken-Mega"),  # #789
+    "cameruptite": ("Camerupt", "Camerupt-Mega"),  # #791
+    "charizarditex": ("Charizard", "Charizard-Mega-X"),  # #788
+    "charizarditey": ("Charizard", "Charizard-Mega-Y"),  # #789
+    "diancite": ("Diancie", "Diancie-Mega"),  # #792
+    "galladite": ("Gallade", "Gallade-Mega"),  # #794
+    "garchompite": ("Garchomp", "Garchomp-Mega"),  # #794
+    "gardevoirite": ("Gardevoir", "Gardevoir-Mega"),  # #790
+    "gengarite": ("Gengar", "Gengar-Mega"),  # #792
+    "glalitite": ("Glalie", "Glalie-Mega"),  # #790
+    "gyaradosite": ("Gyarados", "Gyarados-Mega"),  # #793
+    "heracronite": ("Heracross", "Heracross-Mega"),  # #790
+    "houndoominite": ("Houndoom", "Houndoom-Mega"),  # #794
+    "kangaskhanite": ("Kangaskhan", "Kangaskhan-Mega"),  # #796
+    "latiasite": ("Latias", "Latias-Mega"),  # #793
+    "latiosite": ("Latios", "Latios-Mega"),  # #793
+    "lopunnite": ("Lopunny", "Lopunny-Mega"),  # #791
+    "lucarionite": ("Lucario", "Lucario-Mega"),  # #791
+    "manectite": ("Manectric", "Manectric-Mega"),  # #789
+    "mawilite": ("Mawile", "Mawile-Mega"),  # #788
+    "medichamite": ("Medicham", "Medicham-Mega"),  # #788
+    "metagrossite": ("Metagross", "Metagross-Mega"),  # #788
+    "mewtwonitex": ("Mewtwo", "Mewtwo-Mega-X"),  # #795
+    "mewtwonitey": ("Mewtwo", "Mewtwo-Mega-Y"),  # #795
+    "pidgeotite": ("Pidgeot", "Pidgeot-Mega"),  # #794
+    "pinsirite": ("Pinsir", "Pinsir-Mega"),  # #790
+    "sablenite": ("Sableye", "Sableye-Mega"),  # #792
+    "salamencite": ("Salamence", "Salamence-Mega"),  # #790
+    "sceptilite": ("Sceptile", "Sceptile-Mega"),  # #793
+    "scizorite": ("Scizor", "Scizor-Mega"),  # #788
+    "sharpedonite": ("Sharpedo", "Sharpedo-Mega"),  # #791
+    "slowbronite": ("Slowbro", "Slowbro-Mega"),  # #793
+    "steelixite": ("Steelix", "Steelix-Mega"),  # #794
+    "swampertite": ("Swampert", "Swampert-Mega"),  # #789
+    "tyranitarite": ("Tyranitar", "Tyranitar-Mega"),  # #789
+    "venusaurite": ("Venusaur", "Venusaur-Mega"),  # #786
+}

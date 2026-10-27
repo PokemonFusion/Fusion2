@@ -148,7 +148,7 @@ def _pokemon_reveal_key(
 
 @dataclass
 class Move:
-    """Minimal representation of a Pokémon move.
+    """Minimal representation of a PokÃƒÆ’Ã‚Â©mon move.
 
     Parameters
     ----------
@@ -157,11 +157,12 @@ class Move:
     priority
         Execution priority of the move.
     pokemon_types
-        Optional typing of the Pokémon using the move.  This is primarily
+        Optional typing of the PokÃƒÆ’Ã‚Â©mon using the move.  This is primarily
         carried so ephemeral test battles can perform damage calculations with
         the correct Same Type Attack Bonus.
     """
 
+    effectType = "Move"
     name: str
     priority: int = 0
     pokemon_types: Optional[List[str]] = None
@@ -188,12 +189,12 @@ class Move:
 
 
 class Pokemon:
-    """Very small Pokémon container used for battles.
+    """Very small PokÃƒÆ’Ã‚Â©mon container used for battles.
 
     The constructor accepts optional item and stat data. IVs, EVs and nature
     are used to calculate the base stats for the battle instance.  Explicit
     typing can be supplied via the ``types`` argument; when omitted, typing is
-    inferred from the Pokédex using the Pokémon's species name.
+    inferred from the PokÃƒÆ’Ã‚Â©dex using the PokÃƒÆ’Ã‚Â©mon's species name.
     """
 
     @property
@@ -228,6 +229,15 @@ class Pokemon:
             return getattr(self, "hp", 0) > 0
         return self in active and getattr(self, "hp", 0) > 0
 
+    @property
+    def happiness(self) -> int:
+        """Expose the canonical friendship value to move callbacks."""
+        return self.friendship
+
+    @happiness.setter
+    def happiness(self, value) -> None:
+        self.friendship = max(0, min(255, int(value)))
+
     def __init__(
         self,
         name: str,
@@ -245,7 +255,15 @@ class Pokemon:
         model_id: Optional[int] = None,
         gender: str = "N",
         types: Optional[List[str]] = None,
+        tera_type: str = "",
+        friendship: int = 70,
+        hyper_training: Optional[List[str]] = None,
+        trained_stat_nature: Optional[str] = None,
     ):
+        from pokemon.hyper_training import HyperTraining
+
+        self.hyper_training = HyperTraining.canonical(hyper_training)
+        self.friendship = max(0, min(255, int(friendship)))
         self.name = name
         self.species = name
         self.base_species = name
@@ -261,6 +279,12 @@ class Pokemon:
         self.ivs = ivs or [0, 0, 0, 0, 0, 0]
         self.evs = evs or [0, 0, 0, 0, 0, 0]
         self.nature = nature
+        from pokemon.nature_training import NatureTraining
+
+        self.trained_stat_nature = NatureTraining.validate_training(trained_stat_nature)
+        NatureTraining.effective(self)  # Invalid training cannot enter a stats fallback.
+        if self.trained_stat_nature is not None and parse_pokemon_ref(model_id)[0] == "encounter":
+            raise ValueError("Encounter Pokemon cannot carry mint training.")
         self.gender = gender
         self.tempvals: Dict[str, int] = {}
         # Track volatile status effects such as confusion or curses
@@ -320,9 +344,30 @@ class Pokemon:
         # Ensure a ``types`` attribute is always available. Some parts of the
         # battle engine (such as damage calculation) expect this attribute to
         # exist.  Use the explicitly supplied types if provided; otherwise fall
-        # back to a Pokédex lookup based on the Pokémon's species name.
+        # back to a PokÃƒÆ’Ã‚Â©dex lookup based on the PokÃƒÆ’Ã‚Â©mon's species name.
         self.types = [str(t).title() for t in types] if types else self._lookup_species_types()
+        self.tera_type = tera_type
+        self.terastallized = None
+        self.tera_original_types = []
+        self.stellar_boosted_types = []
+        self.native_origin = None
+        self.native_ability_provenance = None
+        self.ultra_profile = None
+        self.ultra_guard_crystal = None
+        self.mega_profile = None
+        self.mega_evolved = False
+        self.mega_guard_stone = None
         self.stats = self._battle_stats()
+
+    @property
+    def types(self):
+        """Expose defensive battle types, fixed throughout Terastallization."""
+        return list(self._types) if getattr(self, "terastallized", None) else self._types
+
+    @types.setter
+    def types(self, value):
+        if not getattr(self, "terastallized", None):
+            self._types = list(value)
 
     def eat_item(self, *args, **kwargs):
         """Delegate held-item consumption to the active battle when available."""
@@ -370,6 +415,14 @@ class Pokemon:
         for opponent in battle.opponents_of(participant):
             foes.extend(list(getattr(opponent, "active", []) or []))
         return [poke for poke in foes if poke is not None and getattr(poke, "hp", 0) > 0]
+
+    def hasAbility(self, ability) -> bool:
+        """Query active named abilities through suppression and current ownership."""
+        from .effect_context import EffectContext
+
+        choices = ability if isinstance(ability, (list, tuple, set)) else [ability]
+        active = EffectContext.key(EffectContext.ability(self))
+        return bool(active) and any(active == EffectContext.key(choice) for choice in choices)
 
     def allies(self):
         """Return allied active Pokemon excluding ``self`` when in battle."""
@@ -426,7 +479,7 @@ class Pokemon:
     def setType(self, typ) -> bool:
         """Set this Pokemon's active battle type or types."""
 
-        if not typ:
+        if not typ or getattr(self, "terastallized", None):
             return False
         if isinstance(typ, (list, tuple, set)):
             new_types = [str(value).title() for value in typ if value]
@@ -446,8 +499,16 @@ class Pokemon:
         """Return the active field weather in the Showdown callback shape."""
 
         battle = getattr(self, "battle", None)
+        from ._shared import weather_suppressed
+
+        if weather_suppressed(battle):
+            return ""
         field = getattr(battle, "field", None)
         weather = getattr(field, "weather", None) or getattr(self, "weather", None)
+        from .effect_context import EffectContext
+
+        if str(weather).lower() in {"sunnyday", "desolateland", "raindance", "primordialsea"} and EffectContext.key(EffectContext.item(self)) == "utilityumbrella":
+            return ""
         return str(weather).lower() if weather else ""
 
     def _battle_stats(self) -> Dict[str, int]:
@@ -468,6 +529,10 @@ class Pokemon:
         }.get(str(stat), str(stat))
         stat_attr = "def_" if key == "def" else key
 
+        overrides = (getattr(self, "tempvals", {}) or {}).get("stat_overrides", {})
+        override_key = {"atk": "attack", "def": "defense", "spa": "special_attack",
+                        "spd": "special_defense", "spe": "speed"}.get(key, key)
+
         stats_obj = getattr(self, "base_stats", None)
         value = None
         if isinstance(stats_obj, dict):
@@ -478,13 +543,15 @@ class Pokemon:
             value = getattr(self, key, None)
         if value is None and key == "hp":
             value = getattr(self, "max_hp", getattr(self, "hp", 0))
+        value = overrides.get(override_key, value)
         try:
             value = int(value)
         except (TypeError, ValueError):
             value = 0
 
         if key != "hp" and not unboosted and not unmodified:
-            stage = int(getattr(self, "boosts", {}).get(key, 0) or 0)
+            boosts = getattr(self, "boosts", {})
+            stage = int(boosts.get(key, boosts.get(override_key, 0)) or 0)
             stage = max(-6, min(6, stage))
             if stage >= 0:
                 value = int(value * (2 + stage) / 2)
@@ -492,8 +559,13 @@ class Pokemon:
                 value = int(value * 2 / (2 - stage))
         return value
 
+    def getBestStat(self, unboosted: bool = False, unmodified: bool = False) -> str:
+        """Return the highest non-HP battle stat, with canonical tie order."""
+        order = ("atk", "def", "spa", "spd", "spe")
+        return max(order, key=lambda stat: self.getStat(stat, unboosted, unmodified))
+
     def _lookup_species_types(self) -> List[str]:
-        """Return this Pokémon's types inferred from the Pokédex.
+        """Return this PokÃƒÆ’Ã‚Â©mon's types inferred from the PokÃƒÆ’Ã‚Â©dex.
 
         The ``POKEDEX`` mapping may not always be populated during tests so
         this helper is intentionally defensive and falls back to an empty list
@@ -557,7 +629,7 @@ class Pokemon:
         return []
 
     def _lookup_species_entry(self, species_name: Optional[str] = None) -> Any:
-        """Return a Pokédex entry for ``species_name`` when available."""
+        """Return a PokÃƒÆ’Ã‚Â©dex entry for ``species_name`` when available."""
 
         lookup_name = species_name or getattr(self, "species", None) or self.name
         pdex: Dict[str, Any] = {}
@@ -620,7 +692,7 @@ class Pokemon:
         effect=None,
         bypass_protection: bool = False,
     ) -> bool:
-        """Attempt to set a major status condition on this Pokémon."""
+        """Attempt to set a major status condition on this PokÃƒÆ’Ã‚Â©mon."""
 
         previous_status = getattr(self, "status", 0)
         previous_toxic = getattr(self, "toxic_counter", 0)
@@ -649,6 +721,8 @@ class Pokemon:
 
         if status_key in {None, "", 0}:
             self.status = 0
+            self.tempvals.pop("sleep_turns", None)
+            self.tempvals.pop("slp_turns", None)
             self.toxic_counter = 0
             self.status_state = {}
             if battle_obj and previous_key not in {None, "", 0}:
@@ -773,34 +847,64 @@ class Pokemon:
         battle=None,
         is_from_forme_change: bool = False,
         is_transform: bool = False,
+        run_start: bool = True,
     ):
         """Assign a battle ability using the active battle runtime when available."""
 
         battle_obj = battle or getattr(self, "battle", None)
         if battle_obj and hasattr(battle_obj, "set_ability"):
+            start_options = {"run_start": False} if not run_start else {}
             return battle_obj.set_ability(
                 self,
                 ability,
                 source=source,
                 is_from_forme_change=is_from_forme_change,
                 is_transform=is_transform,
+                **start_options,
             )
         old = getattr(self, "ability", None)
         self.ability = ability
         self.ability_state = {"id": getattr(ability, "name", ability)}
         return old
 
-    def formeChange(self, new_forme, *, battle=None, source=None) -> bool:
-        """Apply a lightweight battle-time forme change."""
+    def formeChange(self, new_forme, *, battle=None, source=None, preserve_ability=False) -> bool:
+        """Apply a battle forme, optionally retaining its form-changing ability."""
 
         if not new_forme:
             return False
 
         battle_obj = battle or getattr(self, "battle", None)
         entry = self._lookup_species_entry(str(new_forme))
+        if not entry:
+            return False
+
+        from types import SimpleNamespace
+
+        from pokemon.dex.entities import Stats
+        from pokemon.helpers.pokemon_helpers import get_max_hp, get_stats
+
+        data = SimpleNamespace(species=str(new_forme), level=self.level,
+                               ivs=self.ivs, evs=self.evs, nature=self.nature,
+                               trained_stat_nature=self.trained_stat_nature,
+                               hyper_training=self.hyper_training)
+        stats = get_stats(data)
+        maximum = get_max_hp(data)
+        if not stats or maximum <= 0:
+            return False
+        previous_species = str(self.species)
+        data.species = previous_species
+        previous_maximum = get_max_hp(data) if self._lookup_species_entry(previous_species) else self.max_hp
+        damage = self.max_hp - self.hp
+        conscious = self.hp > 0
 
         self.species = str(new_forme)
         self.name = str(new_forme)
+        self.base_stats = Stats(**stats)
+        # Native HP-changing forms retain damage, not the old HP fraction.
+        # Ordinary forms with identical HP leave the existing HP pool alone.
+        if maximum != previous_maximum:
+            self.max_hp = maximum
+            self.hp = max(1, maximum - damage) if conscious else 0
 
         if entry:
             types = getattr(entry, "types", None)
@@ -809,43 +913,43 @@ class Pokemon:
             if types:
                 self.types = [str(t).title() for t in types if t]
 
-            base_stats = getattr(entry, "baseStats", None)
-            if base_stats is None:
-                raw = getattr(entry, "raw", None)
-                if isinstance(raw, dict):
-                    base_stats = raw.get("baseStats")
-            if base_stats is None:
-                stats = getattr(entry, "base_stats", None)
-                if stats is not None:
-                    base_stats = {
-                        "hp": getattr(stats, "hp", 0),
-                        "attack": getattr(stats, "attack", getattr(stats, "atk", 0)),
-                        "defense": getattr(stats, "defense", getattr(stats, "def_", 0)),
-                        "special_attack": getattr(stats, "special_attack", getattr(stats, "spa", 0)),
-                        "special_defense": getattr(stats, "special_defense", getattr(stats, "spd", 0)),
-                        "speed": getattr(stats, "speed", getattr(stats, "spe", 0)),
-                    }
-            if base_stats is None and isinstance(entry, dict):
-                base_stats = entry.get("baseStats")
-            if isinstance(base_stats, dict):
-                try:
-                    StatsCls = safe_import("pokemon.dex.entities").Stats
-                except Exception:  # pragma: no cover - Stats class optional
-                    from types import SimpleNamespace as StatsCls  # type: ignore
-                self.base_stats = StatsCls(**base_stats)
-
             abilities = getattr(entry, "abilities", None)
             if abilities is None and isinstance(entry, dict):
                 abilities = entry.get("abilities")
-            if isinstance(abilities, dict):
+            if isinstance(abilities, dict) and not preserve_ability:
                 next_ability = abilities.get("0") or abilities.get(0)
                 if next_ability:
+                    # Species entries may carry display-only Ability objects.
+                    # Install the real callbacks before any first-turn effect;
+                    # a later checkpoint must not change ability behavior.
+                    from pokemon.dex import ABILITYDEX
+                    from pokemon.names import normalize_name, resolve_dex_entry
+
+                    next_ability = resolve_dex_entry(
+                        ABILITYDEX, getattr(next_ability, "name", next_ability)
+                    ) or next_ability
+                    display_name = (getattr(next_ability, "raw", {}) or {}).get("name")
+                    if display_name and display_name != getattr(next_ability, "name", None):
+                        from copy import copy
+
+                        next_ability = copy(next_ability)
+                        next_ability.name = display_name
+                    previous_ability = getattr(self, "ability", None)
+                    start_ability = getattr(battle_obj, "start_owned_ability", None)
                     self.setAbility(
                         next_ability,
                         source=source,
                         battle=battle_obj,
                         is_from_forme_change=True,
+                        run_start=not callable(start_ability),
                     )
+                    if callable(start_ability) and normalize_name(
+                        getattr(previous_ability, "name", previous_ability)
+                    ) != normalize_name(getattr(next_ability, "name", next_ability)):
+                        # Named owner context cannot confuse the opponent with
+                        # the battle argument. An unchanged ability starts via
+                        # normal entry, rather than granting its boost twice.
+                        start_ability(self)
 
         return True
 
@@ -868,7 +972,7 @@ class Pokemon:
         return False
 
     def to_dict(self) -> Dict:
-        """Return a serialisable representation of this Pokémon."""
+        """Return a serialisable representation of this PokÃƒÆ’Ã‚Â©mon."""
 
         def _collect_slots(slots_obj):
             if slots_obj is None:
@@ -935,20 +1039,37 @@ class Pokemon:
             "boosts": self.boosts,
             "toxic_counter": self.toxic_counter,
             "tempvals": snapshot_battle_value(detached_mapping(self.tempvals)),
+            "volatiles": snapshot_battle_value(detached_mapping(self.volatiles)),
+            "ability_state": snapshot_battle_value({key: value for key, value in self.ability_state.items()
+                                                     if key not in {"target", "source", "sourceEffect"}}),
+            "item_state": snapshot_battle_value({key: value for key, value in self.item_state.items()
+                                                  if key not in {"target", "source", "sourceEffect"}}),
+            "choice_locked_move": self.choice_locked_move,
             "gender": self.gender,
+            "friendship": self.friendship,
+            "item_suppressed": bool(getattr(self, "item_suppressed", False)),
+            "ability_suppressed": bool(getattr(self, "ability_suppressed", False)),
+            "z_profile": snapshot_battle_value(getattr(self, "z_profile", None)),
+            "z_activated": bool(getattr(self, "z_activated", False)),
+            "z_guard_crystal": getattr(self, "z_guard_crystal", None),
+            "last_move": snapshot_battle_value(getattr(self, "last_move", None)),
         }
+        from .item_consumption import ItemUseHistory
+
+        info["item_use_history"] = ItemUseHistory.freeze(self)
 
         if self.model_id:
             info["model_id"] = self.model_id
 
         if self.ability is not None:
             info["ability"] = getattr(self.ability, "name", self.ability)
-        if self.item is not None:
-            info["item"] = getattr(self.item, "name", self.item)
+        # An explicit empty item records removal; omission is reserved for
+        # legacy checkpoints that must fall back to the stored model.
+        info["item"] = getattr(self.item, "name", self.item)
 
         info.update(
             {
-                "name": self.name,
+                "name": str(self.name),
                 "species": str(self.species),
                 "base_species": str(self.base_species),
                 "level": self.level,
@@ -956,9 +1077,24 @@ class Pokemon:
                 "max_hp": self.max_hp,
                 "moves": [_move_payload(m, index) for index, m in enumerate(self.moves)],
                 "ivs": list(self.ivs),
+                "hyper_training": list(self.hyper_training),
                 "evs": list(self.evs),
                 "nature": self.nature,
+                "trained_stat_nature": self.trained_stat_nature,
                 "types": list(self.types),
+                "tera_type": self.tera_type,
+                "terastallized": self.terastallized,
+                "tera_original_types": list(self.tera_original_types),
+                "stellar_boosted_types": list(self.stellar_boosted_types),
+                "transformed": bool(getattr(self, "transformed", False)),
+                "bond_triggered": bool(getattr(self, "bond_triggered", False)),
+                "native_origin": snapshot_battle_value(getattr(self, "native_origin", None)),
+                "native_ability_provenance": getattr(self, "native_ability_provenance", None),
+                "ultra_profile": snapshot_battle_value(getattr(self, "ultra_profile", None)),
+                "ultra_guard_crystal": getattr(self, "ultra_guard_crystal", None),
+                "mega_profile": snapshot_battle_value(getattr(self, "mega_profile", None)),
+                "mega_evolved": bool(getattr(self, "mega_evolved", False)),
+                "mega_guard_stone": getattr(self, "mega_guard_stone", None),
             }
         )
 
@@ -987,11 +1123,19 @@ class Pokemon:
         ability = data.get("ability")
         item = data.get("item")
         ivs = data.get("ivs")
+        hyper_training = data.get("hyper_training")
         evs = data.get("evs")
         nature = data.get("nature", "Hardy")
+        from pokemon.nature_training import NatureTraining, NatureTrainingError
+
+        trained_stat_nature = NatureTraining.validate_training(data.get("trained_stat_nature"))
+        NatureTraining.genetic(nature, legacy_blank=trained_stat_nature is None)
         types = data.get("types")
+        tera_type = data.get("tera_type", "")
         gender = data.get("gender", "N")
+        friendship = data.get("friendship", data.get("happiness"))
         slots = None
+        native_origin = data.get("native_origin")
         if model_id:
             ref_kind, ref_identifier = parse_pokemon_ref(model_id)
             try:
@@ -1008,14 +1152,28 @@ class Pokemon:
                     poke = OwnedPokemon.objects.get(unique_id=ref_identifier)
                     name = getattr(poke, "name", getattr(poke, "species", "Pikachu"))
                     species = data.get("species") or getattr(poke, "species", name)
-                    level = getattr(poke, "level", 1)
-                    ability = getattr(poke, "ability", ability)
-                    item = getattr(poke, "item", getattr(poke, "held_item", item))
+                    level = data.get("level", getattr(poke, "level", 1)) if native_origin or data.get("mega_profile") else getattr(poke, "level", 1)
+                    native_origin = native_origin or {"ref": model_id, "species": str(poke.species)}
+                    if "ability" not in data:
+                        ability = getattr(poke, "ability", ability)
+                    if "item" not in data:
+                        item = getattr(poke, "item", getattr(poke, "held_item", item))
                     ivs = getattr(poke, "ivs", ivs)
+                    from pokemon.hyper_training import HyperTraining
+
+                    hyper_training = HyperTraining.trained(poke)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
+                    current_training = NatureTraining.validate_training(getattr(poke, "trained_stat_nature", None))
+                    if "trained_stat_nature" in data and current_training != trained_stat_nature:
+                        raise NatureTrainingError("Saved mint training differs from current owned state; battle recovery is required.")
+                    trained_stat_nature = current_training
                     gender = getattr(poke, "gender", gender)
+                    if friendship is None:
+                        friendship = getattr(poke, "friendship", 70)
                     types = getattr(poke, "type_", types)
+                    if "tera_type" not in data:
+                        tera_type = getattr(poke, "tera_type", tera_type)
                     if max_hp is None:
                         try:
                             get_max_hp = safe_import("pokemon.helpers.pokemon_helpers").get_max_hp
@@ -1040,6 +1198,8 @@ class Pokemon:
                         else:
                             move_names = ["Tackle"]
                         moves = [Move(name=m) for m in move_names]
+                except NatureTrainingError:
+                    raise
                 except Exception:
                     pass
             elif ref_kind == "encounter" and EncounterPokemon:
@@ -1049,7 +1209,8 @@ class Pokemon:
                     species = data.get("species") or getattr(poke, "species", name)
                     level = getattr(poke, "level", 1)
                     ability = getattr(poke, "ability", ability)
-                    item = getattr(poke, "held_item", item)
+                    if "item" not in data:
+                        item = getattr(poke, "held_item", item)
                     ivs = getattr(poke, "ivs", ivs)
                     evs = getattr(poke, "evs", evs)
                     nature = getattr(poke, "nature", nature)
@@ -1086,9 +1247,45 @@ class Pokemon:
             nature=nature,
             model_id=model_id,
             gender=gender,
+            friendship=70 if friendship is None else friendship,
+            hyper_training=hyper_training,
+            trained_stat_nature=trained_stat_nature,
             types=([t.strip() for t in types.split(",")] if isinstance(types, str) else types),
         )
-        obj.name = name
+        disguised = (data.get("ability_state", {}) or {}).get("illusion")
+        native_form = (data.get("tempvals", {}) or {}).get("native_form")
+        obj.name = data.get("name", name) if data.get("transformed") or disguised or native_form or data.get("mega_profile") else name
+        obj.native_origin = detached_mapping(native_origin) if native_origin else None
+        provenance = data.get("native_ability_provenance")
+        if provenance not in (None, "native", "changed"):
+            raise ValueError("Invalid native ability provenance requires battle recovery.")
+        obj.native_ability_provenance = provenance
+        obj.ultra_profile = snapshot_battle_value(data["ultra_profile"]) if data.get("ultra_profile") else None
+        obj.ultra_guard_crystal = data.get("ultra_guard_crystal")
+        obj.mega_profile = snapshot_battle_value(data["mega_profile"]) if data.get("mega_profile") else None
+        obj.mega_evolved = bool(data.get("mega_evolved", False))
+        obj.mega_guard_stone = data.get("mega_guard_stone")
+        obj.z_profile = snapshot_battle_value(data["z_profile"]) if data.get("z_profile") else None
+        obj.z_activated = data.get("z_activated", False)
+        obj.z_guard_crystal = data.get("z_guard_crystal")
+        obj.last_move = snapshot_battle_value(data.get("last_move"))
+        from .item_consumption import ItemUseHistory
+
+        ItemUseHistory.restore(obj, data.get("item_use_history"))
+        if "types" in data and data["types"] is not None:
+            obj.types = list(data["types"])
+        obj.transformed = bool(data.get("transformed", False))
+        obj.item_suppressed = data.get("item_suppressed", False) is True
+        obj.ability_suppressed = data.get("ability_suppressed", False) is True
+        obj.bond_triggered = bool(data.get("bond_triggered", False))
+        obj.tera_type = tera_type
+        obj.tera_original_types = list(data.get("tera_original_types", []))
+        obj.stellar_boosted_types = list(data.get("stellar_boosted_types", []))
+        # Database typing is only a fallback for legacy snapshots. A live
+        # transformation must retain the checkpoint's defensive type.
+        if data.get("terastallized"):
+            obj.types = list(data.get("types") or obj.types)
+            obj.terastallized = data["terastallized"]
         obj.is_fainted = bool(data.get("is_fainted", obj.hp <= 0))
         obj.base_species = data.get("base_species") or species
         if slots is not None:
@@ -1098,6 +1295,10 @@ class Pokemon:
             if isinstance(move_data, dict) and "pp" in move_data:
                 setattr(move, "pp", move_data["pp"])
         obj.tempvals = detached_mapping(data.get("tempvals", {}))
+        obj.volatiles = detached_mapping(data.get("volatiles", {}))
+        obj.ability_state = detached_mapping(data.get("ability_state", {}))
+        obj.item_state = detached_mapping(data.get("item_state", {}))
+        obj.choice_locked_move = data.get("choice_locked_move")
         obj.boosts = detached_mapping(
             data.get(
                 "boosts",
@@ -1185,7 +1386,7 @@ class TurnInit:
 
 @dataclass
 class PositionData:
-    """Container for a Pokémon and its declared action."""
+    """Container for a PokÃƒÆ’Ã‚Â©mon and its declared action."""
 
     pokemon: Optional[Pokemon] = None
     turninit: TurnInit = field(default_factory=TurnInit)
@@ -1241,7 +1442,7 @@ class PositionData:
 
 @dataclass(init=False)
 class Team:
-    """Representation of a trainer's party."""
+    """Battle roster with six ordinary slots and any additional participants."""
 
     trainer: str
     slot1: Optional[Pokemon] = None
@@ -1250,6 +1451,7 @@ class Team:
     slot4: Optional[Pokemon] = None
     slot5: Optional[Pokemon] = None
     slot6: Optional[Pokemon] = None
+    extra_pokemon: List[Pokemon] = field(default_factory=list)
 
     def __init__(self, trainer: str, pokemon_list: Optional[List[Pokemon]] = None) -> None:
         self.trainer = trainer
@@ -1265,19 +1467,15 @@ class Team:
             self.slot5,
             self.slot6,
         ) = slots
+        # A reserved trainer Fusion can join six party Pokemon. Keep the
+        # complete roster so internal switch indices survive a checkpoint.
+        self.extra_pokemon = list(pokemon_list[6:])
 
     def returnlist(self) -> List[Optional[Pokemon]]:
-        return [self.slot1, self.slot2, self.slot3, self.slot4, self.slot5, self.slot6]
+        return [self.slot1, self.slot2, self.slot3, self.slot4, self.slot5, self.slot6, *self.extra_pokemon]
 
     def returndict(self) -> Dict[int, Optional[Pokemon]]:
-        return {
-            1: self.slot1,
-            2: self.slot2,
-            3: self.slot3,
-            4: self.slot4,
-            5: self.slot5,
-            6: self.slot6,
-        }
+        return dict(enumerate(self.returnlist(), 1))
 
     def to_dict(self) -> Dict:
         return {

@@ -8,6 +8,17 @@ import types
 import pytest
 
 
+_ORIGINAL_ENSURE_CONNECTION = None
+
+
+def _refuse_offline_database_connection(self):
+	"""Keep unit/dex tests out of the running game's database, even after setup."""
+	raise RuntimeError(
+		"Offline pytest cannot access a database. Use a guarded disposable-schema "
+		"runner from tests/integration for production-model integration checks."
+	)
+
+
 def pytest_addoption(parser):
 	group = parser.getgroup("fusion2")
 	group.addoption(
@@ -31,6 +42,15 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
+	# PF2_NO_EVENNIA skips application bootstrap, but it does not prevent a
+	# late Django setup/import from exposing the real ServerConfig manager.
+	# Guard at the connection boundary before test-module collection begins.
+	global _ORIGINAL_ENSURE_CONNECTION
+	from django.db.backends.base.base import BaseDatabaseWrapper
+
+	if _ORIGINAL_ENSURE_CONNECTION is None:
+		_ORIGINAL_ENSURE_CONNECTION = BaseDatabaseWrapper.ensure_connection
+	BaseDatabaseWrapper.ensure_connection = _refuse_offline_database_connection
 	config.addinivalue_line("markers", "dex: mark test as part of the exhaustive dex suite")
 	config.addinivalue_line(
 		"markers",
@@ -40,6 +60,16 @@ def pytest_configure(config):
 		"markers",
 		"callbacks: mark test as part of the generated move callback suite",
 	)
+
+
+def pytest_unconfigure(config):
+	"""Restore the library method for callers embedding pytest in a process."""
+	global _ORIGINAL_ENSURE_CONNECTION
+	if _ORIGINAL_ENSURE_CONNECTION is not None:
+		from django.db.backends.base.base import BaseDatabaseWrapper
+
+		BaseDatabaseWrapper.ensure_connection = _ORIGINAL_ENSURE_CONNECTION
+		_ORIGINAL_ENSURE_CONNECTION = None
 
 
 def pytest_collection_modifyitems(config, items):

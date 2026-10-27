@@ -499,8 +499,8 @@ class FusionRoom(Room):
 				_append_section("NPCs", self._format_columns(npc_names, width))
 
 		notices = []
-		if getattr(self.db, "is_item_store", False) or getattr(self.db, "is_item_shop", False):
-			notices.append("|yThere is a store here. Use +store/list to see its contents.|n")
+		if getattr(self.db, "is_item_shop", False):
+			notices.append("|yThere is a store here. Use +store and choose Buy items to see its contents.|n")
 		if getattr(self.db, "is_pokemon_center", False):
 			notices.append("|yThere is a Pokemon center here. Use +pokestore to access your Pokemon storage.|n")
 		if notices:

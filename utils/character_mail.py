@@ -179,24 +179,33 @@ def sender_name(message) -> str:
     return character_name(senders[0]) if senders else "Unknown"
 
 
-def is_unread(message) -> bool:
-    """Return whether a mail message is unread."""
-
-    return _has_tag(message, UNREAD_TAG)
-
-
-def mark_read(message):
-    """Mark a mail message read."""
-
-    _remove_tag(message, UNREAD_TAG)
-    return message
+def is_unread(message, character=None) -> bool:
+    """Return one recipient's state, inferring only a single-recipient old call."""
+    from utils.character_mail_state import CharacterMailboxState
+    return CharacterMailboxState(character).is_unread(message)
 
 
-def mark_unread(message):
-    """Mark a mail message unread."""
+def mark_read(message, character=None):
+    """Mark only the authorized recipient read, under the real message row lock."""
+    from utils.character_mail_state import CharacterMailboxState
+    actor = CharacterMailboxState(character).recipient(message)
+    return CharacterMailboxState(actor).read(mail_id(message))
 
-    _add_tag(message, UNREAD_TAG)
-    return message
+
+def mark_unread(message, character=None):
+    """Mark only the authorized recipient unread, retaining other readers' state."""
+    from utils.character_mail_state import CharacterMailboxState
+    actor = CharacterMailboxState(character).recipient(message)
+    return CharacterMailboxState(actor).read(mail_id(message), unread=True)
+
+
+def _notify_saved_mail(recipient, sender, subject):
+    """Transport failure never changes whether the durable send succeeded."""
+    import logging
+    try:
+        recipient.msg(f"You have new mail from {character_name(sender)}: {subject}")
+    except Exception:
+        logging.getLogger(__name__).exception("Could not notify recipient of already-saved character mail")
 
 
 def send_character_mail(sender, recipient, subject: str, body: str):
@@ -209,57 +218,58 @@ def send_character_mail(sender, recipient, subject: str, body: str):
     if not clean_msg:
         raise CharacterMailError("Mail message cannot be empty.")
 
-    message = _create_message(sender, clean_msg, recipient, clean_subj)
-    if not message:
-        raise CharacterMailError("Mail could not be sent.")
-
-    notify = getattr(recipient, "msg", None)
-    if callable(notify):
-        notify(f"You have new mail from {character_name(sender)}: {clean_subj}")
+    from utils.character_mail_state import CharacterMailboxState
+    state = CharacterMailboxState(sender)
+    state.validate_character(sender)
+    state.validate_character(recipient)
+    with state.transaction():
+        message = _create_message(sender, clean_msg, recipient, clean_subj)
+        if not message:
+            raise CharacterMailError("Mail could not be sent.")
+        if state._persistent():
+            from django.db import transaction
+            transaction.on_commit(lambda: _notify_saved_mail(recipient, sender, clean_subj))
+        else:
+            _notify_saved_mail(recipient, sender, clean_subj)
     return message
 
 
 def read_character_mail(character, raw_id):
-    """Return a visible mail message and mark it read."""
-
-    message = get_character_mail(character, raw_id)
-    mark_read(message)
-    return message
+    """Return visible mail and update only this recipient atomically."""
+    from utils.character_mail_state import CharacterMailboxState
+    return CharacterMailboxState(character).read(raw_id)
 
 
 def reply_to_character_mail(character, raw_id, body: str):
-    """Reply to the first sender of a visible mail message."""
-
-    original = read_character_mail(character, raw_id)
-    senders = mail_senders(original)
-    if not senders:
-        raise CharacterMailError("That mail has no sender to reply to.")
-    subject = mail_subject(original)
-    if not subject.lower().startswith("re:"):
-        subject = f"RE: {subject}"
-    return send_character_mail(character, senders[0], subject, body)
+    """Save a valid reply and its recipient read state together."""
+    from utils.character_mail_state import CharacterMailboxState
+    cleaned = clean_body(body)
+    if not cleaned:
+        raise CharacterMailError("Mail message cannot be empty.")
+    state = CharacterMailboxState(character)
+    with state.locked(raw_id) as original:
+        senders = mail_senders(original)
+        if not senders:
+            raise CharacterMailError("That mail has no sender to reply to.")
+        state.validate_character(senders[0])
+        subject = mail_subject(original)
+        if not subject.lower().startswith("re:"):
+            subject = f"RE: {subject}"
+        reply = send_character_mail(character, senders[0], subject, cleaned)
+        state._set(original, unread=False)
+        return reply
 
 
 def archive_character_mail(character, raw_id):
-    """Hide a mail message from one character's inbox."""
-
-    message = get_character_mail(character, raw_id)
-    hidden = getattr(message, "db_hide_from_objects", None)
-    add = getattr(hidden, "add", None)
-    if callable(add):
-        add(character)
-    else:
-        hidden_for = getattr(message, "hidden_for", set())
-        hidden_for.add(character_identity(character))
-        setattr(message, "hidden_for", hidden_for)
-    mark_read(message)
-    return message
+    """Hide only this recipient's inbox entry, retaining a shared message."""
+    from utils.character_mail_state import CharacterMailboxState
+    return CharacterMailboxState(character).archive(raw_id)
 
 
 def unread_mail_count(character) -> int:
     """Return the number of unread mail messages for a character."""
 
-    return sum(1 for message in list_character_mail(character) if is_unread(message))
+    return sum(1 for message in list_character_mail(character) if is_unread(message, character))
 
 
 def unread_mail_counts_for_characters(characters) -> dict:

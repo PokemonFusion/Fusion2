@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import datetime
+from uuid import uuid4
+from collections.abc import Mapping
+from bboard.transactions import BoardError, BoardTransaction, serialized
 from typing import Any, Dict, List, Optional
 
 from evennia import DefaultScript, ScriptDB
@@ -49,9 +52,11 @@ class BBoard(DefaultScript):
 	# ---------------------------------------------------------------------
 	# Post handling
 	# ---------------------------------------------------------------------
+	@serialized
 	def num_posts(self) -> int:
 		return len(self.db.posts or [])
 
+	@serialized
 	def posts(self) -> List[Dict[str, Any]]:
 		"""Return posts with stable ids populated for legacy rows."""
 		posts = list(self.db.posts or [])
@@ -75,13 +80,16 @@ class BBoard(DefaultScript):
 			return str(created)
 		return f"legacy-{index or 0}"
 
+	@serialized
 	def post(self, subject: str, body: str, author) -> int:
 		"""Create a new post by the given Character ``author``."""
+		BoardTransaction(self).require(author, "read")
+		BoardTransaction(self).require(author, "post")
 		posts = self.posts()
 		created = datetime.datetime.utcnow()
 		posts.append(
 			{
-				"id": f"{int(created.timestamp() * 1000000)}-{len(posts) + 1}",
+				"id": str(uuid4()),
 				"subject": subject,
 				"body": body,
 				"author": author.key,
@@ -93,9 +101,10 @@ class BBoard(DefaultScript):
 		self.db.posts = posts
 		index = len(posts)
 		self.mark_read(author, index)
-		self.notify_new_post(author, index, posts[-1])
+		BoardTransaction(self).notify(lambda: self.notify_new_post(author, index, posts[-1]))
 		return index
 
+	@serialized
 	def add_post(self, post: Dict[str, Any]):
 		"""Add an existing post dict without modification."""
 		posts = self.posts()
@@ -105,16 +114,23 @@ class BBoard(DefaultScript):
 		self.db.posts = posts
 		return len(posts)
 
+	@serialized
 	def get_post(self, index: int) -> Optional[Dict[str, Any]]:
 		posts = self.posts()
 		if 1 <= index <= len(posts):
 			return posts[index - 1]
 		return None
 
-	def edit_post(self, index: int, body: str) -> bool:
+	@serialized
+	def edit_post(self, index: int, body: str, *, actor=None, expected_id=None) -> bool:
 		post = self.get_post(index)
 		if not post:
 			return False
+		if actor is not None:
+			BoardTransaction(self).require(actor, "read")
+			BoardTransaction(self).require(actor, "edit")
+		if expected_id is not None and str(post.get("id")) != str(expected_id):
+			raise BoardError("This post changed position or was removed. Reopen the editor before saving.")
 		post["body"] = body
 		post["edited"] = datetime.datetime.utcnow()
 		posts = self.posts()
@@ -122,9 +138,17 @@ class BBoard(DefaultScript):
 		self.db.posts = posts
 		return True
 
-	def delete_post(self, index: int) -> bool:
+	@serialized
+	def delete_post(self, index: int, *, actor=None, expected_id=None) -> bool:
 		posts = self.posts()
 		if 1 <= index <= len(posts):
+			post = posts[index - 1]
+			if actor is not None:
+				BoardTransaction(self).require(actor, "read")
+				if post.get("author_dbref") != actor.dbref:
+					BoardTransaction(self).require(actor, "delete")
+			if expected_id is not None and str(post.get("id")) != str(expected_id):
+				raise BoardError("This post changed position or was removed. Read the current list before deleting.")
 			posts.pop(index - 1)
 			self.db.posts = posts
 			return True
@@ -142,15 +166,17 @@ class BBoard(DefaultScript):
 			or id(reader)
 		)
 
+	@serialized
 	def _read_post_ids(self, reader) -> tuple[str, set[str], dict]:
 		"""Return read post ids, migrating old last-index records lazily."""
+		BoardTransaction(self).require(reader, "read")
 		reads = dict(self.db.read_tracking or {})
 		key = self._reader_key(reader)
 		raw = reads.get(key)
 		legacy_key = getattr(reader, "dbref", None)
 		if raw is None and legacy_key in reads:
 			raw = reads.pop(legacy_key)
-		if isinstance(raw, dict):
+		if isinstance(raw, Mapping):
 			ids = {str(post_id) for post_id in raw.get("post_ids", [])}
 		elif isinstance(raw, int):
 			ids = {
@@ -165,26 +191,34 @@ class BBoard(DefaultScript):
 			ids = set()
 		return key, ids, reads
 
+	@serialized
 	def _save_read_post_ids(self, reader, ids: set[str]):
 		reads = dict(self.db.read_tracking or {})
 		key = self._reader_key(reader)
 		reads[key] = {"post_ids": sorted(ids)}
 		self.db.read_tracking = reads
 
-	def mark_read(self, reader, index: int):
+	@serialized
+	def mark_read(self, reader, index: int, *, expected_id=None):
 		"""Mark one post read for ``reader``."""
 		post = self.get_post(index)
 		if not post:
 			return
+		BoardTransaction(self).require(reader, "read")
+		if expected_id is not None and str(post.get("id")) != str(expected_id):
+			raise BoardError("This post changed position or was removed. Read the current list again.")
 		_, ids, _ = self._read_post_ids(reader)
 		ids.add(self._post_id(post, index))
 		self._save_read_post_ids(reader, ids)
 
+	@serialized
 	def mark_all_read(self, reader):
 		"""Mark all current posts read for ``reader``."""
+		BoardTransaction(self).require(reader, "read")
 		ids = {self._post_id(post, index) for index, post in enumerate(self.posts(), 1)}
 		self._save_read_post_ids(reader, ids)
 
+	@serialized
 	def has_read(self, reader, index: int) -> bool:
 		post = self.get_post(index)
 		if not post:
@@ -192,10 +226,12 @@ class BBoard(DefaultScript):
 		_, ids, _ = self._read_post_ids(reader)
 		return self._post_id(post, index) in ids
 
+	@serialized
 	def unread_count(self, reader) -> int:
 		"""Return how many posts ``reader`` (Character) hasn't read yet."""
 		return sum(1 for index, _post in enumerate(self.posts(), 1) if not self.has_read(reader, index))
 
+	@serialized
 	def first_unread_index(self, reader) -> int | None:
 		"""Return the 1-based index of the first unread post for ``reader``."""
 		for index, _post in enumerate(self.posts(), 1):

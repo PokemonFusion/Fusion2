@@ -100,6 +100,7 @@ def _chargen_data(caller) -> dict:
 def _confirm_choice(caller, field: str, label: str, value: str) -> None:
     """Tell the player what was accepted, without repeating on redraws."""
     data = _chargen_data(caller)
+    _persist_draft(caller)
     confirmed = data.setdefault("_confirmed_choices", {})
     if confirmed.get(field) == value:
         return
@@ -536,7 +537,7 @@ def starter_nature(caller, raw_string, **kwargs):
 def starter_gender(caller, raw_string, **kwargs):
     """Prompt for the starter Pokémon's gender."""
 
-    entry = raw_string.strip().lower()
+    entry = (kwargs.get("resume_nature") or raw_string).strip().lower()
     if entry in ABORT_INPUTS:
         return node_abort(caller)
     nature = NATURE_LOOKUP.get(entry)
@@ -653,7 +654,7 @@ def starter_confirm(caller, raw_string, **kwargs):
         "Proceed? (Y/N)"
     )
     options = (
-        {"key": ("Y", "y"), "desc": "Yes", "goto": "finish_human"},
+        {"key": ("Y", "y"), "desc": "Yes", "goto": ("finish_human", {"expected_choices": dict(data)})},
         {
             "key": ("N", "n"),
             "desc": "No",
@@ -691,7 +692,7 @@ def fusion_confirm(caller, raw_string, **kwargs):
         f"and nature {caller.ndb.chargen['nature']}.\nProceed? (Y/N)"
     )
     options = (
-        {"key": ("Y", "y"), "desc": "Yes", "goto": "finish_fusion"},
+        {"key": ("Y", "y"), "desc": "Yes", "goto": ("finish_fusion", {"expected_choices": dict(_chargen_data(caller))})},
         {"key": ("N", "n"), "desc": "No", "goto": "fusion_species"},
         ABORT_OPTION,
         {"key": "_default", "goto": "_repeat", "exec": _invalid},
@@ -699,71 +700,47 @@ def fusion_confirm(caller, raw_string, **kwargs):
     return text, options
 
 
-def finish_human(caller, raw_string):
-    """Create the chosen starter Pokémon and finish human character creation."""
-    data = caller.ndb.chargen or {}
-    key = data.get("species_key")
-    if not key:
-        caller.msg("Error: No starter selected.")
-        return None, None
+def _persist_draft(caller):
+    """Save accepted choices; interrupted menus grant no Pokemon or resources."""
+    from pokemon.services.onboarding import Onboarding, OnboardingError
+    try:
+        Onboarding(caller).save_draft(_chargen_data(caller))
+        return True
+    except OnboardingError as error:
+        caller.msg(str(error))
+        return False
 
-    pk = _create_starter(
-        caller,
-        key,
-        data.get("ability"),
-        data.get("starter_gender"),
-        data.get("nature"),
-    )
-    if not pk:
-        caller.msg("Starter creation failed. Please try again.")
+
+def _finish(caller, kind, *, expected_choices=None):
+    """Use one server-validated transaction for either supported setup path."""
+    from pokemon.services.onboarding import Onboarding, OnboardingError
+    try:
+        receipt = Onboarding(caller).complete(kind, expected_choices=expected_choices)
+    except OnboardingError as error:
+        caller.msg(str(error))
         return None, None
-    caller.db.gender = data.get("player_gender")
-    caller.db.favored_type = data.get("favored_type")
-    caller.msg(f"You received {pk.name} with ability {pk.ability} and nature {pk.nature} as your starter!")
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Character setup completion rolled back")
+        caller.msg("Setup could not finish. Your saved choices remain; reopen chargen to retry. No partial starter or form was granted.")
+        return None, None
+    label = "Human trainer" if receipt['kind'] == 'human' else "Fusion"
+    caller.msg(f"Your starting choice is saved: {label} with {receipt['species']}, ability {receipt['ability']}, nature {receipt['nature']}.")
     caller.msg(FIRST_STEPS_MESSAGE)
     return None, None
 
 
-def finish_fusion(caller, raw_string):
-    data = caller.ndb.chargen or {}
-    caller.db.gender = data.get("player_gender")
-    caller.db.fusion_species = data.get("species")
-    fused = None
-    species_key = data.get("species_key")
-    trainer = getattr(caller, "trainer", None)
-    if species_key and trainer:
-        try:
-            instance = _generate_instance(species_key, 5)
-            if instance:
-                gender_letter = (data.get("player_gender") or "N")[0].upper()
-                fused = _build_owned_pokemon(
-                    caller,
-                    instance,
-                    data.get("ability"),
-                    gender_letter,
-                    data.get("nature"),
-                    5,
-                )
-                record_fusion(fused, trainer, fused, permanent=True)
-                remember_permanent_form(caller, fused)
-                caller.db.fusion_id = getattr(fused, "unique_id", None)
-                caller.db.fusion_kind = PERMANENT
-                caller.db.level = getattr(fused, "level", None)
-                caller.db.total_exp = getattr(fused, "total_exp", None)
-        except Exception:  # pragma: no cover - defensive
-            fused = None
-    caller.db.fusion_ability = data.get("ability")
-    caller.db.fusion_nature = data.get("nature")
-    caller.msg(
-        "You are now a fusion with "
-        f"{data.get('species')} having ability {data.get('ability')} "
-        f"and nature {data.get('nature')}"
-        "."
-    )
-    caller.msg(FIRST_STEPS_MESSAGE)
-    return None, None
+def finish_human(caller, raw_string, **kwargs):
+    """Complete human setup once from the current persisted accepted choices."""
+    return _finish(caller, "human", expected_choices=kwargs.get("expected_choices"))
+
+
+def finish_fusion(caller, raw_string, **kwargs):
+    """Complete an initial permanent Fusion once, preserving its level-five XP."""
+    return _finish(caller, "fusion", expected_choices=kwargs.get("expected_choices"))
 
 
 def node_abort(caller, raw_string=None):
-    caller.msg("Character generation aborted.")
+    """Pause setup with already-accepted choices saved and no starter/form grant."""
+    caller.msg("Character setup paused. Use chargen to resume your saved choices.")
     return None, None

@@ -106,6 +106,8 @@ class TurnProcessor:
 
 		if not pokemon:
 			return None, "no_pokemon"
+		if getattr(pokemon, "terastallized", None):
+			return None, "already_terastallized"
 		current_name = str(getattr(pokemon, "species", None) or getattr(pokemon, "name", "") or "")
 		if getattr(pokemon, "mega_evolved", False) or "mega" in _normalize_key(current_name):
 			return None, "already_mega_evolved"
@@ -162,17 +164,15 @@ class TurnProcessor:
 
 	def run_action(self) -> None:
 		"""Main action runner modeled on Showdown's ``runAction``."""
+		from .active_slots import active_at
 		for part in self.participants:
 			acts = getattr(part, "pending_action", None)
 			if not acts:
 				continue
 			if not isinstance(acts, list):
 				acts = [acts]
-			if part.active:
-				switching = part.active[0]
-			else:
-				switching = None
 			for act in list(acts):
+				switching = act.switch_from or active_at(part, act.switch_slot or 0)
 				if act.action_type is ActionType.SWITCH and switching:
 					for opp in self.participants:
 						if opp is part or opp.has_lost:
@@ -187,6 +187,8 @@ class TurnProcessor:
 								oa
 								and oa.action_type is ActionType.MOVE
 								and getattr(getattr(oa, "move", None), "key", "") == "pursuit"
+								and oa.target is part
+								and active_at(part, oa.target_slot or 0) is switching
 							):
 								switching.tempvals["switching"] = True
 								self.use_move(oa)
@@ -209,6 +211,8 @@ class TurnProcessor:
 		if self.turn_count == 1:
 			for part in self.participants:
 				for poke in part.active:
+					self._apply_item_forme_effects(poke)
+					self._apply_ability_item_type(poke)
 					self.register_handlers(poke)
 					self.dispatcher.dispatch("pre_start", pokemon=poke, battle=self)
 					self.dispatcher.dispatch("start", pokemon=poke, battle=self)
@@ -221,10 +225,11 @@ class TurnProcessor:
 			if part.has_lost:
 				continue
 			for poke in part.active:
+				poke.tempvals.setdefault("entry_action_turn", self.turn_count)
 				self.dispatcher.dispatch("update", pokemon=poke, battle=self)
 
 	def before_turn(self) -> None:
-		"""Run simple BeforeTurn events for all active Pokémon."""
+		"""Run simple BeforeTurn events for all active PokÃ©mon."""
 		try:
 			from pokemon.dex.functions.conditions_funcs import CONDITION_HANDLERS
 		except Exception:
@@ -274,17 +279,26 @@ class TurnProcessor:
 
 	def lock_choices(self) -> None:
 		"""Apply locked-in transformations like Mega Evolution or Terastallization."""
+		from .terastallization import Terastallization
+		from .z_moves import ZMoves
+
+		if getattr(self, "ultra_pending", {}):
+			from .ultra_burst import UltraBurst
+
+			UltraBurst.lock(self)
+		ZMoves.lock(self)
+		Terastallization.lock(self)
+		from .mega_evolution import MegaEvolution
+
+		MegaEvolution.lock(self)
 		for part in self.participants:
 			if part.has_lost:
 				continue
 			for poke in part.active:
 				if getattr(poke, "pending_mega", False):
-					self.perform_mega_evolution(poke)
+					if not getattr(self, "mechanic_battle_id", None):
+						self.perform_mega_evolution(poke)
 					poke.pending_mega = False
-				tera = getattr(poke, "pending_tera", None)
-				if tera:
-					self.perform_tera_change(poke, tera)
-					poke.pending_tera = None
 
 	def select_actions(self) -> List[Action]:
 		"""Collect participant actions using the participant protocol contract."""
@@ -306,6 +320,13 @@ class TurnProcessor:
 			else:
 				part_actions = [raw_actions]
 			for action in part_actions:
+				if (getattr(raw_participant, "is_ai", False) or getattr(action, "player_selected", False)) and action.action_type in {ActionType.MOVE, ActionType.SWITCH}:
+					from .legal_actions import LegalActions
+
+					reserved = [a.pokemon for a in actions if a.actor is raw_participant and a.action_type is ActionType.SWITCH]
+					action = LegalActions.for_action(self, action).refresh(action, fallback=getattr(raw_participant, "is_ai", False), reserved=reserved)
+					if action is None:
+						continue
 				if action.target and action.target not in self.participants:
 					action.target = None
 				if not action.target:
@@ -313,6 +334,11 @@ class TurnProcessor:
 					if opps:
 						action.target = opps[0]
 				actions.append(action)
+		from .terastallization import Terastallization
+
+		# Direct engine callers choose AI actions here; sessions already queued
+		# their AI choices before lock_choices. Both paths share the same guard.
+		Terastallization.lock(self, actions)
 		return actions
 
 	def collect_actions(self) -> List[Action]:
@@ -337,9 +363,25 @@ class TurnProcessor:
 		trick_room = bool(self.field.get_pseudo_weather("trickroom"))
 
 		for action in actions:
-			poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
+			poke = action.switch_from or action.pokemon or (action.actor.active[0] if action.actor.active else None)
 			move = action.move
-			base_priority = action.priority
+			if move is not None:
+				from pokemon.names import resolve_dex_entry
+
+				entry = resolve_dex_entry(MOVEDEX, getattr(move, "name", ""))
+				raw = dict(getattr(entry, "raw", {}) or {})
+				raw.update(getattr(move, "raw", {}) or {})
+				move.raw = raw
+				flags = dict(raw.get("flags", {}) or {})
+				flags.update(getattr(move, "flags", {}) or {})
+				move.flags = flags
+				if getattr(move, "type", None) is None:
+					move.type = raw.get("type")
+				if raw.get("category"):
+					move.category = raw["category"]
+				if not getattr(move, "priority", 0):
+					move.priority = raw.get("priority", 0)
+			base_priority = action.priority or getattr(move, "priority", 0)
 			priority = base_priority
 			if action.action_type is ActionType.SWITCH and priority == 0:
 				priority = 6
@@ -450,7 +492,8 @@ class TurnProcessor:
 		except Exception:
 			VOLATILE_HANDLERS = {}
 
-		ability = getattr(pokemon, "ability", None)
+		from .effect_context import EffectContext
+		ability = EffectContext.ability(pokemon)
 		if ability and hasattr(ability, "call"):
 			try:
 				mod = ability.call(
@@ -477,7 +520,10 @@ class TurnProcessor:
 			except Exception as err:
 				self._record_failure(context="ability_priority", exception=err, pokemon=pokemon)
 
-		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+		if getattr(pokemon, "volatiles", {}).pop("custap", False):
+			priority += .1
+		from .effect_context import EffectContext
+		item = EffectContext.item(pokemon)
 		if item and hasattr(item, "call"):
 			try:
 				frac = item.call("onFractionalPriority", pokemon=pokemon)
@@ -581,17 +627,20 @@ class TurnProcessor:
 						holders.append(item)
 					for holder in holders:
 						try:
-							result = self._call_effect_event(holder, "onFoeBeforeMove", foe, battle=self)
+							result = self._call_effect_event(holder, "onFoeBeforeMove", foe,
+							                                 pokemon=pokemon, move=move, battle=self)
 						except Exception as err:
 							self._record_failure(context="before_move_foe", exception=err, pokemon=foe)
 							continue
 						if result is False:
 							return True
 
-		ability = getattr(pokemon, "ability", None)
+		from .effect_context import EffectContext
+		ability = EffectContext.ability(pokemon)
 		if ability and hasattr(ability, "call"):
 			try:
-				res = ability.call("onBeforeMove", pokemon=pokemon, move=move, battle=self)
+				res = ability.call("onBeforeMove", pokemon=pokemon, move=move, battle=self,
+				                   effect_state=getattr(pokemon, "ability_state", {}))
 				if res is False:
 					return True
 			except Exception as err:
@@ -606,6 +655,10 @@ class TurnProcessor:
 			except Exception as err:
 				self._record_failure(context="before_move_item", exception=err, pokemon=pokemon)
 
+		handled_status = False
+		legacy_sleep = status == "slp" and "slp_turns" in getattr(pokemon, "tempvals", {})
+		if legacy_sleep and "sleep_turns" not in pokemon.tempvals:
+			pokemon.tempvals["sleep_turns"] = pokemon.tempvals["slp_turns"]
 		handler = CONDITION_HANDLERS.get(status)
 		if handler and hasattr(handler, "onBeforeMove"):
 			marker = object()
@@ -623,14 +676,19 @@ class TurnProcessor:
 							pass
 					else:
 						pokemon.can_use_while_asleep = previous_sleep_permission
+			if legacy_sleep:
+				if getattr(pokemon, "status", None) == "slp":
+					pokemon.tempvals["slp_turns"] = pokemon.tempvals.get("sleep_turns", 0)
+				else:
+					pokemon.tempvals.pop("slp_turns", None)
 			if result is False:
 				return True
-		if status == "slp" and sleep_usable:
-			return False
+			handled_status = result is True
 
 		volatiles = getattr(pokemon, "volatiles", {})
 		if "flinch" in volatiles:
 			volatiles.pop("flinch", None)
+			self.runEvent("Flinch", pokemon, None, move)
 			return True
 		for vol in list(volatiles.keys()):
 			handler = CONDITION_HANDLERS.get(vol) or VOLATILE_HANDLERS.get(vol)
@@ -642,6 +700,8 @@ class TurnProcessor:
 				if result is False:
 					return True
 
+		if handled_status or (status == "slp" and sleep_usable):
+			status = ""
 		rng = resolve_rng(battle=self)
 		if status == "par":
 			if rng.random() < 0.25:
@@ -771,10 +831,30 @@ class TurnProcessor:
 				normalized = _normalize_key(str(ability))
 		return normalized.lower()
 
+	def _grounded_for_escape(self, pokemon) -> bool:
+		"""Apply airborne exceptions when Arena Trap gates a wild escape."""
+		field = getattr(self, "field", None)
+		pseudo = getattr(field, "pseudo_weather", {}) or {}
+		volatiles = getattr(pokemon, "volatiles", {}) or {}
+		if "gravity" in pseudo or any(volatiles.get(name) for name in ("smackdown", "ingrain")):
+			return True
+		ability = "" if getattr(pokemon, "ability_suppressed", False) else self._ability_key(getattr(pokemon, "ability", None))
+		item = getattr(pokemon, "item", None) or getattr(pokemon, "held_item", None)
+		item_key = self._ability_key(item) if ability != "klutz" and "magicroom" not in pseudo else ""
+		if item_key == "ironball":
+			return True
+		if "Flying" in getattr(pokemon, "types", []) or ability == "levitate" or item_key == "airballoon":
+			return False
+		return not any(volatiles.get(name) for name in ("magnetrise", "telekinesis"))
+
 	def attempt_flee(self, action: Action) -> bool:
 		"""Execute a flee attempt and return ``True`` on success."""
 
 		from .engine import BattleType
+		from .effect_context import EffectContext
+
+		if getattr(self, "battle_over", False):
+			return False
 
 		participant = getattr(action, "actor", None)
 		pokemon = getattr(action, "pokemon", None)
@@ -792,7 +872,7 @@ class TurnProcessor:
 		type_value = getattr(battle_type, "value", battle_type)
 		trainer_name = getattr(participant, "name", "Trainer") if participant else "Trainer"
 
-		if type_value != BattleType.WILD.value:
+		if type_value != BattleType.WILD.value or getattr(self, "flee_allowed", True) is not True:
 			message = f"{trainer_name} can't run from this battle!"
 			self._emit_battle_message(message)
 			result["reason"] = "restricted"
@@ -803,13 +883,25 @@ class TurnProcessor:
 				setattr(participant, "flee_attempts", attempts + 1)
 			return False
 
+		if (participant not in self.participants or pokemon is None or getattr(pokemon, "hp", 0) <= 0
+				or not any(mon is pokemon for mon in participant.active)
+				or not any(mon is pokemon for mon in participant.pokemons)):
+			result["reason"] = "invalid"
+			setattr(self, "_flee_result", result)
+			return False
+
 		if participant is not None:
 			attempts = int(getattr(participant, "flee_attempts", 0))
 		else:
 			attempts = 0
 
 		ability_key = self._ability_key(getattr(pokemon, "ability", None))
-		if ability_key == "runaway":
+		if getattr(pokemon, "ability_suppressed", False):
+			ability_key = ""
+		if EffectContext.key(EffectContext.item(pokemon)) == "smokeball":
+			success = True
+			reason = "smokeball"
+		elif ability_key == "runaway":
 			success = True
 			reason = "runaway"
 		else:
@@ -817,21 +909,24 @@ class TurnProcessor:
 			opponents = []
 			if hasattr(self, "opponents_of") and participant is not None:
 				opponents = self.opponents_of(participant)
-			trap_abilities = {"arenatrap", "shadowtag"}
 			trapped = False
 			for opp in opponents:
 				if not getattr(opp, "active", None):
 					continue
 				for foe in opp.active:
-					if not foe:
+					if not foe or getattr(foe, "hp", 0) <= 0:
 						continue
 					opp_ability_key = self._ability_key(getattr(foe, "ability", None))
+					if getattr(foe, "ability_suppressed", False) or "Ghost" in getattr(pokemon, "types", []):
+						continue
 					magnet_pull_traps = (
 						opp_ability_key == "magnetpull"
 						and hasattr(pokemon, "hasType")
 						and pokemon.hasType("Steel")
 					)
-					if opp_ability_key in trap_abilities or magnet_pull_traps:
+					arena_traps = opp_ability_key == "arenatrap" and self._grounded_for_escape(pokemon)
+					shadow_traps = opp_ability_key == "shadowtag" and ability_key != "shadowtag"
+					if arena_traps or shadow_traps or magnet_pull_traps:
 						trapped = True
 						trapper_name = getattr(getattr(foe, "ability", None), "name", None)
 						if not trapper_name:
@@ -897,37 +992,51 @@ class TurnProcessor:
 		return bool(result.get("success"))
 
 	def execute_actions(self, actions: List[Action]) -> None:
-		for action in actions:
-			if getattr(self, "battle_over", False):
-				break
-			action_type = getattr(action, "action_type", None)
-			if action_type is ActionType.RUN:
-				if self.attempt_flee(action):
+		from .action_queue import ActionQueue
+
+		previous_queue = getattr(self, 'queue', None)
+		self.queue = ActionQueue(actions)
+		try:
+			while self.queue:
+				action = self.queue.pop_next()
+				if getattr(self, "battle_over", False):
 					break
-				continue
-			if action_type is ActionType.SWITCH:
-				new_pokemon = getattr(action, "pokemon", None)
-				if new_pokemon is None:
+				action_type = getattr(action, "action_type", None)
+				if (getattr(action.actor, "is_ai", False) or getattr(action, "player_selected", False)) and action_type in {ActionType.MOVE, ActionType.SWITCH}:
+					from .legal_actions import LegalActions
+
+					if LegalActions.for_action(self, action).refresh(action) is None:
+						self.log_action(f"{action.actor.name}'s saved action is no longer legal.")
+						continue
+				if action_type is ActionType.RUN:
+					if self.attempt_flee(action):
+						break
 					continue
-				self.perform_switch_action(action.actor, new_pokemon)
-				continue
-			if action_type is ActionType.MOVE and action.move:
-				actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
-				if self.status_prevents_move(actor_poke, getattr(action, "move", None)):
+				if action_type is ActionType.SWITCH:
+					new_pokemon = getattr(action, "pokemon", None)
+					if new_pokemon is None:
+						continue
+					self.perform_switch_action(action.actor, new_pokemon, slot=getattr(action, "switch_slot", None) or 0)
 					continue
-				self.use_move(action)
-				if actor_poke is not None:
-					try:
-						actor_poke.tempvals["moved"] = True
-					except Exception as err:
-						self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
-			elif action_type is ActionType.ITEM and action.item:
-				self.execute_item(action)
-			elif action.item:
-				# ``ActionType`` enums may be reloaded during tests, so
-				# fall back to the presence of ``action.item`` to detect
-				# item usage.
-				self.execute_item(action)
+				if action_type is ActionType.MOVE and action.move:
+					actor_poke = action.pokemon or (action.actor.active[0] if action.actor.active else None)
+					# use_move owns prevention checks, including direct move execution.
+					# Checking here too advances sleep/confusion and rolls paralysis twice.
+					self.use_move(action)
+					if actor_poke is not None:
+						try:
+							actor_poke.tempvals["moved"] = True
+						except Exception as err:
+							self._record_failure(context="mark_moved", exception=err, pokemon=actor_poke)
+				elif action_type is ActionType.ITEM and action.item:
+					self.execute_item(action)
+				elif action.item:
+					# ``ActionType`` enums may be reloaded during tests, so
+					# fall back to the presence of ``action.item`` to detect
+					# item usage.
+					self.execute_item(action)
+		finally:
+			self.queue = previous_queue
 
 	def execute_turn(self, actions: List[Action]) -> None:
 		"""Execute the supplied actions in proper order."""
@@ -960,12 +1069,31 @@ class TurnProcessor:
 	def execute_item(self, action: Action) -> None:
 		"""Handle item usage during battle."""
 		from pokemon.names import normalize_name
+		from pokemon.items import is_capture_ball
 
 		from .engine import BattleType
 
+		if getattr(action, "item_executed", False):
+			return
+		from pokemon.services.battle_items import BattleItemCapability
+
+		try:
+			BattleItemCapability.validate(action.item, battle=self)
+		except ValueError as error:
+			self.log_action(str(error))
+			return
 		item_key = normalize_name(action.item)
+		from .battle_boosters import BattleBoosters
+
+		if BattleBoosters.supports(action.item):
+			# New bag boosts propagate faults to complete-turn SQL/runtime rollback.
+			used = BattleBoosters.execute(self, action)
+			action.item_executed = True
+			self.log_action(BattleBoosters.notice(action.item, action.pokemon) if used
+				else f"But {action.item} had no effect; no copy was consumed.")
+			return
 		target = action.target
-		if item_key.endswith("ball"):
+		if is_capture_ball(action.item):
 			if target not in self.participants or target.has_lost or not target.active:
 				opponents = self.opponents_of(action.actor)
 				target = opponents[0] if opponents else None
@@ -976,7 +1104,7 @@ class TurnProcessor:
 		if not target or not target.active:
 			return
 
-		if item_key.endswith("ball") and getattr(self.type, "value", self.type) == BattleType.WILD.value:
+		if is_capture_ball(action.item) and getattr(self.type, "value", self.type) == BattleType.WILD.value:
 			target_poke = target.active[0]
 			try:
 				from pokemon.dex.functions import pokedex_funcs
@@ -1072,6 +1200,10 @@ class TurnProcessor:
 					self.log_action("The ball shook!")
 
 			caught = placement is not None
+			if not caught and outcome is not None and not getattr(self, "failed_capture_ball", None):
+				# A resolved failed roll follows a real debit; rejected/replayed
+				# capture requests must never create a retrievable ball.
+				self.failed_capture_ball = str(action.item)
 			if caught:
 				self.capture_succeeded = True
 				if (getattr(battle_context, "encounter_metadata", None) or {}).get("source_type") == "adventure":
@@ -1134,84 +1266,30 @@ class TurnProcessor:
 					self.log_action(f"Oh no! {pokemon_name} broke free!")
 			return
 
-		target_poke = target.active[0]
-		consumed = False
+		from .active_slots import active_at
+		from pokemon.services.battle_items import BattleMedicineUse
 
-		def consume_once() -> bool:
-			nonlocal consumed
-			if consumed:
-				return True
-			consumed = self._consume_action_item(action, context="trainer_item", pokemon=target_poke)
-			return consumed
-
+		target_poke = action.target_pokemon
+		if target_poke is None:
+			target_poke = active_at(target, action.target_slot or 0)
+		if target_poke is None or not any(mon is target_poke for mon in action.actor.pokemons):
+			return
 		if not self._actor_has_item_for_action(action):
 			return
-
-		used = False
-		healing_items = {
-			"potion": 20,
-			"superpotion": 60,
-			"hyperpotion": 120,
-			"maxpotion": None,
-			"fullrestore": None,
-		}
-		status_items = {
-			"antidote": {"psn", "tox"},
-			"burnheal": {"brn"},
-			"iceheal": {"frz"},
-			"awakening": {"slp"},
-			"paralyzeheal": {"par"},
-			"fullheal": {"brn", "psn", "tox", "frz", "slp", "par"},
-			"fullrestore": {"brn", "psn", "tox", "frz", "slp", "par"},
-		}
-
-		if item_key in healing_items:
-			max_hp = getattr(target_poke, "max_hp", getattr(target_poke, "hp", 1))
-			if 0 < getattr(target_poke, "hp", 0) < max_hp:
-				if not consume_once():
-					return
-				amount = healing_items[item_key]
-				target_poke.hp = max_hp if amount is None else min(max_hp, getattr(target_poke, "hp", 0) + amount)
-				used = True
-
-		if (
-			getattr(target_poke, "hp", 0) > 0
-			and item_key in status_items
-			and getattr(target_poke, "status", 0) in status_items[item_key]
-		):
-			if not consume_once():
-				return
-			used = bool(target_poke.setStatus(0, battle=self, effect=f"item:{item_key}")) or used
-
-		if item_key == "revive" and getattr(target_poke, "hp", 0) <= 0:
-			if not consume_once():
-				return
-			max_hp = getattr(target_poke, "max_hp", 1)
-			target_poke.hp = max(1, max_hp // 2)
-			target_poke.is_fainted = False
-			used = True
-		elif item_key == "maxrevive" and getattr(target_poke, "hp", 0) <= 0:
-			if not consume_once():
-				return
-			max_hp = getattr(target_poke, "max_hp", 1)
-			target_poke.hp = max_hp
-			target_poke.is_fainted = False
-			used = True
-
-		if item_key == "ether":
-			from pokemon.services.battle_items import BattlePPRestoration
-
-			trainer = getattr(action.actor, "trainer", None) or getattr(getattr(action.actor, "player", None), "trainer", None)
-			try:
-				used = BattlePPRestoration(target_poke, trainer).restore(consume_once) or used
-			except Exception as err:
-				self._record_failure(context="trainer_item", exception=err, pokemon=target_poke)
-				return
-
-		if not used:
-			if hasattr(self, "log_action"):
-				self.log_action(f"But {action.item} had no effect!")
+		trainer = getattr(action.actor, "trainer", None) or getattr(getattr(action.actor, "player", None), "trainer", None)
+		try:
+			used = BattleMedicineUse(target_poke, trainer, battle=self, move=action.item_move).use(
+				action.item, lambda: self._consume_action_item(action, context="trainer_item", pokemon=target_poke))
+		except ValueError:
+			self.log_action("That item target is no longer an eligible owned party member.")
 			return
+		except Exception as err:
+			self._record_failure(context="trainer_item", exception=err, pokemon=target_poke)
+			return
+		if not used:
+			self.log_action(f"But {action.item} had no effect!")
+			return
+		action.item_executed = True
 
 		if hasattr(self, "log_action"):
 			self.log_action(
@@ -1255,9 +1333,20 @@ class TurnProcessor:
 			self.log_action(f"{getattr(pokemon, 'name', 'Pokemon')} Mega Evolved!")
 		return True
 
-	def perform_tera_change(self, pokemon, tera_type: str) -> None:
-		"""Placeholder for Terastallization mechanics."""
-		setattr(pokemon, "tera_type", tera_type)
+	def perform_tera_change(self, pokemon, tera_type: str) -> bool:
+		"""Apply only the side's matching, reserved declaration."""
+		from .terastallization import Terastallization
+
+		part = self.participant_for(pokemon)
+		if part is None:
+			return False
+		side = Terastallization.side(self, part)
+		pending = getattr(self, "tera_pending", {}).get(side, {})
+		expected = {"pokemon": Terastallization.identifier(pokemon), "type": tera_type,
+			"slot": str(Terastallization.slot(part, pokemon))}
+		if pending != expected:
+			return False
+		return Terastallization.activate(self, part, pokemon, tera_type)
 
 	def end_turn(self) -> None:
 		for part in self.participants:
@@ -1266,8 +1355,27 @@ class TurnProcessor:
 			for poke in part.active:
 				self.dispatcher.dispatch("end_turn", pokemon=poke, battle=self)
 		self.check_victory()
+		from .z_effects import ZEffects
+
+		ZEffects.end_turn(self)
+		for part in self.participants:
+			for pokemon in part.pokemons:
+				if "roost" in getattr(pokemon, "volatiles", {}):
+					self.remove_volatile(pokemon, "roost")
+				if "stall" in getattr(pokemon, "volatiles", {}):
+					handler = self._volatile_handler("stall")
+					if callable(getattr(handler, "expire", None)):
+						handler.expire(pokemon, getattr(self, "mechanic_turn", 0))
+		self.mechanic_turn = getattr(self, "mechanic_turn", 0) + 1
+		self.z_pending = {}
 
 	def run_turn(self) -> None:
+		from pokemon.services.battle_items import BattleItemCapability
+
+		# A deferred invalid item must fail before turn counters, conditions,
+		# transformations, opponents or residual effects can advance.
+		for _, _, error in BattleItemCapability.invalid_pending(self):
+			raise ValueError(error)
 		logger.info("Run turn %s begin", self.turn_count + 1)
 		self.dispatcher.dispatch("turn_start", battle=self)
 		self.start_turn()

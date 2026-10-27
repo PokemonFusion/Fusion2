@@ -1,0 +1,2266 @@
+{
+  "date": "2026-10-25",
+  "source_commit": "86e9eba8f50bcbae803fc5cd900a1f0c40ec63c0",
+  "source_baseline": "03e1da5db8770e4d89cc6fcfdc4f7b5a9a5fda77",
+  "status": "qualified local production-command/menu/PostgreSQL support; no released socket or world-stock claim",
+  "python_sources": 1149,
+  "changed_python_sha256_lf": {
+    "pokemon/battle/engine.py": "69f5397b34d65c4bef9399455590fdb81902bfb2f7b3c630c300f5085d72ce98",
+    "pokemon/battle/protection.py": "6b820ce94874604bc2f16584fa4dd2c749e1e8affaa7e7808e218eea2cb76cc4",
+    "pokemon/battle/recovery_moves.py": "f70b37b3971042a060c2bfaad24ac2e7e43b888795b4247fb5a734e1a5e7ff9a",
+    "pokemon/battle/tests/test_protect_repeat_policy.py": "253fa4aaebeebd3460bdc66185f36857cd28d4048a4a5b7c1bb186d4c1f19790",
+    "pokemon/battle/tests/test_recovery_move_sources.py": "9fccaae07d0041caa958281836c69d27c2a1c97d492defa7c6bbf49886e56fba",
+    "pokemon/battle/tests/test_showdown_event_core.py": "879ce9dd10af67dc48a4401cb23b2aef9bd1de26c844a75ca58de2396d8255e2",
+    "pokemon/battle/tests/test_status_move_type_immunity.py": "194c3f0ff65ab57a42c135778da78c0e1fbe04253a0ac583fb205467cbc6570e",
+    "pokemon/battle/tests/test_z_physical_sources.py": "4baec850301308dc33a15c6e873a41c5137078fe8f5eb459d1a8d7c4e093f199",
+    "pokemon/battle/tests/test_z_special_sources.py": "5ad0ea0f4734eecb97a14632fc84ca5c7e7274350042f6954ec19f973076b715",
+    "pokemon/battle/tests/test_z_status_sources.py": "6760d1cc672ce951099b56a2e153c78bf31a55170ee85dc8e05dd72273adb17f",
+    "pokemon/battle/turns.py": "068c88ce7d8a468e826ca90e08d196f86b59440fd58fd334fa9778f10146fe59",
+    "pokemon/battle/z_effects.py": "3d1946fc3953bbeaf00bf5cdf22d171e2e8d22642cdb7497b6b45d9c14c6fda7",
+    "pokemon/battle/z_generic_pairs.py": "e3812b3cf5dd8f2e2a5faad2e2d908ff9ee95d53cc87192c7cad4df7255da0d8",
+    "pokemon/battle/z_status_pairs.py": "935a43427f0aeed824622db4e1d7776a057e91f62df0faeaed0e33a23e5ccf6a",
+    "pokemon/dex/functions/conditions_funcs.py": "8c7c8112b0034000c4049f6212aee86107d02a10d1e18cac5c3aeec2a460285d",
+    "pokemon/dex/functions/moves/damage_moves.py": "35866e423e0811b1dbda211fef927e72372fe34bd2ee3e45066c2238a877c5ed",
+    "tests/integration/recovery_move_sources_cases.py": "4806530c1c54248081d7367576f1be7f36c934bde10703c8a7a8d5762b4c7543",
+    "tests/integration/status_move_type_sources_cases.py": "bed9554bea6844715c33f957c7ed210d9458836dfe139b183f91f94950fca075",
+    "tests/integration/z_additional_status_sources_cases.py": "687d2bdaa5b987e205d10d204448a1d26194b239c728ddeb1f367c3913c7abd9",
+    "tests/integration/z_physical_sources_cases.py": "41dd867553bda4b17e0c5d6d3bb864c6dcc800489c91a867956a98eb3ad9b246",
+    "tests/test_item_availability.py": "95896b57028369d6bb082449d8f84b26f558f7a50d2cdceb3f4836c9c11df75e",
+    "tools/audit_item_availability.py": "6c38eeff7477b969f8c049e6f25d4c372796b3a9802c1878f72a69011218fdfc"
+  },
+  "unrelated_shared_dirty_paths_preserved": 25,
+  "qualification_manifest_sha256_lf": "126c2e5db0814ee9fda26fd246aa7bfba9ba81c137d4bfa662ba8d88e9f2cde2",
+  "frozen_copy_manifest_sha256_lf": "8759c3add0a02fe126d888cbf46ee280a4c1343de26304b28c957ea27e03e641",
+  "mandatory": {
+    "exit_code": 0,
+    "passed": [
+      "6287",
+      "6287",
+      "6287"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "2bf080d6ca7a4c662a2665d3ace895143442a983da533318dfde832fcb55090c",
+    "seconds": 1975.54
+  },
+  "focused": {
+    "exit": 0,
+    "passed": [
+      "271"
+    ],
+    "sha256": "b1fa61cbbc1ba45ad739809ad2ebd17511cfd3a2ba18d504ff4f48bea4bae104",
+    "seconds": 32.65
+  },
+  "compatibility": [
+    {
+      "suite": "z_existing_sources",
+      "exit": 0,
+      "seconds": 96.34,
+      "cases": [
+        "34"
+      ],
+      "sha256": "eb0a82b2f2954618b2116c6f1378be107069d16edf481e31c291d224728a624e"
+    },
+    {
+      "suite": "z_move",
+      "exit": 0,
+      "seconds": 69.23,
+      "cases": [
+        "37"
+      ],
+      "sha256": "a82ca197f8f5d0166e631e4d7f90c0be1669585c66faf2b3384528e4103ba8ee"
+    },
+    {
+      "suite": "z_generic",
+      "exit": 0,
+      "seconds": 189.44,
+      "cases": [
+        "17"
+      ],
+      "sha256": "ab65d840f4024c8029a36c7d3b3953aa0f2307516d05d52fd3cc99b63ad638ba"
+    },
+    {
+      "suite": "z_status",
+      "exit": 0,
+      "seconds": 106.86,
+      "cases": [
+        "20"
+      ],
+      "sha256": "a914bfb21c61080bffb3f5b4a3d2126455a8ea4241281d82c8ce85d1ce25be90"
+    },
+    {
+      "suite": "z_signature",
+      "exit": 0,
+      "seconds": 192.99,
+      "cases": [
+        "22"
+      ],
+      "sha256": "133759a9ab5c1ad896f0c59698df5d8ab48acc47ce0418008496348f641cbb8a"
+    },
+    {
+      "suite": "z_native",
+      "exit": 0,
+      "seconds": 39.93,
+      "cases": [
+        "9"
+      ],
+      "sha256": "60e4f88d0f53b6d5c8cb4dbe9345651d1dcbec6cb11b0cd62fe2c1d9142a5865"
+    },
+    {
+      "suite": "necrozma_player",
+      "exit": 0,
+      "seconds": 80.66,
+      "cases": [
+        "15"
+      ],
+      "sha256": "7e17ce0bd37502c08711cb9f0e917c099957417d66dda7f4225bf6a6f8a381d5"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 19.11,
+      "cases": [
+        "32"
+      ],
+      "sha256": "0a44f2ac35bbf7d7229bdf35cbb4b588adbdc4e2381eaa92d3bc2856e31c6259"
+    },
+    {
+      "suite": "z_special_sources",
+      "exit": 0,
+      "seconds": 261.36,
+      "cases": [
+        "102"
+      ],
+      "sha256": "18dc2451515a193d653bf03784eb69a9a276c57060e6f10f6ac9d6768c9b22fe"
+    }
+  ],
+  "compatibility_cases": 288,
+  "reference_commit": "7e6cea3605c20b44142b2aab22acf08df75ea52b",
+  "cleanup": {
+    "task_postgres_stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0,
+    "existing_game_data_or_services_changed": false
+  },
+  "formatting": {
+    "new_files": 10,
+    "all_abstract_syntax_trees_identical": true
+  },
+  "supplementary_paid_descriptor_adapters": {
+    "cases": 6,
+    "passed": true,
+    "scope": "Already-paid offline descriptors, distinct from the actual command/SQL PP/custody proof",
+    "outcomes": [
+      {
+        "source": "Z-Roost",
+        "actual_ground_immunity_removed_and_restored": true,
+        "actual_type_checkpoint_round_trip": true,
+        "same_turn_ground_damage": 27
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": null,
+        "hp_before": 10,
+        "hp_after": 62,
+        "expected_fraction": [
+          1,
+          2
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "sunnyday",
+        "hp_before": 10,
+        "hp_after": 80,
+        "expected_fraction": [
+          2,
+          3
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "raindance",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "sandstorm",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "snow",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      }
+    ]
+  },
+  "current_source_only_index": "item-availability-physical-status-z-index-2026-10-25.json",
+  "current_index_sha256_lf": "c030b6a88717db9e63741607ffe1bb49fc9325ae2e4a3c5b58a95fddb7b80f49",
+  "preserved": {
+    "all_452_definition_fingerprints": true,
+    "old_generic25_sha256": "26af9ea21e624e102c7a2d7c36640b221b78b3064d611fd0e6ab9ad3500a26de",
+    "old_status8_sha256": "0b86cdd34a0a26058ef128c66a40c7d116af104a362ec5ec25bfe91826a1d02d",
+    "signatures16_sha256": "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43",
+    "ordinary_source_and_item_dex_metadata": true,
+    "public_stock_or_runtime_mutation_performed": false
+  },
+  "limits": [
+    "Native chart/stock/wallet/party/status/stage prerequisites are labelled isolated fixtures.",
+    "Command transport is captured; no ordinary socket login or shared deployment is claimed.",
+    "The existing Damp/weather callback defect is #915 and remains separate.",
+    "Earlier reports and classified inventories remain immutable; other source moves and Ultra stay deferred."
+  ],
+  "issue": 911,
+  "profiles": [
+    {
+      "crystal": "Normalium Z",
+      "source": "Body Slam",
+      "name": "Breakneck Blitz",
+      "power": 160,
+      "move_type": "Normal",
+      "category": "Physical",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Darkinium Z",
+      "source": "Crunch",
+      "name": "Black Hole Eclipse",
+      "power": 160,
+      "move_type": "Dark",
+      "category": "Physical",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Dragonium Z",
+      "source": "Dragon Claw",
+      "name": "Devastating Drake",
+      "power": 160,
+      "move_type": "Dragon",
+      "category": "Physical",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Groundium Z",
+      "source": "Earthquake",
+      "name": "Tectonic Rage",
+      "power": 180,
+      "move_type": "Ground",
+      "category": "Physical",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Rockium Z",
+      "source": "Rock Slide",
+      "name": "Continental Crush",
+      "power": 140,
+      "move_type": "Rock",
+      "category": "Physical",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    },
+    {
+      "crystal": "Steelium Z",
+      "source": "Iron Head",
+      "name": "Corkscrew Crash",
+      "power": 160,
+      "move_type": "Steel",
+      "category": "Physical",
+      "target": "normal",
+      "kind": "generic",
+      "native": [],
+      "contact": false,
+      "sound": false,
+      "bypass_substitute": false,
+      "critical_stage": 0,
+      "ignore_ability": false,
+      "intrinsic": "",
+      "bonus": []
+    }
+  ],
+  "player": {
+    "suite": "z_physical_sources",
+    "exit": 0,
+    "seconds": 274.81,
+    "cases": [
+      "102"
+    ],
+    "sha256": "35c16659f24bd6b876fcb7f56a55eb64c044941c8f34d15a873cdbb9cc94924b"
+  },
+  "player_cases": 102,
+  "completed_effect_lifecycles": 60,
+  "independent_rejections": 42,
+  "outcomes": [
+    {
+      "case": "test_darkiniumz_active",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "active",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_checkpoint_fault",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "checkpoint_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_embargo",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "embargo",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        60,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_magicroom",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "magicroom",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        60,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "native",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        61
+      ],
+      "native_species": "Arbok",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_payment_fault",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "payment_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_plain",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "plain",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_protect",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "protect",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        4,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_resist",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "resist",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        14,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_darkiniumz_sleep",
+      "item": "Darkinium Z",
+      "source": "Crunch",
+      "facet": "sleep",
+      "pp_before": 15,
+      "pp_after": 15,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Arbok",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_active",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "active",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        21,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_checkpoint_fault",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "checkpoint_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        21,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_embargo",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "embargo",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        42,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_immune",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "immune",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_magicroom",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "magicroom",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        42,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "native",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        97
+      ],
+      "native_species": "Axew",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_payment_fault",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "payment_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        21,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_plain",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "plain",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_protect",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "protect",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        5,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_dragoniumz_sleep",
+      "item": "Dragonium Z",
+      "source": "Dragon Claw",
+      "facet": "sleep",
+      "pp_before": 15,
+      "pp_after": 15,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Axew",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_active",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "active",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        32,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_checkpoint_fault",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "checkpoint_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        32,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_embargo",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "embargo",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        21,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_immune",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "immune",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_magicroom",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "magicroom",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        21,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_native",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "native",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        144
+      ],
+      "native_species": "Diglett",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_payment_fault",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "payment_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        32,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_plain",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "plain",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        47,
+        15,
+        54
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_protect",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "protect",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        8,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_groundiumz_sleep",
+      "item": "Groundium Z",
+      "source": "Earthquake",
+      "facet": "sleep",
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Diglett",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_active",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "active",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_checkpoint_fault",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "checkpoint_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_embargo",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "embargo",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        25,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_immune",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "immune",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_magicroom",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "magicroom",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        25,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_native",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "native",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        53
+      ],
+      "native_species": "Snorlax",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_payment_fault",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "payment_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_plain",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "plain",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        6,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_protect",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "protect",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        2,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_normaliumz_sleep",
+      "item": "Normalium Z",
+      "source": "Body Slam",
+      "facet": "sleep",
+      "pp_before": 15,
+      "pp_after": 15,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Snorlax",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_active",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "active",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_checkpoint_fault",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "checkpoint_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_embargo",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "embargo",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        33,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_magicroom",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "magicroom",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        33,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_native",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "native",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        67
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_payment_fault",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "payment_fault",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_plain",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "plain",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        7,
+        51
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_protect",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "protect",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        4,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_resist",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "resist",
+      "pp_before": 10,
+      "pp_after": 9,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        11,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_rockiumz_sleep",
+      "item": "Rockium Z",
+      "source": "Rock Slide",
+      "facet": "sleep",
+      "pp_before": 10,
+      "pp_after": 10,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Growlithe-Hisui",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_active",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "active",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        24,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_checkpoint_fault",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "checkpoint_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        24,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_embargo",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "embargo",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_immune",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "immune",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_magicroom",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "magicroom",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        16,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_native",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "native",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        164
+      ],
+      "native_species": "Aron",
+      "level": 100,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_payment_fault",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "payment_fault",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        24,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_plain",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "plain",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        14,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_protect",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "protect",
+      "pp_before": 15,
+      "pp_after": 14,
+      "side_use": [
+        "A"
+      ],
+      "damage_by_active_actor": [
+        0,
+        0,
+        6,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    },
+    {
+      "case": "test_steeliumz_sleep",
+      "item": "Steelium Z",
+      "source": "Iron Head",
+      "facet": "sleep",
+      "pp_before": 15,
+      "pp_after": 15,
+      "side_use": [],
+      "damage_by_active_actor": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "native_species": "Aron",
+      "level": 50,
+      "actual_sql_pp_verified": true,
+      "held_identity_preserved": true,
+      "end_unhold_bag_copy": 1
+    }
+  ],
+  "prerequisite_issues": [],
+  "retained_fixture_diagnoses": [
+    "Missing fixture native-method binding corrected before player effects ran.",
+    "Paid offline Synthesis adapter now binds the ordinary callback before copying, as production begin does.",
+    "Spread Growl peer actions were replaced by legal Splash controls so they cannot undo the measured Z stages.",
+    "After a prevented shield caused a legitimate faint/replacement, assertions follow the original owned UUID.",
+    "Safeguard in the suppression controls correctly blocks the ordinary status while preserving the started Z bonus.",
+    "Damp/weather callback failure retained as #915; labelled native Water Absorb opponents bound this recovery proof.",
+    "Legacy Protect event tests updated for version2 counters; a misplaced new-test assertion was corrected."
+  ],
+  "native_command_examples": [
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 8",
+        "A wild Arbok appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-8443c4022f744df5b4f1463d82da8c7b|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Arbok|n\n1 Arbok |C\u2642|n                 Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Arbok (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Arbok was caught!",
+        "**availability-772-player-8443c4022f744df5b4f1463d82da8c7b** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Arbok a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+teach 3=Crunch",
+      "side": 0,
+      "messages": [
+        "Arbok already knows Crunch."
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Arbok                |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+hold 3=Darkinium Z",
+      "side": 0,
+      "messages": [
+        "Arbok is now holding Darkinium Z."
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Arbok) Z choices; side use available:\n1: Crunch (15/15 PP), Darkinium Z \u2192 Black Hole Eclipse, Dark Physical 160."
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Arbok) prepares Black Hole Eclipse from Crunch \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regirock) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_darkiniumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Arbok's Darkinium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 27",
+        "A wild Axew appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-c513f7c52b0741ae9e823e92eab24b94|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Axew|n\n1 Axew |M\u2640|n                  Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Axew (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Axew was caught!",
+        "**availability-772-player-c513f7c52b0741ae9e823e92eab24b94** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Axew a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+teach 3=Dragon Claw",
+      "side": 0,
+      "messages": [
+        "Axew already knows Dragon Claw."
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Axew                 |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+hold 3=Dragonium Z",
+      "side": 0,
+      "messages": [
+        "Axew is now holding Dragonium Z."
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Axew) Z choices; side use available:\n1: Dragonclaw (15/15 PP), Dragonium Z \u2192 Devastating Drake, Dragon Physical 160."
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Axew) prepares Devastating Drake from Dragonclaw \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regirock) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_dragoniumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Axew's Dragonium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 45",
+        "A wild Diglett appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-58ccfa7ac9f44a6b96f3cf7f449bd7f8|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Diglett|n\n1 Diglett |M\u2640|n               Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Diglett (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Diglett was caught!",
+        "**availability-772-player-58ccfa7ac9f44a6b96f3cf7f449bd7f8** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Diglett a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+teach 3=Earthquake",
+      "side": 0,
+      "messages": [
+        "Diglett already knows Earthquake."
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Diglett              |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+hold 3=Groundium Z",
+      "side": 0,
+      "messages": [
+        "Diglett is now holding Groundium Z."
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Diglett) Z choices; side use available:\n1: Earthquake (10/10 PP), Groundium Z \u2192 Tectonic Rage, Ground Physical 180."
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Diglett) prepares Tectonic Rage from Earthquake \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regirock) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_groundiumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Diglett's Groundium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 63",
+        "A wild Snorlax appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-af33d401bd9c495298dcb43e1310d08f|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Snorlax|n\n1 Snorlax |C\u2642|n               Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Snorlax (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Snorlax was caught!",
+        "**availability-772-player-af33d401bd9c495298dcb43e1310d08f** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Snorlax a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+teach 3=Body Slam",
+      "side": 0,
+      "messages": [
+        "Snorlax already knows Body Slam."
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Snorlax              |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+hold 3=Normalium Z",
+      "side": 0,
+      "messages": [
+        "Snorlax is now holding Normalium Z."
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Snorlax) Z choices; side use available:\n1: Bodyslam (15/15 PP), Normalium Z \u2192 Breakneck Blitz, Normal Physical 160."
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Snorlax) prepares Breakneck Blitz from Bodyslam \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regirock) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_normaliumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Snorlax's Normalium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 80",
+        "A wild Growlithe-Hisui appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-88c747c05bd64cde9dbf7cb5c7384baa|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Growlithe-Hisui|n\n1 Growlithe-Hisui |C\u2642|n       Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Growlithe-Hisui (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Growlithe-Hisui was caught!",
+        "**availability-772-player-88c747c05bd64cde9dbf7cb5c7384baa** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Growlithe-Hisui a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+teach 3=Rock Slide",
+      "side": 0,
+      "messages": [
+        "Growlithe-Hisui already knows Rock Slide."
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Growlithe-Hisui      |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+hold 3=Rockium Z",
+      "side": 0,
+      "messages": [
+        "Growlithe-Hisui is now holding Rockium Z."
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Growlithe-Hisui) Z choices; side use available:\n1: Rockslide (10/10 PP), Rockium Z \u2192 Continental Crush, Rock Physical 140."
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Growlithe-Hisui) prepares Continental Crush from Rockslide \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regirock) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_rockiumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Growlithe-Hisui's Rockium Z was returned to your inventory."
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+hunt ",
+      "side": 0,
+      "messages": [
+        "Battle started!",
+        "Battle ID: 99",
+        "A wild Aron appears!",
+        "== Turn 1 ====================================================================\n=================================== Team A ===================================\n|Wavailability-772-player-74ff83f0aa2b43f2800f85578c15d4a0|n\n1 Venusaur |x\u2013|n              Lv 50      |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 140/140 100%    \n|WTeam|n: |gO|n |gO|n |gO|n |x.|n |x.|n |x.|n\n|WWeather|n: -                      | |WField|n: -                        | |WRound|n: 1  \n================================ WILD Pokemon ================================\n|WWild Aron|n\n1 Aron |C\u2642|n                  Lv 100     |WHP|n: |g|||||||||||||||||||||||||||||||||||||||||n|x|n 100%            \n|WTeam|n: |gO|n |x.|n |x.|n |x.|n |x.|n |x.|n",
+        "Choose an action for Venusaur.",
+        "The battle awaits your move.",
+        "A wild Aron (Lv 100) appeared!"
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+item Master Ball",
+      "side": 0,
+      "messages": [
+        "A1 (Venusaur) prepares Master Ball \u2192 B1.",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "The ball shook!",
+        "Gotcha! Aron was caught!",
+        "**availability-772-player-74ff83f0aa2b43f2800f85578c15d4a0** won the battle!",
+        "The battle has ended.",
+        "______________________________________________________________________________\n\n|nWould you like to give Aron a nickname? (yes/no)|n\n______________________________________________________________________________\n\n|n\u001b[0m \u001b[1m\u001b[37myes\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\n\u001b[0m \u001b[1m\u001b[37mno\u001b[0m   \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m\u001b[0m  \u001b[0m"
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+teach 3=Iron Head",
+      "side": 0,
+      "messages": [
+        "Aron already knows Iron Head."
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+movesets ",
+      "side": 0,
+      "messages": [
+        "|y\u2554\u2550\u2550\u2550\u2550\u2550[ |wPok\u00e9mon Menu|y ]\u2550\u2550\u2550\u2550\u2550\u2557|n\n|y\u2551|n|wSelect a Pok\u00e9mon to manage|n|y\u2551|n\n|y\u2551|n  3. Aron                 |y\u2551|n\n|y\u2551|n  4. Eevee                |y\u2551|n\n|y\u2551|n  5. Pikachu              |y\u2551|n\n|y\u2551|nEnter number or 'quit'.   |y\u2551|n\n|y\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d|n"
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+hold 3=Steelium Z",
+      "side": 0,
+      "messages": [
+        "Aron is now holding Steelium Z."
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+zmove A1",
+      "side": 0,
+      "messages": [
+        "A1 (Aron) Z choices; side use available:\n1: Ironhead (15/15 PP), Steelium Z \u2192 Corkscrew Crash, Steel Physical 160."
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+zmove A1 1=B1",
+      "side": 0,
+      "messages": [
+        "A1 (Aron) prepares Corkscrew Crash from Ironhead \u2192 B1."
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+attack B1 Lock-On A1",
+      "side": 1,
+      "messages": [
+        "B1 (Regirock) prepares Lock-On \u2192 A1."
+      ]
+    },
+    {
+      "case": "test_steeliumz_native",
+      "command": "+hold 3=",
+      "side": 0,
+      "messages": [
+        "Aron's Steelium Z was returned to your inventory."
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "crystal": "Normalium Z",
+      "source": "Body Slam",
+      "power": 160,
+      "active_damage": 9,
+      "protected_damage": 2,
+      "ordinary_damage": [
+        0,
+        0,
+        6,
+        0
+      ],
+      "captured_level100_damage": 53,
+      "immunity_control": "native type/ability"
+    },
+    {
+      "crystal": "Darkinium Z",
+      "source": "Crunch",
+      "power": 160,
+      "active_damage": 16,
+      "protected_damage": 4,
+      "ordinary_damage": [
+        0,
+        0,
+        9,
+        0
+      ],
+      "captured_level100_damage": 61,
+      "immunity_control": "native resistance; no type immunity exists"
+    },
+    {
+      "crystal": "Dragonium Z",
+      "source": "Dragon Claw",
+      "power": 160,
+      "active_damage": 21,
+      "protected_damage": 5,
+      "ordinary_damage": [
+        0,
+        0,
+        12,
+        0
+      ],
+      "captured_level100_damage": 97,
+      "immunity_control": "native type/ability"
+    },
+    {
+      "crystal": "Groundium Z",
+      "source": "Earthquake",
+      "power": 180,
+      "active_damage": 32,
+      "protected_damage": 8,
+      "ordinary_damage": [
+        0,
+        47,
+        15,
+        54
+      ],
+      "captured_level100_damage": 144,
+      "immunity_control": "native type/ability"
+    },
+    {
+      "crystal": "Rockium Z",
+      "source": "Rock Slide",
+      "power": 140,
+      "active_damage": 16,
+      "protected_damage": 4,
+      "ordinary_damage": [
+        0,
+        0,
+        7,
+        51
+      ],
+      "captured_level100_damage": 67,
+      "immunity_control": "native resistance; no type immunity exists"
+    },
+    {
+      "crystal": "Steelium Z",
+      "source": "Iron Head",
+      "power": 160,
+      "active_damage": 24,
+      "protected_damage": 6,
+      "ordinary_damage": [
+        0,
+        0,
+        14,
+        0
+      ],
+      "captured_level100_damage": 164,
+      "immunity_control": "native type/ability"
+    }
+  ],
+  "new_offline_tests": 29
+}

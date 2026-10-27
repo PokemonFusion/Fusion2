@@ -1,0 +1,4867 @@
+{
+  "issue": 764,
+  "date": "2026-10-22",
+  "generated_utc": "2026-10-22T05:51:52.871856+00:00",
+  "base_revision": "d4450420a5905e9c379ca619796e4b2ef22139fa",
+  "target_branch": "staging",
+  "claim": "Fresh local automated ordinary-command/model acceptance with real SQL, captured session transport and separate tagged disposable setup.",
+  "not_claimed": [
+    "fresh live player login",
+    "hosted CI completion",
+    "main merge",
+    "public deployment",
+    "live shop stock"
+  ],
+  "scope": [
+    "Rare Candy atomic inventory/EXP/level/learning",
+    "fresh canonical target and current-Fusion eligibility",
+    "postcommit move UI/success messages",
+    "rollback/cache and final-copy concurrency",
+    "help and lifecycle CI coverage"
+  ],
+  "excluded": [
+    "PP Up/PP Max fixes (#765)",
+    "new items",
+    "plot-only content",
+    "battle mechanics changes",
+    "migrations",
+    "game data/services",
+    "unrelated WIP"
+  ],
+  "source_hash_format": "SHA-256 of UTF-8 text with normalized LF; verified against committed blob bytes after commit.",
+  "source_sha256": {
+    "commands/player/cmd_inventory.py": "544f2c3e04df85933b15cb4af1a01b7bf9b088ecd0ae8f6449836e80abbb8d2e",
+    "pokemon/services/field_progression.py": "37e99508c9bde2d79a6348ade4070f8a0b518db2bab2b03d96ab81ccbfff6f2e",
+    "pokemon/services/field_items.py": "c1284dfe958fd6db1e5fadf3fbccb13833755fb5008cc99cab3b9dc3bc199b9d",
+    "pokemon/services/placement.py": "5fa4d9e2b80c2b1a9eab6330e8d9907d497ca23e3da6f93a24e78ee3270930b9",
+    "pokemon/models/trainer.py": "b25af6ac140457b8a4cafca7264e5152ae6eb06f54fdaa40c734143ad993817d",
+    "pokemon/models/core.py": "e807802c0c5eecbefe7819480697d267c4f56ad7edb3d569e23aedfa92193847",
+    "pokemon/models/stats.py": "c741ebcf874f321b9affb868e31704c17e557cb4d508a4e2ce5e773b5b80043a",
+    "pokemon/models/storage.py": "7710c178eceb551294b30bc302931ed883899c7687f4421e4ac32c4552060c3a",
+    "pokemon/models/moves.py": "6b91fad135bafed08f1ca515005409c98d878a933d8d862bcf57e1655ba991d3",
+    "pokemon/utils/move_learning.py": "cdd16ab5c71f53502d80e73e738c43977f290a97dd6fbe554cfcbd50d99fff45",
+    "pokemon/services/move_management.py": "df92dd58cd93ef00437e051e4c6f837755d58254ce20b12a0a3d3e4b5930b8d9",
+    "pokemon/helpers/pokemon_helpers.py": "5ed952479939673e4d6d64c3ad841c7048174af91f942e7d37a9aa943ab5270b",
+    "pokemon/services/leader_crest.py": "2739f0a5f51d48dca49655d2d7a2ec75c5de12c995eb1bd7e02310269ef1a7f1",
+    "pokemon/user.py": "7016b47bbf45c9a0d192d6c9a0b5e606454494db2f59670a8b4f816aee599168",
+    "utils/locks.py": "f12613d58050138f6e5d4adbf74f89ed648065043e8a148ea5763805af32e5f6",
+    "utils/enhanced_evmenu.py": "06a3c430c55c83bf8135193ba7b8213193c25957848853aba12cca1e4920cc09",
+    "menus/learn_move.py": "be4830deaac9d9ad86cdd80127b2a704cdb983b7cbf9d1da9013050c8415fd7a",
+    "tests/integration/rare_candy_cases.py": "303d6f747b45f747e15fef94405950c97c8a93f072ae31b54c19baa1a28c24b8",
+    "tests/integration/isolated_postgres.py": "4b38423ba6d7ccf08cbdfe9d022e26f0d399415adc3ef9df30d89945dcc1270b",
+    "tests/test_useitem_pp.py": "12a871c06b6c939f8653698ac2805e06ff88c1c16f5bc161d8db44569e0c977b",
+    "tests/integration/field_item_cases.py": "04c92154a75dd393231e2a6eb12e8e685eef0dd4c750cdf863cfb6cdb3fd2aa5",
+    "tests/integration/field_berry_cases.py": "7946bee4049a20db95f193e94d5ef45508f55a9e97c65d312e635338e464738d",
+    "tests/integration/field_food_cases.py": "499cc9853a3c0b6ac2d1a3cee32a5ee5d351dcd843317e516818ba50d3c2f849",
+    "tests/integration/leader_crest_cases.py": "a598992bd866b9f4285af522732cdf0d51a90ee6f62d1e88bfa27ef5fe6e59ba",
+    "tests/integration/progression_cases.py": "ab2b1f9c663286ff68caaaac3d58f7de44ba0d3f9ee544ea15f04e87ad0fd63d",
+    ".github/workflows/lifecycle-integrity.yml": "0a376e6123466e8d3b04638f32e816a55882c11435ef4131b7ac83b7b12cabb9",
+    "docs/field-items.md": "19d40344812835972734afd2e863e5af27a75e4e1e173846ed7babfde84b170d",
+    "tools/run_mandatory_tests.py": "74e942d278967cf2065d0d4c3c3a47c2117723c32bb106cfa5c4de15191b0d94"
+  },
+  "all_frozen_python_files": 963,
+  "frozen_python_sources_unchanged": true,
+  "verification": {
+    "postgres": [
+      {
+        "suite": "rare_candy",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "rare_candy_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 25,
+        "seconds": 18.563,
+        "log": "rare_candy.log",
+        "log_sha256": "9ddd74029c2cce807a12026c236086b1b171d7be51de9d5e5d4fd0750cf0e94b"
+      },
+      {
+        "suite": "field_item",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "field_item_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 23,
+        "seconds": 18.657,
+        "log": "field_item.log",
+        "log_sha256": "49daa8059fab6c46516f571bd50a1101cfdb7af923a6538a7ed09e617c1b5aac"
+      },
+      {
+        "suite": "field_berry",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "field_berry_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 26,
+        "seconds": 16.047,
+        "log": "field_berry.log",
+        "log_sha256": "e3484ab862fe389a39fe28b8e92582b8d961b2f4424c94dd5dab971a3ee78a63"
+      },
+      {
+        "suite": "field_food",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "field_food_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 70,
+        "seconds": 26.0,
+        "log": "field_food.log",
+        "log_sha256": "d711bce2942a80d34521771be43758184b67123da4380ae068761a6088cd69e1"
+      },
+      {
+        "suite": "remaining_item",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "remaining_item_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 8,
+        "seconds": 9.375,
+        "log": "remaining_item.log",
+        "log_sha256": "a444b81107870a97cebbe40ef43a674da183cefa790e5a9acf2e59b5f79b5fc8"
+      },
+      {
+        "suite": "capture_pp_item",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "capture_pp_item_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 16,
+        "seconds": 11.187,
+        "log": "capture_pp_item.log",
+        "log_sha256": "fa1fc5d5cd483d579ebde30aece96bd2b21424c7b137bb4d1b5d93c720af7b4e"
+      },
+      {
+        "suite": "leader_crest",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "leader_crest_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 29,
+        "seconds": 38.828,
+        "log": "leader_crest.log",
+        "log_sha256": "3e89e0c58ff3fa990d667329511a74f490508fa13744fea376bec8ef8ede9df4"
+      },
+      {
+        "suite": "evolution",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "evolution_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 28,
+        "seconds": 10.766,
+        "log": "evolution.log",
+        "log_sha256": "082de0dd5f0c3941e0aeacfd34eb345ce9ce4a67529ef770702a4cbabc57c73e"
+      },
+      {
+        "suite": "progression",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "progression_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 11,
+        "seconds": 8.719,
+        "log": "progression.log",
+        "log_sha256": "7fc6f3b01b1603d06b69cb2062050e40e5b47f36de017ba07cbde19f1f46bfcb"
+      },
+      {
+        "suite": "cloud_gameplay",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "cloud_gameplay_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 9,
+        "seconds": 11.484,
+        "log": "cloud_gameplay.log",
+        "log_sha256": "f4635c21f0563802bcbc02c473e02302473678b89e0888b76c7cc8ebe7617bf5"
+      },
+      {
+        "suite": "ui",
+        "command": [
+          "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+          "-B",
+          "H:\\PokemonFusionProject\\fusion2\\.codex-artifacts\\rare-candy-20261022\\run_case.py",
+          "ui_cases.py"
+        ],
+        "exit_code": 0,
+        "passed": 14,
+        "seconds": 9.672,
+        "log": "ui.log",
+        "log_sha256": "48aabd803a983c0b92def5e2c7160ee8de41ceb402afbd38042da3a6c107ad3d"
+      }
+    ],
+    "focused": {
+      "suite": "focused",
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_useitem_pp.py",
+        "tests/test_ownedpokemon_level_field.py",
+        "tests/test_move_learning.py",
+        "tests/test_learn_new_moves_menu.py",
+        "tests/test_experience_and_evs.py",
+        "tests/test_battle_experience.py",
+        "tests/test_field_food.py",
+        "tests/test_evolution.py",
+        "tests/test_evolution_conditions.py",
+        "tests/test_leader_crest.py",
+        "tests/test_test_import_isolation.py",
+        "tests/test_help_pipe_escaping.py",
+        "tests/test_item_store_safety.py",
+        "-q",
+        "--run-callback-tests",
+        "-o",
+        "addopts=",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=.pytest-basetemp-rare-candy-20261022"
+      ],
+      "exit_code": 0,
+      "passed": 162,
+      "seconds": 17.407,
+      "log": "focused.log",
+      "log_sha256": "faf8394aacfaa985742d14ec919093c3debec8f4c8cb4e94742475a68f787608"
+    },
+    "mandatory": {
+      "suite": "mandatory",
+      "command": [
+        "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+        "-B",
+        "tools/run_mandatory_tests.py"
+      ],
+      "exit_code": 0,
+      "passed": 4596,
+      "seconds": 1088.875,
+      "log": "mandatory.log",
+      "log_sha256": "2de11beaeb92e5a25d0b66e36e77a7ed4adb97bf15fca53abcec736926a86c42",
+      "runs": [
+        {
+          "order": "combined",
+          "passed": 4596,
+          "skipped": 4014
+        },
+        {
+          "order": "repeat",
+          "passed": 4596,
+          "skipped": 4014
+        },
+        {
+          "order": "battle-first",
+          "passed": 4596,
+          "skipped": 4014
+        }
+      ]
+    }
+  },
+  "postgres_total": 259,
+  "walkthroughs": [
+    {
+      "label": "current-fusion",
+      "command": "+use Rare Candy=fusion",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 4
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 132651,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 3
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 51."
+      ]
+    },
+    {
+      "label": "current-fusion",
+      "command": "+use Rare Candy=self",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 132651,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 3
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 52,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 140608,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 52."
+      ]
+    },
+    {
+      "label": "current-fusion",
+      "command": "+use Rare Candy=me",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 52,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 140608,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 53,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 148877,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 53."
+      ]
+    },
+    {
+      "label": "current-fusion",
+      "command": "+use Rare Candy=b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 53,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 148877,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 54,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+          "created_at": "2026-10-22 05:32:57.199340+00:00",
+          "trainer_id": 4,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 157464,
+          "active_moveset_id": 4
+        },
+        "placement": [
+          {
+            "id": 4,
+            "storage_id": 4,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "location_type": "fusion",
+            "slot": null,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [],
+        "learned": [
+          {
+            "id": 34,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 1
+          },
+          {
+            "id": 35,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 2
+          },
+          {
+            "id": 36,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 3
+          },
+          {
+            "id": 37,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 4
+          },
+          {
+            "id": 38,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 5
+          },
+          {
+            "id": 39,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 6
+          },
+          {
+            "id": 40,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 7
+          },
+          {
+            "id": 41,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 8
+          },
+          {
+            "id": 42,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 9
+          },
+          {
+            "id": 43,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10
+          },
+          {
+            "id": 44,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 7,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 8,
+            "pokemon_id": "b5eec112-ccdb-4100-a801-9b3cd8c1b12f",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 7,
+            "moveset_id": 4,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 8,
+            "moveset_id": 4,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 54."
+      ]
+    },
+    {
+      "label": "canonical-slot",
+      "command": "+use Rare Candy=3",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "d26488c0-8b90-471e-a702-c91f95150638",
+          "created_at": "2026-10-22 05:32:57.556370+00:00",
+          "trainer_id": 5,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 5
+        },
+        "placement": [
+          {
+            "id": 5,
+            "storage_id": 5,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 45,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 1
+          },
+          {
+            "id": 46,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 2
+          },
+          {
+            "id": 47,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 3
+          },
+          {
+            "id": 48,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 4
+          },
+          {
+            "id": 49,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 5
+          },
+          {
+            "id": 50,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 6
+          },
+          {
+            "id": 51,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 7
+          },
+          {
+            "id": 52,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 8
+          },
+          {
+            "id": 53,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 9
+          },
+          {
+            "id": 54,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10
+          },
+          {
+            "id": 55,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 9,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 10,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 9,
+            "moveset_id": 5,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 10,
+            "moveset_id": 5,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "d26488c0-8b90-471e-a702-c91f95150638",
+          "created_at": "2026-10-22 05:32:57.556370+00:00",
+          "trainer_id": 5,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 132651,
+          "active_moveset_id": 5
+        },
+        "placement": [
+          {
+            "id": 5,
+            "storage_id": 5,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 45,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 1
+          },
+          {
+            "id": 46,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 2
+          },
+          {
+            "id": 47,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 3
+          },
+          {
+            "id": 48,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 4
+          },
+          {
+            "id": 49,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 5
+          },
+          {
+            "id": 50,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 6
+          },
+          {
+            "id": 51,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 7
+          },
+          {
+            "id": 52,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 8
+          },
+          {
+            "id": 53,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 9
+          },
+          {
+            "id": 54,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10
+          },
+          {
+            "id": 55,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 9,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 10,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 9,
+            "moveset_id": 5,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 10,
+            "moveset_id": 5,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 51."
+      ]
+    },
+    {
+      "label": "full-id-after-transport-rebuild",
+      "command": "+use Rare Candy=d26488c0-8b90-471e-a702-c91f95150638",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "d26488c0-8b90-471e-a702-c91f95150638",
+          "created_at": "2026-10-22 05:32:57.556370+00:00",
+          "trainer_id": 5,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 132651,
+          "active_moveset_id": 5
+        },
+        "placement": [
+          {
+            "id": 5,
+            "storage_id": 5,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 45,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 1
+          },
+          {
+            "id": 46,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 2
+          },
+          {
+            "id": 47,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 3
+          },
+          {
+            "id": 48,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 4
+          },
+          {
+            "id": 49,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 5
+          },
+          {
+            "id": 50,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 6
+          },
+          {
+            "id": 51,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 7
+          },
+          {
+            "id": 52,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 8
+          },
+          {
+            "id": 53,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 9
+          },
+          {
+            "id": 54,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10
+          },
+          {
+            "id": 55,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 9,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 10,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 9,
+            "moveset_id": 5,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 10,
+            "moveset_id": 5,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 52,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "d26488c0-8b90-471e-a702-c91f95150638",
+          "created_at": "2026-10-22 05:32:57.556370+00:00",
+          "trainer_id": 5,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 140608,
+          "active_moveset_id": 5
+        },
+        "placement": [
+          {
+            "id": 5,
+            "storage_id": 5,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [],
+        "learned": [
+          {
+            "id": 45,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 1
+          },
+          {
+            "id": 46,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 2
+          },
+          {
+            "id": 47,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 3
+          },
+          {
+            "id": 48,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 4
+          },
+          {
+            "id": 49,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 5
+          },
+          {
+            "id": 50,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 6
+          },
+          {
+            "id": 51,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 7
+          },
+          {
+            "id": 52,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 8
+          },
+          {
+            "id": 53,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 9
+          },
+          {
+            "id": 54,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10
+          },
+          {
+            "id": 55,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 9,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 10,
+            "pokemon_id": "d26488c0-8b90-471e-a702-c91f95150638",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 9,
+            "moveset_id": 5,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 10,
+            "moveset_id": 5,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 52."
+      ]
+    },
+    {
+      "label": "ambiguous-name",
+      "command": "+use Rare Candy=Buddy",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+          "created_at": "2026-10-22 05:32:57.828370+00:00",
+          "trainer_id": 6,
+          "nickname": "Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 6
+        },
+        "placement": [
+          {
+            "id": 6,
+            "storage_id": 6,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 56,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 1
+          },
+          {
+            "id": 57,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 2
+          },
+          {
+            "id": 58,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 3
+          },
+          {
+            "id": 59,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 4
+          },
+          {
+            "id": 60,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 5
+          },
+          {
+            "id": 61,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 6
+          },
+          {
+            "id": 62,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 7
+          },
+          {
+            "id": 63,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 8
+          },
+          {
+            "id": 64,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 9
+          },
+          {
+            "id": 65,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 10
+          },
+          {
+            "id": 66,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 11,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 12,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 11,
+            "moveset_id": 6,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 12,
+            "moveset_id": 6,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+          "created_at": "2026-10-22 05:32:57.828370+00:00",
+          "trainer_id": 6,
+          "nickname": "Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 6
+        },
+        "placement": [
+          {
+            "id": 6,
+            "storage_id": 6,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 56,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 1
+          },
+          {
+            "id": 57,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 2
+          },
+          {
+            "id": 58,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 3
+          },
+          {
+            "id": 59,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 4
+          },
+          {
+            "id": 60,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 5
+          },
+          {
+            "id": 61,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 6
+          },
+          {
+            "id": 62,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 7
+          },
+          {
+            "id": 63,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 8
+          },
+          {
+            "id": 64,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 9
+          },
+          {
+            "id": 65,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 10
+          },
+          {
+            "id": 66,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 11,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 12,
+            "pokemon_id": "76c1f9b3-e224-4f9b-88ca-5b46896e48b8",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 11,
+            "moveset_id": 6,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 12,
+            "moveset_id": 6,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "That Pokemon name is ambiguous; use its party slot or full ID."
+      ]
+    },
+    {
+      "label": "egg-rejected",
+      "command": "+use Rare Candy=3",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+          "created_at": "2026-10-22 05:32:58.156404+00:00",
+          "trainer_id": 7,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": true,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 8
+        },
+        "placement": [
+          {
+            "id": 8,
+            "storage_id": 7,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 78,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 1
+          },
+          {
+            "id": 79,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 2
+          },
+          {
+            "id": 80,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 3
+          },
+          {
+            "id": 81,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 4
+          },
+          {
+            "id": 82,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 5
+          },
+          {
+            "id": 83,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 6
+          },
+          {
+            "id": 84,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 7
+          },
+          {
+            "id": 85,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 8
+          },
+          {
+            "id": 86,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 9
+          },
+          {
+            "id": 87,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 10
+          },
+          {
+            "id": 88,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 15,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 16,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 15,
+            "moveset_id": 8,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 16,
+            "moveset_id": 8,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+          "created_at": "2026-10-22 05:32:58.156404+00:00",
+          "trainer_id": 7,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": true,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 8
+        },
+        "placement": [
+          {
+            "id": 8,
+            "storage_id": 7,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 78,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 1
+          },
+          {
+            "id": 79,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 2
+          },
+          {
+            "id": 80,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 3
+          },
+          {
+            "id": 81,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 4
+          },
+          {
+            "id": 82,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 5
+          },
+          {
+            "id": 83,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 6
+          },
+          {
+            "id": 84,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 7
+          },
+          {
+            "id": 85,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 8
+          },
+          {
+            "id": 86,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 9
+          },
+          {
+            "id": 87,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 10
+          },
+          {
+            "id": 88,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 15,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 16,
+            "pokemon_id": "788b69b4-3bc3-43f7-b17a-26bd95ae900d",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 15,
+            "moveset_id": 8,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 16,
+            "moveset_id": 8,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Field items require an eligible owned party Pokemon; eggs cannot use them."
+      ]
+    },
+    {
+      "label": "failed-debit",
+      "command": "+use Rare Candy=3",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+          "created_at": "2026-10-22 05:32:58.285406+00:00",
+          "trainer_id": 8,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 9
+        },
+        "placement": [
+          {
+            "id": 9,
+            "storage_id": 8,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 89,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 1
+          },
+          {
+            "id": 90,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 2
+          },
+          {
+            "id": 91,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 3
+          },
+          {
+            "id": 92,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 4
+          },
+          {
+            "id": 93,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 5
+          },
+          {
+            "id": 94,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 6
+          },
+          {
+            "id": 95,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 7
+          },
+          {
+            "id": 96,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 8
+          },
+          {
+            "id": 97,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 9
+          },
+          {
+            "id": 98,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 10
+          },
+          {
+            "id": 99,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 17,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 18,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 17,
+            "moveset_id": 9,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 18,
+            "moveset_id": 9,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+          "created_at": "2026-10-22 05:32:58.285406+00:00",
+          "trainer_id": 8,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 9
+        },
+        "placement": [
+          {
+            "id": 9,
+            "storage_id": 8,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 89,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 1
+          },
+          {
+            "id": 90,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 2
+          },
+          {
+            "id": 91,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 3
+          },
+          {
+            "id": 92,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 4
+          },
+          {
+            "id": 93,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 5
+          },
+          {
+            "id": 94,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 6
+          },
+          {
+            "id": 95,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 7
+          },
+          {
+            "id": 96,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 8
+          },
+          {
+            "id": 97,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 9
+          },
+          {
+            "id": 98,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 10
+          },
+          {
+            "id": 99,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 17,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 18,
+            "pokemon_id": "59b231bf-d783-4077-9f6e-ac855a8cd353",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 17,
+            "moveset_id": 9,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 18,
+            "moveset_id": 9,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Rare Candy could not be consumed. Nothing was changed."
+      ]
+    },
+    {
+      "label": "level-cap",
+      "command": "+use Rare Candy=3",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 100,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+          "created_at": "2026-10-22 05:32:59.638444+00:00",
+          "trainer_id": 17,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 1000000,
+          "active_moveset_id": 20
+        },
+        "placement": [
+          {
+            "id": 20,
+            "storage_id": 17,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 195,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 1
+          },
+          {
+            "id": 196,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 2
+          },
+          {
+            "id": 197,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 3
+          },
+          {
+            "id": 198,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 4
+          },
+          {
+            "id": 199,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 5
+          },
+          {
+            "id": 200,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 6
+          },
+          {
+            "id": 201,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 7
+          },
+          {
+            "id": 202,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 8
+          },
+          {
+            "id": 203,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 9
+          },
+          {
+            "id": 204,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 10
+          },
+          {
+            "id": 205,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 46,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 47,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 44,
+            "moveset_id": 20,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 45,
+            "moveset_id": 20,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 100,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+          "created_at": "2026-10-22 05:32:59.638444+00:00",
+          "trainer_id": 17,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 1000000,
+          "active_moveset_id": 20
+        },
+        "placement": [
+          {
+            "id": 20,
+            "storage_id": 17,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 195,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 1
+          },
+          {
+            "id": 196,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 2
+          },
+          {
+            "id": 197,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 3
+          },
+          {
+            "id": 198,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 4
+          },
+          {
+            "id": 199,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 5
+          },
+          {
+            "id": 200,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 6
+          },
+          {
+            "id": 201,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 7
+          },
+          {
+            "id": 202,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 8
+          },
+          {
+            "id": 203,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 9
+          },
+          {
+            "id": 204,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 10
+          },
+          {
+            "id": 205,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 46,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 47,
+            "pokemon_id": "6de7a5bf-7f8b-441f-8ae2-f61e32eeba33",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 44,
+            "moveset_id": 20,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 45,
+            "moveset_id": 20,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew is already level 100. No item was consumed."
+      ]
+    },
+    {
+      "label": "level-up-learning",
+      "command": "+use Rare Candy=6",
+      "before": {
+        "pokemon": {
+          "species": "Bulbasaur",
+          "level": 2,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+          "created_at": "2026-10-22 05:32:59.916445+00:00",
+          "trainer_id": 18,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 13,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 8,
+          "active_moveset_id": 22
+        },
+        "placement": [
+          {
+            "id": 22,
+            "storage_id": 18,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "location_type": "party",
+            "slot": 6,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 218,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 10
+          },
+          {
+            "id": 217,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 13
+          }
+        ],
+        "active": [
+          {
+            "id": 50,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 51,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 13,
+            "slot": 2,
+            "current_pp": 40
+          }
+        ],
+        "sets": [
+          {
+            "id": 48,
+            "moveset_id": 22,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 49,
+            "moveset_id": 22,
+            "move_id": 13,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Bulbasaur",
+          "level": 3,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+          "created_at": "2026-10-22 05:32:59.916445+00:00",
+          "trainer_id": 18,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 13,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 27,
+          "active_moveset_id": 22
+        },
+        "placement": [
+          {
+            "id": 22,
+            "storage_id": 18,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "location_type": "party",
+            "slot": 6,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [],
+        "learned": [
+          {
+            "id": 218,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 10
+          },
+          {
+            "id": 217,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 13
+          },
+          {
+            "id": 219,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 16
+          }
+        ],
+        "active": [
+          {
+            "id": 52,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 53,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 13,
+            "slot": 2,
+            "current_pp": 40
+          },
+          {
+            "id": 54,
+            "pokemon_id": "38c20592-e3c8-4b57-b5ce-d167d4e49d10",
+            "move_id": 16,
+            "slot": 3,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 48,
+            "moveset_id": 22,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 49,
+            "moveset_id": 22,
+            "move_id": 13,
+            "slot": 2
+          },
+          {
+            "id": 50,
+            "moveset_id": 22,
+            "move_id": 16,
+            "slot": 3
+          }
+        ]
+      },
+      "messages": [
+        "Bulbasaur learned Vinewhip!",
+        "Bulbasaur grew to level 3."
+      ]
+    },
+    {
+      "label": "name-or-compatible-syntax",
+      "command": "+use RareCandy=Candy Buddy",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+          "created_at": "2026-10-22 05:33:00.139962+00:00",
+          "trainer_id": 20,
+          "nickname": "Candy Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 125000,
+          "active_moveset_id": 24
+        },
+        "placement": [
+          {
+            "id": 24,
+            "storage_id": 20,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 3
+          }
+        ],
+        "learned": [
+          {
+            "id": 231,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 1
+          },
+          {
+            "id": 232,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 2
+          },
+          {
+            "id": 233,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 3
+          },
+          {
+            "id": 234,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 4
+          },
+          {
+            "id": 235,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 5
+          },
+          {
+            "id": 236,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 6
+          },
+          {
+            "id": 237,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 7
+          },
+          {
+            "id": 238,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 8
+          },
+          {
+            "id": 239,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 9
+          },
+          {
+            "id": 240,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10
+          },
+          {
+            "id": 241,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 57,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 58,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 53,
+            "moveset_id": 24,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 54,
+            "moveset_id": 24,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+          "created_at": "2026-10-22 05:33:00.139962+00:00",
+          "trainer_id": 20,
+          "nickname": "Candy Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 132651,
+          "active_moveset_id": 24
+        },
+        "placement": [
+          {
+            "id": 24,
+            "storage_id": 20,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 231,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 1
+          },
+          {
+            "id": 232,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 2
+          },
+          {
+            "id": 233,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 3
+          },
+          {
+            "id": 234,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 4
+          },
+          {
+            "id": 235,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 5
+          },
+          {
+            "id": 236,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 6
+          },
+          {
+            "id": 237,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 7
+          },
+          {
+            "id": 238,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 8
+          },
+          {
+            "id": 239,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 9
+          },
+          {
+            "id": 240,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10
+          },
+          {
+            "id": 241,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 57,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 58,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 53,
+            "moveset_id": 24,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 54,
+            "moveset_id": 24,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Candy Buddy grew to level 51."
+      ]
+    },
+    {
+      "label": "name-or-compatible-syntax",
+      "command": "+use 3=Rare Candy",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+          "created_at": "2026-10-22 05:33:00.139962+00:00",
+          "trainer_id": 20,
+          "nickname": "Candy Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 132651,
+          "active_moveset_id": 24
+        },
+        "placement": [
+          {
+            "id": 24,
+            "storage_id": 20,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 2
+          }
+        ],
+        "learned": [
+          {
+            "id": 231,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 1
+          },
+          {
+            "id": 232,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 2
+          },
+          {
+            "id": 233,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 3
+          },
+          {
+            "id": 234,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 4
+          },
+          {
+            "id": 235,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 5
+          },
+          {
+            "id": 236,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 6
+          },
+          {
+            "id": 237,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 7
+          },
+          {
+            "id": 238,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 8
+          },
+          {
+            "id": 239,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 9
+          },
+          {
+            "id": 240,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10
+          },
+          {
+            "id": 241,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 57,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 58,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 53,
+            "moveset_id": 24,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 54,
+            "moveset_id": 24,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 52,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+          "created_at": "2026-10-22 05:33:00.139962+00:00",
+          "trainer_id": 20,
+          "nickname": "Candy Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 140608,
+          "active_moveset_id": 24
+        },
+        "placement": [
+          {
+            "id": 24,
+            "storage_id": 20,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 231,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 1
+          },
+          {
+            "id": 232,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 2
+          },
+          {
+            "id": 233,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 3
+          },
+          {
+            "id": 234,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 4
+          },
+          {
+            "id": 235,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 5
+          },
+          {
+            "id": 236,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 6
+          },
+          {
+            "id": 237,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 7
+          },
+          {
+            "id": 238,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 8
+          },
+          {
+            "id": 239,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 9
+          },
+          {
+            "id": 240,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10
+          },
+          {
+            "id": 241,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 57,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 58,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 53,
+            "moveset_id": 24,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 54,
+            "moveset_id": 24,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Candy Buddy grew to level 52."
+      ]
+    },
+    {
+      "label": "name-or-compatible-syntax",
+      "command": "+use Rare Candy=Mew",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 52,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+          "created_at": "2026-10-22 05:33:00.139962+00:00",
+          "trainer_id": 20,
+          "nickname": "Candy Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 140608,
+          "active_moveset_id": 24
+        },
+        "placement": [
+          {
+            "id": 24,
+            "storage_id": 20,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 231,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 1
+          },
+          {
+            "id": 232,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 2
+          },
+          {
+            "id": 233,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 3
+          },
+          {
+            "id": 234,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 4
+          },
+          {
+            "id": 235,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 5
+          },
+          {
+            "id": 236,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 6
+          },
+          {
+            "id": 237,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 7
+          },
+          {
+            "id": 238,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 8
+          },
+          {
+            "id": 239,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 9
+          },
+          {
+            "id": 240,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10
+          },
+          {
+            "id": 241,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 57,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 58,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 53,
+            "moveset_id": 24,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 54,
+            "moveset_id": 24,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 53,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "",
+          "unique_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+          "created_at": "2026-10-22 05:33:00.139962+00:00",
+          "trainer_id": 20,
+          "nickname": "Candy Buddy",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 70,
+          "flags": [],
+          "tera_type": "",
+          "current_hp": 160,
+          "status": "",
+          "sleep_turns": null,
+          "total_exp": 148877,
+          "active_moveset_id": 24
+        },
+        "placement": [
+          {
+            "id": 24,
+            "storage_id": 20,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [],
+        "learned": [
+          {
+            "id": 231,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 1
+          },
+          {
+            "id": 232,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 2
+          },
+          {
+            "id": 233,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 3
+          },
+          {
+            "id": 234,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 4
+          },
+          {
+            "id": 235,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 5
+          },
+          {
+            "id": 236,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 6
+          },
+          {
+            "id": 237,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 7
+          },
+          {
+            "id": 238,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 8
+          },
+          {
+            "id": 239,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 9
+          },
+          {
+            "id": 240,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10
+          },
+          {
+            "id": 241,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 57,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 58,
+            "pokemon_id": "a3d8536a-f676-4f3e-b1c4-059f2946dc59",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 53,
+            "moveset_id": 24,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 54,
+            "moveset_id": 24,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Candy Buddy grew to level 53."
+      ]
+    },
+    {
+      "label": "partial-exp-state-preservation",
+      "command": "+use Rare Candy=3",
+      "before": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 50,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "Everstone",
+          "unique_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+          "created_at": "2026-10-22 05:33:00.809555+00:00",
+          "trainer_id": 24,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 204,
+          "flags": [
+            "ordinary-test-flag"
+          ],
+          "tera_type": "",
+          "current_hp": 7,
+          "status": "slp",
+          "sleep_turns": 2,
+          "total_exp": 125010,
+          "active_moveset_id": 29
+        },
+        "placement": [
+          {
+            "id": 29,
+            "storage_id": 24,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [
+          {
+            "item_name": "rarecandy",
+            "quantity": 1
+          }
+        ],
+        "learned": [
+          {
+            "id": 280,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 1
+          },
+          {
+            "id": 281,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 2
+          },
+          {
+            "id": 282,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 3
+          },
+          {
+            "id": 283,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 4
+          },
+          {
+            "id": 284,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 5
+          },
+          {
+            "id": 285,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 6
+          },
+          {
+            "id": 286,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 7
+          },
+          {
+            "id": 287,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 8
+          },
+          {
+            "id": 288,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 9
+          },
+          {
+            "id": 289,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 10
+          },
+          {
+            "id": 290,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 69,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 70,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 65,
+            "moveset_id": 29,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 66,
+            "moveset_id": 29,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "after": {
+        "pokemon": {
+          "species": "Mew",
+          "level": 51,
+          "ability": "",
+          "nature": "Hardy",
+          "gender": "",
+          "ivs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "evs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "held_item": "Everstone",
+          "unique_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+          "created_at": "2026-10-22 05:33:00.809555+00:00",
+          "trainer_id": 24,
+          "nickname": "",
+          "is_shiny": false,
+          "met_location": "",
+          "met_level": null,
+          "met_date": null,
+          "obtained_method": "",
+          "original_trainer_id": null,
+          "original_trainer_name": "",
+          "is_egg": false,
+          "hatch_steps": null,
+          "friendship": 204,
+          "flags": [
+            "ordinary-test-flag"
+          ],
+          "tera_type": "",
+          "current_hp": 7,
+          "status": "slp",
+          "sleep_turns": 2,
+          "total_exp": 132651,
+          "active_moveset_id": 29
+        },
+        "placement": [
+          {
+            "id": 29,
+            "storage_id": 24,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "location_type": "party",
+            "slot": 3,
+            "box_id": null,
+            "box_position": null
+          }
+        ],
+        "inventory": [],
+        "learned": [
+          {
+            "id": 280,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 1
+          },
+          {
+            "id": 281,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 2
+          },
+          {
+            "id": 282,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 3
+          },
+          {
+            "id": 283,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 4
+          },
+          {
+            "id": 284,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 5
+          },
+          {
+            "id": 285,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 6
+          },
+          {
+            "id": 286,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 7
+          },
+          {
+            "id": 287,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 8
+          },
+          {
+            "id": 288,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 9
+          },
+          {
+            "id": 289,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 10
+          },
+          {
+            "id": 290,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 11
+          }
+        ],
+        "active": [
+          {
+            "id": 69,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 10,
+            "slot": 1,
+            "current_pp": 35
+          },
+          {
+            "id": 70,
+            "pokemon_id": "2a5ceba5-09b9-4768-b7f6-d0d7b7e4b57c",
+            "move_id": 11,
+            "slot": 2,
+            "current_pp": 25
+          }
+        ],
+        "sets": [
+          {
+            "id": 65,
+            "moveset_id": 29,
+            "move_id": 10,
+            "slot": 1
+          },
+          {
+            "id": 66,
+            "moveset_id": 29,
+            "move_id": 11,
+            "slot": 2
+          }
+        ]
+      },
+      "messages": [
+        "Mew grew to level 51."
+      ]
+    }
+  ],
+  "setup_and_cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_item_audit_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_cluster_stopped": true,
+    "fixture_setup": "Tagged disposable ordinary characters, canonical placement and actual Trainer.add_item bag setup; no staff player-path shortcut.",
+    "transport_adapters": "Capture messages/exit look, delegate User lookups/deposit, normal command parse/func, and actual EvMenu; no success effects mocked.",
+    "fault_injection": "Failed/partially failed inventory debit; exceptions after real level/move writes; changed target; UI transport failure after commit."
+  },
+  "preliminary_runs": [
+    {
+      "log": "rare-candy-initial.log",
+      "diagnosis": "Fixture imported party command from wrong module; corrected."
+    },
+    {
+      "log": "rare-candy-second.log",
+      "diagnosis": "Fixture patched absent get_system on cmd_party; corrected to adapt only modules that expose it."
+    },
+    {
+      "log": "rare-candy-third.log",
+      "diagnosis": "Fixture EvMenu import needed real Evennia Command binding; also replaced partial robust callbacks with named functions so callback-error logging is safe."
+    },
+    {
+      "log": "rare-candy-fourth.log",
+      "diagnosis": "Fixture lacked menu-exit transport and included contradictory moved assertions; corrected without changing required effect expectations."
+    },
+    {
+      "log": "rare-candy-fifth.log",
+      "diagnosis": "25 focused PostgreSQL cases passed before full frozen-build verification."
+    }
+  ]
+}

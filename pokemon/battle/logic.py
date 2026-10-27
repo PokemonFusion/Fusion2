@@ -14,7 +14,7 @@ from .state import BattleState
 def _participant_identifier(pokemon) -> str:
         """Return a best-effort identifier for ``pokemon``.
 
-        Persistent battle data stores multiple snapshots of the same Pokémon.
+        Persistent battle data stores multiple snapshots of the same PokÃƒÂ©mon.
         When rebuilding live battle objects after a server restart we need to
         match the copies stored on the teams with the copies embedded in the
         active position data.  Prefer unique database-backed identifiers when
@@ -36,13 +36,13 @@ def _align_positions_with_team(
         positions: Dict[str, object],
         team_key: str,
 ) -> List:
-        """Return active Pokémon aligned with ``participant``'s roster.
+        """Return active PokÃƒÂ©mon aligned with ``participant``'s roster.
 
-        The persisted :class:`TurnData` keeps its own Pokémon copies which are
+        The persisted :class:`TurnData` keeps its own PokÃƒÂ©mon copies which are
         detached from the roster restored on :class:`BattleParticipant`.  The
         battle engine mutates the roster entries (for HP, status changes, etc.)
         so the position data must reference the same objects.  This helper
-        rewires the position Pokémon to the roster entries and returns them in
+        rewires the position PokÃƒÂ©mon to the roster entries and returns them in
         active-slot order.
         """
 
@@ -55,6 +55,7 @@ def _align_positions_with_team(
                 pools[_participant_identifier(mon)].append(mon)
 
         active: List = []
+        participant._active_slots = {}
         for pos_name, pos in positions.items():
                 if not isinstance(pos_name, str) or not pos_name.startswith(team_key):
                         continue
@@ -70,7 +71,7 @@ def _align_positions_with_team(
                         # Fallback: pick the first roster member that has not
                         # already been assigned. This keeps the battle running
                         # even if identifiers could not be matched (e.g. for
-                        # generated wild Pokémon without stored ids).
+                        # generated wild PokÃƒÂ©mon without stored ids).
                         for mon in roster:
                                 if mon not in active:
                                         replacement = mon
@@ -78,6 +79,7 @@ def _align_positions_with_team(
                 if replacement:
                         setattr(pos, "pokemon", replacement)
                         active.append(replacement)
+                        participant._active_slots[int(pos_name[1:]) - 1] = replacement
         return active
 
 
@@ -88,17 +90,69 @@ class BattleLogic:
 		self.battle = battle
 		self.data = data
 		self.state = state
+		# One live field must also be the checkpoint's field. Otherwise an
+		# executed Trick Room disappears during a save/rebuild.
+		data.field = battle.field
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))
 		battle.award_xp = bool(getattr(state, "xp", True))
 		battle.award_txp = bool(getattr(state, "txp", True))
 		battle._rewards_granted = bool(getattr(state, "rewards_granted", False))
 		battle.battle_over = bool(getattr(state, "battle_over", False))
+		battle.flee_allowed = getattr(state, "flee_allowed", True) is True
 		battle._flee_result = dict(getattr(state, "flee_result", {}) or {})
 		battle.capture_succeeded = bool(getattr(state, "capture_succeeded", False))
+		battle.failed_capture_ball = str(getattr(state, "failed_capture_ball", "") or "")
+		battle.tera_used = set(getattr(state, "tera_used", []))
+		battle.tera_pending = {key: dict(value) for key, value in getattr(state, "tera_pending", {}).items()}
+		if (type(getattr(state, "mechanic_version", 1)) is not int or getattr(state, "mechanic_version", 1) != 1
+				or type(getattr(state, "mechanic_turn", 0)) is not int or getattr(state, "mechanic_turn", 0) < 0):
+			raise ValueError("Unsupported or corrupt battle mechanic checkpoint.")
+		battle.mechanic_battle_id = getattr(state, "reward_id", None)
+		battle.mechanic_turn = getattr(state, "mechanic_turn", 0)
+		battle.mechanic_controllers = dict(getattr(state, "pokemon_control", {}))
+		battle.mega_used = set(getattr(state, "mega_used", []))
+		battle.mega_pending = {key: dict(value) for key, value in getattr(state, "mega_pending", {}).items()}
+		z_used, z_pending = getattr(state, "z_used", []), getattr(state, "z_pending", {})
+		from collections.abc import Mapping, MutableSequence
+
+		if (not isinstance(z_used, (list, tuple, MutableSequence)) or any(side not in {"A", "B"} for side in z_used)
+				or len(z_used) != len(set(z_used)) or not isinstance(z_pending, Mapping)
+				or any(side not in {"A", "B"} or not isinstance(value, Mapping) for side, value in z_pending.items())):
+			raise ValueError("Corrupt Z side ledger requires recovery.")
+		battle.z_used = set(z_used)
+		battle.z_pending = {key: dict(value) for key, value in getattr(state, "z_pending", {}).items()}
+		from .mega_evolution import MegaEvolution
+		from .z_moves import ZMoves
+
+		ultra_used, ultra_pending = getattr(state, "ultra_used", []), getattr(state, "ultra_pending", {})
+		if (not isinstance(ultra_used, (list, tuple, MutableSequence))
+				or any(side not in {"A", "B"} for side in ultra_used)
+				or len(ultra_used) != len(set(ultra_used)) or not isinstance(ultra_pending, Mapping)
+				or any(side not in {"A", "B"} or not isinstance(value, Mapping) for side, value in ultra_pending.items())):
+			raise ValueError("Corrupt Ultra side ledger requires recovery.")
+		battle.ultra_used = set(ultra_used)
+		from ._shared import snapshot_battle_value
+
+		battle.ultra_pending = snapshot_battle_value(ultra_pending)
+		MegaEvolution.recover(battle)
+		from .ultra_burst import UltraBurst
+
+		UltraBurst.recover(battle)
+		ZMoves.recover(battle, state.declare)
+		from .z_effects import ZEffects
+
+		ZEffects.recover(battle, getattr(state, "z_effects", {}))
+		from .battle_boosters import BattleBoosters
+
+		BattleBoosters.recover(battle, getattr(state, "booster_effects", {}))
+		from .item_consumption import ItemUseHistory
+
+		ItemUseHistory.restore_sides(battle, getattr(state, "used_item_history", {}))
 		for index, participant in enumerate(battle.participants):
 			team = getattr(participant, "team", None) or ("A" if index == 0 else "B")
 			participant.flee_attempts = getattr(state, "flee_attempts", {}).get(team, 0)
+			participant.last_ai_switch_turn = getattr(state, "ai_switch_turns", {}).get(team, -100)
 			saved = getattr(state, "participants", {}).get(team)
 			if saved is not None:
 				participant.participating_pokemon = []
@@ -112,6 +166,13 @@ class BattleLogic:
 		bind_reveal_data = getattr(battle, "bind_reveal_data", None)
 		if callable(bind_reveal_data):
 			bind_reveal_data(data)
+		# A restored dispatcher is empty even when its saved turn is nonzero.
+		# Bind current holders without replaying entry, forms or Start effects.
+		register = getattr(battle, "register_handlers", None)
+		if callable(register):
+			for participant in battle.participants:
+				for pokemon in getattr(participant, "active", []):
+					register(pokemon)
 
 	def to_dict(self):
 		self.sync_runtime_state()
@@ -122,9 +183,30 @@ class BattleLogic:
 
 	def sync_runtime_state(self):
 		"""Freeze primitive result and participation state before a checkpoint."""
+		self.data.field = self.battle.field
 		self.state.rewards_granted = bool(getattr(self.battle, "_rewards_granted", False))
 		self.state.battle_over = bool(getattr(self.battle, "battle_over", False))
+		self.state.flee_allowed = getattr(self.battle, "flee_allowed", True) is True
 		self.state.capture_succeeded = bool(getattr(self.battle, "capture_succeeded", False))
+		self.state.failed_capture_ball = str(getattr(self.battle, "failed_capture_ball", "") or "")
+		self.state.tera_used = sorted(getattr(self.battle, "tera_used", set()))
+		self.state.tera_pending = {key: dict(value) for key, value in getattr(self.battle, "tera_pending", {}).items()}
+		self.state.mechanic_turn = getattr(self.battle, "mechanic_turn", 0)
+		self.state.ultra_used = sorted(getattr(self.battle, "ultra_used", set()))
+		self.state.ultra_pending = {key: dict(value) for key, value in getattr(self.battle, "ultra_pending", {}).items()}
+		self.state.mega_used = sorted(getattr(self.battle, "mega_used", set()))
+		self.state.mega_pending = {key: dict(value) for key, value in getattr(self.battle, "mega_pending", {}).items()}
+		self.state.z_used = sorted(getattr(self.battle, "z_used", set()))
+		self.state.z_pending = {key: dict(value) for key, value in getattr(self.battle, "z_pending", {}).items()}
+		from .z_effects import ZEffects
+
+		self.state.z_effects = ZEffects.freeze(self.battle)
+		from .battle_boosters import BattleBoosters
+
+		self.state.booster_effects = BattleBoosters.freeze(self.battle)
+		from .item_consumption import ItemUseHistory
+
+		self.state.used_item_history = ItemUseHistory.freeze_sides(self.battle)
 		teams = [
 			(getattr(part, "team", None) or ("A" if index == 0 else "B"), part)
 			for index, part in enumerate(self.battle.participants)
@@ -136,15 +218,22 @@ class BattleLogic:
 		flee = getattr(self.battle, "_flee_result", {}) or {}
 		self.state.flee_result = {key: flee[key] for key in ("success", "reason", "message") if key in flee}
 		self.state.flee_attempts = {key: int(getattr(part, "flee_attempts", 0)) for key, part in teams}
+		self.state.ai_switch_turns = {key: int(getattr(part, "last_ai_switch_turn", -100)) for key, part in teams}
 		self.state.participants = {
 			key: [_participant_identifier(mon) for mon in (getattr(part, "participating_pokemon", []) or getattr(part, "active", []))]
 			for key, part in teams
 		}
+		if getattr(self.state, 'multi', None):
+			from .multi_state import freeze
+			freeze(self)
 
 	@classmethod
 	def from_dict(cls, info):
 		data = BattleData.from_dict(info.get("data", {}))
 		state = BattleState.from_dict(info.get("state", {}))
+		if getattr(state, 'multi', None):
+			from .multi_state import rebuild
+			return rebuild(cls, data, state)
 
 		teamA = data.teams.get("A")
 		teamB = data.teams.get("B")
@@ -209,9 +298,21 @@ class BattleLogic:
 		pokemon_by_ref = {_participant_identifier(mon): mon for part in (part_a, part_b) for mon in part.pokemons}
 		for part in (part_a, part_b):
 			for mon in part.pokemons:
-				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref)
+				mon.tempvals = restore_battle_value(mon.tempvals, pokemon_by_ref, field=data.field)
+				mon.volatiles = restore_battle_value(mon.volatiles, pokemon_by_ref, field=data.field)
+				mon.ability_state = restore_battle_value(mon.ability_state, pokemon_by_ref, field=data.field)
+				mon.item_state = restore_battle_value(mon.item_state, pokemon_by_ref, field=data.field)
+				mon.last_move = restore_battle_value(getattr(mon, "last_move", None), pokemon_by_ref, field=data.field)
 		for name in ("weather_state", "terrain_state", "pseudo_weather"):
-			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref))
+			setattr(data.field, name, restore_battle_value(getattr(data.field, name), pokemon_by_ref, field=data.field))
+		battle.field = data.field
+		# Handlers are runtime objects, not checkpoint data. Reconnect them
+		# without setWeather/setTerrain, whose Start hooks reset durations and
+		# replay activation effects on every restore.
+		for name in ("weather", "terrain"):
+			effect = getattr(data.field, name, None)
+			setattr(data.field, name + "_handler", battle._lookup_effect(effect) if effect else None)
+		battle.weather_state = data.field.weather_state
 		battle.turn_count = data.battle.turn
 		battle.debug = getattr(state, "debug", False)
 		battle.fail_fast_errors = bool(getattr(battle, "debug", False))

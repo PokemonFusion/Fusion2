@@ -1,0 +1,720 @@
+{
+  "issue": 756,
+  "completed_utc": "2026-10-21T21:42:22.310397+00:00",
+  "result": "passed_existing_sweet_evolution_scope",
+  "python": "3.12.4",
+  "baseline_commit": "91668aa0faaea189a9e1f5b13af81780fba4d5c6",
+  "source_sha256_lf": {
+    "pokemon/evolution_forms.py": "d4764711565c1341620512f799f859d8023877c944d458bb38c721156c5d1a74",
+    "pokemon/data/evolution.py": "2f1256376c135f6b7e83aacf0ef96dd8f5d0ae5ba0f9fe51769701ba17e2e6e9",
+    "pokemon/services/evolution.py": "a6a6d83fa1cf617590520e04ea00fe8b10848fca91c744c2e2461cbd3ff1f93f",
+    "commands/player/cmd_learn_evolve.py": "06966da0f207a109d55a133816be855818f05165ed7c0222f6cfcaf9aa96f93c",
+    "utils/display.py": "7d929fb607ea3fa24e6a4e82bdda48def94b049355d36233105fd1fe1c72218a",
+    "world/help_entries.py": "ac8205731dff87907d8ba0e612c22796f3f476024bbf3145c3396bfb96530669",
+    "tests/test_alcremie_evolution.py": "ef2eeaadce3d35273b6c8aa6636ae5a4b987bdc761e691f238f134664bf2e7bb",
+    "tests/integration/alcremie_cases.py": "40f1930fa62063ef850ab390aeca401d73a7016c448adb7ddc0c78ce3acccb65",
+    ".github/workflows/lifecycle-integrity.yml": "dc44531a3fa872d6e249136f5e89a4cb61e3701b014cebfa9e1b5a33a363aaaf",
+    "docs/alcremie-evolution.md": "295417a974f21dedb7108ab4fd9b2bccb302f5ae29b46731032305e982fcdf86",
+    "docs/evolution.md": "d01fbbb2fcc4a63ef3b596b67e56b9422607d9e7ca61cf9757d2cdb47c019406"
+  },
+  "action": "Explicit +evolve is PF2's non-plot spin equivalent; no time/room/story/completion flags",
+  "player_route": [
+    "+party <slot> to find ID",
+    "+hold <slot>=<Sweet>",
+    "+evolve <copied ID>[=<allowed cream>]",
+    "+party <slot> after SQL reload"
+  ],
+  "sweets": [
+    "Berry Sweet",
+    "Clover Sweet",
+    "Flower Sweet",
+    "Love Sweet",
+    "Ribbon Sweet",
+    "Star Sweet",
+    "Strawberry Sweet"
+  ],
+  "cream_targets": [
+    "Alcremie",
+    "Alcremie-Ruby-Cream",
+    "Alcremie-Matcha-Cream",
+    "Alcremie-Mint-Cream",
+    "Alcremie-Lemon-Cream",
+    "Alcremie-Salted-Cream",
+    "Alcremie-Ruby-Swirl",
+    "Alcremie-Caramel-Swirl",
+    "Alcremie-Rainbow-Swirl"
+  ],
+  "combinations": [
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_0_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_0_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_0_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_0_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_0_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_0_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_0_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_0_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Berry Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_0_8",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_1_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_1_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_1_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_1_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_1_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_1_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_1_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_1_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_1_8",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_2_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_2_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_2_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_2_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_2_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_2_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_2_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_2_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_2_8",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_3_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_3_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_3_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_3_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_3_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_3_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_3_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_3_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Love Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_3_8",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_4_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_4_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_4_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_4_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_4_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_4_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_4_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_4_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_4_8",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_5_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_5_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_5_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_5_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_5_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_5_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_5_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_5_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Star Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_5_8",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie",
+      "test": "test_combination_6_0",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Ruby-Cream",
+      "test": "test_combination_6_1",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Matcha-Cream",
+      "test": "test_combination_6_2",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Mint-Cream",
+      "test": "test_combination_6_3",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Lemon-Cream",
+      "test": "test_combination_6_4",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Salted-Cream",
+      "test": "test_combination_6_5",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Ruby-Swirl",
+      "test": "test_combination_6_6",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Caramel-Swirl",
+      "test": "test_combination_6_7",
+      "status": "passed_with_SQL_reload"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "form": "Alcremie-Rainbow-Swirl",
+      "test": "test_combination_6_8",
+      "status": "passed_with_SQL_reload"
+    }
+  ],
+  "default_cream": "Alcremie (Vanilla Cream)",
+  "persistence": {
+    "battle_species": "Alcremie",
+    "decoration_storage": "bounded alcremie:form: and alcremie:sweet: result tags in OwnedPokemon.flags",
+    "tags_grant_eligibility": false,
+    "held_sweet_consumed": 1,
+    "extra_bag_debit_on_evolution": 0,
+    "schema_change": false,
+    "reload": "shared instance discarded before actual SQL model reload and ordinary party sheet"
+  },
+  "production_model_checks": {
+    "proof_kind": "automated normal command parsers/functions and production ORM; session transport adapter, no live login",
+    "alcremie": {
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": ".codex-artifacts\\alcremie-20261021\\player-flow-final.log",
+      "log_sha256": "edd8e82fb27dbb6dfc6226e45c396255315eaca451a1dfdc78f67c22e70a85fe",
+      "command": "python -B tests/integration/alcremie_cases.py",
+      "success_combinations": 63,
+      "other_cases": 13
+    },
+    "existing_evolution_equip": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": ".codex-artifacts\\alcremie-20261021\\evolution-regression.log",
+      "log_sha256": "f8ef44b6a3774cad548c5aab4844dd0768a6494bdfb632f7cf9414193985568e",
+      "command": "python -B tests/integration/evolution_cases.py"
+    },
+    "existing_UI": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": ".codex-artifacts\\alcremie-20261021\\ui-regression-final.log",
+      "log_sha256": "4e9bad03ff3c95cbae1a1b974a228312f7dedc648a522b4f593ea668090edefe",
+      "command": "python -B tests/integration/ui_cases.py"
+    },
+    "total_passed": 118,
+    "database": "fresh private PostgreSQL 16.9 cluster, explicit test DSN and generated schemas"
+  },
+  "focused_pytest": {
+    "passed": 152,
+    "warnings": 14,
+    "failed": 0,
+    "exit_code": 0,
+    "selection": [
+      "tests/test_alcremie_evolution.py",
+      "tests/test_evolution.py",
+      "tests/test_evolution_conditions.py",
+      "tests/test_evolve_command_safety.py",
+      "tests/test_hold_command_safety.py",
+      "tests/test_party_slot_views.py",
+      "tests/test_sheet_command_parsing.py",
+      "tests/test_sheet_pokemon_fusion.py",
+      "tests/test_interface_display.py",
+      "tests/test_display_active_moves.py",
+      "tests/test_trainer_xp_display.py"
+    ],
+    "command": "python -B -m pytest -q tests/test_alcremie_evolution.py tests/test_evolution.py tests/test_evolution_conditions.py tests/test_evolve_command_safety.py tests/test_hold_command_safety.py tests/test_party_slot_views.py tests/test_sheet_command_parsing.py tests/test_sheet_pokemon_fusion.py tests/test_interface_display.py tests/test_display_active_moves.py tests/test_trainer_xp_display.py --run-callback-tests -o addopts= -p no:cacheprovider --basetemp=.pytest-basetemp-756-focused-final",
+    "log": ".codex-artifacts\\alcremie-20261021\\focused-final.log",
+    "log_sha256": "2c76fbb2950ff5645518871b0ed5b8035d8c1d51c840fc6c12de571b3262feb2"
+  },
+  "mandatory_gate": {
+    "command": "python -B tools/run_mandatory_tests.py",
+    "runs": [
+      {
+        "name": "combined",
+        "passed": 4369,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 217.35,
+        "exit_code": 0
+      },
+      {
+        "name": "repeat",
+        "passed": 4369,
+        "skipped": 4014,
+        "warnings": 1391,
+        "duration_seconds": 184.61,
+        "exit_code": 0
+      },
+      {
+        "name": "battle-first",
+        "passed": 4369,
+        "skipped": 4014,
+        "warnings": 1401,
+        "duration_seconds": 177.44,
+        "exit_code": 0
+      }
+    ],
+    "exit_code": 0,
+    "log": ".codex-artifacts\\alcremie-20261021\\mandatory-final.log",
+    "log_sha256": "7786bb495335461daa537a7c78c12f3b4e08bac9a55094556a679285072ebbf1",
+    "skipped_scope": "4014 skipped cases per process are outside the enabled gate; PostgreSQL proof is separately recorded above.",
+    "warnings": "Existing Django model-reload and shared pytest-cache permission warnings are retained."
+  },
+  "negative_cases": [
+    "wrong species",
+    "missing/wrong held item",
+    "bag-only Sweet",
+    "unknown/partial/Gmax target",
+    "saved gender condition",
+    "egg",
+    "fusion reservation",
+    "battle lock at command and locked service",
+    "foreign owner",
+    "save rollback and identity cache",
+    "stale species/item references",
+    "forged cosmetic/spin tags",
+    "normalized complete target",
+    "legacy ability-slot fallback",
+    "replay with another Sweet/form",
+    "concurrent identical requests",
+    "canonical battle stats/types/item after cosmetic selection"
+  ],
+  "walkthrough": [
+    {
+      "sweet": "Berry Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Berry Sweet",
+        "+evolve 2d75008a-7237-4027-a85f-fbf11d1548e1=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "2d75008a-7237-4027-a85f-fbf11d1548e1",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Berry Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Berry Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w2d75008a-7237-4027-a85f-fbf11d1548e1|n\n|xAppearance|n: |wRuby Cream; Berry Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wAroma Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "sweet": "Clover Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Clover Sweet",
+        "+evolve b8d7b10d-fb17-4614-8394-c845331c2b30=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "b8d7b10d-fb17-4614-8394-c845331c2b30",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Clover Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Clover Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wb8d7b10d-fb17-4614-8394-c845331c2b30|n\n|xAppearance|n: |wRuby Cream; Clover Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wSweet Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "sweet": "Flower Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Flower Sweet",
+        "+evolve a090818b-3973-4e50-b3b0-ed569430daa3=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "a090818b-3973-4e50-b3b0-ed569430daa3",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Flower Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Flower Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wa090818b-3973-4e50-b3b0-ed569430daa3|n\n|xAppearance|n: |wRuby Cream; Flower Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wAroma Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "sweet": "Love Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Love Sweet",
+        "+evolve 17f84b8d-bf0b-415d-b264-7b0043f644ed=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "17f84b8d-bf0b-415d-b264-7b0043f644ed",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Love Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Love Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w17f84b8d-bf0b-415d-b264-7b0043f644ed|n\n|xAppearance|n: |wRuby Cream; Love Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wSweet Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "sweet": "Ribbon Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Ribbon Sweet",
+        "+evolve dee84960-a790-427b-b461-63f3dce409ac=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "dee84960-a790-427b-b461-63f3dce409ac",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Ribbon Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Ribbon Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wdee84960-a790-427b-b461-63f3dce409ac|n\n|xAppearance|n: |wRuby Cream; Ribbon Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wAroma Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "sweet": "Star Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Star Sweet",
+        "+evolve f0c5c006-5c29-46c2-a690-0bb1ddfcccca=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "f0c5c006-5c29-46c2-a690-0bb1ddfcccca",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Star Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Star Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |wf0c5c006-5c29-46c2-a690-0bb1ddfcccca|n\n|xAppearance|n: |wRuby Cream; Star Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wSweet Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    },
+    {
+      "sweet": "Strawberry Sweet",
+      "commands": [
+        "+party 3",
+        "+hold 3=Strawberry Sweet",
+        "+evolve 8b394664-ab00-4692-8c0f-a23a3ab8989c=Alcremie-Ruby-Cream",
+        "+party 3"
+      ],
+      "discovered_id": "8b394664-ab00-4692-8c0f-a23a3ab8989c",
+      "evolution_output": "Cream evolved into Alcremie (Ruby Cream; Strawberry Sweet)!",
+      "appearance": {
+        "form": "Alcremie-Ruby-Cream",
+        "sweet": "Strawberry Sweet"
+      },
+      "held_after": "",
+      "bag_after": 1,
+      "sheet": "|g-------------------------------[|n|WSlot 3: Cream|n|g] -------------------------------|n\n\u001b[0m \u001b[1m\u001b[30mSpecies\u001b[0m: \u001b[1m\u001b[37mAlcremie\u001b[0m    \u001b[1m\u001b[30mGender\u001b[0m: \u001b[1m\u001b[37mF\u001b[0m    \u001b[1m\u001b[30mType\u001b[0m: |PFairy\u001b[0m    \u001b[0m\n\u001b[0m \u001b[1m\u001b[30mLevel\u001b[0m: \u001b[1m\u001b[37m30\u001b[0m    \u001b[1m\u001b[30mXP\u001b[0m: \u001b[1m\u001b[37m27000\u001b[0m/29791 \u001b[1m\u001b[30m(0% to next, 2791 xp)\u001b[0m \u001b[0m\n|xID|n: |w8b394664-ab00-4692-8c0f-a23a3ab8989c|n\n|xAppearance|n: |wRuby Cream; Strawberry Sweet|n\n|xHP|n: |w3|n/79 \u001b[1m\u001b[31m                    \u001b[0m |x(3%)|n   |xStatus|n: brn\n|xNature|n: |wHardy|n   |xAbility|n: |wAroma Veil|n   |xHeld|n: |wNothing|n\n+-----------------------------+\n|\u001b[0m HP \u001b[0m\u001b[0m Atk \u001b[0m\u001b[0m Def \u001b[0m\u001b[0m SpA \u001b[0m\u001b[0m SpD \u001b[0m\u001b[0m Spe \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m 79 \u001b[0m\u001b[0m 41  \u001b[0m\u001b[0m 50  \u001b[0m\u001b[0m 71  \u001b[0m\u001b[0m 77  \u001b[0m\u001b[0m 43  \u001b[0m|\n+-----------------------------+\n|xIV/EV Breakdown|n\n+---------------------------------+\n|\u001b[0m    \u001b[0m\u001b[0m \u001b[1m\u001b[37mHP\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mAtk\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mDef\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpA\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpD\u001b[0m \u001b[0m\u001b[0m \u001b[1m\u001b[37mSpe\u001b[0m \u001b[0m|\n+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+\n|\u001b[0m \u001b[1m\u001b[30mIV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n|\u001b[0m \u001b[1m\u001b[30mEV\u001b[0m \u001b[0m\u001b[0m 0  \u001b[0m\u001b[0m 8   \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 12  \u001b[0m\u001b[0m 0   \u001b[0m\u001b[0m 0   \u001b[0m|\n+---------------------------------+\n|g-----------------------------------[|n|WMoves|n|g] -----------------------------------|n\n  Tackle (7/35 PP)\n  Watergun (7/25 PP)"
+    }
+  ],
+  "cleanup": {
+    "private_test_cluster": true,
+    "database": "postgres",
+    "test_user": "pf2_alcremie_test",
+    "remaining_test_schemas": [],
+    "public_tables": 0,
+    "game_database_used": false,
+    "migration_runner_invoked": false,
+    "private_postgres_stopped": true
+  },
+  "development_diagnoses": [
+    {
+      "kind": "fixture_schema_assumption",
+      "detail": "OwnedPokemon has no JSON metadata field; result persistence corrected to bounded existing metadata tags before qualification.",
+      "retained_log": ".codex-artifacts\\alcremie-20261021\\player-flow-fixture-errors.log"
+    },
+    {
+      "kind": "fixture_transport_formatting",
+      "detail": "ID discovery parses the actual terminal-rendered sheet after stripping ANSI/Evennia formatting; raw markup was not a missing product ID.",
+      "retained_log": ".codex-artifacts\\alcremie-20261021\\player-flow-before-ansi-normalization.log"
+    },
+    {
+      "kind": "superseded_gate",
+      "detail": "Pre-ID-discovery combined run passed 4369; repeat was interrupted before the final gameplay change. Only mandatory-final.log qualifies current source.",
+      "retained_log": ".codex-artifacts\\alcremie-20261021\\mandatory-before-id-discovery.log"
+    }
+  ],
+  "acceptance_boundaries": {
+    "live_player_session": false,
+    "game_database_used": false,
+    "game_services_reloaded": false,
+    "migration_runner_invoked": false,
+    "remote_deployment": false,
+    "main_merge": "not established by these tests",
+    "hosted_CI": "new lifecycle job step added; local pass is not hosted CI completion",
+    "publication": "See #756 closure for the staging commit containing these reports.",
+    "out_of_scope": [
+      "plot/story items",
+      "new Sweet definitions",
+      "acquisition",
+      "contests/breeding",
+      "Gmax",
+      "forms absent from PF2 data"
+    ],
+    "unrelated_battle_runtime_changes": false
+  }
+}

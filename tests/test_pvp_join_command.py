@@ -3,8 +3,6 @@ import os
 import sys
 import types
 
-import pytest
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
@@ -36,7 +34,7 @@ def test_pvpjoin_incorrect_password():
 	class DummyCaller:
 		def __init__(self):
 			self.msgs = []
-			self.location = object()
+			self.location = types.SimpleNamespace(db=types.SimpleNamespace(pvp_requests={}))
 			self.id = 2
 			self.key = "Bob"
 
@@ -47,6 +45,7 @@ def test_pvpjoin_incorrect_password():
 			return True
 
 	req = types.SimpleNamespace(
+		host_id=1,
 		host_key="Alice",
 		password="secret",
 		opponent_id=None,
@@ -94,7 +93,7 @@ def test_pvpjoin_notifies_host():
 	class DummyCaller:
 		def __init__(self):
 			self.msgs = []
-			self.location = object()
+			self.location = types.SimpleNamespace(db=types.SimpleNamespace(pvp_requests={}))
 			self.id = 2
 			self.key = "Bob"
 
@@ -107,6 +106,7 @@ def test_pvpjoin_notifies_host():
 	host = types.SimpleNamespace(msgs=[], msg=lambda t: host.msgs.append(t))
 
 	req = types.SimpleNamespace(
+		host_id=1,
 		host_key="Alice",
 		password=None,
 		opponent_id=None,
@@ -163,7 +163,7 @@ def test_pvpjoin_prompts_for_password():
 	class DummyCaller:
 		def __init__(self):
 			self.msgs = []
-			self.location = object()
+			self.location = types.SimpleNamespace(db=types.SimpleNamespace(pvp_requests={}))
 			self.id = 3
 			self.key = "Eve"
 
@@ -174,6 +174,7 @@ def test_pvpjoin_prompts_for_password():
 			return True
 
 	req = types.SimpleNamespace(
+		host_id=1,
 		host_key="Alice",
 		password="secret",
 		opponent_id=None,
@@ -229,7 +230,7 @@ def test_pvpjoin_requires_conscious_pokemon():
 	class DummyCaller:
 		def __init__(self):
 			self.msgs = []
-			self.location = object()
+			self.location = types.SimpleNamespace(db=types.SimpleNamespace(pvp_requests={}))
 			self.id = 4
 			self.key = "Mallory"
 
@@ -240,6 +241,7 @@ def test_pvpjoin_requires_conscious_pokemon():
 			return False
 
 	req = types.SimpleNamespace(
+		host_id=1,
 		host_key="Alice",
 		password=None,
 		opponent_id=None,
@@ -289,7 +291,7 @@ def test_pvpjoin_cannot_join_self():
 	class DummyCaller:
 		def __init__(self):
 			self.msgs = []
-			self.location = object()
+			self.location = types.SimpleNamespace(db=types.SimpleNamespace(pvp_requests={}))
 			self.id = 1
 			self.key = "Alice"
 
@@ -300,8 +302,8 @@ def test_pvpjoin_cannot_join_self():
 			return True
 
 	req = types.SimpleNamespace(
-		host_key="Alice",
 		host_id=1,
+		host_key="Alice",
 		password=None,
 		opponent_id=None,
 		is_joinable=lambda: True,

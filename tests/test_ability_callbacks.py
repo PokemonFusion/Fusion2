@@ -116,6 +116,9 @@ def test_ability_callbacks_run():
 
 	assert records["start"] == 2
 	assert records["switch"] == 2
+	assert records["end"] == 0
+	battle.on_switch_out(user)
+	battle.on_switch_out(target)
 	assert records["end"] == 2
 	assert records["battles"].count(battle) == 2
 

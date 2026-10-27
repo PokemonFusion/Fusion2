@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from .helpers import build_battle, load_modules, physical_move
+from .helpers import build_battle, load_modules
 
 
 def _battle_action(actor, action_type, **kwargs):
@@ -35,7 +35,8 @@ def test_ability_call_resolves_string_callback():
 	)
 	move = SimpleNamespace(category="Status")
 
-	assert ability.call("onModifyPriority", 0, pokemon=object(), move=move) == 0.1
+	assert ability.call("onModifyPriority", 0, pokemon=object(), move=move) == 1
+	assert move.pranksterBoosted is True
 
 
 def test_eat_item_consumes_berry_and_sets_flags():
@@ -62,23 +63,18 @@ def test_eat_item_consumes_berry_and_sets_flags():
 
 
 def test_take_item_respects_on_take_item_blockers():
-	battle, attacker, _ = build_battle()
-	load_modules()
-	from pokemon.dex.entities import Item
+	"""Native holding, rather than a matching nickname, supplies protection."""
+	from .test_diagnosed_item_effects import native_battle
 
-	stone = Item.from_dict(
-		"Abomasite",
-		{
-			"name": "Abomasite",
-			"megaEvolves": "Abomasnow",
-			"onTakeItem": "Abomasite.onTakeItem",
-		},
-	)
-	attacker.name = "Abomasnow"
-	battle.set_item(attacker, stone)
+	battle, attacker, _ = native_battle("Abomasnow", item="Abomasite", ability="Snow Warning")
+	attacker.name = "Buddy"
 
 	assert battle.take_item(attacker, source=object()) is None
 	assert getattr(attacker.item, "name", None) == "Abomasite"
+	battle, foreign, _ = native_battle("Mew", item="Abomasite", ability="Synchronize")
+	foreign.name = "Abomasnow"
+	assert battle.take_item(foreign, source=object()) is not None
+	assert foreign.item is None
 
 
 def test_move_on_modify_move_runs_before_execution():
@@ -90,6 +86,7 @@ def test_move_on_modify_move_runs_before_execution():
 	ally.base_stats = attacker.base_stats
 	ally.party = []
 	attacker.party = [attacker, ally]
+	battle.participants[0].pokemons.append(ally)
 	move = BattleMove(name="Beat Up", raw={"category": "Physical"})
 
 	action = _battle_action(
@@ -243,19 +240,19 @@ def test_natural_gift_uses_item_natural_gift_identity():
 	)
 	battle.use_move(action)
 
-	assert getattr(attacker.item, "natural_type", None) == "Electric"
-	assert getattr(attacker.item, "natural_power", None) == 100
+	assert getattr(belue, "natural_type", None) == "Electric"
+	assert getattr(belue, "natural_power", None) == 100
+	assert attacker.item is None
 	assert move.type == "Electric"
 	assert move.power == 100
 	assert defender.hp < start_hp
 
 
 def test_red_orb_primal_forme_activates_on_switch_in():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Groudon", ability="Drought")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Groudon"
 	red_orb = Item.from_dict(
 		"Red Orb",
 		{"name": "Red Orb", "onPrimal": "Redorb.onPrimal"},
@@ -271,11 +268,10 @@ def test_red_orb_primal_forme_activates_on_switch_in():
 
 
 def test_blue_orb_primal_forme_activates_on_switch_in():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Kyogre", ability="Drizzle")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Kyogre"
 	blue_orb = Item.from_dict(
 		"Blue Orb",
 		{"name": "Blue Orb", "onPrimal": "Blueorb.onPrimal"},
@@ -291,11 +287,10 @@ def test_blue_orb_primal_forme_activates_on_switch_in():
 
 
 def test_forced_forme_item_applies_on_switch_in():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Genesect", ability="Download")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Genesect"
 	burn_drive = Item.from_dict(
 		"Burn Drive",
 		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
@@ -311,12 +306,10 @@ def test_forced_forme_item_applies_on_switch_in():
 
 
 def test_set_item_applies_forced_forme_immediately():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Genesect", ability="Download")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Genesect"
-	attacker.species = "Genesect"
 	burn_drive = Item.from_dict(
 		"Burn Drive",
 		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
@@ -328,12 +321,10 @@ def test_set_item_applies_forced_forme_immediately():
 
 
 def test_take_item_reverts_forced_forme_to_base_species():
-	load_modules()
-	battle, attacker, _ = build_battle()
+	from .test_diagnosed_item_effects import native_battle
+	battle, attacker, _ = native_battle("Genesect", ability="Download")
 	from pokemon.dex.entities import Item
 
-	attacker.name = "Genesect"
-	attacker.species = "Genesect"
 	burn_drive = Item.from_dict(
 		"Burn Drive",
 		{"name": "Burn Drive", "forcedForme": "Genesect-Burn", "onDrive": "Fire"},
@@ -673,6 +664,7 @@ def test_wimp_out_queues_switch_after_damaging_hit():
 	modules = load_modules()
 	damage_mod = __import__("pokemon.battle.damage", fromlist=["apply_damage"])
 	battle, attacker, defender = build_battle(defender_ability=__import__("pokemon.dex.functions.abilities_funcs", fromlist=["Wimpout"]).Wimpout())
+	defender.hp = 110
 	move = modules["BattleMove"](
 		name="Tackle",
 		power=60,

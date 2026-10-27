@@ -21,6 +21,10 @@ IMPORTS = {
         "CmdUseMove",
     ],
     "commands.player.cmd_account": ["CmdTradePokemon"],
+    "commands.player.cmd_market": ["CmdMarket"],
+    "commands.player.cmd_daycare": ["CmdDaycare"],
+    "commands.player.cmd_breed": ["CmdBreed"],
+    "commands.player.cmd_berry": ["CmdBerry"],
     "commands.player.cmd_gym": ["CmdGym"],
     "commands.player.cmd_fusion": [
         "CmdFusionFight",
@@ -40,6 +44,7 @@ IMPORTS = {
     ],
     "commands.player.cmd_movesets": ["CmdMovesets"],
     "commands.player.cmd_nickname": ["CmdCaptureNickname"],
+    "commands.player.cmd_necrozma": ["CmdNecrozma"],
     "commands.player.cmd_party": [
         "CmdChargenInfo",
         "CmdDepositPokemon",
@@ -122,6 +127,11 @@ def test_pokemon_core_cmdset_hides_alpha_commands_when_gate_disabled():
     assert "+alphapokemon" not in keys
     assert "+alphalearn" not in keys
     assert any(isinstance(command, mod.CmdCaptureNickname) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdBerry) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdMarket) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdDaycare) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdBreed) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdNecrozma) for command in cmdset.added)
 
 
 def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
@@ -134,3 +144,8 @@ def test_pokemon_core_cmdset_registers_alpha_commands_when_gate_enabled():
     assert "+alphapokemon" in keys
     assert "+alphalearn" in keys
     assert any(isinstance(command, mod.CmdCaptureNickname) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdBerry) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdMarket) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdDaycare) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdBreed) for command in cmdset.added)
+    assert any(isinstance(command, mod.CmdNecrozma) for command in cmdset.added)

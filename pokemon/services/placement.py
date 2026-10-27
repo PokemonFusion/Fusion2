@@ -32,13 +32,14 @@ class PlacementService:
             storage.refresh_from_db()
             yield storage
 
-    def _pokemon(self, mon, storage):
+    def _pokemon(self, mon, storage, *, reservation_token=None, operation="placement"):
         """Lock and validate persisted ownership, never a cached trainer value."""
         from pokemon.models.core import OwnedPokemon
         from pokemon.models.storage import PokemonPlacement
 
-        pokemon = OwnedPokemon.objects.select_for_update().get(pk=mon.pk)
-        pokemon.refresh_from_db()
+        from pokemon.services.ownership import assert_unreserved, fresh_owned
+
+        pokemon = fresh_owned(mon.pk, lock=True)
         if not pokemon.trainer_id or pokemon.trainer.user_id != storage.user_id:
             raise PlacementError("Pokemon does not belong to this storage's trainer.")
         placement = PokemonPlacement.objects.filter(pokemon=pokemon).first()
@@ -64,6 +65,7 @@ class PlacementService:
             expected = (set(), {storage.pk}, {placement.box_id})
         if (active, stored, boxed) != expected:
             raise PlacementError("Conflicting legacy membership; staff review is required.")
+        assert_unreserved(pokemon.pk, token=reservation_token, operation=operation)
         return pokemon, placement
 
     def _write(self, pokemon, storage, current, location, *, slot=None, box=None, position=None):
@@ -75,12 +77,13 @@ class PlacementService:
         placement.slot = slot
         placement.box = box
         placement.box_position = position
+        placement.combination = None
         placement.save()
         return placement
 
-    def _party(self, pokemon, storage, current, slot=None, *, allow_fusion=False):
+    def _party(self, pokemon, storage, current, slot=None, *, allow_fusion=False, allow_daycare=False, allow_combined=False):
         """Allocate or retain a slot while holding the storage lock."""
-        self._check_reservation(current, allow_fusion)
+        self._check_reservation(current, allow_fusion, allow_daycare, allow_combined)
         if slot is not None and (isinstance(slot, bool) or slot not in range(1, 7)):
             raise PlacementError("Party slot must be between 1 and 6.")
         if current and current.location_type == "party" and (slot is None or slot == current.slot):
@@ -96,16 +99,25 @@ class PlacementService:
         return self._write(pokemon, storage, current, "party", slot=slot)
 
     @staticmethod
-    def _check_reservation(current, allow_fusion):
+    def _check_reservation(current, allow_fusion, allow_daycare=False, allow_combined=False):
         """Only the fusion return path may consume a fusion reservation."""
+        if current and current.location_type == "daycare" and not allow_daycare:
+            raise PlacementError("Pokemon is reserved for Daycare.")
         if current and current.location_type == "fusion" and not allow_fusion:
             raise PlacementError("Pokemon is reserved for fusion.")
+        if current and current.location_type == "combined" and not allow_combined:
+            raise PlacementError("Pokemon is reserved as Necrozma's companion.")
+        if current and not allow_fusion:
+            from pokemon.services.ownership import fusion_references
 
-    def _box(self, pokemon, storage, current, box=None, *, allow_fusion=False):
+            if str(current.pokemon_id) in fusion_references(current.storage.user):
+                raise PlacementError("Pokemon is reserved for an active or unlocked Fusion form.")
+
+    def _box(self, pokemon, storage, current, box=None, *, allow_fusion=False, allow_daycare=False, allow_combined=False):
         """Allocate a unique positive box position, preserving successful retries."""
         from pokemon.models.storage import StorageBox, assign_to_first_storage_box
 
-        self._check_reservation(current, allow_fusion)
+        self._check_reservation(current, allow_fusion, allow_daycare, allow_combined)
         if box is None and current and current.location_type == "box":
             return current
         if box is None:

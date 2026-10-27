@@ -184,7 +184,7 @@ class ConditionHelpers:
 	def _effect_duration(self, effect_key: str, handler, source=None, *, effect: Dict[str, Any] | None = None, moves_funcs=None) -> Any:
 		"""Resolve an effect duration callback and apply Persistent when needed."""
 
-		duration = None
+		duration = effect.get("duration") if effect else None
 		dur_cb = getattr(handler, "durationCallback", None) if handler else None
 		if not callable(dur_cb) and effect:
 			dur_cb = _resolve_callback(effect.get("durationCallback"), moves_funcs)
@@ -216,7 +216,7 @@ class ConditionHelpers:
 		current = side.conditions.get(name)
 		handler = self._lookup_effect(name)
 		effect_state = effect.copy()
-		if "duration" not in effect_state:
+		if "duration" not in effect_state or effect_state.get("durationCallback"):
 			duration = self._effect_duration(name, handler, source, effect=effect_state, moves_funcs=moves_funcs)
 			if duration is not None:
 				effect_state["duration"] = duration
@@ -643,17 +643,17 @@ class ConditionHelpers:
 		Parameters
 		----------
 		pokemon:
-		    The target combatant receiving the condition.
+			The target combatant receiving the condition.
 		condition:
-		    Name of the condition being applied.
+			Name of the condition being applied.
 		dest_attr:
-		    Attribute on ``pokemon`` used to store the condition (``status`` or
-		    ``volatiles``).
+			Attribute on ``pokemon`` used to store the condition (``status`` or
+			``volatiles``).
 		handler_registry:
-		    Mapping of condition names to handler instances.
+			Mapping of condition names to handler instances.
 		context:
-		    Additional keyword arguments passed to the handler's ``onStart``
-		    method, if available.
+			Additional keyword arguments passed to the handler's ``onStart``
+			method, if available.
 		"""
 
 		previous_value = None
@@ -739,23 +739,23 @@ class ConditionHelpers:
 			)
 		)
 
-	def apply_volatile_status(self, pokemon, condition: str) -> None:
+	def apply_volatile_status(self, pokemon, condition: str, *, source=None, effect=None, start_callback=None) -> bool:
 		"""Apply a volatile status to ``pokemon``."""
 		add_volatile = getattr(self, "add_volatile", None)
 		if callable(add_volatile):
-			add_volatile(pokemon, condition)
-			return
+			context = {name: value for name, value in {"source": source, "effect": effect, "start_callback": start_callback}.items() if value is not None}
+			return bool(add_volatile(pokemon, condition, **context))
 		try:
 			from pokemon.dex.functions.moves_funcs import VOLATILE_HANDLERS
 		except Exception:  # pragma: no cover - handler lookup optional
 			VOLATILE_HANDLERS = {}
-		self.apply_condition(
+		return bool(self.apply_condition(
 			pokemon,
 			condition,
 			dest_attr="volatiles",
 			handler_registry=VOLATILE_HANDLERS,
 			context={"battle": self},
-		)
+		))
 
 	def _handle_field_residual(self, effect_attr: str) -> None:
 		"""Trigger the :py:meth:`onFieldResidual` callback for a field effect.
@@ -763,8 +763,8 @@ class ConditionHelpers:
 		Parameters
 		----------
 		effect_attr:
-		    Name of the attribute on ``self.field`` that stores the handler
-		    instance.
+			Name of the attribute on ``self.field`` that stores the handler
+			instance.
 		"""
 		handler = getattr(self.field, effect_attr, None)
 		if handler and hasattr(handler, "onFieldResidual"):

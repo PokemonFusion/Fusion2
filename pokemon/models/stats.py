@@ -173,6 +173,10 @@ def add_experience(pokemon, amount: int, *, rate: str | None = None, caller=None
 		"""Add experience to ``pokemon`` and update its level."""
 		if amount <= 0:
 				return
+		from pokemon.services.necrozma_moves import gain_experience
+
+		if gain_experience(pokemon, amount, rate=rate):
+				return
 
 		prev_level = getattr(pokemon, "level", None)
 
@@ -275,7 +279,7 @@ def apply_item_exp_mod(pokemon, amount: int) -> int:
 		try:
 			mod = item_obj.call("onModifyExp", amount, pokemon=pokemon)
 			if isinstance(mod, (int, float)):
-				amount = int(mod)
+				return int(mod)
 		except Exception:
 			pass
 	item = _item_name(item_obj)
@@ -294,7 +298,7 @@ def apply_item_ev_mod(pokemon, gains: Dict[str, int]) -> Dict[str, int]:
 		try:
 			mod = item_obj.call("onModifyEVs", gains, pokemon=pokemon)
 			if isinstance(mod, dict):
-				gains = mod
+				return _canonical_ev_gains(mod)
 		except Exception:
 			pass
 	if item == "machobrace":
@@ -310,9 +314,21 @@ def apply_item_ev_mod(pokemon, gains: Dict[str, int]) -> Dict[str, int]:
 	if item in power_items:
 		stat = power_items[item]
 		mod = gains.copy()
+		# Species yields may use short aliases (e.g. spe), while Power items
+		# use long names. Normalize before adding so the original yield survives.
+		mod = _canonical_ev_gains(mod)
 		mod[stat] = mod.get(stat, 0) + 8
 		gains = mod
-	return {STAT_KEY_MAP.get(k, k): v for k, v in gains.items()}
+	return _canonical_ev_gains(gains)
+
+
+def _canonical_ev_gains(gains: Dict[str, int]) -> Dict[str, int]:
+	"""Combine aliases for the same stat rather than overwriting their gains."""
+	result: Dict[str, int] = {}
+	for stat, amount in gains.items():
+		key = STAT_KEY_MAP.get(stat, stat)
+		result[key] = result.get(key, 0) + amount
+	return result
 
 
 def calculate_stats(
@@ -330,7 +346,8 @@ def calculate_stats(
 	evs = {stat: evs.get(stat, 0) for stat in ALL_STATS}
 
 	stats = {
-		"hp": _calc_stat(species.base_stats.hp, ivs["hp"], evs["hp"], level, is_hp=True),
+		"hp": (1 if str(getattr(species, "name", species_name)).lower() == "shedinja"
+		       else _calc_stat(species.base_stats.hp, ivs["hp"], evs["hp"], level, is_hp=True)),
 		"attack": _calc_stat(
 			species.base_stats.attack,
 			ivs["attack"],

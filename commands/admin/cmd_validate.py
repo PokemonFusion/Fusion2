@@ -2,7 +2,10 @@ from evennia import Command
 
 
 class CmdValidate(Command):
-	"""Validate a character so they can enter the IC grid.
+	"""Record optional staff review of an established character.
+
+	Beta chargen and ordinary play are self-service; staff validation is not
+	required for a new character to finish setup or enter play.
 
 	Usage:
 	  @validate <character>
@@ -38,4 +41,4 @@ class CmdValidate(Command):
 		target.db.validated = True
 		caller.msg(f"{target.key} has been validated.")
 		if target != caller:
-			target.msg("You have been validated and may now enter the IC grid.")
+			target.msg("Staff review has been recorded. Beta setup and ordinary play do not require staff validation.")

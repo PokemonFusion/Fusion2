@@ -1,4 +1,4 @@
-"""Move-only AI scoring helpers for runtime battle action selection."""
+"""Reusable profile-weighted move scoring for runtime battle action selection."""
 
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ from typing import Any, Callable, Mapping, Sequence
 from ._shared import _normalize_key
 from .ai_profiles import AIScoringWeights
 from .damage import stab_multiplier, type_effectiveness
-
 
 DEFAULT_SCORING_WEIGHTS = AIScoringWeights()
 
@@ -43,9 +42,8 @@ def score_ai_moves(
 ) -> list[ScoredAIMove]:
     """Return legal, scored move candidates for the current AI decision.
 
-    This is intentionally a cheap heuristic, not the real damage calculator.
-    It scores only move actions and leaves switching, items, doubles strategy,
-    and full setup/status intelligence for later phases.
+    This cheap per-target heuristic supplies the damage baseline used by the
+    action scorer. It never executes a move or changes battle state.
     """
 
     scored: list[ScoredAIMove] = []
@@ -185,6 +183,10 @@ def _score_one_move(
     accuracy_factor = _weighted_accuracy_factor(raw_accuracy_factor, weights)
     category = str(raw.get("category") or getattr(dex_entry, "category", "") or getattr(move, "category", "") or "")
     move_type = _move_type(move, dex_entry, raw)
+    if _normalize_key(key).lower() == "terablast":
+        from .terastallization import tera_blast_parameters
+
+        move_type, category, power = tera_blast_parameters(user)
     priority = _move_priority(move, raw)
     reasons: list[str] = ["profile_weighted"]
 
@@ -313,6 +315,7 @@ def _move_lookup(
     key = _normalize_key(getattr(move, "key", None) or getattr(move, "name", ""))
     dex_entry = movedex.get(key)
     raw = dict(raw_getter(dex_entry) or {})
+    raw.update(getattr(move, "raw", {}) or {})
     return key, dex_entry, raw
 
 

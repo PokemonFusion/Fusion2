@@ -170,6 +170,7 @@ def make_user(mod, storage, trainer, pokemon, monkeypatch):
 	class FakeTrainerModel:
 		objects = types.SimpleNamespace(
 			count=lambda: 0,
+			filter=lambda **kwargs: types.SimpleNamespace(first=lambda: trainer),
 			get_or_create=lambda **kwargs: (trainer, True),
 		)
 

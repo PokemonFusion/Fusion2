@@ -101,7 +101,8 @@ def test_run_turn_ends_battle_when_over(monkeypatch):
     inst, _, _ = _setup_battle()
 
     for participant in getattr(inst.battle, "participants", []):
-        participant.pokemons = [object()]
+        # Cleanup restores native/copy forms on the actual battle roster.
+        participant.pokemons = list(participant.active)
 
     def fail_call(*_, **__):  # pragma: no cover - defensive guard
         raise AssertionError("Should not call post-turn helpers when battle is over")
@@ -142,25 +143,19 @@ def test_run_turn_ends_battle_when_over(monkeypatch):
     assert check_calls["count"] >= 1
 
 
-def test_waiting_message_follows_interface(monkeypatch):
-    """`maybe_run_turn` shows the field UI before the waiting notice."""
+def test_waiting_message_uses_saved_choices_without_repeating_interface(monkeypatch):
+    """Item declarations can leave position actions stale; feedback uses state."""
 
-    inst, _, _ = _setup_battle()
+    inst, p1, _ = _setup_battle()
 
     monkeypatch.setattr(inst, "is_turn_ready", lambda: False)
 
-    waiting_pokemon = types.SimpleNamespace(name="Bulbasaur")
-
-    class _DummyPosition:
-        pokemon = waiting_pokemon
-
-        @staticmethod
-        def getAction():
-            return None
-
-    inst.logic.data = types.SimpleNamespace(
-        turndata=types.SimpleNamespace(positions={"slot": _DummyPosition()})
-    )
+    monkeypatch.setattr(inst, "_auto_queue_ai_actions", lambda: False)
+    inst.data.turndata.positions = {
+        "A1": types.SimpleNamespace(pokemon=types.SimpleNamespace(name="Squirtle"), getAction=lambda: None),
+        "B1": types.SimpleNamespace(pokemon=types.SimpleNamespace(name="Bulbasaur"), getAction=lambda: "stale"),
+    }
+    inst.state.declare = {"A1": {"item": "Potion", "target": "A1"}}
 
     events: list[tuple] = []
 
@@ -173,13 +168,12 @@ def test_waiting_message_follows_interface(monkeypatch):
     monkeypatch.setattr(bi_mod, "broadcast_interfaces", record_broadcast)
     monkeypatch.setattr(bi_mod, "send_interface_to", record_send)
     monkeypatch.setattr(inst, "msg", lambda text: events.append(("msg", text)))
+    monkeypatch.setattr(inst, "_msg_to", lambda target, text: events.append(("to", target, text)))
 
-    inst.maybe_run_turn()
+    assert inst._missing_action_positions() == ["B1"]
+    inst.maybe_run_turn(actor=p1)
 
-    assert events[0][0] == "broadcast"
-    assert events[-1] == ("msg", "Waiting on Bulbasaur...")
-    assert all(kind != "send" for kind, *_ in events)
-    assert events[0][2] == "Bulbasaur"
+    assert events == [("to", p1, "Waiting on Bulbasaur...")]
 
 
 def test_duplicate_queue_skips_waiting_broadcast(monkeypatch):
@@ -219,7 +213,22 @@ def test_duplicate_queue_skips_waiting_broadcast(monkeypatch):
 
     assert all(kind != "msg" for kind, *_ in events)
     assert all(kind != "to" for kind, *_ in events)
-    assert events == [("send", p1, "Squirtle")]
+    assert events == []
+
+
+def test_waiting_message_lists_all_missing_double_positions(monkeypatch):
+    """Two same-named partners remain distinguishable without losing a choice."""
+    inst, p1, _ = _setup_battle()
+    monkeypatch.setattr(inst, "_auto_queue_ai_actions", lambda: False)
+    inst.data.turndata.positions = {
+        name: types.SimpleNamespace(pokemon=types.SimpleNamespace(name="Partner"), getAction=lambda: None)
+        for name in ("A1", "A2", "B1", "B2")
+    }
+    inst.state.declare = {"A1": {"move": "tackle"}, "B1": {"item": "Potion"}}
+    deliveries = []
+    monkeypatch.setattr(inst, "_msg_to", lambda target, text: deliveries.append(text))
+    inst.maybe_run_turn(actor=p1)
+    assert deliveries == ["Waiting on Partner (A2), Partner (B2)..."]
 
 
 def test_maybe_run_turn_auto_queues_ai(monkeypatch):

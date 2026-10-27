@@ -71,6 +71,11 @@ class CmdBattleConcede(Command):
             "Are you sure you want to concede this battle? Type |wyes|n to confirm "
             "or anything else to cancel."
         )
+        if getattr(getattr(inst, 'state', None), 'multi', None):
+            prompt = (
+                "Concede for your whole team? Type |wyes|n to confirm "
+                "or anything else to cancel."
+            )
 
         def _confirm(caller, _prompt, response):
             """Handle the confirmation prompt result."""
@@ -103,7 +108,23 @@ class CmdBattleConcede(Command):
         """Carry out the concession once confirmation has been received."""
 
         battle_id = self._extract_battle_id(inst)
+        from pokemon.battle.roster_eligibility import BattleRosterEligibility, BattleRosterRecoveryRequired
+
         try:
+            BattleRosterEligibility.require(inst)
+        except BattleRosterRecoveryRequired as error:
+            self.caller.msg(str(error))
+            return
+        try:
+            if getattr(getattr(inst, 'state', None), 'multi', None):
+                from pokemon.battle.multi_battle import forfeit
+                part = next((part for part in inst.battle.participants if part.player.pk == self.caller.pk), None)
+                if part is None or not part.active or part.has_lost:
+                    self.caller.msg('Only a living active controller may concede for their team.')
+                    return
+                forfeit(inst, {part.team}, reason=f'{self.caller.key} conceded for team {part.team}')
+                self.caller.msg('You concede for your team.')
+                return
             result_hook = getattr(inst, "_handle_battle_result", None)
             if callable(result_hook):
                 result_hook(None)
@@ -121,7 +142,9 @@ class CmdBattleConcede(Command):
             else:
                 raise RuntimeError("No cleanup path is available for this battle.")
         except Exception:
-            if getattr(inst, "_adventure_result", None):
+            if getattr(getattr(inst, 'state', None), 'multi', None):
+                self.caller.msg('Multi result or cleanup is still pending. Use +battle/retry; the room timer also retries it.')
+            elif getattr(inst, "_adventure_result", None):
                 self.caller.db.battle_control = False
                 self.caller.msg("Your Adventure concession is retained for recovery. Use +adventure/retry to finish saving it.")
             else:

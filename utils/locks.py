@@ -13,7 +13,16 @@ def set_battle_lock(caller, battle_id: str) -> None:
     battle_id
         Identifier for the battle this character is participating in.
     """
-    caller.db.battle_lock = battle_id
+    # Pure engine actors have no persistent roster; actual characters must claim
+    # their party under the same storage lock used by ownership writers.
+    from pokemon.services.battle_rewards import BattleRewards
+
+    if BattleRewards.supports(caller):
+        from pokemon.services.ownership import claim_battle
+
+        claim_battle(BattleRewards.character(caller), battle_id)
+    else:
+        caller.db.battle_lock = battle_id
 
 
 def _has_active_battle_ref(value) -> bool:

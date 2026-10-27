@@ -72,6 +72,9 @@ def _calculate_from_data(pokemon):
                         "special_defense": ivs_attr[4],
                         "speed": ivs_attr[5],
                 }
+        from pokemon.hyper_training import HyperTraining
+
+        ivs = HyperTraining.effective(ivs, pokemon)
         if isinstance(evs_attr, dict):
                 evs = {STAT_KEY_MAP.get(k, k): v for k, v in evs_attr.items()}
                 evs = {stat: evs.get(stat, 0) for stat in STAT_KEY_MAP.values()}
@@ -84,7 +87,9 @@ def _calculate_from_data(pokemon):
                         "special_defense": evs_attr[4],
                         "speed": evs_attr[5],
                 }
-        nature = getattr(pokemon, "nature", "Hardy")
+        from pokemon.nature_training import NatureTraining
+
+        nature = NatureTraining.effective(pokemon)
         species = getattr(pokemon, "species", getattr(pokemon, "name", ""))
         level = getattr(pokemon, "level", 1)
         return calculate_stats(species, level, ivs, evs, nature)
@@ -103,6 +108,14 @@ def _get_stats_from_data(pokemon):
         if pokemon is None:
                 return {}
 
+        from pokemon.nature_training import NatureTraining
+
+        effective = NatureTraining.effective(pokemon)
+        # Explicit caches predate mint overlays. A trained preference always
+        # recalculates rather than publishing cached genetic-only modifiers.
+        if (NatureTraining.validate_training(getattr(pokemon, "trained_stat_nature", None)) is not None
+                and getattr(pokemon, "_cached_stats_nature", None) != effective):
+                return _calculate_from_data(pokemon)
         cache = getattr(pokemon, "_cached_stats", None)
         if cache is not None:
                 return cache
@@ -153,6 +166,9 @@ def create_owned_pokemon(
 	"""
 
 	from django.db import transaction
+	from pokemon.services.necrozma_guards import assert_owned_creation
+
+	assert_owned_creation(species)
 
 	with transaction.atomic():
 		from pokemon.models.core import OwnedPokemon

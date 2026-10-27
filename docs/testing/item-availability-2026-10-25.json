@@ -1,0 +1,223 @@
+{
+  "issue": 859,
+  "date": "2026-10-25",
+  "status": "accepted current reporting reconciliation",
+  "baseline": "65e8e246bb50f4672ffdffa79740999251950b7a",
+  "registries": {
+    "mega_pairs": 47,
+    "z_mappings": 42,
+    "z_crystals": 34,
+    "z_kinds": {
+      "generic": 18,
+      "status": 8,
+      "signature": 16
+    }
+  },
+  "definition_count": 600,
+  "scoped_count": 452,
+  "excluded_cap": [
+    "Crucibellite",
+    "Vile Vial"
+  ],
+  "counts": {
+    "world_availability": {
+      "unverified": 452
+    },
+    "support_status": {
+      "capability_with_bounded_evidence": 451,
+      "deferred": 1
+    }
+  },
+  "current_index_sha256_lf": "ef5933912c9544f4bad384257770f72931ced9c83aecfad66239fca8bb9cbac1",
+  "configuration_index_sha256_lf": "3eb049502bbc3d3ae9053148a61ed393cf0dee5c5e339a984de3dc1bf480d49e",
+  "source_sha256_lf": {
+    "tools/audit_item_availability.py": "67a3b95e22a1f8754c375d2936665904e9557b7b1b52a991f9b17cda9d1429f4",
+    "tests/test_item_availability.py": "8456bb5a55718c051a8b270057e8a6d87cf3be1e9081f894bbc32177342c823b"
+  },
+  "repair_receipts": [
+    {
+      "issue": 853,
+      "path": "docs/testing/native-stat-items-2026-10-25.json",
+      "sha256_lf": "be122d9218a870932347f01cb82c12569cc5485c587abb3a2b9fde4abff01081",
+      "status": "accepted local command/model repair; publication recorded in issue closeout",
+      "evidence_kind": "local automated ordinary production commands/menus/full turns and private PostgreSQL; no new live socket, release, hosted CI or obtainability claim",
+      "items": [
+        "deepseascale",
+        "deepseatooth",
+        "leek",
+        "lightball",
+        "luckypunch",
+        "metalpowder",
+        "quickpowder",
+        "stick",
+        "thickclub"
+      ],
+      "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"
+    },
+    {
+      "issue": 854,
+      "path": "docs/testing/legendary-item-identity-2026-10-25.json",
+      "sha256_lf": "63aba9d14e0e372d4d20058f5b3f993fcca7da8fd7e3942de659c1008ba8ca3d",
+      "status": "accepted local repair; publication recorded in issue closeout",
+      "evidence_kind": "local automated ordinary-command/model/full-turn acceptance with real isolated PostgreSQL; not new live socket/release/obtainability/hosted CI",
+      "items": [
+        "adamantcrystal",
+        "adamantorb",
+        "griseouscore",
+        "griseousorb",
+        "lustrousglobe",
+        "lustrousorb",
+        "souldew"
+      ],
+      "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"
+    },
+    {
+      "issue": 855,
+      "path": "docs/testing/plate-theft-identity-2026-10-25.json",
+      "sha256_lf": "4f0a1bcb7f128ac4f7f7f5446d7a0dd98ebbb4683f0386c88d0f4795a5474770",
+      "status": "accepted locally; no new live release claim",
+      "evidence_kind": "Local automated ordinary-command/model/full-turn acceptance with real isolated PostgreSQL; not new live socket/release/acquisition/hosted CI",
+      "items": [
+        "dracoplate",
+        "dreadplate",
+        "earthplate",
+        "fistplate",
+        "flameplate",
+        "icicleplate",
+        "insectplate",
+        "ironplate",
+        "meadowplate",
+        "mindplate",
+        "pixieplate",
+        "skyplate",
+        "splashplate",
+        "spookyplate",
+        "stoneplate",
+        "toxicplate",
+        "zapplate"
+      ],
+      "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"
+    },
+    {
+      "issue": 856,
+      "path": "docs/testing/memory-drive-theft-2026-10-25.json",
+      "sha256_lf": "3cd378875c46842a0b14725fc80df14fd2ee1b2364f7d7b64ad262823efc88e0",
+      "status": "accepted locally; no new live release claim",
+      "evidence_kind": "Local automated ordinary-command/model/turn/checkpoint acceptance with real isolated PostgreSQL; no new released socket, public acquisition or hosted CI claim",
+      "items": [
+        "bugmemory",
+        "burndrive",
+        "chilldrive",
+        "darkmemory",
+        "dousedrive",
+        "dragonmemory",
+        "electricmemory",
+        "fairymemory",
+        "fightingmemory",
+        "firememory",
+        "flyingmemory",
+        "ghostmemory",
+        "grassmemory",
+        "groundmemory",
+        "icememory",
+        "poisonmemory",
+        "psychicmemory",
+        "rockmemory",
+        "shockdrive",
+        "steelmemory",
+        "watermemory"
+      ],
+      "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"
+    },
+    {
+      "issue": 857,
+      "path": "docs/testing/origin-primal-rusted-theft-2026-10-25.json",
+      "sha256_lf": "004cb65b3439d30e2dc6efaaeb9fddaf6f856568a82a3a36bc0882fa1487312f",
+      "status": "accepted locally; no new live release claim",
+      "evidence_kind": "Local automated ordinary-command/model/turn/checkpoint acceptance with real isolated PostgreSQL; no new released socket, public acquisition or hosted CI claim",
+      "items": [
+        "adamantcrystal",
+        "blueorb",
+        "griseouscore",
+        "lustrousglobe",
+        "redorb",
+        "rustedshield",
+        "rustedsword"
+      ],
+      "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"
+    },
+    {
+      "issue": 858,
+      "path": "docs/testing/held-status-berries-2026-10-25.json",
+      "sha256_lf": "9b6281b2c01a3971bc2e42e27b24be43ad58745d8d17b09b877514fed6f37827",
+      "status": "accepted local repair",
+      "evidence_kind": "Local automated ordinary production commands/menus/full turns and isolated PostgreSQL; no new released socket, hosted CI, permanent stock or deployment claim",
+      "items": [
+        "burntberry",
+        "pechaberry",
+        "psncureberry"
+      ],
+      "limit": "Only the named facets and sources in this dated receipt; no fresh live replay"
+    }
+  ],
+  "historical_matrix": {
+    "path": "docs/testing/battle-item-support-2026-10-21.json",
+    "sha256_lf": "d3d9edac9af4aec0c2849c54735af0a8b047b99c685d23551c4da37cc71652a7",
+    "status": "historical_observations_not_a_fresh_replay"
+  },
+  "world_snapshot": {
+    "observed_utc": "2026-10-25T11:37:18.517012+00:00",
+    "revision": "af0eca6e63924c9108c3adbce389cc875be4c702",
+    "dirty": false,
+    "transaction_read_only": true
+  },
+  "read_only_source_inspection": {
+    "configuration_objects": 21,
+    "exits": 24,
+    "enabled_item_shops": 0,
+    "non_capture_vendors": 0,
+    "capture_only_dispenser": "Alpha Ball Dispenser: Pokeball bundle5",
+    "nurseries": 0,
+    "pokemon_migration": "0045_production_strategy_gym",
+    "named_finder_sources": 0,
+    "ordinary_walkthrough": false,
+    "raw_snapshot_sha256_lf": "4b4bbe493920575da680df048873c3a3f990956792c097425630533463eac0f6",
+    "limit": "Named finder unavailable in observed configuration; existing unnamed rates are not current named Potion support. Rewards/other source types remain separate."
+  },
+  "targeted_tests": {
+    "passed": 17,
+    "command": "python -B -m pytest -q -o addopts= tests/test_item_availability.py",
+    "log_sha256_lf": "1ddde72b840a42069726149d875cb8734d2168b532238b8706c5c03ed0f82cb9"
+  },
+  "mandatory": {
+    "command": [
+      "H:\\PokemonFusionProject\\evenv\\Scripts\\python.exe",
+      "-B",
+      "H:\\PokemonFusionProject\\fusion2-necrozma-items\\.codex-artifacts\\item-repairs-reporting-v2-20261025\\qualified-tree\\tools\\run_mandatory_tests.py"
+    ],
+    "exit_code": 0,
+    "seconds": 2097.88,
+    "passed": [
+      "6142",
+      "6142",
+      "6142"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "2ec4fa064c3a0284fbecb06d5334ce6b4a54317af8ead38831bfaee40982454a",
+    "source_count": 1503
+  },
+  "qualification_manifest_sha256_lf": "b98c962aff3c1635df5f99a28078d82fd6cdb462f6edded5de1457056aa2a2e0",
+  "unrelated_shared_paths": 25,
+  "limits": [
+    "No fresh runtime replay inferred from a report or callback.",
+    "Local deliberately released Necrozma evidence is dated; it is not shared deployment or acceptance of this newer candidate.",
+    "Recipes are optional and finite; neither installed source nor permanent stock is inferred.",
+    "Missing snapshot, missing observed source, depleted, disabled/invalid and configured-unwalked sources have distinct labels.",
+    "Historical 576-definition matrix, dated acquisition and item repair reports are preserved.",
+    "Source-only index reads no game database; explicit remote inspection used enforced READ ONLY SQL. No migration/restart/world edit."
+  ]
+}

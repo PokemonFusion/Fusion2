@@ -1,0 +1,581 @@
+{
+  "date": "2026-10-25",
+  "source_commit": "86e9eba8f50bcbae803fc5cd900a1f0c40ec63c0",
+  "source_baseline": "03e1da5db8770e4d89cc6fcfdc4f7b5a9a5fda77",
+  "status": "qualified local production-command/menu/PostgreSQL support; no released socket or world-stock claim",
+  "python_sources": 1149,
+  "changed_python_sha256_lf": {
+    "pokemon/battle/engine.py": "69f5397b34d65c4bef9399455590fdb81902bfb2f7b3c630c300f5085d72ce98",
+    "pokemon/battle/protection.py": "6b820ce94874604bc2f16584fa4dd2c749e1e8affaa7e7808e218eea2cb76cc4",
+    "pokemon/battle/recovery_moves.py": "f70b37b3971042a060c2bfaad24ac2e7e43b888795b4247fb5a734e1a5e7ff9a",
+    "pokemon/battle/tests/test_protect_repeat_policy.py": "253fa4aaebeebd3460bdc66185f36857cd28d4048a4a5b7c1bb186d4c1f19790",
+    "pokemon/battle/tests/test_recovery_move_sources.py": "9fccaae07d0041caa958281836c69d27c2a1c97d492defa7c6bbf49886e56fba",
+    "pokemon/battle/tests/test_showdown_event_core.py": "879ce9dd10af67dc48a4401cb23b2aef9bd1de26c844a75ca58de2396d8255e2",
+    "pokemon/battle/tests/test_status_move_type_immunity.py": "194c3f0ff65ab57a42c135778da78c0e1fbe04253a0ac583fb205467cbc6570e",
+    "pokemon/battle/tests/test_z_physical_sources.py": "4baec850301308dc33a15c6e873a41c5137078fe8f5eb459d1a8d7c4e093f199",
+    "pokemon/battle/tests/test_z_special_sources.py": "5ad0ea0f4734eecb97a14632fc84ca5c7e7274350042f6954ec19f973076b715",
+    "pokemon/battle/tests/test_z_status_sources.py": "6760d1cc672ce951099b56a2e153c78bf31a55170ee85dc8e05dd72273adb17f",
+    "pokemon/battle/turns.py": "068c88ce7d8a468e826ca90e08d196f86b59440fd58fd334fa9778f10146fe59",
+    "pokemon/battle/z_effects.py": "3d1946fc3953bbeaf00bf5cdf22d171e2e8d22642cdb7497b6b45d9c14c6fda7",
+    "pokemon/battle/z_generic_pairs.py": "e3812b3cf5dd8f2e2a5faad2e2d908ff9ee95d53cc87192c7cad4df7255da0d8",
+    "pokemon/battle/z_status_pairs.py": "935a43427f0aeed824622db4e1d7776a057e91f62df0faeaed0e33a23e5ccf6a",
+    "pokemon/dex/functions/conditions_funcs.py": "8c7c8112b0034000c4049f6212aee86107d02a10d1e18cac5c3aeec2a460285d",
+    "pokemon/dex/functions/moves/damage_moves.py": "35866e423e0811b1dbda211fef927e72372fe34bd2ee3e45066c2238a877c5ed",
+    "tests/integration/recovery_move_sources_cases.py": "4806530c1c54248081d7367576f1be7f36c934bde10703c8a7a8d5762b4c7543",
+    "tests/integration/status_move_type_sources_cases.py": "bed9554bea6844715c33f957c7ed210d9458836dfe139b183f91f94950fca075",
+    "tests/integration/z_additional_status_sources_cases.py": "687d2bdaa5b987e205d10d204448a1d26194b239c728ddeb1f367c3913c7abd9",
+    "tests/integration/z_physical_sources_cases.py": "41dd867553bda4b17e0c5d6d3bb864c6dcc800489c91a867956a98eb3ad9b246",
+    "tests/test_item_availability.py": "95896b57028369d6bb082449d8f84b26f558f7a50d2cdceb3f4836c9c11df75e",
+    "tools/audit_item_availability.py": "6c38eeff7477b969f8c049e6f25d4c372796b3a9802c1878f72a69011218fdfc"
+  },
+  "unrelated_shared_dirty_paths_preserved": 25,
+  "qualification_manifest_sha256_lf": "126c2e5db0814ee9fda26fd246aa7bfba9ba81c137d4bfa662ba8d88e9f2cde2",
+  "frozen_copy_manifest_sha256_lf": "8759c3add0a02fe126d888cbf46ee280a4c1343de26304b28c957ea27e03e641",
+  "mandatory": {
+    "exit_code": 0,
+    "passed": [
+      "6287",
+      "6287",
+      "6287"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "2bf080d6ca7a4c662a2665d3ace895143442a983da533318dfde832fcb55090c",
+    "seconds": 1975.54
+  },
+  "focused": {
+    "exit": 0,
+    "passed": [
+      "271"
+    ],
+    "sha256": "b1fa61cbbc1ba45ad739809ad2ebd17511cfd3a2ba18d504ff4f48bea4bae104",
+    "seconds": 32.65
+  },
+  "compatibility": [
+    {
+      "suite": "z_existing_sources",
+      "exit": 0,
+      "seconds": 96.34,
+      "cases": [
+        "34"
+      ],
+      "sha256": "eb0a82b2f2954618b2116c6f1378be107069d16edf481e31c291d224728a624e"
+    },
+    {
+      "suite": "z_move",
+      "exit": 0,
+      "seconds": 69.23,
+      "cases": [
+        "37"
+      ],
+      "sha256": "a82ca197f8f5d0166e631e4d7f90c0be1669585c66faf2b3384528e4103ba8ee"
+    },
+    {
+      "suite": "z_generic",
+      "exit": 0,
+      "seconds": 189.44,
+      "cases": [
+        "17"
+      ],
+      "sha256": "ab65d840f4024c8029a36c7d3b3953aa0f2307516d05d52fd3cc99b63ad638ba"
+    },
+    {
+      "suite": "z_status",
+      "exit": 0,
+      "seconds": 106.86,
+      "cases": [
+        "20"
+      ],
+      "sha256": "a914bfb21c61080bffb3f5b4a3d2126455a8ea4241281d82c8ce85d1ce25be90"
+    },
+    {
+      "suite": "z_signature",
+      "exit": 0,
+      "seconds": 192.99,
+      "cases": [
+        "22"
+      ],
+      "sha256": "133759a9ab5c1ad896f0c59698df5d8ab48acc47ce0418008496348f641cbb8a"
+    },
+    {
+      "suite": "z_native",
+      "exit": 0,
+      "seconds": 39.93,
+      "cases": [
+        "9"
+      ],
+      "sha256": "60e4f88d0f53b6d5c8cb4dbe9345651d1dcbec6cb11b0cd62fe2c1d9142a5865"
+    },
+    {
+      "suite": "necrozma_player",
+      "exit": 0,
+      "seconds": 80.66,
+      "cases": [
+        "15"
+      ],
+      "sha256": "7e17ce0bd37502c08711cb9f0e917c099957417d66dda7f4225bf6a6f8a381d5"
+    },
+    {
+      "suite": "item_availability",
+      "exit": 0,
+      "seconds": 19.11,
+      "cases": [
+        "32"
+      ],
+      "sha256": "0a44f2ac35bbf7d7229bdf35cbb4b588adbdc4e2381eaa92d3bc2856e31c6259"
+    },
+    {
+      "suite": "z_special_sources",
+      "exit": 0,
+      "seconds": 261.36,
+      "cases": [
+        "102"
+      ],
+      "sha256": "18dc2451515a193d653bf03784eb69a9a276c57060e6f10f6ac9d6768c9b22fe"
+    }
+  ],
+  "compatibility_cases": 288,
+  "reference_commit": "7e6cea3605c20b44142b2aab22acf08df75ea52b",
+  "cleanup": {
+    "task_postgres_stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0,
+    "existing_game_data_or_services_changed": false
+  },
+  "formatting": {
+    "new_files": 10,
+    "all_abstract_syntax_trees_identical": true
+  },
+  "supplementary_paid_descriptor_adapters": {
+    "cases": 6,
+    "passed": true,
+    "scope": "Already-paid offline descriptors, distinct from the actual command/SQL PP/custody proof",
+    "outcomes": [
+      {
+        "source": "Z-Roost",
+        "actual_ground_immunity_removed_and_restored": true,
+        "actual_type_checkpoint_round_trip": true,
+        "same_turn_ground_damage": 27
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": null,
+        "hp_before": 10,
+        "hp_after": 62,
+        "expected_fraction": [
+          1,
+          2
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "sunnyday",
+        "hp_before": 10,
+        "hp_after": 80,
+        "expected_fraction": [
+          2,
+          3
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "raindance",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "sandstorm",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      },
+      {
+        "source": "Z-Synthesis",
+        "weather": "snow",
+        "hp_before": 10,
+        "hp_after": 36,
+        "expected_fraction": [
+          1,
+          4
+        ],
+        "passed": true
+      }
+    ]
+  },
+  "current_source_only_index": "item-availability-physical-status-z-index-2026-10-25.json",
+  "current_index_sha256_lf": "c030b6a88717db9e63741607ffe1bb49fc9325ae2e4a3c5b58a95fddb7b80f49",
+  "preserved": {
+    "all_452_definition_fingerprints": true,
+    "old_generic25_sha256": "26af9ea21e624e102c7a2d7c36640b221b78b3064d611fd0e6ab9ad3500a26de",
+    "old_status8_sha256": "0b86cdd34a0a26058ef128c66a40c7d116af104a362ec5ec25bfe91826a1d02d",
+    "signatures16_sha256": "c20d86a160ccf1d2fea55f0c6ad7d0ba951d46e6b195e859b17cee7623926d43",
+    "ordinary_source_and_item_dex_metadata": true,
+    "public_stock_or_runtime_mutation_performed": false
+  },
+  "limits": [
+    "Native chart/stock/wallet/party/status/stage prerequisites are labelled isolated fixtures.",
+    "Command transport is captured; no ordinary socket login or shared deployment is claimed.",
+    "The existing Damp/weather callback defect is #915 and remains separate.",
+    "Earlier reports and classified inventories remain immutable; other source moves and Ultra stay deferred."
+  ],
+  "issues": [
+    913,
+    914,
+    916
+  ],
+  "ordinary_player_cases": 22,
+  "ordinary_recovery_runner": {
+    "suite": "recovery_move_sources",
+    "exit": 0,
+    "seconds": 57.39,
+    "cases": [
+      "19"
+    ],
+    "sha256": "e9811915ed70c2e4bf37b1a4d10b35cf348f4c3b7239eb82f8c0ba0bf322c1af"
+  },
+  "ordinary_type_runner": {
+    "suite": "status_move_type_sources",
+    "exit": 0,
+    "seconds": 18.75,
+    "cases": [
+      "3"
+    ],
+    "sha256": "49ce2a65fea8a1bfd5693fde2f38b608e0b6128235795be74be8cedca9cb48f6"
+  },
+  "outcomes": [
+    {
+      "case": "test_protect_active",
+      "source": "Protect",
+      "facet": "active",
+      "hp_before": 30,
+      "hp_after": 30,
+      "pp_before": 10,
+      "pp_after": 9,
+      "types": [
+        "Water",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_protect_checkpoint_fault",
+      "source": "Protect",
+      "facet": "checkpoint_fault",
+      "hp_before": 30,
+      "hp_after": 30,
+      "pp_before": 10,
+      "pp_after": 9,
+      "types": [
+        "Water",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_protect_native",
+      "source": "Protect",
+      "facet": "native",
+      "hp_before": 63,
+      "hp_after": 63,
+      "pp_before": 10,
+      "pp_after": 9,
+      "types": [
+        "Water",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_protect_repeat",
+      "source": "Protect",
+      "facet": "repeat",
+      "hp_before": 30,
+      "hp_after": 29,
+      "pp_before": 10,
+      "pp_after": 8,
+      "types": [
+        "Water",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_roost_active",
+      "source": "Roost",
+      "facet": "active",
+      "hp_before": 35,
+      "hp_after": 105,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Normal",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_roost_blocked",
+      "source": "Roost",
+      "facet": "blocked",
+      "hp_before": 35,
+      "hp_after": 35,
+      "pp_before": 5,
+      "pp_after": 5,
+      "types": [
+        "Normal",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_roost_checkpoint_fault",
+      "source": "Roost",
+      "facet": "checkpoint_fault",
+      "hp_before": 35,
+      "hp_after": 105,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Normal",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_roost_full",
+      "source": "Roost",
+      "facet": "full",
+      "hp_before": 143,
+      "hp_after": 143,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Normal",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_roost_native",
+      "source": "Roost",
+      "facet": "native",
+      "hp_before": 76,
+      "hp_after": 227,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Normal",
+        "Flying"
+      ]
+    },
+    {
+      "case": "test_synthesis_active",
+      "source": "Synthesis",
+      "facet": "active",
+      "hp_before": 26,
+      "hp_after": 78,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_blocked",
+      "source": "Synthesis",
+      "facet": "blocked",
+      "hp_before": 26,
+      "hp_after": 26,
+      "pp_before": 5,
+      "pp_after": 5,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_checkpoint_fault",
+      "source": "Synthesis",
+      "facet": "checkpoint_fault",
+      "hp_before": 26,
+      "hp_after": 78,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_full",
+      "source": "Synthesis",
+      "facet": "full",
+      "hp_before": 105,
+      "hp_after": 105,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_native",
+      "source": "Synthesis",
+      "facet": "native",
+      "hp_before": 53,
+      "hp_after": 159,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_raindance",
+      "source": "Synthesis",
+      "facet": "raindance",
+      "hp_before": 26,
+      "hp_after": 52,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_sandstorm",
+      "source": "Synthesis",
+      "facet": "sandstorm",
+      "hp_before": 26,
+      "hp_after": 46,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_snow",
+      "source": "Synthesis",
+      "facet": "snow",
+      "hp_before": 26,
+      "hp_after": 52,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_sunnyday",
+      "source": "Synthesis",
+      "facet": "sunnyday",
+      "hp_before": 26,
+      "hp_after": 96,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_synthesis_umbrella",
+      "source": "Synthesis",
+      "facet": "umbrella",
+      "hp_before": 26,
+      "hp_after": 78,
+      "pp_before": 5,
+      "pp_after": 4,
+      "types": [
+        "Grass",
+        "Poison"
+      ]
+    },
+    {
+      "case": "test_thunderwave_diglett",
+      "source": "Thunder Wave",
+      "target": "Diglett",
+      "target_status": "",
+      "source_pp_before": 20,
+      "source_pp_after": 19
+    },
+    {
+      "case": "test_thunderwave_jolteon",
+      "source": "Thunder Wave",
+      "target": "Jolteon",
+      "target_status": "",
+      "source_pp_before": 20,
+      "source_pp_after": 19
+    },
+    {
+      "case": "test_thunderwave_wailord",
+      "source": "Thunder Wave",
+      "target": "Wailord",
+      "target_status": "par",
+      "source_pp_before": 20,
+      "source_pp_after": 19
+    }
+  ],
+  "offline_recovery_tests": 22,
+  "offline_protection_tests": 22,
+  "offline_ordinary_type_tests": 4,
+  "baseline_failures": {
+    "status_and_ordinary_recovery": {
+      "exit": 1,
+      "seconds": 4.88,
+      "passed": [
+        "1"
+      ],
+      "failed": [
+        "23"
+      ],
+      "skipped": [],
+      "sha256": "0aca34dfc1793661a3f97c7b801975546c922c05b0220d2fe748cef1a73dcfdc"
+    },
+    "protect": {
+      "exit": 1,
+      "seconds": 5.15,
+      "passed": [],
+      "failed": [
+        "2"
+      ],
+      "skipped": [],
+      "sha256": "fafb805bfa53af45993c4a80a57e72b0bf1f6f4b1d37717e6b69ac37cd6b86e4"
+    },
+    "thunder_wave": {
+      "exit": 1,
+      "seconds": 4.85,
+      "passed": [
+        "3"
+      ],
+      "failed": [
+        "1"
+      ],
+      "skipped": [],
+      "sha256": "494aa5ac6c18a9c52ddfd21a9da79668c30a7ccd721abb748bc23139e6d6bd69"
+    }
+  },
+  "retained_fixture_diagnoses": [
+    "Missing fixture native-method binding corrected before player effects ran.",
+    "Paid offline Synthesis adapter now binds the ordinary callback before copying, as production begin does.",
+    "Spread Growl peer actions were replaced by legal Splash controls so they cannot undo the measured Z stages.",
+    "After a prevented shield caused a legitimate faint/replacement, assertions follow the original owned UUID.",
+    "Safeguard in the suppression controls correctly blocks the ordinary status while preserving the started Z bonus.",
+    "Damp/weather callback failure retained as #915; labelled native Water Absorb opponents bound this recovery proof.",
+    "Legacy Protect event tests updated for version2 counters; a misplaced new-test assertion was corrected."
+  ]
+}

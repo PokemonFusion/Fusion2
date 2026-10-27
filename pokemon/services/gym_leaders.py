@@ -6,6 +6,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from typing import Any
 
+from pokemon.services.gym_policy import GymPolicy
 from pokemon.services.trainer_encounters import (
     StaticTrainerTemplateCheck,
     TrainerEncounter,
@@ -37,6 +38,12 @@ class GymLeaderCheck:
     issues: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
     profile: Any = None
+    battle_format: str = "single"
+    ai_profile: str = "gym_leader"
+    content_stage: str = "production"
+    reward_policy: str = "legacy"
+    rules_text: str = ""
+    availability_message: str = ""
 
     @property
     def template_count(self) -> int:
@@ -122,6 +129,22 @@ def check_gym_leader(identifier, *, player=None) -> GymLeaderCheck:
 
     issues = list(static_check.issues)
     warnings = list(static_check.warnings)
+    availability = ""
+    try:
+        if getattr(profile, "content_version", 0):
+            from pokemon.services.gym_content import GymContent
+            GymContent.from_profile(profile)
+        policy = GymPolicy.from_profile(profile)
+        if policy.battle_format == "double" and len(static_check.templates) < 2:
+            issues.append("Doubles requires at least two gym roster members.")
+        if policy.reward_policy == "badge_only" and warnings:
+            issues.extend(warnings)
+        availability = policy.availability(profile, player, has_badge=has_badge)
+        if availability:
+            eligible = False
+            issues.append(availability)
+    except ValueError as error:
+        issues.append(str(error))
     if not enabled:
         issues.append("Gym leader profile is disabled.")
     if player is not None and trainer is None:
@@ -148,6 +171,12 @@ def check_gym_leader(identifier, *, player=None) -> GymLeaderCheck:
         issues=tuple(issues),
         warnings=tuple(warnings),
         profile=profile,
+        battle_format=getattr(profile, "battle_format", "single"),
+        ai_profile=getattr(profile, "ai_profile", "gym_leader"),
+        content_stage=getattr(profile, "content_stage", "production"),
+        reward_policy=getattr(profile, "reward_policy", "legacy"),
+        rules_text=getattr(profile, "rules_text", ""),
+        availability_message=availability,
     )
 
 
@@ -174,10 +203,25 @@ def generate_gym_leader_encounter(identifier, *, player=None) -> TrainerEncounte
 
     metadata = dict(getattr(encounter, "metadata", None) or {})
     metadata.update(_profile_metadata(profile))
+    policy = GymPolicy.from_profile(profile)
+    metadata.update(policy.metadata())
+    metadata.update({"content_version": getattr(profile, "content_version", 0),
+                     "content_digest": getattr(profile, "content_digest", ""),
+                     "content_definition": getattr(profile, "content_definition", {}),
+                     "rules_text": getattr(profile, "rules_text", "")})
+    metadata.update({"victory_text": getattr(profile, "victory_text", ""),
+                     "defeat_text": getattr(profile, "defeat_text", ""),
+                     "challenge_mode": "rematch" if check.has_badge else "first_clear"})
     return replace(
         encounter,
         source_type=GYM_LEADER_SOURCE_TYPE,
         metadata=metadata,
+        battle_format=policy.battle_format,
+        ai_profile=policy.ai_profile,
+        intro_text=getattr(profile, "intro_text", "") or encounter.intro_text,
+        victory_text=getattr(profile, "victory_text", ""),
+        defeat_text=getattr(profile, "defeat_text", ""),
+        ruleset=policy.metadata(),
     )
 
 
@@ -263,6 +307,8 @@ def _profile_metadata(profile) -> dict[str, object]:
 
 
 def _eligibility_issue(check: GymLeaderCheck) -> str:
+    if check.availability_message:
+        return check.availability_message
     for issue in check.issues:
         if issue.startswith("Requires at least") or "trainer progression record" in issue:
             return issue

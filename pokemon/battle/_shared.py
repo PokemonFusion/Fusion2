@@ -3,9 +3,33 @@
 from __future__ import annotations
 
 import re
+import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 _NORMALIZED_DEX_IDS: dict[int, dict[str, int]] = {}
+
+
+def weather_suppressed(battle: Any) -> bool:
+    """Derive weather suppression from current living active ability holders."""
+    participants = getattr(battle, "participants", None)
+    if participants is None:
+        return bool(getattr(battle, "suppressWeather", False))
+    try:
+        from pokemon.dex import ABILITYDEX
+    except ImportError:  # Minimal battle adapters may omit the optional dex.
+        ABILITYDEX = {}
+
+    for part in participants:
+        for pokemon in getattr(part, "active", []) or []:
+            if getattr(pokemon, "hp", 0) <= 0 or "gastroacid" in getattr(pokemon, "volatiles", {}):
+                continue
+            ability = getattr(pokemon, "ability", None)
+            if isinstance(ability, str):
+                ability = ABILITYDEX.get(_normalize_key(ability)) or ABILITYDEX.get(ability)
+            raw = getattr(ability, "raw", {}) or {}
+            if raw.get("suppressWeather") or getattr(ability, "suppressWeather", False):
+                return True
+    return False
 
 
 def _normalize_key(name: str) -> str:
@@ -62,12 +86,28 @@ def detached_mapping(value: Any) -> dict[str, Any]:
 
 
 def snapshot_battle_value(value: Any) -> Any:
-    """Serialize Pokemon references without copying their live ORM relationships."""
-    from .battledata import Pokemon
+    """Serialize battler and field references without copying live ORM graphs."""
+    from .battledata import Field, Move, Pokemon
 
+    # Evennia treats unknown iterable subclasses as saved lists. SpeciesName
+    # is a str subclass, so detach it before it enters an Attribute checkpoint.
+    if isinstance(value, str):
+        return str(value)
+    if isinstance(value, Field):
+        return {"__pf2_field_ref__": True}
     if isinstance(value, Pokemon):
         reference = value.model_id or f"{value.name}|{value.level}|{value.max_hp}"
         return {"__pf2_pokemon_ref__": reference}
+    battle_move = getattr(sys.modules.get("pokemon.battle.engine"), "BattleMove", Move)
+    if not isinstance(battle_move, type):
+        battle_move = Move
+    if isinstance(value, (Move, battle_move)):
+        saved = {"__pf2_move_ref__": value.name, "key": getattr(value, "key", None), "pp": getattr(value, "pp", None)}
+        if getattr(value, "_z_paid", False):
+            profile = getattr(value, "_z_profile", None)
+            saved["z_source"] = getattr(value, "_pp_move_name", None)
+            saved["z_crystal"] = getattr(profile, "crystal", None) or getattr(value, "raw", {}).get("isZ")
+        return saved
     if isinstance(value, Mapping):
         return {key: snapshot_battle_value(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -76,23 +116,47 @@ def snapshot_battle_value(value: Any) -> Any:
     return value
 
 
-def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any]) -> Any:
-    """Reconnect saved source/target references to this restored battle's roster."""
+def restore_battle_value(value: Any, pokemon_by_ref: Mapping[str, Any], *, field=None) -> Any:
+    """Reconnect saved source/target references to the restored roster and field."""
     if isinstance(value, Mapping):
+        if set(value) == {"__pf2_field_ref__"}:
+            return field
         if set(value) == {"__pf2_pokemon_ref__"}:
             return pokemon_by_ref.get(value["__pf2_pokemon_ref__"])
-        return {key: restore_battle_value(item, pokemon_by_ref) for key, item in value.items()}
+        if "__pf2_move_ref__" in value:
+            from .engine import MOVEDEX, BattleMove
+
+            name = value["__pf2_move_ref__"]
+            if "z_source" in value or "z_crystal" in value:
+                from pokemon.names import normalize_name
+                from .z_profiles import ZProfiles
+
+                profile = ZProfiles.get(value.get("z_crystal"), value.get("z_source"))
+                if profile is None or normalize_name(name) != normalize_name(profile.name):
+                    raise ValueError("Invalid paid Z move-history source.")
+                source_raw = get_raw(MOVEDEX.get(_normalize_key(profile.source)))
+                source = BattleMove(profile.source, pp=value.get("pp"), raw=source_raw)
+                return profile.descriptor(source)
+            key = value.get("key") or _normalize_key(name)
+            raw = get_raw(MOVEDEX.get(_normalize_key(key)))
+            return BattleMove(name, key=key, pp=value.get("pp"), raw=raw,
+                              power=raw.get("basePower", 0) or 0, type=raw.get("type"),
+                              accuracy=raw.get("accuracy", 100), priority=raw.get("priority", 0))
+        return {key: restore_battle_value(item, pokemon_by_ref, field=field) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
-        items = [restore_battle_value(item, pokemon_by_ref) for item in value]
+        items = [restore_battle_value(item, pokemon_by_ref, field=field) for item in value]
         return tuple(items) if isinstance(value, tuple) else items
     return value
 
 
 def reset_tempvals(pokemon: Any) -> None:
-    """Replace a Pokemon's temporary battle flags with a plain empty dict."""
+    """Clear turn flags while retaining explicitly scoped entry state."""
 
     if hasattr(pokemon, "tempvals"):
-        setattr(pokemon, "tempvals", {})
+        previous = getattr(pokemon, "tempvals", {}) or {}
+        retained = {key: value for key, value in previous.items()
+                    if key in {"moves_used_since_entry", "stat_overrides", "entry_action_turn", "copy_state", "native_form", "sleep_turns", "slp_turns", "bag_boosters"}}
+        setattr(pokemon, "tempvals", retained)
 
 
 def get_pp(entry: Any) -> Optional[int]:

@@ -57,13 +57,18 @@ def _make_name_set(names: Sequence[str] | str) -> set[str]:
 	return {_normalize_name(name) for name in names}
 
 
-def has_ability(holder, names: Sequence[str] | str) -> bool:
+def has_ability(holder, names: Sequence[str] | str, *, battle=None, source=None, effect=None) -> bool:
 	"""Return ``True`` if *holder* has one of *names* as its ability."""
 	if holder is None:
 		return False
-	ability = getattr(holder, 'ability', holder)
-	ability_name = _normalize_name(ability)
-	return ability_name in _make_name_set(names)
+	from pokemon.battle.effect_context import EffectContext
+	ability = EffectContext.ability(holder) if hasattr(holder, 'ability') else holder
+	battle = battle or getattr(holder, 'battle', None)
+	ignores = getattr(battle, '_move_ignores_target_ability', None)
+	if effect is not None and callable(ignores) and ignores(source, holder, effect):
+		return False
+	choices = [names] if isinstance(names, str) else names
+	return bool(ability) and EffectContext.key(ability) in {EffectContext.key(name) for name in choices}
 
 
 def has_type(pokemon, names: Sequence[str] | str) -> bool:
@@ -194,7 +199,7 @@ def can_apply_status(
 	current = _normalize_name(getattr(target, 'status', None))
 	if current and current not in {status_norm, ''}:
 		return False
-	if has_ability(target, 'purifying salt'):
+	if has_ability(target, 'purifying salt', battle=battle, source=source, effect=effect):
 		return False
 	self_inflicted = _is_self_inflicted(target, source, effect, allow_self_inflict)
 	if not self_inflicted:

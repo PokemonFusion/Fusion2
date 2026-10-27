@@ -1,0 +1,304 @@
+{
+  "date": "2026-10-25",
+  "issue": 862,
+  "source_baseline": "73c862b5285d81f011352db9f72d0c547fba5ce0",
+  "scope": "three framework dependency corrections and graph regressions; no item mechanics or world-source changes",
+  "required_object_node": "0013_defaultobject_alter_objectdb_id_defaultcharacter_and_more",
+  "unavailable_prior_node": "0016_delete_exit",
+  "existing_operations_ast_identical": true,
+  "graph_regression": {
+    "before": {
+      "passed": 1,
+      "failed": 1,
+      "failure": "NodeNotFoundError on unavailable ObjectDB 0016"
+    },
+    "after": {
+      "passed": 2,
+      "failed": 0
+    },
+    "uses_database": false
+  },
+  "retained_fixture_diagnosis": "Initial strict whole-row snapshot differed only because 0057 adds nullable PokemonPlacement.combination_id. Corrected the private rehearsal to compare every original column and separately assert the new relation stays null; no game repair was required.",
+  "isolated_migrations": [
+    {
+      "profile": "installed",
+      "suite": "ownership",
+      "scenario": "fresh",
+      "exit": 0,
+      "seconds": 28.26,
+      "sha256": "a882a31eb117dad79a18ff344360eb25a6fc9aa923bb6524b55755c492992027"
+    },
+    {
+      "profile": "installed",
+      "suite": "ownership",
+      "scenario": "upgrade",
+      "exit": 0,
+      "seconds": 24.52,
+      "sha256": "0b14c3009b66209fe1b1217839de1a0a42180eeb81d28b25469084d22f70ce44"
+    },
+    {
+      "profile": "installed",
+      "suite": "ownership",
+      "scenario": "guarded-upgrade",
+      "exit": 0,
+      "seconds": 24.53,
+      "sha256": "e083550f0725edf4eb8fa7333925538f865b06b05140767e0c1ae17ffd73c936"
+    },
+    {
+      "profile": "installed",
+      "suite": "ownership",
+      "scenario": "market-upgrade",
+      "exit": 0,
+      "seconds": 25.55,
+      "sha256": "fb9ca74ec31e15377f93dd8b191d0bd6b7c84ec169a7ce2164617ca076942815"
+    },
+    {
+      "profile": "installed",
+      "suite": "ownership",
+      "scenario": "daycare-upgrade",
+      "exit": 0,
+      "seconds": 24.58,
+      "sha256": "b1ca74c9cc850927c805d340db3a3a91d11716aa6a25c530645d565607047420"
+    },
+    {
+      "profile": "installed",
+      "suite": "ownership",
+      "scenario": "breeding-upgrade",
+      "exit": 0,
+      "seconds": 25.47,
+      "sha256": "6b020128309ccb6fe66e1484e44ebe0ecd8f31b44ea625f0cd80bbf521af5b77"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "fresh",
+      "exit": 0,
+      "seconds": 23.52,
+      "sha256": "41a347c2105fcd3ecc93537a9a5c85836dd9d8e46c57ec2c61d4f87127505ba6"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "upgrade",
+      "exit": 0,
+      "seconds": 24.06,
+      "sha256": "5f4001704153b46946b72b4380720335df192fc0d352ad33266d1219931fdfef"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "legacy-fused",
+      "exit": 0,
+      "seconds": 28.46,
+      "sha256": "e09a540ded96b7f7408324a06a39f75679aeaf9d1ec156f4718ee9553ec9a9ec"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "legacy-source",
+      "exit": 0,
+      "seconds": 24.24,
+      "sha256": "009a0422bf7fe3894dc879b9159c5a24f23c7171223533e0fc521f8151c8790f"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "invalid-integrity",
+      "exit": 0,
+      "seconds": 28.7,
+      "sha256": "999fb68f6a8802a3b231fd519e34fe1f409185ac036b26834fb8daddf351c880"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "reverse-reapply",
+      "exit": 0,
+      "seconds": 26.64,
+      "sha256": "c20c03cd504222c7ba2ab2f5e6cc82b78d05b2a1467a5780ceaed9aafe2be739"
+    },
+    {
+      "profile": "installed",
+      "suite": "necrozma",
+      "scenario": "used-reverse-refusal",
+      "exit": 0,
+      "seconds": 24.98,
+      "sha256": "90aa177a323e91760f09a8248cdbddbff83f22c6142d6af355381b1f4be17bdb"
+    },
+    {
+      "profile": "installed",
+      "suite": "atomic",
+      "scenario": "seeded-0045",
+      "exit": 0,
+      "seconds": 18.67,
+      "sha256": "2bb9fb5a9c5023794b877f60ea489e15968656c41b45d00672d4ea532909b6b0"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "ownership",
+      "scenario": "fresh",
+      "exit": 0,
+      "seconds": 28.13,
+      "sha256": "a882a31eb117dad79a18ff344360eb25a6fc9aa923bb6524b55755c492992027"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "ownership",
+      "scenario": "upgrade",
+      "exit": 0,
+      "seconds": 29.19,
+      "sha256": "0b14c3009b66209fe1b1217839de1a0a42180eeb81d28b25469084d22f70ce44"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "ownership",
+      "scenario": "guarded-upgrade",
+      "exit": 0,
+      "seconds": 23.43,
+      "sha256": "e083550f0725edf4eb8fa7333925538f865b06b05140767e0c1ae17ffd73c936"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "ownership",
+      "scenario": "market-upgrade",
+      "exit": 0,
+      "seconds": 24.6,
+      "sha256": "fb9ca74ec31e15377f93dd8b191d0bd6b7c84ec169a7ce2164617ca076942815"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "ownership",
+      "scenario": "daycare-upgrade",
+      "exit": 0,
+      "seconds": 26.74,
+      "sha256": "b1ca74c9cc850927c805d340db3a3a91d11716aa6a25c530645d565607047420"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "ownership",
+      "scenario": "breeding-upgrade",
+      "exit": 0,
+      "seconds": 26.86,
+      "sha256": "6b020128309ccb6fe66e1484e44ebe0ecd8f31b44ea625f0cd80bbf521af5b77"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "fresh",
+      "exit": 0,
+      "seconds": 25.69,
+      "sha256": "41a347c2105fcd3ecc93537a9a5c85836dd9d8e46c57ec2c61d4f87127505ba6"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "upgrade",
+      "exit": 0,
+      "seconds": 24.43,
+      "sha256": "5f4001704153b46946b72b4380720335df192fc0d352ad33266d1219931fdfef"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "legacy-fused",
+      "exit": 0,
+      "seconds": 25.64,
+      "sha256": "e09a540ded96b7f7408324a06a39f75679aeaf9d1ec156f4718ee9553ec9a9ec"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "legacy-source",
+      "exit": 0,
+      "seconds": 24.68,
+      "sha256": "009a0422bf7fe3894dc879b9159c5a24f23c7171223533e0fc521f8151c8790f"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "invalid-integrity",
+      "exit": 0,
+      "seconds": 28.48,
+      "sha256": "999fb68f6a8802a3b231fd519e34fe1f409185ac036b26834fb8daddf351c880"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "reverse-reapply",
+      "exit": 0,
+      "seconds": 27.16,
+      "sha256": "c20c03cd504222c7ba2ab2f5e6cc82b78d05b2a1467a5780ceaed9aafe2be739"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "necrozma",
+      "scenario": "used-reverse-refusal",
+      "exit": 0,
+      "seconds": 25.06,
+      "sha256": "90aa177a323e91760f09a8248cdbddbff83f22c6142d6af355381b1f4be17bdb"
+    },
+    {
+      "profile": "pf2-dev-6.0",
+      "suite": "atomic",
+      "scenario": "seeded-0045",
+      "exit": 0,
+      "seconds": 18.66,
+      "sha256": "3e5c5d07bbe20036f9f6c5ed5a34f63485c76007357e8fc2e983b0e58799a787"
+    }
+  ],
+  "isolated_command_suites": {
+    "supply": {
+      "exit": 0,
+      "cases": [
+        "11"
+      ],
+      "seconds": 17.84,
+      "sha256": "bc93812333aa3160934338c27f69c51526868f0db6b07274bf58ac806fb4915b",
+      "evidence_sha256": "caa82b80e3d95c397066a29b5b903c15ea8d4b0ddb9b2d2654cc8c693e5409d0"
+    },
+    "availability": {
+      "exit": 0,
+      "cases": [
+        "32"
+      ],
+      "seconds": 23.38,
+      "sha256": "4c8d40b8d204144e946ee902d81372311f7e84aa6d372c4acc17e286db68c1c2",
+      "evidence_sha256": "b809d2e7a23d5b58a8fb4f82ade364d146d2bfc444ab17d30131ae4f18d5ab0f"
+    },
+    "total": 43
+  },
+  "isolated_fixture_cleanup": {
+    "stopped": true,
+    "disposable_schemas_remaining": 0,
+    "public_tables": 0
+  },
+  "full_gate": {
+    "exit_code": 0,
+    "seconds": 2065.49,
+    "passed": [
+      "6188",
+      "6188",
+      "6188"
+    ],
+    "skipped": [
+      "4028",
+      "4028",
+      "4028"
+    ],
+    "log_sha256": "7249b6a4681b1fd79ac11bcc68520cd9ed20fc78addd037932076da2c1bbc6c1"
+  },
+  "qualified_python_count": 1139,
+  "qualified_python_manifest_sha256": "e8bc5edd51aec912206bba9a34760c4722491bebcab238d48012b3ca385ee141",
+  "changed_python_sha256": {
+    "pokemon/migrations/0047_ownership_transfers.py": "f09834f06a332937e9d3650318a3c0e6594331475ea5875b0633b1281ebc8df9",
+    "pokemon/migrations/0049_marketplace.py": "1d9980d6dd2b1ff7bb7b37492d27062d2dd1d5cb236a6930221f6fac15dbbd47",
+    "pokemon/migrations/0056_onboarding_completion.py": "82110b69e999058dcbc0b5bc7158dfc035b7f47b1f69f62b993a7d602010717e",
+    "tests/test_framework_migration_graph.py": "a406fdd925f99a999c34914269fcf01bb675ba7acbb96529f16cf8640da1ad46"
+  },
+  "unrelated_shared_files_preserved": 25,
+  "limits": [
+    "No shared-world walkthrough is claimed by these isolated checks.",
+    "Permanent Supply Corner installation and ordinary-player acceptance remain incomplete.",
+    "No framework package files, game data, stock or item mechanics changed by this source repair.",
+    "Previous reports and candidate plans remain immutable."
+  ]
+}

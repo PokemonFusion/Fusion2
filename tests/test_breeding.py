@@ -37,6 +37,7 @@ pokemon_dex.POKEDEX = {
 		raw={"prevo": "Pichu"},
 	),
 	"pichu": ent_mod.Pokemon(name="Pichu", num=172, egg_groups=["Undiscovered"], raw={}),
+	"geodude": ent_mod.Pokemon(name="Geodude", num=74, egg_groups=["Mineral"], raw={}),
 	"volbeat": ent_mod.Pokemon(
 		name="Volbeat",
 		num=313,
@@ -84,12 +85,21 @@ def test_ditto_breeding_returns_base_form():
 
 def test_incompatible_egg_groups_raise():
 	mom = make_instance("pikachu", "F")
-	dad = make_instance("volbeat", "M")  # different groups
+	dad = make_instance("geodude", "M")  # different groups, ordinary supported species
 	with pytest.raises(ValueError):
 		breed_mod.determine_egg_species(mom, dad)
 
 
-def test_special_case_volbeat_with_ditto():
+def test_special_case_volbeat_requires_explicit_counterpart_rule():
 	dad = make_instance("volbeat", "M")
 	ditto = make_instance("ditto", "N")
-	assert breed_mod.determine_egg_species(dad, ditto) == "Illumise"
+	with pytest.raises(ValueError, match="Special offspring"):
+		breed_mod.determine_egg_species(dad, ditto)
+
+
+def test_two_ditto_and_invalid_gender_are_rejected():
+	ditto = make_instance("ditto", "N")
+	with pytest.raises(ValueError, match="Two Ditto"):
+		breed_mod.determine_egg_species(ditto, ditto)
+	with pytest.raises(ValueError, match="Invalid parent gender"):
+		breed_mod.determine_egg_species(make_instance("pikachu", "X"), ditto)
