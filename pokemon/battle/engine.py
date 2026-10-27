@@ -4491,11 +4491,12 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     start_user_boosts,
                     end_user_boosts,
                 )
-                self.announce_stat_changes(
-                    target,
-                    start_target_boosts,
-                    end_target_boosts,
-                )
+                if not target_self:
+                    self.announce_stat_changes(
+                        target,
+                        start_target_boosts,
+                        end_target_boosts,
+                    )
         elif boosts_changed or statuses_changed or effects_changed or field_changed or getattr(move, "_queue_changed", False):
             if target_self:
                 self.log_action(f"{user_name} used {move.name}!")
@@ -4509,12 +4510,13 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 end_user_boosts,
                 move.raw.get("boosts") if target_self else None,
             )
-            self.announce_stat_changes(
-                target,
-                start_target_boosts,
-                end_target_boosts,
-                move.raw.get("boosts") if not target_self else None,
-            )
+            if not target_self:
+                self.announce_stat_changes(
+                    target,
+                    start_target_boosts,
+                    end_target_boosts,
+                    move.raw.get("boosts"),
+                )
         else:
             if move.raw.get("boosts"):
                 fail_target = "its own" if target_self else f"{target_name}'s"
