@@ -13,7 +13,7 @@ utils_mod.ansi = ansi_mod
 sys.modules["evennia.utils"] = utils_mod
 sys.modules["evennia.utils.ansi"] = ansi_mod
 
-from pokemon.ui.move_gui import render_move_gui
+from pokemon.ui.move_gui import render_move_cards as render_move_gui
 
 
 def _row_heights(out: str) -> Tuple[int, int]:

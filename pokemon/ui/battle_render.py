@@ -1,8 +1,7 @@
-"""Battle UI renderers for the text battle HUD.
+"""Battle HUD dispatch with a compact default and selectable classic styles.
 
-The module keeps the original boxed renderer as the legacy style and adds a
-classic-modern renderer inspired by the old MU* display.  Both styles use
-Evennia pipe-ANSI markup and measure visible width after stripping those tags.
+Renderers use Evennia pipe-ANSI markup and measure width after stripping tags.
+The boxed, classic-modern and PF1 layouts remain available as preferences.
 """
 
 from pokemon.ui.box_utils import render_box
@@ -28,12 +27,15 @@ ASCII_SYMBOL_CLIENT_PREFIXES = ("BEIP",)
 BATTLE_UI_STYLE_LEGACY = "legacy"
 BATTLE_UI_STYLE_CLASSIC_MODERN = "classic_modern"
 BATTLE_UI_STYLE_PF1 = "pf1"
-DEFAULT_BATTLE_UI_STYLE = BATTLE_UI_STYLE_CLASSIC_MODERN
-BATTLE_UI_STYLES = (BATTLE_UI_STYLE_LEGACY, BATTLE_UI_STYLE_CLASSIC_MODERN, BATTLE_UI_STYLE_PF1)
+BATTLE_UI_STYLE_COMPACT = "compact"
+DEFAULT_BATTLE_UI_STYLE = BATTLE_UI_STYLE_COMPACT
+BATTLE_UI_STYLES = (BATTLE_UI_STYLE_COMPACT, BATTLE_UI_STYLE_LEGACY, BATTLE_UI_STYLE_CLASSIC_MODERN, BATTLE_UI_STYLE_PF1)
 _STYLE_ALIASES = {
 	"": DEFAULT_BATTLE_UI_STYLE,
 	"current": DEFAULT_BATTLE_UI_STYLE,
 	"default": DEFAULT_BATTLE_UI_STYLE,
+	"compact": BATTLE_UI_STYLE_COMPACT,
+	"fusion": BATTLE_UI_STYLE_COMPACT,
 	"boxed": BATTLE_UI_STYLE_LEGACY,
 	"legacy": BATTLE_UI_STYLE_LEGACY,
 	"classic": BATTLE_UI_STYLE_CLASSIC_MODERN,
@@ -193,7 +195,7 @@ def display_name(mon) -> str:
 	if illusion:
 		name, species = illusion["name"], illusion["species"]
 		return f"{name} ({species})" if name.lower() != species.lower() else species
-	nick = (getattr(mon, "nickname", None) or "").strip()
+	nick = (getattr(mon, "nickname", None) or getattr(mon, "name", "") or "").strip()
 	species = (getattr(mon, "species", None) or getattr(mon, "name", "") or "?").strip()
 	if nick and nick.lower() != species.lower():
 		return f"{nick} ({species})"
@@ -930,6 +932,10 @@ def render_battle_ui(
 		ascii_symbols = viewer_prefers_ascii_symbols(viewer)
 
 	normalized_style = normalize_battle_ui_style(style)
+	from pokemon.ui.compact_battle import CompactBattleRenderer, screen_reader
+
+	if normalized_style == BATTLE_UI_STYLE_COMPACT or screen_reader(viewer):
+		return CompactBattleRenderer(state, viewer, total_width, waiting_on, ascii_symbols).render()
 	if normalized_style == BATTLE_UI_STYLE_PF1:
 		return render_pf1_battle_ui(
 			state,

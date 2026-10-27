@@ -122,7 +122,7 @@ def setup_modules():
 	ui_pkg = types.ModuleType("pokemon.ui")
 	ui_move = types.ModuleType("pokemon.ui.move_gui")
 
-	def _render(slots, pp_overrides=None, total_width=76):  # pragma: no cover - stub
+	def _render(slots, pp_overrides=None, total_width=76, **kwargs):  # pragma: no cover - stub
 		letters = ["A", "B", "C", "D"]
 		lines = ["Choose a move:"]
 		for idx, s in enumerate(slots[:4]):

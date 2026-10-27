@@ -90,7 +90,7 @@ def test_render_interfaces_trainer_names_visible() -> None:
 
     assert "Trainer Emery" in iface_a
     assert "Trainer Emery" in iface_w
-    assert "Team" in iface_b and "O" in iface_b
+    assert "Team:" in iface_b and "ready" in iface_b
 
 
 def test_render_interfaces_show_live_trick_room_and_remaining_turns() -> None:

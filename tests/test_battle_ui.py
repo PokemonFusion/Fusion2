@@ -107,13 +107,14 @@ def test_classic_modern_renderer_uses_ascii_separators_and_width() -> None:
 	assert max(len(line) for line in clean.splitlines()) <= 78
 
 
-def test_classic_modern_is_default_renderer() -> None:
+def test_compact_is_default_renderer() -> None:
 	state = DummyState()
 	out = render_battle_ui(state, state.A, total_width=78)
 	clean = battle_render.strip_ansi(out)
 
-	assert clean.startswith("== Turn 5 ")
-	assert "Team A" in clean
+	assert clean.startswith("POKEMON FUSION 2")
+	assert "TURN 5" in clean
+	assert "YOUR MOVE" in clean
 	assert not any(ch in clean for ch in "┌┐└┘│─╭╮╰╯")
 
 
@@ -259,7 +260,7 @@ def test_beip_viewer_uses_ascii_symbol_fallback() -> None:
 		all=lambda: [types.SimpleNamespace(protocol_flags={"CLIENTNAME": "BEIP"})]
 	)
 
-	out = render_battle_ui(state, state.A, total_width=78)
+	out = render_battle_ui(state, state.A, total_width=78, style="classic_modern")
 
 	assert "|MF|n" in out
 	assert "|CM|n" in out
@@ -273,7 +274,7 @@ def test_viewer_ascii_symbol_preference_uses_ascii_symbols() -> None:
 	state.B.active_pokemon.gender = "M"
 	state.A.db = types.SimpleNamespace(battle_ascii_symbols=True)
 
-	out = render_battle_ui(state, state.A, total_width=78)
+	out = render_battle_ui(state, state.A, total_width=78, style="classic_modern")
 
 	assert "|MF|n" in out
 	assert "|CM|n" in out

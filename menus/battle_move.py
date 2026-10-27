@@ -46,7 +46,10 @@ def start(
 	**kwargs,
 ) -> Tuple[str, List[Dict[str, Any]]]:
 	"""Node 1: choose move by letter or exact name."""
-	text = render_move_gui(slots, pp_overrides=pp_overrides)
+	from pokemon.battle.interface import get_battle_ui_width
+
+	text = render_move_gui(slots, pp_overrides=pp_overrides,
+						  total_width=get_battle_ui_width(caller), viewer=caller)
 	options = [
 		{
 			"key": "_default",
