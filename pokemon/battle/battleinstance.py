@@ -582,6 +582,10 @@ class BattleSession(TurnManager, MessagingMixin, WatcherManager, ActionQueue, St
             prompts.setdefault(trainer, []).append(f"{pos_name} ({name})" if doubles else str(name))
 
         for trainer, names in prompts.items():
+            from pokemon.ui.compact_battle import uses_compact
+
+            if uses_compact(trainer):
+                continue
             message = f"Choose an action for {self._format_pokemon_names(names)}."
             self._msg_to(trainer, message)
             if len(positions) > 2:

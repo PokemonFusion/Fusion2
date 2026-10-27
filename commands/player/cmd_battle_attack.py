@@ -257,7 +257,7 @@ class CmdBattleAttack(Command):
 
             get_input(
                 self.caller,
-                render_move_gui(slots, pp_overrides=pp_overrides),
+                render_move_gui(slots, pp_overrides=pp_overrides, viewer=self.caller),
                 _callback,
             )
 

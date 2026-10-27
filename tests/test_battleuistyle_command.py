@@ -47,6 +47,7 @@ def test_battleuistyle_shows_default():
 	cmd.caller = caller
 	cmd.args = ""
 	cmd.func()
+	assert "Current battle UI style: compact." in caller.msgs[-1]
 	assert "classic_modern" in caller.msgs[-1]
 	assert "legacy" in caller.msgs[-1]
 	assert "pf1" in caller.msgs[-1]
@@ -59,7 +60,7 @@ def test_battleuistyle_sets_classic_modern():
 	cmd.caller = caller
 	cmd.args = "classic"
 	cmd.func()
-	assert not hasattr(caller.db, "battle_ui_style")
+	assert caller.db.battle_ui_style == "classic_modern"
 	assert caller.msgs[-1] == "Battle UI style set to classic_modern."
 
 
@@ -94,3 +95,14 @@ def test_battleuistyle_pf1_sets_preference():
 	cmd.func()
 	assert caller.db.battle_ui_style == "pf1"
 	assert caller.msgs[-1] == "Battle UI style set to pf1."
+
+
+def test_battleuistyle_default_restores_compact():
+	"""Returning to default clears an explicit old-style preference."""
+	cmd_mod = load_cmd_module()
+	caller = _caller("pf1")
+	cmd = cmd_mod.CmdBattleUiStyle()
+	cmd.caller, cmd.args = caller, "default"
+	cmd.func()
+	assert not hasattr(caller.db, "battle_ui_style")
+	assert caller.msgs[-1] == "Battle UI style set to compact."

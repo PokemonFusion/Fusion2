@@ -54,9 +54,9 @@ class CmdShowBattle(Command):
             return
 
         viewer_team = None
-        if target in getattr(inst, "teamA", []):
+        if self.caller in getattr(inst, "teamA", []):
             viewer_team = "A"
-        elif target in getattr(inst, "teamB", []):
+        elif self.caller in getattr(inst, "teamB", []):
             viewer_team = "B"
 
         ui = display_battle_interface(
@@ -66,5 +66,7 @@ class CmdShowBattle(Command):
             viewer_team=viewer_team,
             style=get_battle_ui_style(self.caller),
             total_width=get_battle_ui_width(self.caller),
+            viewer=self.caller,
+            session=inst,
         )
         self.caller.msg(ui)

@@ -35,7 +35,7 @@ def remove_watcher(state: BattleState, watcher) -> None:
                 state.watchers.discard(getattr(watcher, "id", 0))
 
 
-def notify_watchers(state: Union[BattleState, dict], message: str, room=None) -> None:
+def notify_watchers(state: Union[BattleState, dict], message: str, room=None, *, formatter=None) -> None:
         """Send ``message`` to all registered watchers.
 
         Parameters
@@ -68,7 +68,9 @@ def notify_watchers(state: Union[BattleState, dict], message: str, room=None) ->
                         continue
                 if watcher.attributes.get("battle_ignore_notify"):
                         continue
-                watcher.msg(message)
+                output = formatter(watcher, message) if formatter else message
+                if output is not None:
+                        watcher.msg(output)
 
 
 def normalize_watchers(val: Any) -> List[int]:
@@ -134,9 +136,25 @@ class WatcherManager:
                 log_info(f"Watcher {getattr(watcher, 'key', watcher)} removed")
 
         def notify(self, message: str) -> None:
+                """Collect committed turn events while preserving each viewer's style."""
                 if not getattr(self, "state", None):
                         return
-                notify_watchers(self.state, message, room=getattr(self, "room", None))
+                if getattr(self, "_battle_ui_collecting", False):
+                        self._battle_ui_pending_events.append(message)
+
+                def present(viewer, text):
+                        """Compact viewers receive one grouped turn in their next HUD."""
+                        import re
+                        from pokemon.ui.compact_battle import uses_compact
+
+                        if uses_compact(viewer):
+                                if getattr(self, "_battle_ui_collecting", False):
+                                        return None
+                                if re.fullmatch(r"[=-]{2} Turn \d+ [=-]{2}", str(text)):
+                                        return None
+                        return text
+
+                notify_watchers(self.state, message, room=getattr(self, "room", None), formatter=present)
                 log_info(f"Notified watchers: {message}")
 
         # ------------------------------------------------------------

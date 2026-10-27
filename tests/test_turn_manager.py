@@ -54,6 +54,7 @@ def test_prompt_active_pokemon_announces_names(monkeypatch):
     """`_prompt_active_pokemon` tells trainers which Pokémon to command."""
 
     inst, p1, p2 = _setup_battle()
+    p1.db.battle_ui_style = p2.db.battle_ui_style = "legacy"
     deliveries: list[tuple] = []
 
     def record_msg(target, text):

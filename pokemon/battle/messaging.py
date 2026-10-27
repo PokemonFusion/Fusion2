@@ -16,8 +16,16 @@ class MessagingMixin:
 		if not trainers:
 			trainers = [t for t in (getattr(self, "captainA", None), getattr(self, "captainB", None)) if t]
 		message = text
+		collecting = getattr(self, "_battle_ui_collecting", False)
+		if collecting:
+			self._battle_ui_pending_events.append(text)
 		for obj in trainers + list(getattr(self, "observers", set())):
 			if hasattr(obj, "msg"):
+				if collecting:
+					from pokemon.ui.compact_battle import uses_compact
+
+					if uses_compact(obj):
+						continue
 				obj.msg(message)
 
 	def _msg_to(self, obj, text: str) -> None:
