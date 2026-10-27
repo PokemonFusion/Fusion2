@@ -36,6 +36,14 @@ rebuilds. Ending restores ordinary runtime identity and keeps genuine battle
 HP/status/PP; saved species, native ability, nickname, genetics, placement and
 the reusable stone remain ordinary. A new battle starts with a fresh budget.
 
+The 47 standard stones cannot be stolen, knocked off or swapped away from
+their matching native holder, including its actual Mega form. Nicknames and
+copied appearances do not determine this protection. A foreign holder can
+lose the stone even when the thief is a compatible native species. Magic
+Room, Embargo and Klutz do not remove physical theft protection. The
+[native theft report](testing/mega-stone-theft-2026-10-27.md) separates the
+complete stone matrix from ordinary-command persistence evidence.
+
 Current owned party and current Fusion holders qualify. Eggs, boxes, inactive
 Fusion reservations, foreign owners, copied/Transform species, wrong stones,
 bag-only stock and unsupported formats do not. Fresh persistent ownership or

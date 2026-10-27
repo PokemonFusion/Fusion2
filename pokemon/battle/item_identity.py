@@ -8,6 +8,17 @@ from pokemon.names import normalize_name, resolve_dex_entry
 class HeldItemIdentity:
     """Read real dex species/base species without consulting display names."""
 
+    @classmethod
+    def can_take_mega_stone(cls, item, pokemon):
+        """Protect a compatible native holder, independent of the taking source.
+
+        The reference Mega Stone hook's second argument is its holder. PF2
+        names that argument ``pokemon`` and passes the thief separately. A
+        compatible thief cannot protect a stone held by another species.
+        """
+        native = getattr(item, "mega_evolves", None)
+        return not (native and cls.matches(pokemon, native, family=True))
+
     @staticmethod
     def species_key(value, *, family=False):
         """Resolve an exact known species, optionally to its canonical family."""

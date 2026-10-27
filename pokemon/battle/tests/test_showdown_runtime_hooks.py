@@ -63,23 +63,18 @@ def test_eat_item_consumes_berry_and_sets_flags():
 
 
 def test_take_item_respects_on_take_item_blockers():
-	battle, attacker, _ = build_battle()
-	load_modules()
-	from pokemon.dex.entities import Item
+	"""Native holding, rather than a matching nickname, supplies protection."""
+	from .test_diagnosed_item_effects import native_battle
 
-	stone = Item.from_dict(
-		"Abomasite",
-		{
-			"name": "Abomasite",
-			"megaEvolves": "Abomasnow",
-			"onTakeItem": "Abomasite.onTakeItem",
-		},
-	)
-	attacker.name = "Abomasnow"
-	battle.set_item(attacker, stone)
+	battle, attacker, _ = native_battle("Abomasnow", item="Abomasite", ability="Snow Warning")
+	attacker.name = "Buddy"
 
 	assert battle.take_item(attacker, source=object()) is None
 	assert getattr(attacker.item, "name", None) == "Abomasite"
+	battle, foreign, _ = native_battle("Mew", item="Abomasite", ability="Synchronize")
+	foreign.name = "Abomasnow"
+	assert battle.take_item(foreign, source=object()) is not None
+	assert foreign.item is None
 
 
 def test_move_on_modify_move_runs_before_execution():
