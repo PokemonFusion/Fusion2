@@ -136,6 +136,7 @@ from .battledata import (
     _pokemon_reveal_key,
 )
 from .registry import CALLBACK_REGISTRY
+from .labels import BattlerLabels
 
 ensure_movedex_aliases(MOVEDEX)
 
@@ -895,6 +896,7 @@ class BattleMove:
         logic can still be exercised without the full data package.
         """
 
+        labels = BattlerLabels(battle)
         DEFAULT_TEXT = _get_default_text()
         raw_flags = self.raw.get("flags", {}) if self.raw else {}
         bypasses_substitute = bool(
@@ -908,7 +910,7 @@ class BattleMove:
 
         if battle and hasattr(battle, "log_action"):
             default_messages = DEFAULT_TEXT.get("default", {})
-            actor_name = getattr(user, "name", None) or getattr(user, "species", "Pokemon")
+            actor_name = labels.name(user)
 
             item_template = default_messages.get("activateItem")
             if item_template:
@@ -929,7 +931,7 @@ class BattleMove:
         if (getattr(self, "pranksterBoosted", False)
                 and str(self.category).lower() == "status" and target is not user
                 and not user.is_ally(target) and "Dark" in getattr(target, "types", [])):
-            battle.log_action(f"{target.name} is immune to the Prankster-boosted {self.name}!")
+            battle.log_action(f"{labels.name(target)} is immune to the Prankster-boosted {self.name}!")
             return
         from .called_moves import CalledMoveExecutor
 
@@ -945,14 +947,14 @@ class BattleMove:
 
         if target is not user and StatusTypeImmunity.blocks(target, self):
             if battle and hasattr(battle, "log_action"):
-                battle.log_action(f"{target.name} is immune to {self.name}!")
+                battle.log_action(f"{labels.name(target)} is immune to {self.name}!")
             return
         if (str(self.category).lower() == "status" or self.raw.get("heal")) and target is not user:
             from .accuracy import MoveAccuracy
 
             if not MoveAccuracy.check_status(user, target, self, battle):
                 if battle and hasattr(battle, "log_action"):
-                    battle.log_action(f"{user.name} uses {self.name} but it missed!")
+                    battle.log_action(f"{labels.name(user)} uses {self.name} but it missed!")
                 return
         if self.onHit:
             handled = invoke_callback(self.onHit, user, target, battle=battle)
@@ -1013,12 +1015,12 @@ class BattleMove:
                     if target:
                         battle.log_action(
                             DEFAULT_TEXT["drain"]["heal"].replace(
-                                "[SOURCE]", getattr(target, "name", "Pokemon")
+                                "[SOURCE]", labels.name(target)
                             )
                         )
                     battle.log_action(
                         DEFAULT_TEXT["default"]["heal"].replace(
-                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                            "[POKEMON]", labels.name(user)
                         )
                     )
 
@@ -1038,7 +1040,7 @@ class BattleMove:
                 if battle and recoil_loss:
                     battle.log_action(
                         DEFAULT_TEXT["recoil"]["damage"].replace(
-                            "[POKEMON]", getattr(user, "name", "Pokemon")
+                            "[POKEMON]", labels.name(user)
                         )
                     )
 
@@ -1065,7 +1067,7 @@ class BattleMove:
                 if battle and applied > 0:
                     battle.log_action(
                         DEFAULT_TEXT["default"]["heal"].replace(
-                            "[POKEMON]", getattr(heal_target, "name", "Pokemon")
+                            "[POKEMON]", labels.name(heal_target)
                         )
                     )
 
@@ -1241,12 +1243,12 @@ class BattleMove:
                             if target:
                                 battle.log_action(
                                     DEFAULT_TEXT["drain"]["heal"].replace(
-                                        "[SOURCE]", getattr(target, "name", "Pokemon")
+                                        "[SOURCE]", labels.name(target)
                                     )
                                 )
                             battle.log_action(
                                 DEFAULT_TEXT["default"]["heal"].replace(
-                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                    "[POKEMON]", labels.name(user)
                                 )
                             )
 
@@ -1264,7 +1266,7 @@ class BattleMove:
                         if battle and recoil_loss:
                             battle.log_action(
                                 DEFAULT_TEXT["recoil"]["damage"].replace(
-                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                    "[POKEMON]", labels.name(user)
                                 )
                             )
 
@@ -1277,7 +1279,7 @@ class BattleMove:
                     if battle and applied > 0:
                         battle.log_action(
                             DEFAULT_TEXT["default"]["heal"].replace(
-                                "[POKEMON]", getattr(target, "name", "Pokemon")
+                                "[POKEMON]", labels.name(target)
                             )
                         )
 
@@ -1310,7 +1312,7 @@ class BattleMove:
                         if battle:
                             battle.log_action(
                                 DEFAULT_TEXT["default"]["heal"].replace(
-                                    "[POKEMON]", getattr(user, "name", "Pokemon")
+                                    "[POKEMON]", labels.name(user)
                                 )
                             )
 
@@ -2462,12 +2464,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
     def _pokemon_nickname(self, pokemon) -> str:
         """Return the best nickname representation for ``pokemon``."""
 
-        return self.message_formatter.pokemon_nickname(pokemon)
+        return BattlerLabels(self).name(
+            pokemon, self.message_formatter.pokemon_nickname(pokemon)
+        )
 
     def _pokemon_fullname(self, pokemon) -> str:
         """Return a display-friendly full name for ``pokemon``."""
 
-        return self.message_formatter.pokemon_fullname(pokemon)
+        return BattlerLabels(self).name(
+            pokemon, self.message_formatter.pokemon_fullname(pokemon)
+        )
 
     def _item_display_name(self, item) -> str:
         """Return a display string for ``item``."""
@@ -2490,11 +2496,6 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             },
         )
         if message:
-            if participant.max_active > 1:
-                from .active_slots import slot_for
-                slot = slot_for(participant, pokemon)
-                label = participant.team or ("A" if self.participants[0] is participant else "B")
-                message = f"{label}{slot + 1}: " + message if slot is not None else message
             self.log_action(message)
 
     def _log_switch_out(self, participant: BattleParticipant, pokemon) -> None:
@@ -3030,7 +3031,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         if source is not None and getattr(source, "hp", 0) > 0 and opponents_remain:
             self.runEvent("AfterFaint", pokemon, source, effect, 1)
 
-        name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+        name = self._pokemon_nickname(pokemon)
         try:  # pragma: no cover - data package may be unavailable in tests
             from pokemon.data.text import DEFAULT_TEXT  # type: ignore
         except Exception:  # pragma: no cover
@@ -4478,8 +4479,8 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             for before, after in ((before_user, after_user), (before_target, after_target))
         )
         target_self = target is user
-        user_name = getattr(user, "name", "Pokemon")
-        target_name = "itself" if target_self else getattr(target, "name", "Pokemon")
+        user_name = self._pokemon_nickname(user)
+        target_name = "itself" if target_self else self._pokemon_nickname(target)
         if dmg > 0:
             if getattr(self, "show_damage_numbers", False):
                 self.log_action(
@@ -4736,16 +4737,16 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if selected_move_key and selected_move_key != locked_move_key and not emergency_move:
                 locked_move_name = str(locked_move_key).replace("-", " ").title()
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')} is locked into {locked_move_name}!"
+                    f"{self._pokemon_nickname(user)} is locked into {locked_move_name}!"
                 )
                 return
         elif locked_move_key and not called:
             self._clear_choice_lock(user)
         if not called and not emergency_move and self._is_move_disabled(user, action.move):
-            self.log_action(f"{getattr(user, 'name', 'Pokemon')} can't use {action.move.name}!")
+            self.log_action(f"{self._pokemon_nickname(user)} can't use {action.move.name}!")
             return
         if not called and self.status_prevents_move(user, action.move):
-            self.log_action(f"{getattr(user, 'name', 'Pokemon')} is unable to move!")
+            self.log_action(f"{self._pokemon_nickname(user)} is unable to move!")
             return
         if getattr(action, "z_request", None) is not None:
             from .z_moves import ZMoves
@@ -4844,7 +4845,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.hp = 0
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -4869,7 +4870,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 self._set_choice_lock(user, action.move)
                 self.dispatcher.dispatch("charge_move", user=user, target=target,
                                          move=action.move, battle=self)
-                self.log_action(f"{getattr(user, 'name', 'Pokemon')} began charging {action.move.name}!")
+                self.log_action(f"{self._pokemon_nickname(user)} began charging {action.move.name}!")
                 return
             if not was_charging:
                 self.deduct_pp(user, action.move, target=target)
@@ -4878,7 +4879,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             # separate selfdestruct handling below.
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -4895,7 +4896,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 # Deduct PP from the original user
                 self.deduct_pp(user, action.move, target=target)
                 self.log_action(
-                    f"{getattr(snatcher, 'name', 'Pokemon')} snatched {getattr(user, 'name', 'Pokemon')}'s move!"
+                    f"{self._pokemon_nickname(snatcher)} snatched {self._pokemon_nickname(user)}'s move!"
                 )
                 snatcher.volatiles.pop("snatch", None)
                 # Determine the target of the stolen move
@@ -4934,7 +4935,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
         self._set_choice_lock(user, action.move)
@@ -4957,7 +4958,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if prepared is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
 
@@ -4966,7 +4967,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if try_hit is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
         if action.move.onTryHitSide and target_part is not None:
@@ -4974,7 +4975,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if try_hit_side is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
         if action.move.onTryHitField:
@@ -4982,21 +4983,21 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if try_hit_field is False:
                 self._notify_move_aborted(user, target, action.move)
                 self.log_action(
-                    f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                    f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
                 )
                 return
 
         if not self._passes_try_immunity(target, user, action.move):
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
         if not self._passes_try_primary_hit(target, user, action.move):
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -5009,7 +5010,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             if action.move.raw.get("selfdestruct") == "always":
                 user.hp = 0
             self._notify_move_aborted(user, target, action.move)
-            self.log_action(f"{getattr(target, 'name', 'Pokemon')} protected itself!")
+            self.log_action(f"{self._pokemon_nickname(target)} protected itself!")
             return
 
         blocked = self.runEvent(
@@ -5029,7 +5030,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 user.hp = 0
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{action.move.name} failed to hit {getattr(target, 'name', 'Pokemon')}!"
+                f"{action.move.name} failed to hit {self._pokemon_nickname(target)}!"
             )
             return
 
@@ -5062,7 +5063,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
         if target is not user and sub and not bypasses_substitute:
@@ -5143,7 +5144,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                     if recoil_loss:
                         self.log_action(
                             _get_default_text()["recoil"]["damage"].replace(
-                                "[POKEMON]", getattr(user, "name", "Pokemon")
+                                "[POKEMON]", self._pokemon_nickname(user)
                             )
                         )
                 self._queue_self_switch(user, action.move)
@@ -5203,7 +5204,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 pass
             self._notify_move_aborted(user, target, action.move)
             self.log_action(
-                f"{getattr(user, 'name', 'Pokemon')}'s {action.move.name} failed!"
+                f"{self._pokemon_nickname(user)}'s {action.move.name} failed!"
             )
             return
 
@@ -5215,7 +5216,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                      and getattr(action.move, "_primary_hit_successful", False))
         called = (action.move.raw.get("callsMove") or _effect_key(action.move) == "instruct") and len(getattr(self, "called_moves", [])) > called_before
         if called:
-            self.log_action(f"{user.name} used {action.move.name} and called {self.called_moves[-1]}!")
+            self.log_action(f"{self._pokemon_nickname(user)} used {action.move.name} and called {self.called_moves[-1]}!")
         self._announce_move_result(user, target, action.move, before_user, before_target,
                                    field_changed=room_changed or positions_changed, report_no_effect=not sacrifice and not called)
         if room_changed:
@@ -5568,7 +5569,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
                 return None
             if not hasattr(self, "log_action"):
                 return None
-            name = getattr(pokemon, "name", getattr(pokemon, "species", "Pokemon"))
+            name = self._pokemon_nickname(pokemon)
             self.log_action(template.replace("[POKEMON]", name))
             return None
 
@@ -5789,7 +5790,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
             self._status_template(status_key, event_key) if status_key else None
         )
         if not message_template:
-            name = getattr(pokemon, "name", getattr(pokemon, "nickname", "Pokemon"))
+            name = self._pokemon_nickname(pokemon)
             self.log_action(f"{name} is now {status_key or status}!")
             return
 
@@ -5859,7 +5860,7 @@ class Battle(TurnProcessor, ConditionHelpers, BattleActions):
         attempted = {STAT_KEY_MAP.get(k, k): v for k, v in attempted.items()}
 
         stats = set(start) | set(end) | set(attempted)
-        name = getattr(pokemon, "name", "Pokemon")
+        name = self._pokemon_nickname(pokemon)
 
         for stat in stats:
             before = start.get(stat, 0)

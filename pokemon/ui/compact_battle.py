@@ -274,7 +274,10 @@ class CompactBattleRenderer:
             name = f"{trainer_name} ({species})"
         elif wild:
             name = "Wild " + name
-        left = f"{color}{role} {entry.position}|n  |w{name}|n"
+        if len(self.entries) > 2:
+            left = f"{color}{role}|n  |w{name} ({entry.position})|n"
+        else:
+            left = f"{color}{role} {entry.position}|n  |w{name}|n"
         self._heading(left, f"Lv {getattr(mon, 'level', '?')}")
         if not own and not wild:
             self.text.add(f"Trainer: {trainer_name}")

@@ -48,8 +48,10 @@ def doubles():
     return battle, user, ally, foe, other
 
 
-@pytest.mark.parametrize("name,expected", [("After You", ["User", "Ally", "Foe", "Other"]),
-                                            ("Quash", ["User", "Other", "Ally", "Foe"])])
+@pytest.mark.parametrize("name,expected", [
+    ("After You", ["User (A1)", "Ally (A2)", "Foe (B1)", "Other (B2)"]),
+    ("Quash", ["User (A1)", "Other (B2)", "Ally (A2)", "Foe (B1)"]),
+])
 def test_queue_move_changes_actual_remaining_actor_order(name, expected):
     battle, user, ally, foe, other = doubles()
     observed = []

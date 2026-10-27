@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 
-def active_slots(participant) -> dict:
-    """Map logical slots to current battlers without shifting a surviving ally."""
+def active_slots(participant, *, update=True) -> dict:
+    """Map stable slots, optionally without updating the participant's cache."""
     active = list(getattr(participant, "active", []))
     previous = getattr(participant, "_active_slots", {})
     slots = {slot: mon for slot, mon in previous.items()
@@ -15,7 +15,8 @@ def active_slots(participant) -> dict:
         slot = next((slot for slot in range(getattr(participant, "max_active", max(1, len(active)))) if slot not in slots), None)
         if slot is not None:
             slots[slot] = mon
-    participant._active_slots = slots
+    if update:
+        participant._active_slots = slots
     return slots
 
 
