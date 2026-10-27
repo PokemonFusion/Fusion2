@@ -3,6 +3,7 @@
 import json
 import os
 import random
+import re
 from copy import deepcopy
 from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor
@@ -205,7 +206,11 @@ class MultiBattleCases(unittest.TestCase):
         for block in hud:
             plain = strip_ansi(block)
             labels = {'A1': 'ALLY', 'A2': 'YOU', 'B1': 'FOE', 'B2': 'FOE'}
-            headings = {label: plain.index(role + ' ' + label) for label, role in labels.items()}
+            headings = {}
+            for label, role in labels.items():
+                heading = re.search(rf'^{role}  [^\n]+ \({label}\)', plain, re.MULTILINE)
+                self.assertIsNotNone(heading, plain)
+                headings[label] = heading.start()
             for label, offset in headings.items():
                 end = min((value for value in headings.values() if value > offset), default=len(plain))
                 card = plain[offset:end]

@@ -115,8 +115,8 @@ class TerastallizationCases(unittest.TestCase):
 
         text = display_battle_interface(self.players[0], self.players[1], session.state, viewer_team="A")
         plain = strip_ansi(text)
-        a1 = plain.split("YOU A1", 1)[1].split("YOU A2", 1)[0]
-        a2 = plain.split("YOU A2", 1)[1]
+        a1 = plain.split("YOU  Squirtle (A1)", 1)[1].split("YOU  Eevee (A2)", 1)[0]
+        a2 = plain.split("YOU  Eevee (A2)", 1)[1]
         self.assertIn("[Tera Stellar]", a2)
         self.assertNotIn("[Tera Stellar]", a1)
         for style in ("legacy", "classic_modern", "pf1"):
